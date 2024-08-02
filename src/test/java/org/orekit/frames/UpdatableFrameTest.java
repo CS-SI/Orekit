@@ -19,7 +19,6 @@ package org.orekit.frames;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -28,10 +27,13 @@ import org.orekit.time.AbsoluteDate;
 
 import java.util.Random;
 
-public class UpdatableFrameTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class UpdatableFrameTest {
 
     @Test
-    public void testUpdateTransform() {
+    void testUpdateTransform() {
         Random random     = new Random(0x2f6769c23e53e96el);
         UpdatableFrame f0 = new UpdatableFrame(FramesFactory.getGCRF(), Transform.IDENTITY, "dummy");
         AbsoluteDate date = new AbsoluteDate();
@@ -67,11 +69,11 @@ public class UpdatableFrameTest {
                                              Transform transform, AbsoluteDate date) {
         try {
             f0.updateTransform(f1, f2, transform, date);
-            Assertions.fail("Should raise a FrameAncestorException");
+            fail("Should raise a FrameAncestorException");
         } catch(FrameAncestorException expected){
             // expected behavior
         } catch (Exception e) {
-            Assertions.fail("wrong exception caught");
+            fail("wrong exception caught");
         }
     }
 
@@ -119,14 +121,14 @@ public class UpdatableFrameTest {
                                       random.nextDouble(),
                                       random.nextDouble());
             Vector3D b = transform.transformVector(a);
-            Assertions.assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
+            assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
             Vector3D c = transform.transformPosition(a);
-            Assertions.assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
+            assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
         }
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

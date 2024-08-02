@@ -16,16 +16,18 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-public class AGILeapSecondFilesLoaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class AGILeapSecondFilesLoaderTest {
 
     @Test
-    public void testRegularFile() {
+    void testRegularFile() {
 
         Utils.setDataRoot("AGI");
 
@@ -60,19 +62,19 @@ public class AGILeapSecondFilesLoaderTest {
     }
 
     @Test
-    public void testInconsistentDate() {
+    void testInconsistentDate() {
         checkException("LeapSecond-inconsistent-date.dat",
                        OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
     }
 
     @Test
-    public void testNonChronological() {
+    void testNonChronological() {
         checkException("LeapSecond-non-chronological.dat",
                        OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE);
     }
 
     @Test
-    public void testFormatError() {
+    void testFormatError() {
         checkException("LeapSecond-format-error.dat",
                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE);
     }
@@ -80,7 +82,7 @@ public class AGILeapSecondFilesLoaderTest {
     private void checkOffset(int year, int month, int day, double offset) {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
     private void checkException(String name, OrekitMessages message) {
@@ -88,9 +90,9 @@ public class AGILeapSecondFilesLoaderTest {
         TimeScalesFactory.addUTCTAIOffsetsLoader(new AGILeapSecondFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(message, oe.getSpecifier());
+            assertEquals(message, oe.getSpecifier());
         }
     }
 

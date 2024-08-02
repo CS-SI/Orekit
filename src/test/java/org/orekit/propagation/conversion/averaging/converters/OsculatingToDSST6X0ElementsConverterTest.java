@@ -1,6 +1,5 @@
 package org.orekit.propagation.conversion.averaging.converters;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -15,10 +14,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class OsculatingToDSST6X0ElementsConverterTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential");
     }
 
@@ -39,8 +40,8 @@ class OsculatingToDSST6X0ElementsConverterTest {
         final PVCoordinates relativePV = new PVCoordinates(osculatingOrbit.getPVCoordinates(),
                 recomputedOsculatingOrbit.getPVCoordinates(osculatingOrbit.getFrame()));
         final double expectedDifference = 0.;
-        Assertions.assertEquals(expectedDifference, relativePV.getPosition().getNorm(), 2e-5);
-        Assertions.assertEquals(expectedDifference, relativePV.getVelocity().getNorm(), 1e-8);
+        assertEquals(expectedDifference, relativePV.getPosition().getNorm(), 2e-5);
+        assertEquals(expectedDifference, relativePV.getVelocity().getNorm(), 1e-8);
     }
 
     private UnnormalizedSphericalHarmonicsProvider getProvider() {

@@ -23,7 +23,6 @@ import org.hipparchus.random.UnitSphereRandomVectorGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.attitudes.NadirPointing;
@@ -35,12 +34,17 @@ import org.orekit.propagation.events.VisibilityTrigger;
 import org.orekit.time.AbsoluteDate;
 
 import java.lang.reflect.InvocationTargetException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.lang.reflect.Method;
 
-public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
+class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
 
     @Test
-    public void testPlanarProjection() {
+    void testPlanarProjection() {
 
         EllipticalFieldOfView fov = new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                               FastMath.toRadians(40.0), FastMath.toRadians(10.0),
@@ -59,7 +63,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         final Vector3D closestProj = ellipse.toSpace(ellipse.projectToEllipse(ellipse.toPlane(projected)));
 
         // the closest point to the planar project ellipse belongs to the ellipse on the sphere
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             fov.offsetFromBoundary(closestProj, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                             2.0e-15);
 
@@ -71,20 +75,20 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                 closestSphere = p;
             }
         }
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             fov.offsetFromBoundary(closestSphere, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                             2.0e-15);
 
         // computing the closest point to the planar project ellipse
         // does NOT give the closest point on the ellipse on the sphere
-        Assertions.assertEquals(Vector3D.angle(closestProj, d) - 0.0056958,
+        assertEquals(Vector3D.angle(closestProj, d) - 0.0056958,
                             Vector3D.angle(closestSphere, d),
                             1.0e-7);
 
     }
 
     @Test
-    public void testFocalPoints() {
+    void testFocalPoints() {
 
         EllipticalFieldOfView fov = new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                               FastMath.toRadians(40.0), FastMath.toRadians(10.0),
@@ -99,8 +103,8 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         Vector2D f2Plane = new Vector2D(-f1Plane.getX(), f1Plane.getY());
 
         // the focal points on plane are NOT the projection of the focal points on sphere
-        Assertions.assertTrue(f1Sphere.getX() - f1Plane.getX() > +0.0095);
-        Assertions.assertTrue(f2Sphere.getX() - f2Plane.getX() < -0.0095);
+        assertTrue(f1Sphere.getX() - f1Plane.getX() > +0.0095);
+        assertTrue(f2Sphere.getX() - f2Plane.getX() < -0.0095);
 
         // find the constant sum of the distances to foci
         final double angularDist = 2 * fov.getHalfApertureAlongX();
@@ -110,20 +114,20 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
 
             // sum of angular distances on sphere is constant
             final Vector3D pSphere = fov.directionAt(angle);
-            Assertions.assertEquals(angularDist, Vector3D.angle(pSphere, f1Sphere) + Vector3D.angle(pSphere, f2Sphere), 1.0e-14);
+            assertEquals(angularDist, Vector3D.angle(pSphere, f1Sphere) + Vector3D.angle(pSphere, f2Sphere), 1.0e-14);
 
             // sum of Cartesian distances projected on plane is constant
             final Vector2D pPlane = new Vector2D(pSphere.getX(), pSphere.getY());
-            Assertions.assertEquals(d, Vector2D.distance(pPlane, f1Plane) + Vector2D.distance(pPlane, f2Plane), 5.0e-16);
+            assertEquals(d, Vector2D.distance(pPlane, f1Plane) + Vector2D.distance(pPlane, f2Plane), 5.0e-16);
 
         }
 
     }
 
     @Test
-    public void testDirectionFromDistances()
-        throws NoSuchMethodException, SecurityException, IllegalAccessException,
-               IllegalArgumentException, InvocationTargetException {
+    void testDirectionFromDistances()
+            throws NoSuchMethodException, SecurityException, IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException {
 
         final EllipticalFieldOfView fov = new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                                     FastMath.toRadians(40.0), FastMath.toRadians(10.0),
@@ -141,15 +145,15 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
         for (double d1 = dMin; d1 <= dMax; d1 += 0.001) {
             final double d2 = 2 * a - d1;
             final Vector3D dPlus = (Vector3D) directionAt.invoke(fov, d1, d2, +1.0);
-            Assertions.assertEquals(d1, Vector3D.angle(dPlus, f1Sphere), 2.0e-14);
-            Assertions.assertEquals(d2, Vector3D.angle(dPlus, f2Sphere), 2.0e-14);
-            Assertions.assertEquals(0.0,
+            assertEquals(d1, Vector3D.angle(dPlus, f1Sphere), 2.0e-14);
+            assertEquals(d2, Vector3D.angle(dPlus, f2Sphere), 2.0e-14);
+            assertEquals(0.0,
                                 fov.offsetFromBoundary(dPlus, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                 1.0e-13);
             final Vector3D dMinus = (Vector3D) directionAt.invoke(fov, d1, d2, -1.0);
-            Assertions.assertEquals(d1, Vector3D.angle(dMinus, f1Sphere), 2.0e-14);
-            Assertions.assertEquals(d2, Vector3D.angle(dMinus, f2Sphere), 2.0e-14);
-            Assertions.assertEquals(0.0,
+            assertEquals(d1, Vector3D.angle(dMinus, f1Sphere), 2.0e-14);
+            assertEquals(d2, Vector3D.angle(dMinus, f2Sphere), 2.0e-14);
+            assertEquals(0.0,
                                 fov.offsetFromBoundary(dPlus, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                 1.0e-13);
 
@@ -158,7 +162,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testNadirNoMargin() {
+    void testNadirNoMargin() {
         doTestFootprint(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                   FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                   0.0),
@@ -167,7 +171,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testNadirMargin() {
+    void testNadirMargin() {
         doTestFootprint(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                   FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                   0.01),
@@ -176,7 +180,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testRollPitchYaw() {
+    void testRollPitchYaw() {
         doTestFootprint(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                   FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                   0.0),
@@ -188,7 +192,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testFOVPartiallyTruncatedAtLimb() {
+    void testFOVPartiallyTruncatedAtLimb() {
         doTestFootprint(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                   FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                   0.0),
@@ -200,7 +204,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testFOVLargerThanEarth() {
+    void testFOVLargerThanEarth() {
         doTestFootprint(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                   FastMath.toRadians(50.0), FastMath.toRadians(45.0),
                                                   0.0),
@@ -209,7 +213,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testFOVAwayFromEarth() {
+    void testFOVAwayFromEarth() {
         doTestFOVAwayFromEarth(new EllipticalFieldOfView(Vector3D.MINUS_K, Vector3D.PLUS_I,
                                                          FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                          0.0),
@@ -221,7 +225,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testNoFootprintInside() {
+    void testNoFootprintInside() {
         doTestNoFootprintInside(new EllipticalFieldOfView(Vector3D.PLUS_K, Vector3D.PLUS_I,
                                                           FastMath.toRadians(4.0), FastMath.toRadians(2.0),
                                                           0.0),
@@ -229,9 +233,9 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testConventionsTangentPoints()
-        throws NoSuchMethodException, SecurityException, IllegalAccessException,
-               IllegalArgumentException, InvocationTargetException {
+    void testConventionsTangentPoints()
+            throws NoSuchMethodException, SecurityException, IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException {
         Method directionAt = EllipticalFieldOfView.class.getDeclaredMethod("directionAt", Double.TYPE);
         directionAt.setAccessible(true);
         final EllipticalFieldOfView ang  = new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
@@ -244,12 +248,12 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
             final double theta = i * 0.5 * FastMath.PI;
             final Vector3D pAng  = (Vector3D) directionAt.invoke(ang, theta);
             final Vector3D pCart = (Vector3D) directionAt.invoke(cart, theta);
-            Assertions.assertEquals(0.0, Vector3D.angle(pAng, pCart), 1.0e-15);
+            assertEquals(0.0, Vector3D.angle(pAng, pCart), 1.0e-15);
         }
     }
 
     @Test
-    public void testPointsOnBoundary() {
+    void testPointsOnBoundary() {
         doTestPointsOnBoundary(new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                          FastMath.toRadians(10.0), FastMath.toRadians(40.0),
                                                          0.0),
@@ -257,7 +261,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testPointsOutsideBoundary() {
+    void testPointsOutsideBoundary() {
         doTestPointsNearBoundary(new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                            FastMath.toRadians(10.0), FastMath.toRadians(40.0),
                                                            0.0),
@@ -265,7 +269,7 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testPointsInsideBoundary() {
+    void testPointsInsideBoundary() {
         doTestPointsNearBoundary(new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                            FastMath.toRadians(10.0), FastMath.toRadians(40.0),
                                                            0.0),
@@ -273,51 +277,51 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testPointsAlongPrincipalAxes() {
+    void testPointsAlongPrincipalAxes() {
 
         final EllipticalFieldOfView fov  = new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                                      FastMath.toRadians(10.0), FastMath.toRadians(40.0),
                                                                      0.0);
 
         // test points in the primary meridian
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(11)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(11)),
                                                               FastMath.sin(-FastMath.toRadians(11)),
                                                               0.0),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) > 0.0);
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(9)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(9)),
                                                               FastMath.sin(-FastMath.toRadians(9)),
                                                               0.0),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0);
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(9)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(9)),
                                                               FastMath.sin(FastMath.toRadians(9)),
                                                               0.0),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0);
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(11)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(11)),
                                                               FastMath.sin(FastMath.toRadians(11)),
                                                               0.0),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) > 0.0);
 
         // test points in the secondary meridian
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(41)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(41)),
                                                               0.0,
                                                               FastMath.sin(-FastMath.toRadians(41))),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) > 0.0);
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(39)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(39)),
                                                               0.0,
                                                               FastMath.sin(-FastMath.toRadians(39))),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0);
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(39)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(39)),
                                                               0.0,
                                                               FastMath.sin(FastMath.toRadians(39))),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) < 0.0);
-        Assertions.assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(41)),
+        assertTrue(fov.offsetFromBoundary(new Vector3D(FastMath.cos(FastMath.toRadians(41)),
                                                               0.0,
                                                               FastMath.sin(FastMath.toRadians(41))),
                                                  0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV) > 0.0);
     }
 
     @Test
-    public void testOffsetAngularAccuracy() {
+    void testOffsetAngularAccuracy() {
 
         final EllipticalFieldOfView fov  = new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                                      FastMath.toRadians(10.0), FastMath.toRadians(40.0),
@@ -361,19 +365,19 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
             // and compute offset as an exact angle
             double hugeRadius = FastMath.PI;
             double realOffset = fov.offsetFromBoundary(los, hugeRadius, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
-            Assertions.assertEquals(minDist + hugeRadius, realOffset, 3.0e-7);
+            assertEquals(minDist + hugeRadius, realOffset, 3.0e-7);
 
             // here, we intentionally use a zero radius, so we may use the speed-up
             // and may underestimate the offset
             double approximateOffset = fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV);
-            Assertions.assertTrue(approximateOffset < minDist + 3.0e-7);
+            assertTrue(approximateOffset < minDist + 3.0e-7);
 
         }
 
     }
 
     @Test
-    public void testBoundary() {
+    void testBoundary() {
         doTestBoundary(new EllipticalFieldOfView(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                  FastMath.toRadians(10.0), FastMath.toRadians(40.0),
                                                  0.01),
@@ -387,13 +391,13 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
             directionAt.setAccessible(true);
             for (double theta = 0; theta < MathUtils.TWO_PI; theta += 0.01) {
                 final Vector3D direction = (Vector3D) directionAt.invoke(fov, theta);
-                Assertions.assertEquals(0.0,
+                assertEquals(0.0,
                                     fov.offsetFromBoundary(direction, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                     tol);
             }
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                         IllegalArgumentException | InvocationTargetException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
     }
 
@@ -414,11 +418,11 @@ public class EllipticalFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
                 minOffset = FastMath.min(minOffset, offset);
                 maxOffset = FastMath.max(maxOffset, offset);
             }
-            Assertions.assertEquals(expectedMin, minOffset, tol);
-            Assertions.assertEquals(expectedMax, maxOffset, tol);
+            assertEquals(expectedMin, minOffset, tol);
+            assertEquals(expectedMax, maxOffset, tol);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                         IllegalArgumentException | InvocationTargetException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
     }
 

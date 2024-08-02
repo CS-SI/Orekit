@@ -21,7 +21,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.hipparchus.stat.descriptive.rank.Percentile;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
@@ -29,48 +28,50 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
+
+class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testEopc04Rates() {
+    void testEopc04Rates() {
         EOPHistory history = load("eopc04_20.2022-now.csv");
-        Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
-        Assertions.assertEquals(new AbsoluteDate(2022, 1, 1, utc), history.getStartDate());
-        Assertions.assertEquals(new AbsoluteDate(2023, 8, 28, utc), history.getEndDate());
+        assertEquals(IERSConventions.IERS_2010, history.getConventions());
+        assertEquals(new AbsoluteDate(2022, 1, 1, utc), history.getStartDate());
+        assertEquals(new AbsoluteDate(2023, 8, 28, utc), history.getEndDate());
         checkRatesConsistency(history, 0.049, 0.072, 0.063, 0.046);
     }
 
     @Test
-    public void testBulletinAWithoutRates() {
+    void testBulletinAWithoutRates() {
         EOPHistory history = load("bulletina-xxxvi-037.csv");
-        Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
-        Assertions.assertEquals(new AbsoluteDate(2023, 8, 24, utc), history.getStartDate());
-        Assertions.assertEquals(new AbsoluteDate(2024, 9, 13, utc), history.getEndDate());
+        assertEquals(IERSConventions.IERS_2010, history.getConventions());
+        assertEquals(new AbsoluteDate(2023, 8, 24, utc), history.getStartDate());
+        assertEquals(new AbsoluteDate(2024, 9, 13, utc), history.getEndDate());
     }
 
     @Test
-    public void testBulletinAWithRatesOnlyInHeader() {
+    void testBulletinAWithRatesOnlyInHeader() {
         EOPHistory history = load("bulletina-xxxvi-038.csv");
-        Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
-        Assertions.assertEquals(new AbsoluteDate(2023, 8, 30, utc), history.getStartDate());
-        Assertions.assertEquals(new AbsoluteDate(2024, 9, 20, utc), history.getEndDate());
+        assertEquals(IERSConventions.IERS_2010, history.getConventions());
+        assertEquals(new AbsoluteDate(2023, 8, 30, utc), history.getStartDate());
+        assertEquals(new AbsoluteDate(2024, 9, 20, utc), history.getEndDate());
     }
 
     @Test
-    public void testBulletinBWithoutRates() {
+    void testBulletinBWithoutRates() {
         EOPHistory history = load("bulletinb-423.csv");
-        Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
-        Assertions.assertEquals(new AbsoluteDate(2023, 3, 2, utc), history.getStartDate());
-        Assertions.assertEquals(new AbsoluteDate(2023, 5, 1, utc), history.getEndDate());
+        assertEquals(IERSConventions.IERS_2010, history.getConventions());
+        assertEquals(new AbsoluteDate(2023, 3, 2, utc), history.getStartDate());
+        assertEquals(new AbsoluteDate(2023, 5, 1, utc), history.getEndDate());
     }
 
     @Test
-    public void testBulletinBWithRatesOnlyInHeader() {
+    void testBulletinBWithRatesOnlyInHeader() {
         EOPHistory history = load("bulletinb-427.csv");
-        Assertions.assertEquals(IERSConventions.IERS_2010, history.getConventions());
-        Assertions.assertEquals(new AbsoluteDate(2023, 7, 2, utc), history.getStartDate());
-        Assertions.assertEquals(new AbsoluteDate(2023, 9, 1, utc), history.getEndDate());
+        assertEquals(IERSConventions.IERS_2010, history.getConventions());
+        assertEquals(new AbsoluteDate(2023, 7, 2, utc), history.getStartDate());
+        assertEquals(new AbsoluteDate(2023, 9, 1, utc), history.getEndDate());
     }
 
     private EOPHistory load(final String name) {
@@ -99,15 +100,15 @@ public class EopCsvFilesLoaderTest extends AbstractFilesLoaderTest {
             sampleY[i - 1] = (yRate - current.getYRate()) / yRate;
         }
 
-        Assertions.assertEquals(0.0, new Percentile(10.0).evaluate(sampleX), tol10X);
-        Assertions.assertEquals(0.0, new Percentile(90.0).evaluate(sampleX), tol90X);
-        Assertions.assertEquals(0.0, new Percentile(10.0).evaluate(sampleY), tol10Y);
-        Assertions.assertEquals(0.0, new Percentile(90.0).evaluate(sampleY), tol90Y);
+        assertEquals(0.0, new Percentile(10.0).evaluate(sampleX), tol10X);
+        assertEquals(0.0, new Percentile(90.0).evaluate(sampleX), tol90X);
+        assertEquals(0.0, new Percentile(10.0).evaluate(sampleY), tol10Y);
+        assertEquals(0.0, new Percentile(90.0).evaluate(sampleY), tol90Y);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         setRoot("eop-csv");
     }
 

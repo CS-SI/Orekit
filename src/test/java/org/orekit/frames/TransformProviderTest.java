@@ -25,10 +25,11 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TransformProviderTest {
 
@@ -41,9 +42,9 @@ class TransformProviderTest {
         final StaticTransform staticTransform = transformProvider.getStaticTransform(date);
         // THEN
         final Transform transform = transformProvider.getTransform(date);
-        Assertions.assertEquals(date, staticTransform.getDate());
-        Assertions.assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
-        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
+        assertEquals(date, staticTransform.getDate());
+        assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
+        assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
     }
 
     @Test
@@ -55,11 +56,11 @@ class TransformProviderTest {
         final KinematicTransform kinematicTransform = transformProvider.getKinematicTransform(date);
         // THEN
         final Transform transform = transformProvider.getTransform(date);
-        Assertions.assertEquals(date, kinematicTransform.getDate());
-        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
-        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
-        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+        assertEquals(date, kinematicTransform.getDate());
+        assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
     }
 
     @Test
@@ -73,12 +74,12 @@ class TransformProviderTest {
                 .getKinematicTransform(fieldDate);
         // THEN
         final KinematicTransform kinematicTransform = transformProvider.getKinematicTransform(fieldDate.toAbsoluteDate());
-        Assertions.assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
-        Assertions.assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
+        assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
+        assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
+        assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
+        assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
                 fieldKinematicTransform.getRotation().toRotation()));
-        Assertions.assertEquals(kinematicTransform.getRotationRate(),
+        assertEquals(kinematicTransform.getRotationRate(),
                 fieldKinematicTransform.getRotationRate().toVector3D());
     }
 
@@ -93,9 +94,9 @@ class TransformProviderTest {
                 .getStaticTransform(fieldDate);
         // THEN
         final StaticTransform staticTransform = transformProvider.getStaticTransform(fieldDate.toAbsoluteDate());
-        Assertions.assertEquals(staticTransform.getDate(), fieldStaticTransform.getDate());
-        Assertions.assertEquals(staticTransform.getTranslation(), fieldStaticTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(staticTransform.getRotation(),
+        assertEquals(staticTransform.getDate(), fieldStaticTransform.getDate());
+        assertEquals(staticTransform.getTranslation(), fieldStaticTransform.getTranslation().toVector3D());
+        assertEquals(0., Rotation.distance(staticTransform.getRotation(),
                 fieldStaticTransform.getRotation().toRotation()));
     }
 

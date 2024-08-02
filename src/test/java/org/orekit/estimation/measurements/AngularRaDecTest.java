@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
@@ -51,6 +50,8 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AngularRaDecTest {
 
@@ -95,11 +96,11 @@ class AngularRaDecTest {
         }
 
         // Mean and std errors check
-        Assertions.assertEquals(0.0, raDiffStat.getMean(), 6.9e-11);
-        Assertions.assertEquals(0.0, raDiffStat.getStandardDeviation(), 8.5e-11);
+        assertEquals(0.0, raDiffStat.getMean(), 6.9e-11);
+        assertEquals(0.0, raDiffStat.getStandardDeviation(), 8.5e-11);
 
-        Assertions.assertEquals(0.0, decDiffStat.getMean(), 4.5e-11);
-        Assertions.assertEquals(0.0, decDiffStat.getStandardDeviation(), 3e-11);
+        assertEquals(0.0, decDiffStat.getMean(), 4.5e-11);
+        assertEquals(0.0, decDiffStat.getStandardDeviation(), 3e-11);
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -155,7 +156,7 @@ class AngularRaDecTest {
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assertions.assertEquals(2, estimated.getParticipants().length);
+            assertEquals(2, estimated.getParticipants().length);
             final double[][]   jacobian  = estimated.getStateDerivatives(0);
 
             // compute a reference value using finite differences
@@ -167,8 +168,8 @@ class AngularRaDecTest {
                        getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                                               PositionAngleType.TRUE, 250.0, 4).value(state);
 
-            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             final double smallest = FastMath.ulp((double) 1.0);
 
@@ -199,15 +200,15 @@ class AngularRaDecTest {
         }
 
         // median errors on right-ascension
-        Assertions.assertEquals(0.0, new Median().evaluate(RaerrorsP), 4.8e-11);
-        Assertions.assertEquals(0.0, new Median().evaluate(RaerrorsV), 2.2e-5);
+        assertEquals(0.0, new Median().evaluate(RaerrorsP), 4.8e-11);
+        assertEquals(0.0, new Median().evaluate(RaerrorsV), 2.2e-5);
 
         // median errors on declination
-        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsP), 2.2e-11);
-        Assertions.assertEquals(0.0, new Median().evaluate(DecerrorsV), 9.0e-6);
+        assertEquals(0.0, new Median().evaluate(DecerrorsP), 2.2e-11);
+        assertEquals(0.0, new Median().evaluate(DecerrorsV), 9.0e-6);
 
         // Test measurement type
-        Assertions.assertEquals(AngularRaDec.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(AngularRaDec.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the parameters' derivatives using a numerical
@@ -264,8 +265,8 @@ class AngularRaDecTest {
             };
             for (int i = 0; i < 3; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assertions.assertEquals(2, measurement.getDimension());
-                Assertions.assertEquals(2, gradient.length);
+                assertEquals(2, measurement.getDimension());
+                assertEquals(2, gradient.length);
 
                 for (final int k : new int[] {0, 1}) {
                     final ParameterFunction dMkdP =
@@ -281,7 +282,7 @@ class AngularRaDecTest {
                     final double ref = dMkdP.value(drivers[i], date);
 
                     if (ref > 1.e-12) {
-                        Assertions.assertEquals(ref, gradient[k], 3e-9 * FastMath.abs(ref));
+                        assertEquals(ref, gradient[k], 3e-9 * FastMath.abs(ref));
                     }
                 }
             }
@@ -333,8 +334,8 @@ class AngularRaDecTest {
 
         final double tolAngleDeg = 1e-2 / 3600.; // 0.01 arcsecond
         for (int i = 1; i < raDec.length; i++) {
-            Assertions.assertEquals(raDec[i][0], raDec[0][0], tolAngleDeg);
-            Assertions.assertEquals(raDec[i][1], raDec[0][1], tolAngleDeg);
+            assertEquals(raDec[i][0], raDec[0][0], tolAngleDeg);
+            assertEquals(raDec[i][1], raDec[0][1], tolAngleDeg);
         }
 
     }

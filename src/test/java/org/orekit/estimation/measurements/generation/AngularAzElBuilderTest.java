@@ -28,7 +28,7 @@ import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
 
-public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularAzEl> {
+class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularAzEl> {
 
     private static final double SIGMA = 1.0e-3;
     private static final double BIAS  = 1.0e-4;
@@ -52,12 +52,12 @@ public class AngularAzElBuilderTest extends AbstractGroundMeasurementBuilderTest
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0x527ebeb15d630624l, 0.4, 0.9, 128, 2.9 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0x5300b1314adab8cbl, -0.2, -0.6, 100, 2.6 * SIGMA);
     }
 

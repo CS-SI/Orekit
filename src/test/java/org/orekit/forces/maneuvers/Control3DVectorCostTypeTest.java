@@ -22,29 +22,30 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Control3DVectorCostTypeTest {
 
     final Vector3D EXAMPLE_VECTOR = new Vector3D(-5., 2.4, -8.6);
 
     @Test
-    public void testDoubleValue() {
-        Assertions.assertEquals(Control3DVectorCostType.NONE.evaluate(EXAMPLE_VECTOR), 0.);
-        Assertions.assertEquals(Control3DVectorCostType.ONE_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm1());
-        Assertions.assertEquals(Control3DVectorCostType.TWO_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm());
-        Assertions.assertEquals(Control3DVectorCostType.INF_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNormInf());
+    void testDoubleValue() {
+        assertEquals(0., Control3DVectorCostType.NONE.evaluate(EXAMPLE_VECTOR));
+        assertEquals(Control3DVectorCostType.ONE_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm1());
+        assertEquals(Control3DVectorCostType.TWO_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm());
+        assertEquals(Control3DVectorCostType.INF_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNormInf());
     }
 
     @Test
-    public void testGradient() {
+    void testGradient() {
         final GradientField gradientField = GradientField.getField(2);
         testTemplateField(gradientField);
     }
 
     @Test
-    public void testComplex() {
+    void testComplex() {
         final ComplexField complexField = ComplexField.getInstance();
         testTemplateField(complexField);
     }
@@ -59,7 +60,7 @@ class Control3DVectorCostTypeTest {
     private <T extends CalculusFieldElement<T>> void testTemplateNormField(final Field<T> field,
                                                                            final Control3DVectorCostType control3DVectorCostType) {
         final FieldVector3D<T> fieldVector3D = new FieldVector3D<>(field, EXAMPLE_VECTOR);
-        Assertions.assertEquals(control3DVectorCostType.evaluate(EXAMPLE_VECTOR), control3DVectorCostType.evaluate(fieldVector3D).getReal());
+        assertEquals(control3DVectorCostType.evaluate(EXAMPLE_VECTOR), control3DVectorCostType.evaluate(fieldVector3D).getReal());
     }
 
 }

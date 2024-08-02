@@ -24,7 +24,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.ForceModel;
@@ -53,6 +52,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class StateCovarianceMatrixProviderTest {
 
@@ -107,11 +109,11 @@ public class StateCovarianceMatrixProviderTest {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
                 if (reference.getEntry(row, column) == 0) {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
                                             threshold);
                 }
                 else {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
                                             FastMath.abs(threshold * reference.getEntry(row, column)));
                 }
             }
@@ -122,7 +124,7 @@ public class StateCovarianceMatrixProviderTest {
      * Unit test for covariance propagation in Cartesian elements.
      */
     @Test
-    public void testWithNumericalPropagatorCartesian() {
+    void testWithNumericalPropagatorCartesian() {
 
         // Initialization
         setUp();
@@ -159,9 +161,9 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 4.0e-7);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
-        Assertions.assertEquals(OrbitType.CARTESIAN, propagatedStateCov.getOrbitType());
-        Assertions.assertNull(propagatedStateCov.getLOF());
+        assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        assertEquals(OrbitType.CARTESIAN, propagatedStateCov.getOrbitType());
+        assertNull(propagatedStateCov.getLOF());
 
         ///////////
         // Test the frame transformation
@@ -205,7 +207,7 @@ public class StateCovarianceMatrixProviderTest {
      * default orbit type: EQUINOCTIAL
      */
     @Test
-    public void testWithNumericalPropagatorDefault() {
+    void testWithNumericalPropagatorDefault() {
 
         // Initialization
         setUp();
@@ -235,7 +237,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 3.0e-5);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -282,7 +284,7 @@ public class StateCovarianceMatrixProviderTest {
      * orbit type.
      */
     @Test
-    public void testWithNumericalPropagatorDefaultAndKeplerianOrbitType() {
+    void testWithNumericalPropagatorDefaultAndKeplerianOrbitType() {
 
         // Initialization
         setUp();
@@ -321,8 +323,8 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCovInCart, 3.0e-5);
-        Assertions.assertEquals(OrbitType.KEPLERIAN, provider.getCovarianceOrbitType());
-        Assertions.assertEquals(OrbitType.KEPLERIAN, propagatedStateCov.getOrbitType());
+        assertEquals(OrbitType.KEPLERIAN, provider.getCovarianceOrbitType());
+        assertEquals(OrbitType.KEPLERIAN, propagatedStateCov.getOrbitType());
 
     }
 
@@ -330,7 +332,7 @@ public class StateCovarianceMatrixProviderTest {
      * Unit test for covariance propagation in Cartesian elements.
      */
     @Test
-    public void testWithAnalyticalPropagator() {
+    void testWithAnalyticalPropagator() {
 
         // Initialization
         setUp();
@@ -351,7 +353,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(refCovAfter60s, propagatedCov, 5.0e-4);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
 
         ///////////
         // Test the frame transformation
@@ -394,7 +396,7 @@ public class StateCovarianceMatrixProviderTest {
      * Unit test for covariance propagation with DSST propagator.
      */
     @Test
-    public void testWithDSSTPropagatorDefault() {
+    void testWithDSSTPropagatorDefault() {
 
         // Initialization
         setUp();
@@ -432,7 +434,7 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify (3% error with respect to reference)
         compareCovariance(refCovAfter60s, propagatedCov, 0.03);
-        Assertions.assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
+        assertEquals(OrbitType.CARTESIAN, provider.getCovarianceOrbitType());
     }
 
     /**
@@ -440,7 +442,7 @@ public class StateCovarianceMatrixProviderTest {
      * The method is compared to covariance propagation using the Keplerian propagator.
      */
     @Test
-    public void testCovarianceShift() {
+    void testCovarianceShift() {
 
         // Initialization
         setUp();
@@ -466,9 +468,9 @@ public class StateCovarianceMatrixProviderTest {
 
         // Verify
         compareCovariance(propagatedCov, shiftedCov, 4.0e-12);
-        Assertions.assertEquals(propagatedStateCov.getDate(), shiftedStateCov.getDate());
-        Assertions.assertEquals(propagatedStateCov.getOrbitType(), shiftedStateCov.getOrbitType());
-        Assertions.assertEquals(propagatedStateCov.getPositionAngleType(), shiftedStateCov.getPositionAngleType());
+        assertEquals(propagatedStateCov.getDate(), shiftedStateCov.getDate());
+        assertEquals(propagatedStateCov.getOrbitType(), shiftedStateCov.getOrbitType());
+        assertEquals(propagatedStateCov.getPositionAngleType(), shiftedStateCov.getPositionAngleType());
     }
 
     /**
@@ -480,7 +482,7 @@ public class StateCovarianceMatrixProviderTest {
      * output BoundedPropagator was wrong. Actually, it was always equal to the initial covariance matrix.
      */
     @Test
-    public void testIssue1253_IntegratedPropagator() {
+    void testIssue1253_IntegratedPropagator() {
 
         // GIVEN
         // -----
@@ -533,9 +535,9 @@ public class StateCovarianceMatrixProviderTest {
         // ----
 
         // Verify that both covariances are equal
-        Assertions.assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
-        Assertions.assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
-        Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
+        assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
+        assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
+        assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
         compareCovariance(refPropagatedCov, propagatedCov, 0.);
     }
 
@@ -545,7 +547,7 @@ public class StateCovarianceMatrixProviderTest {
      * With analytical propagators, the former code worked. Test if it still works with the new version of the code.
      */
     @Test
-    public void testIssue1253_AnalyticalPropagator() {
+    void testIssue1253_AnalyticalPropagator() {
 
         // GIVEN
         // -----
@@ -590,9 +592,9 @@ public class StateCovarianceMatrixProviderTest {
         // ----
 
         // Verify that both covariances are equal
-        Assertions.assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
-        Assertions.assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
-        Assertions.assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
+        assertEquals(refPropagatedStateCov.getDate(), propagatedStateCov.getDate());
+        assertEquals(refPropagatedStateCov.getOrbitType(), propagatedStateCov.getOrbitType());
+        assertEquals(refPropagatedStateCov.getPositionAngleType(), propagatedStateCov.getPositionAngleType());
         compareCovariance(refPropagatedCov, propagatedCov, 0.);
     }
     

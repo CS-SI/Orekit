@@ -17,7 +17,6 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -32,23 +31,25 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Unit tests for {@link EventMultipleHandler}.
  *
  * @author Lara Hué
  */
-public class EventMultipleHandlerTest {
+class EventMultipleHandlerTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
-     /**
+    /**
      * check eventOccurred method.
      */
     @Test
-    public void testEventOccurred() {
+    void testEventOccurred() {
         // setup
         ContinueOnEvent handler1 = new ContinueOnEvent();
         StopOnEvent handler2 = new StopOnEvent();
@@ -62,17 +63,17 @@ public class EventMultipleHandlerTest {
 
         // actions
         EventMultipleHandler facade1 = new EventMultipleHandler().addHandler(handler1).addHandler(handler2);
-        Assertions.assertEquals(Action.STOP, facade1.eventOccurred(s, detector, true));
+        assertEquals(Action.STOP, facade1.eventOccurred(s, detector, true));
 
         EventMultipleHandler facade2 = new EventMultipleHandler().addHandler(handler1).addHandler(handler3);
-        Assertions.assertEquals(Action.CONTINUE, facade2.eventOccurred(s, detector, true));
+        assertEquals(Action.CONTINUE, facade2.eventOccurred(s, detector, true));
     }
 
     /**
      * check resetState method.
      */
     @Test
-    public void testResetState() {
+    void testResetState() {
         // setup
         ContinueOnEvent handler1 = new ContinueOnEvent();
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -88,8 +89,8 @@ public class EventMultipleHandlerTest {
         EventMultipleHandler facade = new EventMultipleHandler().addHandlers(handler1, handler2, handler3);
 
         // verify
-        Assertions.assertEquals(Action.RESET_STATE, facade.eventOccurred(s, detector, true));
-        Assertions.assertEquals(s.shiftedBy(30).getOrbit().getDate(), facade.resetState(detector, s).getOrbit().getDate());
+        assertEquals(Action.RESET_STATE, facade.eventOccurred(s, detector, true));
+        assertEquals(s.shiftedBy(30).getOrbit().getDate(), facade.resetState(detector, s).getOrbit().getDate());
     }
 
     /**

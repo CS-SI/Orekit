@@ -21,7 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +33,10 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
-public class MariniMurrayTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class MariniMurrayTest {
 
     private static double epsilon = 1e-6;
 
@@ -43,18 +45,18 @@ public class MariniMurrayTest {
     private double longitude;
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         latitude = FastMath.toRadians(45.0);
         longitude = FastMath.toRadians(45.0);
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         final double elevation = 10d;
         final double height = 100d;
 
@@ -64,12 +66,12 @@ public class MariniMurrayTest {
                                             new GeodeticPoint(latitude, longitude, height),
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH).getDelay();
 
-        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
+        assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
 
     @Test
-    public void testFieldDelay() {
+    void testFieldDelay() {
         doTestFieldDelay(Binary64Field.getInstance());
     }
 
@@ -87,12 +89,12 @@ public class MariniMurrayTest {
                                        new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                        null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
 
-        Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
+        assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
+        assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         // ruby laser with wavelength 694.3 nm
         TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
         double lastDelay = Double.MAX_VALUE;
@@ -101,13 +103,13 @@ public class MariniMurrayTest {
             final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
                                                  new GeodeticPoint(latitude, longitude, 350.0),
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testFieldFixedHeight() {
+    void testFieldFixedHeight() {
         doTestFieldFixedHeight(Binary64Field.getInstance());
     }
 
@@ -122,13 +124,13 @@ public class MariniMurrayTest {
                                             new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(350.0)),
                                             new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void compareExpectedValues() {
+    void compareExpectedValues() {
 
         // ruby laser with wavelength 694.3 nm
         TroposphericModel model = new MariniMurray(694.3, TroposphericModelUtils.NANO_M);
@@ -140,11 +142,11 @@ public class MariniMurrayTest {
                                              new GeodeticPoint(latitude, longitude, height),
                                              TroposphericModelUtils.STANDARD_ATMOSPHERE, null, AbsoluteDate.J2000_EPOCH).getDelay();
 
-        Assertions.assertEquals(expectedValue, actualValue, 1.0e-5);
+        assertEquals(expectedValue, actualValue, 1.0e-5);
     }
 
     @Test
-    public void compareFieldExpectedValue() {
+    void compareFieldExpectedValue() {
         doCompareFieldExpectedValues(Binary64Field.getInstance());
     }
 
@@ -162,7 +164,7 @@ public class MariniMurrayTest {
                                         new FieldPressureTemperatureHumidity<T>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                         null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
 
-        Assertions.assertEquals(expectedValue, actualValue.getReal(), 1.0e-5);
+        assertEquals(expectedValue, actualValue.getReal(), 1.0e-5);
     }
 
 }

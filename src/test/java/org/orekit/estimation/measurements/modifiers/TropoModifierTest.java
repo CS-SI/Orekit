@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -57,12 +56,15 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Map;
 
-public class TropoModifierTest {
+class TropoModifierTest {
 
     @Test
-    public void testRangeTropoModifier() {
+    void testRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -104,19 +106,19 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
-            Assertions.assertEquals(evalNoMod.getEstimatedValue()[0],
+            assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            assertEquals(evalNoMod.getEstimatedValue()[0],
                                     eval.getOriginalEstimatedValue()[0],
                                     3.0e-14 * evalNoMod.getEstimatedValue()[0]);
-            Assertions.assertEquals(eval.getEstimatedValue()[0] - eval.getOriginalEstimatedValue()[0],
+            assertEquals(eval.getEstimatedValue()[0] - eval.getOriginalEstimatedValue()[0],
                                     eval.getAppliedEffects().get(modifier)[0],
                                     1.0e-15);
         }
     }
 
     @Test
-    public void testRangeEstimatedTropoModifier() {
+    void testRangeEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -156,13 +158,13 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
     @Test
-    public void testPhaseTropoModifier() {
+    void testPhaseTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -213,13 +215,13 @@ public class TropoModifierTest {
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
             final double epsilon = 1e-6;
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
     @Test
-    public void testPhaseEstimatedTropoModifier() {
+    void testPhaseEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -269,13 +271,13 @@ public class TropoModifierTest {
             final double diffMeters = (eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]) * phase.getWavelength();
 
             final double epsilon = 1e-6;
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
     @Test
-    public void testTurnAroundRangeTropoModifier() {
+    void testTurnAroundRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -323,13 +325,13 @@ public class TropoModifierTest {
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMeters, 12., epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMeters, 0., epsilon) > 0);
         }
     }
 
     @Test
-    public void testBistaticRangeTropoModifier() {
+    void testBistaticRangeTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -373,13 +375,13 @@ public class TropoModifierTest {
 
             final double diffMeters = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
-            Assertions.assertTrue(diffMeters < 9.1);
-            Assertions.assertTrue(diffMeters > 5.8);
+            assertTrue(diffMeters < 9.1);
+            assertTrue(diffMeters > 5.8);
         }
     }
 
     @Test
-    public void testBistaticRangeRateTropoModifier() {
+    void testBistaticRangeRateTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -423,13 +425,13 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 5e-5;
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.005, epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.007, epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMetersSec,  0.005, epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMetersSec, -0.007, epsilon) > 0);
         }
     }
 
     @Test
-    public void testBistaticRangeRateEstimatedTropoModifier() {
+    void testBistaticRangeRateEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -480,13 +482,13 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-4;
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec,  0.010, epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.014, epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMetersSec,  0.010, epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMetersSec, -0.014, epsilon) > 0);
         }
     }
 
     @Test
-    public void testTDOATropoModifier() {
+    void testTDOATropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -531,13 +533,13 @@ public class TropoModifierTest {
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1.e-11;
-            Assertions.assertTrue(Precision.compareTo(diffSec,  2.35e-9, epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffSec, -1.05e-9, epsilon) > 0);
+            assertTrue(Precision.compareTo(diffSec,  2.35e-9, epsilon) < 0);
+            assertTrue(Precision.compareTo(diffSec, -1.05e-9, epsilon) > 0);
         }
     }
 
     @Test
-    public void testTDOAEstimatedTropoModifier() {
+    void testTDOAEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -588,13 +590,13 @@ public class TropoModifierTest {
             final double diffSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 5.e-11;
-            Assertions.assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffSec, -2.21e-9, epsilon) > 0);
+            assertTrue(Precision.compareTo(diffSec,  4.90e-9, epsilon) < 0);
+            assertTrue(Precision.compareTo(diffSec, -2.21e-9, epsilon) > 0);
         }
     }
 
     @Test
-    public void testRangeRateTropoModifier() {
+    void testRangeRateTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -638,13 +640,13 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }
 
     @Test
-    public void testRangeRateEstimatedTropoModifier() {
+    void testRangeRateEstimatedTropoModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -687,13 +689,13 @@ public class TropoModifierTest {
             final double diffMetersSec = eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0];
 
             final double epsilon = 1e-6;
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
-            Assertions.assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
+            assertTrue(Precision.compareTo(diffMetersSec, 0.01, epsilon) < 0);
+            assertTrue(Precision.compareTo(diffMetersSec, -0.01, epsilon) > 0);
         }
     }
 
     @Test
-    public void testAngularRadioRefractionModifier() {
+    void testAngularRadioRefractionModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -737,7 +739,7 @@ public class TropoModifierTest {
 
             final double diffEl = MathUtils.normalizeAngle(eval.getEstimatedValue()[1], evalNoMod.getEstimatedValue()[1]) - evalNoMod.getEstimatedValue()[1];
             // TODO: check threshold
-            Assertions.assertEquals(0.0, diffEl, 1.0e-3);
+            assertEquals(0.0, diffEl, 1.0e-3);
         }
     }
 

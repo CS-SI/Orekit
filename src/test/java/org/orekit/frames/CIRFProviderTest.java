@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -30,16 +29,20 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
-public class CIRFProviderTest {
+class CIRFProviderTest {
 
     @Test
-    public void testRotationRate() {
+    void testRotationRate() {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         TransformProvider provider =
                 new InterpolatingTransformProvider(new CIRFProvider(eopHistory),
@@ -48,14 +51,14 @@ public class CIRFProviderTest {
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2009, 4, 7, 2, 56, 33.816, TimeScalesFactory.getUTC());
         double minRate = provider.getTransform(tMin).getRotationRate().getNorm();
-        Assertions.assertEquals(1.1e-15, minRate, 1.0e-16);
+        assertEquals(1.1e-15, minRate, 1.0e-16);
         AbsoluteDate tMax = new AbsoluteDate(2043, 12, 16, 10, 47, 20, TimeScalesFactory.getUTC());
         double maxRate = provider.getTransform(tMax).getRotationRate().getNorm();
-        Assertions.assertEquals(8.6e-12, maxRate, 1.0e-13);
+        assertEquals(8.6e-12, maxRate, 1.0e-13);
     }
 
     @Test
-    public void testShiftingAccuracyWithEOP() {
+    void testShiftingAccuracyWithEOP() {
 
         // max shift error observed on a 2 months period with 60 seconds step
         // the shifting step after the interpolation step induces that mainly the
@@ -101,12 +104,12 @@ public class CIRFProviderTest {
             final double error = transform.getRotation().getAngle();
             maxError = FastMath.max(maxError, error);
         }
-        Assertions.assertTrue(maxError < 4.6e-12);
+        assertTrue(maxError < 4.6e-12);
 
     }
 
     @Test
-    public void testShiftingAccuracyWithoutEOP() {
+    void testShiftingAccuracyWithoutEOP() {
 
         // max shift error observed on a 2 months period with 60 seconds step
         // the shifting step after the interpolation step induces that only the
@@ -152,20 +155,20 @@ public class CIRFProviderTest {
             final double error = transform.getRotation().getAngle();
             maxError = FastMath.max(maxError, error);
         }
-        Assertions.assertTrue(maxError < 1.3e-13);
+        assertTrue(maxError < 1.3e-13);
 
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         CIRFProvider provider = new CIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
+        assertTrue(bos.size() > 340000);
+        assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -175,14 +178,14 @@ public class CIRFProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

@@ -18,7 +18,6 @@ package org.orekit.bodies;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -31,6 +30,13 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -44,49 +50,49 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class CelestialBodyFactoryTest {
+class CelestialBodyFactoryTest {
 
     @Test
-    public void getSun() {
+    void getSun() {
         Utils.setDataRoot("regular-data");
 
         CelestialBody sun = CelestialBodyFactory.getSun();
-        Assertions.assertNotNull(sun);
+        assertNotNull(sun);
     }
 
     @Test
-    public void clearCache() {
+    void clearCache() {
         Utils.setDataRoot("regular-data");
 
         CelestialBody sun = CelestialBodyFactory.getSun();
-        Assertions.assertNotNull(sun);
+        assertNotNull(sun);
         CelestialBodyFactory.clearCelestialBodyCache();
         CelestialBody sun2 = CelestialBodyFactory.getSun();
-        Assertions.assertNotNull(sun2);
-        Assertions.assertNotSame(sun, sun2);
+        assertNotNull(sun2);
+        assertNotSame(sun, sun2);
     }
 
     @Test
-    public void clearLoaders() {
+    void clearLoaders() {
         Utils.setDataRoot("regular-data");
 
         CelestialBody sun = CelestialBodyFactory.getSun();
-        Assertions.assertNotNull(sun);
+        assertNotNull(sun);
         CelestialBodyFactory.clearCelestialBodyLoaders();
         CelestialBody sun2 = CelestialBodyFactory.getSun();
-        Assertions.assertNotNull(sun2);
-        Assertions.assertNotSame(sun, sun2);
+        assertNotNull(sun2);
+        assertNotSame(sun, sun2);
         CelestialBodyFactory.clearCelestialBodyLoaders(CelestialBodyFactory.SUN);
         CelestialBodyFactory.clearCelestialBodyCache(CelestialBodyFactory.SUN);
         CelestialBodyFactory.addDefaultCelestialBodyLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES);
         CelestialBody sun3 = CelestialBodyFactory.getSun();
-        Assertions.assertNotNull(sun3);
-        Assertions.assertNotSame(sun,  sun3);
-        Assertions.assertNotSame(sun2, sun3);
+        assertNotNull(sun3);
+        assertNotSame(sun,  sun3);
+        assertNotSame(sun2, sun3);
     }
 
     @Test
-    public void testHorizon() {
+    void testHorizon() {
 
         // The following data are an excerpt from a telnet session with JPL Horizon system
         // note that in Horizon we selected Jupiter barycenter rather than Jupiter body center
@@ -162,23 +168,23 @@ public class CelestialBodyFactoryTest {
         for (final TimeStampedPVCoordinates ref : refPV) {
             TimeStampedPVCoordinates testPV = jupiter.getPVCoordinates(ref.getDate(),
                     icrf);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 Vector3D.distance(ref.getPosition(), testPV.getPosition()),
                                 4.0e-4);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 Vector3D.distance(ref.getVelocity(), testPV.getVelocity()),
                                 1.0e-11);
             Vector3D testP = jupiter.getInertiallyOrientedFrame()
                     .getStaticTransformTo(icrf, ref.getDate())
                     .transformPosition(Vector3D.ZERO);
-            Assertions.assertEquals(
+            assertEquals(
                     0.0,
                     Vector3D.distance(ref.getPosition(), testP),
                     8.0e-4);
             testP = jupiter.getBodyOrientedFrame()
                     .getStaticTransformTo(icrf, ref.getDate())
                     .transformPosition(Vector3D.ZERO);
-            Assertions.assertEquals(
+            assertEquals(
                     0.0,
                     Vector3D.distance(ref.getPosition(), testP),
                     8.0e-4);
@@ -195,7 +201,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testSerialization()
+    void testSerialization()
             throws IOException, ClassNotFoundException {
         Utils.setDataRoot("regular-data");
         for (String name : new String[] {
@@ -210,41 +216,41 @@ public class CelestialBodyFactoryTest {
             ByteArrayOutputStream bosBody = new ByteArrayOutputStream();
             ObjectOutputStream    oosBody = new ObjectOutputStream(bosBody);
             oosBody.writeObject(original);
-            Assertions.assertTrue(bosBody.size() > 400);
-            Assertions.assertTrue(bosBody.size() < 460);
+            assertTrue(bosBody.size() > 400);
+            assertTrue(bosBody.size() < 460);
 
             ByteArrayInputStream  bisBody = new ByteArrayInputStream(bosBody.toByteArray());
             ObjectInputStream     oisBody = new ObjectInputStream(bisBody);
             CelestialBody deserializedBody  = (CelestialBody) oisBody.readObject();
-            Assertions.assertTrue(original == deserializedBody);
+            assertTrue(original == deserializedBody);
 
             ByteArrayOutputStream bosInertialFrame = new ByteArrayOutputStream();
             ObjectOutputStream    oosInertialFrame = new ObjectOutputStream(bosInertialFrame);
             oosInertialFrame.writeObject(original.getInertiallyOrientedFrame());
-            Assertions.assertTrue(bosInertialFrame.size() > 400);
-            Assertions.assertTrue(bosInertialFrame.size() < 460);
+            assertTrue(bosInertialFrame.size() > 400);
+            assertTrue(bosInertialFrame.size() < 460);
 
             ByteArrayInputStream  bisInertialFrame = new ByteArrayInputStream(bosInertialFrame.toByteArray());
             ObjectInputStream     oisInertialFrame = new ObjectInputStream(bisInertialFrame);
             Frame deserializedInertialFrame  = (Frame) oisInertialFrame.readObject();
-            Assertions.assertTrue(original.getInertiallyOrientedFrame() == deserializedInertialFrame);
+            assertTrue(original.getInertiallyOrientedFrame() == deserializedInertialFrame);
 
             ByteArrayOutputStream bosBodyFrame = new ByteArrayOutputStream();
             ObjectOutputStream    oosBodyFrame = new ObjectOutputStream(bosBodyFrame);
             oosBodyFrame.writeObject(original.getBodyOrientedFrame());
-            Assertions.assertTrue(bosBodyFrame.size() > 400);
-            Assertions.assertTrue(bosBodyFrame.size() < 460);
+            assertTrue(bosBodyFrame.size() > 400);
+            assertTrue(bosBodyFrame.size() < 460);
 
             ByteArrayInputStream  bisBodyFrame = new ByteArrayInputStream(bosBodyFrame.toByteArray());
             ObjectInputStream     oisBodyFrame = new ObjectInputStream(bisBodyFrame);
             Frame deserializedBodyFrame  = (Frame) oisBodyFrame.readObject();
-            Assertions.assertTrue(original.getBodyOrientedFrame() == deserializedBodyFrame);
+            assertTrue(original.getBodyOrientedFrame() == deserializedBodyFrame);
 
         }
     }
 
     @Test
-    public void multithreadTest() {
+    void multithreadTest() {
         Utils.setDataRoot("regular-data");
         checkMultiThread(10, 100);
     }
@@ -261,7 +267,7 @@ public class CelestialBodyFactoryTest {
                     try {
                         for (int run = 0; run < runs; run++) {
                             CelestialBody mars = CelestialBodyFactory.getBody(CelestialBodyFactory.MARS);
-                            Assertions.assertNotNull(mars);
+                            assertNotNull(mars);
                             CelestialBodyFactory.clearCelestialBodyLoaders();
                         }
                     } catch (OrekitException oe) {
@@ -276,11 +282,11 @@ public class CelestialBodyFactoryTest {
             executorService.shutdown();
             executorService.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException ie) {
-            Assertions.fail(ie.getLocalizedMessage());
+            fail(ie.getLocalizedMessage());
         }
 
         for (Future<?> result : results) {
-            Assertions.assertTrue(result.isDone(),"Not all threads finished -> possible deadlock");
+            assertTrue(result.isDone(),"Not all threads finished -> possible deadlock");
         }
 
         if (caught.get() != null) {
@@ -289,7 +295,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthMoonBarycenter() {
+    void testEarthMoonBarycenter() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody mars = CelestialBodyFactory.getMars();
@@ -304,14 +310,14 @@ public class CelestialBodyFactoryTest {
         AbsoluteDate date = new AbsoluteDate(1969, 7, 23, TimeScalesFactory.getTT());
         final double refDistance = bodyDistance(sun, earthMoonBarycenter, date, frames.get(0));
         for (Frame frame : frames) {
-            Assertions.assertEquals(refDistance,
+            assertEquals(refDistance,
                                 bodyDistance(sun, earthMoonBarycenter, date, frame),
                                 1.0e-14 * refDistance,frame.toString());
         }
     }
 
     @Test
-    public void testICRFAndGCRFAlignment() {
+    void testICRFAndGCRFAlignment() {
         Utils.setDataRoot("regular-data");
         final CelestialBody earthMoonBarycenter   = CelestialBodyFactory.getEarthMoonBarycenter();
         final CelestialBody solarSystemBarycenter = CelestialBodyFactory.getSolarSystemBarycenter();
@@ -324,16 +330,16 @@ public class CelestialBodyFactoryTest {
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 60) {
             final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
             for (final Frame frame : frames) {
-                Assertions.assertEquals(0.0, frame.getTransformTo(icrf, date).getRotation().getAngle(), 1.0e-15);
-                Assertions.assertEquals(0.0, frame.getTransformTo(gcrf, date).getRotation().getAngle(), 1.0e-15);
-                Assertions.assertEquals(0.0, frame.getStaticTransformTo(icrf, date).getRotation().getAngle(), 1.0e-15);
-                Assertions.assertEquals(0.0, frame.getStaticTransformTo(gcrf, date).getRotation().getAngle(), 1.0e-15);
+                assertEquals(0.0, frame.getTransformTo(icrf, date).getRotation().getAngle(), 1.0e-15);
+                assertEquals(0.0, frame.getTransformTo(gcrf, date).getRotation().getAngle(), 1.0e-15);
+                assertEquals(0.0, frame.getStaticTransformTo(icrf, date).getRotation().getAngle(), 1.0e-15);
+                assertEquals(0.0, frame.getStaticTransformTo(gcrf, date).getRotation().getAngle(), 1.0e-15);
             }
         }
     }
 
     @Test
-    public void testEarthInertialFrameAroundJ2000() {
+    void testEarthInertialFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getInertiallyOrientedFrame();
         final Frame base       = FramesFactory.getGCRF();
@@ -342,19 +348,19 @@ public class CelestialBodyFactoryTest {
          for (double dt = -60; dt <= 60; dt += 1.0) {
              final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
              Rotation rotation = base.getTransformTo(earthFrame, date).getRotation();
-             Assertions.assertEquals(0.0, Rotation.distance(reference, rotation), 3.0e-10);
+             assertEquals(0.0, Rotation.distance(reference, rotation), 3.0e-10);
          }
     }
 
     @Test
-    public void testEarthBodyOrientedFrameAroundJ2000() {
+    void testEarthBodyOrientedFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         final Frame base       = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
          for (double dt = -60; dt <= 60; dt += 1.0) {
              final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
              Rotation rotation = base.getTransformTo(earthFrame, date).getRotation();
-             Assertions.assertEquals(7.9426e-4, Rotation.distance(Rotation.IDENTITY, rotation), 1.0e-8);
+             assertEquals(7.9426e-4, Rotation.distance(Rotation.IDENTITY, rotation), 1.0e-8);
          }
     }
 

@@ -19,7 +19,6 @@ package org.orekit.bodies;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -33,49 +32,51 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 
-public class EllipseTest {
+class EllipseTest {
 
     @Test
-    public void testMeridianShape() {
+    void testMeridianShape() {
         OneAxisEllipsoid model =
                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Ellipse e = model.getPlaneSection(new Vector3D(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0),
                                           Vector3D.PLUS_J);
-        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                             e.getA(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS * (1 - Constants.WGS84_EARTH_FLATTENING),
+        assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS * (1 - Constants.WGS84_EARTH_FLATTENING),
                             e.getB(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getU()), 1.0e-15);
-        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_K, e.getU()), 1.0e-15);
-        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_I, e.getV()), 1.0e-15);
-        Assertions.assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getV()), 1.0e-15);
+        assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getU()), 1.0e-15);
+        assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_K, e.getU()), 1.0e-15);
+        assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_I, e.getV()), 1.0e-15);
+        assertEquals(0.5 * FastMath.PI, Vector3D.angle(Vector3D.PLUS_J, e.getV()), 1.0e-15);
     }
 
     @Test
-    public void testEquatorialShape() {
+    void testEquatorialShape() {
         OneAxisEllipsoid model =
                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
                                      FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Ellipse e = model.getPlaneSection(new Vector3D(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0),
                                           Vector3D.PLUS_K);
-        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                             e.getA(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        Assertions.assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+        assertEquals(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                             e.getB(),
                             1.0e-15 * Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
     }
 
     @Test
-    public void testProjectionDerivatives() {
+    void testProjectionDerivatives() {
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                 6.4e6, 6.3e6, FramesFactory.getGCRF());
         TimeStampedPVCoordinates linearMotion =
@@ -94,56 +95,56 @@ public class EllipseTest {
                 new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), CartesianDerivativesFilter.USE_P);
 
         TimeStampedPVCoordinates ref = interpolator.interpolate(g0.getDate(), sample);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                             Vector3D.distance(g0.getPosition(), ref.getPosition()) / ref.getPosition().getNorm(),
                             1.0e-15);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                             Vector3D.distance(g0.getVelocity(), ref.getVelocity()) / ref.getVelocity().getNorm(),
                             6.0e-12);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                             Vector3D.distance(g0.getAcceleration(), ref.getAcceleration()) / ref.getAcceleration().getNorm(),
                             8.0e-8);
 
     }
 
     @Test
-    public void testMinRadiusOfCurvature() {
+    void testMinRadiusOfCurvature() {
         final double a = 100.0;
         final double b =  50.0;
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                 a, b, FramesFactory.getGCRF());
         Vector2D point = new Vector2D(10 * a, 0.0);
-        Assertions.assertEquals(b * b / a,
+        assertEquals(b * b / a,
                            Vector2D.distance(e.projectToEllipse(point), e.getCenterOfCurvature(point)),
                            1.0e-15);
     }
 
     @Test
-    public void testMaxRadiusOfCurvature() {
+    void testMaxRadiusOfCurvature() {
         final double a = 100.0;
         final double b =  50.0;
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                 a, b, FramesFactory.getGCRF());
         Vector2D point = new Vector2D(0.0, 10 * b);
-        Assertions.assertEquals(a * a / b,
+        assertEquals(a * a / b,
                            Vector2D.distance(e.projectToEllipse(point), e.getCenterOfCurvature(point)),
                            1.0e-15);
     }
 
     @Test
-    public void testFlatEllipse() {
+    void testFlatEllipse() {
         final double a = 0.839;
         final double b = 0.176;
         final Ellipse  ellipse   = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                a, b, FramesFactory.getGCRF());
         final Vector2D close = ellipse.projectToEllipse(new Vector2D(2.0, 4.0));
-        Assertions.assertEquals(1.0,
+        assertEquals(1.0,
                             close.getX() * close.getX() / (a * a) + close.getY() * close.getY() / (b * b),
                             1.0e-15);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

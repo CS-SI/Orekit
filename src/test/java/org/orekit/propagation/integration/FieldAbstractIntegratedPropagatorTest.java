@@ -23,7 +23,6 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.attitudes.AttitudeProvider;
@@ -40,6 +39,8 @@ import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldAbstractIntegratedPropagatorTest {
 
@@ -60,7 +61,7 @@ class FieldAbstractIntegratedPropagatorTest {
         testAbstractIntegratedPropagator.setResetAtEnd(expectedResetAtEnd);
         // THEN
         final boolean actualResetAtEnd = testAbstractIntegratedPropagator.getResetAtEnd();
-        Assertions.assertEquals(expectedResetAtEnd, actualResetAtEnd);
+        assertEquals(expectedResetAtEnd, actualResetAtEnd);
     }
     
     /** Test issue 1461.
@@ -104,10 +105,10 @@ class FieldAbstractIntegratedPropagatorTest {
         final double dpMean = meanState.getPosition().distance(state.getPosition()).getReal();
         final double dvMean = meanState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity()).getReal();
         
-        Assertions.assertEquals(0., dpOsc, 0.);
-        Assertions.assertEquals(0., dvOsc, 0.);
-        Assertions.assertEquals(0., dpMean, 0.);
-        Assertions.assertEquals(0., dvMean, 0.);
+        assertEquals(0., dpOsc, 0.);
+        assertEquals(0., dvOsc, 0.);
+        assertEquals(0., dpMean, 0.);
+        assertEquals(0., dvMean, 0.);
     }
 
     private static class TestFieldAbstractIntegratedPropagator extends FieldAbstractIntegratedPropagator<Complex> {

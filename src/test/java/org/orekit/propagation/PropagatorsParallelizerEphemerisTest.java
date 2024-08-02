@@ -20,7 +20,6 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -53,11 +52,15 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.util.List;
 import java.util.stream.Collectors;
 
 
-public class PropagatorsParallelizerEphemerisTest {
+class PropagatorsParallelizerEphemerisTest {
 
     private double mass;
     private Orbit orbit;
@@ -66,7 +69,7 @@ public class PropagatorsParallelizerEphemerisTest {
     private NormalizedSphericalHarmonicsProvider normalizedGravityField;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data:potential/icgem-format");
             unnormalizedGravityField = GravityFieldFactory.getUnnormalizedProvider(6, 0);
@@ -92,19 +95,18 @@ public class PropagatorsParallelizerEphemerisTest {
             attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mass                     = Double.NaN;
         orbit                    = null;
         attitudeLaw              = null;
         unnormalizedGravityField = null;
         normalizedGravityField   = null;
     }
-
 
 
     /*
@@ -119,7 +121,7 @@ public class PropagatorsParallelizerEphemerisTest {
      */
 
     @Test
-    public void testSeveralEphemeris() {
+    void testSeveralEphemeris() {
         /*
          * The closing behaviour is checked by verifying the presence of generated ephemeris as a result of the
          * following process, using PropagatorsParallelizer.
@@ -135,14 +137,14 @@ public class PropagatorsParallelizerEphemerisTest {
 
         parallelizer.propagate(startDate, endDate);
         for ( EphemerisGenerator generator : generators ) {
-            Assertions.assertNotNull(generator.getGeneratedEphemeris());
-            Assertions.assertEquals(endDate, generator.getGeneratedEphemeris().getMaxDate());
-            Assertions.assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
+            assertNotNull(generator.getGeneratedEphemeris());
+            assertEquals(endDate, generator.getGeneratedEphemeris().getMaxDate());
+            assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
         }
     }
 
     @Test
-    public void testSeveralEphemerisDateDetector() {
+    void testSeveralEphemerisDateDetector() {
         /*
          * The closing behaviour is checked for a stop event occuring during the propagation.
          * The test isn't applied to analytical propagators as their behaviour differs.
@@ -165,9 +167,9 @@ public class PropagatorsParallelizerEphemerisTest {
 
         // Check for all generators
         for ( EphemerisGenerator generator : generators ) {
-            Assertions.assertNotNull(generator.getGeneratedEphemeris());
-            Assertions.assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
-            Assertions.assertEquals(detectorDate, generator.getGeneratedEphemeris().getMaxDate());
+            assertNotNull(generator.getGeneratedEphemeris());
+            assertEquals(startDate, generator.getGeneratedEphemeris().getMinDate());
+            assertEquals(detectorDate, generator.getGeneratedEphemeris().getMaxDate());
         }
     }
 

@@ -16,14 +16,12 @@
  */
 package org.orekit.frames;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -40,6 +38,11 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -56,10 +59,10 @@ import java.util.concurrent.Future;
  *
  * @author Evan Ward
  */
-public class TIRFProviderTest {
+class TIRFProviderTest {
 
     @Test
-    public void testAASReferenceLEO() {
+    void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -113,7 +116,7 @@ public class TIRFProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() {
+    void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -167,7 +170,7 @@ public class TIRFProviderTest {
 
     /** Issue #636 */
     @Test
-    public void testContinuousDuringLeap() {
+    void testContinuousDuringLeap() {
         // setup
         Utils.setDataRoot("regular-data");
         Frame tirf = FramesFactory.getTIRF(IERSConventions.IERS_2010, true);
@@ -183,10 +186,10 @@ public class TIRFProviderTest {
         // action + verify
         for (AbsoluteDate d = dateA; d.compareTo(dateB) < 0; d = d.shiftedBy(dt)) {
             Rotation actual = cirf.getTransformTo(tirf, d).getRotation();
-            Assertions.assertEquals(expected,
+            assertEquals(expected,
                     Rotation.distance(previous, actual),
                     tol, "At " + d.toString(utc));
-            Assertions.assertEquals(expected,
+            assertEquals(expected,
                     Rotation.distance(
                             previous,
                             cirf.getStaticTransformTo(tirf, d).getRotation()),
@@ -196,7 +199,7 @@ public class TIRFProviderTest {
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
         TimeScale ut1 = DataContext.getDefault().getTimeScales().getUT1(eopHistory);
         TIRFProvider provider = new TIRFProvider(eopHistory, ut1);
@@ -205,8 +208,8 @@ public class TIRFProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
+        assertTrue(bos.size() > 340000);
+        assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -216,8 +219,8 @@ public class TIRFProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
@@ -226,8 +229,8 @@ public class TIRFProviderTest {
      * Checks that {@link TIRFProvider#getTransform(AbsoluteDate)} is thread safe.
      */
     @Test
-    public void testConcurrentGetTransform()
-        throws InterruptedException, ExecutionException {
+    void testConcurrentGetTransform()
+            throws InterruptedException, ExecutionException {
 
         // subject under test
         final EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false);
@@ -288,7 +291,7 @@ public class TIRFProviderTest {
 
         // verify - necessary to throw AssertionErrors from the Callable
         for (Future<Boolean> future : futures) {
-            Assertions.assertEquals(true, future.get());
+            assertTrue(future.get());
         }
 
     }
@@ -305,10 +308,10 @@ public class TIRFProviderTest {
         final PVCoordinates actualPV = actual.getCartesian();
 
         // transform
-        Assertions.assertEquals(Rotation.distance(actualRotation, expectedRotation), 0, absTol);
-        Assertions.assertEquals(expectedAngular.getRotationRate(), actualAngular.getRotationRate());
-        Assertions.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
-        Assertions.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+        assertEquals(0, Rotation.distance(actualRotation, expectedRotation), absTol);
+        assertEquals(expectedAngular.getRotationRate(), actualAngular.getRotationRate());
+        assertEquals(expectedPV.getPosition(), actualPV.getPosition());
+        assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
     }
 
     @Test
@@ -322,11 +325,11 @@ public class TIRFProviderTest {
         final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
         // THEN
         final Transform transform = provider.getTransform(date);
-        Assertions.assertEquals(date, kinematicTransform.getDate());
-        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
-        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
-        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+        assertEquals(date, kinematicTransform.getDate());
+        assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
     }
 
     @Test
@@ -341,12 +344,12 @@ public class TIRFProviderTest {
         final FieldKinematicTransform<Complex> fieldKinematicTransform = provider.getKinematicTransform(date);
         // THEN
         final KinematicTransform kinematicTransform = provider.getKinematicTransform(date.toAbsoluteDate());
-        Assertions.assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
-        Assertions.assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
+        assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
+        assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
+        assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
+        assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
                 fieldKinematicTransform.getRotation().toRotation()), 1e-15);
-        Assertions.assertEquals(kinematicTransform.getRotationRate(), fieldKinematicTransform.getRotationRate().toVector3D());
+        assertEquals(kinematicTransform.getRotationRate(), fieldKinematicTransform.getRotationRate().toVector3D());
     }
 
     @Test
@@ -361,15 +364,15 @@ public class TIRFProviderTest {
         final FieldStaticTransform<Complex> fieldStaticTransform = provider.getStaticTransform(date);
         // THEN
         final StaticTransform staticTransform = provider.getStaticTransform(date.toAbsoluteDate());
-        Assertions.assertEquals(staticTransform.getDate(), fieldStaticTransform.getDate());
-        Assertions.assertEquals(staticTransform.getTranslation(), fieldStaticTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(staticTransform.getRotation(),
+        assertEquals(staticTransform.getDate(), fieldStaticTransform.getDate());
+        assertEquals(staticTransform.getTranslation(), fieldStaticTransform.getTranslation().toVector3D());
+        assertEquals(0., Rotation.distance(staticTransform.getRotation(),
                 fieldStaticTransform.getRotation().toRotation()), 1e-15);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 
@@ -378,14 +381,14 @@ public class TIRFProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     private void checkP(Vector3D position,
                         Vector3D transformPosition,
                         double tol) {
-        MatcherAssert.assertThat(
+        assertThat(
                 transformPosition,
                 OrekitMatchers.vectorCloseTo(position, tol));
     }

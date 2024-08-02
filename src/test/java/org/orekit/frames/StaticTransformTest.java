@@ -18,27 +18,28 @@
 package org.orekit.frames;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.time.AbsoluteDate;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link StaticTransform}.
  *
  * @author Evan Ward
  */
-public class StaticTransformTest {
+class StaticTransformTest {
 
     /** Test creating, composing, and using a StaticTransform. */
     @Test
-    public void testSimpleComposition() {
+    void testSimpleComposition() {
         // setup
         Rotation rotation = new Rotation(
                 Vector3D.PLUS_K, 0.5 * FastMath.PI,
@@ -57,20 +58,20 @@ public class StaticTransformTest {
         double tol = 1e-15;
         Vector3D u = transform.transformPosition(new Vector3D(1.0, 1.0, 1.0));
         Vector3D v = new Vector3D(0.0, 1.0, 1.0);
-        MatcherAssert.assertThat(u, OrekitMatchers.vectorCloseTo(v, tol));
+        assertThat(u, OrekitMatchers.vectorCloseTo(v, tol));
         Vector3D w = transform.transformVector(new Vector3D(1, 2, 3));
         Vector3D x = new Vector3D(-2, 1, 3);
-        MatcherAssert.assertThat(w, OrekitMatchers.vectorCloseTo(x, tol));
-        MatcherAssert.assertThat(transform.getTranslation(),
+        assertThat(w, OrekitMatchers.vectorCloseTo(x, tol));
+        assertThat(transform.getTranslation(),
                 OrekitMatchers.vectorCloseTo(Vector3D.MINUS_J, tol));
-        MatcherAssert.assertThat(transform.getRotation().getAngle(),
+        assertThat(transform.getRotation().getAngle(),
                 CoreMatchers.is(rotation.getAngle()));
-        MatcherAssert.assertThat(transform.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR),
+        assertThat(transform.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR),
                 CoreMatchers.is(rotation.getAxis(RotationConvention.VECTOR_OPERATOR)));
-        MatcherAssert.assertThat(
+        assertThat(
                 identity.transformPosition(u),
                 OrekitMatchers.vectorCloseTo(u, tol));
-        MatcherAssert.assertThat(
+        assertThat(
                 identity.transformVector(u),
                 OrekitMatchers.vectorCloseTo(u, tol));
         // check line transform
@@ -78,16 +79,16 @@ public class StaticTransformTest {
         Vector3D d = new Vector3D(-42e6, 42e6, -42e6);
         Line line = Line.fromDirection(p1, d, 0);
         Line actualLine = transform.transformLine(line);
-        MatcherAssert.assertThat(
+        assertThat(
                 actualLine.getDirection(),
                 OrekitMatchers.vectorCloseTo(transform.transformVector(d).normalize(), 1));
         // account for translation
         Vector3D expectedOrigin = new Vector3D(
                -56133332.666666666, 28066666.333333333, 28066666.333333333);
-        MatcherAssert.assertThat(
+        assertThat(
                 actualLine.getOrigin(),
                 OrekitMatchers.vectorCloseTo(expectedOrigin, 3));
-        MatcherAssert.assertThat(
+        assertThat(
                 actualLine.getTolerance(),
                 CoreMatchers.is(line.getTolerance()));
     }
@@ -103,10 +104,10 @@ public class StaticTransformTest {
         final StaticTransform actualInverseStaticTransform = staticTransform.getStaticInverse();
         // THEN
         final StaticTransform expectedInverseStaticTransform = staticTransform.getInverse();
-        Assertions.assertEquals(expectedInverseStaticTransform.getDate(), actualInverseStaticTransform.getDate());
-        Assertions.assertEquals(expectedInverseStaticTransform.getTranslation(),
+        assertEquals(expectedInverseStaticTransform.getDate(), actualInverseStaticTransform.getDate());
+        assertEquals(expectedInverseStaticTransform.getTranslation(),
                 actualInverseStaticTransform.getTranslation());
-        Assertions.assertEquals(0., Rotation.distance(expectedInverseStaticTransform.getRotation(),
+        assertEquals(0., Rotation.distance(expectedInverseStaticTransform.getRotation(),
                 actualInverseStaticTransform.getRotation()));
     }
 

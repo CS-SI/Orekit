@@ -19,7 +19,6 @@ package org.orekit.estimation.leastsquares;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
@@ -59,6 +58,10 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -66,7 +69,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
+class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -205,11 +208,11 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
-    @Test
     // Orbit determination for Lageos2 based on SLR (range) measurements
-    public void testLageos2()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+    @Test
+    void testLageos2()
+            throws URISyntaxException, IllegalArgumentException, IOException,
+            OrekitException, ParseException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/od_test_Lageos2.in").toURI().getPath();
@@ -231,8 +234,8 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final int numberOfIte  = 5;
         final int numberOfEval = 5;
 
-        Assertions.assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
-        Assertions.assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
+        assertEquals(numberOfIte, odLageos2.getNumberOfIteration());
+        assertEquals(numberOfEval, odLageos2.getNumberOfEvaluation());
 
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odLageos2.getEstimatedPV().getPosition();
@@ -240,24 +243,24 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         // Ref position from "lageos2_cpf_160213_5451.jax"
         final Vector3D refPos = new Vector3D(7526994.072, -9646309.832, 1464110.239);
         final Vector3D refVel = new Vector3D(3033.794, 1715.265, -4447.659);
-        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+        assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+        assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 95;
         final double[] RefStatRange = { -0.756, 0.845, 0.0, 0.261 };
-        Assertions.assertEquals(nbRange, odLageos2.getRangeStat().getN());
-        Assertions.assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        assertEquals(nbRange, odLageos2.getRangeStat().getN());
+        assertEquals(RefStatRange[0], odLageos2.getRangeStat().getMin(),               distanceAccuracy);
+        assertEquals(RefStatRange[1], odLageos2.getRangeStat().getMax(),               distanceAccuracy);
+        assertEquals(RefStatRange[2], odLageos2.getRangeStat().getMean(),              distanceAccuracy);
+        assertEquals(RefStatRange[3], odLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
     }
 
-    @Test
     // Orbit determination for GNSS satellite based on range measurements
-    public void testGNSS()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-               OrekitException, ParseException {
+    @Test
+    void testGNSS()
+            throws URISyntaxException, IllegalArgumentException, IOException,
+            OrekitException, ParseException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/GNSS/od_test_GPS07.in").toURI().getPath();
@@ -280,34 +283,34 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final int numberOfIte  = 2;
         final int numberOfEval = 3;
 
-        Assertions.assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
-        Assertions.assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
+        assertEquals(numberOfIte, odGNSS.getNumberOfIteration());
+        assertEquals(numberOfEval, odGNSS.getNumberOfEvaluation());
 
         //test on the estimated position and velocity (reference from IGS-MGEX file com18836.sp3)
         final Vector3D estimatedPos = odGNSS.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odGNSS.getEstimatedPV().getVelocity();
         final Vector3D refPos = new Vector3D(-2747606.680868164, 22572091.30648564, 13522761.402325712);
         final Vector3D refVel = new Vector3D(-2729.5151218788005, 1142.6629459030657, -2523.9055974487947);
-        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+        assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+        assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on statistic for the range residuals
         final long nbRangeInit     = 8981;
         final long nbRangeExcluded = 305;
         final double[] RefStatRange = { -3.853, 8.307, 0.0, 0.873 };
-        Assertions.assertEquals(nbRangeInit - nbRangeExcluded, odGNSS.getRangeStat().getN());
-        Assertions.assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
-        Assertions.assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
-        Assertions.assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
-        Assertions.assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
+        assertEquals(nbRangeInit - nbRangeExcluded, odGNSS.getRangeStat().getN());
+        assertEquals(RefStatRange[0], odGNSS.getRangeStat().getMin(),               1.0e-3);
+        assertEquals(RefStatRange[1], odGNSS.getRangeStat().getMax(),               1.0e-3);
+        assertEquals(RefStatRange[2], odGNSS.getRangeStat().getMean(),              1.0e-3);
+        assertEquals(RefStatRange[3], odGNSS.getRangeStat().getStandardDeviation(), 1.0e-3);
 
     }
 
-    @Test
     // Orbit determination for range, azimuth elevation measurements
-    public void testW3B()
-        throws URISyntaxException, IllegalArgumentException, IOException,
-              OrekitException, ParseException {
+    @Test
+    void testW3B()
+            throws URISyntaxException, IllegalArgumentException, IOException,
+            OrekitException, ParseException {
 
     	// input in resources directory
         final String inputPath = NumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/W3B/od_test_W3.in").toURI().getPath();
@@ -326,32 +329,32 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         final double angleAccuracy    = 1e-5;
 
         //test on the convergence (with some margins)
-        Assertions.assertTrue(odsatW3.getNumberOfIteration()  <  6);
-        Assertions.assertTrue(odsatW3.getNumberOfEvaluation() < 10);
+        assertTrue(odsatW3.getNumberOfIteration()  <  6);
+        assertTrue(odsatW3.getNumberOfEvaluation() < 10);
 
         //test on the estimated position and velocity
         final Vector3D estimatedPos = odsatW3.getEstimatedPV().getPosition();
         final Vector3D estimatedVel = odsatW3.getEstimatedPV().getVelocity();
         final Vector3D refPos = new Vector3D(-40541446.236, -9905357.943, 206777.082);
         final Vector3D refVel = new Vector3D(759.0685, -1476.5156, 54.7931);
-        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
-        Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
+        assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), distanceAccuracy);
+        assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), velocityAccuracy);
 
         //test on propagator parameters
         final double dragCoef  = -0.2154;
         final ParameterDriversList propagatorParameters = odsatW3.getPropagatorParameters();
-        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
+        assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-3);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
                                      propagatorParameters.getDrivers().get(5).getValue());
         //Assertions.assertEquals(7.215e-6, leakAcceleration.getNorm(), 1.0e-8);
-        Assertions.assertEquals(8.005e-6, leakAcceleration0.getNorm(), 1.0e-8);
+        assertEquals(8.005e-6, leakAcceleration0.getNorm(), 1.0e-8);
         final Vector3D leakAcceleration1 =
                         new Vector3D(propagatorParameters.getDrivers().get(2).getValue(),
                                      propagatorParameters.getDrivers().get(4).getValue(),
                                      propagatorParameters.getDrivers().get(6).getValue());
-        Assertions.assertEquals(3.060e-10, leakAcceleration1.getNorm(), 1.0e-12);
+        assertEquals(3.060e-10, leakAcceleration1.getNorm(), 1.0e-12);
 
         //test on measurements parameters
         final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>();
@@ -361,82 +364,82 @@ public class NumericalOrbitDeterminationTest extends AbstractOrbitDetermination<
         //station CastleRock
         final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         final double   CastleRangeBias = 11274.4195;
-        Assertions.assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
-        Assertions.assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
-        Assertions.assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
+        assertEquals(CastleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        assertEquals(CastleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
+        assertEquals(CastleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 
         //station Fucino
         final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
         final double   FucRangeBias = 13467.8361;
-        Assertions.assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
-        Assertions.assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
-        Assertions.assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
+        assertEquals(FucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
+        assertEquals(FucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
+        assertEquals(FucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
 
         //station Kumsan
         final double[] KumAzElBias  = { -0.023574208, -0.054520756 };
         final double   KumRangeBias = 13512.4898;
-        Assertions.assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
-        Assertions.assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
-        Assertions.assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
+        assertEquals(KumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
+        assertEquals(KumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
+        assertEquals(KumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
 
         //station Pretoria
         final double[] PreAzElBias = { 0.030201539, 0.009747877 };
         final double PreRangeBias = 13594.1758;
-        Assertions.assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
-        Assertions.assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
-        Assertions.assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
+        assertEquals(PreAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
+        assertEquals(PreAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
+        assertEquals(PreRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
 
         //station Uralla
         final double[] UraAzElBias = { 0.167814449, -0.12305252 };
         final double UraRangeBias = 13450.2320;
-        Assertions.assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
-        Assertions.assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
-        Assertions.assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
+        assertEquals(UraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
+        assertEquals(UraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
+        assertEquals(UraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 182;
         //statistics for the range residual (min, max, mean, std)
         final double[] RefStatRange = { -18.39149369, 12.54165259, -4.32E-05, 4.374712716 };
-        Assertions.assertEquals(nbRange, odsatW3.getRangeStat().getN());
-        Assertions.assertEquals(RefStatRange[0], odsatW3.getRangeStat().getMin(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[1], odsatW3.getRangeStat().getMax(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[2], odsatW3.getRangeStat().getMean(),              distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[3], odsatW3.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        assertEquals(nbRange, odsatW3.getRangeStat().getN());
+        assertEquals(RefStatRange[0], odsatW3.getRangeStat().getMin(),               distanceAccuracy);
+        assertEquals(RefStatRange[1], odsatW3.getRangeStat().getMax(),               distanceAccuracy);
+        assertEquals(RefStatRange[2], odsatW3.getRangeStat().getMean(),              distanceAccuracy);
+        assertEquals(RefStatRange[3], odsatW3.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
         //test on statistic for the azimuth residuals
         final long nbAzi = 339;
         //statistics for the azimuth residual (min, max, mean, std)
         final double[] RefStatAzi = { -0.043033616, 0.025297558, -1.39E-10, 0.010063041 };
-        Assertions.assertEquals(nbAzi, odsatW3.getAzimStat().getN());
-        Assertions.assertEquals(RefStatAzi[0], odsatW3.getAzimStat().getMin(),               angleAccuracy);
-        Assertions.assertEquals(RefStatAzi[1], odsatW3.getAzimStat().getMax(),               angleAccuracy);
-        Assertions.assertEquals(RefStatAzi[2], odsatW3.getAzimStat().getMean(),              angleAccuracy);
-        Assertions.assertEquals(RefStatAzi[3], odsatW3.getAzimStat().getStandardDeviation(), angleAccuracy);
+        assertEquals(nbAzi, odsatW3.getAzimStat().getN());
+        assertEquals(RefStatAzi[0], odsatW3.getAzimStat().getMin(),               angleAccuracy);
+        assertEquals(RefStatAzi[1], odsatW3.getAzimStat().getMax(),               angleAccuracy);
+        assertEquals(RefStatAzi[2], odsatW3.getAzimStat().getMean(),              angleAccuracy);
+        assertEquals(RefStatAzi[3], odsatW3.getAzimStat().getStandardDeviation(), angleAccuracy);
 
         //test on statistic for the elevation residuals
         final long nbEle = 339;
         final double[] RefStatEle = { -0.025061971, 0.056294405, -4.10E-11, 0.011604931 };
-        Assertions.assertEquals(nbEle, odsatW3.getElevStat().getN());
-        Assertions.assertEquals(RefStatEle[0], odsatW3.getElevStat().getMin(),               angleAccuracy);
-        Assertions.assertEquals(RefStatEle[1], odsatW3.getElevStat().getMax(),               angleAccuracy);
-        Assertions.assertEquals(RefStatEle[2], odsatW3.getElevStat().getMean(),              angleAccuracy);
-        Assertions.assertEquals(RefStatEle[3], odsatW3.getElevStat().getStandardDeviation(), angleAccuracy);
+        assertEquals(nbEle, odsatW3.getElevStat().getN());
+        assertEquals(RefStatEle[0], odsatW3.getElevStat().getMin(),               angleAccuracy);
+        assertEquals(RefStatEle[1], odsatW3.getElevStat().getMax(),               angleAccuracy);
+        assertEquals(RefStatEle[2], odsatW3.getElevStat().getMean(),              angleAccuracy);
+        assertEquals(RefStatEle[3], odsatW3.getElevStat().getStandardDeviation(), angleAccuracy);
 
         RealMatrix covariances = odsatW3.getCovariances();
-        Assertions.assertEquals(28, covariances.getRowDimension());
-        Assertions.assertEquals(28, covariances.getColumnDimension());
+        assertEquals(28, covariances.getRowDimension());
+        assertEquals(28, covariances.getColumnDimension());
 
         // drag coefficient variance
-        Assertions.assertEquals(0.687998, covariances.getEntry(6, 6), 1.0e-4);
+        assertEquals(0.687998, covariances.getEntry(6, 6), 1.0e-4);
 
         // leak-X constant term variance
-        Assertions.assertEquals(2.0540e-12, covariances.getEntry(7, 7), 1.0e-16);
+        assertEquals(2.0540e-12, covariances.getEntry(7, 7), 1.0e-16);
 
         // leak-Y constant term variance
-        Assertions.assertEquals(2.4930e-11, covariances.getEntry(9, 9), 1.0e-15);
+        assertEquals(2.4930e-11, covariances.getEntry(9, 9), 1.0e-15);
 
         // leak-Z constant term variance
-        Assertions.assertEquals(7.6720e-11, covariances.getEntry(11, 11), 1.0e-15);
+        assertEquals(7.6720e-11, covariances.getEntry(11, 11), 1.0e-15);
     }
 
 }

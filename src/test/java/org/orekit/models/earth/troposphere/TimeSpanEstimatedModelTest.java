@@ -27,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,20 +59,23 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TrackingCoordinates;
 
-public class TimeSpanEstimatedModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class TimeSpanEstimatedModelTest {
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
@@ -86,13 +88,13 @@ public class TimeSpanEstimatedModelTest {
                                                          point,
                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                          timeSpanModel.getParameters(), date).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         final double elevation = 10d;
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
@@ -104,12 +106,12 @@ public class TimeSpanEstimatedModelTest {
                                                     point,
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     timeSpanModel.getParameters(), date).getDelay();
-        Assertions.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
+        assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
+        assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
     }
 
     @Test
-    public void testStateDerivativesGMF() {
+    void testStateDerivativesGMF() {
         final double latitude     = FastMath.toRadians(45.0);
         final double longitude    = FastMath.toRadians(45.0);
         GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -118,7 +120,7 @@ public class TimeSpanEstimatedModelTest {
     }
 
     @Test
-    public void testStateDerivativesNMF() {
+    void testStateDerivativesNMF() {
         final double latitude     = FastMath.toRadians(45.0);
         final double longitude    = FastMath.toRadians(45.0);
         GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
@@ -254,12 +256,12 @@ public class TimeSpanEstimatedModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], tolerance);
+            assertEquals(compDeriv[i + 1], refDeriv[0][i], tolerance);
         }
     }
 
     @Test
-    public void testDelayParameterDerivative() {
+    void testDelayParameterDerivative() {
         doTestParametersDerivatives(EstimatedModel.TOTAL_ZENITH_DELAY, 5.0e-15);
     }
 
@@ -407,12 +409,12 @@ public class TimeSpanEstimatedModelTest {
                            delayM4, delayM3, delayM2, delayM1,
                            delayP1, delayP2, delayP3, delayP4);
 
-        Assertions.assertEquals(compDeriv[7], refDeriv[0][0], tolerance);
+        assertEquals(compDeriv[7], refDeriv[0][0], tolerance);
 
     }
 
     @Test
-    public void testComparisonWithEstimatedModel() {
+    void testComparisonWithEstimatedModel() {
         final AbsoluteDate date = new AbsoluteDate();
         TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
         EstimatedModel estimatedModel = new EstimatedModel(mapping, 2.0);
@@ -423,7 +425,7 @@ public class TimeSpanEstimatedModelTest {
         final double[] timeSpanParameters = estimatedModel.getParameters();
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
 
-        Assertions.assertEquals(estimatedModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+        assertEquals(estimatedModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                          point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                          estimatedParameters, date).getDelay(),
                                 timeSpanModel.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
@@ -433,7 +435,7 @@ public class TimeSpanEstimatedModelTest {
     }
 
     @Test
-    public void testFieldComparisonWithEstimatedModel() {
+    void testFieldComparisonWithEstimatedModel() {
         doTestFieldComparisonWithEstimatedModel(Binary64Field.getInstance());
     }
 
@@ -451,7 +453,7 @@ public class TimeSpanEstimatedModelTest {
         final T[] timeSpanParameters = estimatedModel.getParameters(field);
         final FieldGeodeticPoint<T> dsPoint = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), height);
 
-        Assertions.assertEquals(estimatedModel.pathDelay(trackingCoordinates, dsPoint,
+        assertEquals(estimatedModel.pathDelay(trackingCoordinates, dsPoint,
                                                          new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          estimatedParameters, date).getDelay().getReal(),
                                 timeSpanModel.pathDelay(trackingCoordinates, dsPoint,

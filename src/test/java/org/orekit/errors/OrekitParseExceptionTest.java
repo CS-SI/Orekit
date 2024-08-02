@@ -16,46 +16,49 @@
  */
 package org.orekit.errors;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
 
-public class OrekitParseExceptionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class OrekitParseExceptionTest {
 
     @Test
-    public void testNullSpecifier() {
+    void testNullSpecifier() {
         OrekitParseException e = new OrekitParseException(null, 1, 2, 3);
-        Assertions.assertNull(e.getSpecifier());
-        Assertions.assertEquals(3, e.getParts().length);
-        Assertions.assertEquals("", e.getMessage());
-        Assertions.assertEquals("", e.getLocalizedMessage());
-        Assertions.assertEquals("", e.getMessage(Locale.FRENCH));
+        assertNull(e.getSpecifier());
+        assertEquals(3, e.getParts().length);
+        assertEquals("", e.getMessage());
+        assertEquals("", e.getLocalizedMessage());
+        assertEquals("", e.getMessage(Locale.FRENCH));
     }
 
     @Test
-    public void testNullParts() {
+    void testNullParts() {
         OrekitParseException e =
                         new OrekitParseException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET,
                                                  (Object[]) null);
-        Assertions.assertEquals(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET, e.getSpecifier());
-        Assertions.assertEquals(0, e.getParts().length);
-        Assertions.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assertions.assertEquals("le satellite s'est écrasé sur sa cible", e.getMessage(Locale.FRENCH));
+        assertEquals(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET, e.getSpecifier());
+        assertEquals(0, e.getParts().length);
+        assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
+        assertEquals("le satellite s'est écrasé sur sa cible", e.getMessage(Locale.FRENCH));
     }
 
     @Test
-    public void testMessage() {
+    void testMessage() {
         OrekitParseException e =
                         new OrekitParseException(OrekitMessages.NON_EXISTENT_HMS_TIME, 97, 98, 99);
-        Assertions.assertEquals(OrekitMessages.NON_EXISTENT_HMS_TIME, e.getSpecifier());
-        Assertions.assertEquals(3, e.getParts().length);
-        Assertions.assertEquals(97, ((Integer) e.getParts()[0]).intValue());
-        Assertions.assertEquals(98, ((Integer) e.getParts()[1]).intValue());
-        Assertions.assertEquals(99, ((Integer) e.getParts()[2]).intValue());
-        Assertions.assertTrue(e.getMessage().contains("98"));
-        Assertions.assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
-        Assertions.assertEquals("heure inexistante 97:98:99", e.getMessage(Locale.FRENCH));
+        assertEquals(OrekitMessages.NON_EXISTENT_HMS_TIME, e.getSpecifier());
+        assertEquals(3, e.getParts().length);
+        assertEquals(97, ((Integer) e.getParts()[0]).intValue());
+        assertEquals(98, ((Integer) e.getParts()[1]).intValue());
+        assertEquals(99, ((Integer) e.getParts()[2]).intValue());
+        assertTrue(e.getMessage().contains("98"));
+        assertEquals(e.getMessage(Locale.getDefault()), e.getLocalizedMessage());
+        assertEquals("heure inexistante 97:98:99", e.getMessage(Locale.FRENCH));
     }
 
 }

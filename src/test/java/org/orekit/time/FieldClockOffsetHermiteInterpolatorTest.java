@@ -20,10 +20,11 @@ package org.orekit.time;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldClockOffsetHermiteInterpolatorTest {
 
@@ -44,9 +45,9 @@ class FieldClockOffsetHermiteInterpolatorTest {
                                                    new FieldClockOffset<>(t0.shiftedBy(3), zero.newInstance( 9.0), zero.newInstance(Double.NaN), zero.newInstance(Double.NaN)),
                                                    new FieldClockOffset<>(t0.shiftedBy(4), zero.newInstance(16.0), zero.newInstance(Double.NaN), zero.newInstance(Double.NaN)),
                                                    new FieldClockOffset<>(t0.shiftedBy(5), zero.newInstance(25.0), zero.newInstance(Double.NaN), zero.newInstance(Double.NaN))));
-        Assertions.assertEquals(6.25, interpolated.getOffset().getReal(),       1.0e-15);
-        Assertions.assertEquals(5.00, interpolated.getRate().getReal(),         1.0e-15);
-        Assertions.assertEquals(2.00, interpolated.getAcceleration().getReal(), 1.0e-15);
+        assertEquals(6.25, interpolated.getOffset().getReal(),       1.0e-15);
+        assertEquals(5.00, interpolated.getRate().getReal(),         1.0e-15);
+        assertEquals(2.00, interpolated.getAcceleration().getReal(), 1.0e-15);
     }
 
     @Test
@@ -66,9 +67,9 @@ class FieldClockOffsetHermiteInterpolatorTest {
                                                    new FieldClockOffset<>(t0.shiftedBy(3), zero.newInstance( 9.0), zero.newInstance( 6.0), zero.newInstance(Double.NaN)),
                                                    new FieldClockOffset<>(t0.shiftedBy(4), zero.newInstance(16.0), zero.newInstance( 8.0), zero.newInstance(Double.NaN)),
                                                    new FieldClockOffset<>(t0.shiftedBy(5), zero.newInstance(25.0), zero.newInstance(10.0), zero.newInstance(Double.NaN))));
-        Assertions.assertEquals(6.25, interpolated.getOffset().getReal(),       1.0e-15);
-        Assertions.assertEquals(5.00, interpolated.getRate().getReal(),         1.0e-15);
-        Assertions.assertEquals(2.00, interpolated.getAcceleration().getReal(), 1.0e-15);
+        assertEquals(6.25, interpolated.getOffset().getReal(),       1.0e-15);
+        assertEquals(5.00, interpolated.getRate().getReal(),         1.0e-15);
+        assertEquals(2.00, interpolated.getAcceleration().getReal(), 1.0e-15);
     }
 
     @Test
@@ -88,9 +89,9 @@ class FieldClockOffsetHermiteInterpolatorTest {
                                                    new FieldClockOffset<>(t0.shiftedBy(3), zero.newInstance( 9.0), zero.newInstance( 6.0), zero.newInstance(2.0)),
                                                    new FieldClockOffset<>(t0.shiftedBy(4), zero.newInstance(16.0), zero.newInstance( 8.0), zero.newInstance(2.0)),
                                                    new FieldClockOffset<>(t0.shiftedBy(5), zero.newInstance(25.0), zero.newInstance(10.0), zero.newInstance(2.0))));
-        Assertions.assertEquals(6.25, interpolated.getOffset().getReal(),       1.0e-15);
-        Assertions.assertEquals(5.00, interpolated.getRate().getReal(),         1.0e-15);
-        Assertions.assertEquals(2.00, interpolated.getAcceleration().getReal(), 1.0e-15);
+        assertEquals(6.25, interpolated.getOffset().getReal(),       1.0e-15);
+        assertEquals(5.00, interpolated.getRate().getReal(),         1.0e-15);
+        assertEquals(2.00, interpolated.getAcceleration().getReal(), 1.0e-15);
     }
 
 }

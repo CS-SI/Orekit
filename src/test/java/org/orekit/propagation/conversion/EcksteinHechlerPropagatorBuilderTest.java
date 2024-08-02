@@ -33,10 +33,10 @@ import org.orekit.utils.PVCoordinates;
 
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
-public class EcksteinHechlerPropagatorBuilderTest {
+class EcksteinHechlerPropagatorBuilderTest {
 
     @BeforeEach
-    public void initialize() {
+    void initialize() {
         Utils.setDataRoot("potential");
     }
 

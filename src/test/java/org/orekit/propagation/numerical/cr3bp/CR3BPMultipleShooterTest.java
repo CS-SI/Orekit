@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -44,11 +43,14 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
-public class CR3BPMultipleShooterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class CR3BPMultipleShooterTest {
 
     @Test
-    public void testCannotSetEpochFreedom() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testCannotSetEpochFreedom() {
+        assertThrows(OrekitException.class, () -> {
             final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
             final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
             final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
@@ -66,8 +68,8 @@ public class CR3BPMultipleShooterTest {
     }
 
     @Test
-    public void testCannotSetScaleLength() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testCannotSetScaleLength() {
+        assertThrows(OrekitException.class, () -> {
             final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
             final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
             final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
@@ -85,8 +87,8 @@ public class CR3BPMultipleShooterTest {
     }
 
     @Test
-    public void testCannotSetScaleTime() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testCannotSetScaleTime() {
+        assertThrows(OrekitException.class, () -> {
             final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
             final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
             final HaloOrbit h1 = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L1), 8E6, LibrationOrbitFamily.NORTHERN);
@@ -104,7 +106,7 @@ public class CR3BPMultipleShooterTest {
     }
 
     @Test
-    public void testHaloOrbit() {
+    void testHaloOrbit() {
 
         final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -178,23 +180,23 @@ public class CR3BPMultipleShooterTest {
         final AbsolutePVCoordinates initialPVMS = result.get(0).getAbsPVA();
         final double periodMS = 2 * result.get(1).getDate().durationFrom(result.get(0).getDate());
 
-        Assertions.assertEquals(0.0, initialPVDC.getPosition().getY(), 1E-15);
-        Assertions.assertEquals(0.0, initialPVDC.getVelocity().getX(), 1E-15);
-        Assertions.assertEquals(0.0, initialPVDC.getVelocity().getZ(), 1E-15);
+        assertEquals(0.0, initialPVDC.getPosition().getY(), 1E-15);
+        assertEquals(0.0, initialPVDC.getVelocity().getX(), 1E-15);
+        assertEquals(0.0, initialPVDC.getVelocity().getZ(), 1E-15);
 
-        Assertions.assertEquals(0.0, initialPVMS.getPosition().getY(), 1E-15);
-        Assertions.assertEquals(0.0, initialPVMS.getVelocity().getX(), 1E-15);
-        Assertions.assertEquals(0.0, initialPVMS.getVelocity().getZ(), 1E-15);
+        assertEquals(0.0, initialPVMS.getPosition().getY(), 1E-15);
+        assertEquals(0.0, initialPVMS.getVelocity().getX(), 1E-15);
+        assertEquals(0.0, initialPVMS.getVelocity().getZ(), 1E-15);
 
-        Assertions.assertEquals(initialPVDC.getPosition().getX(), initialPVMS.getPosition().getX(), 1E-9);
-        Assertions.assertEquals(initialPVDC.getPosition().getZ(), initialPVMS.getPosition().getZ(), 1E-15);
-        Assertions.assertEquals(initialPVDC.getVelocity().getY(), initialPVMS.getVelocity().getY(), 1E-7);
+        assertEquals(initialPVDC.getPosition().getX(), initialPVMS.getPosition().getX(), 1E-9);
+        assertEquals(initialPVDC.getPosition().getZ(), initialPVMS.getPosition().getZ(), 1E-15);
+        assertEquals(initialPVDC.getVelocity().getY(), initialPVMS.getVelocity().getY(), 1E-7);
 
-        Assertions.assertEquals(periodDC, periodMS, 7E-9);
+        assertEquals(periodDC, periodMS, 7E-9);
     }
 
     @Test
-    public void testClosedOrbit() {
+    void testClosedOrbit() {
 
         // Earth-Moon system and L2 southern Halo
         final CR3BPSystem earthMoon = CR3BPFactory.getEarthMoonCR3BP();
@@ -247,21 +249,21 @@ public class CR3BPMultipleShooterTest {
 
         final PVCoordinates pv0 = corrStates.get(0).getPVCoordinates();
         final PVCoordinates pv2 = corrStates.get(nArcs).getPVCoordinates();
-        Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-13);
-        Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-13);
-        Assertions.assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-13);
-        Assertions.assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1e-13);
-        Assertions.assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1e-13);
-        Assertions.assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1e-13);
-        Assertions.assertEquals(0.0, pv0.getPosition().getY(), 1e-16);
-        Assertions.assertEquals(0.0, pv2.getVelocity().getX(), 1e-16);
-        Assertions.assertEquals(0.0, pv2.getVelocity().getZ(), 1e-16);
+        assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-13);
+        assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-13);
+        assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-13);
+        assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1e-13);
+        assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1e-13);
+        assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1e-13);
+        assertEquals(0.0, pv0.getPosition().getY(), 1e-16);
+        assertEquals(0.0, pv2.getVelocity().getX(), 1e-16);
+        assertEquals(0.0, pv2.getVelocity().getZ(), 1e-16);
 
     }
 
     // Non regression test
     @Test
-    public void testWithConstraint() {
+    void testWithConstraint() {
 
         // Earth-Moon system and L2 southern Halo
         final CR3BPSystem earthMoon = CR3BPFactory.getEarthMoonCR3BP();
@@ -315,18 +317,18 @@ public class CR3BPMultipleShooterTest {
 
         final PVCoordinates pv0 = corrStates.get(0).getPVCoordinates();
         final PVCoordinates pv2 = corrStates.get(nArcs).getPVCoordinates();
-        Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-6);
-        Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-6);
-        Assertions.assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-6);
-        Assertions.assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1e-6);
-        Assertions.assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1e-6);
-        Assertions.assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1e-6);
+        assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-6);
+        assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-6);
+        assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-6);
+        assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1e-6);
+        assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1e-6);
+        assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1e-6);
 
     }
 
     @Test
-    public void testLagrangianError() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testLagrangianError() {
+        assertThrows(OrekitException.class, () -> {
             CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
             final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
             h.getClass();
@@ -334,8 +336,8 @@ public class CR3BPMultipleShooterTest {
     }
 
     @Test
-    public void testDifferentialCorrectionError() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testDifferentialCorrectionError() {
+        assertThrows(OrekitException.class, () -> {
             CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 
             final double orbitalPeriod = 1;
@@ -349,8 +351,8 @@ public class CR3BPMultipleShooterTest {
     }
 
     @Test
-    public void testSTMError() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testSTMError() {
+        assertThrows(OrekitException.class, () -> {
             // Time settings
             final AbsoluteDate initialDate =
                     new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
@@ -379,7 +381,7 @@ public class CR3BPMultipleShooterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("cr3bp:regular-data");
     }
 }

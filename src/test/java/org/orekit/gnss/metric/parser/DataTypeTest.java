@@ -16,13 +16,14 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class DataTypeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class DataTypeTest {
 
     @Test
-    public void testBit1() {
+    void testBit1() {
         check(DataType.BIT_1,  0l,            0l);
         check(DataType.BIT_1,  1l,            0l);
         check(DataType.BIT_1, -1l,            1l);
@@ -31,7 +32,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit2() {
+    void testBit2() {
         check(DataType.BIT_2,  0l,            0l);
         check(DataType.BIT_2,  1l,            0l);
         check(DataType.BIT_2, -1l,            3l);
@@ -40,7 +41,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit3() {
+    void testBit3() {
         check(DataType.BIT_3,  0l,            0l);
         check(DataType.BIT_3,  1l,            0l);
         check(DataType.BIT_3, -1l,            7l);
@@ -49,7 +50,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit4() {
+    void testBit4() {
         check(DataType.BIT_4,  0l,             0l);
         check(DataType.BIT_4,  1l,             0l);
         check(DataType.BIT_4, -1l,            15l);
@@ -58,7 +59,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit6() {
+    void testBit6() {
         check(DataType.BIT_6,  0l,             0l);
         check(DataType.BIT_6,  1l,             0l);
         check(DataType.BIT_6, -1l,            63l);
@@ -67,7 +68,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit7() {
+    void testBit7() {
         check(DataType.BIT_7,  0l,              0l);
         check(DataType.BIT_7,  1l,              0l);
         check(DataType.BIT_7, -1l,            127l);
@@ -76,7 +77,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit8() {
+    void testBit8() {
         check(DataType.BIT_8,  0l,              0l);
         check(DataType.BIT_8,  1l,              0l);
         check(DataType.BIT_8, -1l,            255l);
@@ -85,7 +86,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit10() {
+    void testBit10() {
         check(DataType.BIT_10,  0l,               0l);
         check(DataType.BIT_10,  1l,               0l);
         check(DataType.BIT_10, -1l,            1023l);
@@ -94,7 +95,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit12() {
+    void testBit12() {
         check(DataType.BIT_12,  0l,               0l);
         check(DataType.BIT_12,  1l,               0l);
         check(DataType.BIT_12, -1l,            4095l);
@@ -103,7 +104,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit24() {
+    void testBit24() {
         check(DataType.BIT_24,  0l,                   0l);
         check(DataType.BIT_24,  1l,                   0l);
         check(DataType.BIT_24, -1l,            16777215l);
@@ -112,7 +113,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testBit32() {
+    void testBit32() {
         check(DataType.BIT_32,  0l,                     0l);
         check(DataType.BIT_32,  1l,                     0l);
         check(DataType.BIT_32, -1l,            4294967295l);
@@ -121,7 +122,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt6() {
+    void testInt6() {
         check(DataType.INT_6,  0l,               0l);
         check(DataType.INT_6,  1l,               0l);
         check(DataType.INT_6, -1l,              -1l);
@@ -130,7 +131,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt8() {
+    void testInt8() {
         check(DataType.INT_8,  0l,               0l);
         check(DataType.INT_8,  1l,               0l);
         check(DataType.INT_8, -1l,              -1l);
@@ -139,7 +140,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt9() {
+    void testInt9() {
         check(DataType.INT_9,  0l,               0l);
         check(DataType.INT_9,  1l,               0l);
         check(DataType.INT_9, -1l,              -1l);
@@ -148,7 +149,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt10() {
+    void testInt10() {
         check(DataType.INT_10,  0l,               0l);
         check(DataType.INT_10,  1l,               0l);
         check(DataType.INT_10, -1l,              -1l);
@@ -157,7 +158,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt11() {
+    void testInt11() {
         check(DataType.INT_11,  0l,                0l);
         check(DataType.INT_11,  1l,                0l);
         check(DataType.INT_11, -1l,               -1l);
@@ -166,7 +167,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt14() {
+    void testInt14() {
         check(DataType.INT_14,  0l,               0l);
         check(DataType.INT_14,  1l,               0l);
         check(DataType.INT_14, -1l,              -1l);
@@ -175,7 +176,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt15() {
+    void testInt15() {
         check(DataType.INT_15,  0l,               0l);
         check(DataType.INT_15,  1l,               0l);
         check(DataType.INT_15, -1l,              -1l);
@@ -184,7 +185,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt16() {
+    void testInt16() {
         check(DataType.INT_16,  0l,                0l);
         check(DataType.INT_16,  1l,                0l);
         check(DataType.INT_16, -1l,               -1l);
@@ -193,7 +194,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt17() {
+    void testInt17() {
         check(DataType.INT_17,  0l,                0l);
         check(DataType.INT_17,  1l,                0l);
         check(DataType.INT_17, -1l,               -1l);
@@ -202,7 +203,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt18() {
+    void testInt18() {
         check(DataType.INT_18,  0l,                 0l);
         check(DataType.INT_18,  1l,                 0l);
         check(DataType.INT_18, -1l,                -1l);
@@ -211,7 +212,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt19() {
+    void testInt19() {
         check(DataType.INT_19,  0l,                 0l);
         check(DataType.INT_19,  1l,                 0l);
         check(DataType.INT_19, -1l,                -1l);
@@ -220,7 +221,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt20() {
+    void testInt20() {
         check(DataType.INT_20,  0l,                  0l);
         check(DataType.INT_20,  1l,                  0l);
         check(DataType.INT_20, -1l,                 -1l);
@@ -229,7 +230,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt21() {
+    void testInt21() {
         check(DataType.INT_21,  0l,                  0l);
         check(DataType.INT_21,  1l,                  0l);
         check(DataType.INT_21, -1l,                 -1l);
@@ -238,7 +239,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt22() {
+    void testInt22() {
         check(DataType.INT_22,  0l,                  0l);
         check(DataType.INT_22,  1l,                  0l);
         check(DataType.INT_22, -1l,                 -1l);
@@ -247,7 +248,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt23() {
+    void testInt23() {
         check(DataType.INT_23,  0l,                  0l);
         check(DataType.INT_23,  1l,                  0l);
         check(DataType.INT_23, -1l,                 -1l);
@@ -256,7 +257,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt24() {
+    void testInt24() {
         check(DataType.INT_24,  0l,                  0l);
         check(DataType.INT_24,  1l,                  0l);
         check(DataType.INT_24, -1l,                 -1l);
@@ -265,7 +266,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt25() {
+    void testInt25() {
         check(DataType.INT_25,  0l,                   0l);
         check(DataType.INT_25,  1l,                   0l);
         check(DataType.INT_25, -1l,                  -1l);
@@ -274,7 +275,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt26() {
+    void testInt26() {
         check(DataType.INT_26,  0l,                   0l);
         check(DataType.INT_26,  1l,                   0l);
         check(DataType.INT_26, -1l,                  -1l);
@@ -283,7 +284,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt27() {
+    void testInt27() {
         check(DataType.INT_27,  0l,                   0l);
         check(DataType.INT_27,  1l,                   0l);
         check(DataType.INT_27, -1l,                  -1l);
@@ -292,7 +293,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt30() {
+    void testInt30() {
         check(DataType.INT_30,  0l,                    0l);
         check(DataType.INT_30,  1l,                    0l);
         check(DataType.INT_30, -1l,                   -1l);
@@ -301,7 +302,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt31() {
+    void testInt31() {
         check(DataType.INT_31,  0l,                    0l);
         check(DataType.INT_31,  1l,                    0l);
         check(DataType.INT_31, -1l,                   -1l);
@@ -310,7 +311,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt32() {
+    void testInt32() {
         check(DataType.INT_32,  0l,                     0l);
         check(DataType.INT_32,  1l,                     0l);
         check(DataType.INT_32, -1l,                    -1l);
@@ -319,7 +320,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt34() {
+    void testInt34() {
         check(DataType.INT_34,  0l,                     0l);
         check(DataType.INT_34,  1l,                     0l);
         check(DataType.INT_34, -1l,                    -1l);
@@ -328,7 +329,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt35() {
+    void testInt35() {
         check(DataType.INT_35,  0l,                     0l);
         check(DataType.INT_35,  1l,                     0l);
         check(DataType.INT_35, -1l,                    -1l);
@@ -337,7 +338,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testInt38() {
+    void testInt38() {
         check(DataType.INT_38,  0l,                        0l);
         check(DataType.INT_38,  1l,                        0l);
         check(DataType.INT_38, -1l,                       -1l);
@@ -346,7 +347,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint2() {
+    void testUint2() {
         check(DataType.U_INT_2,  0l,            0l);
         check(DataType.U_INT_2,  1l,            0l);
         check(DataType.U_INT_2, -1l,            3l);
@@ -355,7 +356,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint3() {
+    void testUint3() {
         check(DataType.U_INT_3,  0l,            0l);
         check(DataType.U_INT_3,  1l,            0l);
         check(DataType.U_INT_3, -1l,            7l);
@@ -364,7 +365,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint4() {
+    void testUint4() {
         check(DataType.U_INT_4,  0l,             0l);
         check(DataType.U_INT_4,  1l,             0l);
         check(DataType.U_INT_4, -1l,            15l);
@@ -373,7 +374,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint5() {
+    void testUint5() {
         check(DataType.U_INT_5,  0l,             0l);
         check(DataType.U_INT_5,  1l,             0l);
         check(DataType.U_INT_5, -1l,            31l);
@@ -382,7 +383,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint6() {
+    void testUint6() {
         check(DataType.U_INT_6,  0l,             0l);
         check(DataType.U_INT_6,  1l,             0l);
         check(DataType.U_INT_6, -1l,            63l);
@@ -391,7 +392,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint7() {
+    void testUint7() {
         check(DataType.U_INT_7,  0l,              0l);
         check(DataType.U_INT_7,  1l,              0l);
         check(DataType.U_INT_7, -1l,            127l);
@@ -400,7 +401,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint8() {
+    void testUint8() {
         check(DataType.U_INT_8,  0l,              0l);
         check(DataType.U_INT_8,  1l,              0l);
         check(DataType.U_INT_8, -1l,            255l);
@@ -409,7 +410,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint9() {
+    void testUint9() {
         check(DataType.U_INT_9,  0l,              0l);
         check(DataType.U_INT_9,  1l,              0l);
         check(DataType.U_INT_9, -1l,            511l);
@@ -418,7 +419,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint10() {
+    void testUint10() {
         check(DataType.U_INT_10,  0l,               0l);
         check(DataType.U_INT_10,  1l,               0l);
         check(DataType.U_INT_10, -1l,            1023l);
@@ -427,7 +428,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint11() {
+    void testUint11() {
         check(DataType.U_INT_11,  0l,               0l);
         check(DataType.U_INT_11,  1l,               0l);
         check(DataType.U_INT_11, -1l,            2047l);
@@ -436,7 +437,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint12() {
+    void testUint12() {
         check(DataType.U_INT_12,  0l,               0l);
         check(DataType.U_INT_12,  1l,               0l);
         check(DataType.U_INT_12, -1l,            4095l);
@@ -445,7 +446,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint13() {
+    void testUint13() {
         check(DataType.U_INT_13,  0l,               0l);
         check(DataType.U_INT_13,  1l,               0l);
         check(DataType.U_INT_13, -1l,            8191l);
@@ -454,7 +455,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint14() {
+    void testUint14() {
         check(DataType.U_INT_14,  0l,                0l);
         check(DataType.U_INT_14,  1l,                0l);
         check(DataType.U_INT_14, -1l,            16383l);
@@ -463,7 +464,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint16() {
+    void testUint16() {
         check(DataType.U_INT_16,  0l,                0l);
         check(DataType.U_INT_16,  1l,                0l);
         check(DataType.U_INT_16, -1l,            65535l);
@@ -472,7 +473,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint17() {
+    void testUint17() {
         check(DataType.U_INT_17,  0l,                 0l);
         check(DataType.U_INT_17,  1l,                 0l);
         check(DataType.U_INT_17, -1l,            131071l);
@@ -481,7 +482,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint18() {
+    void testUint18() {
         check(DataType.U_INT_18,  0l,                 0l);
         check(DataType.U_INT_18,  1l,                 0l);
         check(DataType.U_INT_18, -1l,            262143l);
@@ -490,7 +491,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint20() {
+    void testUint20() {
         check(DataType.U_INT_20,  0l,                  0l);
         check(DataType.U_INT_20,  1l,                  0l);
         check(DataType.U_INT_20, -1l,            1048575l);
@@ -499,7 +500,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint23() {
+    void testUint23() {
         check(DataType.U_INT_23,  0l,                  0l);
         check(DataType.U_INT_23,  1l,                  0l);
         check(DataType.U_INT_23, -1l,            8388607l);
@@ -508,7 +509,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint24() {
+    void testUint24() {
         check(DataType.U_INT_24,  0l,                   0l);
         check(DataType.U_INT_24,  1l,                   0l);
         check(DataType.U_INT_24, -1l,            16777215l);
@@ -517,7 +518,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint25() {
+    void testUint25() {
         check(DataType.U_INT_25,  0l,                   0l);
         check(DataType.U_INT_25,  1l,                   0l);
         check(DataType.U_INT_25, -1l,            33554431l);
@@ -526,7 +527,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint26() {
+    void testUint26() {
         check(DataType.U_INT_26,  0l,                   0l);
         check(DataType.U_INT_26,  1l,                   0l);
         check(DataType.U_INT_26, -1l,            67108863l);
@@ -535,7 +536,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint27() {
+    void testUint27() {
         check(DataType.U_INT_27,  0l,                    0l);
         check(DataType.U_INT_27,  1l,                    0l);
         check(DataType.U_INT_27, -1l,            134217727l);
@@ -544,7 +545,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint30() {
+    void testUint30() {
         check(DataType.U_INT_30,  0l,                     0l);
         check(DataType.U_INT_30,  1l,                     0l);
         check(DataType.U_INT_30, -1l,            1073741823l);
@@ -553,7 +554,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint32() {
+    void testUint32() {
         check(DataType.U_INT_32,  0l,                     0l);
         check(DataType.U_INT_32,  1l,                     0l);
         check(DataType.U_INT_32, -1l,            4294967295l);
@@ -562,7 +563,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint35() {
+    void testUint35() {
         check(DataType.U_INT_35,  0l,                      0l);
         check(DataType.U_INT_35,  1l,                      0l);
         check(DataType.U_INT_35, -1l,            34359738367l);
@@ -571,7 +572,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testUint36() {
+    void testUint36() {
         check(DataType.U_INT_36,  0l,                      0l);
         check(DataType.U_INT_36,  1l,                      0l);
         check(DataType.U_INT_36, -1l,            68719476735l);
@@ -580,7 +581,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testIntS5() {
+    void testIntS5() {
         check(DataType.INT_S_5,  0l,              0l);
         check(DataType.INT_S_5,  1l,              0l);
         check(DataType.INT_S_5, -1l,            -15l);
@@ -589,7 +590,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testIntS11() {
+    void testIntS11() {
         check(DataType.INT_S_11,  0l,                0l);
         check(DataType.INT_S_11,  1l,                0l);
         check(DataType.INT_S_11, -1l,            -1023l);
@@ -598,7 +599,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testIntS22() {
+    void testIntS22() {
         check(DataType.INT_S_22,  0l,                   0l);
         check(DataType.INT_S_22,  1l,                   0l);
         check(DataType.INT_S_22, -1l,            -2097151l);
@@ -607,7 +608,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testIntS24() {
+    void testIntS24() {
         check(DataType.INT_S_24,  0l,                   0l);
         check(DataType.INT_S_24,  1l,                   0l);
         check(DataType.INT_S_24, -1l,            -8388607l);
@@ -616,7 +617,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testIntS27() {
+    void testIntS27() {
         check(DataType.INT_S_27,  0l,                    0l);
         check(DataType.INT_S_27,  1l,                    0l);
         check(DataType.INT_S_27, -1l,            -67108863l);
@@ -625,7 +626,7 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testIntS32() {
+    void testIntS32() {
         check(DataType.INT_S_32,  0l,                      0l);
         check(DataType.INT_S_32,  1l,                      0l);
         check(DataType.INT_S_32, -1l,            -2147483647l);
@@ -634,13 +635,13 @@ public class DataTypeTest {
     }
 
     @Test
-    public void testNumber() {
-        Assertions.assertEquals(68, DataType.values().length);
+    void testNumber() {
+        assertEquals(68, DataType.values().length);
     }
 
     private void check(DataType dataType, long rawMessage, Long expected) {
         final EncodedMessage rm = (n) -> rawMessage >>> (64 - n);
         final Long result = dataType.decode(rm);
-        Assertions.assertEquals(expected, result);
+        assertEquals(expected, result);
     }
 }

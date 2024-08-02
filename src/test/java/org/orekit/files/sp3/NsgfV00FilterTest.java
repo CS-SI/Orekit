@@ -18,7 +18,6 @@ package org.orekit.files.sp3;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -30,15 +29,17 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class NsgfV00FilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class NsgfV00FilterTest {
 
     @Test
-    public void testFiltered() throws IOException {
+    void testFiltered() throws IOException {
         doTestFilter("/sp3/nsgf.orb.stella.v00.sp3.gz", "L56", 100);
     }
 
     @Test
-    public void testNotFiltered() throws IOException {
+    void testNotFiltered() throws IOException {
         doTestFilter("/sp3/example-c-1.sp3", "G04", 1, 1);
     }
 
@@ -53,14 +54,14 @@ public class NsgfV00FilterTest {
 
         final SP3 file = parser.parse(manager.applyRelevantFilters(original));
         for (int i = 0; i < nbCoords.length; ++i) {
-            Assertions.assertEquals(nbCoords[i],
+            assertEquals(nbCoords[i],
                                     file.getEphemeris(id).getSegments().get(i).getCoordinates().size());
         }
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

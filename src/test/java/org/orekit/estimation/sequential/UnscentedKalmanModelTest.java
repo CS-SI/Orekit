@@ -27,7 +27,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.MerweUnscentedTransform;
 import org.hipparchus.util.UnscentedTransformProvider;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -50,7 +49,11 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class UnscentedKalmanModelTest {
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class UnscentedKalmanModelTest {
 
     /** Orbit type for propagation. */
     private final OrbitType orbitType = OrbitType.CARTESIAN;
@@ -98,7 +101,7 @@ public class UnscentedKalmanModelTest {
     private final double tol = 1.0e-16;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         // Create context
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -175,7 +178,7 @@ public class UnscentedKalmanModelTest {
      *  Finally we process a range measurement after t0 in the Kalman and check the matrices.
      */
     @Test
-    public void ModelPhysicalOutputsTest() {
+    void ModelPhysicalOutputsTest() {
 
         // Check model at t0 before any measurement is added
         // -------------------------------------------------
@@ -226,15 +229,15 @@ public class UnscentedKalmanModelTest {
         // --------------
 
         // Time
-        Assertions.assertEquals(0., model.getEstimate().getTime(), 0.);
-        Assertions.assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
+        assertEquals(0., model.getEstimate().getTime(), 0.);
+        assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
 
         // Measurement number
-        Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
+        assertEquals(0, model.getCurrentMeasurementNumber());
 
         // Normalized state - is zeros
         final RealVector stateN = model.getEstimate().getState();
-        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
+        assertArrayEquals(new double[M], stateN.toArray(), tol);
 
         // Physical state - = initialized
         final RealVector x = model.getPhysicalEstimatedState();
@@ -245,14 +248,14 @@ public class UnscentedKalmanModelTest {
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
         final double[] dX = x.subtract(expX).toArray();
-        Assertions.assertArrayEquals(new double[M], dX, tol);
+        assertArrayEquals(new double[M], dX, tol);
 
         // Normalized covariance - diagonal
         final double[][] Pn = model.getEstimate().getCovariance().getData();
         final double[][] expPn = new double[M][M];
         for (int i = 0; i < M; i++) {
             expPn[i][i] = 1.;
-            Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
+            assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
 
         // Physical covariance = initialized
@@ -260,18 +263,18 @@ public class UnscentedKalmanModelTest {
         final RealMatrix expP = covMatrixProvider.getInitialCovarianceMatrix(new SpacecraftState(orbit0));
         final double[][] dP = P.subtract(expP).getData();
         for (int i = 0; i < M; i++) {
-            Assertions.assertArrayEquals(new double[M], dP[i], tol, "Failed on line " + i);
+            assertArrayEquals(new double[M], dP[i], tol, "Failed on line " + i);
         }
 
         // Check that other "physical" matrices are null
-        Assertions.assertNull(model.getEstimate().getInnovationCovariance());
-        Assertions.assertNull(model.getPhysicalInnovationCovarianceMatrix());
-        Assertions.assertNull(model.getEstimate().getKalmanGain());
-        Assertions.assertNull(model.getPhysicalKalmanGain());
-        Assertions.assertNull(model.getEstimate().getMeasurementJacobian());
-        Assertions.assertNull(model.getPhysicalMeasurementJacobian());
-        Assertions.assertNull(model.getEstimate().getStateTransitionMatrix());
-        Assertions.assertNull(model.getPhysicalStateTransitionMatrix());
+        assertNull(model.getEstimate().getInnovationCovariance());
+        assertNull(model.getPhysicalInnovationCovarianceMatrix());
+        assertNull(model.getEstimate().getKalmanGain());
+        assertNull(model.getPhysicalKalmanGain());
+        assertNull(model.getEstimate().getMeasurementJacobian());
+        assertNull(model.getPhysicalMeasurementJacobian());
+        assertNull(model.getEstimate().getStateTransitionMatrix());
+        assertNull(model.getPhysicalStateTransitionMatrix());
     }
 
     /** Add a measurement to the Kalman filter.
@@ -302,16 +305,16 @@ public class UnscentedKalmanModelTest {
         final int N = meas.getDimension();
 
         // Time
-        Assertions.assertEquals(0., model.getCurrentDate().durationFrom(expOrbitPred.getDate()), 0.);
+        assertEquals(0., model.getCurrentDate().durationFrom(expOrbitPred.getDate()), 0.);
 
         // Measurement number
-        Assertions.assertEquals(expMeasurementNumber, model.getCurrentMeasurementNumber());
+        assertEquals(expMeasurementNumber, model.getCurrentMeasurementNumber());
 
         // State transition matrix (null for unscented kalman filter)
-        Assertions.assertNull(model.getPhysicalStateTransitionMatrix());
+        assertNull(model.getPhysicalStateTransitionMatrix());
 
         // Measurement matrix (null for unscented kalman filter)
-        Assertions.assertNull(model.getPhysicalMeasurementJacobian());
+        assertNull(model.getPhysicalMeasurementJacobian());
 
         // Measurement covariance matrix
         final double[] measSigmas = meas.getTheoreticalStandardDeviation();
@@ -325,7 +328,7 @@ public class UnscentedKalmanModelTest {
         final RealMatrix S = model.getPhysicalInnovationCovarianceMatrix();
         final double[][] dS = S.subtract(expS).getData();
         for (int i = 0; i < N; i++) {
-            Assertions.assertArrayEquals(new double[N], dS[i], tol*1e8, "Failed on line \" + i");
+            assertArrayEquals(new double[N], dS[i], tol*1e8, "Failed on line \" + i");
         }
 
         // Kalman gain
@@ -333,7 +336,7 @@ public class UnscentedKalmanModelTest {
         final RealMatrix K = model.getPhysicalKalmanGain();
         final double[][] dK = K.subtract(expK).getData();
         for (int i = 0; i < M; i++) {
-            Assertions.assertArrayEquals(new double[N], dK[i], tol*1e5, "Failed on line " + i);
+            assertArrayEquals(new double[N], dK[i], tol*1e5, "Failed on line " + i);
         }
 
         // Predicted orbit
@@ -342,12 +345,12 @@ public class UnscentedKalmanModelTest {
         final PVCoordinates expPVOrbitPred = expOrbitPred.getPVCoordinates();
         final double dpOrbitPred = Vector3D.distance(expPVOrbitPred.getPosition(), pvOrbitPred.getPosition());
         final double dvOrbitPred = Vector3D.distance(expPVOrbitPred.getVelocity(), pvOrbitPred.getVelocity());
-        Assertions.assertEquals(0., dpOrbitPred, tol);
-        Assertions.assertEquals(0., dvOrbitPred, tol);
+        assertEquals(0., dpOrbitPred, tol);
+        assertEquals(0., dvOrbitPred, tol);
 
         // Predicted measurement
         final double[] measPred = model.getPredictedMeasurement().getEstimatedValue();
-        Assertions.assertArrayEquals(expMeasPred, measPred, 1e-6);
+        assertArrayEquals(expMeasPred, measPred, 1e-6);
 
         // Predicted state
         final double[] orbitPredState = new double[6];
@@ -369,7 +372,7 @@ public class UnscentedKalmanModelTest {
         final RealVector expectedXcor = expXpred.add(expK.operate(innovation));
         final RealVector Xcor = model.getPhysicalEstimatedState();
         final double[] dXcor = Xcor.subtract(expectedXcor).toArray();
-        Assertions.assertArrayEquals(new double[M], dXcor, tol);
+        assertArrayEquals(new double[M], dXcor, tol);
 
         // Corrected covariance
         final RealMatrix expectedPcor =
@@ -378,7 +381,7 @@ public class UnscentedKalmanModelTest {
         final RealMatrix Pcor = model.getPhysicalEstimatedCovarianceMatrix();
         final double[][] dPcor = Pcor.subtract(expectedPcor).getData();
         for (int i = 0; i < M; i++) {
-            Assertions.assertArrayEquals(new double[M], dPcor[i], tol*1e8, "Failed on line " + i);
+            assertArrayEquals(new double[M], dPcor[i], tol*1e8, "Failed on line " + i);
         }
     }
 

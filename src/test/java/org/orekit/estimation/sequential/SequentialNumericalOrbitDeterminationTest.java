@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
@@ -60,6 +59,8 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
+class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -208,7 +209,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
 
     @Test
-    public void testLageos2Extended() throws URISyntaxException, IOException {
+    void testLageos2Extended() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
         final double distanceAccuracy = 0.541;
@@ -228,7 +229,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     }
 
     @Test
-    public void testLageos2Unscented() throws URISyntaxException, IOException {
+    void testLageos2Unscented() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
         final double distanceAccuracy = 0.482;
@@ -298,7 +299,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
         // Number of measurements processed
         final int numberOfMeas  = 258;
-        Assertions.assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
+        assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
 
         // Estimated position and velocity
         final Vector3D estimatedPos = kalmanLageos2.getEstimatedPV().getPosition();
@@ -317,8 +318,8 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        Assertions.assertEquals(0.0, dP, distanceAccuracy);
-        Assertions.assertEquals(0.0, dV, velocityAccuracy);
+        assertEquals(0.0, dP, distanceAccuracy);
+        assertEquals(0.0, dV, velocityAccuracy);
 
         // Print orbit deltas
         if (print) {
@@ -338,23 +339,23 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         final List<DelegatingDriver> list = new ArrayList<DelegatingDriver>(kalmanLageos2.getMeasurementsParameters().getDrivers());
         sortParametersChanges(list);
 
-        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
-        Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), parametersAccuracy);
-        Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), parametersAccuracy);
-        Assertions.assertEquals(rangeBias,        list.get(3).getValue(), parametersAccuracy);
+        assertEquals(stationOffSet[0], list.get(0).getValue(), parametersAccuracy);
+        assertEquals(stationOffSet[1], list.get(1).getValue(), parametersAccuracy);
+        assertEquals(stationOffSet[2], list.get(2).getValue(), parametersAccuracy);
+        assertEquals(rangeBias,        list.get(3).getValue(), parametersAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 258;
-        Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
-        Assertions.assertEquals(refStatRange[0], kalmanLageos2.getRangeStat().getMin(),               parametersAccuracy);
-        Assertions.assertEquals(refStatRange[1], kalmanLageos2.getRangeStat().getMax(),               parametersAccuracy);
-        Assertions.assertEquals(refStatRange[2], kalmanLageos2.getRangeStat().getMean(),              parametersAccuracy);
-        Assertions.assertEquals(refStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), parametersAccuracy);
+        assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
+        assertEquals(refStatRange[0], kalmanLageos2.getRangeStat().getMin(),               parametersAccuracy);
+        assertEquals(refStatRange[1], kalmanLageos2.getRangeStat().getMax(),               parametersAccuracy);
+        assertEquals(refStatRange[2], kalmanLageos2.getRangeStat().getMean(),              parametersAccuracy);
+        assertEquals(refStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), parametersAccuracy);
 
     }
 
     @Test
-    public void testW3BExtended() throws URISyntaxException, IOException {
+    void testW3BExtended() throws URISyntaxException, IOException {
         // Batch LS result: -0.2154;
         final double dragCoef  = 0.1932;
 
@@ -423,7 +424,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     }
 
     @Test
-    public void testW3BUnscented() throws URISyntaxException, IOException {
+    void testW3BUnscented() throws URISyntaxException, IOException {
         // Batch LS result: -0.2154;
         final double dragCoef  = -0.0214;
 
@@ -577,24 +578,24 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
         // Number of measurements processed
         final int numberOfMeas  = 521;
-        Assertions.assertEquals(numberOfMeas, kalmanW3B.getNumberOfMeasurements());
+        assertEquals(numberOfMeas, kalmanW3B.getNumberOfMeasurements());
 
 
         // Test on propagator parameters
         // -----------------------------
         final ParameterDriversList propagatorParameters = kalmanW3B.getPropagatorParameters();
-        Assertions.assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-4);
+        assertEquals(dragCoef, propagatorParameters.getDrivers().get(0).getValue(), 1e-4);
         final Vector3D leakAcceleration0 =
                         new Vector3D(propagatorParameters.getDrivers().get(1).getValue(),
                                      propagatorParameters.getDrivers().get(3).getValue(),
                                      propagatorParameters.getDrivers().get(5).getValue());
-        Assertions.assertEquals(leakAccelerationNorm0, leakAcceleration0.getNorm(), 1.0e-9);
+        assertEquals(leakAccelerationNorm0, leakAcceleration0.getNorm(), 1.0e-9);
 
         final Vector3D leakAcceleration1 =
                         new Vector3D(propagatorParameters.getDrivers().get(2).getValue(),
                                      propagatorParameters.getDrivers().get(4).getValue(),
                                      propagatorParameters.getDrivers().get(6).getValue());
-        Assertions.assertEquals(leakAccelerationNorm1, leakAcceleration1.getNorm(), 1.0e-13);
+        assertEquals(leakAccelerationNorm1, leakAcceleration1.getNorm(), 1.0e-13);
 
         // Test on measurements parameters
         // -------------------------------
@@ -603,70 +604,70 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         sortParametersChanges(list);
 
         // Station CastleRock
-        Assertions.assertEquals(castleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
-        Assertions.assertEquals(castleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
-        Assertions.assertEquals(castleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
+        assertEquals(castleAzElBias[0], FastMath.toDegrees(list.get(0).getValue()), angleAccuracy);
+        assertEquals(castleAzElBias[1], FastMath.toDegrees(list.get(1).getValue()), angleAccuracy);
+        assertEquals(castleRangeBias,   list.get(2).getValue(),                     distanceAccuracy);
 
         // Station Fucino
-        Assertions.assertEquals(fucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
-        Assertions.assertEquals(fucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
-        Assertions.assertEquals(fucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
+        assertEquals(fucAzElBias[0], FastMath.toDegrees(list.get(3).getValue()), angleAccuracy);
+        assertEquals(fucAzElBias[1], FastMath.toDegrees(list.get(4).getValue()), angleAccuracy);
+        assertEquals(fucRangeBias,   list.get(5).getValue(),                     distanceAccuracy);
 
         // Station Kumsan
-        Assertions.assertEquals(kumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
-        Assertions.assertEquals(kumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
-        Assertions.assertEquals(kumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
+        assertEquals(kumAzElBias[0], FastMath.toDegrees(list.get(6).getValue()), angleAccuracy);
+        assertEquals(kumAzElBias[1], FastMath.toDegrees(list.get(7).getValue()), angleAccuracy);
+        assertEquals(kumRangeBias,   list.get(8).getValue(),                     distanceAccuracy);
 
         // Station Pretoria
-        Assertions.assertEquals(preAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
-        Assertions.assertEquals(preAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
-        Assertions.assertEquals(preRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
+        assertEquals(preAzElBias[0], FastMath.toDegrees(list.get( 9).getValue()), angleAccuracy);
+        assertEquals(preAzElBias[1], FastMath.toDegrees(list.get(10).getValue()), angleAccuracy);
+        assertEquals(preRangeBias,   list.get(11).getValue(),                     distanceAccuracy);
 
         // Station Uralla
-        Assertions.assertEquals(uraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
-        Assertions.assertEquals(uraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
-        Assertions.assertEquals(uraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
+        assertEquals(uraAzElBias[0], FastMath.toDegrees(list.get(12).getValue()), angleAccuracy);
+        assertEquals(uraAzElBias[1], FastMath.toDegrees(list.get(13).getValue()), angleAccuracy);
+        assertEquals(uraRangeBias,   list.get(14).getValue(),                     distanceAccuracy);
 
 
         // Test on statistic for the range residuals
         final long nbRange = 182;
-        Assertions.assertEquals(nbRange, kalmanW3B.getRangeStat().getN());
-        Assertions.assertEquals(refStatRange[0], kalmanW3B.getRangeStat().getMin(),               distanceAccuracy);
-        Assertions.assertEquals(refStatRange[1], kalmanW3B.getRangeStat().getMax(),               distanceAccuracy);
-        Assertions.assertEquals(refStatRange[2], kalmanW3B.getRangeStat().getMean(),              distanceAccuracy);
-        Assertions.assertEquals(refStatRange[3], kalmanW3B.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        assertEquals(nbRange, kalmanW3B.getRangeStat().getN());
+        assertEquals(refStatRange[0], kalmanW3B.getRangeStat().getMin(),               distanceAccuracy);
+        assertEquals(refStatRange[1], kalmanW3B.getRangeStat().getMax(),               distanceAccuracy);
+        assertEquals(refStatRange[2], kalmanW3B.getRangeStat().getMean(),              distanceAccuracy);
+        assertEquals(refStatRange[3], kalmanW3B.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
         //test on statistic for the azimuth residuals
         final long nbAzi = 339;
-        Assertions.assertEquals(nbAzi, kalmanW3B.getAzimStat().getN());
-        Assertions.assertEquals(refStatAzi[0], kalmanW3B.getAzimStat().getMin(),               angleAccuracy);
-        Assertions.assertEquals(refStatAzi[1], kalmanW3B.getAzimStat().getMax(),               angleAccuracy);
-        Assertions.assertEquals(refStatAzi[2], kalmanW3B.getAzimStat().getMean(),              angleAccuracy);
-        Assertions.assertEquals(refStatAzi[3], kalmanW3B.getAzimStat().getStandardDeviation(), angleAccuracy);
+        assertEquals(nbAzi, kalmanW3B.getAzimStat().getN());
+        assertEquals(refStatAzi[0], kalmanW3B.getAzimStat().getMin(),               angleAccuracy);
+        assertEquals(refStatAzi[1], kalmanW3B.getAzimStat().getMax(),               angleAccuracy);
+        assertEquals(refStatAzi[2], kalmanW3B.getAzimStat().getMean(),              angleAccuracy);
+        assertEquals(refStatAzi[3], kalmanW3B.getAzimStat().getStandardDeviation(), angleAccuracy);
 
         //test on statistic for the elevation residuals
         final long nbEle = 339;
-        Assertions.assertEquals(nbEle, kalmanW3B.getElevStat().getN());
-        Assertions.assertEquals(refStatEle[0], kalmanW3B.getElevStat().getMin(),               angleAccuracy);
-        Assertions.assertEquals(refStatEle[1], kalmanW3B.getElevStat().getMax(),               angleAccuracy);
-        Assertions.assertEquals(refStatEle[2], kalmanW3B.getElevStat().getMean(),              angleAccuracy);
-        Assertions.assertEquals(refStatEle[3], kalmanW3B.getElevStat().getStandardDeviation(), angleAccuracy);
+        assertEquals(nbEle, kalmanW3B.getElevStat().getN());
+        assertEquals(refStatEle[0], kalmanW3B.getElevStat().getMin(),               angleAccuracy);
+        assertEquals(refStatEle[1], kalmanW3B.getElevStat().getMax(),               angleAccuracy);
+        assertEquals(refStatEle[2], kalmanW3B.getElevStat().getMean(),              angleAccuracy);
+        assertEquals(refStatEle[3], kalmanW3B.getElevStat().getStandardDeviation(), angleAccuracy);
 
         RealMatrix covariances = kalmanW3B.getCovariances();
-        Assertions.assertEquals(28, covariances.getRowDimension());
-        Assertions.assertEquals(28, covariances.getColumnDimension());
+        assertEquals(28, covariances.getRowDimension());
+        assertEquals(28, covariances.getColumnDimension());
 
         // drag coefficient variance
-        Assertions.assertEquals(dragVariance, covariances.getEntry(6, 6), 1.0e-6);
+        assertEquals(dragVariance, covariances.getEntry(6, 6), 1.0e-6);
 
         // leak-X constant term variance
-        Assertions.assertEquals(leakXVariance, covariances.getEntry(7, 7), 1.0e-16);
+        assertEquals(leakXVariance, covariances.getEntry(7, 7), 1.0e-16);
 
         // leak-Y constant term variance
-        Assertions.assertEquals(leakYVariance, covariances.getEntry(9, 9), 1.0e-16);
+        assertEquals(leakYVariance, covariances.getEntry(9, 9), 1.0e-16);
 
         // leak-Z constant term variance
-        Assertions.assertEquals(leakZVariance, covariances.getEntry(11, 11), 1.0e-16);
+        assertEquals(leakZVariance, covariances.getEntry(11, 11), 1.0e-16);
 
         // Test on orbital parameters
         // Done at the end to avoid changing the estimated propagation parameters
@@ -711,8 +712,8 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        Assertions.assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), predictionDistanceAccuracy);
-        Assertions.assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), predictionVelocityAccuracy);
+        assertEquals(0.0, Vector3D.distance(refPos, estimatedPos), predictionDistanceAccuracy);
+        assertEquals(0.0, Vector3D.distance(refVel, estimatedVel), predictionVelocityAccuracy);
 
         // Print orbit deltas
         if (print) {

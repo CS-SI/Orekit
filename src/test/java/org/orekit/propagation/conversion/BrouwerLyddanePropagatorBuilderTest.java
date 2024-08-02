@@ -16,11 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -42,13 +43,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-public class BrouwerLyddanePropagatorBuilderTest {
+class BrouwerLyddanePropagatorBuilderTest {
 
     private Orbit orbit;
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @Test
-    public void doTestBuildPropagator() {
+    void doTestBuildPropagator() {
 
         final double eps  = 2.0e-10;
 
@@ -80,17 +81,17 @@ public class BrouwerLyddanePropagatorBuilderTest {
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(60000)).getOrbit();
 
         // Verify
-        Assertions.assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
-        Assertions.assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getEquinoctialEy(), orbitWithBuilder.getEquinoctialEy(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getHx(),            orbitWithBuilder.getHx(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getHy(),            orbitWithBuilder.getHy(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getLM(),            orbitWithBuilder.getLM(), 8.0e-10);
+        assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
+        assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
+        assertEquals(orbitWithPropagator.getEquinoctialEy(), orbitWithBuilder.getEquinoctialEy(), eps);
+        assertEquals(orbitWithPropagator.getHx(),            orbitWithBuilder.getHx(), eps);
+        assertEquals(orbitWithPropagator.getHy(),            orbitWithBuilder.getHy(), eps);
+        assertEquals(orbitWithPropagator.getLM(),            orbitWithBuilder.getLM(), 8.0e-10);
 
     }
 
     @Test
-    public void doTestBuildPropagatorWithDrag() {
+    void doTestBuildPropagatorWithDrag() {
 
         // M2
         final double M2 = 1.0e-15;
@@ -123,13 +124,13 @@ public class BrouwerLyddanePropagatorBuilderTest {
         final BrouwerLyddanePropagator prop = (BrouwerLyddanePropagator) builder.buildPropagator();
 
         // Verify
-        Assertions.assertEquals(M2, prop.getM2(), Double.MIN_VALUE);
-        Assertions.assertTrue(prop.getParametersDrivers().get(0).isSelected());
+        assertEquals(M2, prop.getM2(), Double.MIN_VALUE);
+        assertTrue(prop.getParametersDrivers().get(0).isSelected());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("potential:regular-data");
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(583.);
@@ -175,9 +176,9 @@ public class BrouwerLyddanePropagatorBuilderTest {
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
-        Assertions.assertEquals(builder.getM2Value(), copyBuilder.getM2Value());
-        Assertions.assertTrue(builder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
-        Assertions.assertTrue(copyBuilder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
+        assertEquals(builder.getM2Value(), copyBuilder.getM2Value());
+        assertTrue(builder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
+        assertTrue(copyBuilder.getPropagationParametersDrivers().getDrivers().get(0).isSelected());
     }
 
 }

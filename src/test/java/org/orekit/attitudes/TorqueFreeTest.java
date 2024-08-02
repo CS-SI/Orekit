@@ -31,7 +31,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -49,10 +48,13 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class TorqueFreeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class TorqueFreeTest {
 
     @Test
-    public void testLocalBehavior() {
+    void testLocalBehavior() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());
@@ -70,15 +72,15 @@ public class TorqueFreeTest {
                               new Vector3D(0, 0, 3680.853673522056));
         Orbit orbit = new KeplerianOrbit(pv, frame, initialDate, 3.986004415e14);
 
-        Assertions.assertSame(initialAttitude, torqueFree.getInitialAttitude());
-        Assertions.assertSame(inertia, torqueFree.getInertia());
+        assertSame(initialAttitude, torqueFree.getInitialAttitude());
+        assertSame(inertia, torqueFree.getInertia());
 
         // check model gives back initial attitude at initial date
         Attitude attitude0 = torqueFree.getAttitude(orbit, initialDate, frame);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                                 Rotation.distance(initialAttitude.getRotation(), attitude0.getRotation()),
                                 1.0e-10);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                                 Vector3D.distance(initialAttitude.getSpin(), attitude0.getSpin()),
                                 1.0e-10);
 
@@ -89,20 +91,20 @@ public class TorqueFreeTest {
                                              torqueFree.getAttitude(orbit, initialDate.shiftedBy(dt), frame).getRotation());
             maxError = FastMath.max(error, maxError);
         }
-        Assertions.assertEquals(5.0e-6, maxError, 1.0e-7);
+        assertEquals(5.0e-6, maxError, 1.0e-7);
          maxError = 0;
         for (double dt = -1.0; dt < 1.0; dt += 0.001) {
             double error = Rotation.distance(initialAttitude.shiftedBy(dt).getRotation(),
                                              torqueFree.getAttitude(orbit, initialDate.shiftedBy(dt), frame).getRotation());
             maxError = FastMath.max(error, maxError);
         }
-        Assertions.assertEquals(5.0e-4, maxError, 1.0e-7);
+        assertEquals(5.0e-4, maxError, 1.0e-7);
 
     }
 
     /** Torque-free motion preserves angular momentum in inertial frame. */
     @Test
-    public void testMomentum() {
+    void testMomentum() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());
@@ -161,13 +163,13 @@ public class TorqueFreeTest {
             final Vector3D momentum = attitude.getRotation().applyInverseTo(inertia.momentum(attitude.getSpin()));
             maxError = FastMath.max(maxError, Vector3D.angle(momentum, initialMomentum));
         }
-        Assertions.assertEquals(0.0, maxError, tol);
+        assertEquals(0.0, maxError, tol);
 
     }
 
     /** Torque-free motion preserves angular momentum in inertial frame. */
     @Test
-    public void testFieldMomentum() {
+    void testFieldMomentum() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());
@@ -240,12 +242,12 @@ public class TorqueFreeTest {
             final FieldVector3D<T> momentum = attitude.getRotation().applyInverseTo(fInertia.momentum(attitude.getSpin()));
             maxError = FastMath.max(maxError, FieldVector3D.angle(momentum, fInitialMomentum));
         }
-        Assertions.assertEquals(0.0, maxError.getReal(), tol);
+        assertEquals(0.0, maxError.getReal(), tol);
 
     }
 
     @Test
-    public void testField() {
+    void testField() {
         AbsoluteDate initialDate = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                     new TimeComponents(13, 17, 7.865),
                                                     TimeScalesFactory.getUTC());
@@ -274,20 +276,20 @@ public class TorqueFreeTest {
             final FieldAttitude<Binary64> a64 = torqueFree.getAttitude(orbit64,
                                                                        orbit64.getDate().shiftedBy(dt),
                                                                        frame);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                     Rotation.distance(a.getRotation(), a64.getRotation().toRotation()),
                                     1.0e-10);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                     Vector3D.distance(a.getSpin(), a64.getSpin().toVector3D()),
                                     1.0e-10);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                     Vector3D.distance(a.getRotationAcceleration(), a64.getRotationAcceleration().toVector3D()),
                                     1.0e-10);
         }
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

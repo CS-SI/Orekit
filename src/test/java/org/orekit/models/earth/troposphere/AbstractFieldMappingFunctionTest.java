@@ -26,7 +26,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -54,6 +53,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class AbstractFieldMappingFunctionTest {
 
@@ -95,8 +97,8 @@ public abstract class AbstractFieldMappingFunctionTest {
                                                                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-2);
-        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-2);
+        assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-2);
+        assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-2);
     }
 
     @Test
@@ -121,8 +123,8 @@ public abstract class AbstractFieldMappingFunctionTest {
                                                      new FieldPressureTemperatureHumidity<>(field,
                                                                                             TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                      date);
-            Assertions.assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
-            Assertions.assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }
@@ -271,8 +273,8 @@ public abstract class AbstractFieldMappingFunctionTest {
 
         // Tolerances
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(0., FastMath.abs(compMFH[i + 1] - refMF[0][i]), epsMFH);
-            Assertions.assertEquals(0., FastMath.abs(compMFW[i + 1] - refMF[1][i]), epsMFW);
+            assertEquals(0., FastMath.abs(compMFH[i + 1] - refMF[0][i]), epsMFH);
+            assertEquals(0., FastMath.abs(compMFW[i + 1] - refMF[1][i]), epsMFW);
         }
     }
 

@@ -16,12 +16,14 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-public class HexadecimalSequenceEncodedMessageTest extends AbstractEncodedMessageTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class HexadecimalSequenceEncodedMessageTest extends AbstractEncodedMessageTest {
 
     protected EncodedMessage buildRawMessages(byte[] bytes) {
         final StringBuilder builder = new StringBuilder();
@@ -34,19 +36,19 @@ public class HexadecimalSequenceEncodedMessageTest extends AbstractEncodedMessag
     }
 
     @Test
-    public void testString() {
+    void testString() {
         final EncodedMessage message = new HexadecimalSequenceEncodedMessage("0BFF3480AA");
         message.start();
-        Assertions.assertEquals(0x0b,   message.extractBits(8));
-        Assertions.assertEquals(0xff34, message.extractBits(16));
-        Assertions.assertEquals(0x8,    message.extractBits(4));
-        Assertions.assertEquals(0x0,    message.extractBits(4));
-        Assertions.assertEquals(0xaa,   message.extractBits(8));
+        assertEquals(0x0b,   message.extractBits(8));
+        assertEquals(0xff34, message.extractBits(16));
+        assertEquals(0x8,    message.extractBits(4));
+        assertEquals(0x0,    message.extractBits(4));
+        assertEquals(0xaa,   message.extractBits(8));
         try {
             message.extractBits(1);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
+            assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
         }
     }
 

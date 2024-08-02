@@ -26,7 +26,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -51,14 +50,18 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
-public class FieldEventEnablingPredicateFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FieldEventEnablingPredicateFilterTest {
 
     private OneAxisEllipsoid earth;
     private GeodeticPoint gp;
     private FieldOrbit<Binary64> orbit;
 
     @Test
-    public void testForward0Degrees() {
+    void testForward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -66,7 +69,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5Degrees() {
+    void testForward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate(),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -74,7 +77,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testForward5DegreesStartEnabled() {
+    void testForward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(12614.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
@@ -82,7 +85,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward0Degrees() {
+    void testBackward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -90,7 +93,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5Degrees() {
+    void testBackward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(Constants.JULIAN_DAY),
                orbit.getDate(),
@@ -98,7 +101,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testBackward5DegreesStartEnabled() {
+    void testBackward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
                orbit.getDate().shiftedBy(73112.0),
                orbit.getDate(),
@@ -122,11 +125,11 @@ public class FieldEventEnablingPredicateFilterTest {
                     }
                 }).withMaxCheck(60.0);
 
-        Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
-        Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold().getReal(), 1.0e-15);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, aboveGroundElevationDetector.getMaxIterationCount());
+        assertSame(raw, aboveGroundElevationDetector.getDetector());
+        assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(60.0, aboveGroundElevationDetector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-6, aboveGroundElevationDetector.getThreshold().getReal(), 1.0e-15);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, aboveGroundElevationDetector.getMaxIterationCount());
 
 
         FieldPropagator<Binary64> propagator =
@@ -147,31 +150,31 @@ public class FieldEventEnablingPredicateFilterTest {
             final double eMinus = raw.getElevation(e.getState().shiftedBy(-10.0)).getReal();
             final double e0     = raw.getElevation(e.getState()).getReal();
             final double ePlus  = raw.getElevation(e.getState().shiftedBy(+10.0)).getReal();
-            Assertions.assertTrue(e0 > eMinus);
-            Assertions.assertTrue(e0 > ePlus);
-            Assertions.assertTrue(e0 > minElevation);
+            assertTrue(e0 > eMinus);
+            assertTrue(e0 > ePlus);
+            assertTrue(e0 > minElevation);
         }
-        Assertions.assertEquals(expectedEvents, logger.getLoggedEvents().size());
+        assertEquals(expectedEvents, logger.getLoggedEvents().size());
 
         propagator.clearEventsDetectors();
         double g1Raw = raw.g(propagator.propagate(orbit.getDate().shiftedBy(18540.0))).getReal();
         double g2Raw = raw.g(propagator.propagate(orbit.getDate().shiftedBy(18624.0))).getReal();
         double g1 = aboveGroundElevationDetector.g(propagator.propagate(orbit.getDate().shiftedBy(18540.0))).getReal();
         double g2 = aboveGroundElevationDetector.g(propagator.propagate(orbit.getDate().shiftedBy(18624.0))).getReal();
-        Assertions.assertTrue(g1Raw > 0);
-        Assertions.assertTrue(g2Raw < 0);
+        assertTrue(g1Raw > 0);
+        assertTrue(g2Raw < 0);
         if (sameSign) {
-            Assertions.assertTrue(g1 > 0);
-            Assertions.assertTrue(g2 < 0);
+            assertTrue(g1 > 0);
+            assertTrue(g2 < 0);
         } else {
-            Assertions.assertTrue(g1 < 0);
-            Assertions.assertTrue(g2 > 0);
+            assertTrue(g1 < 0);
+            assertTrue(g2 > 0);
         }
 
     }
 
     @Test
-    public void testResetState() {
+    void testResetState() {
         final List<FieldAbsoluteDate<Binary64>> reset = new ArrayList<>();
         FieldDateDetector<Binary64> raw = new FieldDateDetector<>(Binary64Field.getInstance(), orbit.getDate().shiftedBy(3600.0)).
                         withMaxCheck(1000.0).
@@ -203,21 +206,21 @@ public class FieldEventEnablingPredicateFilterTest {
         propagator.addEventDetector(logger.monitorDetector(filtered));
         propagator.propagate(orbit.getDate().shiftedBy(Constants.JULIAN_DAY));
         List<FieldLoggedEvent<Binary64>> events = logger.getLoggedEvents();
-        Assertions.assertEquals(4, events.size());
-        Assertions.assertEquals(6 * 3600, events.get(0).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
-        Assertions.assertEquals(7 * 3600, events.get(1).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
-        Assertions.assertEquals(8 * 3600, events.get(2).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
-        Assertions.assertEquals(9 * 3600, events.get(3).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
-        Assertions.assertEquals(4, reset.size());
-        Assertions.assertEquals(6 * 3600, reset.get(0).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
-        Assertions.assertEquals(7 * 3600, reset.get(1).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
-        Assertions.assertEquals(8 * 3600, reset.get(2).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
-        Assertions.assertEquals(9 * 3600, reset.get(3).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(4, events.size());
+        assertEquals(6 * 3600, events.get(0).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(7 * 3600, events.get(1).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(8 * 3600, events.get(2).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(9 * 3600, events.get(3).getState().getDate().durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(4, reset.size());
+        assertEquals(6 * 3600, reset.get(0).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(7 * 3600, reset.get(1).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(8 * 3600, reset.get(2).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
+        assertEquals(9 * 3600, reset.get(3).durationFrom(orbit.getDate()).getReal(), 1.0e-6);
 
     }
 
     @Test
-    public void testExceedHistoryForward() throws IOException {
+    void testExceedHistoryForward() throws IOException {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -246,7 +249,7 @@ public class FieldEventEnablingPredicateFilterTest {
         List<FieldLoggedEvent<Binary64>> events = logger.getLoggedEvents();
 
         // 300 periods, 150 events as half of them are filtered out
-        Assertions.assertEquals(150, events.size());
+        assertEquals(150, events.size());
 
         // as we have encountered a lot of enabling status changes, we exceeded the internal history
         // if we try to display again the filtered g function for dates far in the past,
@@ -254,7 +257,7 @@ public class FieldEventEnablingPredicateFilterTest {
         propagator.clearEventsDetectors();
         for (double dt = 5000.0; dt < 10000.0; dt += 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt))).getReal();
-            Assertions.assertTrue(filteredG < 0.0);
+            assertTrue(filteredG < 0.0);
         }
 
         // on the other hand, if we try to display again the filtered g function for past dates
@@ -262,16 +265,16 @@ public class FieldEventEnablingPredicateFilterTest {
         for (double dt = 195400.0; dt < 196200.0; dt += 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt))).getReal();
             if (dt < 195750) {
-                Assertions.assertTrue(filteredG > 0.0);
+                assertTrue(filteredG > 0.0);
             } else {
-                Assertions.assertTrue(filteredG < 0.0);
+                assertTrue(filteredG < 0.0);
             }
         }
 
     }
 
     @Test
-    public void testExceedHistoryBackward() throws IOException {
+    void testExceedHistoryBackward() throws IOException {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -300,7 +303,7 @@ public class FieldEventEnablingPredicateFilterTest {
         List<FieldLoggedEvent<Binary64>> events = logger.getLoggedEvents();
 
         // 300 periods, 150 events as half of them are filtered out
-        Assertions.assertEquals(150, events.size());
+        assertEquals(150, events.size());
 
         // as we have encountered a lot of enabling status changes, we exceeded the internal history
         // if we try to display again the filtered g function for dates far in the future,
@@ -308,7 +311,7 @@ public class FieldEventEnablingPredicateFilterTest {
         propagator.clearEventsDetectors();
         for (double dt = -5000.0; dt > -10000.0; dt -= 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt))).getReal();
-            Assertions.assertTrue(filteredG < 0.0);
+            assertTrue(filteredG < 0.0);
         }
 
         // on the other hand, if we try to display again the filtered g function for future dates
@@ -316,16 +319,16 @@ public class FieldEventEnablingPredicateFilterTest {
         for (double dt = -195400.0; dt > -196200.0; dt -= 3.0) {
             double filteredG = filtered.g(propagator.propagate(orbit.getDate().shiftedBy(dt))).getReal();
             if (dt < -195750) {
-                Assertions.assertTrue(filteredG < 0.0);
+                assertTrue(filteredG < 0.0);
             } else {
-                Assertions.assertTrue(filteredG > 0.0);
+                assertTrue(filteredG > 0.0);
             }
         }
 
     }
 
     @Test
-    public void testGenerics() {
+    void testGenerics() {
         // setup
         FieldDateDetector<Binary64> detector = new FieldDateDetector<>(orbit.getDate().getField(), orbit.getDate());
         FieldEnablingPredicate<Binary64> predicate = (state, eventDetector, g) -> true;
@@ -335,7 +338,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -359,7 +362,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         earth = null;
         gp    = null;
         orbit = null;

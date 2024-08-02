@@ -17,7 +17,6 @@
 package org.orekit.forces.gravity;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,13 +35,15 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Map;
 
-public class OceanTidesFieldTest {
+class OceanTidesFieldTest {
 
     @Test
-    public void testDeltaCnmSnm() {
+    void testDeltaCnmSnm() {
 
         // this is an arbitrarily truncated model, limited to 4x4 and with only a few waves
         List<OceanTidesWave> waves = getWaves(4, 4, 55565, 56554, 85455, 135655, 273555);
@@ -74,8 +75,8 @@ public class OceanTidesFieldTest {
         for (int n = 0; n < refDeltaCnm.length; ++n) {
             double threshold = 4.0e-17;
             for (int m = 0; m <= n; ++m) {
-                Assertions.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
-                Assertions.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
+                assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
+                assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
             }
         }
     }
@@ -113,7 +114,7 @@ public class OceanTidesFieldTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:tides");
     }
 

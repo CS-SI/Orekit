@@ -21,7 +21,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.FramesFactory;
@@ -36,6 +35,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class FieldRelativeDistanceDetectorTest {
 
     @Test
@@ -47,7 +48,7 @@ class FieldRelativeDistanceDetectorTest {
         // WHEN
         final Complex actualDistanceThreshold = distanceDetector.getDistanceThreshold();
         // THEN
-        Assertions.assertEquals(expectedDistanceThreshold, actualDistanceThreshold);
+        assertEquals(expectedDistanceThreshold, actualDistanceThreshold);
     }
 
     @Test
@@ -61,7 +62,7 @@ class FieldRelativeDistanceDetectorTest {
         final FieldRelativeDistanceDetector<Complex> detector = distanceDetector.create(distanceDetector.getMaxCheckInterval(),
                 distanceDetector.getThreshold(), distanceDetector.getMaxIterationCount(), expectedHandler);
         // THEN
-        Assertions.assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(expectedHandler, detector.getHandler());
     }
 
     @SuppressWarnings("unchecked")
@@ -89,7 +90,7 @@ class FieldRelativeDistanceDetectorTest {
         final RelativeDistanceDetector relativeDistanceDetector = new RelativeDistanceDetector(
                 new KeplerianPropagator(initialOrbit), distanceThreshold);
         final double expectedDistance = relativeDistanceDetector.g(fieldSpacecraftState.toSpacecraftState());
-        Assertions.assertEquals(expectedDistance, actualDistance);
+        assertEquals(expectedDistance, actualDistance);
     }
 
     private CartesianOrbit createOrbit(final Vector3D position) {

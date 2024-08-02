@@ -17,7 +17,6 @@
 package org.orekit.gnss.metric.messages.rtcm;
 
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,17 +33,23 @@ import org.orekit.time.GLONASSDate;
 
 import java.util.ArrayList;
 
-public class Rtcm1020Test {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class Rtcm1020Test {
 
     private double eps = 1.0e-16;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("gnss");
     }
 
     @Test
-    public void testParseMessage() {
+    void testParseMessage() {
 
         final String m = "001111111100" +                     // Message number: 1020
                         "001100" +                           // Satellite ID
@@ -96,45 +101,45 @@ public class Rtcm1020Test {
 
         // Verify propagator initialization
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(new ClassicalRungeKuttaIntegrator(60.0), glonassMessage, true).build();
-        Assertions.assertNotNull(propagator);
-        Assertions.assertEquals(0.0, glonassMessage.getDate().
+        assertNotNull(propagator);
+        assertEquals(0.0, glonassMessage.getDate().
                             durationFrom(new GLONASSDate(ephemerisData.getNt(), ephemerisData.getN4(), glonassMessage.getTime()).getDate()), eps);
 
-        Assertions.assertEquals(12,                             glonassMessage.getPRN());
-        Assertions.assertEquals(10,                             glonassMessage.getFrequencyNumber());
-        Assertions.assertFalse(ephemerisData.isHealthAvailable());
-        Assertions.assertEquals(1800,                           ephemerisData.getP1());
-        Assertions.assertEquals(22410.0,                        ephemerisData.getTk(),    eps);
-        Assertions.assertEquals(0,                              ephemerisData.getBN());
-        Assertions.assertEquals(1,                              ephemerisData.getP2());
-        Assertions.assertEquals(26100.0,                        glonassMessage.getTime(), eps);
-        Assertions.assertEquals(242.42592,                      glonassMessage.getXDot(),          2.0e-6);
-        Assertions.assertEquals(1.21071935E-5,                  glonassMessage.getXDotDot(),       2.0e-6);
-        Assertions.assertEquals(4064977.5390625,                glonassMessage.getX(),             eps);
-        Assertions.assertEquals(-242.42592,                     glonassMessage.getYDot(),          2.0e-6);
-        Assertions.assertEquals(-1.21071935E-5,                 glonassMessage.getYDotDot(),       2.0e-6);
-        Assertions.assertEquals(-4064977.5390625,               glonassMessage.getY(),             eps);
-        Assertions.assertEquals(-4242.426,                      glonassMessage.getZDot(),          2.5e-4);
-        Assertions.assertEquals(1.21071935E-5,                  glonassMessage.getZDotDot(),       2.0e-6);
-        Assertions.assertEquals(-1.22569775390625E7,            glonassMessage.getZ(),             eps);
-        Assertions.assertEquals(4,                              ephemerisData.getP3());
-        Assertions.assertEquals(3,                              ephemerisData.getP());
-        Assertions.assertEquals(0,                              ephemerisData.getLNThirdString());
-        Assertions.assertEquals(14,                             ephemerisData.getEn());
-        Assertions.assertEquals(1.30385160446367E-8,            ephemerisData.getDeltaTN(), eps);
-        Assertions.assertEquals(1,                              ephemerisData.getP4());
-        Assertions.assertEquals(14,                             ephemerisData.getFT());
-        Assertions.assertEquals(1,                              ephemerisData.getM());
-        Assertions.assertTrue(ephemerisData.areAdditionalDataAvailable());
-        Assertions.assertEquals(1242,                           ephemerisData.getNA());
-        Assertions.assertEquals(0.095649354159832,              ephemerisData.getTauC(), eps);
-        Assertions.assertEquals(4.214453510940075E-4,           ephemerisData.getTauGps(), eps);
-        Assertions.assertEquals(0,                              ephemerisData.getLNFifthString());
+        assertEquals(12,                             glonassMessage.getPRN());
+        assertEquals(10,                             glonassMessage.getFrequencyNumber());
+        assertFalse(ephemerisData.isHealthAvailable());
+        assertEquals(1800,                           ephemerisData.getP1());
+        assertEquals(22410.0,                        ephemerisData.getTk(),    eps);
+        assertEquals(0,                              ephemerisData.getBN());
+        assertEquals(1,                              ephemerisData.getP2());
+        assertEquals(26100.0,                        glonassMessage.getTime(), eps);
+        assertEquals(242.42592,                      glonassMessage.getXDot(),          2.0e-6);
+        assertEquals(1.21071935E-5,                  glonassMessage.getXDotDot(),       2.0e-6);
+        assertEquals(4064977.5390625,                glonassMessage.getX(),             eps);
+        assertEquals(-242.42592,                     glonassMessage.getYDot(),          2.0e-6);
+        assertEquals(-1.21071935E-5,                 glonassMessage.getYDotDot(),       2.0e-6);
+        assertEquals(-4064977.5390625,               glonassMessage.getY(),             eps);
+        assertEquals(-4242.426,                      glonassMessage.getZDot(),          2.5e-4);
+        assertEquals(1.21071935E-5,                  glonassMessage.getZDotDot(),       2.0e-6);
+        assertEquals(-1.22569775390625E7,            glonassMessage.getZ(),             eps);
+        assertEquals(4,                              ephemerisData.getP3());
+        assertEquals(3,                              ephemerisData.getP());
+        assertEquals(0,                              ephemerisData.getLNThirdString());
+        assertEquals(14,                             ephemerisData.getEn());
+        assertEquals(1.30385160446367E-8,            ephemerisData.getDeltaTN(), eps);
+        assertEquals(1,                              ephemerisData.getP4());
+        assertEquals(14,                             ephemerisData.getFT());
+        assertEquals(1,                              ephemerisData.getM());
+        assertTrue(ephemerisData.areAdditionalDataAvailable());
+        assertEquals(1242,                           ephemerisData.getNA());
+        assertEquals(0.095649354159832,              ephemerisData.getTauC(), eps);
+        assertEquals(4.214453510940075E-4,           ephemerisData.getTauGps(), eps);
+        assertEquals(0,                              ephemerisData.getLNFifthString());
 
     }
 
     @Test
-    public void testNullMessage() {
+    void testNullMessage() {
 
         final String m = "001111111100" +                     // Message number: 1020
                         "001100" +                           // Satellite ID
@@ -182,20 +187,20 @@ public class Rtcm1020Test {
 
        final Rtcm1020 rtcm1020 = (Rtcm1020) new RtcmMessagesParser(messages).parse(message, false);
 
-       Assertions.assertNull(rtcm1020);
+       assertNull(rtcm1020);
     }
 
     @Test
-    public void testAdditionalDataFields() {
+    void testAdditionalDataFields() {
         String m = "11111111111111111";
         EncodedMessage message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
-        Assertions.assertTrue(RtcmDataField.DF105.booleanValue(message));
+        assertTrue(RtcmDataField.DF105.booleanValue(message));
         m = "11111111111111111";
         message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
-        Assertions.assertEquals(5, RtcmDataField.DF120.intValue(message));
+        assertEquals(5, RtcmDataField.DF120.intValue(message));
         m = "00000000000000000";
         message = new ByteArrayEncodedMessage(byteArrayFromBinary(m));
-        Assertions.assertFalse(RtcmDataField.DF131.booleanValue(message));
+        assertFalse(RtcmDataField.DF131.booleanValue(message));
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

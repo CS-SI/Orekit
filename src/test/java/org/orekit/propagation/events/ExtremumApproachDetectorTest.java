@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
@@ -34,13 +33,15 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class ExtremumApproachDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ExtremumApproachDetectorTest {
 
     /**
     * Test the detector on a keplerian orbit and detect extremum approach with Earth.
     */
     @Test
-    public void testStopPropagationClosestApproachByDefault() {
+    void testStopPropagationClosestApproachByDefault() {
         // Given
         // Loading Orekit data
         Utils.setDataRoot("regular-data");
@@ -77,7 +78,7 @@ public class ExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
-        Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod(),1e-9);
+        assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod(),1e-9);
 
     }
 
@@ -85,7 +86,7 @@ public class ExtremumApproachDetectorTest {
     * Test the detector on a keplerian orbit and detect extremum approach with Earth.
     */
     @Test
-    public void testStopPropagationFarthestApproachWithHandler() {
+    void testStopPropagationFarthestApproachWithHandler() {
         
         // Given
         // Loading Orekit data
@@ -124,7 +125,7 @@ public class ExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod() * 2));
 
         // Then
-        Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod() / 2,1e-7);
+        assertEquals(stateAtEvent.getDate().durationFrom(initialDate),orbit.getKeplerianPeriod() / 2,1e-7);
 
     }
 
@@ -138,6 +139,6 @@ public class ExtremumApproachDetectorTest {
         final PVCoordinatesProvider returnedSecondaryPVProvider = extremumApproachDetector.getSecondaryPVProvider();
 
         // Then
-        Assertions.assertEquals(secondaryPVProvider, returnedSecondaryPVProvider);
+        assertEquals(secondaryPVProvider, returnedSecondaryPVProvider);
     }
 }

@@ -1,6 +1,5 @@
 package org.orekit.propagation.conversion.averaging;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -13,10 +12,12 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.averaging.elements.AveragedEquinoctialWithMeanAngle;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class DSST6X0OrbitalStateTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential");
     }
     
@@ -31,7 +32,7 @@ class DSST6X0OrbitalStateTest {
         final Orbit orbit = averagedState.toOsculatingOrbit();
         final EquinoctialOrbit equinoctialOrbit = (EquinoctialOrbit) averagedState.getOrbitType().convertType(orbit);
         // THEN
-        Assertions.assertEquals(averagedState.getDate(), equinoctialOrbit.getDate());
+        assertEquals(averagedState.getDate(), equinoctialOrbit.getDate());
         compareOrbitalElements(averagedState.getAveragedElements(), equinoctialOrbit,
                 averagedState.getPositionAngleType());
     }
@@ -39,16 +40,16 @@ class DSST6X0OrbitalStateTest {
     private void compareOrbitalElements(final AveragedEquinoctialWithMeanAngle elements,
                                         final EquinoctialOrbit equinoctialOrbit,
                                         final PositionAngleType positionAngleType) {
-        Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), equinoctialOrbit.getA(), 1.6e4);
-        Assertions.assertEquals(elements.getAveragedEquinoctialEx(),
+        assertEquals(elements.getAveragedSemiMajorAxis(), equinoctialOrbit.getA(), 1.6e4);
+        assertEquals(elements.getAveragedEquinoctialEx(),
                 equinoctialOrbit.getEquinoctialEx(), 1.e-3);
-        Assertions.assertEquals(elements.getAveragedEquinoctialEy(),
+        assertEquals(elements.getAveragedEquinoctialEy(),
                 equinoctialOrbit.getEquinoctialEy(), 2.5e-3);
-        Assertions.assertEquals(elements.getAveragedHx(),
+        assertEquals(elements.getAveragedHx(),
                 equinoctialOrbit.getHx(), 4.e-3);
-        Assertions.assertEquals(elements.getAveragedHy(),
+        assertEquals(elements.getAveragedHy(),
                 equinoctialOrbit.getHy(), 1.e-3);
-        Assertions.assertEquals(elements.getAveragedMeanLongitudeArgument(),
+        assertEquals(elements.getAveragedMeanLongitudeArgument(),
                 equinoctialOrbit.getL(positionAngleType), 1.e-3);
     }
 

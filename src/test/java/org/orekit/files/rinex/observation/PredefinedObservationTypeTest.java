@@ -16,32 +16,35 @@
  */
 package org.orekit.files.rinex.observation;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
 
-public class PredefinedObservationTypeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class PredefinedObservationTypeTest {
 
     @Test
-    public void testMeasurementType() {
+    void testMeasurementType() {
         for (final ObservationType rf : PredefinedObservationType.values()) {
             final char c = rf.toString().charAt(0);
             switch (rf.getMeasurementType()) {
                 case PSEUDO_RANGE :
-                    Assertions.assertTrue(c == 'C' || c == 'P');
+                    assertTrue(c == 'C' || c == 'P');
                     break;
                 case CARRIER_PHASE :
-                    Assertions.assertTrue(c == 'L');
+                    assertEquals('L', c);
                     break;
                 case DOPPLER :
-                    Assertions.assertTrue(c == 'D');
+                    assertEquals('D', c);
                     break;
                 case SIGNAL_STRENGTH :
-                    Assertions.assertTrue(c == 'S');
+                    assertEquals('S', c);
                     break;
                 default :
-                    Assertions.fail("unknown " + rf.getMeasurementType());
+                    fail("unknown " + rf.getMeasurementType());
             }
         }
     }

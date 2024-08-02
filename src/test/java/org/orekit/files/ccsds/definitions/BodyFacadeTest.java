@@ -16,59 +16,60 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
 
-public class BodyFacadeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class BodyFacadeTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testIssue898Earth() {
+    void testIssue898Earth() {
 
         // Create the body facade
         final BodyFacade body = BodyFacade.create(CenterName.EARTH);
 
         // Verify
-        Assertions.assertEquals("EARTH", body.getName());
-        Assertions.assertEquals("Earth", body.getBody().getName());
+        assertEquals("EARTH", body.getName());
+        assertEquals("Earth", body.getBody().getName());
 
     }
 
     @Test
-    public void testIssue898Sun() {
+    void testIssue898Sun() {
 
         // Create the body facade
         final BodyFacade body = BodyFacade.create(CenterName.SUN);
 
         // Verify
-        Assertions.assertEquals("SUN", body.getName());
-        Assertions.assertEquals("Sun", body.getBody().getName());
+        assertEquals("SUN", body.getName());
+        assertEquals("Sun", body.getBody().getName());
 
     }
 
     @Test
-    public void testIssue1137() {
+    void testIssue1137() {
 
         // Create the body facade (SUN)
         final BodyFacade sun = BodyFacade.create(CenterName.SUN, DataContext.getDefault());
 
         // Verify
-        Assertions.assertEquals("SUN", sun.getName());
-        Assertions.assertEquals("Sun", sun.getBody().getName());
+        assertEquals("SUN", sun.getName());
+        assertEquals("Sun", sun.getBody().getName());
 
         // Create the body facade (EARTH)
         final BodyFacade earth = BodyFacade.create(CenterName.EARTH, DataContext.getDefault().getCelestialBodies());
 
         // Verify
-        Assertions.assertEquals("EARTH", earth.getName());
-        Assertions.assertEquals("Earth", earth.getBody().getName());
+        assertEquals("EARTH", earth.getName());
+        assertEquals("Earth", earth.getBody().getName());
 
     }
 

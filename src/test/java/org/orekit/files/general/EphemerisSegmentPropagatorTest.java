@@ -22,9 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -42,16 +40,20 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Unit tests for {@link EphemerisSegmentPropagator}.
  *
  * @author Evan Ward
  */
-public class EphemerisSegmentPropagatorTest {
+class EphemerisSegmentPropagatorTest {
 
     /** Set Orekit data. */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -62,7 +64,7 @@ public class EphemerisSegmentPropagatorTest {
      * @throws Exception on error.
      */
     @Test
-    public void testPropagator() throws Exception {
+    void testPropagator() throws Exception {
         // setup
         AbsoluteDate start = AbsoluteDate.J2000_EPOCH, end = start.shiftedBy(60);
         Frame frame = FramesFactory.getEME2000();
@@ -111,44 +113,44 @@ public class EphemerisSegmentPropagatorTest {
         BoundedPropagator propagator = ephemeris.getPropagator();
 
         //verify
-        MatcherAssert.assertThat(propagator.getMinDate(), CoreMatchers.is(start));
-        MatcherAssert.assertThat(propagator.getMaxDate(), CoreMatchers.is(end));
-        MatcherAssert.assertThat(propagator.getFrame(), CoreMatchers.is(frame));
+        assertThat(propagator.getMinDate(), CoreMatchers.is(start));
+        assertThat(propagator.getMaxDate(), CoreMatchers.is(end));
+        assertThat(propagator.getFrame(), CoreMatchers.is(frame));
         int ulps = 0;
         PVCoordinates expected = new PVCoordinates(
                 new Vector3D(6778137, 0, 0),
                 new Vector3D(1.0 / 30, 0, 0));
-        MatcherAssert.assertThat(
+        assertThat(
                 propagator.propagate(start).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(expected, ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 propagator.getPVCoordinates(start, frame),
                 OrekitMatchers.pvCloseTo(expected, ulps));
         expected = new PVCoordinates(
                 new Vector3D(6778137 + 2, 0, 0),
                 new Vector3D(2 / 30.0, 0, 0));
-        MatcherAssert.assertThat(
+        assertThat(
                 propagator.propagate(start.shiftedBy(45)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(expected, ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 propagator.getPVCoordinates(start.shiftedBy(45), frame),
                 OrekitMatchers.pvCloseTo(expected, ulps));
         expected = new PVCoordinates(
                 new Vector3D(6778137 + 3, 0, 0),
                 new Vector3D(2 / 30.0, 0, 0));
-        MatcherAssert.assertThat(
+        assertThat(
                 propagator.propagate(end).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(expected, ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 propagator.getPVCoordinates(end, frame),
                 OrekitMatchers.pvCloseTo(expected, ulps));
         // check reset state is prohibited
         SpacecraftState ic = propagator.propagate(start);
         try {
             propagator.resetInitialState(ic);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
             Method reset = EphemerisSegmentPropagator.class.getDeclaredMethod("resetIntermediateState",
@@ -156,10 +158,10 @@ public class EphemerisSegmentPropagatorTest {
                                                                               Boolean.TYPE);
             reset.setAccessible(true);
             reset.invoke(propagator, ic, true);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (InvocationTargetException ite) {
             OrekitException oe = (OrekitException) ite.getCause();
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
 
     }

@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -26,8 +25,13 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /** Unit tests for {@link AggregatedPVCoordinatesProvider}. */
-public class AggregatedPVCoordinatesProviderTest {
+class AggregatedPVCoordinatesProviderTest {
     
     private PVCoordinatesProvider pv1 = Mockito.mock(PVCoordinatesProvider.class);
     
@@ -43,7 +47,7 @@ public class AggregatedPVCoordinatesProviderTest {
 
     /** Set up test data. */
     @BeforeEach
-    public void setup() {
+    void setup() {
         Utils.setDataRoot("regular-data");
 
         date1 = AbsoluteDate.J2000_EPOCH;
@@ -53,15 +57,15 @@ public class AggregatedPVCoordinatesProviderTest {
     }
 
     @Test
-    public void invalidPVProvider() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+    void invalidPVProvider() {
+        assertThrows(IllegalStateException.class, () -> {
             final PVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.InvalidPVProvider();
             pvProv.getPVCoordinates(date1, FramesFactory.getGCRF());
         });
     }
 
     @Test
-    public void nominalCase() {
+    void nominalCase() {
         final AggregatedPVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.Builder()
             .addPVProviderAfter(date1, pv1, false)
             .addPVProviderAfter(date2, pv2, false)
@@ -71,13 +75,13 @@ public class AggregatedPVCoordinatesProviderTest {
 
         Mockito.when(pv1.getPVCoordinates(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(pv);
 
-        Assertions.assertEquals(date1, pvProv.getMinDate());
-        Assertions.assertEquals(date4, pvProv.getMaxDate());
+        assertEquals(date1, pvProv.getMinDate());
+        assertEquals(date4, pvProv.getMaxDate());
 
         // check start date
-        Assertions.assertSame(pv, pvProv.getPVCoordinates(date1, FramesFactory.getGCRF()));
+        assertSame(pv, pvProv.getPVCoordinates(date1, FramesFactory.getGCRF()));
         // check middle date
-        Assertions.assertSame(pv, pvProv.getPVCoordinates(date1.shiftedBy(43200), FramesFactory.getGCRF()));
+        assertSame(pv, pvProv.getPVCoordinates(date1.shiftedBy(43200), FramesFactory.getGCRF()));
 
         Mockito.verify(pv1, Mockito.times(2)).getPVCoordinates(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(FramesFactory.getGCRF()));
@@ -85,22 +89,22 @@ public class AggregatedPVCoordinatesProviderTest {
     }
 
     @Test
-    public void alwaysValid() {
+    void alwaysValid() {
         final AggregatedPVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.Builder(pv1).build();
 
         pvProv.getPVCoordinates(date1.shiftedBy(-1.), FramesFactory.getGCRF());
         pvProv.getPVCoordinates(date1, FramesFactory.getGCRF());
         pvProv.getPVCoordinates(date4, FramesFactory.getGCRF());
 
-        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY, pvProv.getMinDate());
-        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, pvProv.getMaxDate());
+        assertEquals(AbsoluteDate.PAST_INFINITY, pvProv.getMinDate());
+        assertEquals(AbsoluteDate.FUTURE_INFINITY, pvProv.getMaxDate());
 
         Mockito.verify(pv1, Mockito.times(3)).getPVCoordinates(ArgumentMatchers.any(),
                 ArgumentMatchers.eq(FramesFactory.getGCRF()));
     }
 
     @Test
-    public void alwaysValidAfter() {
+    void alwaysValidAfter() {
         final AggregatedPVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.Builder(pv1)
                 .invalidBefore(date1)
                 .addPVProviderBefore(date2, pv2, false)
@@ -111,7 +115,7 @@ public class AggregatedPVCoordinatesProviderTest {
 
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1.), FramesFactory.getGCRF());
-            Assertions.fail("expected exception not thrown");
+            fail("expected exception not thrown");
         }
         catch (final OrekitIllegalArgumentException ex) {
             // this exception is expected
@@ -120,8 +124,8 @@ public class AggregatedPVCoordinatesProviderTest {
             throw ex;
         }
 
-        Assertions.assertEquals(date1, pvProv.getMinDate());
-        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, pvProv.getMaxDate());
+        assertEquals(date1, pvProv.getMinDate());
+        assertEquals(AbsoluteDate.FUTURE_INFINITY, pvProv.getMaxDate());
 
         Mockito.verify(pv1).getPVCoordinates(ArgumentMatchers.eq(date3),
                 ArgumentMatchers.eq(FramesFactory.getGCRF()));
@@ -130,8 +134,8 @@ public class AggregatedPVCoordinatesProviderTest {
     }
 
     @Test
-    public void invalidBefore() {
-        Assertions.assertThrows(OrekitIllegalArgumentException.class, () -> {
+    void invalidBefore() {
+        assertThrows(OrekitIllegalArgumentException.class, () -> {
             final PVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.Builder()
                     .addPVProviderAfter(date1, pv1, false)
                     .addPVProviderAfter(date2, pv2, false)
@@ -143,8 +147,8 @@ public class AggregatedPVCoordinatesProviderTest {
     }
 
     @Test
-    public void invalidAfter() {
-        Assertions.assertThrows(OrekitIllegalArgumentException.class, () -> {
+    void invalidAfter() {
+        assertThrows(OrekitIllegalArgumentException.class, () -> {
             final PVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.Builder()
                     .addPVProviderAfter(date1, pv1, false)
                     .addPVProviderAfter(date2, pv2, false)

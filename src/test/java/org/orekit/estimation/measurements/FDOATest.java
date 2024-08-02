@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -34,7 +33,9 @@ import org.orekit.utils.ParameterFunction;
 
 import java.util.List;
 
-public class FDOATest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class FDOATest {
 
     // Satellite transmission frequency
     private static final double CENTRE_FREQUENCY = 2.3e9;
@@ -44,7 +45,7 @@ public class FDOATest {
      * Both are calculated with a different algorithm.
      */
     @Test
-    public void testValues() {
+    void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -76,11 +77,11 @@ public class FDOATest {
         }
 
         // Mean and std errors check
-        Assertions.assertEquals(0.0, diffStat.getMean(), 1e-3);
-        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 1e-3);
+        assertEquals(0.0, diffStat.getMean(), 1e-3);
+        assertEquals(0.0, diffStat.getStandardDeviation(), 1e-3);
 
         // Test measurement type
-        Assertions.assertEquals(FDOA.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(FDOA.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /**
@@ -88,7 +89,7 @@ public class FDOATest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -111,7 +112,7 @@ public class FDOATest {
             final SpacecraftState state = propagator.propagate(date);
 
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assertions.assertEquals(3, estimated.getParticipants().length);
+            assertEquals(3, estimated.getParticipants().length);
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
@@ -121,8 +122,8 @@ public class FDOATest {
                                                   OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).
                         value(state);
 
-            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -134,7 +135,7 @@ public class FDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 5.4e-6);
+        assertEquals(0, maxRelativeError, 5.4e-6);
 
     }
 
@@ -143,7 +144,7 @@ public class FDOATest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -199,8 +200,8 @@ public class FDOATest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
-                Assertions.assertEquals(1, measurement.getDimension());
-                Assertions.assertEquals(1, gradient.length);
+                assertEquals(1, measurement.getDimension());
+                assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -217,7 +218,7 @@ public class FDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 3.4e-8);
+        assertEquals(0, maxRelativeError, 3.4e-8);
 
     }
 

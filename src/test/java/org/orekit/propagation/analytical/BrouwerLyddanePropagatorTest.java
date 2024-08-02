@@ -26,7 +26,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -63,12 +62,16 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class BrouwerLyddanePropagatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BrouwerLyddanePropagatorTest {
 
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
     @Test
-    public void sameDateCartesian() {
+    void sameDateCartesian() {
 
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
@@ -88,21 +91,21 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState finalOrbit = extrapolator.propagate(initDate);
 
         // positions velocity and semi major axis match perfectly
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
                             4.4e-9);
 
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             3.9e-12);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
+        assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
 
     }
 
     @Test
-    public void sameDateKeplerian() {
+    void sameDateKeplerian() {
 
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
@@ -117,21 +120,21 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState finalOrbit = extrapolator.propagate(initDate);
 
         // positions  velocity and semi major axis match perfectly
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getPosition(),
                                               finalOrbit.getPVCoordinates().getPosition()),
                             7.4e-9);
 
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             7.8e-12);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
+        assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
     }
 
 
     @Test
-    public void almostSphericalBody() {
+    void almostSphericalBody() {
 
         // Definition of initial conditions
         // ---------------------------------
@@ -172,38 +175,36 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
         SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
 
-        Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate), 0.0,
-                     Utils.epsilonTest);
+        assertEquals(0.0, finalOrbitAna.getDate().durationFrom(extrapDate),
+                Utils.epsilonTest);
         // comparison of each orbital parameters
-        Assertions.assertEquals(finalOrbitAna.getA(), finalOrbitKep.getA(), 10
+        assertEquals(finalOrbitAna.getA(), finalOrbitKep.getA(), 10
                      * Utils.epsilonTest * finalOrbitKep.getA());
-        Assertions.assertEquals(finalOrbitAna.getEquinoctialEx(), finalOrbitKep.getEquinoctialEx(), Utils.epsilonE
+        assertEquals(finalOrbitAna.getEquinoctialEx(), finalOrbitKep.getEquinoctialEx(), Utils.epsilonE
                      * finalOrbitKep.getE());
-        Assertions.assertEquals(finalOrbitAna.getEquinoctialEy(), finalOrbitKep.getEquinoctialEy(), Utils.epsilonE
+        assertEquals(finalOrbitAna.getEquinoctialEy(), finalOrbitKep.getEquinoctialEy(), Utils.epsilonE
                      * finalOrbitKep.getE());
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx(), finalOrbitKep.getHx()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx(), finalOrbitKep.getHx()),
                      finalOrbitKep.getHx(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy(), finalOrbitKep.getHy()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy(), finalOrbitKep.getHy()),
                      finalOrbitKep.getHy(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv(), finalOrbitKep.getLv()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv(), finalOrbitKep.getLv()),
                      finalOrbitKep.getLv(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLv()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE(), finalOrbitKep.getLE()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE(), finalOrbitKep.getLE()),
                      finalOrbitKep.getLE(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLE()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM(), finalOrbitKep.getLM()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM(), finalOrbitKep.getLM()),
                      finalOrbitKep.getLM(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLM()));
 
     }
 
 
-
-
     @Test
-    public void compareToNumericalPropagation() {
+    void compareToNumericalPropagation() {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -260,19 +261,19 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
-        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.2);
-        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.00000007);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
+        assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.2);
+        assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
+        assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.00000007);
+        assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.0021);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0000013);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.0021);
     }
 
     @Test
-    public void compareToNumericalPropagationWithDrag() {
+    void compareToNumericalPropagationWithDrag() {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -345,8 +346,8 @@ public class BrouwerLyddanePropagatorTest {
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaBefore = 20.44;
         final double deltaEccBefore = 1.0301e-4;
-        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaBefore);
-        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccBefore);
+        assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaBefore);
+        assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccBefore);
 
         //_______________________________________________________________________________________________
         // SET UP A BROUWER LYDDANE PROPAGATION WITH DRAG
@@ -360,16 +361,16 @@ public class BrouwerLyddanePropagatorTest {
         // Verify a and e differences without the drag effect on Brouwer-Lyddane
         final double deltaSmaAfter = 15.66;
         final double deltaEccAfter = 1.0297e-4;
-        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaAfter);
-        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
-        Assertions.assertTrue(deltaSmaAfter < deltaSmaBefore);
-        Assertions.assertTrue(deltaEccAfter < deltaEccBefore);
+        assertEquals(NumOrbit.getA(), BLOrbit.getA(), deltaSmaAfter);
+        assertEquals(NumOrbit.getE(), BLOrbit.getE(), deltaEccAfter);
+        assertTrue(deltaSmaAfter < deltaSmaBefore);
+        assertTrue(deltaEccAfter < deltaEccBefore);
 
     }
 
 
     @Test
-    public void compareToNumericalPropagationMeanInitialOrbit() {
+    void compareToNumericalPropagationMeanInitialOrbit() {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -429,21 +430,21 @@ public class BrouwerLyddanePropagatorTest {
         // SET UP A BROUWER LYDDANE PROPAGATION
         //_______________________________________________________________________________________________
 
-        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.17);
-        Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
-        Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000004);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
+        assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.17);
+        assertEquals(NumOrbit.getE(), BLOrbit.getE(), 0.00000028);
+        assertEquals(NumOrbit.getI(), BLOrbit.getI(), 0.000004);
+        assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getPerigeeArgument(), FastMath.PI), 0.197);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(NumOrbit.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getRightAscensionOfAscendingNode(), FastMath.PI), 0.00072);
-        Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(NumOrbit.getTrueAnomaly(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit.getTrueAnomaly(), FastMath.PI), 0.12);
 
     }
 
 
     @Test
-    public void compareToNumericalPropagationResetInitialIntermediate() {
+    void compareToNumericalPropagationResetInitialIntermediate() {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -484,20 +485,20 @@ public class BrouwerLyddanePropagatorTest {
         BLextrapolator2.resetIntermediateState(BLFinalState1, true);
         final KeplerianOrbit BLOrbit2 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState2.getOrbit());
 
-        Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
-        Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
-        Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
+        assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
+        assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
+        assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getTrueAnomaly(), FastMath.PI), 0.0);
 
     }
 
     @Test
-    public void compareConstructors() {
+    void compareConstructors() {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -529,31 +530,31 @@ public class BrouwerLyddanePropagatorTest {
         final KeplerianOrbit BLOrbit3 = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState3.getOrbit());
 
 
-        Assertions.assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
-        Assertions.assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
-        Assertions.assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
+        assertEquals(BLOrbit1.getA(), BLOrbit2.getA(), 0.0);
+        assertEquals(BLOrbit1.getE(), BLOrbit2.getE(), 0.0);
+        assertEquals(BLOrbit1.getI(), BLOrbit2.getI(), 0.0);
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getPerigeeArgument(), FastMath.PI), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit2.getTrueAnomaly(), FastMath.PI), 0.0);
-        Assertions.assertEquals(BLOrbit1.getA(), BLOrbit3.getA(), 0.0);
-        Assertions.assertEquals(BLOrbit1.getE(), BLOrbit3.getE(), 0.0);
-        Assertions.assertEquals(BLOrbit1.getI(), BLOrbit3.getI(), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
+        assertEquals(BLOrbit1.getA(), BLOrbit3.getA(), 0.0);
+        assertEquals(BLOrbit1.getE(), BLOrbit3.getE(), 0.0);
+        assertEquals(BLOrbit1.getI(), BLOrbit3.getI(), 0.0);
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getPerigeeArgument(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit3.getPerigeeArgument(), FastMath.PI), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getRightAscensionOfAscendingNode(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit3.getRightAscensionOfAscendingNode(), FastMath.PI), 0.0);
-        Assertions.assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
+        assertEquals(MathUtils.normalizeAngle(BLOrbit1.getTrueAnomaly(), FastMath.PI),
                 MathUtils.normalizeAngle(BLOrbit3.getTrueAnomaly(), FastMath.PI), 0.0);
 
     }
 
 
     @Test
-    public void undergroundOrbit() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void undergroundOrbit() {
+        assertThrows(OrekitException.class, () -> {
             // for a semi major axis < equatorial radius
             Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
             Vector3D velocity = new Vector3D(-500.0, 800.0, 100.0);
@@ -576,8 +577,8 @@ public class BrouwerLyddanePropagatorTest {
 
 
     @Test
-    public void tooEllipticalOrbit() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void tooEllipticalOrbit() {
+        assertThrows(OrekitException.class, () -> {
             // for an eccentricity too big for the model
             AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
             Orbit initialOrbit = new KeplerianOrbit(67679244.0, 1.0,  1.85850, 2.1, 2.9,
@@ -599,7 +600,7 @@ public class BrouwerLyddanePropagatorTest {
 
 
     @Test
-    public void criticalInclination() {
+    void criticalInclination() {
 
         final Frame inertialFrame = FramesFactory.getEME2000();
 
@@ -624,23 +625,23 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState finalOrbit = extrapolator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
                             1.9e-8);
 
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             3.0e-12);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
+        assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 0.0);
 
     }
 
 
     @Test
-    public void insideEarth() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void insideEarth() {
+        assertThrows(OrekitException.class, () -> {
             // for an eccentricity too big for the model
             AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
             Orbit initialOrbit = new KeplerianOrbit( provider.getAe()-1000.0, 0.01, FastMath.toRadians(10.0), 2.1, 2.9,
@@ -661,8 +662,8 @@ public class BrouwerLyddanePropagatorTest {
     }
 
     @Test
-    public void testUnableToComputeBLMeanParameters() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testUnableToComputeBLMeanParameters() {
+        assertThrows(OrekitException.class, () -> {
 
             final Frame inertialFrame = FramesFactory.getEME2000();
             AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -690,7 +691,7 @@ public class BrouwerLyddanePropagatorTest {
     }
 
     @Test
-    public void testMeanOrbit() {
+    void testMeanOrbit() {
         final KeplerianOrbit initialOsculating =
                         new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -724,19 +725,19 @@ public class BrouwerLyddanePropagatorTest {
         });
         num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assertions.assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
-        Assertions.assertEquals(  18.464, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+        assertEquals(3188.347, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
+        assertEquals(  18.464, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
         provider = GravityFieldFactory.getNormalizedProvider(5, 0);
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         provider = null;
     }
 

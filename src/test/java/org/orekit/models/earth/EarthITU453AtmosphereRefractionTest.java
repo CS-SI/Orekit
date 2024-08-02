@@ -17,7 +17,6 @@
 package org.orekit.models.earth;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -28,7 +27,9 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class EarthITU453AtmosphereRefractionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class EarthITU453AtmosphereRefractionTest {
 
     private final double onehundredth = 1e-2;
     private final double twohundredth = 2e-2;
@@ -65,7 +66,7 @@ public class EarthITU453AtmosphereRefractionTest {
     private String namea = "Alt0";
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data:potential:tides");
         IERSConventions  conventions = IERSConventions.IERS_2010;
         OneAxisEllipsoid earth       = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -105,7 +106,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
 
     @Test
-    public void testEarthITU453AtmosphereRefractionHighest() {
+    void testEarthITU453AtmosphereRefractionHighest() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
@@ -116,11 +117,11 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(0.11458177523385392, refraction, epsilon);
+        assertEquals(0.11458177523385392, refraction, epsilon);
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefractionLowest() {
+    void testEarthITU453AtmosphereRefractionLowest() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
@@ -131,11 +132,11 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(0.3550620274090111, refraction, epsilon);
+        assertEquals(0.3550620274090111, refraction, epsilon);
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction2degree() {
+    void testEarthITU453AtmosphereRefraction2degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(2.0);
@@ -146,17 +147,17 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         final double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(refraction, 0.32, onehundredth);
+        assertEquals(0.32, refraction, onehundredth);
 
         final double thetamin = FastMath.toDegrees(modelTropo.getThetaMin());
-        Assertions.assertEquals(-0.5402509318003884, thetamin, epsilon);
+        assertEquals(-0.5402509318003884, thetamin, epsilon);
         final double theta0 = FastMath.toDegrees(modelTropo.getTheta0());
-        Assertions.assertEquals(-1.4959064751203384, theta0, epsilon);
+        assertEquals(-1.4959064751203384, theta0, epsilon);
 
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction4degree() {
+    void testEarthITU453AtmosphereRefraction4degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(4.0);
@@ -167,11 +168,11 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(0.21, refraction, onehundredth);
+        assertEquals(0.21, refraction, onehundredth);
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction10degree() {
+    void testEarthITU453AtmosphereRefraction10degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(10.0);
@@ -182,11 +183,11 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(0.10, refraction, twohundredth);
+        assertEquals(0.10, refraction, twohundredth);
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction30degree() {
+    void testEarthITU453AtmosphereRefraction30degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(30.0);
@@ -197,11 +198,11 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(0.02, refraction, onehundredth);
+        assertEquals(0.02, refraction, onehundredth);
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefraction90degree() {
+    void testEarthITU453AtmosphereRefraction90degree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(90.0);
@@ -212,11 +213,12 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(0.002, refraction, onethousandth);
+        assertEquals(0.002, refraction, onethousandth);
 
     }
+
     @Test
-    public void testEarthITU453AtmosphereRefractionminusdegree() {
+    void testEarthITU453AtmosphereRefractionminusdegree() {
 
         // elevation angle of the space station under free-space propagation conditions
         final double elevation = FastMath.toRadians(-10.);
@@ -227,11 +229,11 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
-        Assertions.assertEquals(1.7367073234643113, refraction, onethousandth);
+        assertEquals(1.7367073234643113, refraction, onethousandth);
     }
 
     @Test
-    public void testEarthITU453AtmosphereRefractiontable() {
+    void testEarthITU453AtmosphereRefractiontable() {
 
         // Station altitude
         final double altitude = stationa.getPoint().getAltitude();
@@ -243,7 +245,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
             // refraction correction in arcminutes
             final double refraction = 60.0 * FastMath.toDegrees(modelTropo.getRefraction(elevation));
-            Assertions.assertEquals(ref_refraction[itab], refraction, 2.1);
+            assertEquals(ref_refraction[itab], refraction, 2.1);
         }
     }
 }

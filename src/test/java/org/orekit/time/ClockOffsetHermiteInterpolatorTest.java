@@ -17,10 +17,11 @@
 
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ClockOffsetHermiteInterpolatorTest {
 
@@ -36,9 +37,9 @@ class ClockOffsetHermiteInterpolatorTest {
                                                    new ClockOffset(t0.shiftedBy(3),  9.0, Double.NaN, Double.NaN),
                                                    new ClockOffset(t0.shiftedBy(4), 16.0, Double.NaN, Double.NaN),
                                                    new ClockOffset(t0.shiftedBy(5), 25.0, Double.NaN, Double.NaN)));
-        Assertions.assertEquals(6.25, interpolated.getOffset(),       1.0e-15);
-        Assertions.assertEquals(5.00, interpolated.getRate(),         1.0e-15);
-        Assertions.assertEquals(2.00, interpolated.getAcceleration(), 1.0e-15);
+        assertEquals(6.25, interpolated.getOffset(),       1.0e-15);
+        assertEquals(5.00, interpolated.getRate(),         1.0e-15);
+        assertEquals(2.00, interpolated.getAcceleration(), 1.0e-15);
     }
 
     @Test
@@ -53,9 +54,9 @@ class ClockOffsetHermiteInterpolatorTest {
                                                    new ClockOffset(t0.shiftedBy(3),  9.0,  6.0, Double.NaN),
                                                    new ClockOffset(t0.shiftedBy(4), 16.0,  8.0, Double.NaN),
                                                    new ClockOffset(t0.shiftedBy(5), 25.0, 10.0, Double.NaN)));
-        Assertions.assertEquals(6.25, interpolated.getOffset(),       1.0e-15);
-        Assertions.assertEquals(5.00, interpolated.getRate(),         1.0e-15);
-        Assertions.assertEquals(2.00, interpolated.getAcceleration(), 1.0e-15);
+        assertEquals(6.25, interpolated.getOffset(),       1.0e-15);
+        assertEquals(5.00, interpolated.getRate(),         1.0e-15);
+        assertEquals(2.00, interpolated.getAcceleration(), 1.0e-15);
     }
 
     @Test
@@ -70,9 +71,9 @@ class ClockOffsetHermiteInterpolatorTest {
                                                    new ClockOffset(t0.shiftedBy(3),  9.0,  6.0, 2.0),
                                                    new ClockOffset(t0.shiftedBy(4), 16.0,  8.0, 2.0),
                                                    new ClockOffset(t0.shiftedBy(5), 25.0, 10.0, 2.0)));
-        Assertions.assertEquals(6.25, interpolated.getOffset(),       1.0e-15);
-        Assertions.assertEquals(5.00, interpolated.getRate(),         1.0e-15);
-        Assertions.assertEquals(2.00, interpolated.getAcceleration(), 1.0e-15);
+        assertEquals(6.25, interpolated.getOffset(),       1.0e-15);
+        assertEquals(5.00, interpolated.getRate(),         1.0e-15);
+        assertEquals(2.00, interpolated.getAcceleration(), 1.0e-15);
     }
 
 }

@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -35,10 +34,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class ITRFProviderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ITRFProviderTest {
 
     @Test
-    public void testTidalEffects() {
+    void testTidalEffects() {
 
         final Frame itrfWith    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
         final Frame itrfWithout = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -49,19 +50,19 @@ public class ITRFProviderTest {
         for (double dt = 0; dt < 3 * Constants.JULIAN_DAY; dt += 60) {
             final AbsoluteDate date = date0.shiftedBy(dt);
             final Transform t = itrfWith.getTransformTo(itrfWithout, date);
-            Assertions.assertEquals(0, t.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0, t.getTranslation().getNorm(), 1.0e-15);
             final double milliarcSeconds = FastMath.toDegrees(t.getRotation().getAngle()) * 3600000.0;
             minCorrection = FastMath.min(minCorrection, milliarcSeconds);
             maxCorrection = FastMath.max(maxCorrection, milliarcSeconds);
         }
 
-        Assertions.assertEquals(0.064, minCorrection, 0.001);
-        Assertions.assertEquals(0.613, maxCorrection, 0.001);
+        assertEquals(0.064, minCorrection, 0.001);
+        assertEquals(0.613, maxCorrection, 0.001);
 
     }
 
     @Test
-    public void testAASReferenceLEO() {
+    void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -107,7 +108,7 @@ public class ITRFProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() {
+    void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -152,7 +153,7 @@ public class ITRFProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEODX0DY0() {
+    void testAASReferenceGEODX0DY0() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -197,7 +198,7 @@ public class ITRFProviderTest {
     }
 
     @Test
-    public void testSofaCookbook() {
+    void testSofaCookbook() {
 
         // SOFA cookbook test case:
         //     date       2007 April 05, 12h00m00s.0 UTC
@@ -235,16 +236,16 @@ public class ITRFProviderTest {
 
         // time scales checks
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2007, 4, 5), TimeComponents.H12, utc);
-        Assertions.assertEquals(0.50075444444444,
+        assertEquals(0.50075444444444,
                             date.getComponents(tt).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             5.0e-15);
-        Assertions.assertEquals(0.499999165813831,
+        assertEquals(0.499999165813831,
                             date.getComponents(ut1).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             1.0e-15);
 
         // sidereal time check
         double era = IERSConventions.IERS_2010.getEarthOrientationAngleFunction(ut1).value(date);
-        Assertions.assertEquals(13.318492966097 * 3600 * 1.0e6,
+        assertEquals(13.318492966097 * 3600 * 1.0e6,
                             radToMicroAS(MathUtils.normalizeAngle(era, 0)),
                             0.0022);
 
@@ -255,7 +256,7 @@ public class ITRFProviderTest {
             { +0.000712264729708, +0.000044385250265, +0.999999745354420 }
         }, 1.0e-13);
         Rotation npb = gcrf.getTransformTo(tod, date).getRotation();
-        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 0.31);
+        assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 0.31);
 
         // celestial to terrestrial frames matrix, without polar motion
         Rotation refWithoutPolarMotion = new Rotation(new double[][] {
@@ -264,7 +265,7 @@ public class ITRFProviderTest {
             { +0.000712264729708, +0.000044385250265, +0.999999745354420 }
         }, 1.0e-13);
         Rotation withoutPM = gcrf.getTransformTo(gtod, date).getRotation();
-        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 0.31);
+        assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 0.31);
 
         // celestial to terrestrial frames matrix, with polar motion
         Rotation refWithPolarMotion = new Rotation(new double[][] {
@@ -273,12 +274,12 @@ public class ITRFProviderTest {
             { +0.000711560162777, +0.000046626403835, +0.999999745754024 }
         }, 1.0e-13);
         Rotation withPM = gcrf.getTransformTo(itrf, date).getRotation();
-        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 0.31);
+        assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 0.31);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 
@@ -287,8 +288,8 @@ public class ITRFProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     double radToMicroAS(double deltaRad) {

@@ -19,24 +19,25 @@ package org.orekit.data;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
-public class TruncatingFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class TruncatingFilterTest {
 
     @Test
-    public void testNoTruncation() throws IOException {
+    void testNoTruncation() throws IOException {
         doTestTruncate("regular-data/UTC-TAI.history", 10000, 50);
     }
 
     @Test
-    public void testRemoveAllLines() throws IOException {
+    void testRemoveAllLines() throws IOException {
         doTestTruncate("regular-data/UTC-TAI.history", 0, 0);
     }
 
     @Test
-    public void testAfterNLines() throws IOException {
+    void testAfterNLines() throws IOException {
         for (int n = 1; n < 35; ++n) {
             doTestTruncate("regular-data/UTC-TAI.history", n, n);
         }
@@ -51,7 +52,7 @@ public class TruncatingFilterTest {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lines;
             }
-            Assertions.assertEquals(expected, lines);
+            assertEquals(expected, lines);
         }
     }
 

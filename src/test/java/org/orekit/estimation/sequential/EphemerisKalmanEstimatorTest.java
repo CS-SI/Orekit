@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -55,7 +54,9 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriversList;
 
-public class EphemerisKalmanEstimatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class EphemerisKalmanEstimatorTest {
 
     private AbsoluteDate     initDate;
     private AbsoluteDate     finalDate;
@@ -64,7 +65,7 @@ public class EphemerisKalmanEstimatorTest {
     private EphemerisContext context;
 
     @BeforeEach
-    public void setUp() throws IllegalArgumentException, OrekitException {
+    void setUp() throws IllegalArgumentException, OrekitException {
         Utils.setDataRoot("regular-data");
 
         initDate = new AbsoluteDate(new DateComponents(2004, 1, 1),
@@ -93,7 +94,7 @@ public class EphemerisKalmanEstimatorTest {
     }
 
     @Test
-    public void testRangeWithBias() {
+    void testRangeWithBias() {
 
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
@@ -154,15 +155,15 @@ public class EphemerisKalmanEstimatorTest {
         estimator.processMeasurements(measurements);
 
         // Verify
-        Assertions.assertEquals(refBias, estimator.getPhysicalEstimatedState().getEntry(0), 3.0e-5);
-        Assertions.assertEquals(1, estimator.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(refBias, estimator.getPhysicalEstimatedState().getEntry(0), 3.0e-5);
+        assertEquals(1, estimator.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 
     @Test
-    public void testRangeRateWithClockDrift() {
+    void testRangeRateWithClockDrift() {
 
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
@@ -213,15 +214,15 @@ public class EphemerisKalmanEstimatorTest {
         estimator.processMeasurements(measurements);
 
         // verify
-        Assertions.assertEquals(refClockBias, estimator.getPhysicalEstimatedState().getEntry(0), 6.0e-16);
-        Assertions.assertEquals(1, estimator.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(refClockBias, estimator.getPhysicalEstimatedState().getEntry(0), 6.0e-16);
+        assertEquals(1, estimator.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 
     @Test
-    public void testAzElWithBias() {
+    void testAzElWithBias() {
 
         double dt = finalDate.durationFrom(initDate);
         double timeStep = dt / 20.0;
@@ -283,11 +284,11 @@ public class EphemerisKalmanEstimatorTest {
         estimator.processMeasurements(measurements);
 
         // verify
-        Assertions.assertEquals(refAzBias, estimator.getPhysicalEstimatedState().getEntry(0), 0.017);
-        Assertions.assertEquals(refElBias, estimator.getPhysicalEstimatedState().getEntry(1), 0.022);
-        Assertions.assertEquals(2, estimator.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(refAzBias, estimator.getPhysicalEstimatedState().getEntry(0), 0.017);
+        assertEquals(refElBias, estimator.getPhysicalEstimatedState().getEntry(1), 0.022);
+        assertEquals(2, estimator.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(0, estimator.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(0, estimator.getPropagationParametersDrivers(true).getNbParams());
 
     }
 

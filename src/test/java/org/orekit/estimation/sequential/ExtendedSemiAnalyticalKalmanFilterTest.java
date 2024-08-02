@@ -30,7 +30,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -87,13 +86,16 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 /**
  * Validation against real data of the ESKF. This test is a short version of the one presented in:
  * "Cazabonne B., Bayard J., Journot M., and Cefola P. J., A Semi-analytical Approach for Orbit
  *  Determination based on Extended Kalman Filter, AAS Paper 21-614, AAS/AIAA Astrodynamics
  *  Specialist Conference, Big Sky, August 2021."
  */
-public class ExtendedSemiAnalyticalKalmanFilterTest {
+class ExtendedSemiAnalyticalKalmanFilterTest {
 
     /** Print. */
     private static boolean print;
@@ -105,7 +107,7 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
     private static final String DATA_LINE = "%-25s\t%16.9f\t%16.9f\t%16.9f";
 
     @Test
-    public void testLageos() throws URISyntaxException, IOException {
+    void testLageos() throws URISyntaxException, IOException {
 
         // Print
         print = false;
@@ -170,23 +172,23 @@ public class ExtendedSemiAnalyticalKalmanFilterTest {
         final StreamingStatistics statX = observer.getXStatistics();
         final StreamingStatistics statY = observer.getYStatistics();
         final StreamingStatistics statZ = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.26e-4);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.18e-4);
-        Assertions.assertEquals(0.0, statZ.getMean(), 1.29e-4);
-        Assertions.assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
-        Assertions.assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
-        Assertions.assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value
-        Assertions.assertEquals(0.0, statX.getMax(),  0.031);
-        Assertions.assertEquals(0.0, statY.getMax(),  0.029);
-        Assertions.assertEquals(0.0, statX.getMax(),  0.033);
+        assertEquals(0.0, statX.getMean(), 1.26e-4);
+        assertEquals(0.0, statY.getMean(), 1.18e-4);
+        assertEquals(0.0, statZ.getMean(), 1.29e-4);
+        assertEquals(0.0, statX.getMin(),  0.019); // It's a negative value
+        assertEquals(0.0, statY.getMin(),  0.018); // It's a negative value
+        assertEquals(0.0, statX.getMin(),  0.020); // It's a negative value
+        assertEquals(0.0, statX.getMax(),  0.031);
+        assertEquals(0.0, statY.getMax(),  0.029);
+        assertEquals(0.0, statX.getMax(),  0.033);
 
         // Check that "physical" matrices are null
         final KalmanEstimation estimation = observer.getEstimation();
-        Assertions.assertNotNull(estimation.getPhysicalEstimatedState());
-        Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
-        Assertions.assertNotNull(estimation.getPhysicalKalmanGain());
-        Assertions.assertNotNull(estimation.getPhysicalMeasurementJacobian());
-        Assertions.assertNotNull(estimation.getPhysicalStateTransitionMatrix());
+        assertNotNull(estimation.getPhysicalEstimatedState());
+        assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
+        assertNotNull(estimation.getPhysicalKalmanGain());
+        assertNotNull(estimation.getPhysicalMeasurementJacobian());
+        assertNotNull(estimation.getPhysicalStateTransitionMatrix());
 
     }
 

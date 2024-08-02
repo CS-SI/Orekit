@@ -17,7 +17,6 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -31,6 +30,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.text.ParseException;
 import java.util.Arrays;
 
@@ -72,17 +73,17 @@ class DSSTNewtonianAttractionTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(0.0,                   elements[0], eps);
-        Assertions.assertEquals(0.0,                   elements[1], eps);
-        Assertions.assertEquals(0.0,                   elements[2], eps);
-        Assertions.assertEquals(0.0,                   elements[3], eps);
-        Assertions.assertEquals(0.0,                   elements[4], eps);
-        Assertions.assertEquals(1.4585773985530907E-4, elements[5], eps);
+        assertEquals(0.0,                   elements[0], eps);
+        assertEquals(0.0,                   elements[1], eps);
+        assertEquals(0.0,                   elements[2], eps);
+        assertEquals(0.0,                   elements[3], eps);
+        assertEquals(0.0,                   elements[4], eps);
+        assertEquals(1.4585773985530907E-4, elements[5], eps);
 
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }
 

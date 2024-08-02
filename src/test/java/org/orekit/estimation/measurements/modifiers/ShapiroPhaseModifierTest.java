@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -38,13 +37,16 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 
-public class ShapiroPhaseModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ShapiroPhaseModifierTest {
 
     /** Radio wave of the measurements. */
     private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     @Test
-    public void testShapiro() {
+    void testShapiro() {
         doTestShapiro(0.006850703, 0.008320738, 0.010297509);
     }
 
@@ -85,8 +87,8 @@ public class ShapiroPhaseModifierTest {
 
             Phase phase = (Phase) measurement;
             EstimatedMeasurementBase<Phase> evalNoMod = phase.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
-            Assertions.assertEquals(12, evalNoMod.getIteration());
-            Assertions.assertEquals(17, evalNoMod.getCount());
+            assertEquals(12, evalNoMod.getIteration());
+            assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             phase.addModifier(modifier);
@@ -94,7 +96,7 @@ public class ShapiroPhaseModifierTest {
             for (final EstimationModifier<Phase> existing : phase.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assertions.assertTrue(found);
+            assertTrue(found);
             EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives( new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
@@ -104,9 +106,9 @@ public class ShapiroPhaseModifierTest {
         // wavelength
         final double wavelength = ((Phase) measurements.get(0)).getWavelength();
 
-        Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
-        Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
-        Assertions.assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
+        assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
+        assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
+        assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
 
     }
 

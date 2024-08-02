@@ -17,10 +17,12 @@
 package org.orekit.orbits;
 
 import org.hipparchus.complex.Complex;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FieldCircularLatitudeArgumentUtilityTest {
 
@@ -38,7 +40,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         final Complex actualLatitudeArgument = FieldCircularLatitudeArgumentUtility.trueToMean(EX, EY,
                 intermediateLatitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument.getReal(), actualLatitudeArgument.getReal(), TOLERANCE);
+        assertEquals(expectedLatitudeArgument.getReal(), actualLatitudeArgument.getReal(), TOLERANCE);
     }
 
     @Test
@@ -51,7 +53,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         final Complex actualLatitudeArgument = FieldCircularLatitudeArgumentUtility.trueToEccentric(EX, EY,
                 intermediateLatitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument.getReal(), actualLatitudeArgument.getReal(), TOLERANCE);
+        assertEquals(expectedLatitudeArgument.getReal(), actualLatitudeArgument.getReal(), TOLERANCE);
     }
 
     @Test
@@ -64,7 +66,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         final Complex actualLatitudeArgument = FieldCircularLatitudeArgumentUtility.meanToEccentric(EX, EY,
                 intermediateLatitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument.getReal(), actualLatitudeArgument.getReal(), TOLERANCE);
+        assertEquals(expectedLatitudeArgument.getReal(), actualLatitudeArgument.getReal(), TOLERANCE);
     }
 
     @Test
@@ -77,7 +79,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // THEN
         final double expectedPositionAngle = CircularLatitudeArgumentUtility.meanToTrue(
                 EX.getReal(), EY.getReal(), fieldOriginalPositionAngle.getReal());
-        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
+        assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
     }
 
     @Test
@@ -90,7 +92,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // THEN
         final double expectedPositionAngle = CircularLatitudeArgumentUtility.meanToEccentric(
                 EX.getReal(), EY.getReal(), fieldOriginalPositionAngle.getReal());
-        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
+        assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
     }
 
     @Test
@@ -103,7 +105,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // THEN
         final double expectedPositionAngle = CircularLatitudeArgumentUtility.trueToEccentric(
                 EX.getReal(), EY.getReal(), fieldOriginalPositionAngle.getReal());
-        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
+        assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
     }
 
     @Test
@@ -116,7 +118,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // THEN
         final double expectedPositionAngle = CircularLatitudeArgumentUtility.trueToMean(
                 EX.getReal(), EY.getReal(), fieldOriginalPositionAngle.getReal());
-        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
+        assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
     }
 
     @Test
@@ -129,7 +131,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // THEN
         final double expectedPositionAngle = CircularLatitudeArgumentUtility.eccentricToMean(
                 EX.getReal(), EY.getReal(), fieldOriginalPositionAngle.getReal());
-        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
+        assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
     }
 
     @Test
@@ -142,7 +144,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // THEN
         final double expectedPositionAngle = CircularLatitudeArgumentUtility.eccentricToTrue(
                 EX.getReal(), EY.getReal(), fieldOriginalPositionAngle.getReal());
-        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
+        assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
     }
 
     @Test
@@ -150,7 +152,7 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // GIVEN
         final Complex fieldNaNPositionAngle = Complex.NaN;
         // WHEN & THEN
-        Assertions.assertThrows(OrekitException.class, () -> FieldCircularLatitudeArgumentUtility.meanToEccentric(EX,
+        assertThrows(OrekitException.class, () -> FieldCircularLatitudeArgumentUtility.meanToEccentric(EX,
                 EY, fieldNaNPositionAngle), OrekitMessages.UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT.toString());
     }
 

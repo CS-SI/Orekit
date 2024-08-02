@@ -19,9 +19,10 @@ package org.orekit.models.earth.weather.water;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.models.earth.troposphere.TroposphericModelUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public abstract class AbstractWaterVaporPressureProviderTest {
 
@@ -33,7 +34,7 @@ public abstract class AbstractWaterVaporPressureProviderTest {
     protected void doTestReferenceWaterVaporPressure(final double tolerance) {
         // the reference value is from NBS/NRC steam table
         final WaterVaporPressureProvider provider = buildProvider();
-        Assertions.assertEquals(TroposphericModelUtils.HECTO_PASCAL.toSI(10.55154),
+        assertEquals(TroposphericModelUtils.HECTO_PASCAL.toSI(10.55154),
                                 provider.waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(1013.25), 273.5 + 18, 0.5),
                                 tolerance);
     }
@@ -45,7 +46,7 @@ public abstract class AbstractWaterVaporPressureProviderTest {
                                                                                               final double tolerance) {
         // the reference value is from NBS/NRC steam table
         final WaterVaporPressureProvider provider = buildProvider();
-        Assertions.assertEquals(TroposphericModelUtils.HECTO_PASCAL.toSI(10.55154),
+        assertEquals(TroposphericModelUtils.HECTO_PASCAL.toSI(10.55154),
                                 provider.waterVaporPressure(TroposphericModelUtils.HECTO_PASCAL.toSI(field.getZero().newInstance(1013.25)),
                                                             field.getZero().newInstance(273.5 + 18),
                                                             field.getZero().newInstance(0.5)).getReal(),
@@ -61,7 +62,7 @@ public abstract class AbstractWaterVaporPressureProviderTest {
                 final double t = 273.15 + tC;
                 for (double rH = 0.0; rH < 1.0; rH += 0.02) {
                     final double e = provider.waterVaporPressure(p, t, rH);
-                    Assertions.assertEquals(rH, provider.relativeHumidity(p, t, e), 1.0e-10);
+                    assertEquals(rH, provider.relativeHumidity(p, t, e), 1.0e-10);
                 }
             }
         }
@@ -80,7 +81,7 @@ public abstract class AbstractWaterVaporPressureProviderTest {
                 final T t = field.getZero().newInstance(273.15 + tC);
                 for (double rH = 0.0; rH < 1.0; rH += 0.02) {
                     final T e = provider.waterVaporPressure(p, t, field.getZero().newInstance(rH));
-                    Assertions.assertEquals(rH, provider.relativeHumidity(p, t, e).getReal(), 1.0e-10);
+                    assertEquals(rH, provider.relativeHumidity(p, t, e).getReal(), 1.0e-10);
                 }
             }
         }

@@ -16,30 +16,31 @@
  */
 package org.orekit.data;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
-public class CompositeDataContextTest {
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class CompositeDataContextTest {
 
     @Test
-    public void testGetters() {
+    void testGetters() {
         final DataContext defaultcontext = DataContext.getDefault();
         final DataContext composite      = new CompositeDataContext(defaultcontext.getTimeScales(),
                                                                     defaultcontext.getFrames(),
                                                                     defaultcontext.getCelestialBodies(),
                                                                     defaultcontext.getGravityFields(),
                                                                     defaultcontext.getGeoMagneticFields());
-        Assertions.assertSame(defaultcontext.getTimeScales(),        composite.getTimeScales());
-        Assertions.assertSame(defaultcontext.getFrames(),            composite.getFrames());
-        Assertions.assertSame(defaultcontext.getCelestialBodies(),   composite.getCelestialBodies());
-        Assertions.assertSame(defaultcontext.getGravityFields(),     composite.getGravityFields());
-        Assertions.assertSame(defaultcontext.getGeoMagneticFields(), composite.getGeoMagneticFields());
+        assertSame(defaultcontext.getTimeScales(),        composite.getTimeScales());
+        assertSame(defaultcontext.getFrames(),            composite.getFrames());
+        assertSame(defaultcontext.getCelestialBodies(),   composite.getCelestialBodies());
+        assertSame(defaultcontext.getGravityFields(),     composite.getGravityFields());
+        assertSame(defaultcontext.getGeoMagneticFields(), composite.getGeoMagneticFields());
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

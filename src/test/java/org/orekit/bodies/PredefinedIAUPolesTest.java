@@ -31,7 +31,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -46,25 +45,27 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 import java.io.BufferedReader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
-public class PredefinedIAUPolesTest {
+class PredefinedIAUPolesTest {
 
     @Test
-    public void testGCRFAligned() throws UnsupportedEncodingException, IOException {
+    void testGCRFAligned() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SOLAR_SYSTEM_BARYCENTER, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         double w = iauPole.getPrimeMeridianAngle(AbsoluteDate.J2000_EPOCH.shiftedBy(3600.0));
-        Assertions.assertEquals(0,   Vector3D.distance(pole, Vector3D.PLUS_K), 1.0e-15);
-        Assertions.assertEquals(0.0, w, 1.0e-15);
+        assertEquals(0,   Vector3D.distance(pole, Vector3D.PLUS_K), 1.0e-15);
+        assertEquals(0.0, w, 1.0e-15);
     }
 
     @Test
-    public void testSun() throws UnsupportedEncodingException, IOException {
+    void testSun() throws UnsupportedEncodingException, IOException {
         IAUPole iauPole = PredefinedIAUPoles.getIAUPole(EphemerisType.SUN, timeScales);
         Vector3D pole = iauPole.getPole(AbsoluteDate.J2000_EPOCH);
         final double alphaRef    = FastMath.toRadians(286.13);
@@ -73,13 +74,13 @@ public class PredefinedIAUPolesTest {
         final double rateRef     = FastMath.toRadians(14.1844000);
         double w = iauPole.getPrimeMeridianAngle(new AbsoluteDate(AbsoluteDate.J2000_EPOCH, 3600.0,
                                                                   TimeScalesFactory.getTDB()));
-        Assertions.assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.0e-15);
-        Assertions.assertEquals(deltaRef, pole.getDelta(), 1.0e-15);
-        Assertions.assertEquals(wRef + rateRef / 24.0, w, 1.0e-15);
+        assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.0e-15);
+        assertEquals(deltaRef, pole.getDelta(), 1.0e-15);
+        assertEquals(wRef + rateRef / 24.0, w, 1.0e-15);
     }
 
     @Test
-    public void testNaif() throws UnsupportedEncodingException, IOException {
+    void testNaif() throws UnsupportedEncodingException, IOException {
         final TimeScale tdb = TimeScalesFactory.getTDB();
         final InputStream inEntry = getClass().getResourceAsStream("/naif/IAU-pole-NAIF.txt");
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inEntry, StandardCharsets.UTF_8))) {
@@ -112,10 +113,10 @@ public class PredefinedIAUPolesTest {
                     IAUPole iauPole = PredefinedIAUPoles.getIAUPole(type, timeScales);
                     Vector3D pole = iauPole.getPole(date2);
                     double w = iauPole.getPrimeMeridianAngle(date2);
-                    Assertions.assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
-                    Assertions.assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.8e-15);
-                    Assertions.assertEquals(deltaRef, pole.getDelta(), 2.4e-13);
-                    Assertions.assertEquals(wRef, MathUtils.normalizeAngle(w, wRef), 2.5e-12);
+                    assertEquals(0.0, date2.durationFrom(date1), 8.0e-5);
+                    assertEquals(alphaRef, MathUtils.normalizeAngle(pole.getAlpha(), alphaRef), 1.8e-15);
+                    assertEquals(deltaRef, pole.getDelta(), 2.4e-13);
+                    assertEquals(wRef, MathUtils.normalizeAngle(w, wRef), 2.5e-12);
 
                     // check matrix
                     Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
@@ -124,7 +125,7 @@ public class PredefinedIAUPolesTest {
                     }
                     final Rotation rotation = new Rotation(Vector3D.PLUS_K, wRef, RotationConvention.FRAME_TRANSFORM).
                                     applyTo(new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
-                    Assertions.assertEquals(0.0, Rotation.distance(rRef, rotation), 1.9e-15);
+                    assertEquals(0.0, Rotation.distance(rRef, rotation), 1.9e-15);
 
                 }
             }
@@ -132,34 +133,34 @@ public class PredefinedIAUPolesTest {
     }
 
     @Test
-    public void testVersus80Implementation() {
+    void testVersus80Implementation() {
         for (EphemerisType body : EphemerisType.values()) {
             IAUPole    newPole = PredefinedIAUPoles.getIAUPole(body, timeScales);
             OldIAUPole oldPole = IAUPoleFactory.getIAUPole(body);
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-                Assertions.assertEquals(0, Vector3D.angle(newPole.getPole(date), oldPole.getPole(date)), 1.0e-20);
-                Assertions.assertEquals(oldPole.getPrimeMeridianAngle(date), newPole.getPrimeMeridianAngle(date), 5.0e-13);
+                assertEquals(0, Vector3D.angle(newPole.getPole(date), oldPole.getPole(date)), 1.0e-20);
+                assertEquals(oldPole.getPrimeMeridianAngle(date), newPole.getPrimeMeridianAngle(date), 5.0e-13);
             }
         }
 
     }
 
     @Test
-    public void testFieldConsistency() {
+    void testFieldConsistency() {
         for (IAUPole iaupole : PredefinedIAUPoles.values(timeScales)) {
             for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
                 final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
                 final FieldAbsoluteDate<Binary64> date64 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
-                Assertions.assertEquals(0, Vector3D.angle(iaupole.getPole(date), iaupole.getPole(date64).toVector3D()), 2.0e-15);
-                Assertions.assertEquals(iaupole.getPrimeMeridianAngle(date), iaupole.getPrimeMeridianAngle(date64).getReal(), 1.0e-12);
+                assertEquals(0, Vector3D.angle(iaupole.getPole(date), iaupole.getPole(date64).toVector3D()), 2.0e-15);
+                assertEquals(iaupole.getPrimeMeridianAngle(date), iaupole.getPrimeMeridianAngle(date64).getReal(), 1.0e-12);
             }
         }
 
     }
 
     @Test
-    public void testDerivatives() {
+    void testDerivatives() {
         final DSFactory factory = new DSFactory(1, 1);
         final AbsoluteDate ref = AbsoluteDate.J2000_EPOCH;
         final FieldAbsoluteDate<DerivativeStructure> refDS = new FieldAbsoluteDate<>(factory.getDerivativeField(), ref);
@@ -186,14 +187,14 @@ public class PredefinedIAUPolesTest {
                 final DerivativeStructure[] refPole = dPole.value(dtDS);
                 final DerivativeStructure[] fieldPole = iaupole.getPole(refDS.shiftedBy(dtDS)).toArray();
                 for (int i = 0; i < 3; ++i) {
-                    Assertions.assertEquals(refPole[i].getValue(),              fieldPole[i].getValue(),              2.0e-15);
-                    Assertions.assertEquals(refPole[i].getPartialDerivative(1), fieldPole[i].getPartialDerivative(1), 4.0e-17);
+                    assertEquals(refPole[i].getValue(),              fieldPole[i].getValue(),              2.0e-15);
+                    assertEquals(refPole[i].getPartialDerivative(1), fieldPole[i].getPartialDerivative(1), 4.0e-17);
                 }
 
                 final DerivativeStructure refMeridian = dMeridian.value(dtDS);
                 final DerivativeStructure fieldMeridian = iaupole.getPrimeMeridianAngle(refDS.shiftedBy(dtDS));
-                Assertions.assertEquals(refMeridian.getValue(),              fieldMeridian.getValue(),              4.0e-12);
-                Assertions.assertEquals(refMeridian.getPartialDerivative(1), fieldMeridian.getPartialDerivative(1), 9.0e-14);
+                assertEquals(refMeridian.getValue(),              fieldMeridian.getValue(),              4.0e-12);
+                assertEquals(refMeridian.getPartialDerivative(1), fieldMeridian.getPartialDerivative(1), 9.0e-14);
 
             }
         }
@@ -203,7 +204,7 @@ public class PredefinedIAUPolesTest {
     private TimeScales timeScales;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         timeScales = DataContext.getDefault().getTimeScales();
     }

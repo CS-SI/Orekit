@@ -21,7 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -35,6 +34,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.text.ParseException;
 import java.util.Arrays;
 
@@ -82,17 +83,17 @@ class FieldDSSTNewtonianAttractionTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(0.0,                   elements[0].getReal(), eps);
-        Assertions.assertEquals(0.0,                   elements[1].getReal(), eps);
-        Assertions.assertEquals(0.0,                   elements[2].getReal(), eps);
-        Assertions.assertEquals(0.0,                   elements[3].getReal(), eps);
-        Assertions.assertEquals(0.0,                   elements[4].getReal(), eps);
-        Assertions.assertEquals(1.4585773985530907E-4, elements[5].getReal(), eps);
+        assertEquals(0.0,                   elements[0].getReal(), eps);
+        assertEquals(0.0,                   elements[1].getReal(), eps);
+        assertEquals(0.0,                   elements[2].getReal(), eps);
+        assertEquals(0.0,                   elements[3].getReal(), eps);
+        assertEquals(0.0,                   elements[4].getReal(), eps);
+        assertEquals(1.4585773985530907E-4, elements[5].getReal(), eps);
 
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data");
     }
 

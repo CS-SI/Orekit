@@ -31,12 +31,15 @@ import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
-public class CoefficientFactoryTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class CoefficientFactoryTest {
 
     private static final double eps0  = 0.;
     private static final double eps10 = 1e-10;
@@ -46,7 +49,7 @@ public class CoefficientFactoryTest {
     private static Map<NSKey, PolynomialFunction> QNS_MAP = new TreeMap<NSKey, PolynomialFunction>();
 
     @Test
-    public void testVns() {
+    void testVns() {
         final int order = 100;
         SortedMap<NSKey, Double> Vns = CoefficientsFactory.computeVns(order);
 
@@ -54,26 +57,26 @@ public class CoefficientFactoryTest {
         for (int i = 0; i < order; i++) {
             for (int j = 0; j < i + 1; j++) {
                 if ((i - j) % 2 != 0) {
-                    Assertions.assertEquals(0d, Vns.get(new NSKey(i, j)), eps0);
+                    assertEquals(0d, Vns.get(new NSKey(i, j)), eps0);
                 }
             }
         }
 
         // Check the first coefficients :
-        Assertions.assertEquals(1, Vns.get(new NSKey(0, 0)), eps0);
-        Assertions.assertEquals(0.5, Vns.get(new NSKey(1, 1)), eps0);
-        Assertions.assertEquals(-0.5, Vns.get(new NSKey(2, 0)), eps0);
-        Assertions.assertEquals(1 / 8d, Vns.get(new NSKey(2, 2)), eps0);
-        Assertions.assertEquals(-1 / 8d, Vns.get(new NSKey(3, 1)), eps0);
-        Assertions.assertEquals(1 / 48d, Vns.get(new NSKey(3, 3)), eps0);
-        Assertions.assertEquals(3 / 8d, Vns.get(new NSKey(4, 0)), eps0);
-        Assertions.assertEquals(-1 / 48d, Vns.get(new NSKey(4, 2)), eps0);
-        Assertions.assertEquals(1 / 384d, Vns.get(new NSKey(4, 4)), eps0);
-        Assertions.assertEquals(1 / 16d, Vns.get(new NSKey(5, 1)), eps0);
-        Assertions.assertEquals(-1 / 384d, Vns.get(new NSKey(5, 3)), eps0);
-        Assertions.assertEquals(1 / 3840d, Vns.get(new NSKey(5, 5)), eps0);
-        Assertions.assertEquals(Vns.lastKey().getN(), order - 1);
-        Assertions.assertEquals(Vns.lastKey().getS(), order - 1);
+        assertEquals(1, Vns.get(new NSKey(0, 0)), eps0);
+        assertEquals(0.5, Vns.get(new NSKey(1, 1)), eps0);
+        assertEquals(-0.5, Vns.get(new NSKey(2, 0)), eps0);
+        assertEquals(1 / 8d, Vns.get(new NSKey(2, 2)), eps0);
+        assertEquals(-1 / 8d, Vns.get(new NSKey(3, 1)), eps0);
+        assertEquals(1 / 48d, Vns.get(new NSKey(3, 3)), eps0);
+        assertEquals(3 / 8d, Vns.get(new NSKey(4, 0)), eps0);
+        assertEquals(-1 / 48d, Vns.get(new NSKey(4, 2)), eps0);
+        assertEquals(1 / 384d, Vns.get(new NSKey(4, 4)), eps0);
+        assertEquals(1 / 16d, Vns.get(new NSKey(5, 1)), eps0);
+        assertEquals(-1 / 384d, Vns.get(new NSKey(5, 3)), eps0);
+        assertEquals(1 / 3840d, Vns.get(new NSKey(5, 5)), eps0);
+        assertEquals(Vns.lastKey().getN(), order - 1);
+        assertEquals(Vns.lastKey().getS(), order - 1);
     }
 
     /**
@@ -81,43 +84,43 @@ public class CoefficientFactoryTest {
      * current element
      */
     @Test
-    public void testVmns() {
-        Assertions.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
-        Assertions.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
-        Assertions.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
-        Assertions.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1), eps0);
-        Assertions.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3), eps0);
-        Assertions.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2), eps0);
+    void testVmns() {
+        assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
+        assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
+        assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
+        assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1), eps0);
+        assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3), eps0);
+        assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2), eps0);
         final double vmnsp = getVmns2(12, 26, 20);
-        Assertions.assertEquals(vmnsp,
+        assertEquals(vmnsp,
                             CoefficientsFactory.getVmns(12, 26, 20),
                             FastMath.abs(eps12 * vmnsp));
         final double vmnsm = getVmns2(12, 27, -21);
-        Assertions.assertEquals(vmnsm,
+        assertEquals(vmnsm,
                             CoefficientsFactory.getVmns(12, 27, -21),
                             Math.abs(eps12 * vmnsm));
     }
 
     /** Error if m > n */
     @Test
-    public void testVmnsError() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testVmnsError() {
+        assertThrows(OrekitException.class, () -> {
             // if m > n
             CoefficientsFactory.getVmns(3, 2, 1);
         });
     }
 
     @Test
-    public void testKey() {
+    void testKey() {
         // test cases mostly written to improve coverage and make SonarQube happy...
         NSKey key21 = new NSKey(2, 1);
-        Assertions.assertEquals(key21, key21);
-        Assertions.assertEquals(key21, new NSKey(2, 1));
-        Assertions.assertNotEquals(key21, null);
-        Assertions.assertNotEquals(key21, new NSKey(2, 0));
-        Assertions.assertNotEquals(key21, new NSKey(3, 1));
-        Assertions.assertEquals(-1719365209, key21.hashCode());
-        Assertions.assertEquals(-1719365465, new NSKey(3, 1).hashCode());
+        assertEquals(key21, key21);
+        assertEquals(key21, new NSKey(2, 1));
+        assertNotEquals(null, key21);
+        assertNotEquals(key21, new NSKey(2, 0));
+        assertNotEquals(key21, new NSKey(3, 1));
+        assertEquals(-1719365209, key21.hashCode());
+        assertEquals(-1719365465, new NSKey(3, 1).hashCode());
     }
 
     /**
@@ -125,8 +128,8 @@ public class CoefficientFactoryTest {
      * results, we assume them to be consistent.
      */
     @Test
-    public void testQns() {
-        Assertions.assertEquals(1., getQnsPolynomialValue(0, 0, 0), 0.);
+    void testQns() {
+        assertEquals(1., getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
         final int nmax = 10;
         final int smax = 10;
@@ -138,14 +141,14 @@ public class CoefficientFactoryTest {
                 final int sdim = FastMath.min(smax + 2, n);
                 for (int s = 0; s <= sdim; s++) {
                     final double qp = getQnsPolynomialValue(gamma, n, s);
-                    Assertions.assertEquals(qns[n][s], qp, FastMath.abs(eps10 * qns[n][s]));
+                    assertEquals(qns[n][s], qp, FastMath.abs(eps10 * qns[n][s]));
                 }
             }
         }
     }
 
     @Test
-    public void testQnsField() {
+    void testQnsField() {
         doTestQnsField(Binary64Field.getInstance());
     }
 
@@ -155,7 +158,7 @@ public class CoefficientFactoryTest {
      */
     private <T extends CalculusFieldElement<T>> void doTestQnsField(Field<T> field) {
         final T zero = field.getZero();
-        Assertions.assertEquals(1., getQnsPolynomialValue(0, 0, 0), 0.);
+        assertEquals(1., getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
         final int nmax = 10;
         final int smax = 10;
@@ -167,7 +170,7 @@ public class CoefficientFactoryTest {
                 final int sdim = FastMath.min(smax + 2, n);
                 for (int s = 0; s <= sdim; s++) {
                     final T qp = getQnsPolynomialValue(gamma, n, s);
-                    Assertions.assertEquals(qns[n][s].getReal(), qp.getReal(), FastMath.abs(qns[n][s].multiply(eps10)).getReal());
+                    assertEquals(qns[n][s].getReal(), qp.getReal(), FastMath.abs(qns[n][s].multiply(eps10)).getReal());
                 }
             }
         }
@@ -177,7 +180,7 @@ public class CoefficientFactoryTest {
      *  If they give same results, we assume them to be consistent.
      */
     @Test
-    public void testGsHs() {
+    void testGsHs() {
         final int s = 50;
         final MersenneTwister random = new MersenneTwister(123456789);
         for (int i = 0; i < 10; i++) {
@@ -188,14 +191,14 @@ public class CoefficientFactoryTest {
             final double[][] GH = CoefficientsFactory.computeGsHs(k, h, a, b, s);
             for (int j = 1; j < s; j++) {
                 final double[] GsHs = getGsHs(k, h, a, b, j);
-                Assertions.assertEquals(GsHs[0], GH[0][j], FastMath.abs(eps12 * GsHs[0]));
-                Assertions.assertEquals(GsHs[1], GH[1][j], FastMath.abs(eps12 * GsHs[1]));
+                assertEquals(GsHs[0], GH[0][j], FastMath.abs(eps12 * GsHs[0]));
+                assertEquals(GsHs[1], GH[1][j], FastMath.abs(eps12 * GsHs[1]));
             }
         }
     }
 
     @Test
-    public void testGsHsField() {
+    void testGsHsField() {
         doTestGsHsField(Binary64Field.getInstance());
     }
 
@@ -214,8 +217,8 @@ public class CoefficientFactoryTest {
             final T[][] GH = CoefficientsFactory.computeGsHs(k, h, a, b, s, field);
             for (int j = 1; j < s; j++) {
                 final T[] GsHs = getGsHs(k, h, a, b, j, field);
-                Assertions.assertEquals(GsHs[0].getReal(), GH[0][j].getReal(), FastMath.abs(GsHs[0].multiply(eps12)).getReal());
-                Assertions.assertEquals(GsHs[1].getReal(), GH[1][j].getReal(), FastMath.abs(GsHs[1].multiply(eps12)).getReal());
+                assertEquals(GsHs[0].getReal(), GH[0][j].getReal(), FastMath.abs(GsHs[0].multiply(eps12)).getReal());
+                assertEquals(GsHs[1].getReal(), GH[1][j].getReal(), FastMath.abs(GsHs[1].multiply(eps12)).getReal());
             }
         }
     }

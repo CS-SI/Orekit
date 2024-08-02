@@ -20,7 +20,6 @@ package org.orekit.forces.maneuvers.triggers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +38,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Tests the functionality of starting a propagation in between and on start and end times
@@ -183,10 +185,10 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         SpacecraftState finalStateTest =
                 propagator.propagate(startDate.shiftedBy(propDuration));
 
-        Assertions.assertEquals(massControlHalfForward, finalStateTest.getMass(), massTolerance);
+        assertEquals(massControlHalfForward, finalStateTest.getMass(), massTolerance);
 
-        Assertions.assertNull(triggerStart);
-        Assertions.assertEquals(duration / 2, triggerStop.durationFrom(startDate), 1.0e-10);
+        assertNull(triggerStart);
+        assertEquals(duration / 2, triggerStop.durationFrom(startDate), 1.0e-10);
 
     }
 
@@ -207,11 +209,11 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(mass / finalStateTest.getMass());
 
-        Assertions.assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
-        Assertions.assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
+        assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
+        assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
 
-        Assertions.assertEquals(0.0,      triggerStart.durationFrom(startDate), 1.0e-10);
-        Assertions.assertEquals(duration, triggerStop.durationFrom(startDate),  1.0e-10);
+        assertEquals(0.0,      triggerStart.durationFrom(startDate), 1.0e-10);
+        assertEquals(duration, triggerStop.durationFrom(startDate),  1.0e-10);
 
     }
 
@@ -232,11 +234,11 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(mass / finalStateTest.getMass());
 
-        Assertions.assertTrue(deltaVTest == 0.0);
-        Assertions.assertTrue(finalStateTest.getMass() == mass);
+        assertEquals(0.0, deltaVTest);
+        assertEquals(finalStateTest.getMass(), mass);
 
-        Assertions.assertNull(triggerStart);
-        Assertions.assertEquals(0.0, triggerStop.durationFrom(startDate), 1.0e-10);
+        assertNull(triggerStart);
+        assertEquals(0.0, triggerStop.durationFrom(startDate), 1.0e-10);
 
     }
 
@@ -257,11 +259,11 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assertions.assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
-        Assertions.assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
+        assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
+        assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
 
-        Assertions.assertEquals(-duration, triggerStart.durationFrom(startDate), 1.0e-10);
-        Assertions.assertEquals(0.0,       triggerStop.durationFrom(startDate),  1.0e-10);
+        assertEquals(-duration, triggerStart.durationFrom(startDate), 1.0e-10);
+        assertEquals(0.0,       triggerStop.durationFrom(startDate),  1.0e-10);
 
     }
 
@@ -282,11 +284,11 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assertions.assertEquals(0.0, deltaVTest, dvTolerance);
-        Assertions.assertTrue(finalStateTest.getMass() == mass);
+        assertEquals(0.0, deltaVTest, dvTolerance);
+        assertEquals(finalStateTest.getMass(), mass);
 
-        Assertions.assertEquals(0.0, triggerStart.durationFrom(startDate), 1.0e-10);
-        Assertions.assertNull(triggerStop);
+        assertEquals(0.0, triggerStart.durationFrom(startDate), 1.0e-10);
+        assertNull(triggerStop);
     }
 
     @Test
@@ -306,11 +308,11 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assertions.assertEquals(deltaVControlHalfReverse, deltaVTest, dvTolerance);
-        Assertions.assertEquals(massControlHalfReverse, finalStateTest.getMass(), massTolerance);
+        assertEquals(deltaVControlHalfReverse, deltaVTest, dvTolerance);
+        assertEquals(massControlHalfReverse, finalStateTest.getMass(), massTolerance);
 
-        Assertions.assertEquals(-0.5 * duration, triggerStart.durationFrom(startDate), 1.0e-10);
-        Assertions.assertNull(triggerStop);
+        assertEquals(-0.5 * duration, triggerStart.durationFrom(startDate), 1.0e-10);
+        assertNull(triggerStop);
 
     }
 
@@ -331,11 +333,11 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(mass / finalStateTest.getMass());
 
-        Assertions.assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
-        Assertions.assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
+        assertEquals(deltaVControlFullForward, deltaVTest, dvTolerance);
+        assertEquals(massControlFullForward, finalStateTest.getMass(), massTolerance);
 
-        Assertions.assertEquals(1.0,            triggerStart.durationFrom(startDate), 1.0e-10);
-        Assertions.assertEquals(1.0 + duration, triggerStop.durationFrom(startDate),  1.0e-10);
+        assertEquals(1.0,            triggerStart.durationFrom(startDate), 1.0e-10);
+        assertEquals(1.0 + duration, triggerStop.durationFrom(startDate),  1.0e-10);
     }
 
     @Test
@@ -355,11 +357,11 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double deltaVTest = isp * Constants.G0_STANDARD_GRAVITY *
                 FastMath.log(finalStateTest.getMass() / mass);
 
-        Assertions.assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
-        Assertions.assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
+        assertEquals(deltaVControlFullReverse, deltaVTest, dvTolerance);
+        assertEquals(massControlFullReverse, finalStateTest.getMass(), massTolerance);
 
-        Assertions.assertEquals(-1.0 - duration, triggerStart.durationFrom(startDate), 1.0e-10);
-        Assertions.assertEquals(-1.0,            triggerStop.durationFrom(startDate),  1.0e-10);
+        assertEquals(-1.0 - duration, triggerStart.durationFrom(startDate), 1.0e-10);
+        assertEquals(-1.0,            triggerStop.durationFrom(startDate),  1.0e-10);
 
     }
 

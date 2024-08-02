@@ -20,7 +20,6 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
@@ -44,15 +43,20 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
-public class TLEBatchLSEstimatorTest {
+class TLEBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testPV() {
+    void testPV() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -86,17 +90,17 @@ public class TLEBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assertions.assertEquals(0.03071, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        assertEquals(6,       normalizedCovariances.getRowDimension());
+        assertEquals(6,       normalizedCovariances.getColumnDimension());
+        assertEquals(6,       physicalCovariances.getRowDimension());
+        assertEquals(6,       physicalCovariances.getColumnDimension());
+        assertEquals(0.03071, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testPVBackward() {
+    void testPVBackward() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -130,11 +134,11 @@ public class TLEBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assertions.assertEquals(0.03420, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        assertEquals(6,       normalizedCovariances.getRowDimension());
+        assertEquals(6,       normalizedCovariances.getColumnDimension());
+        assertEquals(6,       physicalCovariances.getRowDimension());
+        assertEquals(6,       physicalCovariances.getColumnDimension());
+        assertEquals(0.03420, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -142,7 +146,7 @@ public class TLEBatchLSEstimatorTest {
      * Perfect range measurements with a biased start
      */
     @Test
-    public void testRange() {
+    void testRange() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -181,36 +185,36 @@ public class TLEBatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assertions.assertEquals(lastEval + 1, evaluationscount);
+                    assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assertions.assertEquals(lastIter + 1, iterationsCount);
+                    assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assertions.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(measurements.size());
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assertions.assertTrue(current.compareTo(previous) >= 0);
+                    assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
         });
 
         ParameterDriver xDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assertions.assertEquals(OrbitType.POS_X, xDriver.getName());
+        assertEquals(OrbitType.POS_X, xDriver.getName());
         xDriver.setValue(xDriver.getValue() + 10.0);
         xDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -225,16 +229,16 @@ public class TLEBatchLSEstimatorTest {
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if (OrbitType.POS_X.equals(driver.getName())) {
                 // user-specified reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
             }
         }
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -278,7 +282,7 @@ public class TLEBatchLSEstimatorTest {
                                          0.0, 3.2e-6,
                                          0.0, 3.8e-7,
                                          0.0, 1.5e-10);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
         }
@@ -296,7 +300,7 @@ public class TLEBatchLSEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testRangeAndRangeRate() {
+    void testRangeAndRangeRate() {
 
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 

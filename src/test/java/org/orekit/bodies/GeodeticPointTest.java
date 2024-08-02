@@ -18,8 +18,10 @@ package org.orekit.bodies;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Unit tests for {@link GeodeticPoint}.
@@ -27,28 +29,28 @@ import org.junit.jupiter.api.Test;
  * @author Evan Ward
  *
  */
-public class GeodeticPointTest {
+class GeodeticPointTest {
 
     /**
      * check {@link GeodeticPoint#GeodeticPoint(double, double, double)} angle
      * normalization.
      */
     @Test
-    public void testGeodeticPointAngleNormalization() {
+    void testGeodeticPointAngleNormalization() {
         // action
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(135),
                 FastMath.toRadians(90 - 360), 0);
 
         // verify
-        Assertions.assertEquals(FastMath.toRadians(45), point.getLatitude(), 0);
-        Assertions.assertEquals(FastMath.toRadians(-90), point.getLongitude(), 0);
+        assertEquals(FastMath.toRadians(45), point.getLatitude(), 0);
+        assertEquals(FastMath.toRadians(-90), point.getLongitude(), 0);
 
-        Assertions.assertEquals(0, Vector3D.distance(point.getEast(),   Vector3D.PLUS_I), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(point.getNorth(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(point.getWest(),   Vector3D.MINUS_I), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(point.getSouth(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(point.getZenith(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(point.getNadir(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        assertEquals(0, Vector3D.distance(point.getEast(),   Vector3D.PLUS_I), 1.0e-15);
+        assertEquals(0, Vector3D.distance(point.getNorth(),  new Vector3D( 0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        assertEquals(0, Vector3D.distance(point.getWest(),   Vector3D.MINUS_I), 1.0e-15);
+        assertEquals(0, Vector3D.distance(point.getSouth(),  new Vector3D(-0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
+        assertEquals(0, Vector3D.distance(point.getZenith(), new Vector3D(-0.50 * FastMath.PI,  0.25 * FastMath.PI)), 1.0e-15);
+        assertEquals(0, Vector3D.distance(point.getNadir(),  new Vector3D( 0.50 * FastMath.PI, -0.25 * FastMath.PI)), 1.0e-15);
 
     }
 
@@ -57,7 +59,7 @@ public class GeodeticPointTest {
      * several different angles.
      */
     @Test
-    public void testGeodeticPoint() {
+    void testGeodeticPoint() {
         // setup
         // the input and expected results
         final double pi = FastMath.PI;
@@ -77,16 +79,16 @@ public class GeodeticPointTest {
         for (double[] point : points) {
             // action
             GeodeticPoint gp = new GeodeticPoint(point[0], point[1], 0);
-            Assertions.assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()), 1.0e-15);
-            Assertions.assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()), 1.0e-15);
-            Assertions.assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()), 1.0e-15);
-            Assertions.assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()), 1.0e-15);
-            Assertions.assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()), 1.0e-15);
-            Assertions.assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()), 1.0e-15);
+            assertEquals(0, gp.getEast().crossProduct(gp.getNorth()).distance(gp.getZenith()), 1.0e-15);
+            assertEquals(0, gp.getNorth().crossProduct(gp.getWest()).distance(gp.getZenith()), 1.0e-15);
+            assertEquals(0, gp.getSouth().crossProduct(gp.getWest()).distance(gp.getNadir()), 1.0e-15);
+            assertEquals(0, gp.getEast().crossProduct(gp.getSouth()).distance(gp.getNadir()), 1.0e-15);
+            assertEquals(0, gp.getZenith().crossProduct(gp.getSouth()).distance(gp.getEast()), 1.0e-15);
+            assertEquals(0, gp.getNadir().crossProduct(gp.getWest()).distance(gp.getNorth()), 1.0e-15);
 
             // verify to within 5 ulps
-            Assertions.assertEquals(point[2], gp.getLatitude(), 5 * FastMath.ulp(point[2]));
-            Assertions.assertEquals(point[3], gp.getLongitude(), 5 * FastMath.ulp(point[3]));
+            assertEquals(point[2], gp.getLatitude(), 5 * FastMath.ulp(point[2]));
+            assertEquals(point[3], gp.getLongitude(), 5 * FastMath.ulp(point[3]));
         }
     }
 
@@ -94,25 +96,25 @@ public class GeodeticPointTest {
      * check {@link GeodeticPoint#equals(Object)}.
      */
     @Test
-    public void testEquals() {
+    void testEquals() {
         // setup
         GeodeticPoint point = new GeodeticPoint(1, 2, 3);
 
         // actions + verify
-        Assertions.assertEquals(point, new GeodeticPoint(1, 2, 3));
-        Assertions.assertFalse(point.equals(new GeodeticPoint(0, 2, 3)));
-        Assertions.assertFalse(point.equals(new GeodeticPoint(1, 0, 3)));
-        Assertions.assertFalse(point.equals(new GeodeticPoint(1, 2, 0)));
-        Assertions.assertFalse(point.equals(new Object()));
-        Assertions.assertEquals(point.hashCode(), new GeodeticPoint(1, 2, 3).hashCode());
-        Assertions.assertNotEquals(point.hashCode(), new GeodeticPoint(1, FastMath.nextUp(2), 3).hashCode());
+        assertEquals(point, new GeodeticPoint(1, 2, 3));
+        assertNotEquals(point, new GeodeticPoint(0, 2, 3));
+        assertNotEquals(point, new GeodeticPoint(1, 0, 3));
+        assertNotEquals(point, new GeodeticPoint(1, 2, 0));
+        assertNotEquals(point, new Object());
+        assertEquals(point.hashCode(), new GeodeticPoint(1, 2, 3).hashCode());
+        assertNotEquals(point.hashCode(), new GeodeticPoint(1, FastMath.nextUp(2), 3).hashCode());
     }
 
     /**
      * check {@link GeodeticPoint#toString()}.
      */
     @Test
-    public void testToString() {
+    void testToString() {
         // setup
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(30),
                 FastMath.toRadians(60), 90);
@@ -121,6 +123,6 @@ public class GeodeticPointTest {
         String actual = point.toString();
 
         // verify
-        Assertions.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
+        assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
     }
 }

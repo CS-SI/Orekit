@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 
-public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem> {
+class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem> {
 
     protected AemParser getParser() {
         return new ParserBuilder().
@@ -50,103 +50,103 @@ public class AemWriterTest extends AbstractWriterTest<AdmHeader, AemSegment, Aem
     }
 
     @Test
-    public void testWriteExample01() {
+    void testWriteExample01() {
         doTest("/ccsds/adm/aem/AEMExample01.txt");
     }
 
     @Test
-    public void testWriteExample02() {
+    void testWriteExample02() {
         doTest("/ccsds/adm/aem/AEMExample02.txt");
     }
 
     @Test
-    public void testWriteKvnExample03() {
+    void testWriteKvnExample03() {
         doTest("/ccsds/adm/aem/AEMExample03.txt");
     }
 
     @Test
-    public void testWriteXmlExample03() {
+    void testWriteXmlExample03() {
         doTest("/ccsds/adm/aem/AEMExample03.xml");
     }
 
     @Test
-    public void testWriteExample04() {
+    void testWriteExample04() {
         doTest("/ccsds/adm/aem/AEMExample04.txt");
     }
 
     @Test
-    public void testWriteExample05() {
+    void testWriteExample05() {
         doTest("/ccsds/adm/aem/AEMExample05.txt");
     }
 
     @Test
-    public void testWriteExample06a() {
+    void testWriteExample06a() {
         doTest("/ccsds/adm/aem/AEMExample06a.txt");
     }
 
     @Test
-    public void testWriteExample06b() {
+    void testWriteExample06b() {
         doTest("/ccsds/adm/aem/AEMExample06b.txt");
     }
 
     @Test
-    public void testWriteExample07() {
+    void testWriteExample07() {
         doTest("/ccsds/adm/aem/AEMExample07.txt");
     }
 
     @Test
-    public void testWriteExample08() {
+    void testWriteExample08() {
         doTest("/ccsds/adm/aem/AEMExample08.txt");
     }
 
     @Test
-    public void testWriteExample09() {
+    void testWriteExample09() {
         doTest("/ccsds/adm/aem/AEMExample09.txt");
     }
 
     @Test
-    public void testWriteExample10() {
+    void testWriteExample10() {
         doTest("/ccsds/adm/aem/AEMExample10.txt");
     }
 
     @Test
-    public void testWriteExample11() {
+    void testWriteExample11() {
         doTest("/ccsds/adm/aem/AEMExample11.xml");
     }
 
     @Test
-    public void testWriteExample12() {
+    void testWriteExample12() {
         doTest("/ccsds/adm/aem/AEMExample12.txt");
     }
 
     @Test
-    public void testWriteExample13() {
+    void testWriteExample13() {
         doTest("/ccsds/adm/aem/AEMExample13.xml");
     }
 
     @Test
-    public void testWriteExample14() {
+    void testWriteExample14() {
         doTest("/ccsds/adm/aem/AEMExample14.txt");
     }
 
     @Test
-    public void testWriteExample15() {
+    void testWriteExample15() {
         doTest("/ccsds/adm/aem/AEMExample15.txt");
     }
 
     @Test
-    public void testWriteExample16() {
+    void testWriteExample16() {
         doTest("/ccsds/adm/aem/AEMExample16.txt");
     }
 
     @Test
-    public void testWriteExample17() {
+    void testWriteExample17() {
         doTest("/ccsds/adm/aem/AEMExample17.txt");
     }
 
-    @Test
     // This test was added to increase overall conditions coverage in the scope of issue 1453
-    public void testIssue1453() throws IOException {
+    @Test
+    void testIssue1453() throws IOException {
         // GIVEN
         // Load orekit data
         Utils.setDataRoot("regular-data");

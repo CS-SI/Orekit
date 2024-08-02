@@ -21,7 +21,6 @@ import java.util.SortedSet;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -57,10 +56,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class WindUpTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class WindUpTest {
 
     @Test
-    public void testYawSteering() {
+    void testYawSteering() {
         // this test corresponds to a classical yaw steering attitude far from turns
         // where Sun remains largely below orbital plane during the turn (β is about -18.8°)
         // in this case, yaw does not evolve a lot, so wind-up changes only about 0.024 cycle
@@ -82,7 +83,7 @@ public class WindUpTest {
     }
 
     @Test
-    public void testMidnightTurn() {
+    void testMidnightTurn() {
         // this test corresponds to a Block II-A midnight turn (prn = 07, satellite G37)
         // where Sun crosses the orbital plane during the turn (β increases from negative to positive values)
         // this very special case seems to trigger a possible bug in Block IIA attitude model.
@@ -108,7 +109,7 @@ public class WindUpTest {
     }
 
     @Test
-    public void testNoonTurn() {
+    void testNoonTurn() {
         // this test corresponds to a Block II-R noon turn (prn = 11, satellite G46)
         // where Sun remains slightly above orbital plane during the turn (β is about +1.5°)
         // this is a regular turn, corresponding to a half turn, so wind-up effect changes by about 0.5 cycle
@@ -152,7 +153,7 @@ public class WindUpTest {
         generator.addSubscriber(gatherer);
         generator.generate(orbit.getDate(), orbit.getDate().shiftedBy(7200));
         SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
-        Assertions.assertEquals(120, measurements.size());
+        assertEquals(120, measurements.size());
 
         WindUp windUp = new WindUpFactory().getWindUp(system, prn, Dipole.CANONICAL_I_J, station.getBaseFrame().getName());
         Propagator propagator = new KeplerianPropagator(orbit, attitudeProvider);
@@ -173,13 +174,13 @@ public class WindUpTest {
             min = FastMath.min(min, correction);
             max = FastMath.max(max, correction);
         }
-        Assertions.assertEquals(expectedMin, min, 1.0e-5);
-        Assertions.assertEquals(expectedMax, max, 1.0e-5);
+        assertEquals(expectedMin, min, 1.0e-5);
+        assertEquals(expectedMax, max, 1.0e-5);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -187,7 +188,7 @@ public class WindUpTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         earth = null;
     }
 

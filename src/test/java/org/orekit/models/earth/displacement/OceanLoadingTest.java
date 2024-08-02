@@ -18,7 +18,6 @@ package org.orekit.models.earth.displacement;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -33,68 +32,73 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.lang.reflect.Field;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class OceanLoadingTest {
+class OceanLoadingTest {
 
     private OneAxisEllipsoid earth;
 
     @Test
-    public void testSemiDiurnal() {
+    void testSemiDiurnal() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] == 2) {
                 double f = tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI);
-                Assertions.assertTrue(f >  1.5);
-                Assertions.assertTrue(f <= 2.5);
+                assertTrue(f >  1.5);
+                assertTrue(f <= 2.5);
             }
         }
     }
 
     @Test
-    public void testDiurnal() {
+    void testDiurnal() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] == 1) {
                 double f = tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI);
-                Assertions.assertTrue(f >  0.5);
-                Assertions.assertTrue(f <= 1.5);
+                assertTrue(f >  0.5);
+                assertTrue(f <= 1.5);
             }
         }
     }
 
     @Test
-    public void testLongPeriod() {
+    void testLongPeriod() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate(2009, 6, 25, 0, 0, 0.0, ut1));
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] == 0) {
                 double f = tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI);
-                Assertions.assertTrue(f >  0.0);
-                Assertions.assertTrue(f <= 0.5);
+                assertTrue(f >  0.0);
+                assertTrue(f <= 0.5);
             }
         }
     }
 
     @Test
-    public void testNoExtra() {
+    void testNoExtra() {
         for (Tide tide : getTides()) {
             if (tide.getDoodsonMultipliers()[0] > 2) {
-                Assertions.fail("unexpected tide " + tide.getDoodsonNumber());
+                fail("unexpected tide " + tide.getDoodsonNumber());
             }
         }
     }
 
     @Test
-    public void testStableRates() {
+    void testStableRates() {
         // this test checks that tides sort order is date-independent for a large time range
         // (almost 180000 years long)
         // tides sort-order is based on rate, but the rates varies slightly with dates
@@ -116,13 +120,13 @@ public class OceanLoadingTest {
             for (int i = 1; i < tides.size(); ++i) {
                 final Tide t1 = tides.get(i - 1);
                 final Tide t2 = tides.get(i);
-                Assertions.assertTrue(t1.getRate(el) < t2.getRate(el));
+                assertTrue(t1.getRate(el) < t2.getRate(el));
             }
         }
     }
 
     @Test
-    public void testTidesRatesPastInversion() {
+    void testTidesRatesPastInversion() {
         // on -122502-11-09, the rates for semidiurnal tides 245556 and 245635 cross over
         final TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         final FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
@@ -131,16 +135,16 @@ public class OceanLoadingTest {
 
         final AbsoluteDate   t0530  = new AbsoluteDate(-122502, 11, 9, 5, 30, 0.0, TimeScalesFactory.getTAI());
         final BodiesElements el0530 = fna.evaluateAll(t0530);
-        Assertions.assertTrue(tide1.getRate(el0530) < tide2.getRate(el0530));
+        assertTrue(tide1.getRate(el0530) < tide2.getRate(el0530));
 
         final AbsoluteDate   t0430  = t0530.shiftedBy(-3600.0);
         final BodiesElements el0430 = fna.evaluateAll(t0430);
-        Assertions.assertTrue(tide1.getRate(el0430) > tide2.getRate(el0430));
+        assertTrue(tide1.getRate(el0430) > tide2.getRate(el0430));
 
     }
 
     @Test
-    public void testTidesRatesFutureInversion() {
+    void testTidesRatesFutureInversion() {
         // on 56824-11-02, the rates for semidiurnal tides 274554 (R₂) and 274556 cross over
         final TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         final FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
@@ -149,22 +153,22 @@ public class OceanLoadingTest {
 
         final AbsoluteDate   t1700  = new AbsoluteDate(56824, 11, 2, 17, 0, 0.0, TimeScalesFactory.getTAI());
         final BodiesElements el1700 = fna.evaluateAll(t1700);
-        Assertions.assertTrue(tide1.getRate(el1700) < tide2.getRate(el1700));
+        assertTrue(tide1.getRate(el1700) < tide2.getRate(el1700));
 
         final AbsoluteDate   t1800  = t1700.shiftedBy(3600.0);
         final BodiesElements el1800 = fna.evaluateAll(t1800);
-        Assertions.assertTrue(tide1.getRate(el1800) > tide2.getRate(el1800));
+        assertTrue(tide1.getRate(el1800) > tide2.getRate(el1800));
 
     }
 
     @Test
-    public void testOnsalaOriginalEarthRotation() {
+    void testOnsalaOriginalEarthRotation() {
         // this test is the first test case for HARDISP.F program
         doTestOnsala(true, 4.7e-6);
     }
 
     @Test
-    public void testOnsalaIERSEarthRotation() {
+    void testOnsalaIERSEarthRotation() {
         // this test is the first test case for HARDISP.F program
         doTestOnsala(false, 3.4e-6);
     }
@@ -209,20 +213,20 @@ public class OceanLoadingTest {
         for (int i = 0; i < ref.length; ++i) {
             BodiesElements elements = fna.evaluateAll(t0.shiftedBy(i * 3600.0));
             final Vector3D d = loading.displacement(elements, earth.getBodyFrame(), refPoint);
-            Assertions.assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
-            Assertions.assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
-            Assertions.assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
+            assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
+            assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
+            assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
         }
     }
 
     @Test
-    public void testReykjavikOriginalEarthRotation() {
+    void testReykjavikOriginalEarthRotation() {
         // this test is the second test case for HARDISP.F program
         doTestReykjavik(true, 9.3e-6);
     }
 
     @Test
-    public void testReykjavikIERSEarthRotation() {
+    void testReykjavikIERSEarthRotation() {
         // this test is the second test case for HARDISP.F program
         doTestReykjavik(false, 16.9e-6);
     }
@@ -272,9 +276,9 @@ public class OceanLoadingTest {
         for (int i = 0; i < ref.length; ++i) {
             BodiesElements elements = fna.evaluateAll(t0.shiftedBy(i * 3600.0));
             final Vector3D d = loading.displacement(elements, earth.getBodyFrame(), refPoint);
-            Assertions.assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
-            Assertions.assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
-            Assertions.assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
+            assertEquals(ref[i][0], Vector3D.dotProduct(d, coefficients.getSiteLocation().getZenith()), tolerance);
+            assertEquals(ref[i][1], Vector3D.dotProduct(d, coefficients.getSiteLocation().getSouth()),  tolerance);
+            assertEquals(ref[i][2], Vector3D.dotProduct(d, coefficients.getSiteLocation().getWest()),   tolerance);
         }
     }
 
@@ -286,13 +290,13 @@ public class OceanLoadingTest {
             Map<Tide, Double> map = (Map<Tide, Double>) mapField.get(null);
             return map.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList());
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
             return null;
         }
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data:oso-blq");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,

@@ -26,7 +26,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -57,7 +56,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
     /** speed of light */
     private static final double c = Constants.SPEED_OF_LIGHT;
@@ -134,7 +135,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         LenseThirringRelativity relativity = new LenseThirringRelativity(gm, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -152,7 +153,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         LenseThirringRelativity relativity = new LenseThirringRelativity(gm, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -175,7 +176,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldGradientTest() {
+    void RealFieldGradientTest() {
 
         final int freeParameters = 6;
         Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
@@ -232,7 +233,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -243,14 +244,14 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         LenseThirringRelativity relativity = new LenseThirringRelativity(Constants.EIGEN5C_EARTH_MU, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertFalse(relativity.dependsOnPositionOnly());
+        assertFalse(relativity.dependsOnPositionOnly());
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization
@@ -280,7 +281,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

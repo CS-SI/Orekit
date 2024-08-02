@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -39,10 +38,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class ElevationExtremumDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ElevationExtremumDetectorTest {
 
     @Test
-    public void testLEO() {
+    void testLEO() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -57,10 +59,10 @@ public class ElevationExtremumDetectorTest {
         final EventSlopeFilter<ElevationExtremumDetector> maxElevationDetector =
                 new EventSlopeFilter<>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 
-        Assertions.assertEquals(60.0, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
-        Assertions.assertEquals("test", raw.getTopocentricFrame().getName());
+        assertEquals(60.0, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-6, raw.getThreshold(), 1.0e-15);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
+        assertEquals("test", raw.getTopocentricFrame().getName());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -92,16 +94,16 @@ public class ElevationExtremumDetectorTest {
             if (e0 > FastMath.toRadians(5.0)) {
                 ++visibleEvents;
             }
-            Assertions.assertTrue(e0 > eMinus);
-            Assertions.assertTrue(e0 > ePlus);
+            assertTrue(e0 > eMinus);
+            assertTrue(e0 > ePlus);
         }
-        Assertions.assertEquals(15, logger.getLoggedEvents().size());
-        Assertions.assertEquals( 6, visibleEvents);
+        assertEquals(15, logger.getLoggedEvents().size());
+        assertEquals( 6, visibleEvents);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

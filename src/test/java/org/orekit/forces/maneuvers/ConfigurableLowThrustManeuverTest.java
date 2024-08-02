@@ -28,7 +28,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -79,6 +78,11 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class ConfigurableLowThrustManeuverTest {
     /** */
     private static double maxCheck = 100;
@@ -93,7 +97,7 @@ public class ConfigurableLowThrustManeuverTest {
     private double halfThrustArc = FastMath.PI / 4;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -484,7 +488,7 @@ public class ConfigurableLowThrustManeuverTest {
     }
 
     @Test
-    public void testNominalUseCase() {
+    void testNominalUseCase() {
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbit();
         final double initMass = 20;
@@ -504,13 +508,13 @@ public class ConfigurableLowThrustManeuverTest {
         /////////////////// results check /////////////////////////////////
         final double expectedPropellantConsumption = -0.022;
         final double expectedDeltaSemiMajorAxisRealized = 16397;
-        Assertions.assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
+        assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
                 0.005);
-        Assertions.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
+        assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
     }
 
     @Test
-    public void testFielddPropagationDisabled() {
+    void testFielddPropagationDisabled() {
         doTestFielddPropagationDisabled(Binary64Field.getInstance());
     }
 
@@ -540,16 +544,16 @@ public class ConfigurableLowThrustManeuverTest {
         propagator.setInitialState(initialState);
         try {
             propagator.propagate(finalDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, oe.getSpecifier());
-            Assertions.assertEquals("StartStopNoField with CalculusFieldElement", oe.getParts()[0]);
+            assertEquals(OrekitMessages.FUNCTION_NOT_IMPLEMENTED, oe.getSpecifier());
+            assertEquals("StartStopNoField with CalculusFieldElement", oe.getParts()[0]);
         }
 
     }
 
     @Test
-    public void testDateBasedManeuverTriggers() {
+    void testDateBasedManeuverTriggers() {
 
         final double f = 0.1;
         final double isp = 2000;
@@ -586,7 +590,7 @@ public class ConfigurableLowThrustManeuverTest {
         final SpacecraftState recoveredStateNumerical = backwardPropagator.propagate(orbit.getDate());
 
         /////////////////// results check /////////////////////////////////
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(orbit.getPosition(),
                                               recoveredStateNumerical.getPosition()),
                             0.015);
@@ -594,7 +598,7 @@ public class ConfigurableLowThrustManeuverTest {
     }
 
     @Test
-    public void testBackwardPropagationEnabled() {
+    void testBackwardPropagationEnabled() {
 
         final double f = 0.1;
         final double isp = 2000;
@@ -624,8 +628,8 @@ public class ConfigurableLowThrustManeuverTest {
                                                                           forwardDetector, f, isp));
         forwardPropagator.setInitialState(initialState);
         final SpacecraftState finalStateNumerical = forwardPropagator.propagate(startDate.shiftedBy(duration + 900.0));
-        Assertions.assertEquals(0.0, forwardRegistering.startStates.get(0).durationFrom(startDate), 1.0e-16);
-        Assertions.assertEquals(duration, forwardRegistering.stopStates.get(0).durationFrom(startDate), 1.0e-16);
+        assertEquals(0.0, forwardRegistering.startStates.get(0).durationFrom(startDate), 1.0e-16);
+        assertEquals(duration, forwardRegistering.stopStates.get(0).durationFrom(startDate), 1.0e-16);
 
         // backward propagation
         final NumericalPropagator backwardPropagator = buildNumericalPropagator(finalStateNumerical.getOrbit());
@@ -636,19 +640,19 @@ public class ConfigurableLowThrustManeuverTest {
                                                                            backwardDetector, f, isp));
         backwardPropagator.setInitialState(finalStateNumerical);
         final SpacecraftState recoveredStateNumerical = backwardPropagator.propagate(orbit.getDate());
-        Assertions.assertEquals(0.0, backwardRegistering.startStates.get(0).durationFrom(startDate), 1.0e-16);
-        Assertions.assertEquals(duration, backwardRegistering.stopStates.get(0).durationFrom(startDate), 1.0e-16);
+        assertEquals(0.0, backwardRegistering.startStates.get(0).durationFrom(startDate), 1.0e-16);
+        assertEquals(duration, backwardRegistering.stopStates.get(0).durationFrom(startDate), 1.0e-16);
 
-        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(-0.001)),
+        assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(-0.001)),
                                                      null));
-        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(+0.001)),
+        assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(+0.001)),
                                                      null));
-        Assertions.assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration - 0.001)),
+        assertTrue(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration - 0.001)),
                                                      null));
-        Assertions.assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration + 0.001)),
+        assertFalse(backwardDetector.isFiring(new FieldAbsoluteDate<>(Binary64Field.getInstance(), startDate.shiftedBy(duration + 0.001)),
                                                      null));
         /////////////////// results check /////////////////////////////////
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(orbit.getPosition(),
                                               recoveredStateNumerical.getPosition()),
                             0.015);
@@ -656,7 +660,7 @@ public class ConfigurableLowThrustManeuverTest {
     }
 
     @Test
-    public void testInitBefore() {
+    void testInitBefore() {
         // thrust arc is around apogee which is on anomaly PI
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbitWithAnomaly(0);
@@ -672,11 +676,11 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happened
-        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
+        assertEquals(finalState.getMass(), initialState.getMass());
     }
 
     @Test
-    public void testInitNearStart() {
+    void testInitNearStart() {
         // thrust arc is around apogee which is on anomaly PI
         /////////////////// initial conditions /////////////////////////////////
         // we can not start exactly on start due to angle conversion, the g function is
@@ -697,7 +701,7 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing happened
-        Assertions.assertTrue(finalState.getMass() < initialState.getMass());
+        assertTrue(finalState.getMass() < initialState.getMass());
 
         // call init again, to check nothing weir happens (and improving test coverage)
         maneuver.init(initialState, finalDate);
@@ -705,7 +709,7 @@ public class ConfigurableLowThrustManeuverTest {
     }
 
     @Test
-    public void testInitOnStart() {
+    void testInitOnStart() {
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbit();
         final double initMass = 20;
@@ -728,11 +732,11 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing happened
-        Assertions.assertTrue(finalState.getMass() < initialState.getMass());
+        assertTrue(finalState.getMass() < initialState.getMass());
     }
 
     @Test
-    public void testInitFiring() {
+    void testInitFiring() {
         // thrust arc is around apogee which is on anomaly PI
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbitWithAnomaly(FastMath.PI);
@@ -748,11 +752,11 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing happened
-        Assertions.assertTrue(finalState.getMass() < initialState.getMass());
+        assertTrue(finalState.getMass() < initialState.getMass());
     }
 
     @Test
-    public void testInitNearEndOfStart() {
+    void testInitNearEndOfStart() {
         // thrust arc is around apogee which is on anomaly PI
         /////////////////// initial conditions /////////////////////////////////
         // we can not start exactly on end of start due to angle conversion, the g
@@ -773,11 +777,11 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happened
-        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
+        assertEquals(finalState.getMass(), initialState.getMass());
     }
 
     @Test
-    public void testInitOnStop() {
+    void testInitOnStop() {
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbit();
         final double initMass = 20;
@@ -800,11 +804,11 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happen
-        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
+        assertEquals(finalState.getMass(), initialState.getMass());
     }
 
     @Test
-    public void testInitAfter() {
+    void testInitAfter() {
         // thrust arc is around apogee which is on anomaly PI
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbitWithAnomaly(FastMath.PI + 2 * halfThrustArc);
@@ -820,11 +824,11 @@ public class ConfigurableLowThrustManeuverTest {
         numericalPropagatorForward.setInitialState(initialState);
         final SpacecraftState finalState = numericalPropagatorForward.propagate(finalDate);
         // check firing did not happened
-        Assertions.assertTrue(finalState.getMass() == initialState.getMass());
+        assertEquals(finalState.getMass(), initialState.getMass());
     }
 
     @Test
-    public void testGetters() {
+    void testGetters() {
         final ApogeeCenteredIntervalDetector maneuverStartDetector = new ApogeeCenteredIntervalDetector(halfThrustArc,
                 PositionAngleType.MEAN, new ContinueOnEvent());
 
@@ -833,14 +837,14 @@ public class ConfigurableLowThrustManeuverTest {
                         new ConfigurableLowThrustManeuver(attitudeProvider,
                                                           new StartStopNoField<>(maneuverStartDetector),
                                                           thrust, isp);
-        Assertions.assertEquals(isp, maneuver.getIsp(), 1e-9);
-        Assertions.assertEquals(thrust, maneuver.getThrustMagnitude(), 1e-9);
-        Assertions.assertEquals(attitudeProvider, maneuver.getThrustDirectionProvider());
+        assertEquals(isp, maneuver.getIsp(), 1e-9);
+        assertEquals(thrust, maneuver.getThrustMagnitude(), 1e-9);
+        assertEquals(attitudeProvider, maneuver.getThrustDirectionProvider());
 
     }
 
     @Test
-    public void testIssue874() {
+    void testIssue874() {
         /////////////////// initial conditions /////////////////////////////////
         final KeplerianOrbit initOrbit = buildInitOrbit();
         final double initMass = 20;
@@ -859,9 +863,9 @@ public class ConfigurableLowThrustManeuverTest {
         /////////////////// results check /////////////////////////////////
         final double expectedPropellantConsumption = -0.0227;
         final double expectedDeltaSemiMajorAxisRealized = 16838;
-        Assertions.assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
+        assertEquals(expectedPropellantConsumption, finalStateNumerical.getMass() - initialState.getMass(),
                 0.005);
-        Assertions.assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
+        assertEquals(expectedDeltaSemiMajorAxisRealized, finalStateNumerical.getA() - initialState.getA(), 100);
     }
 
 }

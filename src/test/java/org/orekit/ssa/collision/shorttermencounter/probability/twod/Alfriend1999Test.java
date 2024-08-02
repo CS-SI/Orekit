@@ -28,7 +28,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,6 +53,10 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.List;
 
 class Alfriend1999Test {
@@ -127,7 +130,7 @@ class Alfriend1999Test {
         final ProbabilityOfCollision result = method.compute(collision);
 
         // THEN
-        Assertions.assertEquals(0.147559, result.getValue(), 1e-6);
+        assertEquals(0.147559, result.getValue(), 1e-6);
     }
 
     @Test
@@ -143,8 +146,8 @@ class Alfriend1999Test {
                         armellinDataRowList);
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 8.843564833687099E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.607777228462353E-9);
+        assertTrue(statistics.getMean() <= 8.843564833687099E-10);
+        assertTrue(statistics.getStandardDeviation() <= 3.607777228462353E-9);
     }
 
     /**
@@ -238,7 +241,7 @@ class Alfriend1999Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(collision);
 
         // THEN
-        Assertions.assertEquals(0.147559, result.getValue().getReal(), 1e-6);
+        assertEquals(0.147559, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -254,8 +257,8 @@ class Alfriend1999Test {
                         armellinDataRowList);
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 8.8446207E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 3.6068271E-9);
+        assertTrue(statistics.getMean() <= 8.8446207E-10);
+        assertTrue(statistics.getStandardDeviation() <= 3.6068271E-9);
     }
 
     /**
@@ -296,8 +299,8 @@ class Alfriend1999Test {
                                                   sigmaYNominal + dSigmaY, radiusNominal + dRadius).getValue();
 
         // THEN
-        Assertions.assertEquals(0.147559, resultNominal.getValue().getReal(), 1e-6);
-        Assertions.assertEquals(exactResult, taylorResult, 1e-3);
+        assertEquals(0.147559, resultNominal.getValue().getReal(), 1e-6);
+        assertEquals(exactResult, taylorResult, 1e-3);
     }
 
 }

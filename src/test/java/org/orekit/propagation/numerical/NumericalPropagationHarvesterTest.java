@@ -22,7 +22,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
@@ -44,58 +43,64 @@ import org.orekit.utils.DoubleArrayDictionary;
 
 import java.util.List;
 
-public class NumericalPropagationHarvesterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class NumericalPropagationHarvesterTest {
 
     @Test
-    public void testNullStmName() {
+    void testNullStmName() {
          try {
             propagator.setupMatricesComputation(null, null, null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NULL_ARGUMENT, oe.getSpecifier());
-            Assertions.assertEquals("stmName", oe.getParts()[0]);
+            assertEquals(OrekitMessages.NULL_ARGUMENT, oe.getSpecifier());
+            assertEquals("stmName", oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testUnknownStmName() {
+    void testUnknownStmName() {
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assertions.assertNull(harvester.getStateTransitionMatrix(propagator.getInitialState()));
+        assertNull(harvester.getStateTransitionMatrix(propagator.getInitialState()));
     }
 
     @Test
-    public void testUnknownColumnName() {
+    void testUnknownColumnName() {
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assertions.assertNull(harvester.getParametersJacobian(propagator.getInitialState()));
+        assertNull(harvester.getParametersJacobian(propagator.getInitialState()));
     }
 
     @Test
-    public void testDefaultNonNullInitialJacobian() {
+    void testDefaultNonNullInitialJacobian() {
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assertions.assertNotNull(harvester.getInitialJacobianColumn("xyz"));
+        assertNotNull(harvester.getInitialJacobianColumn("xyz"));
     }
 
     @Test
-    public void testInitialStmCartesian() {
+    void testInitialStmCartesian() {
         doTestInitialStm(OrbitType.CARTESIAN, 0.0);
     }
 
     @Test
-    public void testInitialStmKeplerian() {
+    void testInitialStmKeplerian() {
         doTestInitialStm(OrbitType.KEPLERIAN, 2160.746);
     }
 
     @Test
-    public void testInitialStmAbsPV() {
+    void testInitialStmAbsPV() {
         SpacecraftState state = propagator.getInitialState();
         SpacecraftState absPV =
                         new SpacecraftState(new AbsolutePVCoordinates(state.getFrame(),
@@ -105,25 +110,25 @@ public class NumericalPropagationHarvesterTest {
     }
 
     @Test
-    public void testColumnsNames() {
+    void testColumnsNames() {
 
         NumericalPropagationHarvester harvester =
                         (NumericalPropagationHarvester) propagator.setupMatricesComputation("stm",
                                                                                             MatrixUtils.createRealIdentityMatrix(6),
                                                                                             new DoubleArrayDictionary());
-        Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+        assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
 
         DateBasedManeuverTriggers triggers = new DateBasedManeuverTriggers("apogee_boost", propagator.getInitialState().getDate().shiftedBy(60.0), 120.0);
         PropulsionModel propulsion = new BasicConstantThrustPropulsionModel(400.0, 350.0, Vector3D.PLUS_I, "ABM-");
         propagator.addForceModel(new Maneuver(null, triggers, propulsion));
-        Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+        assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
 
         triggers.getParametersDrivers().get(1).setSelected(true);
         propulsion.getParametersDrivers().get(0).setSelected(true);
         List<String> columnsNames = harvester.getJacobiansColumnsNames();
-        Assertions.assertEquals(2, columnsNames.size());
-        Assertions.assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + Integer.toString(0), columnsNames.get(0));
-        Assertions.assertEquals("Spanapogee_boost_STOP" + Integer.toString(0), columnsNames.get(1));
+        assertEquals(2, columnsNames.size());
+        assertEquals("SpanABM-" + BasicConstantThrustPropulsionModel.THRUST + Integer.toString(0), columnsNames.get(0));
+        assertEquals("Spanapogee_boost_STOP" + Integer.toString(0), columnsNames.get(1));
 
     }
 
@@ -139,13 +144,13 @@ public class NumericalPropagationHarvesterTest {
         }
         SpacecraftState s = propagator.getInitialState().addAdditionalState(harvester.getStmName(), p);
         RealMatrix stm = harvester.getStateTransitionMatrix(s);
-        Assertions.assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
-        Assertions.assertEquals(type, harvester.getOrbitType());
-        Assertions.assertEquals(angle, harvester.getPositionAngleType());
+        assertEquals(deltaId, stm.subtract(MatrixUtils.createRealIdentityMatrix(6)).getNorm1(), 1.0e-3);
+        assertEquals(type, harvester.getOrbitType());
+        assertEquals(angle, harvester.getPositionAngleType());
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Orbit initialOrbit =
                         new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngleType.TRUE,
                                            FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -160,7 +165,7 @@ public class NumericalPropagationHarvesterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         propagator = null;
     }
 

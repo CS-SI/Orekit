@@ -19,7 +19,6 @@ package org.orekit.files.rinex.observation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -29,26 +28,29 @@ import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 
-public class RinexObservationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class RinexObservationTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testGenerateRegular() {
+    void testGenerateRegular() {
         final double interval = 300.0;
         final int    n        = 100;
         RinexObservation rinexObservation = generate(AbsoluteDate.ARBITRARY_EPOCH,
                                                      AbsoluteDate.ARBITRARY_EPOCH.shiftedBy((n - 1) * interval),
                                                      interval, n);
-        Assertions.assertEquals(n, rinexObservation.getObservationDataSets().size());
+        assertEquals(n, rinexObservation.getObservationDataSets().size());
     }
 
     @Test
-    public void testWrongSampling() {
+    void testWrongSampling() {
         final double interval = 300.0;
         final int    n        = 100;
         RinexObservation rinexObservation = generate(AbsoluteDate.ARBITRARY_EPOCH,
@@ -58,14 +60,14 @@ public class RinexObservationTest {
         final AbsoluteDate lastGenerated = ods.get(ods.size() - 1).getDate();
         try {
             rinexObservation.addObservationDataSet(dummyMeasurement(lastGenerated.shiftedBy(0.75 * interval)));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.INCONSISTENT_SAMPLING_DATE, oiae.getSpecifier());
+            assertEquals(OrekitMessages.INCONSISTENT_SAMPLING_DATE, oiae.getSpecifier());
         }
     }
 
     @Test
-    public void testOutOfRange() {
+    void testOutOfRange() {
         final double interval = 300.0;
         final int    n        = 100;
         RinexObservation rinexObservation = generate(AbsoluteDate.ARBITRARY_EPOCH,
@@ -75,9 +77,9 @@ public class RinexObservationTest {
         final AbsoluteDate lastGenerated = ods.get(ods.size() - 1).getDate();
         try {
             rinexObservation.addObservationDataSet(dummyMeasurement(lastGenerated.shiftedBy(interval)));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, oiae.getSpecifier());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, oiae.getSpecifier());
         }
     }
 

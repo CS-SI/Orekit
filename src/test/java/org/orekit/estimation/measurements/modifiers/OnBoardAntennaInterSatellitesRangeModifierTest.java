@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -40,10 +39,13 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class OnBoardAntennaInterSatellitesRangeModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class OnBoardAntennaInterSatellitesRangeModifierTest {
 
     @Test
-    public void testPreliminary() {
+    void testPreliminary() {
 
         // this test does not check OnBoardAntennaInterSatellitesRangeModifier at all,
         // it just checks InterSatellitesRangeMeasurementCreator behaves as necessary for the other test
@@ -97,14 +99,14 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             InterSatellitesRange sr = (InterSatellitesRange) spacecraftCenteredMeasurements.get(i);
             InterSatellitesRange ar = (InterSatellitesRange) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= -1.0);
-            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= -0.36);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= -1.0);
+            assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= -0.36);
         }
     }
 
     @Test
-    public void testEffect() {
+    void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -163,8 +165,8 @@ public class OnBoardAntennaInterSatellitesRangeModifierTest {
                                                                                                          ephemeris.propagate(sr.getDate())
                                                                                                      });
             InterSatellitesRange ar = (InterSatellitesRange) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);
         }
 
     }

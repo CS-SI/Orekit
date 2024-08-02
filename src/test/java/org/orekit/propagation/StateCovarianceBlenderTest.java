@@ -19,7 +19,6 @@ package org.orekit.propagation;
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,6 +44,10 @@ import org.orekit.time.TimeStampedPair;
 import org.orekit.utils.Constants;
 
 import java.util.Locale;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.util.Map;
 
 class StateCovarianceBlenderTest {
@@ -58,7 +61,7 @@ class StateCovarianceBlenderTest {
     private final double DEFAUTL_SERGEI_TABULATED_TIMESTEP = 2400;
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         Utils.setDataRoot("regular-data:potential/egm-format:atmosphere:tides:regular-data/de405-ephemerides");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("EGM96-truncated-21x21", true));
         AstronomicalAmplitudeReader aaReader =
@@ -116,12 +119,12 @@ class StateCovarianceBlenderTest {
         }
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
+        assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
+        assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
+        assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), tolerance);
+        assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
     }
 
     /**
@@ -369,19 +372,19 @@ class StateCovarianceBlenderTest {
         }
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals( 0.1190324127, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.2800701738, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.1221432731, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.4882858178, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.2282143786, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.0468503672, relativeRMSSigmaError[1].getMax(), tolerance);
+        assertEquals( 0.1190324127, relativeRMSSigmaError[0].getMean(), tolerance);
+        assertEquals( 7.2800701738, relativeRMSSigmaError[1].getMean(), tolerance);
+        assertEquals( 0.1221432731, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        assertEquals( 7.4882858178, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        assertEquals( 0.2282143786, relativeRMSSigmaError[0].getMax(), tolerance);
+        assertEquals(16.0468503672, relativeRMSSigmaError[1].getMax(), tolerance);
 
         // Assert getters as well
-        Assertions.assertNull(covarianceInterpolator.getOutFrame());
-        Assertions.assertEquals(DEFAULT_LOFTYPE, covarianceInterpolator.getOutLOF());
-        Assertions.assertEquals(OrbitType.CARTESIAN, covarianceInterpolator.getOutOrbitType());
-        Assertions.assertEquals(PositionAngleType.MEAN, covarianceInterpolator.getOutPositionAngleType());
-        Assertions.assertEquals(orbitInterpolator, covarianceInterpolator.getOrbitInterpolator());
+        assertNull(covarianceInterpolator.getOutFrame());
+        assertEquals(DEFAULT_LOFTYPE, covarianceInterpolator.getOutLOF());
+        assertEquals(OrbitType.CARTESIAN, covarianceInterpolator.getOutOrbitType());
+        assertEquals(PositionAngleType.MEAN, covarianceInterpolator.getOutPositionAngleType());
+        assertEquals(orbitInterpolator, covarianceInterpolator.getOrbitInterpolator());
 
     }
 

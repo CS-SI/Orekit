@@ -19,17 +19,18 @@ package org.orekit.time;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.gnss.TimeSystem;
 
-public class ClockTimeScaleTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ClockTimeScaleTest {
 
     @Test
-    public void testGalileo() {
+    void testGalileo() {
         final String name = "Galileo+offset";
         final AbsoluteDate        t0    = new AbsoluteDate(2020, 4, 1,
                                                            TimeScalesFactory.getUTC());
@@ -40,20 +41,20 @@ public class ClockTimeScaleTest {
         final ClockTimeScale positive = new ClockTimeScale(name,
                                                            TimeSystem.GALILEO.getTimeScale(TimeScalesFactory.getTimeScales()),
                                                            clock);
-        Assertions.assertEquals(name, positive.getName());
-        Assertions.assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0),                   1.0e-15);
-        Assertions.assertEquals(1.75 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(1.0)), 1.0e-15);
-        Assertions.assertEquals(3.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(2.0)), 1.0e-15);
+        assertEquals(name, positive.getName());
+        assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0),                   1.0e-15);
+        assertEquals(1.75 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(1.0)), 1.0e-15);
+        assertEquals(3.00 / 1024.0 - 19.0, positive.offsetFromTAI(t0.shiftedBy(2.0)), 1.0e-15);
 
         FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t064).getReal(),                   1.0e-15);
-        Assertions.assertEquals(1.75 / 1024.0 - 19.0, positive.offsetFromTAI(t064.shiftedBy(1.0)).getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 1024.0 - 19.0, positive.offsetFromTAI(t064.shiftedBy(2.0)).getReal(), 1.0e-15);
+        assertEquals(1.00 / 1024.0 - 19.0, positive.offsetFromTAI(t064).getReal(),                   1.0e-15);
+        assertEquals(1.75 / 1024.0 - 19.0, positive.offsetFromTAI(t064.shiftedBy(1.0)).getReal(), 1.0e-15);
+        assertEquals(3.00 / 1024.0 - 19.0, positive.offsetFromTAI(t064.shiftedBy(2.0)).getReal(), 1.0e-15);
 
     }
 
     @Test
-    public void testUTC() {
+    void testUTC() {
         final String name = "UTC+offset";
         final AbsoluteDate        t0    = new AbsoluteDate(2020, 4, 1,
                                                            TimeScalesFactory.getUTC());
@@ -64,20 +65,20 @@ public class ClockTimeScaleTest {
         final ClockTimeScale positive = new ClockTimeScale(name,
                                                            TimeScalesFactory.getUTC(),
                                                            clock);
-        Assertions.assertEquals(name, positive.getName());
-        Assertions.assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0),                   1.0e-15);
-        Assertions.assertEquals(1.75 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(1.0)), 1.0e-15);
-        Assertions.assertEquals(3.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(2.0)), 1.0e-15);
+        assertEquals(name, positive.getName());
+        assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0),                   1.0e-15);
+        assertEquals(1.75 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(1.0)), 1.0e-15);
+        assertEquals(3.00 / 1024.0 - 37.0, positive.offsetFromTAI(t0.shiftedBy(2.0)), 1.0e-15);
 
         FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t064).getReal(),                   1.0e-15);
-        Assertions.assertEquals(1.75 / 1024.0 - 37.0, positive.offsetFromTAI(t064.shiftedBy(1.0)).getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 1024.0 - 37.0, positive.offsetFromTAI(t064.shiftedBy(2.0)).getReal(), 1.0e-15);
+        assertEquals(1.00 / 1024.0 - 37.0, positive.offsetFromTAI(t064).getReal(),                   1.0e-15);
+        assertEquals(1.75 / 1024.0 - 37.0, positive.offsetFromTAI(t064.shiftedBy(1.0)).getReal(), 1.0e-15);
+        assertEquals(3.00 / 1024.0 - 37.0, positive.offsetFromTAI(t064.shiftedBy(2.0)).getReal(), 1.0e-15);
 
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 

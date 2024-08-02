@@ -23,7 +23,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.estimation.Context;
@@ -36,13 +35,16 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 
-public class PositionTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class PositionTest {
 
     /** Compare observed values and estimated values.
      *  Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -84,19 +86,19 @@ public class PositionTest {
         // Mean and std errors check
         for (int i = 0; i < 3; i++) {
             // Check position values
-            Assertions.assertEquals(0.0, pvDiffStat[i].getMean(), 3.8e-7);
-            Assertions.assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.3e-7);
+            assertEquals(0.0, pvDiffStat[i].getMean(), 3.8e-7);
+            assertEquals(0.0, pvDiffStat[i].getStandardDeviation(), 2.3e-7);
         }
 
         // Test measurement type
-        Assertions.assertEquals(Position.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(Position.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -131,8 +133,8 @@ public class PositionTest {
                                               propagator.getAttitudeProvider(), OrbitType.CARTESIAN,
                                               PositionAngleType.TRUE, 1.0, 3).value(state);
 
-            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
                     final double relativeError = FastMath.abs((finiteDifferencesJacobian[i][j] - jacobian[i][j]) /
@@ -144,14 +146,14 @@ public class PositionTest {
         }
 
         // median errors
-        Assertions.assertEquals(0.0, new Median().evaluate(errorsP), 2.1e-100);
+        assertEquals(0.0, new Median().evaluate(errorsP), 2.1e-100);
 
     }
 
     /** Test the position constructor with standard deviations for position given as one double.
      */
     @Test
-    public void testPositionWithSingleStandardDeviations() {
+    void testPositionWithSingleStandardDeviations() {
 
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -190,34 +192,34 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
-                Assertions.assertEquals(baseWeight, p.getBaseWeight()[i], eps);
+                assertEquals(baseWeight, p.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                Assertions.assertEquals(sigmaP, p.getTheoreticalStandardDeviation()[i]  , eps);
+                assertEquals(sigmaP, p.getTheoreticalStandardDeviation()[i]  , eps);
             }
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            Assertions.assertEquals(0., normP, eps);
+            assertEquals(0., normP, eps);
 
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            Assertions.assertEquals(0., normCorrCoef, eps);
+            assertEquals(0., normCorrCoef, eps);
         }
     }
 
     /** Test the Position constructor with standard deviations for position given as a 3-sized vector.
      */
     @Test
-    public void testPositionWithVectorStandardDeviations() {
+    void testPositionWithVectorStandardDeviations() {
 
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -256,34 +258,34 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
-                Assertions.assertEquals(baseWeight, p.getBaseWeight()[i], eps);
+                assertEquals(baseWeight, p.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                Assertions.assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
+                assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
             }
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            Assertions.assertEquals(0., normP, eps);
+            assertEquals(0., normP, eps);
 
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            Assertions.assertEquals(0., normCorrCoef, eps);
+            assertEquals(0., normCorrCoef, eps);
         }
     }
 
     /** Test the Position constructor with 3x3 covariance matrix as input.
      */
     @Test
-    public void testPositionWithCovarianceMatrix() {
+    void testPositionWithCovarianceMatrix() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -334,34 +336,34 @@ public class PositionTest {
             final Position p = ps[k];
 
             // Propagator numbers
-            Assertions.assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
+            assertEquals(sats[k].getPropagatorIndex(), p.getSatellites().get(0).getPropagatorIndex());
 
             // Weights
             for (int i = 0; i < 3; i++) {
-                Assertions.assertEquals(baseWeight, p.getBaseWeight()[i], eps);
+                assertEquals(baseWeight, p.getBaseWeight()[i], eps);
             }
             // Sigmas
             for (int i = 0; i < 3; i++) {
-                Assertions.assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
+                assertEquals(sigmaP[i], p.getTheoreticalStandardDeviation()[i]  , eps);
             }
             // Covariances
             final double[][] P = p.getCovarianceMatrix();
             // Substract with ref and get the norm
             final double normP = MatrixUtils.createRealMatrix(P).subtract(MatrixUtils.createRealMatrix(Pref)).getNorm1();
-            Assertions.assertEquals(0., normP, eps);
+            assertEquals(0., normP, eps);
 
             // Correlation coef
             final double[][] corrCoef = p.getCorrelationCoefficientsMatrix();
             // Substract with ref and get the norm
             final double normCorrCoef = MatrixUtils.createRealMatrix(corrCoef).subtract(MatrixUtils.createRealMatrix(corrCoefRef)).getNorm1();
-            Assertions.assertEquals(0., normCorrCoef, eps);
+            assertEquals(0., normCorrCoef, eps);
         }
 
     }
 
     /** Test exceptions raised if the covariance matrix does not have the proper size. */
     @Test
-    public void testExceptions() {
+    void testExceptions() {
         // Context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -373,7 +375,7 @@ public class PositionTest {
         // Build with one 3-sized vectors
         try {
             new Position(date, position, new double[] {1.}, weight, new ObservableSatellite(0));
-            Assertions.fail("An OrekitException should have been thrown");
+            fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }
@@ -381,7 +383,7 @@ public class PositionTest {
         // Build with one 3x3 matrix
         try {
             new Position(date, position, new double[][] {{0., 0.}, {0., 0.}}, weight, new ObservableSatellite(0));
-            Assertions.fail("An OrekitException should have been thrown");
+            fail("An OrekitException should have been thrown");
         } catch (OrekitException e) {
             // An exception should indeed be raised here
         }

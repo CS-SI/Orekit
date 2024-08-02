@@ -18,7 +18,6 @@
 package org.orekit.frames;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
@@ -31,22 +30,24 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link StaticTransform}.
  *
  * @author Evan Ward
  */
-public class FieldStaticTransformTest {
+class FieldStaticTransformTest {
 
     /** Test creating, composing, and using a StaticTransform. */
     @Test
-    public void testSimpleComposition() {
+    void testSimpleComposition() {
         doTestSimpleComposition(Binary64Field.getInstance());
     }
 
@@ -95,20 +96,20 @@ public class FieldStaticTransformTest {
         double tol = 1e-15;
         FieldVector3D<T> u = transform.transformPosition(new FieldVector3D<>(one, one, one));
         FieldVector3D<T> v = new FieldVector3D<>(zero, one, one);
-        MatcherAssert.assertThat(u.toVector3D(), OrekitMatchers.vectorCloseTo(v.toVector3D(), tol));
+        assertThat(u.toVector3D(), OrekitMatchers.vectorCloseTo(v.toVector3D(), tol));
         FieldVector3D<T> w = transform.transformVector(new FieldVector3D<>(zero.newInstance(1), zero.newInstance(2), zero.newInstance(3)));
         FieldVector3D<T> x = new FieldVector3D<>(zero.newInstance(-2), zero.newInstance(1), zero.newInstance(3));
-        MatcherAssert.assertThat(w.toVector3D(), OrekitMatchers.vectorCloseTo(x.toVector3D(), tol));
-        MatcherAssert.assertThat(transform.getTranslation().toVector3D(),
+        assertThat(w.toVector3D(), OrekitMatchers.vectorCloseTo(x.toVector3D(), tol));
+        assertThat(transform.getTranslation().toVector3D(),
                 OrekitMatchers.vectorCloseTo(Vector3D.MINUS_J, tol));
-        MatcherAssert.assertThat(transform.getRotation().getAngle().getReal(),
+        assertThat(transform.getRotation().getAngle().getReal(),
                 CoreMatchers.is(rotation.getAngle().getReal()));
-        MatcherAssert.assertThat(transform.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR).toVector3D(),
+        assertThat(transform.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR).toVector3D(),
                 CoreMatchers.is(rotation.getAxis(RotationConvention.VECTOR_OPERATOR).toVector3D()));
-        MatcherAssert.assertThat(
+        assertThat(
                 identity.transformPosition(u).toVector3D(),
                 OrekitMatchers.vectorCloseTo(u.toVector3D(), tol));
-        MatcherAssert.assertThat(
+        assertThat(
                 identity.transformVector(u).toVector3D(),
                 OrekitMatchers.vectorCloseTo(u.toVector3D(), tol));
         // check line transform
@@ -116,16 +117,16 @@ public class FieldStaticTransformTest {
         FieldVector3D<T> d  = new FieldVector3D<>(zero.newInstance(-42e6), zero.newInstance(42e6), zero.newInstance(-42e6));
         FieldLine<T> line = new FieldLine<>(p1, p1.add(d), 0);
         FieldLine<T> actualLine = transform.transformLine(line);
-        MatcherAssert.assertThat(
+        assertThat(
                 actualLine.getDirection().toVector3D(),
                 OrekitMatchers.vectorCloseTo(transform.transformVector(d).normalize().toVector3D(), 44));
         // account for translation
         FieldVector3D<T> expectedOrigin = new FieldVector3D<>(
                         zero.newInstance(-56133332.666666666), zero.newInstance(28066666.333333333), zero.newInstance(28066666.333333333));
-        MatcherAssert.assertThat(
+        assertThat(
                 actualLine.getOrigin().toVector3D(),
                 OrekitMatchers.vectorCloseTo(expectedOrigin.toVector3D(), 33));
-        MatcherAssert.assertThat(
+        assertThat(
                 actualLine.getTolerance(),
                 CoreMatchers.is(line.getTolerance()));
     }
@@ -146,12 +147,12 @@ public class FieldStaticTransformTest {
         final FieldStaticTransform<Complex> staticTransform = FieldStaticTransform.of(expectedFieldDate,
                 fieldTranslation, fieldRotation);
         // WHEN
-        Assertions.assertEquals(expectedDate, staticTransform.getDate());
+        assertEquals(expectedDate, staticTransform.getDate());
         final FieldAbsoluteDate<Complex> actualFieldDate = staticTransform.getFieldDate();
-        Assertions.assertEquals(staticTransform.getDate(), actualFieldDate.toAbsoluteDate());
-        Assertions.assertEquals(Complex.ZERO, actualFieldDate.durationFrom(expectedFieldDate));
-        Assertions.assertEquals(expectedTranslation, staticTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(fieldRotation.toRotation(),
+        assertEquals(staticTransform.getDate(), actualFieldDate.toAbsoluteDate());
+        assertEquals(Complex.ZERO, actualFieldDate.durationFrom(expectedFieldDate));
+        assertEquals(expectedTranslation, staticTransform.getTranslation().toVector3D());
+        assertEquals(0., Rotation.distance(fieldRotation.toRotation(),
                 staticTransform.getRotation().toRotation()));
     }
 
@@ -171,12 +172,12 @@ public class FieldStaticTransformTest {
         final FieldStaticTransform<Complex> actualInverseStaticTransform = staticTransform.getStaticInverse();
         // THEN
         final FieldStaticTransform<Complex> expectedInverseStaticTransform = staticTransform.getInverse();
-        Assertions.assertEquals(expectedInverseStaticTransform.getDate(), actualInverseStaticTransform.getDate());
-        Assertions.assertEquals(expectedInverseStaticTransform.getFieldDate(),
+        assertEquals(expectedInverseStaticTransform.getDate(), actualInverseStaticTransform.getDate());
+        assertEquals(expectedInverseStaticTransform.getFieldDate(),
                 actualInverseStaticTransform.getFieldDate());
-        Assertions.assertEquals(expectedInverseStaticTransform.getTranslation().toVector3D(),
+        assertEquals(expectedInverseStaticTransform.getTranslation().toVector3D(),
                 actualInverseStaticTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(expectedInverseStaticTransform.getRotation().toRotation(),
+        assertEquals(0., Rotation.distance(expectedInverseStaticTransform.getRotation().toRotation(),
                 actualInverseStaticTransform.getRotation().toRotation()));
     }
 
@@ -188,7 +189,7 @@ public class FieldStaticTransformTest {
         // WHEN
         final FieldAbsoluteDate<Complex> actualFieldDate = testFieldStaticTransform.getFieldDate();
         // THEN
-        Assertions.assertEquals(testFieldStaticTransform.getDate(), actualFieldDate.toAbsoluteDate());
+        assertEquals(testFieldStaticTransform.getDate(), actualFieldDate.toAbsoluteDate());
     }
 
     private static class TestFieldStaticTransform implements FieldStaticTransform<Complex> {

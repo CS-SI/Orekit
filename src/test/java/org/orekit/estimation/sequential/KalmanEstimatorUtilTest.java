@@ -16,7 +16,6 @@
  */
 package org.orekit.estimation.sequential;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -28,10 +27,14 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class KalmanEstimatorUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-	@Test
-	public void testDimension() {
+class KalmanEstimatorUtilTest {
+
+    @Test
+    void testDimension() {
 
 		// Orbital drivers
 		final ParameterDriversList orbital = new ParameterDriversList();
@@ -54,18 +57,18 @@ public class KalmanEstimatorUtilTest {
 		// Test exception
         try {
         	KalmanEstimatorUtil.checkDimension(4, orbital, prop, meas);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS, oe.getSpecifier());
+            assertEquals(OrekitMessages.DIMENSION_INCONSISTENT_WITH_PARAMETERS, oe.getSpecifier());
         }
 		
 	}
 
-	@Test
-	public void testRejectedMeasurement() {
+    @Test
+    void testRejectedMeasurement() {
 		final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<>(null, 1, 1, new SpacecraftState[1], new TimeStampedPVCoordinates[1]);
 		estimated.setStatus(Status.REJECTED);
-		Assertions.assertNull(KalmanEstimatorUtil.computeInnovationVector(estimated, new double[1]));
+		assertNull(KalmanEstimatorUtil.computeInnovationVector(estimated, new double[1]));
 	}
 
 	private ParameterDriver createDriver(final String name, final boolean estimated) {

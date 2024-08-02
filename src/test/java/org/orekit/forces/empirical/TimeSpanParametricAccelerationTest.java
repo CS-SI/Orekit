@@ -23,7 +23,6 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -56,10 +55,14 @@ import org.orekit.utils.TimeSpanMap;
 
 import java.util.List;
 
-public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
 
     @Test
-    public void testGetParameterDrivers() {
+    void testGetParameterDrivers() {
 
         // A date
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -69,17 +72,17 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         TimeSpanParametricAcceleration forceModel = new TimeSpanParametricAcceleration(Vector3D.PLUS_K, false,
                                                                                        new PolynomialAccelerationModel("driver", date, 0));
 
-        Assertions.assertFalse(forceModel.dependsOnPositionOnly());
+        assertFalse(forceModel.dependsOnPositionOnly());
         List<ParameterDriver> drivers = forceModel.getParametersDrivers();
-        Assertions.assertEquals(1,  drivers.size());
-        Assertions.assertEquals("driver[0]",  drivers.get(0).getName());
+        assertEquals(1,  drivers.size());
+        assertEquals("driver[0]",  drivers.get(0).getName());
 
         // Extract acceleration model at an arbitrary epoch and check it is the one added
         PolynomialAccelerationModel accModel = (PolynomialAccelerationModel) forceModel.getAccelerationModel(date);
         drivers = accModel.getParametersDrivers();
-        Assertions.assertEquals(1, drivers.size());
-        Assertions.assertEquals(0.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals("driver[0]",  drivers.get(0).getName());
+        assertEquals(1, drivers.size());
+        assertEquals(0.0,  drivers.get(0).getValue(), 0.);
+        assertEquals("driver[0]",  drivers.get(0).getName());
 
         // 3 AccelerationModel added, with one default
         // ----------------------------------------------
@@ -96,38 +99,38 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
 
         // Extract the drivers and check their values and names
         drivers = forceModel.getParametersDrivers();
-        Assertions.assertEquals(3,  drivers.size());
-        Assertions.assertEquals(0.0,  drivers.get(0).getValue(), 0.);
-        Assertions.assertEquals("C2[0]", drivers.get(0).getName());
-        Assertions.assertEquals(0.0,  drivers.get(1).getValue(), 0.);
-        Assertions.assertEquals("C[0]",  drivers.get(1).getName());
-        Assertions.assertEquals(0.0,  drivers.get(2).getValue(), 0.);
-        Assertions.assertEquals("C1[0]", drivers.get(2).getName());
+        assertEquals(3,  drivers.size());
+        assertEquals(0.0,  drivers.get(0).getValue(), 0.);
+        assertEquals("C2[0]", drivers.get(0).getName());
+        assertEquals(0.0,  drivers.get(1).getValue(), 0.);
+        assertEquals("C[0]",  drivers.get(1).getName());
+        assertEquals(0.0,  drivers.get(2).getValue(), 0.);
+        assertEquals("C1[0]", drivers.get(2).getName());
 
         // Check that proper models are returned at significant test dates
         double eps = 1.e-14;
-        Assertions.assertEquals(accModel,  forceModel.getAccelerationModel(date));
-        Assertions.assertEquals(accModel,  forceModel.getAccelerationModel(date.shiftedBy(-dt)));
-        Assertions.assertEquals(accModel,  forceModel.getAccelerationModel(date.shiftedBy(+dt - eps)));
-        Assertions.assertEquals(accModel2, forceModel.getAccelerationModel(date.shiftedBy(-dt - eps)));
-        Assertions.assertEquals(accModel2, forceModel.getAccelerationModel(date.shiftedBy(-dt - 86400.)));
-        Assertions.assertEquals(accModel1, forceModel.getAccelerationModel(date.shiftedBy(+dt)));
-        Assertions.assertEquals(accModel1, forceModel.getAccelerationModel(date.shiftedBy(+dt + 86400.)));
+        assertEquals(accModel,  forceModel.getAccelerationModel(date));
+        assertEquals(accModel,  forceModel.getAccelerationModel(date.shiftedBy(-dt)));
+        assertEquals(accModel,  forceModel.getAccelerationModel(date.shiftedBy(+dt - eps)));
+        assertEquals(accModel2, forceModel.getAccelerationModel(date.shiftedBy(-dt - eps)));
+        assertEquals(accModel2, forceModel.getAccelerationModel(date.shiftedBy(-dt - 86400.)));
+        assertEquals(accModel1, forceModel.getAccelerationModel(date.shiftedBy(+dt)));
+        assertEquals(accModel1, forceModel.getAccelerationModel(date.shiftedBy(+dt + 86400.)));
 
         // Test #getAccelerationModelSpan method
-        Assertions.assertEquals(accModel,  forceModel.getAccelerationModelSpan(date).getData());
-        Assertions.assertEquals(accModel2, forceModel.getAccelerationModelSpan(date.shiftedBy(-dt - 86400.)).getData());
-        Assertions.assertEquals(accModel1, forceModel.getAccelerationModelSpan(date.shiftedBy(+dt + 1.)).getData());
+        assertEquals(accModel,  forceModel.getAccelerationModelSpan(date).getData());
+        assertEquals(accModel2, forceModel.getAccelerationModelSpan(date.shiftedBy(-dt - 86400.)).getData());
+        assertEquals(accModel1, forceModel.getAccelerationModelSpan(date.shiftedBy(+dt + 1.)).getData());
 
         // Test #extractAccelerationModelRange
         TimeSpanMap<AccelerationModel> dragMap = forceModel.extractAccelerationModelRange(date, date.shiftedBy(dt + 1.));
-        Assertions.assertEquals(accModel,  dragMap.getSpan(date).getData());
-        Assertions.assertEquals(accModel1, dragMap.getSpan(date.shiftedBy(dt + 86400.)).getData());
-        Assertions.assertEquals(accModel,  dragMap.getSpan(date.shiftedBy(-dt - 86400.)).getData());
+        assertEquals(accModel,  dragMap.getSpan(date).getData());
+        assertEquals(accModel1, dragMap.getSpan(date.shiftedBy(dt + 86400.)).getData());
+        assertEquals(accModel,  dragMap.getSpan(date.shiftedBy(-dt - 86400.)).getData());
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         // Time scale
         final TimeScale tai = TimeScalesFactory.getTAI();
@@ -164,7 +167,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // Initialize model
         forceModel.init(state, null);
 
-        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
+        assertTrue(forceModel.dependsOnPositionOnly());
 
         // Check parameter derivatives at initial date: only "C1" shouldn't be 0.
         checkParameterDerivative(state, forceModel, "C1[0]" , 1.0e-4, 2.0e-12);
@@ -183,7 +186,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobian() {
+    void testStateJacobian() {
 
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -245,7 +248,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianAttitudeOverride() {
+    void testStateJacobianAttitudeOverride() {
 
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -308,7 +311,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void RealFieldGradientTest() {
+    void RealFieldGradientTest() {
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
         final int freeParameters = 6;
@@ -396,7 +399,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

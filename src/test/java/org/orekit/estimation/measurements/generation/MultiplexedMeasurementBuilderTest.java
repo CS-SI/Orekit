@@ -32,7 +32,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
 
-public class MultiplexedMeasurementBuilderTest extends AbstractGroundMeasurementBuilderTest<MultiplexedMeasurement> {
+class MultiplexedMeasurementBuilderTest extends AbstractGroundMeasurementBuilderTest<MultiplexedMeasurement> {
 
     private static final double RANGE_SIGMA = 10.0;
     private static final double RANGE_BIAS  =  3.0;
@@ -71,12 +71,12 @@ public class MultiplexedMeasurementBuilderTest extends AbstractGroundMeasurement
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0xb715507647d63318l, 0.4, 0.9, 128, 2.7 * RANGE_SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0xceac6c6c358e95d0l, -0.2, -0.6, 100, 2.8 * RANGE_SIGMA);
     }
 

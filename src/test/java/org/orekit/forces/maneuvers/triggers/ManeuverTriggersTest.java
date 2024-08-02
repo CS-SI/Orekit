@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.FieldManeuverTriggersResetter;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
@@ -40,10 +39,12 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
-public class ManeuverTriggersTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ManeuverTriggersTest {
 
     @Test
-    public void testNoOpDefault() {
+    void testNoOpDefault() {
         // just test the default no-op implementation can be called without side effects
         ManeuverTriggers dummy = new ManeuverTriggers() {
             public <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters) {
@@ -77,7 +78,7 @@ public class ManeuverTriggersTest {
         dummy.init(state, state.getDate().shiftedBy(60));
         dummy.init(new FieldSpacecraftState<>(Binary64Field.getInstance(), state),
                    new FieldAbsoluteDate<>(Binary64Field.getInstance(), state.getDate().shiftedBy(60)));
-        Assertions.assertEquals("", dummy.getName());
+        assertEquals("", dummy.getName());
 
     }
 

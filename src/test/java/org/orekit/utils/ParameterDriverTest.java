@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -26,94 +25,97 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeSpanMap.Span;
 
-public class ParameterDriverTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-	@Test
-    public void testPDriverConstruction(){
+class ParameterDriverTest {
+
+    @Test
+    void testPDriverConstruction(){
         ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -10.0, +10.0);
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
 
         p1.addSpanAtDate(date);
         p1.setValue(3.0, date.shiftedBy(10));
-        Assertions.assertEquals(3.0, p1.getValue(date.shiftedBy(10)), 1e-10);
-        Assertions.assertEquals(0.0, p1.getValue(date.shiftedBy(-10)), 1e-10);
-        Assertions.assertEquals("Span" + p1.getName() + Integer.toString(0), p1.getNameSpan(date.shiftedBy(-10)));
-        Assertions.assertEquals("Span" + p1.getName() + Integer.toString(1), p1.getNameSpan(date.shiftedBy(10)));
+        assertEquals(3.0, p1.getValue(date.shiftedBy(10)), 1e-10);
+        assertEquals(0.0, p1.getValue(date.shiftedBy(-10)), 1e-10);
+        assertEquals("Span" + p1.getName() + Integer.toString(0), p1.getNameSpan(date.shiftedBy(-10)));
+        assertEquals("Span" + p1.getName() + Integer.toString(1), p1.getNameSpan(date.shiftedBy(10)));
 
         p1.addSpanAtDate(date.shiftedBy(2 * 24 * 3600));
         p1.setValue(6.0, date.shiftedBy(2 * 24 * 3600));
-        Assertions.assertEquals(p1.getValue(date.shiftedBy(2 * 24 * 3600 + 10)), 6.0, 1e-10);
+        assertEquals(6.0, p1.getValue(date.shiftedBy(2 * 24 * 3600 + 10)), 1e-10);
         int nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
         }
         
         p1.setName("p1_new");
         nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
         }
         
         
 	}
 
-	@Test
-    public void testExceptionSetPeriod(){
+    @Test
+    void testExceptionSetPeriod(){
         ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
         p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         int nb = 0;
         for (Span<String> span = p1.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-        	Assertions.assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
+        	assertEquals(span.getData(),"Span" + p1.getName() + Integer.toString(nb++));
         }
         try {
             p1.addSpans(date, date.shiftedBy(15 * 3600), 5*3600);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-        	Assertions.assertEquals(OrekitMessages.PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET, oe.getSpecifier());
-        	Assertions.assertEquals(p1.getName(), oe.getParts()[0]);
+        	assertEquals(OrekitMessages.PARAMETER_PERIODS_HAS_ALREADY_BEEN_SET, oe.getSpecifier());
+        	assertEquals(p1.getName(), oe.getParts()[0]);
         }
         
 	}
 
-	@Test
-    public void testExceptiongetValue(){
+    @Test
+    void testExceptiongetValue(){
         ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
         p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         try {
             p1.getNormalizedValue();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-        	Assertions.assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
-        	Assertions.assertEquals(p1.getName(), oe.getParts()[0]);
-        	Assertions.assertEquals("getValue(date)", oe.getParts()[1]);
+        	assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
+        	assertEquals(p1.getName(), oe.getParts()[0]);
+        	assertEquals("getValue(date)", oe.getParts()[1]);
         }
         
     }
 
-	@Test
-    public void testExceptionsetValue(){
+    @Test
+    void testExceptionsetValue(){
         ParameterDriver p1 = new ParameterDriver("p1", 0.0, 1.0, -1.0, +1.0);
         AbsoluteDate date = new AbsoluteDate(2010, 11, 02, 03, 0, 0, TimeScalesFactory.getUTC());
         p1.addSpans(date, date.shiftedBy(15 * 3600), 3 * 3600);
         p1.setValue(30., date.shiftedBy(-100));
-        Assertions.assertEquals(1.0, p1.getValue(date.shiftedBy(-500)), 0);
+        assertEquals(1.0, p1.getValue(date.shiftedBy(-500)), 0);
         p1.setValue(0.8, date.shiftedBy(-100));
-        Assertions.assertEquals(0.8, p1.getValue(date.shiftedBy(-500)), 0);
+        assertEquals(0.8, p1.getValue(date.shiftedBy(-500)), 0);
         try {
             p1.setNormalizedValue(2.0);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalStateException oe) {
-        	Assertions.assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
-        	Assertions.assertEquals(p1.getName(), oe.getParts()[0]);
-        	Assertions.assertEquals("setValue(date)", oe.getParts()[1]);
+        	assertEquals(OrekitMessages.PARAMETER_WITH_SEVERAL_ESTIMATED_VALUES, oe.getSpecifier());
+        	assertEquals(p1.getName(), oe.getParts()[0]);
+        	assertEquals("setValue(date)", oe.getParts()[1]);
         }
         
     }
-	
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
     

@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -42,16 +40,21 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 
-public class GTODProviderTest {
+class GTODProviderTest {
 
     @Test
-    public void testAASReferenceLEO() {
+    void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -97,10 +100,10 @@ public class GTODProviderTest {
         checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 0.00942, 3.12e-5);
         StaticTransform st = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
                 getStaticTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
-        MatcherAssert.assertThat(
+        assertThat(
                 st.getTranslation(),
                 OrekitMatchers.vectorCloseTo(t.getTranslation(), 0));
-        MatcherAssert.assertThat(
+        assertThat(
                 Rotation.distance(st.getRotation(), t.getRotation()),
                 OrekitMatchers.closeTo(0, 0));
 
@@ -111,7 +114,7 @@ public class GTODProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() {
+    void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -163,7 +166,7 @@ public class GTODProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEOField() {
+    void testAASReferenceGEOField() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -216,7 +219,7 @@ public class GTODProviderTest {
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         GTODProvider provider = new GTODProvider(IERSConventions.IERS_2010,
                                                  FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
                                                  DataContext.getDefault().getTimeScales());
@@ -225,8 +228,8 @@ public class GTODProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
+        assertTrue(bos.size() > 340000);
+        assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -236,8 +239,8 @@ public class GTODProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
@@ -253,11 +256,11 @@ public class GTODProviderTest {
         final KinematicTransform kinematicTransform = provider.getKinematicTransform(date);
         // THEN
         final Transform transform = provider.getTransform(date);
-        Assertions.assertEquals(date, kinematicTransform.getDate());
-        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
-        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
-        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+        assertEquals(date, kinematicTransform.getDate());
+        assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
     }
 
     @Test
@@ -271,13 +274,13 @@ public class GTODProviderTest {
         final StaticTransform staticTransform = provider.getStaticTransform(date);
         // THEN
         final Transform transform = provider.getTransform(date);
-        Assertions.assertEquals(date, staticTransform.getDate());
-        Assertions.assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
-        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
+        assertEquals(date, staticTransform.getDate());
+        assertEquals(transform.getCartesian().getPosition(), staticTransform.getTranslation());
+        assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 
@@ -286,8 +289,8 @@ public class GTODProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     private <T extends CalculusFieldElement<T>> void checkPV(FieldPVCoordinates<T> reference,
@@ -297,8 +300,8 @@ public class GTODProviderTest {
 
         FieldVector3D<T> dP = result.getPosition().subtract(reference.getPosition());
         FieldVector3D<T> dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(expectedPositionError, dP.getNorm().getReal(), 0.01 * expectedPositionError);
-        Assertions.assertEquals(expectedVelocityError, dV.getNorm().getReal(), 0.01 * expectedVelocityError);
+        assertEquals(expectedPositionError, dP.getNorm().getReal(), 0.01 * expectedPositionError);
+        assertEquals(expectedVelocityError, dV.getNorm().getReal(), 0.01 * expectedVelocityError);
     }
 
 }

@@ -22,7 +22,6 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -35,12 +34,14 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class PosVelChebyshevTest {
 
     private static final double DURATION = 10.;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
     }
 
@@ -54,7 +55,7 @@ class PosVelChebyshevTest {
         // Then
         final double[] expectedPositionArray = chebyshev.getPositionVelocityAcceleration(date).getPosition().toArray();
         for (int i = 0; i < expectedPositionArray.length; i++) {
-            Assertions.assertEquals(expectedPositionArray[i], actualPositionArray[i]);
+            assertEquals(expectedPositionArray[i], actualPositionArray[i]);
         }
     }
 
@@ -72,7 +73,7 @@ class PosVelChebyshevTest {
         // Then
         final Gradient[] expectedPositionArray = chebyshev.getPositionVelocityAcceleration(fieldDate).getPosition().toArray();
         for (int i = 0; i < expectedPositionArray.length; i++) {
-            Assertions.assertEquals(expectedPositionArray[i], actualPositionArray[i]);
+            assertEquals(expectedPositionArray[i], actualPositionArray[i]);
         }
     }
 
@@ -90,9 +91,9 @@ class PosVelChebyshevTest {
         // Then
         final PVCoordinates expectedPVCoordinates = chebyshev.getPositionVelocityAcceleration(fieldDate.toAbsoluteDate());
         final PVCoordinates actualPVCoordinates = fieldPVCoordinates.toPVCoordinates();
-        Assertions.assertEquals(expectedPVCoordinates.getPosition(), actualPVCoordinates.getPosition());
-        Assertions.assertEquals(expectedPVCoordinates.getVelocity(), actualPVCoordinates.getVelocity());
-        Assertions.assertEquals(expectedPVCoordinates.getAcceleration(), actualPVCoordinates.getAcceleration());
+        assertEquals(expectedPVCoordinates.getPosition(), actualPVCoordinates.getPosition());
+        assertEquals(expectedPVCoordinates.getVelocity(), actualPVCoordinates.getVelocity());
+        assertEquals(expectedPVCoordinates.getAcceleration(), actualPVCoordinates.getAcceleration());
     }
 
     @Test
@@ -111,12 +112,12 @@ class PosVelChebyshevTest {
         final Vector3D expectedAcceleration = expectedPVCoordinates.getAcceleration();
         final FieldVector3D<UnivariateDerivative2> fieldPosition = fieldPVCoordinates.getPosition();
         final double tolerance = 1e-15;
-        Assertions.assertEquals(expectedVelocity.getX(), fieldPosition.getX().getDerivative(1), tolerance);
-        Assertions.assertEquals(expectedVelocity.getY(), fieldPosition.getY().getDerivative(1), tolerance);
-        Assertions.assertEquals(expectedVelocity.getZ(), fieldPosition.getZ().getDerivative(1), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getX(), fieldPosition.getX().getDerivative(2), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getY(), fieldPosition.getY().getDerivative(2), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getZ(), fieldPosition.getZ().getDerivative(2), tolerance);
+        assertEquals(expectedVelocity.getX(), fieldPosition.getX().getDerivative(1), tolerance);
+        assertEquals(expectedVelocity.getY(), fieldPosition.getY().getDerivative(1), tolerance);
+        assertEquals(expectedVelocity.getZ(), fieldPosition.getZ().getDerivative(1), tolerance);
+        assertEquals(expectedAcceleration.getX(), fieldPosition.getX().getDerivative(2), tolerance);
+        assertEquals(expectedAcceleration.getY(), fieldPosition.getY().getDerivative(2), tolerance);
+        assertEquals(expectedAcceleration.getZ(), fieldPosition.getZ().getDerivative(2), tolerance);
     }
 
     private PosVelChebyshev createPolynomial() {

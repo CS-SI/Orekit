@@ -22,7 +22,6 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -46,18 +45,20 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public class OneWayGNSSRangeRateTest {
+class OneWayGNSSRangeRateTest {
 
     /**
      * Test the values of the range rate comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest One-way GNSS range rate Values\n");
@@ -71,7 +72,7 @@ public class OneWayGNSSRangeRateTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -101,7 +102,7 @@ public class OneWayGNSSRangeRateTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -246,14 +247,14 @@ public class OneWayGNSSRangeRateTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 3.9e-9);
-        Assertions.assertEquals(0.0, absErrorsMin,    1.2e-11);
-        Assertions.assertEquals(0.0, absErrorsMax,    1.6e-8);
-        Assertions.assertEquals(0.0, relErrorsMedian, 1.1e-9);
-        Assertions.assertEquals(0.0, relErrorsMax,    1.1e-7);
+        assertEquals(0.0, absErrorsMedian, 3.9e-9);
+        assertEquals(0.0, absErrorsMin,    1.2e-11);
+        assertEquals(0.0, absErrorsMax,    1.6e-8);
+        assertEquals(0.0, relErrorsMedian, 1.1e-9);
+        assertEquals(0.0, relErrorsMax,    1.1e-7);
 
         // Test measurement type
-        Assertions.assertEquals(OneWayGNSSRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(OneWayGNSSRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -333,8 +334,8 @@ public class OneWayGNSSRangeRateTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                                                                 OrbitType.CARTESIAN, PositionAngleType.TRUE, 8.0, 5).value(states[index]);
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -407,12 +408,12 @@ public class OneWayGNSSRangeRateTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean printResults,
@@ -486,8 +487,8 @@ public class OneWayGNSSRangeRateTest {
                         for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
                             final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                            assertEquals(1, measurement.getDimension());
+                            assertEquals(1, gradient.length);
                             
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
@@ -554,9 +555,9 @@ public class OneWayGNSSRangeRateTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 

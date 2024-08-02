@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -32,16 +31,20 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 
-public class TEMEProviderTest {
+class TEMEProviderTest {
 
     @Test
-    public void testValladoTEMEofDate() {
+    void testValladoTEMEofDate() {
 
         // this reference test has been extracted from Vallado's book:
         // Fundamentals of Astrodynamics and Applications
@@ -71,13 +74,13 @@ public class TEMEProviderTest {
 
         PVCoordinates pvEME2000Computed = t.transformPVCoordinates(pvTEME);
         PVCoordinates delta = new PVCoordinates(pvEME2000Computed, pvEME2000Ref);
-        Assertions.assertEquals(0.0, delta.getPosition().getNorm(), 0.025);
-        Assertions.assertEquals(0.0, delta.getVelocity().getNorm(), 1.0e-4);
+        assertEquals(0.0, delta.getPosition().getNorm(), 0.025);
+        assertEquals(0.0, delta.getVelocity().getNorm(), 1.0e-4);
 
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         TEMEProvider provider = new TEMEProvider(IERSConventions.IERS_2010,
                                                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
                                                DataContext.getDefault().getTimeScales());
@@ -86,8 +89,8 @@ public class TEMEProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
+        assertTrue(bos.size() > 340000);
+        assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -97,14 +100,14 @@ public class TEMEProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

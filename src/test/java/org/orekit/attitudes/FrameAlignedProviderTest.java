@@ -18,11 +18,13 @@ package org.orekit.attitudes;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.orekit.OrekitMatchers.attitudeIs;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.distanceIs;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.GradientField;
@@ -35,7 +37,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -63,14 +64,14 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
 
-public class FrameAlignedProviderTest {
+class FrameAlignedProviderTest {
 
     private AbsoluteDate t0;
     private Orbit        orbit0;
 
     @Test
     @DefaultDataContext
-    public void testIsInertial() {
+    void testIsInertial() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9,
                                                                          RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -81,14 +82,14 @@ public class FrameAlignedProviderTest {
             Attitude attitude = state.getAttitude();
             Rotation evolution = attitude.getRotation().compose(initial.getRotation().revert(),
                                                                 RotationConvention.VECTOR_OPERATOR);
-            Assertions.assertEquals(0, evolution.getAngle(), 1.0e-10);
-            Assertions.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
+            assertEquals(0, evolution.getAngle(), 1.0e-10);
+            assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
     @Test
     @DefaultDataContext
-    public void testCompensateMomentum() {
+    void testCompensateMomentum() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2,
                                                                          RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -97,14 +98,14 @@ public class FrameAlignedProviderTest {
             Attitude attitude = propagator.propagate(t0.shiftedBy(t)).getAttitude();
             Rotation evolution = attitude.getRotation().compose(initial.getRotation().revert(),
                                                                 RotationConvention.VECTOR_OPERATOR);
-            Assertions.assertEquals(0, evolution.getAngle(), 1.0e-10);
-            Assertions.assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
+            assertEquals(0, evolution.getAngle(), 1.0e-10);
+            assertEquals(FramesFactory.getEME2000(), attitude.getReferenceFrame());
         }
     }
 
     @Test
     @DefaultDataContext
-    public void testSpin() {
+    void testSpin() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -129,21 +130,21 @@ public class FrameAlignedProviderTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         // compute spin axis using finite differences
         Rotation rMinus = sMinus.getAttitude().getRotation();
         Rotation rPlus  = sPlus.getAttitude().getRotation();
         Rotation dr     = rPlus.compose(rMinus.revert(), RotationConvention.VECTOR_OPERATOR);
-        Assertions.assertEquals(0, dr.getAngle(), 1.0e-10);
+        assertEquals(0, dr.getAngle(), 1.0e-10);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
-        Assertions.assertEquals(0, spin0.getNorm(), 1.0e-10);
+        assertEquals(0, spin0.getNorm(), 1.0e-10);
 
     }
 
@@ -155,13 +156,13 @@ public class FrameAlignedProviderTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
     @Test
-    public void testGetAttitude() {
+    void testGetAttitude() {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
@@ -169,11 +170,11 @@ public class FrameAlignedProviderTest {
 
         // action + verify
         Attitude actual = law.getAttitude(orbit0, t0, eci);
-        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
-        MatcherAssert.assertThat(actual, attitudeIs(expected));
+        assertThat(actual.getReferenceFrame(), is(eci));
+        assertThat(actual, attitudeIs(expected));
         actual = law.getAttitude(orbit0.shiftedBy(1e3), t0.shiftedBy(1e3), eci);
-        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
-        MatcherAssert.assertThat(actual, attitudeIs(expected));
+        assertThat(actual.getReferenceFrame(), is(eci));
+        assertThat(actual, attitudeIs(expected));
         // create new frame for testing frame transforms
         Rotation rotation = new Rotation(
                 Vector3D.PLUS_K,
@@ -191,10 +192,10 @@ public class FrameAlignedProviderTest {
                 new Vector3D(7, 8, -9));
         Frame other = new Frame(eci, new Transform(t0, angular, translation), "other");
         actual = law.getAttitude(orbit0.shiftedBy(1e3), t0.shiftedBy(1e3), other);
-        MatcherAssert.assertThat(actual.getReferenceFrame(), is(other));
-        MatcherAssert.assertThat(actual, attitudeIs(expected));
+        assertThat(actual.getReferenceFrame(), is(other));
+        assertThat(actual, attitudeIs(expected));
         // check not identity rotation
-        MatcherAssert.assertThat(actual.getRotation(),
+        assertThat(actual.getRotation(),
                                  not(distanceIs(Rotation.IDENTITY, closeTo(0.0, 1e-1))));
     }
 
@@ -204,7 +205,7 @@ public class FrameAlignedProviderTest {
      * FieldAbsoluteDate, Frame)}.
      */
     @Test
-    public void testGetAttitudeField() {
+    void testGetAttitudeField() {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
@@ -219,11 +220,11 @@ public class FrameAlignedProviderTest {
 
         // action + verify
         FieldAttitude<Binary64> actual = law.getAttitude(orbit, date, eci);
-        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
-        MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
+        assertThat(actual.getReferenceFrame(), is(eci));
+        assertThat(actual.toAttitude(), attitudeIs(expected));
         actual = law.getAttitude(orbit.shiftedBy(1e3), date.shiftedBy(1e3), eci);
-        MatcherAssert.assertThat(actual.getReferenceFrame(), is(eci));
-        MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
+        assertThat(actual.getReferenceFrame(), is(eci));
+        assertThat(actual.toAttitude(), attitudeIs(expected));
         // create new frame for testing frame transforms
         Rotation rotation = new Rotation(
                 Vector3D.PLUS_K,
@@ -241,10 +242,10 @@ public class FrameAlignedProviderTest {
                 new Vector3D(7, 8, -9));
         Frame other = new Frame(eci, new Transform(t0, angular, translation), "other");
         actual = law.getAttitude(orbit.shiftedBy(1e3), date.shiftedBy(1e3), other);
-        MatcherAssert.assertThat(actual.getReferenceFrame(), is(other));
-        MatcherAssert.assertThat(actual.toAttitude(), attitudeIs(expected));
+        assertThat(actual.getReferenceFrame(), is(other));
+        assertThat(actual.toAttitude(), attitudeIs(expected));
         // check not identity rotation
-        MatcherAssert.assertThat(actual.getRotation().toRotation(),
+        assertThat(actual.getRotation().toRotation(),
                 not(distanceIs(Rotation.IDENTITY, closeTo(0.0, 1e-1))));
     }
 
@@ -260,7 +261,7 @@ public class FrameAlignedProviderTest {
         final Rotation actualRotation = frameAlignedProvider.getAttitudeRotation(orbit0, date, frame2);
         // THEN
         final Rotation expectedRotation = frameAlignedProvider.getAttitude(orbit0, date, frame2).getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
     @Test
@@ -289,12 +290,12 @@ public class FrameAlignedProviderTest {
         final FieldRotation<T> actualRotation = frameAlignedProvider.getAttitudeRotation(fieldState.getOrbit(), fieldState.getDate(), frame2);
         // THEN
         final FieldRotation<T> expectedRotation = frameAlignedProvider.getAttitude(fieldState.getOrbit(), fieldState.getDate(), frame2).getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+        assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
     @BeforeEach
     @DefaultDataContext
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
@@ -305,12 +306,12 @@ public class FrameAlignedProviderTest {
                                    PositionAngleType.TRUE, FramesFactory.getEME2000(),
                                    t0, 3.986004415e14);
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         t0     = null;
         orbit0 = null;
     }

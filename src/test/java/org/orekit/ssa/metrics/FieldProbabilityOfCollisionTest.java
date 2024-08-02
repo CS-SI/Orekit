@@ -17,11 +17,13 @@
 package org.orekit.ssa.metrics;
 
 import org.hipparchus.util.Binary64;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.Laas2015;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.ShortTermEncounter2DPOCMethod;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class FieldProbabilityOfCollisionTest {
     @Test
@@ -39,12 +41,12 @@ class FieldProbabilityOfCollisionTest {
                                                   method.isAMaximumProbabilityOfCollisionMethod());
 
         // THEN
-        Assertions.assertEquals(0.1, probabilityOfCollision.getValue().getReal());
-        Assertions.assertEquals(0.2, probabilityOfCollision.getUpperLimit().getReal());
-        Assertions.assertEquals(0.05, probabilityOfCollision.getLowerLimit().getReal());
-        Assertions.assertEquals(new Laas2015().getName(),
+        assertEquals(0.1, probabilityOfCollision.getValue().getReal());
+        assertEquals(0.2, probabilityOfCollision.getUpperLimit().getReal());
+        assertEquals(0.05, probabilityOfCollision.getLowerLimit().getReal());
+        assertEquals(new Laas2015().getName(),
                                 probabilityOfCollision.getProbabilityOfCollisionMethodName());
-        Assertions.assertFalse(probabilityOfCollision.isMaxProbability());
+        assertFalse(probabilityOfCollision.isMaxProbability());
     }
 
     @Test
@@ -58,9 +60,9 @@ class FieldProbabilityOfCollisionTest {
         final FieldProbabilityOfCollision<Binary64> probabilityOfCollision =
                 new FieldProbabilityOfCollision<>(value, method.getName());
         // THEN
-        Assertions.assertEquals(0.1, probabilityOfCollision.getValue().getReal());
-        Assertions.assertEquals(0, probabilityOfCollision.getUpperLimit().getReal());
-        Assertions.assertEquals(0, probabilityOfCollision.getLowerLimit().getReal());
-        Assertions.assertEquals(new Laas2015().getName(), probabilityOfCollision.getProbabilityOfCollisionMethodName());
+        assertEquals(0.1, probabilityOfCollision.getValue().getReal());
+        assertEquals(0, probabilityOfCollision.getUpperLimit().getReal());
+        assertEquals(0, probabilityOfCollision.getLowerLimit().getReal());
+        assertEquals(new Laas2015().getName(), probabilityOfCollision.getProbabilityOfCollisionMethodName());
     }
 }

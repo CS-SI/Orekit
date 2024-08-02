@@ -17,12 +17,15 @@
 
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -39,9 +42,9 @@ class TimeStampedDoubleAndDerivativeAndDerivativeHermiteInterpolatorTest {
         final TimeStampedDoubleAndDerivativeHermiteInterpolator interpolator = new TimeStampedDoubleAndDerivativeHermiteInterpolator();
 
         // Then
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
                                 interpolator.getNbInterpolationPoints());
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                 interpolator.getExtrapolationThreshold());
     }
 
@@ -84,13 +87,13 @@ class TimeStampedDoubleAndDerivativeAndDerivativeHermiteInterpolatorTest {
         try {
             // wait for proper ending
             service.shutdown();
-            Assertions.assertTrue(service.awaitTermination(5, TimeUnit.SECONDS));
+            assertTrue(service.awaitTermination(5, TimeUnit.SECONDS));
         } catch (InterruptedException ie) {
             // Restore interrupted state...
             Thread.currentThread().interrupt();
         }
-        Assertions.assertEquals(expectedSum0, sum0.get(), 1.0e-12);
-        Assertions.assertEquals(expectedSum1, sum1.get(), 1.0e-12);
+        assertEquals(expectedSum0, sum0.get(), 1.0e-12);
+        assertEquals(expectedSum1, sum1.get(), 1.0e-12);
     }
 
     /** Custom class for multi threading testing purpose */

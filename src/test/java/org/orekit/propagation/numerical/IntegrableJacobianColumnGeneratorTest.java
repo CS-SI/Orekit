@@ -25,7 +25,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -61,22 +60,24 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /** Unit tests for {@link IntegrableJacobianColumnGenerator}. */
-public class IntegrableJacobianColumnGeneratorTest {
+class IntegrableJacobianColumnGeneratorTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }
 
     @Test
-    public void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT, 2.4e-3, OrbitType.values());
     }
 
     @Test
-    public void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() throws ParseException, IOException {
         // TODO: for an unknown reason, derivatives with respect to central attraction
         // coefficient currently (June 2016) do not work in non-Cartesian orbits
         // we don't even know if the test is badly written or if the library code is wrong ...
@@ -209,7 +210,7 @@ public class IntegrableJacobianColumnGeneratorTest {
                                    sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
                 for (int i = 0; i < 6; ++i) {
-                    Assertions.assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
+                    assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
                 }
 
             }
@@ -218,7 +219,7 @@ public class IntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    public void testJacobianIssue18() {
+    void testJacobianIssue18() {
 
         // Body mu
         final double mu = 3.9860047e14;
@@ -287,7 +288,7 @@ public class IntegrableJacobianColumnGeneratorTest {
 
         final AbsoluteDate finalDate = fireDate.shiftedBy(3800);
         final SpacecraftState finalorb = propagator.propagate(finalDate);
-        Assertions.assertEquals(0, finalDate.durationFrom(finalorb.getDate()), 1.0e-11);
+        assertEquals(0, finalDate.durationFrom(finalorb.getDate()), 1.0e-11);
 
     }
 

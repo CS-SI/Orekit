@@ -16,18 +16,19 @@
  */
 package org.orekit.forces.gravity;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 
 import java.lang.reflect.Field;
 
-public class OceanTidesWaveTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class OceanTidesWaveTest {
 
     @Test
-    public void testDelaunayParameters()
-        throws SecurityException, NoSuchFieldException,
-               IllegalArgumentException, IllegalAccessException {
+    void testDelaunayParameters()
+            throws SecurityException, NoSuchFieldException,
+            IllegalArgumentException, IllegalAccessException {
 
         Field cGammaField = OceanTidesWave.class.getDeclaredField("cGamma");
         cGammaField.setAccessible(true);
@@ -127,13 +128,13 @@ public class OceanTidesWaveTest {
 
         for (int[] row : tab65) {
             OceanTidesWave wave = new OceanTidesWave(row[0], 0, 0, new double[1][1][4]);
-            Assertions.assertEquals( row[0], wave.getDoodson());
-            Assertions.assertEquals( row[1], ((Integer) cGammaField.get(wave)).intValue());
-            Assertions.assertEquals(-row[2], ((Integer) cLField.get(wave)).intValue());
-            Assertions.assertEquals(-row[3], ((Integer) cLPrimeField.get(wave)).intValue());
-            Assertions.assertEquals(-row[4], ((Integer) cFField.get(wave)).intValue());
-            Assertions.assertEquals(-row[5], ((Integer) cDField.get(wave)).intValue());
-            Assertions.assertEquals(-row[6], ((Integer) cOmegaField.get(wave)).intValue());
+            assertEquals( row[0], wave.getDoodson());
+            assertEquals( row[1], ((Integer) cGammaField.get(wave)).intValue());
+            assertEquals(-row[2], ((Integer) cLField.get(wave)).intValue());
+            assertEquals(-row[3], ((Integer) cLPrimeField.get(wave)).intValue());
+            assertEquals(-row[4], ((Integer) cFField.get(wave)).intValue());
+            assertEquals(-row[5], ((Integer) cDField.get(wave)).intValue());
+            assertEquals(-row[6], ((Integer) cOmegaField.get(wave)).intValue());
         }
 
     }

@@ -17,10 +17,8 @@
 package org.orekit.utils;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +38,14 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
 import java.util.ArrayList;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -49,24 +55,24 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 
-public class GenericTimeStampedCacheTest {
+class GenericTimeStampedCacheTest {
 
     @Test
-    public void testSingleCall() throws TimeStampedCacheException {
+    void testSingleCall() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(10, 3600.0, 13);
         List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
         list.add(AbsoluteDate.GALILEO_EPOCH);
-        Assertions.assertEquals(1, checkDatesSingleThread(list, cache));
-        Assertions.assertEquals(1, cache.getGetNeighborsCalls());
-        Assertions.assertEquals(4, cache.getGenerateCalls());
-        Assertions.assertEquals(0, cache.getSlotsEvictions());
-        Assertions.assertEquals(10, cache.getMaxSlots());
-        Assertions.assertEquals(Constants.JULIAN_DAY, cache.getNewSlotQuantumGap(), 1.0e-10);
-        Assertions.assertEquals(Constants.JULIAN_YEAR, cache.getMaxSpan(), 1.0e-10);
+        assertEquals(1, checkDatesSingleThread(list, cache));
+        assertEquals(1, cache.getGetNeighborsCalls());
+        assertEquals(4, cache.getGenerateCalls());
+        assertEquals(0, cache.getSlotsEvictions());
+        assertEquals(10, cache.getMaxSlots());
+        assertEquals(Constants.JULIAN_DAY, cache.getNewSlotQuantumGap(), 1.0e-10);
+        assertEquals(Constants.JULIAN_YEAR, cache.getMaxSpan(), 1.0e-10);
     }
 
     @Test
-    public void testPastInfinityRange() throws TimeStampedCacheException {
+    void testPastInfinityRange() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache =
                 new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.PAST_INFINITY,
@@ -76,20 +82,20 @@ public class GenericTimeStampedCacheTest {
         list.add(AbsoluteDate.GALILEO_EPOCH);
         list.add(AbsoluteDate.MODIFIED_JULIAN_EPOCH);
         list.add(AbsoluteDate.JULIAN_EPOCH);
-        Assertions.assertEquals(3, checkDatesSingleThread(list, cache));
-        Assertions.assertEquals(3, cache.getGetNeighborsCalls());
+        assertEquals(3, checkDatesSingleThread(list, cache));
+        assertEquals(3, cache.getGetNeighborsCalls());
         try {
             cache.getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
-            Assertions.fail("expected TimeStampedCacheException");
+            fail("expected TimeStampedCacheException");
         } catch (TimeStampedCacheException tce) {
             // expected behavior
         } catch (Exception e) {
-            Assertions.fail("wrong exception caught");
+            fail("wrong exception caught");
         }
     }
 
     @Test
-    public void testFutureInfinityRange() throws TimeStampedCacheException {
+    void testFutureInfinityRange() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache =
                 new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.MODIFIED_JULIAN_EPOCH,
@@ -97,20 +103,20 @@ public class GenericTimeStampedCacheTest {
         List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
         list.add(AbsoluteDate.J2000_EPOCH);
         list.add(AbsoluteDate.GALILEO_EPOCH);
-        Assertions.assertEquals(2, checkDatesSingleThread(list, cache));
-        Assertions.assertEquals(2, cache.getGetNeighborsCalls());
+        assertEquals(2, checkDatesSingleThread(list, cache));
+        assertEquals(2, cache.getGetNeighborsCalls());
         try {
             cache.getNeighbors(AbsoluteDate.JULIAN_EPOCH);
-            Assertions.fail("expected TimeStampedCacheException");
+            fail("expected TimeStampedCacheException");
         } catch (TimeStampedCacheException tce) {
             // expected behavior
         } catch (Exception e) {
-            Assertions.fail("wrong exception caught");
+            fail("wrong exception caught");
         }
     }
 
     @Test
-    public void testInfinityRange() throws TimeStampedCacheException {
+    void testInfinityRange() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache =
                 new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.PAST_INFINITY,
@@ -122,146 +128,146 @@ public class GenericTimeStampedCacheTest {
         list.add(AbsoluteDate.JULIAN_EPOCH);
         list.add(AbsoluteDate.J2000_EPOCH);
         list.add(AbsoluteDate.GALILEO_EPOCH);
-        Assertions.assertEquals(5, checkDatesSingleThread(list, cache));
-        Assertions.assertEquals(5, cache.getGetNeighborsCalls());
+        assertEquals(5, checkDatesSingleThread(list, cache));
+        assertEquals(5, cache.getGetNeighborsCalls());
     }
 
     @Test
-    public void testRegularCalls() throws TimeStampedCacheException {
+    void testRegularCalls() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
-        Assertions.assertEquals(2000, testMultipleSingleThread(cache, new SequentialMode(), 2));
-        Assertions.assertEquals(2000, cache.getGetNeighborsCalls());
-        Assertions.assertEquals(56, cache.getGenerateCalls());
-        Assertions.assertEquals(0, cache.getSlotsEvictions());
+        assertEquals(2000, testMultipleSingleThread(cache, new SequentialMode(), 2));
+        assertEquals(2000, cache.getGetNeighborsCalls());
+        assertEquals(56, cache.getGenerateCalls());
+        assertEquals(0, cache.getSlotsEvictions());
     }
 
     @Test
-    public void testAlternateCallsGoodConfiguration() throws TimeStampedCacheException {
+    void testAlternateCallsGoodConfiguration() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
-        Assertions.assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
-        Assertions.assertEquals(2000, cache.getGetNeighborsCalls());
-        Assertions.assertEquals(56, cache.getGenerateCalls());
-        Assertions.assertEquals(0, cache.getSlotsEvictions());
+        assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
+        assertEquals(2000, cache.getGetNeighborsCalls());
+        assertEquals(56, cache.getGenerateCalls());
+        assertEquals(0, cache.getSlotsEvictions());
     }
 
     @Test
-    public void testAlternateCallsBadConfiguration() throws TimeStampedCacheException {
+    void testAlternateCallsBadConfiguration() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(1, 3600, 13);
-        Assertions.assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
-        Assertions.assertEquals(2000, cache.getGetNeighborsCalls());
-        Assertions.assertEquals(8000, cache.getGenerateCalls());
-        Assertions.assertEquals(1999, cache.getSlotsEvictions());
+        assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
+        assertEquals(2000, cache.getGetNeighborsCalls());
+        assertEquals(8000, cache.getGenerateCalls());
+        assertEquals(1999, cache.getSlotsEvictions());
     }
 
     @Test
-    public void testRandomCallsGoodConfiguration() throws TimeStampedCacheException {
+    void testRandomCallsGoodConfiguration() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(30, 3600, 13);
-        Assertions.assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
-        Assertions.assertEquals(5000, cache.getGetNeighborsCalls());
-        Assertions.assertTrue(cache.getGenerateCalls() < 250);
-        Assertions.assertEquals(0, cache.getSlotsEvictions());
+        assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
+        assertEquals(5000, cache.getGetNeighborsCalls());
+        assertTrue(cache.getGenerateCalls() < 250);
+        assertEquals(0, cache.getSlotsEvictions());
     }
 
     @Test
-    public void testRandomCallsBadConfiguration() throws TimeStampedCacheException {
+    void testRandomCallsBadConfiguration() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
-        Assertions.assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
-        Assertions.assertEquals(5000, cache.getGetNeighborsCalls());
-        Assertions.assertTrue(cache.getGenerateCalls()  > 400);
-        Assertions.assertTrue(cache.getSlotsEvictions() > 300);
+        assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
+        assertEquals(5000, cache.getGetNeighborsCalls());
+        assertTrue(cache.getGenerateCalls()  > 400);
+        assertTrue(cache.getSlotsEvictions() > 300);
     }
 
     @Test
-    public void testMultithreadedGoodConfiguration() throws TimeStampedCacheException {
+    void testMultithreadedGoodConfiguration() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(50, 3600, 13);
         int n = testMultipleMultiThread(cache, new AlternateMode(), 50, 30);
-        Assertions.assertEquals(n, cache.getGetNeighborsCalls());
-        Assertions.assertTrue(cache.getGenerateCalls() < n / 20,
+        assertEquals(n, cache.getGetNeighborsCalls());
+        assertTrue(cache.getGenerateCalls() < n / 20,
                 "this test may fail randomly due to multi-threading non-determinism" +
                 " (n = " + n + ", calls = " + cache.getGenerateCalls() +
                 ", ratio = " + (n / cache.getGenerateCalls()) + ")");
-        Assertions.assertTrue(cache.getSlotsEvictions() < n / 1000, 
+        assertTrue(cache.getSlotsEvictions() < n / 1000, 
                 "this test may fail randomly due to multi-threading non-determinism" +
                 " (n = " + n + ", evictions = " + cache.getSlotsEvictions() +
                 (cache.getSlotsEvictions() == 0 ? "" : (", ratio = " + (n / cache.getSlotsEvictions()))) + ")");
     }
 
     @Test
-    public void testMultithreadedBadConfiguration() throws TimeStampedCacheException {
+    void testMultithreadedBadConfiguration() throws TimeStampedCacheException {
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
         int n = testMultipleMultiThread(cache, new AlternateMode(), 50, 100);
-        Assertions.assertEquals(n, cache.getGetNeighborsCalls());
-        Assertions.assertTrue(cache.getGenerateCalls() > n / 15,
+        assertEquals(n, cache.getGetNeighborsCalls());
+        assertTrue(cache.getGenerateCalls() > n / 15,
                 "this test may fail randomly due to multi-threading non-determinism" +
                 " (n = " + n + ", calls = " + cache.getGenerateCalls() +
                 ", ratio = " + (n / cache.getGenerateCalls()) + ")");
-        Assertions.assertTrue(cache.getSlotsEvictions() > n / 60, 
+        assertTrue(cache.getSlotsEvictions() > n / 60, 
                 "this test may fail randomly due to multi-threading non-determinism" +
                 " (n = " + n + ", evictions = " + cache.getSlotsEvictions() +
                 ", ratio = " + (n / cache.getSlotsEvictions()) + ")");
     }
 
     @Test
-    public void testSmallShift() throws TimeStampedCacheException {
+    void testSmallShift() throws TimeStampedCacheException {
         double hour = 3600;
         GenericTimeStampedCache<AbsoluteDate> cache = createCache(10, hour, 13);
-        Assertions.assertEquals(0, cache.getSlots());
-        Assertions.assertEquals(0, cache.getEntries());
+        assertEquals(0, cache.getSlots());
+        assertEquals(0, cache.getEntries());
         final AbsoluteDate start = AbsoluteDate.GALILEO_EPOCH;
         cache.getNeighbors(start);
-        Assertions.assertEquals(1, cache.getGetNeighborsCalls());
-        Assertions.assertEquals(1, cache.getSlots());
-        Assertions.assertEquals(18, cache.getEntries());
-        Assertions.assertEquals(4, cache.getGenerateCalls());
-        Assertions.assertEquals(-11 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
-        Assertions.assertEquals( +6 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
+        assertEquals(1, cache.getGetNeighborsCalls());
+        assertEquals(1, cache.getSlots());
+        assertEquals(18, cache.getEntries());
+        assertEquals(4, cache.getGenerateCalls());
+        assertEquals(-11 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
+        assertEquals( +6 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
         cache.getNeighbors(start.shiftedBy(-3 * 3600));
-        Assertions.assertEquals(2, cache.getGetNeighborsCalls());
-        Assertions.assertEquals(1, cache.getSlots());
-        Assertions.assertEquals(18, cache.getEntries());
-        Assertions.assertEquals(4, cache.getGenerateCalls());
-        Assertions.assertEquals(-11 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
-        Assertions.assertEquals( +6 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
+        assertEquals(2, cache.getGetNeighborsCalls());
+        assertEquals(1, cache.getSlots());
+        assertEquals(18, cache.getEntries());
+        assertEquals(4, cache.getGenerateCalls());
+        assertEquals(-11 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
+        assertEquals( +6 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
         cache.getNeighbors(start.shiftedBy(7 * 3600));
-        Assertions.assertEquals(3, cache.getGetNeighborsCalls());
-        Assertions.assertEquals(1, cache.getSlots());
-        Assertions.assertEquals(25, cache.getEntries());
-        Assertions.assertEquals(5, cache.getGenerateCalls());
-        Assertions.assertEquals(-11 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
-        Assertions.assertEquals(+13 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
+        assertEquals(3, cache.getGetNeighborsCalls());
+        assertEquals(1, cache.getSlots());
+        assertEquals(25, cache.getEntries());
+        assertEquals(5, cache.getGenerateCalls());
+        assertEquals(-11 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
+        assertEquals(+13 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
     }
 
     @Test
-    public void testNotEnoughSlots() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testNotEnoughSlots() {
+        assertThrows(IllegalArgumentException.class, () -> {
             createCache(0, 3600.0, 13);
         });
     }
 
     @Test
-    public void testNotEnoughNeighbors() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testNotEnoughNeighbors() {
+        assertThrows(IllegalArgumentException.class, () -> {
             createCache(10, 3600.0, 1);
         });
     }
 
     @Test
-    public void testNoEarliestEntry() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+    void testNoEarliestEntry() {
+        assertThrows(IllegalStateException.class, () -> {
             createCache(10, 3600.0, 3).getEarliest();
         });
     }
 
     @Test
-    public void testNoLatestEntry() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+    void testNoLatestEntry() {
+        assertThrows(IllegalStateException.class, () -> {
             createCache(10, 3600.0, 3).getLatest();
         });
     }
 
     @Test
-    public void testNoGeneratedData() throws TimeStampedCacheException {
-        Assertions.assertThrows(TimeStampedCacheException.class, () -> {
+    void testNoGeneratedData() throws TimeStampedCacheException {
+        assertThrows(TimeStampedCacheException.class, () -> {
             TimeStampedGenerator<AbsoluteDate> nullGenerator =
                     new TimeStampedGenerator<AbsoluteDate>() {
                         public List<AbsoluteDate> generate(AbsoluteDate existingDate,
@@ -275,7 +281,7 @@ public class GenericTimeStampedCacheTest {
     }
 
     @Test
-    public void testNoDataBefore() throws TimeStampedCacheException {
+    void testNoDataBefore() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
                     public List<AbsoluteDate> generate(AbsoluteDate existingDate,
@@ -288,15 +294,15 @@ public class GenericTimeStampedCacheTest {
                 2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY, nullGenerator);
         try {
             cache.getNeighbors(central);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
-            MatcherAssert.assertThat(e.getMessage(),
+            assertThat(e.getMessage(),
                     CoreMatchers.containsString(central.toString()));
         }
     }
 
     @Test
-    public void testNoDataAfter() throws TimeStampedCacheException {
+    void testNoDataAfter() throws TimeStampedCacheException {
         TimeStampedGenerator<AbsoluteDate> nullGenerator =
                 new TimeStampedGenerator<AbsoluteDate>() {
             public List<AbsoluteDate> generate(AbsoluteDate existingDate,
@@ -309,16 +315,16 @@ public class GenericTimeStampedCacheTest {
                 2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY, nullGenerator);
         try {
             cache.getNeighbors(central);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
-            MatcherAssert.assertThat(e.getMessage(),
+            assertThat(e.getMessage(),
                     CoreMatchers.containsString(central.toString()));
         }
     }
 
     @Test
-    public void testUnsortedEntries() throws TimeStampedCacheException {
-        Assertions.assertThrows(TimeStampedCacheException.class, () -> {
+    void testUnsortedEntries() throws TimeStampedCacheException {
+        assertThrows(TimeStampedCacheException.class, () -> {
             TimeStampedGenerator<AbsoluteDate> reversedGenerator =
                     new TimeStampedGenerator<AbsoluteDate>() {
                         /** {@inheritDoc} */
@@ -336,7 +342,7 @@ public class GenericTimeStampedCacheTest {
     }
 
     @Test
-    public void testDuplicatingGenerator() throws TimeStampedCacheException {
+    void testDuplicatingGenerator() throws TimeStampedCacheException {
 
         final double step = 3600.0;
 
@@ -374,19 +380,19 @@ public class GenericTimeStampedCacheTest {
 
         final AbsoluteDate start = AbsoluteDate.GALILEO_EPOCH;
         final List<AbsoluteDate> firstSet = cache.getNeighbors(start).collect(Collectors.toList());
-        Assertions.assertEquals(5, firstSet.size());
-        Assertions.assertEquals(4, cache.getGenerateCalls());
-        Assertions.assertEquals(8, cache.getEntries());
+        assertEquals(5, firstSet.size());
+        assertEquals(4, cache.getGenerateCalls());
+        assertEquals(8, cache.getEntries());
         for (int i = 1; i < firstSet.size(); ++i) {
-            Assertions.assertEquals(step, firstSet.get(i).durationFrom(firstSet.get(i - 1)), 1.0e-10);
+            assertEquals(step, firstSet.get(i).durationFrom(firstSet.get(i - 1)), 1.0e-10);
         }
 
         final List<AbsoluteDate> secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step)).collect(Collectors.toList());
-        Assertions.assertEquals(5, secondSet.size());
-        Assertions.assertEquals(7, cache.getGenerateCalls());
-        Assertions.assertEquals(20, cache.getEntries());
+        assertEquals(5, secondSet.size());
+        assertEquals(7, cache.getGenerateCalls());
+        assertEquals(20, cache.getEntries());
         for (int i = 1; i < secondSet.size(); ++i) {
-            Assertions.assertEquals(step, firstSet.get(i).durationFrom(firstSet.get(i - 1)), 1.0e-10);
+            assertEquals(step, firstSet.get(i).durationFrom(firstSet.get(i - 1)), 1.0e-10);
         }
 
     }
@@ -419,7 +425,7 @@ public class GenericTimeStampedCacheTest {
             final AbsoluteDate ephemerisEndDate   = new AbsoluteDate(23, 6, 15, 0, 0, 1, utc);
 
             // New propagation should not throw an ArithmeticException
-            Assertions.assertDoesNotThrow(() -> tlePropagator.propagate(ephemerisStartDate, ephemerisEndDate));
+            assertDoesNotThrow(() -> tlePropagator.propagate(ephemerisStartDate, ephemerisEndDate));
         }
     }
 
@@ -464,10 +470,10 @@ public class GenericTimeStampedCacheTest {
 
         for (final AbsoluteDate central : centralDates) {
             final List<AbsoluteDate> neighbors = cache.getNeighbors(central).collect(Collectors.toList());
-            Assertions.assertEquals(n, neighbors.size());
+            assertEquals(n, neighbors.size());
             for (final AbsoluteDate date : neighbors) {
-                Assertions.assertTrue(date.durationFrom(central) >= -(n + 1) * step);
-                Assertions.assertTrue(date.durationFrom(central) <= n * step);
+                assertTrue(date.durationFrom(central) >= -(n + 1) * step);
+                assertTrue(date.durationFrom(central) <= n * step);
             }
         }
 
@@ -491,7 +497,7 @@ public class GenericTimeStampedCacheTest {
                 public void run() {
                     try {
                         final List<AbsoluteDate> neighbors = cache.getNeighbors(central).collect(Collectors.toList());
-                        Assertions.assertEquals(n, neighbors.size());
+                        assertEquals(n, neighbors.size());
                         for (final AbsoluteDate date : neighbors) {
                             if (date.durationFrom(central) < -(n + 1) * step ||
                                 date.durationFrom(central) > n * step) {
@@ -510,10 +516,10 @@ public class GenericTimeStampedCacheTest {
 
         try {
             executorService.shutdown();
-            Assertions.assertTrue(executorService.awaitTermination(10, TimeUnit.MINUTES), 
+            assertTrue(executorService.awaitTermination(10, TimeUnit.MINUTES), 
                     "Not enough time for all threads to complete, try increasing the timeout");
         } catch (InterruptedException ie) {
-            Assertions.fail(ie.getLocalizedMessage());
+            fail(ie.getLocalizedMessage());
         }
 
         if (caught.get() != null) {
@@ -530,7 +536,7 @@ public class GenericTimeStampedCacheTest {
             for (int i = 1; i < dates.length; ++i) {
                 builder.append("    ").append(dates[i]).append(eol);
             }
-            Assertions.fail(builder.toString());
+            fail(builder.toString());
         }
 
         return centralDates.size();
@@ -632,7 +638,7 @@ public class GenericTimeStampedCacheTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 }

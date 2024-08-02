@@ -27,7 +27,6 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -48,7 +47,9 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeSpanMap.Span;
 
-public class InterSatellitesRangeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class InterSatellitesRangeTest {
 
 
     /**
@@ -56,7 +57,7 @@ public class InterSatellitesRangeTest {
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest inter-satellites Range Values\n");
@@ -70,7 +71,7 @@ public class InterSatellitesRangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesEmitter() {
+    void testStateDerivativesEmitter() {
 
         boolean printResults = false;
         if (printResults) {
@@ -93,7 +94,7 @@ public class InterSatellitesRangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesTransit() {
+    void testStateDerivativesTransit() {
 
         boolean printResults = false;
         if (printResults) {
@@ -181,13 +182,13 @@ public class InterSatellitesRangeTest {
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     if (!isr.isTwoWay()) {
                         final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                        Assertions.assertEquals((dt + localClockOffset - remoteClockOffset) * Constants.SPEED_OF_LIGHT,
+                        assertEquals((dt + localClockOffset - remoteClockOffset) * Constants.SPEED_OF_LIGHT,
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
                     } else {
                         final double dt = participants[2].getDate().durationFrom(participants[0].getDate());
-                        Assertions.assertEquals(3, participants.length);
-                        Assertions.assertEquals(0.5 * dt * Constants.SPEED_OF_LIGHT,
+                        assertEquals(3, participants.length);
+                        assertEquals(0.5 * dt * Constants.SPEED_OF_LIGHT,
                                             estimated.getEstimatedValue()[0],
                                             1.0e-7);
                     }
@@ -250,14 +251,14 @@ public class InterSatellitesRangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 2.2e-7);
-        Assertions.assertEquals(0.0, absErrorsMin,    1.4e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    2.0e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 4.1e-12);
-        Assertions.assertEquals(0.0, relErrorsMax,    5.0e-11);
+        assertEquals(0.0, absErrorsMedian, 2.2e-7);
+        assertEquals(0.0, absErrorsMin,    1.4e-6);
+        assertEquals(0.0, absErrorsMax,    2.0e-7);
+        assertEquals(0.0, relErrorsMedian, 4.1e-12);
+        assertEquals(0.0, relErrorsMax,    5.0e-11);
 
         // Test measurement type
-        Assertions.assertEquals(InterSatellitesRange.MEASUREMENT_TYPE,
+        assertEquals(InterSatellitesRange.MEASUREMENT_TYPE,
                                 measurements.get(0).getMeasurementType());
     }
 
@@ -335,8 +336,8 @@ public class InterSatellitesRangeTest {
                                                                 }, measurement.getDimension(), propagator.getAttitudeProvider(),
                                                                 OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -409,12 +410,12 @@ public class InterSatellitesRangeTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     /**
@@ -422,7 +423,7 @@ public class InterSatellitesRangeTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Run test
         double refErrorsMedian = 1.0e-12;
@@ -509,8 +510,8 @@ public class InterSatellitesRangeTest {
 
                             final double[] gradient  = measurement.
                                 estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                            assertEquals(1, measurement.getDimension());
+                            assertEquals(1, gradient.length);
 
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
@@ -551,9 +552,9 @@ public class InterSatellitesRangeTest {
         final double relErrorsMean   = new Mean().evaluate(relErrors);
         final double relErrorsMax    = new Max().evaluate(relErrors);
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 

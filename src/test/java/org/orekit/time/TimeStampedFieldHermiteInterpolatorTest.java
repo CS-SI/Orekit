@@ -19,12 +19,13 @@ package org.orekit.time;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -40,9 +41,9 @@ class TimeStampedFieldHermiteInterpolatorTest {
         final TimeStampedFieldHermiteInterpolator<Binary64> interpolator = new TimeStampedFieldHermiteInterpolator<>();
 
         // Then
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
                                 interpolator.getNbInterpolationPoints());
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                 interpolator.getExtrapolationThreshold());
     }
 
@@ -82,7 +83,7 @@ class TimeStampedFieldHermiteInterpolatorTest {
         // THEN
         // Sum of 1*1 + 2*2 + 3*3 + ...
         final int expectedSum = sampleSize * (sampleSize + 1) * (2 * sampleSize + 1) / 6;
-        Assertions.assertEquals(expectedSum, sum.get());
+        assertEquals(expectedSum, sum.get());
         try {
             // wait for proper ending
             service.shutdown();

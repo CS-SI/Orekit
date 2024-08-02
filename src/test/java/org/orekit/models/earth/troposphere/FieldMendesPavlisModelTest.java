@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,22 +58,25 @@ import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
 
-public class FieldMendesPavlisModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FieldMendesPavlisModelTest {
 
     private static final double epsilon = 1e-6;
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testZenithDelay() {
+    void testZenithDelay() {
         doTestZenithDelay(Binary64Field.getInstance());
     }
 
@@ -127,14 +129,14 @@ public class FieldMendesPavlisModelTest {
         
         final T[] computedDelay = model.computeZenithDelay(point, date);
 
-        Assertions.assertEquals(expectedHydroDelay, computedDelay[0].getReal(),                    precision);
-        Assertions.assertEquals(expectedWetDelay,   computedDelay[1].getReal(), precision);
-        Assertions.assertEquals(expectedDelay,      computedDelay[0].getReal() + computedDelay[1].getReal(), precision);
+        assertEquals(expectedHydroDelay, computedDelay[0].getReal(),                    precision);
+        assertEquals(expectedWetDelay,   computedDelay[1].getReal(), precision);
+        assertEquals(expectedDelay,      computedDelay[0].getReal() + computedDelay[1].getReal(), precision);
 
     }
 
     @Test
-    public void testMappingFactors() {
+    void testMappingFactors() {
         doTestMappingFactors(Binary64Field.getInstance());
     }
 
@@ -189,12 +191,12 @@ public class FieldMendesPavlisModelTest {
                                                                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
-        Assertions.assertEquals(expectedMapping, computedMapping[0].getReal(), 5.0e-8);
-        Assertions.assertEquals(expectedMapping, computedMapping[1].getReal(), 5.0e-8);
+        assertEquals(expectedMapping, computedMapping[0].getReal(), 5.0e-8);
+        assertEquals(expectedMapping, computedMapping[1].getReal(), 5.0e-8);
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         doTestDelay(Binary64Field.getInstance());
     }
 
@@ -211,12 +213,12 @@ public class FieldMendesPavlisModelTest {
                                        point,
                                        new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                        model.getParameters(field), date).getDelay();
-        Assertions.assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
+        assertTrue(Precision.compareTo(path.getReal(), 20d, epsilon) < 0);
+        assertTrue(Precision.compareTo(path.getReal(), 0d, epsilon) > 0);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         doTestFixedHeight(Binary64Field.getInstance());
     }
 
@@ -234,13 +236,13 @@ public class FieldMendesPavlisModelTest {
                                             point,
                                             new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             model.getParameters(field), date).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testDelayStateDerivatives() {
+    void testDelayStateDerivatives() {
 
         // Geodetic point
         final double latitude     = FastMath.toRadians(45.0);
@@ -368,7 +370,7 @@ public class FieldMendesPavlisModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.0e-11);
+            assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.0e-11);
         }
     }
 

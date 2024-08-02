@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -34,6 +33,9 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 
 class FieldOrbitTest {
@@ -48,7 +50,7 @@ class FieldOrbitTest {
         final FieldVector3D<Complex> actualPosition = testFieldOrbit.getPosition(date, frame);
         // THEN
         final FieldVector3D<Complex> expectedPosition = testFieldOrbit.getPVCoordinates(date, frame).getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     @Test
@@ -60,7 +62,7 @@ class FieldOrbitTest {
         // WHEN
         final boolean actualResult = FieldOrbit.hasNonKeplerianAcceleration(fieldPVCoordinates, mu);
         // THEN
-        Assertions.assertFalse(actualResult);
+        assertFalse(actualResult);
     }
 
     @Test
@@ -71,7 +73,7 @@ class FieldOrbitTest {
         // WHEN
         final boolean actualResult = FieldOrbit.hasNonKeplerianAcceleration(fieldPVCoordinates, mu);
         // THEN
-        Assertions.assertFalse(actualResult);
+        assertFalse(actualResult);
     }
 
     private static <T extends CalculusFieldElement<T>> FieldPVCoordinates<T> createFieldTPVWithKeplerianAcceleration(final T mu) {
@@ -92,7 +94,7 @@ class FieldOrbitTest {
         final double actualValue = period.multiply(meanMotion).getReal();
         // THEN
         final double expectedValue = MathUtils.TWO_PI;
-        Assertions.assertEquals(expectedValue, actualValue, 1e-10);
+        assertEquals(expectedValue, actualValue, 1e-10);
     }
 
     @Test
@@ -112,7 +114,7 @@ class FieldOrbitTest {
         final boolean actualValue = testOrbit.isElliptical();
         // THEN
         final boolean expectedValue = aIn > 0.;
-        Assertions.assertEquals(expectedValue, actualValue);
+        assertEquals(expectedValue, actualValue);
     }
 
     private static class TestFieldOrbit extends FieldOrbit<Complex> {

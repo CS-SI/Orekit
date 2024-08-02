@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -30,11 +29,16 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 class OrbitTypeTest {
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -45,7 +49,7 @@ class OrbitTypeTest {
         // WHEN
         final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
         // THEN
-        Assertions.assertFalse(actualIsPositionAngleBased);
+        assertFalse(actualIsPositionAngleBased);
     }
 
     @Test
@@ -55,7 +59,7 @@ class OrbitTypeTest {
         // WHEN
         final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
         // THEN
-        Assertions.assertTrue(actualIsPositionAngleBased);
+        assertTrue(actualIsPositionAngleBased);
     }
 
     @Test
@@ -65,7 +69,7 @@ class OrbitTypeTest {
         // WHEN
         final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
         // THEN
-        Assertions.assertTrue(actualIsPositionAngleBased);
+        assertTrue(actualIsPositionAngleBased);
     }
 
     @Test
@@ -75,7 +79,7 @@ class OrbitTypeTest {
         // WHEN
         final boolean actualIsPositionAngleBased = orbitType.isPositionAngleBased();
         // THEN
-        Assertions.assertTrue(actualIsPositionAngleBased);
+        assertTrue(actualIsPositionAngleBased);
     }
 
     @Test
@@ -132,16 +136,16 @@ class OrbitTypeTest {
 
     static <T extends CalculusFieldElement<T>> void compareFieldCartesian(final FieldCartesianOrbit<T> expectedFieldOrbit,
                                                                           final FieldCartesianOrbit<T> actualFieldOrbit) {
-        Assertions.assertEquals(expectedFieldOrbit.hasDerivatives(), actualFieldOrbit.hasDerivatives());
-        Assertions.assertEquals(expectedFieldOrbit.getFrame(), actualFieldOrbit.getFrame());
-        Assertions.assertEquals(expectedFieldOrbit.getMu(), actualFieldOrbit.getMu());
-        Assertions.assertEquals(expectedFieldOrbit.getDate(), actualFieldOrbit.getDate());
+        assertEquals(expectedFieldOrbit.hasDerivatives(), actualFieldOrbit.hasDerivatives());
+        assertEquals(expectedFieldOrbit.getFrame(), actualFieldOrbit.getFrame());
+        assertEquals(expectedFieldOrbit.getMu(), actualFieldOrbit.getMu());
+        assertEquals(expectedFieldOrbit.getDate(), actualFieldOrbit.getDate());
         final double tolerance = 1e-6;
-        Assertions.assertArrayEquals(expectedFieldOrbit.getPosition().toVector3D().toArray(),
+        assertArrayEquals(expectedFieldOrbit.getPosition().toVector3D().toArray(),
                 actualFieldOrbit.getPosition().toVector3D().toArray(), tolerance);
-        Assertions.assertArrayEquals(expectedFieldOrbit.getPVCoordinates().getVelocity().toVector3D().toArray(),
+        assertArrayEquals(expectedFieldOrbit.getPVCoordinates().getVelocity().toVector3D().toArray(),
                 actualFieldOrbit.getPVCoordinates().getVelocity().toVector3D().toArray(), tolerance);
-        Assertions.assertArrayEquals(expectedFieldOrbit.getPVCoordinates().getAcceleration().toVector3D().toArray(),
+        assertArrayEquals(expectedFieldOrbit.getPVCoordinates().getAcceleration().toVector3D().toArray(),
                 actualFieldOrbit.getPVCoordinates().getAcceleration().toVector3D().toArray(), tolerance);
     }
 

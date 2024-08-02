@@ -27,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -48,6 +47,8 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class GroundPointingTest {
     
     private static Frame INERTIAL_FRAME;
@@ -58,7 +59,7 @@ class GroundPointingTest {
 
     @BeforeAll
     @DefaultDataContext
-    public static void setUp() {
+    static void setUp() {
 
         Utils.setDataRoot("regular-data");
 
@@ -106,7 +107,7 @@ class GroundPointingTest {
         // THEN
         final Attitude attitude = groundPointing.getAttitude(orbit, orbit.getDate(), frame);
         final Rotation expectedRotation = attitude.getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
     
     @Test
@@ -130,7 +131,7 @@ class GroundPointingTest {
         // THEN
         final FieldAttitude<T> attitude = groundPointing.getAttitude(fieldOrbit, fieldOrbit.getDate(), frame);
         final FieldRotation<T> expectedRotation = attitude.getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+        assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
     @Test
@@ -152,9 +153,9 @@ class GroundPointingTest {
         final Attitude actualAttitude = groundPointing.getAttitude(fieldOrbit, fieldOrbit.getDate(), OTHER_INERTIAL_FRAME).toAttitude();
         // THEN
         final Attitude expectedAttitude = groundPointing.getAttitude(orbit, orbit.getDate(), OTHER_INERTIAL_FRAME);
-        Assertions.assertEquals(0., Rotation.distance(expectedAttitude.getRotation(), actualAttitude.getRotation()));
-        Assertions.assertEquals(expectedAttitude.getSpin(), actualAttitude.getSpin());
-        Assertions.assertEquals(expectedAttitude.getRotationAcceleration(), actualAttitude.getRotationAcceleration());
+        assertEquals(0., Rotation.distance(expectedAttitude.getRotation(), actualAttitude.getRotation()));
+        assertEquals(expectedAttitude.getSpin(), actualAttitude.getSpin());
+        assertEquals(expectedAttitude.getRotationAcceleration(), actualAttitude.getRotationAcceleration());
     }
 
     @Test
@@ -167,7 +168,7 @@ class GroundPointingTest {
         // THEN
         final Vector3D expectedPosition = groundPointing.getTargetPV(orbit, orbit.getDate(), INERTIAL_FRAME).
                 getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     @Test
@@ -190,7 +191,7 @@ class GroundPointingTest {
         // THEN
         final FieldVector3D<T> expectedPosition = groundPointing.getTargetPV(fieldOrbit, fieldOrbit.getDate(), INERTIAL_FRAME).
                 getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     private EquinoctialOrbit createPVCoordinatesProvider() {

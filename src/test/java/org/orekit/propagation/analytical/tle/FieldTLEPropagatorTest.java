@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -27,7 +26,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -50,28 +48,32 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 
 public class FieldTLEPropagatorTest {
 
     private double period;
 
     @Test
-    public void testsecondaryMode() {
+    void testsecondaryMode() {
         doTestsecondaryMode(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEphemerisMode() {
+    void testEphemerisMode() {
         doTestEphemerisMode(Binary64Field.getInstance());
     }
 
     @Test
-    public void testBodyCenterInPointingDirection() {
+    void testBodyCenterInPointingDirection() {
         doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
     @Test
-    public void testComparisonWithNonField() {
+    void testComparisonWithNonField() {
         doTestComparisonWithNonField(Binary64Field.getInstance());
     }
 
@@ -92,12 +94,12 @@ public class FieldTLEPropagatorTest {
         FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(period));
 
         // Check results
-        Assertions.assertEquals(initialState.getA().getReal(), finalState.getA().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getHx().getReal(), finalState.getHx().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getHy().getReal(), finalState.getHy().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getLM().getReal(), finalState.getLM().getReal(), 1e-3);
+        assertEquals(initialState.getA().getReal(), finalState.getA().getReal(), 1e-1);
+        assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1e-1);
+        assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1e-1);
+        assertEquals(initialState.getHx().getReal(), finalState.getHx().getReal(), 1e-3);
+        assertEquals(initialState.getHy().getReal(), finalState.getHy().getReal(), 1e-3);
+        assertEquals(initialState.getLM().getReal(), finalState.getLM().getReal(), 1e-3);
 
     }
 
@@ -128,22 +130,22 @@ public class FieldTLEPropagatorTest {
         FieldSpacecraftState<T> boundedState = boundedProp.propagate(initDate);
 
         // Check results
-        Assertions.assertEquals(initialState.getA().getReal(), boundedState.getA().getReal(), 0.);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), boundedState.getEquinoctialEx().getReal(), 0.);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), boundedState.getEquinoctialEy().getReal(), 0.);
-        Assertions.assertEquals(initialState.getHx().getReal(), boundedState.getHx().getReal(), 0.);
-        Assertions.assertEquals(initialState.getHy().getReal(), boundedState.getHy().getReal(), 0.);
-        Assertions.assertEquals(initialState.getLM().getReal(), boundedState.getLM().getReal(), 1e-14);
+        assertEquals(initialState.getA().getReal(), boundedState.getA().getReal(), 0.);
+        assertEquals(initialState.getEquinoctialEx().getReal(), boundedState.getEquinoctialEx().getReal(), 0.);
+        assertEquals(initialState.getEquinoctialEy().getReal(), boundedState.getEquinoctialEy().getReal(), 0.);
+        assertEquals(initialState.getHx().getReal(), boundedState.getHx().getReal(), 0.);
+        assertEquals(initialState.getHy().getReal(), boundedState.getHy().getReal(), 0.);
+        assertEquals(initialState.getLM().getReal(), boundedState.getLM().getReal(), 1e-14);
 
         FieldSpacecraftState<T> finalState = boundedProp.propagate(endDate);
 
         // Check results
-        Assertions.assertEquals(initialState.getA().getReal(), finalState.getA().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1e-1);
-        Assertions.assertEquals(initialState.getHx().getReal(), finalState.getHx().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getHy().getReal(), finalState.getHy().getReal(), 1e-3);
-        Assertions.assertEquals(initialState.getLM().getReal(), finalState.getLM().getReal(), 1e-3);
+        assertEquals(initialState.getA().getReal(), finalState.getA().getReal(), 1e-1);
+        assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1e-1);
+        assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 1e-1);
+        assertEquals(initialState.getHx().getReal(), finalState.getHx().getReal(), 1e-3);
+        assertEquals(initialState.getHy().getReal(), finalState.getHy().getReal(), 1e-3);
+        assertEquals(initialState.getLM().getReal(), finalState.getLM().getReal(), 1e-3);
 
     }
 
@@ -173,15 +175,15 @@ public class FieldTLEPropagatorTest {
                                                  T_zero.add(Propagator.DEFAULT_MASS), parameters);
         propagator.setStepHandler(T_zero.add(900.0), checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        Assertions.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
+        assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
 
         // with default attitude mode, distance should be large
         propagator = FieldTLEPropagator.selectExtrapolator(tle, parameters);
         propagator.setStepHandler(T_zero.add(900.0), checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        MatcherAssert.assertThat(checker.getMinDistance(),
+        assertThat(checker.getMinDistance(),
                 OrekitMatchers.greaterThan(1.5218e7));
-        Assertions.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
+        assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
 
     }
 
@@ -282,11 +284,11 @@ public class FieldTLEPropagatorTest {
         SpacecraftState finalISS = propagator.propagate(endDate);
 
         // check
-        Assertions.assertEquals(0, Vector3D.distance(finalGPS.getPosition(), fieldfinalGPS.getPosition().toVector3D()), 3.8e-9);
-        Assertions.assertEquals(0, Vector3D.distance(finalGPS.getVelocity(), fieldfinalGPS.getVelocity().toVector3D()), 0.);
+        assertEquals(0, Vector3D.distance(finalGPS.getPosition(), fieldfinalGPS.getPosition().toVector3D()), 3.8e-9);
+        assertEquals(0, Vector3D.distance(finalGPS.getVelocity(), fieldfinalGPS.getVelocity().toVector3D()), 0.);
 
-        Assertions.assertEquals(0, Vector3D.distance(finalISS.getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
-        Assertions.assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getVelocity(), fieldfinalISS.getPVCoordinates().getVelocity().toVector3D()), 0.);
+        assertEquals(0, Vector3D.distance(finalISS.getPosition(), fieldfinalISS.getPVCoordinates().getPosition().toVector3D()), 0.);
+        assertEquals(0, Vector3D.distance(finalISS.getPVCoordinates().getVelocity(), fieldfinalISS.getPVCoordinates().getVelocity().toVector3D()), 0.);
 
     }
 
@@ -308,9 +310,9 @@ public class FieldTLEPropagatorTest {
 
         // THEN
         final FieldSpacecraftState<Gradient> actualState = tlePropagator.getInitialState();
-        Assertions.assertEquals(expectedMass.getReal(), tlePropagator.getMass(actualState.getDate()).getReal());
-        Assertions.assertEquals(expectedMass.getReal(), actualState.getMass().getReal());
-        Assertions.assertNotEquals(unexpectedMass.getReal(), actualState.getMass().getReal());
+        assertEquals(expectedMass.getReal(), tlePropagator.getMass(actualState.getDate()).getReal());
+        assertEquals(expectedMass.getReal(), actualState.getMass().getReal());
+        assertNotEquals(unexpectedMass.getReal(), actualState.getMass().getReal());
     }
 
     private FieldTLE<Gradient> getGradientTLE() {
@@ -347,11 +349,11 @@ public class FieldTLEPropagatorTest {
         // THEN
         final double tinyTimeShift = (isForward) ? 1e-3 : -1e-3;
         final double actualMass = tlePropagator.getMass(modifiedState.getDate().shiftedBy(tinyTimeShift)).getReal();
-        Assertions.assertEquals(expectedMass, actualMass);
+        assertEquals(expectedMass, actualMass);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
 
         // the period of the GPS satellite

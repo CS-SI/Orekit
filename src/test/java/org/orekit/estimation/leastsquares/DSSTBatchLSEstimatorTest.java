@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -48,15 +47,21 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
-public class DSSTBatchLSEstimatorTest {
+class DSSTBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testKeplerPV() {
+    void testKeplerPV() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -89,17 +94,17 @@ public class DSSTBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assertions.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        assertEquals(6,       normalizedCovariances.getRowDimension());
+        assertEquals(6,       normalizedCovariances.getColumnDimension());
+        assertEquals(6,       physicalCovariances.getRowDimension());
+        assertEquals(6,       physicalCovariances.getColumnDimension());
+        assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerPVBackward() {
+    void testKeplerPVBackward() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -132,11 +137,11 @@ public class DSSTBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
-        Assertions.assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
+        assertEquals(6,       normalizedCovariances.getRowDimension());
+        assertEquals(6,       normalizedCovariances.getColumnDimension());
+        assertEquals(6,       physicalCovariances.getRowDimension());
+        assertEquals(6,       physicalCovariances.getColumnDimension());
+        assertEquals(0.00258, physicalCovariances.getEntry(0, 0), 1.0e-5);
 
     }
 
@@ -144,7 +149,7 @@ public class DSSTBatchLSEstimatorTest {
      * Perfect range measurements with a biased start
      */
     @Test
-    public void testKeplerRange() {
+    void testKeplerRange() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -180,36 +185,36 @@ public class DSSTBatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assertions.assertEquals(lastEval + 1, evaluationscount);
+                    assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assertions.assertEquals(lastIter + 1, iterationsCount);
+                    assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assertions.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(measurements.size());
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assertions.assertTrue(current.compareTo(previous) >= 0);
+                    assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
         });
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assertions.assertEquals("a", aDriver.getName());
+        assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -224,10 +229,10 @@ public class DSSTBatchLSEstimatorTest {
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if ("a".equals(driver.getName())) {
                 // user-specified reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
             }
         }
 
@@ -237,7 +242,7 @@ public class DSSTBatchLSEstimatorTest {
      * Perfect range measurements with a biased start and an on-board antenna range offset
      */
     @Test
-    public void testKeplerRangeWithOnBoardAntennaOffset() {
+    void testKeplerRangeWithOnBoardAntennaOffset() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -282,36 +287,36 @@ public class DSSTBatchLSEstimatorTest {
                                             ParameterDriversList estimatedMeasurementsParameters,
                                             EstimationsProvider evaluationsProvider, Evaluation lspEvaluation) {
                 if (iterationsCount == lastIter) {
-                    Assertions.assertEquals(lastEval + 1, evaluationscount);
+                    assertEquals(lastEval + 1, evaluationscount);
                 } else {
-                    Assertions.assertEquals(lastIter + 1, iterationsCount);
+                    assertEquals(lastIter + 1, iterationsCount);
                 }
                 lastIter = iterationsCount;
                 lastEval = evaluationscount;
-                Assertions.assertEquals(measurements.size(), evaluationsProvider.getNumber());
+                assertEquals(measurements.size(), evaluationsProvider.getNumber());
                 try {
                     evaluationsProvider.getEstimatedMeasurement(-1);
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 try {
                     evaluationsProvider.getEstimatedMeasurement(measurements.size());
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException oe) {
-                    Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+                    assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
                 }
                 AbsoluteDate previous = AbsoluteDate.PAST_INFINITY;
                 for (int i = 0; i < evaluationsProvider.getNumber(); ++i) {
                     AbsoluteDate current = evaluationsProvider.getEstimatedMeasurement(i).getDate();
-                    Assertions.assertTrue(current.compareTo(previous) >= 0);
+                    assertTrue(current.compareTo(previous) >= 0);
                     previous = current;
                 }
             }
         });
 
         ParameterDriver aDriver = estimator.getOrbitalParametersDrivers(true).getDrivers().get(0);
-        Assertions.assertEquals("a", aDriver.getName());
+        assertEquals("a", aDriver.getName());
         aDriver.setValue(aDriver.getValue() + 1.2);
         aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -326,17 +331,17 @@ public class DSSTBatchLSEstimatorTest {
         for (final ParameterDriver driver : estimator.getOrbitalParametersDrivers(true).getDrivers()) {
             if ("a".equals(driver.getName())) {
                 // user-specified reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(propagatorBuilder.getInitialOrbitDate()), 1.0e-15);
             }
         }
 
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -379,7 +384,7 @@ public class DSSTBatchLSEstimatorTest {
                                          0.0, 3.2e-6,
                                          0.0, 3.8e-7,
                                          0.0, 1.5e-10);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
         }
@@ -397,7 +402,7 @@ public class DSSTBatchLSEstimatorTest {
      * Perfect range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerRangeRate() {
+    void testKeplerRangeRate() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -441,7 +446,7 @@ public class DSSTBatchLSEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerRangeAndRangeRate() {
+    void testKeplerRangeAndRangeRate() {
 
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -490,7 +495,7 @@ public class DSSTBatchLSEstimatorTest {
     }
 
     @Test
-    public void testIssue359() {
+    void testIssue359() {
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final DSSTPropagatorBuilder propagatorBuilder =
@@ -516,11 +521,11 @@ public class DSSTBatchLSEstimatorTest {
         ParameterDriversList estimatedParameters = estimator.getPropagatorParametersDrivers(true);
         // Verify that the propagator, the builder and the estimator know mu
         final String driverName = DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        Assertions.assertTrue(propagator.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
-        Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
-        Assertions.assertNotNull(estimatedParameters.findByName(driverName));
-        Assertions.assertTrue(propagator.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());
-        Assertions.assertTrue(propagatorBuilder.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());
+        assertTrue(propagator.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
+        assertTrue(propagatorBuilder.getAllForceModels().get(0) instanceof DSSTNewtonianAttraction);
+        assertNotNull(estimatedParameters.findByName(driverName));
+        assertTrue(propagator.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());
+        assertTrue(propagatorBuilder.getAllForceModels().get(0).getParametersDrivers().get(0).isSelected());
     }
 
 }

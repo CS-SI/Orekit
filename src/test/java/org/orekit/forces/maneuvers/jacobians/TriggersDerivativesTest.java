@@ -24,7 +24,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -59,103 +58,105 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-public class TriggersDerivativesTest {
+class TriggersDerivativesTest {
 
     @Test
-    public void testDerivativeWrtStartTimeCartesianForward() {
+    void testDerivativeWrtStartTimeCartesianForward() {
         doTestDerivativeWrtStartStopTime(true, OrbitType.CARTESIAN, true,
                                          4.3e-6, 2.8e-6, 4.3e-6, 1.5e-5, 8.1e-6, 1.5e-5);
     }
 
     @Test
-    public void testDerivativeWrtStartTimeKeplerianForward() {
+    void testDerivativeWrtStartTimeKeplerianForward() {
         doTestDerivativeWrtStartStopTime(true, OrbitType.KEPLERIAN, true,
                                          1.5e-5, 1.5e-5, 1.5e-5, 6.8e-6, 1.1e-4, 3.2e-5);
     }
 
     @Test
-    public void testDerivativeWrtStartTimeCartesianBackward() {
+    void testDerivativeWrtStartTimeCartesianBackward() {
         doTestDerivativeWrtStartStopTime(true, OrbitType.CARTESIAN, false,
                                          9.7e-5, 9.7e-5, 9.7e-5, 4.7e-8, 4.7e-8, 4.7e-8);
     }
 
     @Test
-    public void testDerivativeWrtStartTimeKeplerianBackward() {
+    void testDerivativeWrtStartTimeKeplerianBackward() {
         doTestDerivativeWrtStartStopTime(true, OrbitType.KEPLERIAN, false,
                                          6.5e-8, 6.5e-8, 6.5e-8, 1.1e-6, 1.8e-6, 6.2e-7);
     }
 
     @Test
-    public void testDerivativeWrtStopTimeCartesianForward() {
+    void testDerivativeWrtStopTimeCartesianForward() {
         doTestDerivativeWrtStartStopTime(false, OrbitType.CARTESIAN, true,
                                          5.2e-10, 6.0e-8, 6.6e-11, 6.8e-12, 3.9e-11, 7.5e-12);
     }
 
     @Test
-    public void testDerivativeWrtStopTimeKeplerianForward() {
+    void testDerivativeWrtStopTimeKeplerianForward() {
         doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, true,
                                          1.8e-11, 9.7e-12, 3.0e-12, 2.6e-9, 2.9e-9, 1.8e-9);
     }
 
     @Test
-    public void testDerivativeWrtStopTimeCartesianBackward() {
+    void testDerivativeWrtStopTimeCartesianBackward() {
         doTestDerivativeWrtStartStopTime(false, OrbitType.CARTESIAN, false,
                                          9.7e-5, 9.7e-5, 9.7e-5, 1.5e-5, 2.1e-5, 1.5e-5);
     }
 
     @Test
-    public void testDerivativeWrtStopTimeKeplerianBackward() {
+    void testDerivativeWrtStopTimeKeplerianBackward() {
         doTestDerivativeWrtStartStopTime(false, OrbitType.KEPLERIAN, false,
                                          1.5e-5, 1.5e-5, 1.5e-5, 3.8e-6, 1.2e-4, 3.0e-4);
     }
 
     @Test
-    public void testDerivativeWrtMedianCartesianForward() {
+    void testDerivativeWrtMedianCartesianForward() {
         doTestDerivativeWrtMedianDuration(true, OrbitType.CARTESIAN, true,
                                           1.8e-5, 1.2e-5, 1.8e-5, 2.0e-2, 1.7e-2, 2.0e-2);
     }
 
     @Test
-    public void testDerivativeWrtMedianKeplerianForward() {
+    void testDerivativeWrtMedianKeplerianForward() {
         doTestDerivativeWrtMedianDuration(true, OrbitType.KEPLERIAN, true,
                                           0.095, 0.13, 0.11, 9.0e-6, 4.8e-5, 3.2e-4);
     }
 
     @Test
-    public void testDerivativeWrtMedianCartesianBackward() {
+    void testDerivativeWrtMedianCartesianBackward() {
         doTestDerivativeWrtMedianDuration(true, OrbitType.CARTESIAN, false,
                                           9.7e-5, 9.7e-5, 9.7e-5, 1.9e-2, 2.1e-2, 2.0e-2);
     }
 
     @Test
-    public void testDerivativeWrtMedianKeplerianBackward() {
+    void testDerivativeWrtMedianKeplerianBackward() {
         doTestDerivativeWrtMedianDuration(true, OrbitType.KEPLERIAN, false,
                                           0.091, 0.13, 0.11, 7.4e-6, 4.7e-5, 3.4e-4);
     }
 
     @Test
-    public void testDerivativeWrtDurationCartesianForward() {
+    void testDerivativeWrtDurationCartesianForward() {
         doTestDerivativeWrtMedianDuration(false, OrbitType.CARTESIAN, true,
                                           2.5e-6, 1.6e-6, 2.5e-6, 7.3e-6, 4.1e-6, 7.2e-6);
     }
 
     @Test
-    public void testDerivativeWrtDurationKeplerianForward() {
+    void testDerivativeWrtDurationKeplerianForward() {
         doTestDerivativeWrtMedianDuration(false, OrbitType.KEPLERIAN, true,
                                           7.2e-6, 7.2e-6, 7.2e-6, 2.5e-6, 2.5e-5, 1.5e-5);
     }
 
     @Test
-    public void testDerivativeWrtDurationCartesianBackward() {
+    void testDerivativeWrtDurationCartesianBackward() {
         doTestDerivativeWrtMedianDuration(false, OrbitType.CARTESIAN, false,
                                           9.7e-5, 9.7e-5, 9.7e-5, 7.1e-6, 1.1e-5, 7.2e-6);
     }
 
     @Test
-    public void testDerivativeWrtDurationKeplerianBackward() {
+    void testDerivativeWrtDurationKeplerianBackward() {
         doTestDerivativeWrtMedianDuration(false, OrbitType.KEPLERIAN, false,
                                           7.2e-6, 7.2e-6, 7.2e-6, 2.3e-6, 2.9e-5, 3.0e-4);
     }
@@ -220,7 +221,7 @@ public class TriggersDerivativesTest {
         }
 
         for (int i = 0; i < tolerance.length; ++i) {
-            Assertions.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
+            assertEquals(0.0, maxRelativeError[i], tolerance[i]);
         }
 
     }
@@ -321,7 +322,7 @@ public class TriggersDerivativesTest {
         }
 
         for (int i = 0; i < tolerance.length; ++i) {
-            Assertions.assertEquals(0.0, maxRelativeError[i], tolerance[i]);
+            assertEquals(0.0, maxRelativeError[i], tolerance[i]);
         }
 
     }
@@ -520,7 +521,7 @@ public class TriggersDerivativesTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }

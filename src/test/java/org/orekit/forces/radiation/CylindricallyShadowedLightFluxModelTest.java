@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
@@ -36,6 +35,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 class CylindricallyShadowedLightFluxModelTest {
 
@@ -57,9 +59,9 @@ class CylindricallyShadowedLightFluxModelTest {
             final SpacecraftState state = mockState(position);
             final double g = detector.g(state);
             if (g < 0.) {
-                Assertions.assertEquals(0., ratio);
+                assertEquals(0., ratio);
             } else {
-                Assertions.assertEquals(1., ratio);
+                assertEquals(1., ratio);
             }
         }
     }
@@ -98,9 +100,9 @@ class CylindricallyShadowedLightFluxModelTest {
             final FieldSpacecraftState<Complex> state = mockFieldState(position);
             final double g = detector.g(state).getReal();
             if (g < 0.) {
-                Assertions.assertEquals(0., ratio);
+                assertEquals(0., ratio);
             } else {
-                Assertions.assertEquals(1., ratio);
+                assertEquals(1., ratio);
             }
         }
     }
@@ -119,7 +121,7 @@ class CylindricallyShadowedLightFluxModelTest {
         final FieldVector3D<Complex> fieldFlux = model.getUnoccultedFluxVector(fieldPosition);
         // THEN
         final Vector3D expectedFlux = model.getUnoccultedFluxVector(position);
-        Assertions.assertEquals(expectedFlux, fieldFlux.toVector3D());
+        assertEquals(expectedFlux, fieldFlux.toVector3D());
     }
 
     @SuppressWarnings("unchecked")
@@ -148,11 +150,11 @@ class CylindricallyShadowedLightFluxModelTest {
         // WHEN
         final List<EventDetector> detectors = model.getEclipseConditionsDetector();
         // THEN
-        Assertions.assertEquals(1, detectors.size());
+        assertEquals(1, detectors.size());
         final EventDetector detector = detectors.get(0);
-        Assertions.assertInstanceOf(CylindricalShadowEclipseDetector.class, detector);
+        assertInstanceOf(CylindricalShadowEclipseDetector.class, detector);
         final Action action = detector.getHandler().eventOccurred(Mockito.mock(SpacecraftState.class), detector, false);
-        Assertions.assertEquals(Action.RESET_DERIVATIVES, action);
+        assertEquals(Action.RESET_DERIVATIVES, action);
     }
 
     @Test
@@ -167,11 +169,11 @@ class CylindricallyShadowedLightFluxModelTest {
         final List<FieldEventDetector<Complex>> fieldEventDetectors = model.getFieldEclipseConditionsDetector(field);
         // THEN
         final List<EventDetector> eventDetectors = model.getEclipseConditionsDetector();
-        Assertions.assertEquals(eventDetectors.size(), fieldEventDetectors.size());
-        Assertions.assertInstanceOf(FieldCylindricalShadowEclipseDetector.class, fieldEventDetectors.get(0));
+        assertEquals(eventDetectors.size(), fieldEventDetectors.size());
+        assertInstanceOf(FieldCylindricalShadowEclipseDetector.class, fieldEventDetectors.get(0));
         final FieldCylindricalShadowEclipseDetector<Complex> fieldShadowDetector = (FieldCylindricalShadowEclipseDetector<Complex>) fieldEventDetectors.get(0);
         final CylindricalShadowEclipseDetector shadowDetector = (CylindricalShadowEclipseDetector) eventDetectors.get(0);
-        Assertions.assertEquals(shadowDetector.getThreshold(), fieldShadowDetector.getThreshold().getReal());
+        assertEquals(shadowDetector.getThreshold(), fieldShadowDetector.getThreshold().getReal());
         compareActions(shadowDetector, fieldShadowDetector);
     }
 
@@ -180,7 +182,7 @@ class CylindricallyShadowedLightFluxModelTest {
         final boolean isIncreasing = false;
         final Action expectedAction = eventDetector.getHandler().eventOccurred(Mockito.mock(SpacecraftState.class), eventDetector, isIncreasing);
         final Action actualAction = fieldEventDetector.getHandler().eventOccurred(Mockito.mock(FieldSpacecraftState.class), fieldEventDetector, isIncreasing);
-        Assertions.assertEquals(expectedAction, actualAction);
+        assertEquals(expectedAction, actualAction);
     }
 
 }

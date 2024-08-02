@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,6 +35,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Check against prediction in
  * "Springer Handbook oƒ Global Navigation Satellite Systems, Teunissen, Montenbruck".
@@ -50,7 +51,7 @@ import org.orekit.utils.Constants;
  * </p>
  */
 
-public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
+class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
 
     /** Date. */
     private static AbsoluteDate date;
@@ -60,7 +61,7 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
 
     @Deprecated
     @Test
-    public void testRelativisticClockCorrectionDeprecated() {
+    void testRelativisticClockCorrectionDeprecated() {
 
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
@@ -82,13 +83,13 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 62 ps for Galileo.
         //          The computed value is equal to 67.284 ps, therefore lying in the supposed range.
-        Assertions.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
+        assertEquals(0, modifier.getParametersDrivers().size());
 
     }
 
     @Test
-    public void testRelativisticClockCorrection() {
+    void testRelativisticClockCorrection() {
 
         // Measurement
         final double wavelength = PredefinedGnssSignal.G01.getWavelength();
@@ -110,13 +111,13 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 62 ps for Galileo.
         //          The computed value is equal to 67.284 ps, therefore lying in the supposed range.
-        Assertions.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
+        assertEquals(0, modifier.getParametersDrivers().size());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Data root
         Utils.setDataRoot("regular-data");
 

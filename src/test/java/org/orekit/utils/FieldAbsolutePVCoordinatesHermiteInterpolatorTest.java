@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -34,6 +33,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Random;
 
@@ -60,10 +61,10 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
         // Then
         final CartesianDerivativesFilter expectedFilter = CartesianDerivativesFilter.USE_PVA;
 
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                 interpolator.getExtrapolationThreshold());
-        Assertions.assertEquals(frameMock, interpolator.getOutputFrame());
-        Assertions.assertEquals(expectedFilter, interpolator.getFilter());
+        assertEquals(frameMock, interpolator.getOutputFrame());
+        assertEquals(expectedFilter, interpolator.getFilter());
     }
 
     @Test
@@ -98,15 +99,15 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
             FieldVector3D<Binary64> p = interpolated.getPosition();
             FieldVector3D<Binary64> v = interpolated.getVelocity();
             FieldVector3D<Binary64> a = interpolated.getAcceleration();
-            Assertions.assertEquals(FastMath.cos(dt), p.getX().getReal(), 3.0e-10 * p.getNorm().getReal());
-            Assertions.assertEquals(FastMath.sin(dt), p.getY().getReal(), 3.0e-10 * p.getNorm().getReal());
-            Assertions.assertEquals(0, p.getZ().getReal(), 3.0e-10 * p.getNorm().getReal());
-            Assertions.assertEquals(-FastMath.sin(dt), v.getX().getReal(), 3.0e-9 * v.getNorm().getReal());
-            Assertions.assertEquals(FastMath.cos(dt), v.getY().getReal(), 3.0e-9 * v.getNorm().getReal());
-            Assertions.assertEquals(0, v.getZ().getReal(), 3.0e-9 * v.getNorm().getReal());
-            Assertions.assertEquals(-FastMath.cos(dt), a.getX().getReal(), 4.0e-8 * a.getNorm().getReal());
-            Assertions.assertEquals(-FastMath.sin(dt), a.getY().getReal(), 4.0e-8 * a.getNorm().getReal());
-            Assertions.assertEquals(0, a.getZ().getReal(), 4.0e-8 * a.getNorm().getReal());
+            assertEquals(FastMath.cos(dt), p.getX().getReal(), 3.0e-10 * p.getNorm().getReal());
+            assertEquals(FastMath.sin(dt), p.getY().getReal(), 3.0e-10 * p.getNorm().getReal());
+            assertEquals(0, p.getZ().getReal(), 3.0e-10 * p.getNorm().getReal());
+            assertEquals(-FastMath.sin(dt), v.getX().getReal(), 3.0e-9 * v.getNorm().getReal());
+            assertEquals(FastMath.cos(dt), v.getY().getReal(), 3.0e-9 * v.getNorm().getReal());
+            assertEquals(0, v.getZ().getReal(), 3.0e-9 * v.getNorm().getReal());
+            assertEquals(-FastMath.cos(dt), a.getX().getReal(), 4.0e-8 * a.getNorm().getReal());
+            assertEquals(-FastMath.sin(dt), a.getY().getReal(), 4.0e-8 * a.getNorm().getReal());
+            assertEquals(0, a.getZ().getReal(), 4.0e-8 * a.getNorm().getReal());
         }
 
     }
@@ -152,15 +153,15 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<Binary64> p = interpolated.getPosition();
                 FieldVector3D<Binary64> v = interpolated.getVelocity();
                 FieldVector3D<Binary64> a = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 5.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 7.0e-15 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 7.0e-15 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 7.0e-15 * v.getNorm().getReal());
-                Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 2.0e-13 * a.getNorm().getReal());
-                Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 2.0e-13 * a.getNorm().getReal());
-                Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 2.0e-13 * a.getNorm().getReal());
+                assertEquals(px.value(dt), p.getX().getReal(), 5.0e-16 * p.getNorm().getReal());
+                assertEquals(py.value(dt), p.getY().getReal(), 5.0e-16 * p.getNorm().getReal());
+                assertEquals(pz.value(dt), p.getZ().getReal(), 5.0e-16 * p.getNorm().getReal());
+                assertEquals(pxDot.value(dt), v.getX().getReal(), 7.0e-15 * v.getNorm().getReal());
+                assertEquals(pyDot.value(dt), v.getY().getReal(), 7.0e-15 * v.getNorm().getReal());
+                assertEquals(pzDot.value(dt), v.getZ().getReal(), 7.0e-15 * v.getNorm().getReal());
+                assertEquals(pxDotDot.value(dt), a.getX().getReal(), 2.0e-13 * a.getNorm().getReal());
+                assertEquals(pyDotDot.value(dt), a.getY().getReal(), 2.0e-13 * a.getNorm().getReal());
+                assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 2.0e-13 * a.getNorm().getReal());
             }
 
         }
@@ -210,15 +211,15 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<Binary64> p = interpolated.getPosition();
                 FieldVector3D<Binary64> v = interpolated.getVelocity();
                 FieldVector3D<Binary64> a = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 1.0e-14 * a.getNorm().getReal());
-                Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 1.0e-14 * a.getNorm().getReal());
-                Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 1.0e-14 * a.getNorm().getReal());
+                assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
+                assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
+                assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
+                assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
+                assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
+                assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
+                assertEquals(pxDotDot.value(dt), a.getX().getReal(), 1.0e-14 * a.getNorm().getReal());
+                assertEquals(pyDotDot.value(dt), a.getY().getReal(), 1.0e-14 * a.getNorm().getReal());
+                assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 1.0e-14 * a.getNorm().getReal());
             }
 
         }
@@ -275,15 +276,15 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
                 FieldVector3D<Binary64> p = interpolated.getPosition();
                 FieldVector3D<Binary64> v = interpolated.getVelocity();
                 FieldVector3D<Binary64> a = interpolated.getAcceleration();
-                Assertions.assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
-                Assertions.assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
-                Assertions.assertEquals(pxDotDot.value(dt), a.getX().getReal(), 9.0e-15 * a.getNorm().getReal());
-                Assertions.assertEquals(pyDotDot.value(dt), a.getY().getReal(), 9.0e-15 * a.getNorm().getReal());
-                Assertions.assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 9.0e-15 * a.getNorm().getReal());
+                assertEquals(px.value(dt), p.getX().getReal(), 4.0e-16 * p.getNorm().getReal());
+                assertEquals(py.value(dt), p.getY().getReal(), 4.0e-16 * p.getNorm().getReal());
+                assertEquals(pz.value(dt), p.getZ().getReal(), 4.0e-16 * p.getNorm().getReal());
+                assertEquals(pxDot.value(dt), v.getX().getReal(), 9.0e-16 * v.getNorm().getReal());
+                assertEquals(pyDot.value(dt), v.getY().getReal(), 9.0e-16 * v.getNorm().getReal());
+                assertEquals(pzDot.value(dt), v.getZ().getReal(), 9.0e-16 * v.getNorm().getReal());
+                assertEquals(pxDotDot.value(dt), a.getX().getReal(), 9.0e-15 * a.getNorm().getReal());
+                assertEquals(pyDotDot.value(dt), a.getY().getReal(), 9.0e-15 * a.getNorm().getReal());
+                assertEquals(pzDotDot.value(dt), a.getZ().getReal(), 9.0e-15 * a.getNorm().getReal());
             }
 
         }

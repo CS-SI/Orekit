@@ -20,7 +20,6 @@ package org.orekit.estimation.sequential;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.DSSTContext;
@@ -42,9 +41,15 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import java.util.List;
 
-public class SemiAnalyticalKalmanModelTest {
+class SemiAnalyticalKalmanModelTest {
 
     /** Orbit type for propagation. */
     private final OrbitType orbitType = OrbitType.EQUINOCTIAL;
@@ -86,7 +91,7 @@ public class SemiAnalyticalKalmanModelTest {
     private final double tol = 1e-16;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -150,7 +155,7 @@ public class SemiAnalyticalKalmanModelTest {
     }
 
     @Test
-    public void ModelPhysicalOutputsTest() {
+    void ModelPhysicalOutputsTest() {
 
         // Check model at t0 before any measurement is added
         // -------------------------------------------------
@@ -172,18 +177,18 @@ public class SemiAnalyticalKalmanModelTest {
         // --------------
 
         // Observer
-        Assertions.assertNotNull(model.getObserver());
+        assertNotNull(model.getObserver());
 
         // Time
-        Assertions.assertEquals(0., model.getEstimate().getTime(), 0.);
-        Assertions.assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
+        assertEquals(0., model.getEstimate().getTime(), 0.);
+        assertEquals(0., model.getCurrentDate().durationFrom(orbit0.getDate()), 0.);
 
         // Measurement number
-        Assertions.assertEquals(0, model.getCurrentMeasurementNumber());
+        assertEquals(0, model.getCurrentMeasurementNumber());
 
         // Normalized state - is zeros
         final RealVector stateN = model.getEstimate().getState();
-        Assertions.assertArrayEquals(new double[M], stateN.toArray(), tol);
+        assertArrayEquals(new double[M], stateN.toArray(), tol);
 
         // Physical state - = initialized
         final RealVector x = model.getPhysicalEstimatedState();
@@ -194,7 +199,7 @@ public class SemiAnalyticalKalmanModelTest {
         expX.setEntry(6, srpCoefDriver.getReferenceValue());
         expX.setEntry(7, satRangeBiasDriver.getReferenceValue());
         final double[] dX = x.subtract(expX).toArray();
-        Assertions.assertArrayEquals(new double[M], dX, tol);
+        assertArrayEquals(new double[M], dX, tol);
 
         // Normalized covariance - filled with 1
         final double[][] Pn = model.getEstimate().getCovariance().getData();
@@ -203,7 +208,7 @@ public class SemiAnalyticalKalmanModelTest {
             for (int j = 0; j < M; j++) {
                 expPn[i][j] = 1.;
             }
-            Assertions.assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
+            assertArrayEquals(expPn[i], Pn[i], tol, "Failed on line " + i);
         }
 
         // Physical covariance = initialized
@@ -211,18 +216,18 @@ public class SemiAnalyticalKalmanModelTest {
         final RealMatrix expP = covMatrixProvider.getInitialCovarianceMatrix(new SpacecraftState(orbit0));
         final double[][] dP = P.subtract(expP).getData();
         for (int i = 0; i < M; i++) {
-            Assertions.assertArrayEquals(new double[M], dP[i], tol, "Failed on line " + i);
+            assertArrayEquals(new double[M], dP[i], tol, "Failed on line " + i);
         }
 
         // Check that other "physical" matrices are null
-        Assertions.assertNull(model.getEstimate().getInnovationCovariance());
-        Assertions.assertNull(model.getPhysicalInnovationCovarianceMatrix());
-        Assertions.assertNull(model.getEstimate().getKalmanGain());
-        Assertions.assertNull(model.getPhysicalKalmanGain());
-        Assertions.assertNull(model.getEstimate().getMeasurementJacobian());
-        Assertions.assertNull(model.getPhysicalMeasurementJacobian());
-        Assertions.assertNull(model.getEstimate().getStateTransitionMatrix());
-        Assertions.assertNull(model.getPhysicalStateTransitionMatrix());
+        assertNull(model.getEstimate().getInnovationCovariance());
+        assertNull(model.getPhysicalInnovationCovarianceMatrix());
+        assertNull(model.getEstimate().getKalmanGain());
+        assertNull(model.getPhysicalKalmanGain());
+        assertNull(model.getEstimate().getMeasurementJacobian());
+        assertNull(model.getPhysicalMeasurementJacobian());
+        assertNull(model.getEstimate().getStateTransitionMatrix());
+        assertNull(model.getPhysicalStateTransitionMatrix());
     }
 
     /** Get an array of the scales of the estimated parameters.

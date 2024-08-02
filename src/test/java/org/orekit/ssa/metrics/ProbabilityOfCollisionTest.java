@@ -16,11 +16,13 @@
  */
 package org.orekit.ssa.metrics;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.Laas2015;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.ShortTermEncounter2DPOCMethod;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class ProbabilityOfCollisionTest {
 
@@ -39,12 +41,12 @@ class ProbabilityOfCollisionTest {
                                                                                          method.isAMaximumProbabilityOfCollisionMethod());
 
         // THEN
-        Assertions.assertEquals(0.1, probabilityOfCollision.getValue());
-        Assertions.assertEquals(0.2, probabilityOfCollision.getUpperLimit());
-        Assertions.assertEquals(0.05, probabilityOfCollision.getLowerLimit());
-        Assertions.assertEquals(new Laas2015().getName(),
+        assertEquals(0.1, probabilityOfCollision.getValue());
+        assertEquals(0.2, probabilityOfCollision.getUpperLimit());
+        assertEquals(0.05, probabilityOfCollision.getLowerLimit());
+        assertEquals(new Laas2015().getName(),
                                 probabilityOfCollision.getProbabilityOfCollisionMethodName());
-        Assertions.assertFalse(probabilityOfCollision.isMaxProbability());
+        assertFalse(probabilityOfCollision.isMaxProbability());
     }
 
     @Test
@@ -57,10 +59,10 @@ class ProbabilityOfCollisionTest {
         // WHEN
         final ProbabilityOfCollision probabilityOfCollision = new ProbabilityOfCollision(value, method.getName());
         // THEN
-        Assertions.assertEquals(0.1, probabilityOfCollision.getValue());
-        Assertions.assertEquals(0, probabilityOfCollision.getUpperLimit());
-        Assertions.assertEquals(0, probabilityOfCollision.getLowerLimit());
-        Assertions.assertEquals(new Laas2015().getName(),
+        assertEquals(0.1, probabilityOfCollision.getValue());
+        assertEquals(0, probabilityOfCollision.getUpperLimit());
+        assertEquals(0, probabilityOfCollision.getLowerLimit());
+        assertEquals(new Laas2015().getName(),
                                 probabilityOfCollision.getProbabilityOfCollisionMethodName());
     }
 

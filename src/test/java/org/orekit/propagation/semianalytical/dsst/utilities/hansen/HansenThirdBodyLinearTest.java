@@ -17,10 +17,11 @@
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class HansenThirdBodyLinearTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class HansenThirdBodyLinearTest {
 
     private static double hansen(int n, int s, double chi) {
         if (n == 0 && s == 0) {
@@ -40,52 +41,52 @@ public class HansenThirdBodyLinearTest {
     }
 
     @Test
-    public void testLinearVsRecursive00() {
+    void testLinearVsRecursive00() {
         doTestLinearVsRecursive(0.0, 1.1e-12);
     }
 
     @Test
-    public void testLinearVsRecursive01() {
+    void testLinearVsRecursive01() {
         doTestLinearVsRecursive(0.1, 2.7e-13);
     }
 
     @Test
-    public void testLinearVsRecursive02() {
+    void testLinearVsRecursive02() {
         doTestLinearVsRecursive(0.2, 9.5e-14);
     }
 
     @Test
-    public void testLinearVsRecursive03() {
+    void testLinearVsRecursive03() {
         doTestLinearVsRecursive(0.3, 5.6e-14);
     }
 
     @Test
-    public void testLinearVsRecursive04() {
+    void testLinearVsRecursive04() {
         doTestLinearVsRecursive(0.4, 1.5e-14);
     }
 
     @Test
-    public void testLinearVsRecursive05() {
+    void testLinearVsRecursive05() {
         doTestLinearVsRecursive(0.5, 5.9e-15);
     }
 
     @Test
-    public void testLinearVsRecursive06() {
+    void testLinearVsRecursive06() {
         doTestLinearVsRecursive(0.6, 3.7e-15);
     }
 
     @Test
-    public void testLinearVsRecursive07() {
+    void testLinearVsRecursive07() {
         doTestLinearVsRecursive(0.7, 1.7e-15);
     }
 
     @Test
-    public void testLinearVsRecursive08() {
+    void testLinearVsRecursive08() {
         doTestLinearVsRecursive(0.8, 9.5e-16);
     }
 
     @Test
-    public void testLinearVsRecursive09() {
+    void testLinearVsRecursive09() {
         doTestLinearVsRecursive(0.9, 8.3e-16);
     }
 
@@ -109,7 +110,7 @@ public class HansenThirdBodyLinearTest {
             }
         }
 
-        Assertions.assertEquals(0.0, maxRelativeError, tol);
+        assertEquals(0.0, maxRelativeError, tol);
 
     }
 

@@ -19,7 +19,6 @@ package org.orekit.models.earth.displacement;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,95 +33,102 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.lang.reflect.Field;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class TideTest {
 
     @Test
-    public void testDoodsonMultipliers() {
-        Assertions.assertArrayEquals(new int[] { 2,  0,  0,  0,  0,  0 }, Tide.M2.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 2,  2, -2,  0,  0,  0 }, Tide.S2.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 2, -1,  0,  1,  0,  0 }, Tide.N2.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 2,  2,  0,  0,  0,  0 }, Tide.K2.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 1,  1,  0,  0,  0,  0 }, Tide.K1.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 1, -1,  0,  0,  0,  0 }, Tide.O1.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 1,  1, -2,  0,  0,  0 }, Tide.P1.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 1, -2,  0,  1,  0,  0 }, Tide.Q1.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 0,  2,  0,  0,  0,  0 }, Tide.MF.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 0,  1,  0, -1,  0,  0 }, Tide.MM.getDoodsonMultipliers());
-        Assertions.assertArrayEquals(new int[] { 0,  0,  2,  0,  0,  0 }, Tide.SSA.getDoodsonMultipliers());
+    void testDoodsonMultipliers() {
+        assertArrayEquals(new int[] { 2,  0,  0,  0,  0,  0 }, Tide.M2.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 2,  2, -2,  0,  0,  0 }, Tide.S2.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 2, -1,  0,  1,  0,  0 }, Tide.N2.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 2,  2,  0,  0,  0,  0 }, Tide.K2.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 1,  1,  0,  0,  0,  0 }, Tide.K1.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 1, -1,  0,  0,  0,  0 }, Tide.O1.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 1,  1, -2,  0,  0,  0 }, Tide.P1.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 1, -2,  0,  1,  0,  0 }, Tide.Q1.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 0,  2,  0,  0,  0,  0 }, Tide.MF.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 0,  1,  0, -1,  0,  0 }, Tide.MM.getDoodsonMultipliers());
+        assertArrayEquals(new int[] { 0,  0,  2,  0,  0,  0 }, Tide.SSA.getDoodsonMultipliers());
     }
 
     @Test
-    public void testDelaunayMultipliers() {
-        Assertions.assertArrayEquals(new int[] {  0,  0,  2,  0,  2 }, Tide.M2.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  0,  0,  2, -2,  2 }, Tide.S2.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  1,  0,  2,  0,  2 }, Tide.N2.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  0,  0,  0,  0,  0 }, Tide.K2.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  0,  0,  0,  0,  0 }, Tide.K1.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  0,  0,  2,  0,  2 }, Tide.O1.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  0,  0,  2, -2,  2 }, Tide.P1.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  1,  0,  2,  0,  2 }, Tide.Q1.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  0,  0, -2,  0, -2 }, Tide.MF.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] { -1,  0,  0,  0,  0 }, Tide.MM.getDelaunayMultipliers());
-        Assertions.assertArrayEquals(new int[] {  0,  0, -2,  2, -2 }, Tide.SSA.getDelaunayMultipliers());
+    void testDelaunayMultipliers() {
+        assertArrayEquals(new int[] {  0,  0,  2,  0,  2 }, Tide.M2.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  0,  0,  2, -2,  2 }, Tide.S2.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  1,  0,  2,  0,  2 }, Tide.N2.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  0,  0,  0,  0,  0 }, Tide.K2.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  0,  0,  0,  0,  0 }, Tide.K1.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  0,  0,  2,  0,  2 }, Tide.O1.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  0,  0,  2, -2,  2 }, Tide.P1.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  1,  0,  2,  0,  2 }, Tide.Q1.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  0,  0, -2,  0, -2 }, Tide.MF.getDelaunayMultipliers());
+        assertArrayEquals(new int[] { -1,  0,  0,  0,  0 }, Tide.MM.getDelaunayMultipliers());
+        assertArrayEquals(new int[] {  0,  0, -2,  2, -2 }, Tide.SSA.getDelaunayMultipliers());
     }
 
     @Test
-    public void testTauMultiplier() {
-        Assertions.assertEquals(2, Tide.M2.getTauMultiplier());
-        Assertions.assertEquals(2, Tide.S2.getTauMultiplier());
-        Assertions.assertEquals(2, Tide.N2.getTauMultiplier());
-        Assertions.assertEquals(2, Tide.K2.getTauMultiplier());
-        Assertions.assertEquals(1, Tide.K1.getTauMultiplier());
-        Assertions.assertEquals(1, Tide.O1.getTauMultiplier());
-        Assertions.assertEquals(1, Tide.P1.getTauMultiplier());
-        Assertions.assertEquals(1, Tide.Q1.getTauMultiplier());
-        Assertions.assertEquals(0, Tide.MF.getTauMultiplier());
-        Assertions.assertEquals(0, Tide.MM.getTauMultiplier());
-        Assertions.assertEquals(0, Tide.SSA.getTauMultiplier());
+    void testTauMultiplier() {
+        assertEquals(2, Tide.M2.getTauMultiplier());
+        assertEquals(2, Tide.S2.getTauMultiplier());
+        assertEquals(2, Tide.N2.getTauMultiplier());
+        assertEquals(2, Tide.K2.getTauMultiplier());
+        assertEquals(1, Tide.K1.getTauMultiplier());
+        assertEquals(1, Tide.O1.getTauMultiplier());
+        assertEquals(1, Tide.P1.getTauMultiplier());
+        assertEquals(1, Tide.Q1.getTauMultiplier());
+        assertEquals(0, Tide.MF.getTauMultiplier());
+        assertEquals(0, Tide.MM.getTauMultiplier());
+        assertEquals(0, Tide.SSA.getTauMultiplier());
     }
 
     @Test
-    public void testInherited() {
-        Assertions.assertEquals(new Tide(135655), Tide.Q1);
-        Assertions.assertNotEquals(new Tide(163545), new Tide(163544));
-        Assertions.assertNotEquals(new Tide(163545), null);
-        Assertions.assertEquals(163545, new Tide(163545).hashCode());
+    void testInherited() {
+        assertEquals(Tide.Q1, new Tide(135655));
+        assertNotEquals(new Tide(163545), new Tide(163544));
+        assertNotEquals(null, new Tide(163545));
+        assertEquals(163545, new Tide(163545).hashCode());
     }
 
     @Test
-    public void testPhase() {
+    void testPhase() {
         TimeScale                    ut1      = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         FundamentalNutationArguments fna      = IERSConventions.IERS_2010.getNutationArguments(ut1);
         BodiesElements               elements = fna.evaluateAll(new AbsoluteDate("2003-05-17T13:41:54",
                                                                                  TimeScalesFactory.getUTC()));
-        Assertions.assertEquals(-514.950946, Tide.M2.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(  19.738518, Tide.S2.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(-798.252248, Tide.N2.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(  59.352413, Tide.K2.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(  29.676206, Tide.K1.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(-544.627152, Tide.O1.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(  -9.937688, Tide.P1.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(-827.928455, Tide.Q1.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals( 574.303358, Tide.MF.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals( 283.301303, Tide.MM.getPhase(elements),  1.0e-6);
-        Assertions.assertEquals(  39.613894, Tide.SSA.getPhase(elements), 1.0e-6);
+        assertEquals(-514.950946, Tide.M2.getPhase(elements),  1.0e-6);
+        assertEquals(  19.738518, Tide.S2.getPhase(elements),  1.0e-6);
+        assertEquals(-798.252248, Tide.N2.getPhase(elements),  1.0e-6);
+        assertEquals(  59.352413, Tide.K2.getPhase(elements),  1.0e-6);
+        assertEquals(  29.676206, Tide.K1.getPhase(elements),  1.0e-6);
+        assertEquals(-544.627152, Tide.O1.getPhase(elements),  1.0e-6);
+        assertEquals(  -9.937688, Tide.P1.getPhase(elements),  1.0e-6);
+        assertEquals(-827.928455, Tide.Q1.getPhase(elements),  1.0e-6);
+        assertEquals( 574.303358, Tide.MF.getPhase(elements),  1.0e-6);
+        assertEquals( 283.301303, Tide.MM.getPhase(elements),  1.0e-6);
+        assertEquals(  39.613894, Tide.SSA.getPhase(elements), 1.0e-6);
     }
 
     @Test
-    public void testSortedRatesSemiLongPeriod() {
+    void testSortedRatesSemiLongPeriod() {
         doTestSort(0, Tide.SSA, Tide.MM, Tide.MF);
     }
 
     @Test
-    public void testSortedRatesDiurnal() {
+    void testSortedRatesDiurnal() {
         doTestSort(1, Tide.Q1, Tide.O1, Tide.P1, Tide.K1);
     }
 
     @Test
-    public void testSortedRatesSemiDiurnal() {
+    void testSortedRatesSemiDiurnal() {
         doTestSort(2, Tide.N2, Tide.M2, Tide.S2, Tide.K2 );
     }
 
@@ -140,19 +146,19 @@ public class TideTest {
             final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_YEAR);
             final BodiesElements el = fna.evaluateAll(date);
             for (int i = 1; i < tides.length; ++i) {
-                Assertions.assertTrue(tides[i - 1].getRate(el) < tides[i].getRate(el));
+                assertTrue(tides[i - 1].getRate(el) < tides[i].getRate(el));
             }
         }
 
         // check we are in the expected species
         for (final Tide tide : tides) {
-            Assertions.assertEquals(tauMultiplier, tide.getTauMultiplier());
+            assertEquals(tauMultiplier, tide.getTauMultiplier());
         }
 
     }
 
     @Test
-    public void testTable65a() {
+    void testTable65a() {
         doTestTable(new double[][] {
             { 12.85429,  125755, 1, -3,  0,  2,   0,  0,   2,  0,  2,  0,  2  },
             { 12.92714,  127555, 1, -3,  2,  0,   0,  0,   0,  0,  2,  2,  2  },
@@ -206,7 +212,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTable65b() {
+    void testTable65b() {
         doTestTable(new double[][] {
             {  0.00221, 55565,  0, 0,  0,  0,  1,  0,  0,  0,  0,  0,  1 },
             {  0.00441, 55575,  0, 0,  0,  0,  2,  0,  0,  0,  0,  0,  2 },
@@ -233,7 +239,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTable65c() {
+    void testTable65c() {
         doTestTable(new double[][] {
             { 28.43973, 245655,  2, -1, 0, 1, 0,   0, 1, 0,  2, 0, 2 },
             { 28.98410, 255555,  2,  0, 0, 0, 0,   0, 0, 0,  2, 0, 2 }
@@ -241,7 +247,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH1OriginalEarthRotation() {
+    void testTDFRPH1OriginalEarthRotation() {
         // this is test 1 from the TDFRPH subroutine in IERS HARDISP program
         // using the reference routine hard coded simplified model for Earth rotation
         doTestTDFRPH(true,
@@ -251,7 +257,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH1IERSEarthRotation() {
+    void testTDFRPH1IERSEarthRotation() {
         // this is test 1 from the TDFRPH subroutine in IERS HARDISP program
         // but using regular IERS model for Earth rotation
         doTestTDFRPH(false,
@@ -261,7 +267,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH2OriginalEarthRotation() {
+    void testTDFRPH2OriginalEarthRotation() {
         doTestTDFRPH(true,
                      2009, 6, 25, 12, 1, 45.0, Tide.M2,
                      1.9322736160568872, 291.997959322689,
@@ -269,7 +275,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPH2IERSEarthRotation() {
+    void testTDFRPH2IERSEarthRotation() {
         // this is test 2 from the TDFRPH subroutine in IERS HARDISP program
         // but using regular IERS model for Earth rotation
         doTestTDFRPH(false,
@@ -279,7 +285,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional1OriginalEarthRotation() {
+    void testTDFRPHAdditional1OriginalEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(true,
@@ -301,7 +307,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional1IERSEarthRotation() {
+    void testTDFRPHAdditional1IERSEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(false,
@@ -323,7 +329,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional2OriginalEarthRotation() {
+    void testTDFRPHAdditional2OriginalEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(true,
@@ -345,7 +351,7 @@ public class TideTest {
     }
 
     @Test
-    public void testTDFRPHAdditional2IERSEarthRotation() {
+    void testTDFRPHAdditional2IERSEarthRotation() {
         // additional tests, for tides other than M2
         // reference values were obtained running the TDFRPH subroutine
         doTestTDFRPH(false,
@@ -378,10 +384,10 @@ public class TideTest {
         }
         AbsoluteDate   date     = new AbsoluteDate(year, month, day, hour, minute, second, ut1);
         BodiesElements elements = fna.evaluateAll(date);
-        Assertions.assertEquals(refRate,
+        assertEquals(refRate,
                             tide.getRate(elements) * Constants.JULIAN_DAY/ (2 * FastMath.PI),
                             toleranceRate);
-        Assertions.assertEquals(refPhase,
+        assertEquals(refPhase,
                             FastMath.toDegrees(MathUtils.normalizeAngle(tide.getPhase(elements), FastMath.PI)),
                             tolerancePhase);
     }
@@ -432,7 +438,7 @@ public class TideTest {
                     double v = 2 * FastMath.PI * dayFraction + sunAngle(date) + FastMath.PI;
                     // the patched value is about 24 arc seconds from the IERS value (almost independent on date)
                     double deltaArcSeconds = 3600.0 * FastMath.toDegrees(MathUtils.normalizeAngle(old.value(date) - v, 0.0));
-                    Assertions.assertEquals(0.0, deltaArcSeconds, 23.7);
+                    assertEquals(0.0, deltaArcSeconds, 23.7);
                     return v;
                 }
 
@@ -444,7 +450,7 @@ public class TideTest {
             });
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException |
                  NoSuchMethodException | SecurityException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
     }
 
@@ -458,16 +464,16 @@ public class TideTest {
             int[] delaunayMultipliers = new int[] { (int) r[8], (int) r[9], (int) r[10], (int) r[11], (int) r[12] };
             final Tide tdN = new Tide(doodsonNumber);
             final Tide tdM = new Tide((int) r[2], (int) r[3], (int) r[4], (int) r[5], (int) r[6], (int) r[7]);
-            Assertions.assertEquals(r[0],                     FastMath.toDegrees(tdN.getRate(elements)) * 3600, 7.2e-5);
-            Assertions.assertEquals(doodsonNumber,            tdM.getDoodsonNumber());
-            Assertions.assertArrayEquals(dooodsonMultipliers, tdN.getDoodsonMultipliers());
-            Assertions.assertArrayEquals(delaunayMultipliers, tdN.getDelaunayMultipliers());
-            Assertions.assertArrayEquals(delaunayMultipliers, tdM.getDelaunayMultipliers());
+            assertEquals(r[0],                     FastMath.toDegrees(tdN.getRate(elements)) * 3600, 7.2e-5);
+            assertEquals(doodsonNumber,            tdM.getDoodsonNumber());
+            assertArrayEquals(dooodsonMultipliers, tdN.getDoodsonMultipliers());
+            assertArrayEquals(delaunayMultipliers, tdN.getDelaunayMultipliers());
+            assertArrayEquals(delaunayMultipliers, tdM.getDelaunayMultipliers());
         }
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 

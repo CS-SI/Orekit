@@ -25,7 +25,6 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -48,6 +47,9 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 class ManeuverTest {
 
     @Test
@@ -64,7 +66,7 @@ class ManeuverTest {
         final Maneuver maneuver = new Maneuver(null, triggers, propulsion);
         final String actualName = maneuver.getName();
         // THEN
-        Assertions.assertEquals(expectedName, actualName);
+        assertEquals(expectedName, actualName);
     }
 
     @Test
@@ -78,7 +80,7 @@ class ManeuverTest {
         final Control3DVectorCostType actualCostType = maneuver.getControl3DVectorCostType();
         // THEN
         final Control3DVectorCostType expectedCostType = mockedPropulsion.getControl3DVectorCostType();
-        Assertions.assertEquals(expectedCostType, actualCostType);
+        assertEquals(expectedCostType, actualCostType);
     }
 
     @Test
@@ -123,8 +125,8 @@ class ManeuverTest {
         // THEN
         final Maneuver maneuverWithoutOverride = new Maneuver(null, mockedTriggers, mockedPropulsion);
         final FieldVector3D<Complex> expectedAcceleration = maneuverWithoutOverride.acceleration(fieldState, fieldParameters);
-        Assertions.assertNotEquals(0., actualAcceleration.toVector3D().getNorm());
-        Assertions.assertEquals(expectedAcceleration, actualAcceleration);
+        assertNotEquals(0., actualAcceleration.toVector3D().getNorm());
+        assertEquals(expectedAcceleration, actualAcceleration);
     }
 
     @Test
@@ -166,8 +168,8 @@ class ManeuverTest {
         
         // THEN
         final Vector3D expectedAcceleration = maneuver.acceleration(fieldState.toSpacecraftState(), new double[arbitraryNumber]);
-        Assertions.assertNotEquals(0., acceleration.toVector3D().getNorm());
-        Assertions.assertEquals(expectedAcceleration, acceleration.toVector3D());
+        assertNotEquals(0., acceleration.toVector3D().getNorm());
+        assertEquals(expectedAcceleration, acceleration.toVector3D());
     }
 
     private <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> createFieldState(final Field<T> field, 

@@ -19,13 +19,14 @@ package org.orekit.ssa.collision.shorttermencounter.probability.twod;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.Binary64;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Chan1997Test {
 
@@ -53,7 +54,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.754e-3, result.getValue(), 1e-6);
+        assertEquals(9.754e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -70,7 +71,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.189e-3, result.getValue(), 1e-6);
+        assertEquals(9.189e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -87,7 +88,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.586e-3, result.getValue(), 1e-6);
+        assertEquals(6.586e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -104,7 +105,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.135e-3, result.getValue(), 1e-6);
+        assertEquals(6.135e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -121,7 +122,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue(), 1e-8);
+        assertEquals(1.577e-5, result.getValue(), 1e-8);
     }
 
     @Test
@@ -138,7 +139,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue(), 1e-8);
+        assertEquals(1.011e-5, result.getValue(), 1e-8);
     }
 
     @Test
@@ -155,7 +156,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue(), 1e-11);
+        assertEquals(6.443e-8, result.getValue(), 1e-11);
     }
 
     @Test
@@ -172,7 +173,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.216e-27, result.getValue(), 1e-30);
+        assertEquals(3.216e-27, result.getValue(), 1e-30);
     }
 
     @Test
@@ -189,7 +190,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue(), 1e-9);
+        assertEquals(3.033e-6, result.getValue(), 1e-9);
     }
 
     @Test
@@ -206,7 +207,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.645e-28, result.getValue(), 1e-31);
+        assertEquals(9.645e-28, result.getValue(), 1e-31);
     }
 
     @Test
@@ -223,7 +224,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue(), 1e-7);
+        assertEquals(1.039e-4, result.getValue(), 1e-7);
     }
 
     @Test
@@ -240,7 +241,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.556e-9, result.getValue(), 1e-12);
+        assertEquals(1.556e-9, result.getValue(), 1e-12);
     }
 
     @Test
@@ -257,7 +258,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.8934e-3, result.getValue(), 1e-7);
+        assertEquals(1.8934e-3, result.getValue(), 1e-7);
     }
 
     @Test
@@ -274,7 +275,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0135e-11, result.getValue(), 1e-15);
+        assertEquals(2.0135e-11, result.getValue(), 1e-15);
     }
 
     @Test
@@ -291,7 +292,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2000e-5, result.getValue(), 1e-9);
+        assertEquals(7.2000e-5, result.getValue(), 1e-9);
     }
 
     @Test
@@ -308,7 +309,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3903e-7, result.getValue(), 1e-11);
+        assertEquals(5.3903e-7, result.getValue(), 1e-11);
     }
 
     @Test
@@ -325,7 +326,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.2880e-20, result.getValue(), 1e-24);
+        assertEquals(2.2880e-20, result.getValue(), 1e-24);
     }
 
     @Test
@@ -342,7 +343,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.1264e-2, result.getValue(), 1e-6);
+        assertEquals(3.1264e-2, result.getValue(), 1e-6);
     }
 
     @Test
@@ -359,7 +360,7 @@ class Chan1997Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.7346e-202, result.getValue(), 1e-206);
+        assertEquals(1.7346e-202, result.getValue(), 1e-206);
     }
 
     @Test
@@ -376,7 +377,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.754e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.754e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -393,7 +394,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.189e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.189e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -410,7 +411,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.586e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.586e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -427,7 +428,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.135e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.135e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -444,7 +445,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
     }
 
     @Test
@@ -461,7 +462,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
     }
 
     @Test
@@ -478,7 +479,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
+        assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
     }
 
     @Test
@@ -495,7 +496,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.216e-27, result.getValue().getReal(), 1e-30);
+        assertEquals(3.216e-27, result.getValue().getReal(), 1e-30);
     }
 
     @Test
@@ -512,7 +513,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
+        assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
     }
 
     @Test
@@ -529,7 +530,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.645e-28, result.getValue().getReal(), 1e-31);
+        assertEquals(9.645e-28, result.getValue().getReal(), 1e-31);
     }
 
     @Test
@@ -546,7 +547,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
+        assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
     }
 
     @Test
@@ -563,7 +564,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.556e-9, result.getValue().getReal(), 1e-12);
+        assertEquals(1.556e-9, result.getValue().getReal(), 1e-12);
     }
 
     @Test
@@ -580,7 +581,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.8934e-3, result.getValue().getReal(), 1e-7);
+        assertEquals(1.8934e-3, result.getValue().getReal(), 1e-7);
     }
 
     @Test
@@ -597,7 +598,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0135e-11, result.getValue().getReal(), 1e-15);
+        assertEquals(2.0135e-11, result.getValue().getReal(), 1e-15);
     }
 
     @Test
@@ -614,7 +615,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2000e-5, result.getValue().getReal(), 1e-9);
+        assertEquals(7.2000e-5, result.getValue().getReal(), 1e-9);
     }
 
     @Test
@@ -631,7 +632,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3903e-7, result.getValue().getReal(), 1e-11);
+        assertEquals(5.3903e-7, result.getValue().getReal(), 1e-11);
     }
 
     @Test
@@ -648,7 +649,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.2880e-20, result.getValue().getReal(), 1e-24);
+        assertEquals(2.2880e-20, result.getValue().getReal(), 1e-24);
     }
 
     @Test
@@ -665,7 +666,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.1264e-2, result.getValue().getReal(), 1e-6);
+        assertEquals(3.1264e-2, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -682,7 +683,7 @@ class Chan1997Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.7346e-202, result.getValue().getReal(), 1e-206);
+        assertEquals(1.7346e-202, result.getValue().getReal(), 1e-206);
     }
 
     @Test
@@ -712,7 +713,7 @@ class Chan1997Test {
                 method.compute(xmNominal, ymNominal, sigmaXNominal, sigmaYNominal, radiusNominal + dRadius).getValue();
 
         // THEN
-        Assertions.assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
-        Assertions.assertEquals(exactResult, taylorResult, 1e-18);
+        assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
+        assertEquals(exactResult, taylorResult, 1e-18);
     }
 }

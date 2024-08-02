@@ -17,7 +17,6 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -32,18 +31,22 @@ import org.orekit.utils.Constants;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Unit tests for {@link RecordAndContinue}.
  *
  * @author Evan Ward
  */
-public class RecordAndContinueTest {
+class RecordAndContinueTest {
 
     /**
      * check add and clear behavior.
      */
     @Test
-    public void testGetEvents() {
+    void testGetEvents() {
         // setup
         RecordAndContinue handler = new RecordAndContinue();
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -57,38 +60,38 @@ public class RecordAndContinueTest {
         SpacecraftState s4 = s3.shiftedBy(1);
 
         // actions
-        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s1, detector, true));
-        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s2, detector, true));
-        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
+        assertEquals(Action.CONTINUE, handler.eventOccurred(s1, detector, true));
+        assertEquals(Action.CONTINUE, handler.eventOccurred(s2, detector, true));
+        assertEquals(Action.CONTINUE, handler.eventOccurred(s3, detector, false));
 
         // verify
         List<Event> events = handler.getEvents();
-        Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(s1, events.get(0).getState());
-        Assertions.assertEquals(s2, events.get(1).getState());
-        Assertions.assertEquals(s3, events.get(2).getState());
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertEquals(false, events.get(2).isIncreasing());
+        assertEquals(3, events.size());
+        assertEquals(s1, events.get(0).getState());
+        assertEquals(s2, events.get(1).getState());
+        assertEquals(s3, events.get(2).getState());
+        assertTrue(events.get(0).isIncreasing());
+        assertTrue(events.get(1).isIncreasing());
+        assertFalse(events.get(2).isIncreasing());
         for (Event event : events) {
-            Assertions.assertEquals(detector, event.getDetector());
+            assertEquals(detector, event.getDetector());
         }
 
         // action: clear
         handler.clear();
 
         // verify is empty
-        Assertions.assertEquals(0, handler.getEvents().size());
+        assertEquals(0, handler.getEvents().size());
 
         // action add more
-        Assertions.assertEquals(Action.CONTINUE, handler.eventOccurred(s4, detector, false));
+        assertEquals(Action.CONTINUE, handler.eventOccurred(s4, detector, false));
 
         // verify new events
         events = handler.getEvents();
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(s4, events.get(0).getState());
-        Assertions.assertEquals(false, events.get(0).isIncreasing());
-        Assertions.assertEquals(detector, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(s4, events.get(0).getState());
+        assertFalse(events.get(0).isIncreasing());
+        assertEquals(detector, events.get(0).getDetector());
     }
 
 }

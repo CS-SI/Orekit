@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.ndm.odm.OdmCommonMetadata;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 
-public class OpmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OdmCommonMetadata, OpmData>, Opm> {
+class OpmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OdmCommonMetadata, OpmData>, Opm> {
 
     protected OpmParser getParser() {
         return new ParserBuilder().
@@ -38,37 +38,37 @@ public class OpmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OdmComm
     }
 
     @Test
-    public void testWriteExample1() {
+    void testWriteExample1() {
         doTest("/ccsds/odm/opm/OPMExample1.txt");
     }
 
     @Test
-    public void testWriteExample2() {
+    void testWriteExample2() {
         doTest("/ccsds/odm/opm/OPMExample2.txt");
     }
 
     @Test
-    public void testWriteKvnExample3() {
+    void testWriteKvnExample3() {
         doTest("/ccsds/odm/opm/OPMExample3.txt");
     }
 
     @Test
-    public void testWriteXmlExample3() {
+    void testWriteXmlExample3() {
         doTest("/ccsds/odm/opm/OPMExample3.xml");
     }
 
     @Test
-    public void testWriteExample4() {
+    void testWriteExample4() {
         doTest("/ccsds/odm/opm/OPMExample4.txt");
     }
 
     @Test
-    public void testWriteExample5() {
+    void testWriteExample5() {
         doTest("/ccsds/odm/opm/OPMExample5.txt");
     }
 
     @Test
-    public void testWriteExample6() {
+    void testWriteExample6() {
         doTest("/ccsds/odm/opm/OPMExample6.txt");
     }
 

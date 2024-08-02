@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,22 +28,25 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-public class ViennaThreeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ViennaThreeTest {
 
     private static double epsilon = 1e-6;
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testMappingFactors() {
+    void testMappingFactors() {
 
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
@@ -86,12 +88,12 @@ public class ViennaThreeTest {
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
+        assertEquals(expectedHydro, computedMapping[0], epsilon);
+        assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
-    public void testLowElevation() {
+    void testLowElevation() {
 
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
@@ -133,12 +135,12 @@ public class ViennaThreeTest {
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
+        assertEquals(expectedHydro, computedMapping[0], epsilon);
+        assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
-    public void testHightElevation() {
+    void testHightElevation() {
 
         // Site:     latitude:  37.5°
         //           longitude: 277.5°
@@ -180,12 +182,12 @@ public class ViennaThreeTest {
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0], epsilon);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], epsilon);
+        assertEquals(expectedHydro, computedMapping[0], epsilon);
+        assertEquals(expectedWet,   computedMapping[1], epsilon);
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         final double        azimuth   = 30.0;
         final double        elevation = 10.0;
         final double        height    = 100.0;
@@ -199,15 +201,15 @@ public class ViennaThreeTest {
                                                         point,
                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                         model.getParameters(date), date);
-        Assertions.assertEquals( 2.1993, delay.getZh(),    1.0e-4);
-        Assertions.assertEquals( 0.069,  delay.getZw(),    1.0e-4);
-        Assertions.assertEquals(12.2124, delay.getSh(),    1.0e-4);
-        Assertions.assertEquals( 0.3916, delay.getSw(),    1.0e-4);
-        Assertions.assertEquals(12.6041, delay.getDelay(), 1.0e-4);
+        assertEquals( 2.1993, delay.getZh(),    1.0e-4);
+        assertEquals( 0.069,  delay.getZw(),    1.0e-4);
+        assertEquals(12.2124, delay.getSh(),    1.0e-4);
+        assertEquals( 0.3916, delay.getSw(),    1.0e-4);
+        assertEquals(12.6041, delay.getDelay(), 1.0e-4);
     }
 
     @Test
-    public void testDelayWithAzimuthalAsymmetry() {
+    void testDelayWithAzimuthalAsymmetry() {
         final double        azimuth   = 30.0;
         final double        elevation = 10.0;
         final double        height    = 100.0;
@@ -222,15 +224,15 @@ public class ViennaThreeTest {
                                                         point,
                                                         TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                         model.getParameters(date), date);
-        Assertions.assertEquals( 2.1993,                      delay.getZh(),    1.0e-4);
-        Assertions.assertEquals( 0.069,                       delay.getZw(),    1.0e-4);
-        Assertions.assertEquals(12.2124 + 373.8241,           delay.getSh(),    1.0e-4); // second term is due to azimuthal gradient
-        Assertions.assertEquals( 0.3916 +  38.9670,           delay.getSw(),    1.0e-4); // second term is due to azimuthal gradient
-        Assertions.assertEquals(12.6041 + 373.8241 + 38.9670, delay.getDelay(), 1.0e-4);
+        assertEquals( 2.1993,                      delay.getZh(),    1.0e-4);
+        assertEquals( 0.069,                       delay.getZw(),    1.0e-4);
+        assertEquals(12.2124 + 373.8241,           delay.getSh(),    1.0e-4); // second term is due to azimuthal gradient
+        assertEquals( 0.3916 +  38.9670,           delay.getSw(),    1.0e-4); // second term is due to azimuthal gradient
+        assertEquals(12.6041 + 373.8241 + 38.9670, delay.getDelay(), 1.0e-4);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(37.5), FastMath.toRadians(277.5), 350.0);
         ViennaThree model = new ViennaThree(new ConstantViennaAProvider(new ViennaACoefficients(0.00123462, 0.00047101)),
@@ -244,7 +246,7 @@ public class ViennaThreeTest {
                                                  point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  model.getParameters(date), date).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }

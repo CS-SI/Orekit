@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,12 +35,16 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-public class ParameterDrivenDateIntervalDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class ParameterDrivenDateIntervalDetectorTest {
 
     private Propagator propagator;
 
     @Test
-    public void testNoShift() {
+    void testNoShift() {
         final AbsoluteDate t0    = propagator.getInitialState().getDate();
         final AbsoluteDate start = t0.shiftedBy( 120);
         final AbsoluteDate stop  = t0.shiftedBy(1120);
@@ -50,11 +53,11 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
-        Assertions.assertEquals("no-shift_STOP", detector.getStopDriver().getName());
+        assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        assertEquals("no-shift_START", detector.getStartDriver().getName());
+        assertEquals("no-shift_STOP", detector.getStopDriver().getName());
 
 
         EventsLogger logger = new EventsLogger();
@@ -62,13 +65,13 @@ public class ParameterDrivenDateIntervalDetectorTest {
 
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(3600.0));
 
-        Assertions.assertEquals(2, logger.getLoggedEvents().size());
-        Assertions.assertEquals(0.0, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
-        Assertions.assertEquals(0.0, logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
+        assertEquals(2, logger.getLoggedEvents().size());
+        assertEquals(0.0, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
+        assertEquals(0.0, logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
     }
 
     @Test
-    public void testSmallShift() {
+    void testSmallShift() {
         final AbsoluteDate t0    = propagator.getInitialState().getDate();
         final AbsoluteDate start = t0.shiftedBy( 120);
         final AbsoluteDate stop  = t0.shiftedBy(1120);
@@ -77,11 +80,11 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        Assertions.assertEquals("small-shift_START", detector.getStartDriver().getName());
-        Assertions.assertEquals("small-shift_STOP", detector.getStopDriver().getName());
+        assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        assertEquals("small-shift_START", detector.getStartDriver().getName());
+        assertEquals("small-shift_STOP", detector.getStopDriver().getName());
 
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(detector));
@@ -92,13 +95,13 @@ public class ParameterDrivenDateIntervalDetectorTest {
         detector.getStopDriver().setValue(stopShift);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(3600.0));
 
-        Assertions.assertEquals(2, logger.getLoggedEvents().size());
-        Assertions.assertEquals(startShift, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
-        Assertions.assertEquals(stopShift,  logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
+        assertEquals(2, logger.getLoggedEvents().size());
+        assertEquals(startShift, logger.getLoggedEvents().get(0).getDate().durationFrom(start), 1.0e-10);
+        assertEquals(stopShift,  logger.getLoggedEvents().get(1).getDate().durationFrom(stop),  1.0e-10);
     }
 
     @Test
-    public void testLargeShift() {
+    void testLargeShift() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);
@@ -109,11 +112,11 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
-        Assertions.assertEquals("large-shift_START", detector.getStartDriver().getName());
-        Assertions.assertEquals("large-shift_STOP", detector.getStopDriver().getName());
+        assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        assertEquals("large-shift_START", detector.getStartDriver().getName());
+        assertEquals("large-shift_STOP", detector.getStopDriver().getName());
 
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(detector));
@@ -124,12 +127,12 @@ public class ParameterDrivenDateIntervalDetectorTest {
         detector.getStopDriver().setValue(stopShift);
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(3600.0));
 
-        Assertions.assertEquals(0, logger.getLoggedEvents().size());
+        assertEquals(0, logger.getLoggedEvents().size());
 
     }
 
     @Test
-    public void testSelection() {
+    void testSelection() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);
@@ -138,10 +141,10 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertFalse(detector.getStartDriver().isSelected());
-        Assertions.assertFalse(detector.getStopDriver().isSelected());
-        Assertions.assertFalse(detector.getMedianDriver().isSelected());
-        Assertions.assertFalse(detector.getDurationDriver().isSelected());
+        assertFalse(detector.getStartDriver().isSelected());
+        assertFalse(detector.getStopDriver().isSelected());
+        assertFalse(detector.getMedianDriver().isSelected());
+        assertFalse(detector.getDurationDriver().isSelected());
 
         // check all 16 possible configurations, changing one selection at a time
         checkSelection(detector, detector.getDurationDriver(), true,  false, false, false, true,  false);
@@ -164,7 +167,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
     }
 
     @Test
-    public void testStartStopToMedianDuration() {
+    void testStartStopToMedianDuration() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);
@@ -172,26 +175,26 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
-        Assertions.assertEquals(   0.0, detector.getStartDriver().getValue(),    1.0e-15);
-        Assertions.assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
-        Assertions.assertEquals(   0.0, detector.getMedianDriver().getValue(),   1.0e-15);
-        Assertions.assertEquals(1000.0, detector.getDurationDriver().getValue(), 1.0e-15);
+        assertEquals(   0.0, detector.getStartDriver().getValue(),    1.0e-15);
+        assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
+        assertEquals(   0.0, detector.getMedianDriver().getValue(),   1.0e-15);
+        assertEquals(1000.0, detector.getDurationDriver().getValue(), 1.0e-15);
         detector.getStartDriver().setSelected(true);
         detector.getStartDriver().setValue(1.0);
-        Assertions.assertEquals(   1.0, detector.getStartDriver().getValue(),    1.0e-15);
-        Assertions.assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
-        Assertions.assertEquals(   0.5, detector.getMedianDriver().getValue(),   1.0e-15);
-        Assertions.assertEquals( 999.0, detector.getDurationDriver().getValue(), 1.0e-15);
+        assertEquals(   1.0, detector.getStartDriver().getValue(),    1.0e-15);
+        assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
+        assertEquals(   0.5, detector.getMedianDriver().getValue(),   1.0e-15);
+        assertEquals( 999.0, detector.getDurationDriver().getValue(), 1.0e-15);
         detector.getStopDriver().setSelected(true);
         detector.getStopDriver().setValue(10.0);
-        Assertions.assertEquals(   1.0, detector.getStartDriver().getValue(),    1.0e-15);
-        Assertions.assertEquals(  10.0, detector.getStopDriver().getValue(),     1.0e-15);
-        Assertions.assertEquals(   5.5, detector.getMedianDriver().getValue(),   1.0e-15);
-        Assertions.assertEquals(1009.0, detector.getDurationDriver().getValue(), 1.0e-15);
+        assertEquals(   1.0, detector.getStartDriver().getValue(),    1.0e-15);
+        assertEquals(  10.0, detector.getStopDriver().getValue(),     1.0e-15);
+        assertEquals(   5.5, detector.getMedianDriver().getValue(),   1.0e-15);
+        assertEquals(1009.0, detector.getDurationDriver().getValue(), 1.0e-15);
     }
 
     @Test
-    public void testMedianDurationToStartStop() {
+    void testMedianDurationToStartStop() {
         final AbsoluteDate t0       = propagator.getInitialState().getDate();
         final AbsoluteDate start    = t0.shiftedBy( 120);
         final AbsoluteDate stop     = t0.shiftedBy(1120);
@@ -199,22 +202,22 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withMaxCheck(10.0).
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
-        Assertions.assertEquals(   0.0, detector.getStartDriver().getValue(),    1.0e-15);
-        Assertions.assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
-        Assertions.assertEquals(   0.0, detector.getMedianDriver().getValue(),   1.0e-15);
-        Assertions.assertEquals(1000.0, detector.getDurationDriver().getValue(), 1.0e-15);
+        assertEquals(   0.0, detector.getStartDriver().getValue(),    1.0e-15);
+        assertEquals(   0.0, detector.getStopDriver().getValue(),     1.0e-15);
+        assertEquals(   0.0, detector.getMedianDriver().getValue(),   1.0e-15);
+        assertEquals(1000.0, detector.getDurationDriver().getValue(), 1.0e-15);
         detector.getMedianDriver().setSelected(true);
         detector.getMedianDriver().setValue(1.0);
-        Assertions.assertEquals(   1.0, detector.getStartDriver().getValue(),    1.0e-15);
-        Assertions.assertEquals(   1.0, detector.getStopDriver().getValue(),     1.0e-15);
-        Assertions.assertEquals(   1.0, detector.getMedianDriver().getValue(),   1.0e-15);
-        Assertions.assertEquals(1000.0, detector.getDurationDriver().getValue(), 1.0e-15);
+        assertEquals(   1.0, detector.getStartDriver().getValue(),    1.0e-15);
+        assertEquals(   1.0, detector.getStopDriver().getValue(),     1.0e-15);
+        assertEquals(   1.0, detector.getMedianDriver().getValue(),   1.0e-15);
+        assertEquals(1000.0, detector.getDurationDriver().getValue(), 1.0e-15);
         detector.getDurationDriver().setSelected(true);
         detector.getDurationDriver().setValue(900.0);
-        Assertions.assertEquals(  51.0, detector.getStartDriver().getValue(),    1.0e-15);
-        Assertions.assertEquals( -49.0, detector.getStopDriver().getValue(),     1.0e-15);
-        Assertions.assertEquals(   1.0, detector.getMedianDriver().getValue(),   1.0e-15);
-        Assertions.assertEquals( 900.0, detector.getDurationDriver().getValue(), 1.0e-15);
+        assertEquals(  51.0, detector.getStartDriver().getValue(),    1.0e-15);
+        assertEquals( -49.0, detector.getStopDriver().getValue(),     1.0e-15);
+        assertEquals(   1.0, detector.getMedianDriver().getValue(),   1.0e-15);
+        assertEquals( 900.0, detector.getDurationDriver().getValue(), 1.0e-15);
     }
 
     private void checkSelection(final ParameterDrivenDateIntervalDetector detector,
@@ -224,20 +227,20 @@ public class ParameterDrivenDateIntervalDetectorTest {
         try {
             driver.setSelected(selection);
             if (shouldFail) {
-                Assertions.fail("an exception should have been thrown");
+                fail("an exception should have been thrown");
             }
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INCONSISTENT_SELECTION, oe.getSpecifier());
+            assertEquals(OrekitMessages.INCONSISTENT_SELECTION, oe.getSpecifier());
         }
-        Assertions.assertEquals(selection,        driver.isSelected());
-        Assertions.assertEquals(expectedStart,    detector.getStartDriver().isSelected());
-        Assertions.assertEquals(expectedStop,     detector.getStopDriver().isSelected());
-        Assertions.assertEquals(expectedMedian,   detector.getMedianDriver().isSelected());
-        Assertions.assertEquals(expectedDuration, detector.getDurationDriver().isSelected());
+        assertEquals(selection,        driver.isSelected());
+        assertEquals(expectedStart,    detector.getStartDriver().isSelected());
+        assertEquals(expectedStop,     detector.getStopDriver().isSelected());
+        assertEquals(expectedMedian,   detector.getMedianDriver().isSelected());
+        assertEquals(expectedDuration, detector.getDurationDriver().isSelected());
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);

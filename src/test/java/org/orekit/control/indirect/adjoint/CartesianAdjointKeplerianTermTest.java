@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -30,6 +29,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CartesianAdjointKeplerianTermTest {
 
@@ -59,11 +60,11 @@ class CartesianAdjointKeplerianTermTest {
         final Gradient[] fieldMu = MathArrays.buildArray(field, 1);
         fieldMu[0] = Gradient.constant(dimension, keplerianTerm.getMu());
         final FieldVector3D<Gradient> acceleration = newtonianAttraction.acceleration(mockedState, fieldMu);
-        Assertions.assertEquals(-contribution[0], acceleration.getX().getGradient()[0] * adjoint[3]
+        assertEquals(-contribution[0], acceleration.getX().getGradient()[0] * adjoint[3]
                 + acceleration.getX().getGradient()[1] * adjoint[4] + acceleration.getX().getGradient()[2] * adjoint[5]);
-        Assertions.assertEquals(-contribution[1], acceleration.getY().getGradient()[0] * adjoint[3]
+        assertEquals(-contribution[1], acceleration.getY().getGradient()[0] * adjoint[3]
                 + acceleration.getY().getGradient()[1] * adjoint[4] + acceleration.getY().getGradient()[2] * adjoint[5]);
-        Assertions.assertEquals(-contribution[2], acceleration.getZ().getGradient()[0] * adjoint[3]
+        assertEquals(-contribution[2], acceleration.getZ().getGradient()[0] * adjoint[3]
                 + acceleration.getZ().getGradient()[1] * adjoint[4] + acceleration.getZ().getGradient()[2] * adjoint[5]);
     }
 
@@ -92,7 +93,7 @@ class CartesianAdjointKeplerianTermTest {
         }
         final double[] contribution = keplerianTerm.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint);
         for (int i = 0; i < contribution.length; i++) {
-            Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i]);
+            assertEquals(fieldContribution[i].getReal(), contribution[i]);
         }
     }
 }

@@ -32,7 +32,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -41,6 +40,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DefaultEncounterLOFTest {
 
@@ -114,7 +115,7 @@ class DefaultEncounterLOFTest {
         final boolean returnedInertialFlag = encounterLOF.isQuasiInertial();
 
         // Then
-        Assertions.assertTrue(returnedInertialFlag);
+        assertTrue(returnedInertialFlag);
 
     }
 

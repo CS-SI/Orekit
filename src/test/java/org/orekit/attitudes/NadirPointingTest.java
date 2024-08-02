@@ -27,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -50,6 +49,11 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.*;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
 
@@ -86,10 +90,10 @@ class NadirPointingTest {
             return new TimeStampedPVCoordinates(date12, originalPV.getPosition(), originalPV.getVelocity());
         };
         final TimeStampedPVCoordinates pv = nadirAttitudeLaw.getTargetPV(providerWithoutAcceleration, date, frame);
-        Assertions.assertEquals(pv.getDate(), actualPV.getDate());
+        assertEquals(pv.getDate(), actualPV.getDate());
         final PVCoordinates relativePV = new PVCoordinates(pv, actualPV);
-        Assertions.assertEquals(0., relativePV.getPosition().getNorm(), 2e-9);
-        Assertions.assertEquals(0., relativePV.getVelocity().getNorm(), 1e-7);
+        assertEquals(0., relativePV.getPosition().getNorm(), 2e-9);
+        assertEquals(0., relativePV.getVelocity().getNorm(), 1e-7);
     }
 
     @Test
@@ -110,12 +114,12 @@ class NadirPointingTest {
         final TimeStampedFieldPVCoordinates<Complex> actualPV = nadirAttitudeLaw.getTargetPV(fieldProvider, fieldDate, frame);
         // THEN
         final TimeStampedPVCoordinates pv = nadirAttitudeLaw.getTargetPV(provider, date, frame);
-        Assertions.assertEquals(pv.getDate(), actualPV.getDate().toAbsoluteDate());
+        assertEquals(pv.getDate(), actualPV.getDate().toAbsoluteDate());
         final PVCoordinates relativePV = new PVCoordinates(pv, actualPV.toPVCoordinates());
         final Vector3D positionDifference = relativePV.getPosition();
-        Assertions.assertEquals(0., positionDifference.getNorm(), 1e-9);
+        assertEquals(0., positionDifference.getNorm(), 1e-9);
         final Vector3D velocityDifference = relativePV.getVelocity();
-        Assertions.assertEquals(0., velocityDifference.getNorm(), 1e-6);
+        assertEquals(0., velocityDifference.getNorm(), 1e-6);
     }
 
     @Test
@@ -131,7 +135,7 @@ class NadirPointingTest {
         final Vector3D actualPosition = nadirAttitudeLaw.getTargetPosition(circ, circ.getDate(), circ.getFrame());
         // THEN
         final Vector3D expectedPosition = nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame()).getPosition();
-        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm(), 1e-9);
+        assertEquals(0., expectedPosition.subtract(actualPosition).getNorm(), 1e-9);
     }
 
     @Test
@@ -148,7 +152,7 @@ class NadirPointingTest {
         final FieldVector3D<Complex> actualPosition = nadirAttitudeLaw.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
         // THEN
         final FieldVector3D<Complex> expectedPosition = nadirAttitudeLaw.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-9);
+        assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-9);
     }
 
     /** Test in the case of a spheric earth : nadir pointing shall be
@@ -184,7 +188,7 @@ class NadirPointingTest {
         // with nadir pointing rotation shall be identity.
         Rotation rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
-        Assertions.assertEquals(angle, 0.0, Utils.epsilonAngle);
+        assertEquals(0.0, angle, Utils.epsilonAngle);
 
     }
 
@@ -224,7 +228,7 @@ class NadirPointingTest {
         // with nadir pointing rotation shall be identity.
         Rotation rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
-        Assertions.assertEquals(0.0, angle, 5.e-6);
+        assertEquals(0.0, angle, 5.e-6);
 
         //  Satellite on polar position
         // *****************************
@@ -244,7 +248,7 @@ class NadirPointingTest {
         // with nadir pointing rotation shall be identity.
         rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         angle = rotCompo.getAngle();
-        Assertions.assertEquals(angle, 0.0, 5.e-6);
+        assertEquals(0.0, angle, 5.e-6);
 
         //  Satellite on any position
         // ***************************
@@ -264,7 +268,7 @@ class NadirPointingTest {
         // pointing rotation with nadir pointing rotation shall be different from identity.
         rotCompo = rotCenter.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         angle = rotCompo.getAngle();
-        Assertions.assertEquals(angle, FastMath.toRadians(0.16797386586252272), Utils.epsilonAngle);
+        assertEquals(angle, FastMath.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
 
     /** Vertical test : check that Z satellite axis is collinear to local vertical axis,
@@ -311,7 +315,7 @@ class NadirPointingTest {
 
         // Check that satellite Z axis is collinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);
-        Assertions.assertEquals(0.0, FastMath.sin(angle), Utils.epsilonTest);
+        assertEquals(0.0, FastMath.sin(angle), Utils.epsilonTest);
 
     }
 
@@ -347,13 +351,13 @@ class NadirPointingTest {
         TimeStampedPVCoordinates target =
                 nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame());
 
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getPosition(),     target.getPosition()),
                             1.0e-15 * reference.getPosition().getNorm());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
                             3.0e-11 * reference.getVelocity().getNorm());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
                             1.3e-5 * reference.getAcceleration().getNorm());
 
@@ -387,19 +391,19 @@ class NadirPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 5.3e-9 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 5.3e-9 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 8.1e-9 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 8.1e-9 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Rotation rM = sMinus.getAttitude().getRotation();
         Rotation rP = sPlus.getAttitude().getRotation();
         Vector3D reference = AngularCoordinates.estimateRate(rM, rP, 2 * h);
-        Assertions.assertTrue(Rotation.distance(rM, rP) > 2.0e-4);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-6);
+        assertTrue(Rotation.distance(rM, rP) > 2.0e-4);
+        assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-6);
 
     }
 
@@ -412,20 +416,20 @@ class NadirPointingTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 2.0e-14);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 4.0e-12);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 2.0e-14);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 4.0e-12);
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     2.0e-8);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 3.0e-5);
+        assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
+        assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     2.0e-8);
+        assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 3.0e-5);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
@@ -442,13 +446,13 @@ class NadirPointingTest {
             itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
     }

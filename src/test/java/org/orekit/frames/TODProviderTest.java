@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -37,6 +36,10 @@ import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,10 +47,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 
-public class TODProviderTest {
+class TODProviderTest {
 
     @Test
-    public void testRotationRate() {
+    void testRotationRate() {
         TransformProvider provider =
                 new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null, DataContext.getDefault().getTimeScales()),
                                                    CartesianDerivativesFilter.USE_PVA,
@@ -55,14 +58,14 @@ public class TODProviderTest {
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2035, 3, 2, 15, 58, 59, TimeScalesFactory.getUTC());
         double minRate = provider.getTransform(tMin).getRotationRate().getNorm();
-        Assertions.assertEquals(6.4e-14, minRate, 1.0e-15);
+        assertEquals(6.4e-14, minRate, 1.0e-15);
         AbsoluteDate tMax = new AbsoluteDate(2043, 12, 16, 14, 18, 9, TimeScalesFactory.getUTC());
         double maxRate = provider.getTransform(tMax).getRotationRate().getNorm();
-        Assertions.assertEquals(1.4e-11, maxRate, 1.0e-12);
+        assertEquals(1.4e-11, maxRate, 1.0e-12);
     }
 
     @Test
-    public void testAASReferenceLEO() {
+    void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -116,7 +119,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() {
+    void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -172,7 +175,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testInterpolationAccuracyWithEOP() throws FileNotFoundException {
+    void testInterpolationAccuracyWithEOP() throws FileNotFoundException {
 
         // max interpolation error observed on a one month period with 60 seconds step
         //
@@ -231,12 +234,12 @@ public class TODProviderTest {
             maxError = FastMath.max(maxError, error);
         }
 
-        Assertions.assertTrue(maxError < 7e-12);
+        assertTrue(maxError < 7e-12);
 
     }
 
     @Test
-    public void testInterpolationAccuracyWithoutEOP() throws FileNotFoundException {
+    void testInterpolationAccuracyWithoutEOP() throws FileNotFoundException {
 
         // max interpolation error observed on a one month period with 60 seconds step
         //
@@ -285,12 +288,12 @@ public class TODProviderTest {
                     maxError = FastMath.max(maxError, error);
                 }
 
-                Assertions.assertTrue(maxError < 4.0e-15);
+                assertTrue(maxError < 4.0e-15);
 
     }
 
     @Test
-    public void testSofaPnm80() {
+    void testSofaPnm80() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -345,7 +348,7 @@ public class TODProviderTest {
     }
 
     @Test
-    public void testTOD1976vs2006() {
+    void testTOD1976vs2006() {
 
         final Frame tod1976 = FramesFactory.getTOD(IERSConventions.IERS_1996, true);
         final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
@@ -354,13 +357,13 @@ public class TODProviderTest {
             double delta = tod1976.getTransformTo(tod2006, date).getRotation().getAngle();
             // TOD2006 and TOD2000 are similar to about 65 milli-arcseconds
             // between 2000 and 2002, with EOP corrections taken into account in both cases
-            Assertions.assertEquals(0.0, delta, 3.2e-7);
+            assertEquals(0.0, delta, 3.2e-7);
         }
 
     }
 
     @Test
-    public void testTOD2000vs2006() {
+    void testTOD2000vs2006() {
 
         final Frame tod2000 = FramesFactory.getTOD(IERSConventions.IERS_2003, true);
         final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
@@ -369,13 +372,13 @@ public class TODProviderTest {
             double delta = tod2000.getTransformTo(tod2006, date).getRotation().getAngle();
             // TOD2006 and TOD2000 are similar to about 30 micro-arcseconds
             // between 2000 and 2002, with EOP corrections taken into account in both cases
-            Assertions.assertEquals(0.0, delta, 1.5e-10);
+            assertEquals(0.0, delta, 1.5e-10);
         }
 
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         TODProvider provider = new TODProvider(IERSConventions.IERS_2010,
                                                FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
                                                DataContext.getDefault().getTimeScales());
@@ -384,8 +387,8 @@ public class TODProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
+        assertTrue(bos.size() > 340000);
+        assertTrue(bos.size() < 350000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -395,14 +398,14 @@ public class TODProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 
@@ -411,15 +414,15 @@ public class TODProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     private void checkRotation(double[][] reference, Transform t, double epsilon) {
         double[][] mat = t.getRotation().getMatrix();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                Assertions.assertEquals(reference[i][j], mat[i][j], epsilon);
+                assertEquals(reference[i][j], mat[i][j], epsilon);
             }
         }
     }

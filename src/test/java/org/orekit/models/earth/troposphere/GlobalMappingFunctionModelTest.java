@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,20 +28,23 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-public class GlobalMappingFunctionModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class GlobalMappingFunctionModelTest {
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testMappingFactors() {
+    void testMappingFactors() {
 
         // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
         //                              longitude: -1.393397187 radians
@@ -73,12 +75,12 @@ public class GlobalMappingFunctionModelTest {
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
+        assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
+        assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         TroposphereMappingFunction model = new GlobalMappingFunctionModel();
         double[] lastFactors = new double[] {
@@ -92,8 +94,8 @@ public class GlobalMappingFunctionModelTest {
                                                           point,
                                                           TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                           date);
-            Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
-            Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }

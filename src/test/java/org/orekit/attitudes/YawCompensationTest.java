@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -60,6 +59,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
 
@@ -101,10 +106,10 @@ class YawCompensationTest {
         // Check difference
         PVCoordinates observedDiff = new PVCoordinates(yawObserved, noYawObserved);
 
-        Assertions.assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
-        Assertions.assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
-        Assertions.assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
-        Assertions.assertSame(nadirLaw, yawCompensLaw.getUnderlyingAttitudeProvider());
+        assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
+        assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
+        assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
+        assertSame(nadirLaw, yawCompensLaw.getUnderlyingAttitudeProvider());
 
     }
 
@@ -131,13 +136,13 @@ class YawCompensationTest {
         TimeStampedPVCoordinates target =
                 law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
 
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 Vector3D.distance(reference.getPosition(), target.getPosition()),
                                 1.0e-15 * reference.getPosition().getNorm());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
                             3.0e-11 * reference.getVelocity().getNorm());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
                             1.0e-5 * reference.getAcceleration().getNorm());
 
@@ -195,14 +200,14 @@ class YawCompensationTest {
         // but will remain nearly at Δy=0 if we do apply compensation
         // in fact, as the yaw compensation mode removes the linear drift,
         // what remains is a parabola Δy = a uΔx²
-        Assertions.assertEquals(-55.7056, minYWithoutCompensation,    0.0001);
-        Assertions.assertEquals(+55.7056, maxYWithoutCompensation,    0.0001);
-        Assertions.assertEquals(352.5667, minYDotWithoutCompensation, 0.0001);
-        Assertions.assertEquals(352.5677, maxYDotWithoutCompensation, 0.0001);
-        Assertions.assertEquals(  0.0000, minYWithCompensation,       0.0001);
-        Assertions.assertEquals(  0.0008, maxYWithCompensation,       0.0001);
-        Assertions.assertEquals( -0.0101, minYDotWithCompensation,    0.0001);
-        Assertions.assertEquals(  0.0102, maxYDotWithCompensation,    0.0001);
+        assertEquals(-55.7056, minYWithoutCompensation,    0.0001);
+        assertEquals(+55.7056, maxYWithoutCompensation,    0.0001);
+        assertEquals(352.5667, minYDotWithoutCompensation, 0.0001);
+        assertEquals(352.5677, maxYDotWithoutCompensation, 0.0001);
+        assertEquals(  0.0000, minYWithCompensation,       0.0001);
+        assertEquals(  0.0008, maxYWithCompensation,       0.0001);
+        assertEquals( -0.0101, minYDotWithCompensation,    0.0001);
+        assertEquals(  0.0102, maxYDotWithCompensation,    0.0001);
 
     }
 
@@ -270,30 +275,30 @@ class YawCompensationTest {
             // 1/ Check yaw values around ascending node (max yaw)
             if ((FastMath.abs(extrapLat) < FastMath.toRadians(2.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                Assertions.assertEquals(-3.206, FastMath.toDegrees(yawAngle), 0.003);
+                assertEquals(-3.206, FastMath.toDegrees(yawAngle), 0.003);
             }
 
             // 2/ Check yaw values around maximum positive latitude (min yaw)
             if ( extrapLat > FastMath.toRadians(50.15) ) {
-                Assertions.assertEquals(0, FastMath.toDegrees(yawAngle), 0.15);
+                assertEquals(0, FastMath.toDegrees(yawAngle), 0.15);
             }
 
             // 3/ Check yaw values around descending node (max yaw)
             if ( (FastMath.abs(extrapLat) < FastMath.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) ) {
-                Assertions.assertEquals(3.206, FastMath.toDegrees(yawAngle), 0.003);
+                assertEquals(3.206, FastMath.toDegrees(yawAngle), 0.003);
             }
 
             // 4/ Check yaw values around maximum negative latitude (min yaw)
             if ( extrapLat < FastMath.toRadians(-50.15) ) {
-                Assertions.assertEquals(0, FastMath.toDegrees(yawAngle), 0.15);
+                assertEquals(0, FastMath.toDegrees(yawAngle), 0.15);
             }
 
         }
 
         // 5/ Check that minimum yaw compensation value is around maximum latitude
-        Assertions.assertEquals( 0.0, FastMath.toDegrees(yawMin), 0.004);
-        Assertions.assertEquals(50.0, FastMath.toDegrees(latMin), 0.22);
+        assertEquals( 0.0, FastMath.toDegrees(yawMin), 0.004);
+        assertEquals(50.0, FastMath.toDegrees(latMin), 0.22);
 
     }
 
@@ -321,7 +326,7 @@ class YawCompensationTest {
         Vector3D yawAxis = compoRot.getAxis(RotationConvention.VECTOR_OPERATOR);
 
         // Check axis
-        Assertions.assertEquals(0., yawAxis.subtract(Vector3D.PLUS_K).getNorm(), Utils.epsilonTest);
+        assertEquals(0., yawAxis.subtract(Vector3D.PLUS_K).getNorm(), Utils.epsilonTest);
 
     }
 
@@ -352,19 +357,19 @@ class YawCompensationTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 8.5e-6 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 8.5e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 2.0e-5 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 2.0e-5 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assertions.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-8);
+        assertTrue(spin0.getNorm() > 1.0e-3);
+        assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-8);
 
     }
 
@@ -376,23 +381,23 @@ class YawCompensationTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 2.0e-13);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 2.0e-11);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 2.0e-13);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 2.0e-13);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 2.0e-11);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 2.0e-13);
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     9.0e-9);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 8.0e-7);
+        assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
+        assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     9.0e-9);
+        assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 8.0e-7);
 
-        Assertions.assertEquals(provider.getYawAngle(orbit, date, frame),
+        assertEquals(provider.getYawAngle(orbit, date, frame),
                             provider.getYawAngle(orbitF, dateF, frame).getReal(),
                             1.0e-12);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
@@ -418,13 +423,13 @@ class YawCompensationTest {
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
         circOrbit = null;

@@ -16,39 +16,42 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.SatelliteSystem;
 
-public class InterSatellitesWindUpFactoryTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class InterSatellitesWindUpFactoryTest {
 
     @Test
-    public void testDifferentFactories() {
+    void testDifferentFactories() {
         InterSatellitesWindUp windUp1 = new InterSatellitesWindUpFactory().
                         getWindUp(SatelliteSystem.GALILEO,         1, Dipole.CANONICAL_I_J,
                                   SatelliteSystem.USER_DEFINED_D, 17, Dipole.CANONICAL_I_J);
-        Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
+        assertEquals(0, windUp1.getParametersDrivers().size());
         InterSatellitesWindUp windUp2 = new InterSatellitesWindUpFactory().
                         getWindUp(SatelliteSystem.GALILEO,         1, Dipole.CANONICAL_I_J,
                                   SatelliteSystem.USER_DEFINED_D, 17, Dipole.CANONICAL_I_J);
-        Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
-        Assertions.assertNotSame(windUp1, windUp2);
+        assertEquals(0, windUp2.getParametersDrivers().size());
+        assertNotSame(windUp1, windUp2);
     }
 
     @Test
-    public void testSameFactory() {
+    void testSameFactory() {
         InterSatellitesWindUpFactory factory = new InterSatellitesWindUpFactory();
         InterSatellitesWindUp windUp1 = factory.getWindUp(SatelliteSystem.GALILEO,         1,  Dipole.CANONICAL_I_J,
                                                           SatelliteSystem.USER_DEFINED_D, 17, Dipole.CANONICAL_I_J);
-        Assertions.assertEquals(0, windUp1.getParametersDrivers().size());
+        assertEquals(0, windUp1.getParametersDrivers().size());
         InterSatellitesWindUp windUp2 = factory.getWindUp(SatelliteSystem.GALILEO,         1, Dipole.CANONICAL_I_J,
                                                           SatelliteSystem.USER_DEFINED_D, 17, Dipole.CANONICAL_I_J);
-        Assertions.assertEquals(0, windUp2.getParametersDrivers().size());
-        Assertions.assertSame(windUp1, windUp2);
+        assertEquals(0, windUp2.getParametersDrivers().size());
+        assertSame(windUp1, windUp2);
     }
 
     @Test
-    public void testCachedInstances() {
+    void testCachedInstances() {
 
         InterSatellitesWindUpFactory factory = new InterSatellitesWindUpFactory();
         InterSatellitesWindUp[] windUp1 = {
@@ -91,11 +94,11 @@ public class InterSatellitesWindUpFactoryTest {
         for (int i = 0; i < windUp1.length; ++i) {
             for (int j = 0; j < windUp1.length; ++j) {
                 if (i != j) {
-                    Assertions.assertNotSame(windUp1[i], windUp1[j]);
-                    Assertions.assertNotSame(windUp2[i], windUp2[j]);
+                    assertNotSame(windUp1[i], windUp1[j]);
+                    assertNotSame(windUp2[i], windUp2[j]);
                 }
             }
-            Assertions.assertSame(windUp1[i], windUp2[i]);
+            assertSame(windUp1[i], windUp2[i]);
         }
 
     }

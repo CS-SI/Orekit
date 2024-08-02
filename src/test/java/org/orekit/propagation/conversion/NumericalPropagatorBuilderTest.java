@@ -18,7 +18,6 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,12 +35,13 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
-public class NumericalPropagatorBuilderTest {
+class NumericalPropagatorBuilderTest {
 
     @BeforeAll
-    public static void setUpBeforeClass() {
+    static void setUpBeforeClass() {
         Utils.setDataRoot("regular-data:potential");
     }
 
@@ -76,16 +76,16 @@ public class NumericalPropagatorBuilderTest {
         // Assert force models
         final List<ForceModel> expectedForceModelList = expected.getAllForceModels();
         final List<ForceModel> actualForceModelList   = actual.getAllForceModels();
-        Assertions.assertEquals(expectedForceModelList.size(), actualForceModelList.size());
+        assertEquals(expectedForceModelList.size(), actualForceModelList.size());
         for (int i = 0; i < expectedForceModelList.size(); i++) {
-            Assertions.assertEquals(expectedForceModelList.get(i).getClass(), actualForceModelList.get(i).getClass());
+            assertEquals(expectedForceModelList.get(i).getClass(), actualForceModelList.get(i).getClass());
         }
 
         // Assert integrator builder
-        Assertions.assertEquals(expected.getIntegratorBuilder().getClass(), actual.getIntegratorBuilder().getClass());
+        assertEquals(expected.getIntegratorBuilder().getClass(), actual.getIntegratorBuilder().getClass());
 
         // Assert mass
-        Assertions.assertEquals(expected.getMass(), actual.getMass());
+        assertEquals(expected.getMass(), actual.getMass());
     }
 
 }

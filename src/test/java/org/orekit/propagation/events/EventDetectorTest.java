@@ -20,7 +20,6 @@ import java.util.Locale;
 import java.util.function.Function;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
@@ -28,7 +27,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -56,12 +54,18 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class EventDetectorTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class EventDetectorTest {
 
     private double mu;
 
     @Test
-    public void testEventHandlerInit() {
+    void testEventHandlerInit() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -95,12 +99,12 @@ public class EventDetectorTest {
         double stepSize = 60.0;
         propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(handler));
         propagator.propagate(date.shiftedBy(10 * stepSize));
-        Assertions.assertTrue(eventOccurred[0]);
+        assertTrue(eventOccurred[0]);
 
     }
 
     @Test
-    public void testBasicScheduling() {
+    void testBasicScheduling() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -115,7 +119,7 @@ public class EventDetectorTest {
         propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(checker));
         propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(10 * stepSize));
-        Assertions.assertTrue(checker.outOfOrderCallDetected());
+        assertTrue(checker.outOfOrderCallDetected());
 
     }
 
@@ -144,7 +148,7 @@ public class EventDetectorTest {
                 double dt = currentState.getDate().durationFrom(triggerDate);
                 if (dt < 0) {
                     outOfOrderCallDetected = true;
-                    Assertions.assertTrue(FastMath.abs(dt) < (2 * stepSize));
+                    assertTrue(FastMath.abs(dt) < (2 * stepSize));
                 }
             }
         }
@@ -160,7 +164,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testIssue108Numerical() {
+    void testIssue108Numerical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -174,11 +178,11 @@ public class EventDetectorTest {
         GCallsCounter counter = new GCallsCounter(AdaptableInterval.of(100000.0), 1.0e-6, 20, new StopOnEvent());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(n * step));
-        Assertions.assertEquals(n + 1, counter.getCount());
+        assertEquals(n + 1, counter.getCount());
     }
 
     @Test
-    public void testIssue108Analytical() {
+    void testIssue108Analytical() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
         final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
@@ -193,7 +197,7 @@ public class EventDetectorTest {
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(n * step));
         // analytical propagator can take one big step, further reducing calls to g()
-        Assertions.assertEquals(2, counter.getCount());
+        assertEquals(2, counter.getCount());
     }
 
     private static class GCallsCounter extends AbstractDetector<GCallsCounter> {
@@ -223,7 +227,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testNoisyGFunction() {
+    void testNoisyGFunction() {
 
         // initial conditions
         Frame eme2000 = FramesFactory.getEME2000();
@@ -247,7 +251,7 @@ public class EventDetectorTest {
                             withMaxCheck(Constants.JULIAN_DAY).
                             withThreshold(1.0e-6));
         SpacecraftState s = k2.propagate(startDate, targetDate);
-        Assertions.assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
+        assertEquals(0.0, interruptDate.durationFrom(s.getDate()), 1.1e-6);
     }
 
     private static class CloseApproachDetector extends AbstractDetector<CloseApproachDetector> {
@@ -280,7 +284,7 @@ public class EventDetectorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
         final Throwable dummyCause = new RuntimeException();
         try {
             // initial conditions
@@ -303,20 +307,20 @@ public class EventDetectorTest {
                 }
             });
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertSame(OrekitException.class, oe.getClass());
-            Assertions.assertSame(dummyCause, oe.getCause().getCause());
+            assertSame(OrekitException.class, oe.getClass());
+            assertSame(dummyCause, oe.getCause().getCause());
             String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
                     "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
                     "Last iteration at 2011-05-11T00:00:00.000Z (g=-3.6E3)";
-            MatcherAssert.assertThat(oe.getMessage(Locale.US),
+            assertThat(oe.getMessage(Locale.US),
                     CoreMatchers.containsString(expected));
         }
     }
 
     @Test
-    public void testDefaultMethods() {
+    void testDefaultMethods() {
         EventDetector dummyDetector = new EventDetector() {
 
             @Override
@@ -352,12 +356,12 @@ public class EventDetectorTest {
        SpacecraftState s = new SpacecraftState(new KeplerianOrbit(7e6, 0.01, 0.3, 0, 0, 0,
                                                                   PositionAngleType.TRUE, FramesFactory.getEME2000(),
                                                                   AbsoluteDate.J2000_EPOCH, Constants.EIGEN5C_EARTH_MU));
-       Assertions.assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
+       assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
 
     }
 
     @Test
-    public void testNumericalNoiseAtIntervalEnd() {
+    void testNumericalNoiseAtIntervalEnd() {
 
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -373,27 +377,27 @@ public class EventDetectorTest {
         AbsoluteDate eventTime = finalTime.shiftedBy(-noise);
         propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise / 2));
         SpacecraftState finalState = propagator.propagate(finalTime);
-        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
+        assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
 
     }
 
     @Test
-    public void testForwardAnalytical() {
+    void testForwardAnalytical() {
         doTestScheduling(0.0, 1.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testBackwardAnalytical() {
+    void testBackwardAnalytical() {
         doTestScheduling(1.0, 0.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testForwardNumerical() {
+    void testForwardNumerical() {
         doTestScheduling(0.0, 1.0, 23, this::buildNumerical);
     }
 
     @Test
-    public void testBackwardNumerical() {
+    void testBackwardNumerical() {
         doTestScheduling(1.0, 0.0, 23, this::buildNumerical);
     }
 
@@ -441,7 +445,7 @@ public class EventDetectorTest {
 
         propagator.propagate(initialDate.shiftedBy(start), initialDate.shiftedBy(stop));
 
-        Assertions.assertEquals(expectedCalls, checker.calls);
+        assertEquals(expectedCalls, checker.calls);
 
     }
 
@@ -465,14 +469,14 @@ public class EventDetectorTest {
                 // check scheduling is always consistent with integration direction
                 if (start.isBefore(stop)) {
                     // forward direction
-                    Assertions.assertTrue(date.isAfterOrEqualTo(start));
-                    Assertions.assertTrue(date.isBeforeOrEqualTo(stop));
-                    Assertions.assertTrue(date.isAfterOrEqualTo(last));
+                    assertTrue(date.isAfterOrEqualTo(start));
+                    assertTrue(date.isBeforeOrEqualTo(stop));
+                    assertTrue(date.isAfterOrEqualTo(last));
                } else {
                     // backward direction
-                   Assertions.assertTrue(date.isBeforeOrEqualTo(start));
-                   Assertions.assertTrue(date.isAfterOrEqualTo(stop));
-                   Assertions.assertTrue(date.isBeforeOrEqualTo(last));
+                   assertTrue(date.isBeforeOrEqualTo(start));
+                   assertTrue(date.isAfterOrEqualTo(stop));
+                   assertTrue(date.isBeforeOrEqualTo(last));
                 }
             }
             last = date;
@@ -482,7 +486,7 @@ public class EventDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu = Constants.EIGEN5C_EARTH_MU;
     }

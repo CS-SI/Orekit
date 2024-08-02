@@ -21,13 +21,15 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class AbstractSunInfluencedAtmosphereTest {
 
@@ -43,8 +45,8 @@ class AbstractSunInfluencedAtmosphereTest {
         final FieldVector3D<Complex> fieldSunPosition = testAtmosphere.getSunPosition(fieldDate, mockedFrame);
         // THEN
         final Vector3D sunPosition = testAtmosphere.getSunPosition(date, mockedFrame);
-        Assertions.assertEquals(sunPosition, fieldSunPosition.toVector3D());
-        Assertions.assertNotEquals(0., fieldSunPosition.getX().getImaginary());
+        assertEquals(sunPosition, fieldSunPosition.toVector3D());
+        assertNotEquals(0., fieldSunPosition.getX().getImaginary());
     }
 
     @Test
@@ -55,7 +57,7 @@ class AbstractSunInfluencedAtmosphereTest {
         // WHEN
         final ExtendedPositionProvider sun = testAtmosphere.getSun();
         // THEN
-        Assertions.assertEquals(mockedProvider, sun);
+        assertEquals(mockedProvider, sun);
     }
 
     private static class TestProvider implements ExtendedPositionProvider {

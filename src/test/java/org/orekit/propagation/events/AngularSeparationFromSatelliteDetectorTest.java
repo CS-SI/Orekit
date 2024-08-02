@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -45,7 +44,12 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class AngularSeparationFromSatelliteDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class AngularSeparationFromSatelliteDetectorTest {
 
     private OneAxisEllipsoid earth;
     private TopocentricFrame acatenango;
@@ -54,7 +58,7 @@ public class AngularSeparationFromSatelliteDetectorTest {
     private Propagator       propagator;
 
     @Test
-    public void testCentralSunTransit() {
+    void testCentralSunTransit() {
 
         double proximityAngle = FastMath.toRadians(10.0);
         double maxCheck = 0.1 * proximityAngle / initialOrbit.getKeplerianMeanMotion();
@@ -63,25 +67,25 @@ public class AngularSeparationFromSatelliteDetectorTest {
                         new AngularSeparationFromSatelliteDetector(sun, acatenango, proximityAngle).
                         withMaxCheck(maxCheck).
                         withThreshold(1.0e-6);
-        Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
-        Assertions.assertSame(sun,    detector.getPrimaryObject());
-        Assertions.assertSame(acatenango,  detector.getSecondaryObject());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
+        assertSame(sun,    detector.getPrimaryObject());
+        assertSame(acatenango,  detector.getSecondaryObject());
+        assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(3600 * 2));
-        Assertions.assertEquals(4587.6472, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        assertEquals(4587.6472, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
         final PVCoordinates sPV = finalState.getPVCoordinates();
         final PVCoordinates primaryPV   = sun       .getPVCoordinates(finalState.getDate(), finalState.getFrame());
         final PVCoordinates secondaryPV = acatenango.getPVCoordinates(finalState.getDate(), finalState.getFrame());
         final double separation = Vector3D.angle(primaryPV  .getPosition().subtract(sPV.getPosition()),
                                                  secondaryPV.getPosition().subtract(sPV.getPosition()));
-        Assertions.assertTrue(separation < proximityAngle);
+        assertTrue(separation < proximityAngle);
 
     }
 
     @Test
-    public void testRegularProximity() {
+    void testRegularProximity() {
 
         double proximityAngle = FastMath.toRadians(15.0);
         double maxCheck = 0.1 * proximityAngle / initialOrbit.getKeplerianMeanMotion();
@@ -93,25 +97,25 @@ public class AngularSeparationFromSatelliteDetectorTest {
                         withHandler(new EventHandler() {
                             public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
                                 if (increasing) {
-                                    Assertions.assertEquals(5259.6649, s.getDate().durationFrom(iniDate), 1.0e-3);
+                                    assertEquals(5259.6649, s.getDate().durationFrom(iniDate), 1.0e-3);
                                 } else {
-                                    Assertions.assertEquals(4410.2581, s.getDate().durationFrom(iniDate), 1.0e-3);
+                                    assertEquals(4410.2581, s.getDate().durationFrom(iniDate), 1.0e-3);
                                 }
                                 return Action.CONTINUE;
                             }
                         });
-        Assertions.assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
-        Assertions.assertSame(sun,    detector.getPrimaryObject());
-        Assertions.assertSame(acatenango,  detector.getSecondaryObject());
-        Assertions.assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(proximityAngle, detector.getProximityAngle(), 1.0e-15);
+        assertSame(sun,    detector.getPrimaryObject());
+        assertSame(acatenango,  detector.getSecondaryObject());
+        assertEquals(maxCheck, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
         propagator.addEventDetector(detector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(3600 * 2));
-        Assertions.assertEquals(7200.0, finalState.getDate().durationFrom(iniDate), 1.0e-3);
+        assertEquals(7200.0, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -130,12 +134,12 @@ public class AngularSeparationFromSatelliteDetectorTest {
                                               Constants.EIGEN5C_EARTH_MU);
             propagator = new KeplerianPropagator(initialOrbit);
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         earth        = null;
         iniDate      = null;
         initialOrbit = null;

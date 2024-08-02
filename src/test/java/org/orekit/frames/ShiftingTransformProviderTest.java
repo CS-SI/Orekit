@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -31,16 +30,21 @@ import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 
-public class ShiftingTransformProviderTest {
+class ShiftingTransformProviderTest {
 
     @Test
-    public void testCacheHitForward() {
+    void testCacheHitForward() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -50,35 +54,35 @@ public class ShiftingTransformProviderTest {
                                               CartesianDerivativesFilter.USE_PVA,
                                               AngularDerivativesFilter.USE_RRA,
                                               5, 0.8, 10, 60.0, 60.0);
-        Assertions.assertEquals(5,   shiftingProvider.getGridPoints());
-        Assertions.assertEquals(0.8, shiftingProvider.getStep(), 1.0e-15);
+        assertEquals(5,   shiftingProvider.getGridPoints());
+        assertEquals(0.8, shiftingProvider.getStep(), 1.0e-15);
 
         for (double dt = 0.8; dt <= 1.0; dt += 0.001) {
             Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
             Transform interpolated = shiftingProvider.getTransform(t0.shiftedBy(dt));
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
 
-            Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           1.1e-5);
-            Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           1.6e-4);
-            Assertions.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       1.6e-3);
-            Assertions.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            4.2e-16);
-            Assertions.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         1.2e-16);
-            Assertions.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 7.1e-30);
+            assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           1.1e-5);
+            assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           1.6e-4);
+            assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       1.6e-3);
+            assertEquals(0.0, error.getAngular().getRotation().getAngle(),            4.2e-16);
+            assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         1.2e-16);
+            assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 7.1e-30);
 
             StaticTransform staticError = StaticTransform.compose(
                     reference.getDate(),
                     reference,
                     shiftingProvider.getStaticTransform(t0.shiftedBy(dt)).getInverse());
-            Assertions.assertEquals(0.0, staticError.getTranslation().getNorm(), 1.1e-5);
-            Assertions.assertEquals(0.0, staticError.getRotation().getAngle(),   4.2e-16);
+            assertEquals(0.0, staticError.getTranslation().getNorm(), 1.1e-5);
+            assertEquals(0.0, staticError.getRotation().getAngle(),   4.2e-16);
         }
-        Assertions.assertEquals(8,   rawProvider.getCount());
-        Assertions.assertEquals(200, referenceProvider.getCount());
+        assertEquals(8,   rawProvider.getCount());
+        assertEquals(200, referenceProvider.getCount());
 
     }
 
     @Test
-    public void testCacheHitBackward() {
+    void testCacheHitBackward() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
@@ -88,36 +92,36 @@ public class ShiftingTransformProviderTest {
                                               CartesianDerivativesFilter.USE_PVA,
                                               AngularDerivativesFilter.USE_RRA,
                                               5, 0.8, 10, 60.0, 60.0);
-        Assertions.assertEquals(5,   shiftingProvider.getGridPoints());
-        Assertions.assertEquals(0.8, shiftingProvider.getStep(), 1.0e-15);
+        assertEquals(5,   shiftingProvider.getGridPoints());
+        assertEquals(0.8, shiftingProvider.getStep(), 1.0e-15);
 
         for (double dt = 1.0; dt >= 0.8; dt -= 0.001) {
             Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
             Transform interpolated = shiftingProvider.getTransform(t0.shiftedBy(dt));
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
 
-            Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           1.1e-5);
-            Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           1.6e-4);
-            Assertions.assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       1.6e-3);
-            Assertions.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            4.2e-16);
-            Assertions.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.3e-16);
-            Assertions.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 7.1e-30);
+            assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           1.1e-5);
+            assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           1.6e-4);
+            assertEquals(0.0, error.getCartesian().getAcceleration().getNorm(),       1.6e-3);
+            assertEquals(0.0, error.getAngular().getRotation().getAngle(),            4.2e-16);
+            assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.3e-16);
+            assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 7.1e-30);
 
             StaticTransform staticError = StaticTransform.compose(
                     reference.getDate(),
                     reference,
                     shiftingProvider.getStaticTransform(t0.shiftedBy(dt)).getInverse());
-            Assertions.assertEquals(0.0, staticError.getTranslation().getNorm(), 1.1e-5);
-            Assertions.assertEquals(0.0, staticError.getRotation().getAngle(),   4.2e-16);
+            assertEquals(0.0, staticError.getTranslation().getNorm(), 1.1e-5);
+            assertEquals(0.0, staticError.getRotation().getAngle(),   4.2e-16);
         }
-        Assertions.assertEquals(10,   rawProvider.getCount());
-        Assertions.assertEquals(200, referenceProvider.getCount());
+        assertEquals(10,   rawProvider.getCount());
+        assertEquals(200, referenceProvider.getCount());
 
     }
 
     @Test
-    public void testForwardException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testForwardException() {
+        assertThrows(OrekitException.class, () -> {
             ShiftingTransformProvider shiftingProvider =
                     new ShiftingTransformProvider(new TransformProvider() {
                         private static final long serialVersionUID = -3126512810306982868L;
@@ -136,7 +140,7 @@ public class ShiftingTransformProviderTest {
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
@@ -149,36 +153,36 @@ public class ShiftingTransformProviderTest {
         for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
             shiftingProvider.getTransform(t0.shiftedBy(dt));
         }
-        Assertions.assertEquals(12, rawProvider.getCount());
+        assertEquals(12, rawProvider.getCount());
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(shiftingProvider);
 
-        Assertions.assertTrue(bos.size () >  650);
-        Assertions.assertTrue(bos.size () <  750);
+        assertTrue(bos.size () >  650);
+        assertTrue(bos.size () <  750);
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream ois = new ObjectInputStream(bis);
         ShiftingTransformProvider deserialized =
                 (ShiftingTransformProvider) ois.readObject();
-        Assertions.assertEquals(0, ((CirclingProvider) deserialized.getRawProvider()).getCount());
+        assertEquals(0, ((CirclingProvider) deserialized.getRawProvider()).getCount());
         for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
             Transform t1 = shiftingProvider.getTransform(t0.shiftedBy(dt));
             Transform t2 = deserialized.getTransform(t0.shiftedBy(dt));
             Transform error = new Transform(t1.getDate(), t1, t2.getInverse());
             // both interpolators should give the same results
-            Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),   1.0e-15);
-            Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),   1.0e-15);
-            Assertions.assertEquals(0.0, error.getAngular().getRotation().getAngle(),    1.0e-15);
-            Assertions.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(), 1.0e-15);
+            assertEquals(0.0, error.getCartesian().getPosition().getNorm(),   1.0e-15);
+            assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),   1.0e-15);
+            assertEquals(0.0, error.getAngular().getRotation().getAngle(),    1.0e-15);
+            assertEquals(0.0, error.getAngular().getRotationRate().getNorm(), 1.0e-15);
         }
 
         // the original interpolator should not have triggered any new calls
-        Assertions.assertEquals(12, rawProvider.getCount());
+        assertEquals(12, rawProvider.getCount());
 
         // the deserialized interpolator should have triggered new calls
-        Assertions.assertEquals(12, ((CirclingProvider) deserialized.getRawProvider()).getCount());
+        assertEquals(12, ((CirclingProvider) deserialized.getRawProvider()).getCount());
 
     }
 

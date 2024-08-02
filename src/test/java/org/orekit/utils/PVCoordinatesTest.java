@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
@@ -29,7 +28,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.errors.OrekitException;
@@ -38,16 +36,20 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class PVCoordinatesTest {
+
+class PVCoordinatesTest {
 
     @Test
-    public void testDefaultConstructor() {
-        Assertions.assertEquals("{P(0.0, 0.0, 0.0), V(0.0, 0.0, 0.0), A(0.0, 0.0, 0.0)}", new PVCoordinates().toString());
+    void testDefaultConstructor() {
+        assertEquals("{P(0.0, 0.0, 0.0), V(0.0, 0.0, 0.0), A(0.0, 0.0, 0.0)}", new PVCoordinates().toString());
     }
 
     @Test
-    public void testLinearConstructors() {
+    void testLinearConstructors() {
         PVCoordinates pv1 = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                               new Vector3D(-1, -0.1, -10));
         PVCoordinates pv2 = new PVCoordinates(new Vector3D( 2,  0.2,  20),
@@ -65,38 +67,38 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVectorNeg() {
+    void testToDerivativeStructureVectorNeg() {
         try {
             PVCoordinates.ZERO.toDerivativeStructureVector(-1);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
-            Assertions.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
         }
     }
 
     @Test
-    public void testToDerivativeStructureVector3() {
+    void testToDerivativeStructureVector3() {
         try {
             PVCoordinates.ZERO.toDerivativeStructureVector(3);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
-            Assertions.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
         }
     }
 
     @Test
-    public void testToDerivativeStructureVector0() {
+    void testToDerivativeStructureVector0() {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
                                   new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(0);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(0, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(1, fv.getX().getFreeParameters());
+        assertEquals(0, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
         checkPV(new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   Vector3D.ZERO,
                                   Vector3D.ZERO),
@@ -104,19 +106,19 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector1() {
+    void testToDerivativeStructureVector1() {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
                                   new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(1);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        assertEquals(1, fv.getX().getFreeParameters());
+        assertEquals(1, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
         checkPV(new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
                                   Vector3D.ZERO),
@@ -124,46 +126,46 @@ public class PVCoordinatesTest {
     }
 
     @Test
-    public void testUnivariateDerivative1Vector() {
+    void testUnivariateDerivative1Vector() {
         FieldVector3D<UnivariateDerivative1> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative1Vector();
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
+        assertEquals(1, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
 
         PVCoordinates pv = new PVCoordinates(fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
 
     }
 
     @Test
-    public void testToDerivativeStructureVector2() {
+    void testToDerivativeStructureVector2() {
         FieldVector3D<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
                                   new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(2);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
+        assertEquals(1, fv.getX().getFreeParameters());
+        assertEquals(2, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
+        assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
+        assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
         checkPV(new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
                                   new Vector3D(10, -1.0, -100)),
@@ -173,241 +175,241 @@ public class PVCoordinatesTest {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10),
                                            new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
 
         PVCoordinates pv = new PVCoordinates(fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-        Assertions.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
-        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+        assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
 
     }
 
     @Test
-    public void testUnivariateDerivative2Vector() {
+    void testUnivariateDerivative2Vector() {
         FieldVector3D<UnivariateDerivative2> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative2Vector();
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getDerivative(2), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getDerivative(2), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getDerivative(2), 1.0e-15);
+        assertEquals(2, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getDerivative(1), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getDerivative(1), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getDerivative(1), 1.0e-15);
+        assertEquals(  10.0, fv.getX().getDerivative(2), 1.0e-15);
+        assertEquals(  -1.0, fv.getY().getDerivative(2), 1.0e-15);
+        assertEquals(-100.0, fv.getZ().getDerivative(2), 1.0e-15);
 
         for (double dt = 0; dt < 10; dt += 0.125) {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10),
                                            new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+            assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
         }
 
         PVCoordinates pv = new PVCoordinates(fv);
-        Assertions.assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
-        Assertions.assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
-        Assertions.assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
-        Assertions.assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
+        assertEquals(   1.0, pv.getPosition().getX(), 1.0e-10);
+        assertEquals(   0.1, pv.getPosition().getY(), 1.0e-10);
+        assertEquals(  10.0, pv.getPosition().getZ(), 1.0e-10);
+        assertEquals(  -1.0, pv.getVelocity().getX(), 1.0e-15);
+        assertEquals(  -0.1, pv.getVelocity().getY(), 1.0e-15);
+        assertEquals( -10.0, pv.getVelocity().getZ(), 1.0e-15);
+        assertEquals(  10.0, pv.getAcceleration().getX(), 1.0e-15);
+        assertEquals(  -1.0, pv.getAcceleration().getY(), 1.0e-15);
+        assertEquals(-100.0, pv.getAcceleration().getZ(), 1.0e-15);
 
     }
 
     @Test
-    public void testToDerivativeStructurePVNeg() {
+    void testToDerivativeStructurePVNeg() {
         try {
             PVCoordinates.ZERO.toDerivativeStructurePV(-1);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
-            Assertions.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
         }
     }
 
     @Test
-    public void testToDerivativeStructurePV3() {
+    void testToDerivativeStructurePV3() {
         try {
             PVCoordinates.ZERO.toDerivativeStructurePV(3);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
-            Assertions.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
         }
     }
 
     @Test
-    public void testToDerivativeStructurePV0() {
+    void testToDerivativeStructurePV0() {
         FieldPVCoordinates<DerivativeStructure> fv =
                 new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                   new Vector3D(-1, -0.1, -10),
                                   new Vector3D(10, -1.0, -100)).toDerivativeStructurePV(0);
-        Assertions.assertEquals(1, fv.getPosition().getX().getFreeParameters());
-        Assertions.assertEquals(0, fv.getPosition().getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+        assertEquals(1, fv.getPosition().getX().getFreeParameters());
+        assertEquals(0, fv.getPosition().getX().getOrder());
+        assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
     }
 
     @Test
-    public void testToDerivativeStructurePV1() {
+    void testToDerivativeStructurePV1() {
         FieldPVCoordinates<DerivativeStructure> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toDerivativeStructurePV(1);
-                Assertions.assertEquals(1, fv.getPosition().getX().getFreeParameters());
-                Assertions.assertEquals(1, fv.getPosition().getX().getOrder());
-                Assertions.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
-                Assertions.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
-                Assertions.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
-                Assertions.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
-                Assertions.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
-                Assertions.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
-                Assertions.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
-                Assertions.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
-                Assertions.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+                assertEquals(1, fv.getPosition().getX().getFreeParameters());
+                assertEquals(1, fv.getPosition().getX().getOrder());
+                assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+                assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+                assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+                assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+                assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+                assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+                assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+                assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+                assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
 
-                Assertions.assertEquals(fv.getVelocity().getX().getReal(),     fv.getPosition().getX().getPartialDerivative(1), 1.0e-10);
-                Assertions.assertEquals(fv.getVelocity().getY().getReal(),     fv.getPosition().getY().getPartialDerivative(1), 1.0e-10);
-                Assertions.assertEquals(fv.getVelocity().getZ().getReal(),     fv.getPosition().getZ().getPartialDerivative(1), 1.0e-10);
-                Assertions.assertEquals(fv.getAcceleration().getX().getReal(), fv.getVelocity().getX().getPartialDerivative(1), 1.0e-10);
-                Assertions.assertEquals(fv.getAcceleration().getY().getReal(), fv.getVelocity().getY().getPartialDerivative(1), 1.0e-10);
-                Assertions.assertEquals(fv.getAcceleration().getZ().getReal(), fv.getVelocity().getZ().getPartialDerivative(1), 1.0e-10);
+                assertEquals(fv.getVelocity().getX().getReal(),     fv.getPosition().getX().getPartialDerivative(1), 1.0e-10);
+                assertEquals(fv.getVelocity().getY().getReal(),     fv.getPosition().getY().getPartialDerivative(1), 1.0e-10);
+                assertEquals(fv.getVelocity().getZ().getReal(),     fv.getPosition().getZ().getPartialDerivative(1), 1.0e-10);
+                assertEquals(fv.getAcceleration().getX().getReal(), fv.getVelocity().getX().getPartialDerivative(1), 1.0e-10);
+                assertEquals(fv.getAcceleration().getY().getReal(), fv.getVelocity().getY().getPartialDerivative(1), 1.0e-10);
+                assertEquals(fv.getAcceleration().getZ().getReal(), fv.getVelocity().getZ().getPartialDerivative(1), 1.0e-10);
 
     }
 
     @Test
-    public void testToUnivariateDerivative1PV() {
+    void testToUnivariateDerivative1PV() {
         FieldPVCoordinates<UnivariateDerivative1> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative1PV();
-        Assertions.assertEquals(1, fv.getPosition().getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+        assertEquals(1, fv.getPosition().getX().getOrder());
+        assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
 
-        Assertions.assertEquals(fv.getVelocity().getX().getReal(),     fv.getPosition().getX().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getVelocity().getY().getReal(),     fv.getPosition().getY().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getVelocity().getZ().getReal(),     fv.getPosition().getZ().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getX().getReal(), fv.getVelocity().getX().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getY().getReal(), fv.getVelocity().getY().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getZ().getReal(), fv.getVelocity().getZ().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getVelocity().getX().getReal(),     fv.getPosition().getX().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getVelocity().getY().getReal(),     fv.getPosition().getY().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getVelocity().getZ().getReal(),     fv.getPosition().getZ().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getX().getReal(), fv.getVelocity().getX().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getY().getReal(), fv.getVelocity().getY().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getZ().getReal(), fv.getVelocity().getZ().getDerivative(1), 1.0e-10);
 
     }
 
     @Test
-    public void testToDerivativeStructurePV2() {
+    void testToDerivativeStructurePV2() {
         FieldPVCoordinates<DerivativeStructure> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toDerivativeStructurePV(2);
-        Assertions.assertEquals(1, fv.getPosition().getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getPosition().getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+        assertEquals(1, fv.getPosition().getX().getFreeParameters());
+        assertEquals(2, fv.getPosition().getX().getOrder());
+        assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
 
-        Assertions.assertEquals(fv.getVelocity().getX().getReal(),                   fv.getPosition().getX().getPartialDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getVelocity().getY().getReal(),                   fv.getPosition().getY().getPartialDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getVelocity().getZ().getReal(),                   fv.getPosition().getZ().getPartialDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getX().getReal(),               fv.getPosition().getX().getPartialDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getY().getReal(),               fv.getPosition().getY().getPartialDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getPosition().getZ().getPartialDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getX().getReal(),               fv.getVelocity().getX().getPartialDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getY().getReal(),               fv.getVelocity().getY().getPartialDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getVelocity().getZ().getPartialDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getX().getPartialDerivative(1), fv.getVelocity().getX().getPartialDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getY().getPartialDerivative(1), fv.getVelocity().getY().getPartialDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getZ().getPartialDerivative(1), fv.getVelocity().getZ().getPartialDerivative(2), 1.0e-10);
+        assertEquals(fv.getVelocity().getX().getReal(),                   fv.getPosition().getX().getPartialDerivative(1), 1.0e-10);
+        assertEquals(fv.getVelocity().getY().getReal(),                   fv.getPosition().getY().getPartialDerivative(1), 1.0e-10);
+        assertEquals(fv.getVelocity().getZ().getReal(),                   fv.getPosition().getZ().getPartialDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getX().getReal(),               fv.getPosition().getX().getPartialDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getY().getReal(),               fv.getPosition().getY().getPartialDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getPosition().getZ().getPartialDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getX().getReal(),               fv.getVelocity().getX().getPartialDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getY().getReal(),               fv.getVelocity().getY().getPartialDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getVelocity().getZ().getPartialDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getX().getPartialDerivative(1), fv.getVelocity().getX().getPartialDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getY().getPartialDerivative(1), fv.getVelocity().getY().getPartialDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getZ().getPartialDerivative(1), fv.getVelocity().getZ().getPartialDerivative(2), 1.0e-10);
 
         for (double dt = 0; dt < 10; dt += 0.125) {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10),
                                            new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getPosition().getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getPosition().getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getPosition().getZ().taylor(dt), 1.0e-14);
+            assertEquals(p.getX(), fv.getPosition().getX().taylor(dt), 1.0e-14);
+            assertEquals(p.getY(), fv.getPosition().getY().taylor(dt), 1.0e-14);
+            assertEquals(p.getZ(), fv.getPosition().getZ().taylor(dt), 1.0e-14);
         }
 
     }
 
     @Test
-    public void testToUnivariateDerivative2PV() {
+    void testToUnivariateDerivative2PV() {
         FieldPVCoordinates<UnivariateDerivative2> fv =
                         new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                           new Vector3D(-1, -0.1, -10),
                                           new Vector3D(10, -1.0, -100)).toUnivariateDerivative2PV();
-        Assertions.assertEquals(2, fv.getPosition().getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
-        Assertions.assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
-        Assertions.assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
+        assertEquals(2, fv.getPosition().getX().getOrder());
+        assertEquals(   1.0, fv.getPosition().getX().getReal(),     1.0e-10);
+        assertEquals(   0.1, fv.getPosition().getY().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getPosition().getZ().getReal(),     1.0e-10);
+        assertEquals(  -1.0, fv.getVelocity().getX().getReal(),     1.0e-10);
+        assertEquals(  -0.1, fv.getVelocity().getY().getReal(),     1.0e-10);
+        assertEquals( -10.0, fv.getVelocity().getZ().getReal(),     1.0e-10);
+        assertEquals(  10.0, fv.getAcceleration().getX().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getAcceleration().getY().getReal(), 1.0e-10);
+        assertEquals(-100.0, fv.getAcceleration().getZ().getReal(), 1.0e-10);
 
-        Assertions.assertEquals(fv.getVelocity().getX().getReal(),                   fv.getPosition().getX().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getVelocity().getY().getReal(),                   fv.getPosition().getY().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getVelocity().getZ().getReal(),                   fv.getPosition().getZ().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getX().getReal(),               fv.getPosition().getX().getDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getY().getReal(),               fv.getPosition().getY().getDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getPosition().getZ().getDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getX().getReal(),               fv.getVelocity().getX().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getY().getReal(),               fv.getVelocity().getY().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getVelocity().getZ().getDerivative(1), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getX().getDerivative(1), fv.getVelocity().getX().getDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getY().getDerivative(1), fv.getVelocity().getY().getDerivative(2), 1.0e-10);
-        Assertions.assertEquals(fv.getAcceleration().getZ().getDerivative(1), fv.getVelocity().getZ().getDerivative(2), 1.0e-10);
+        assertEquals(fv.getVelocity().getX().getReal(),                   fv.getPosition().getX().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getVelocity().getY().getReal(),                   fv.getPosition().getY().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getVelocity().getZ().getReal(),                   fv.getPosition().getZ().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getX().getReal(),               fv.getPosition().getX().getDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getY().getReal(),               fv.getPosition().getY().getDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getPosition().getZ().getDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getX().getReal(),               fv.getVelocity().getX().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getY().getReal(),               fv.getVelocity().getY().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getZ().getReal(),               fv.getVelocity().getZ().getDerivative(1), 1.0e-10);
+        assertEquals(fv.getAcceleration().getX().getDerivative(1), fv.getVelocity().getX().getDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getY().getDerivative(1), fv.getVelocity().getY().getDerivative(2), 1.0e-10);
+        assertEquals(fv.getAcceleration().getZ().getDerivative(1), fv.getVelocity().getZ().getDerivative(2), 1.0e-10);
 
         for (double dt = 0; dt < 10; dt += 0.125) {
             Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
                                            new Vector3D(-1, -0.1, -10),
                                            new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX(), fv.getPosition().getX().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getY(), fv.getPosition().getY().taylor(dt), 1.0e-14);
-            Assertions.assertEquals(p.getZ(), fv.getPosition().getZ().taylor(dt), 1.0e-14);
+            assertEquals(p.getX(), fv.getPosition().getX().taylor(dt), 1.0e-14);
+            assertEquals(p.getY(), fv.getPosition().getY().taylor(dt), 1.0e-14);
+            assertEquals(p.getZ(), fv.getPosition().getZ().taylor(dt), 1.0e-14);
         }
     }
 
     @Test
-    public void testJerkIsVelocitySecondDerivative() {
+    void testJerkIsVelocitySecondDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -415,20 +417,20 @@ public class PVCoordinatesTest {
                                                         Constants.EIGEN5C_EARTH_MU);
         FieldPVCoordinates<DerivativeStructure> fv = orbit.getPVCoordinates().toDerivativeStructurePV(2);
         Vector3D numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
-        Assertions.assertEquals(numericalJerk.getX(),
+        assertEquals(numericalJerk.getX(),
                             fv.getVelocity().getX().getPartialDerivative(2),
                             3.0e-13);
-        Assertions.assertEquals(numericalJerk.getY(),
+        assertEquals(numericalJerk.getY(),
                             fv.getVelocity().getY().getPartialDerivative(2),
                             3.0e-13);
-        Assertions.assertEquals(numericalJerk.getZ(),
+        assertEquals(numericalJerk.getZ(),
                             fv.getVelocity().getZ().getPartialDerivative(2),
                             3.0e-13);
 
     }
 
     @Test
-    public void testJerkIsAccelerationDerivative() {
+    void testJerkIsAccelerationDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -437,31 +439,31 @@ public class PVCoordinatesTest {
 
         FieldPVCoordinates<DerivativeStructure> fv1 = orbit.getPVCoordinates().toDerivativeStructurePV(1);
         Vector3D numericalJerk = differentiate(orbit, o -> o.getPVCoordinates().getAcceleration());
-        Assertions.assertEquals(numericalJerk.getX(),
+        assertEquals(numericalJerk.getX(),
                             fv1.getAcceleration().getX().getPartialDerivative(1),
                             3.0e-13);
-        Assertions.assertEquals(numericalJerk.getY(),
+        assertEquals(numericalJerk.getY(),
                             fv1.getAcceleration().getY().getPartialDerivative(1),
                             3.0e-13);
-        Assertions.assertEquals(numericalJerk.getZ(),
+        assertEquals(numericalJerk.getZ(),
                             fv1.getAcceleration().getZ().getPartialDerivative(1),
                             3.0e-13);
 
         FieldPVCoordinates<DerivativeStructure> fv2 = orbit.getPVCoordinates().toDerivativeStructurePV(2);
-        Assertions.assertEquals(numericalJerk.getX(),
+        assertEquals(numericalJerk.getX(),
                             fv2.getAcceleration().getX().getPartialDerivative(1),
                             3.0e-13);
-        Assertions.assertEquals(numericalJerk.getY(),
+        assertEquals(numericalJerk.getY(),
                             fv2.getAcceleration().getY().getPartialDerivative(1),
                             3.0e-13);
-        Assertions.assertEquals(numericalJerk.getZ(),
+        assertEquals(numericalJerk.getZ(),
                             fv2.getAcceleration().getZ().getPartialDerivative(1),
                             3.0e-13);
 
     }
 
     @Test
-    public void testJounceIsAccelerationSecondDerivative() {
+    void testJounceIsAccelerationSecondDerivative() {
         final CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                                                           new Vector3D(-2079., 5291., -7842.)),
                                                         FramesFactory.getEME2000(),
@@ -474,20 +476,20 @@ public class PVCoordinatesTest {
                                 a.getY().getPartialDerivative(1),
                                 a.getZ().getPartialDerivative(1));
         });
-        Assertions.assertEquals(numericalJounce.getX(),
+        assertEquals(numericalJounce.getX(),
                             fv.getAcceleration().getX().getPartialDerivative(2),
                             1.0e-15);
-        Assertions.assertEquals(numericalJounce.getY(),
+        assertEquals(numericalJounce.getY(),
                             fv.getAcceleration().getY().getPartialDerivative(2),
                             1.0e-15);
-        Assertions.assertEquals(numericalJounce.getZ(),
+        assertEquals(numericalJounce.getZ(),
                             fv.getAcceleration().getZ().getPartialDerivative(2),
                             1.0e-15);
 
     }
 
     @Test
-    public void testMomentumDerivative() {
+    void testMomentumDerivative() {
         final PVCoordinates pva =
                         new PVCoordinates(new Vector3D(-4947831., -3765382., -3708221.),
                                           new Vector3D(-2079., 5291., -7842.));
@@ -502,72 +504,72 @@ public class PVCoordinatesTest {
         final Vector3D momentumDotRef = PVCoordinates.crossProduct(pva, velocity).getVelocity();
 
         final FieldVector3D<DerivativeStructure> momentumDot = pva.toDerivativeStructurePV(1).getMomentum();
-        Assertions.assertEquals(momentumRef.getX(),    momentumDot.getX().getReal(),               1.0e-15);
-        Assertions.assertEquals(momentumRef.getY(),    momentumDot.getY().getReal(),               1.0e-15);
-        Assertions.assertEquals(momentumRef.getZ(),    momentumDot.getZ().getReal(),               1.0e-15);
-        Assertions.assertEquals(momentumDotRef.getX(), momentumDot.getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(momentumDotRef.getY(), momentumDot.getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(momentumDotRef.getZ(), momentumDot.getZ().getPartialDerivative(1), 1.0e-15);
+        assertEquals(momentumRef.getX(),    momentumDot.getX().getReal(),               1.0e-15);
+        assertEquals(momentumRef.getY(),    momentumDot.getY().getReal(),               1.0e-15);
+        assertEquals(momentumRef.getZ(),    momentumDot.getZ().getReal(),               1.0e-15);
+        assertEquals(momentumDotRef.getX(), momentumDot.getX().getPartialDerivative(1), 1.0e-15);
+        assertEquals(momentumDotRef.getY(), momentumDot.getY().getPartialDerivative(1), 1.0e-15);
+        assertEquals(momentumDotRef.getZ(), momentumDot.getZ().getPartialDerivative(1), 1.0e-15);
 
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
         Vector3D p1 = new Vector3D( 1,  0.1,  10);
         Vector3D p2 = new Vector3D( 2,  0.2,  20);
         Vector3D v  = new Vector3D(-1, -0.1, -10);
         checkPV(new PVCoordinates(p2, v), new PVCoordinates(p1, v).shiftedBy(-1.0), 1.0e-15);
-        Assertions.assertEquals(0.0, PVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(v).getNorm(), 1.0e-15);
-        MatcherAssert.assertThat(
+        assertEquals(0.0, PVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(v).getNorm(), 1.0e-15);
+        assertThat(
                 new PVCoordinates(p1, v).positionShiftedBy(-1.0),
                 OrekitMatchers.vectorCloseTo(p2, 1e-15));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D( 1,  0.1,  10), new Vector3D(-1, -0.1, -10));
-        Assertions.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(0.0, 0.0, 0.0)}", pv.toString());
+        assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(0.0, 0.0, 0.0)}", pv.toString());
     }
 
     @Test
-    public void testGetMomentum() {
+    void testGetMomentum() {
         //setup
         Vector3D p = new Vector3D(1, -2, 3);
         Vector3D v = new Vector3D(-9, 8, -7);
 
         //action + verify
-        Assertions.assertEquals(new PVCoordinates(p, v).getMomentum(), p.crossProduct(v));
+        assertEquals(new PVCoordinates(p, v).getMomentum(), p.crossProduct(v));
         //check simple cases
-        Assertions.assertEquals(
-                new PVCoordinates(Vector3D.PLUS_I, Vector3D.MINUS_I).getMomentum(),
-                Vector3D.ZERO);
-        Assertions.assertEquals(
-                new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J).getMomentum(),
-                Vector3D.PLUS_K);
+        assertEquals(
+                Vector3D.ZERO,
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.MINUS_I).getMomentum());
+        assertEquals(
+                Vector3D.PLUS_K,
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J).getMomentum());
     }
 
     @Test
-    public void testGetAngularVelocity() {
+    void testGetAngularVelocity() {
         //setup
         Vector3D p = new Vector3D(1, -2, 3);
         Vector3D v = new Vector3D(-9, 8, -7);
 
         //action + verify
-        Assertions.assertEquals(
+        assertEquals(
                 new PVCoordinates(p, v).getAngularVelocity(),
                 p.crossProduct(v).scalarMultiply(1.0 / p.getNormSq()));
         //check extra simple cases
-        Assertions.assertEquals(
-                new PVCoordinates(Vector3D.PLUS_I, Vector3D.MINUS_I).getAngularVelocity(),
-                Vector3D.ZERO);
-        Assertions.assertEquals(
+        assertEquals(
+                Vector3D.ZERO,
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.MINUS_I).getAngularVelocity());
+        assertEquals(
                 new PVCoordinates(new Vector3D(2, 0, 0), Vector3D.PLUS_J).getAngularVelocity(),
                 Vector3D.PLUS_K.scalarMultiply(0.5));
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0xb2011ffd25412067l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
@@ -592,20 +594,20 @@ public class PVCoordinatesTest {
                         }
                     }).value(factory.variable(0, 0.0));
             PVCoordinates normalized = pv.normalize();
-            Assertions.assertEquals(x.getValue(),              normalized.getPosition().getX(),     1.0e-16);
-            Assertions.assertEquals(y.getValue(),              normalized.getPosition().getY(),     1.0e-16);
-            Assertions.assertEquals(z.getValue(),              normalized.getPosition().getZ(),     1.0e-16);
-            Assertions.assertEquals(x.getPartialDerivative(1), normalized.getVelocity().getX(),     3.0e-13);
-            Assertions.assertEquals(y.getPartialDerivative(1), normalized.getVelocity().getY(),     3.0e-13);
-            Assertions.assertEquals(z.getPartialDerivative(1), normalized.getVelocity().getZ(),     3.0e-13);
-            Assertions.assertEquals(x.getPartialDerivative(2), normalized.getAcceleration().getX(), 6.0e-10);
-            Assertions.assertEquals(y.getPartialDerivative(2), normalized.getAcceleration().getY(), 6.0e-10);
-            Assertions.assertEquals(z.getPartialDerivative(2), normalized.getAcceleration().getZ(), 6.0e-10);
+            assertEquals(x.getValue(),              normalized.getPosition().getX(),     1.0e-16);
+            assertEquals(y.getValue(),              normalized.getPosition().getY(),     1.0e-16);
+            assertEquals(z.getValue(),              normalized.getPosition().getZ(),     1.0e-16);
+            assertEquals(x.getPartialDerivative(1), normalized.getVelocity().getX(),     3.0e-13);
+            assertEquals(y.getPartialDerivative(1), normalized.getVelocity().getY(),     3.0e-13);
+            assertEquals(z.getPartialDerivative(1), normalized.getVelocity().getZ(),     3.0e-13);
+            assertEquals(x.getPartialDerivative(2), normalized.getAcceleration().getX(), 6.0e-10);
+            assertEquals(y.getPartialDerivative(2), normalized.getAcceleration().getY(), 6.0e-10);
+            assertEquals(z.getPartialDerivative(2), normalized.getAcceleration().getZ(), 6.0e-10);
         }
     }
 
     @Test
-    public void testCrossProduct() {
+    void testCrossProduct() {
         DSFactory factory = new DSFactory(1, 2);
         RandomGenerator generator = new Well19937a(0x85c592b3be733d23l);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
@@ -634,15 +636,15 @@ public class PVCoordinatesTest {
                         }
                     }).value(factory.variable(0, 0.0));
             PVCoordinates product = PVCoordinates.crossProduct(pv1, pv2);
-            Assertions.assertEquals(x.getValue(),              product.getPosition().getX(),     1.0e-16);
-            Assertions.assertEquals(y.getValue(),              product.getPosition().getY(),     1.0e-16);
-            Assertions.assertEquals(z.getValue(),              product.getPosition().getZ(),     1.0e-16);
-            Assertions.assertEquals(x.getPartialDerivative(1), product.getVelocity().getX(),     9.0e-10);
-            Assertions.assertEquals(y.getPartialDerivative(1), product.getVelocity().getY(),     9.0e-10);
-            Assertions.assertEquals(z.getPartialDerivative(1), product.getVelocity().getZ(),     9.0e-10);
-            Assertions.assertEquals(x.getPartialDerivative(2), product.getAcceleration().getX(), 3.0e-9);
-            Assertions.assertEquals(y.getPartialDerivative(2), product.getAcceleration().getY(), 3.0e-9);
-            Assertions.assertEquals(z.getPartialDerivative(2), product.getAcceleration().getZ(), 3.0e-9);
+            assertEquals(x.getValue(),              product.getPosition().getX(),     1.0e-16);
+            assertEquals(y.getValue(),              product.getPosition().getY(),     1.0e-16);
+            assertEquals(z.getValue(),              product.getPosition().getZ(),     1.0e-16);
+            assertEquals(x.getPartialDerivative(1), product.getVelocity().getX(),     9.0e-10);
+            assertEquals(y.getPartialDerivative(1), product.getVelocity().getY(),     9.0e-10);
+            assertEquals(z.getPartialDerivative(1), product.getVelocity().getZ(),     9.0e-10);
+            assertEquals(x.getPartialDerivative(2), product.getAcceleration().getX(), 3.0e-9);
+            assertEquals(y.getPartialDerivative(2), product.getAcceleration().getY(), 3.0e-9);
+            assertEquals(z.getPartialDerivative(2), product.getAcceleration().getZ(), 3.0e-9);
         }
     }
 
@@ -663,12 +665,12 @@ public class PVCoordinatesTest {
     }
 
     private void checkPV(PVCoordinates expected, PVCoordinates real, double epsilon) {
-        Assertions.assertEquals(expected.getPosition().getX(), real.getPosition().getX(), epsilon);
-        Assertions.assertEquals(expected.getPosition().getY(), real.getPosition().getY(), epsilon);
-        Assertions.assertEquals(expected.getPosition().getZ(), real.getPosition().getZ(), epsilon);
-        Assertions.assertEquals(expected.getVelocity().getX(), real.getVelocity().getX(), epsilon);
-        Assertions.assertEquals(expected.getVelocity().getY(), real.getVelocity().getY(), epsilon);
-        Assertions.assertEquals(expected.getVelocity().getZ(), real.getVelocity().getZ(), epsilon);
+        assertEquals(expected.getPosition().getX(), real.getPosition().getX(), epsilon);
+        assertEquals(expected.getPosition().getY(), real.getPosition().getY(), epsilon);
+        assertEquals(expected.getPosition().getZ(), real.getPosition().getZ(), epsilon);
+        assertEquals(expected.getVelocity().getX(), real.getVelocity().getX(), epsilon);
+        assertEquals(expected.getVelocity().getY(), real.getVelocity().getY(), epsilon);
+        assertEquals(expected.getVelocity().getZ(), real.getVelocity().getZ(), epsilon);
     }
 
     private interface OrbitFunction {

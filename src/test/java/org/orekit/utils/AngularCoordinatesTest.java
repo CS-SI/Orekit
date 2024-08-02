@@ -36,18 +36,21 @@ import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 import java.lang.reflect.InvocationTargetException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.lang.reflect.Method;
 
-public class AngularCoordinatesTest {
+class AngularCoordinatesTest {
 
     @Test
-    public void testAccelerationModeling() {
+    void testAccelerationModeling() {
         double rate = 2 * FastMath.PI / (12 * 60);
         double acc  = 0.01;
         double dt   = 1.0;
@@ -105,7 +108,7 @@ public class AngularCoordinatesTest {
                                     new UnivariateDerivative2(y0[2], yd0[2], ydd0[2]),
                                     new UnivariateDerivative2(y0[3], yd0[3], ydd0[3]),
                                     false));
-                    Assertions.assertEquals(0.0,
+                    assertEquals(0.0,
                                             Vector3D.distance(quadratic.getRotationAcceleration(),
                                                               ac.getRotationAcceleration()),
                                             4.0e-13);
@@ -125,39 +128,39 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testDefaultConstructor() {
+    void testDefaultConstructor() {
         AngularCoordinates ac = new AngularCoordinates();
-        Assertions.assertEquals(0.0, ac.getRotationAcceleration().getNorm(), 1.0e-15);
-        Assertions.assertEquals(0.0, ac.getRotationRate().getNorm(), 1.0e-15);
-        Assertions.assertEquals(0.0, Rotation.distance(ac.getRotation(), Rotation.IDENTITY), 1.0e-10);
+        assertEquals(0.0, ac.getRotationAcceleration().getNorm(), 1.0e-15);
+        assertEquals(0.0, ac.getRotationRate().getNorm(), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(ac.getRotation(), Rotation.IDENTITY), 1.0e-10);
     }
 
     @Test
-    public void testDerivativesStructuresNeg() {
+    void testDerivativesStructuresNeg() {
         try {
             AngularCoordinates.IDENTITY.toDerivativeStructureRotation(-1);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
-            Assertions.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
         }
 
     }
 
     @Test
-    public void testDerivativesStructures3() {
+    void testDerivativesStructures3() {
         try {
             AngularCoordinates.IDENTITY.toDerivativeStructureRotation(3);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
-            Assertions.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
         }
 
     }
 
     @Test
-    public void testDerivativesStructures0() {
+    void testDerivativesStructures0() {
         RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
 
         Rotation r    = randomRotation(random);
@@ -165,13 +168,13 @@ public class AngularCoordinatesTest {
         Vector3D oDot = randomVector(random, 1.0e-2);
         AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
         AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(0));
-        Assertions.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-15);
-        Assertions.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-15);
+        assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
     }
 
     @Test
-    public void testDerivativesStructures1() {
+    void testDerivativesStructures1() {
         RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
 
         Rotation r    = randomRotation(random);
@@ -179,13 +182,13 @@ public class AngularCoordinatesTest {
         Vector3D oDot = randomVector(random, 1.0e-2);
         AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
         AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(1));
-        Assertions.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
-        Assertions.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
     }
 
     @Test
-    public void testDerivativesStructures2() {
+    void testDerivativesStructures2() {
         RandomGenerator random = new Well1024a(0x1633878dddac047dl);
 
         Rotation r    = randomRotation(random);
@@ -193,13 +196,13 @@ public class AngularCoordinatesTest {
         Vector3D oDot = randomVector(random, 1.0e-2);
         AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
         AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(2));
-        Assertions.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
     }
 
     @Test
-    public void testUnivariateDerivative1() {
+    void testUnivariateDerivative1() {
         RandomGenerator random = new Well1024a(0x6de8cce747539904l);
 
         Rotation r    = randomRotation(random);
@@ -208,23 +211,23 @@ public class AngularCoordinatesTest {
         AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
         FieldRotation<UnivariateDerivative1> rotationUD = ac.toUnivariateDerivative1Rotation();
         FieldRotation<DerivativeStructure>   rotationDS = ac.toDerivativeStructureRotation(1);
-        Assertions.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ0().getPartialDerivative(1), rotationUD.getQ0().getFirstDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ1().getPartialDerivative(1), rotationUD.getQ1().getFirstDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ2().getPartialDerivative(1), rotationUD.getQ2().getFirstDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ3().getPartialDerivative(1), rotationUD.getQ3().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ0().getPartialDerivative(1), rotationUD.getQ0().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ1().getPartialDerivative(1), rotationUD.getQ1().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ2().getPartialDerivative(1), rotationUD.getQ2().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ3().getPartialDerivative(1), rotationUD.getQ3().getFirstDerivative(), 1.0e-15);
 
         AngularCoordinates rebuilt = new AngularCoordinates(rotationUD);
-        Assertions.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
 
     }
 
     @Test
-    public void testUnivariateDerivative2() {
+    void testUnivariateDerivative2() {
         RandomGenerator random = new Well1024a(0x255710c8fa2247ecl);
 
         Rotation r    = randomRotation(random);
@@ -233,63 +236,63 @@ public class AngularCoordinatesTest {
         AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
         FieldRotation<UnivariateDerivative2> rotationUD = ac.toUnivariateDerivative2Rotation();
         FieldRotation<DerivativeStructure>   rotationDS = ac.toDerivativeStructureRotation(2);
-        Assertions.assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ0().getPartialDerivative(1), rotationUD.getQ0().getFirstDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ1().getPartialDerivative(1), rotationUD.getQ1().getFirstDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ2().getPartialDerivative(1), rotationUD.getQ2().getFirstDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ3().getPartialDerivative(1), rotationUD.getQ3().getFirstDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ0().getPartialDerivative(2), rotationUD.getQ0().getSecondDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ1().getPartialDerivative(2), rotationUD.getQ1().getSecondDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ2().getPartialDerivative(2), rotationUD.getQ2().getSecondDerivative(), 1.0e-15);
-        Assertions.assertEquals(rotationDS.getQ3().getPartialDerivative(2), rotationUD.getQ3().getSecondDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ0().getReal(), rotationUD.getQ0().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ1().getReal(), rotationUD.getQ1().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ2().getReal(), rotationUD.getQ2().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ3().getReal(), rotationUD.getQ3().getReal(), 1.0e-15);
+        assertEquals(rotationDS.getQ0().getPartialDerivative(1), rotationUD.getQ0().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ1().getPartialDerivative(1), rotationUD.getQ1().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ2().getPartialDerivative(1), rotationUD.getQ2().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ3().getPartialDerivative(1), rotationUD.getQ3().getFirstDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ0().getPartialDerivative(2), rotationUD.getQ0().getSecondDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ1().getPartialDerivative(2), rotationUD.getQ1().getSecondDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ2().getPartialDerivative(2), rotationUD.getQ2().getSecondDerivative(), 1.0e-15);
+        assertEquals(rotationDS.getQ3().getPartialDerivative(2), rotationUD.getQ3().getSecondDerivative(), 1.0e-15);
 
         AngularCoordinates rebuilt = new AngularCoordinates(rotationUD);
-        Assertions.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
 
     }
 
     @Test
-    public void testZeroRate() {
+    void testZeroRate() {
         AngularCoordinates ac =
                 new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false), Vector3D.ZERO, Vector3D.ZERO);
-        Assertions.assertEquals(Vector3D.ZERO, ac.getRotationRate());
+        assertEquals(Vector3D.ZERO, ac.getRotationRate());
         double dt = 10.0;
         AngularCoordinates shifted = ac.shiftedBy(dt);
-        Assertions.assertEquals(Vector3D.ZERO, shifted.getRotationAcceleration());
-        Assertions.assertEquals(Vector3D.ZERO, shifted.getRotationRate());
-        Assertions.assertEquals(0.0, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
+        assertEquals(Vector3D.ZERO, shifted.getRotationAcceleration());
+        assertEquals(Vector3D.ZERO, shifted.getRotationRate());
+        assertEquals(0.0, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
     }
 
     @Test
-    public void testShiftWithoutAcceleration() {
+    void testShiftWithoutAcceleration() {
         double rate = 2 * FastMath.PI / (12 * 60);
         AngularCoordinates ac =
                 new AngularCoordinates(Rotation.IDENTITY,
                                        new Vector3D(rate, Vector3D.PLUS_K),
                                        Vector3D.ZERO);
-        Assertions.assertEquals(rate, ac.getRotationRate().getNorm(), 1.0e-10);
+        assertEquals(rate, ac.getRotationRate().getNorm(), 1.0e-10);
         double dt = 10.0;
         double alpha = rate * dt;
         AngularCoordinates shifted = ac.shiftedBy(dt);
-        Assertions.assertEquals(rate, shifted.getRotationRate().getNorm(), 1.0e-10);
-        Assertions.assertEquals(alpha, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
+        assertEquals(rate, shifted.getRotationRate().getNorm(), 1.0e-10);
+        assertEquals(alpha, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
 
         Vector3D xSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Assertions.assertEquals(0.0, xSat.subtract(new Vector3D(FastMath.cos(alpha), FastMath.sin(alpha), 0)).getNorm(), 1.0e-15);
+        assertEquals(0.0, xSat.subtract(new Vector3D(FastMath.cos(alpha), FastMath.sin(alpha), 0)).getNorm(), 1.0e-15);
         Vector3D ySat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
-        Assertions.assertEquals(0.0, ySat.subtract(new Vector3D(-FastMath.sin(alpha), FastMath.cos(alpha), 0)).getNorm(), 1.0e-15);
+        assertEquals(0.0, ySat.subtract(new Vector3D(-FastMath.sin(alpha), FastMath.cos(alpha), 0)).getNorm(), 1.0e-15);
         Vector3D zSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assertions.assertEquals(0.0, zSat.subtract(Vector3D.PLUS_K).getNorm(), 1.0e-15);
+        assertEquals(0.0, zSat.subtract(Vector3D.PLUS_K).getNorm(), 1.0e-15);
 
     }
 
     @Test
-    public void testShiftWithAcceleration() {
+    void testShiftWithAcceleration() {
         double rate = 2 * FastMath.PI / (12 * 60);
         double acc  = 0.001;
         double dt   = 1.0;
@@ -326,19 +329,19 @@ public class AngularCoordinatesTest {
 
                 // the error in shiftedBy taking acceleration into account is cubic
                 double expectedCubicError     = 1.4544e-6 * t * t * t;
-                Assertions.assertEquals(expectedCubicError,
+                assertEquals(expectedCubicError,
                                     Rotation.distance(reference, quadratic.shiftedBy(t).getRotation()),
                                     0.0001 * expectedCubicError);
-                Assertions.assertEquals(expectedCubicError,
+                assertEquals(expectedCubicError,
                                     Rotation.distance(reference, quadratic.rotationShiftedBy(t)),
                                     0.0001 * expectedCubicError);
 
                 // the error in shiftedBy not taking acceleration into account is quadratic
                 double expectedQuadraticError = 5.0e-4 * t * t;
-                Assertions.assertEquals(expectedQuadraticError,
+                assertEquals(expectedQuadraticError,
                                     Rotation.distance(reference, linear.shiftedBy(t).getRotation()),
                                     0.00001 * expectedQuadraticError);
-                Assertions.assertEquals(expectedQuadraticError,
+                assertEquals(expectedQuadraticError,
                                     Rotation.distance(reference, linear.rotationShiftedBy(t)),
                                     0.00001 * expectedQuadraticError);
 
@@ -356,16 +359,16 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
         double rate = 2 * FastMath.PI / (12 * 60);
         AngularCoordinates angularCoordinates =
                 new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false),
                                        new Vector3D(rate, Vector3D.PLUS_K));
-        Assertions.assertEquals(rate, angularCoordinates.getRotationRate().getNorm(), 1.0e-10);
+        assertEquals(rate, angularCoordinates.getRotationRate().getNorm(), 1.0e-10);
         double dt = 10.0;
         AngularCoordinates shifted = angularCoordinates.shiftedBy(dt);
-        Assertions.assertEquals(rate, shifted.getRotationRate().getNorm(), 1.0e-10);
-        Assertions.assertEquals(rate * dt, Rotation.distance(angularCoordinates.getRotation(), shifted.getRotation()), 1.0e-10);
+        assertEquals(rate, shifted.getRotationRate().getNorm(), 1.0e-10);
+        assertEquals(rate * dt, Rotation.distance(angularCoordinates.getRotation(), shifted.getRotation()), 1.0e-10);
 
         Vector3D shiftedX  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D shiftedY  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
@@ -373,40 +376,40 @@ public class AngularCoordinatesTest {
         Vector3D originalX = angularCoordinates.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D originalY = angularCoordinates.getRotation().applyInverseTo(Vector3D.PLUS_J);
         Vector3D originalZ = angularCoordinates.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assertions.assertEquals( FastMath.cos(rate * dt), Vector3D.dotProduct(shiftedX, originalX), 1.0e-10);
-        Assertions.assertEquals( FastMath.sin(rate * dt), Vector3D.dotProduct(shiftedX, originalY), 1.0e-10);
-        Assertions.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedX, originalZ), 1.0e-10);
-        Assertions.assertEquals(-FastMath.sin(rate * dt), Vector3D.dotProduct(shiftedY, originalX), 1.0e-10);
-        Assertions.assertEquals( FastMath.cos(rate * dt), Vector3D.dotProduct(shiftedY, originalY), 1.0e-10);
-        Assertions.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedY, originalZ), 1.0e-10);
-        Assertions.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalX), 1.0e-10);
-        Assertions.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalY), 1.0e-10);
-        Assertions.assertEquals( 1.0,                 Vector3D.dotProduct(shiftedZ, originalZ), 1.0e-10);
+        assertEquals( FastMath.cos(rate * dt), Vector3D.dotProduct(shiftedX, originalX), 1.0e-10);
+        assertEquals( FastMath.sin(rate * dt), Vector3D.dotProduct(shiftedX, originalY), 1.0e-10);
+        assertEquals( 0.0,                 Vector3D.dotProduct(shiftedX, originalZ), 1.0e-10);
+        assertEquals(-FastMath.sin(rate * dt), Vector3D.dotProduct(shiftedY, originalX), 1.0e-10);
+        assertEquals( FastMath.cos(rate * dt), Vector3D.dotProduct(shiftedY, originalY), 1.0e-10);
+        assertEquals( 0.0,                 Vector3D.dotProduct(shiftedY, originalZ), 1.0e-10);
+        assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalX), 1.0e-10);
+        assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalY), 1.0e-10);
+        assertEquals( 1.0,                 Vector3D.dotProduct(shiftedZ, originalZ), 1.0e-10);
 
         Vector3D forward = AngularCoordinates.estimateRate(angularCoordinates.getRotation(), shifted.getRotation(), dt);
-        Assertions.assertEquals(0.0, forward.subtract(angularCoordinates.getRotationRate()).getNorm(), 1.0e-10);
+        assertEquals(0.0, forward.subtract(angularCoordinates.getRotationRate()).getNorm(), 1.0e-10);
 
         Vector3D reversed = AngularCoordinates.estimateRate(shifted.getRotation(), angularCoordinates.getRotation(), dt);
-        Assertions.assertEquals(0.0, reversed.add(angularCoordinates.getRotationRate()).getNorm(), 1.0e-10);
+        assertEquals(0.0, reversed.add(angularCoordinates.getRotationRate()).getNorm(), 1.0e-10);
 
     }
 
     @Test
-    public void testReverseOffset() {
+    void testReverseOffset() {
         RandomGenerator random = new Well1024a(0x4ecca9d57a8f1611l);
         for (int i = 0; i < 100; ++i) {
             Rotation r = randomRotation(random);
             Vector3D o = randomVector(random, 1.0e-3);
             AngularCoordinates ac = new AngularCoordinates(r, o);
             AngularCoordinates sum = ac.addOffset(ac.revert());
-            Assertions.assertEquals(0.0, sum.getRotation().getAngle(), 1.0e-15);
-            Assertions.assertEquals(0.0, sum.getRotationRate().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, sum.getRotationAcceleration().getNorm(), 1.0e-15);
+            assertEquals(0.0, sum.getRotation().getAngle(), 1.0e-15);
+            assertEquals(0.0, sum.getRotationRate().getNorm(), 1.0e-15);
+            assertEquals(0.0, sum.getRotationAcceleration().getNorm(), 1.0e-15);
         }
     }
 
     @Test
-    public void testNoCommute() {
+    void testNoCommute() {
         AngularCoordinates ac1 =
                 new AngularCoordinates(new Rotation(0.48,  0.64, 0.36, 0.48, false), Vector3D.ZERO);
         AngularCoordinates ac2 =
@@ -416,12 +419,12 @@ public class AngularCoordinatesTest {
         AngularCoordinates add21 = ac2.addOffset(ac1);
 
         // the rotations are really different from each other
-        Assertions.assertEquals(2.574, Rotation.distance(add12.getRotation(), add21.getRotation()), 1.0e-3);
+        assertEquals(2.574, Rotation.distance(add12.getRotation(), add21.getRotation()), 1.0e-3);
 
     }
 
     @Test
-    public void testRoundTripNoOp() {
+    void testRoundTripNoOp() {
         RandomGenerator random = new Well1024a(0x1e610cfe89306669l);
         for (int i = 0; i < 100; ++i) {
 
@@ -436,20 +439,20 @@ public class AngularCoordinatesTest {
             AngularCoordinates ac2 = new AngularCoordinates(r2, o2, oDot2);
 
             AngularCoordinates roundTripSA = ac1.subtractOffset(ac2).addOffset(ac2);
-            Assertions.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripSA.getRotation()), 5.0e-16);
-            Assertions.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()), 2.0e-17);
-            Assertions.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripSA.getRotationAcceleration()), 2.0e-17);
+            assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripSA.getRotation()), 5.0e-16);
+            assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()), 2.0e-17);
+            assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripSA.getRotationAcceleration()), 2.0e-17);
 
             AngularCoordinates roundTripAS = ac1.addOffset(ac2).subtractOffset(ac2);
-            Assertions.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 5.0e-16);
-            Assertions.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 2.0e-17);
-            Assertions.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()), 2.0e-17);
+            assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 5.0e-16);
+            assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 2.0e-17);
+            assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()), 2.0e-17);
 
         }
     }
 
     @Test
-    public void testRodriguesSymmetry() {
+    void testRodriguesSymmetry() {
 
         // check the two-way conversion result in identity
         RandomGenerator random = new Well1024a(0xb1e615aaa8236b52l);
@@ -459,26 +462,26 @@ public class AngularCoordinatesTest {
             Vector3D rotationAcceleration = randomVector(random, 0.01);
             AngularCoordinates ac         = new AngularCoordinates(rotation, rotationRate, rotationAcceleration);
             AngularCoordinates rebuilt    = AngularCoordinates.createFromModifiedRodrigues(ac.getModifiedRodrigues(1.0));
-            Assertions.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
-            Assertions.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
-            Assertions.assertEquals(0.0, Vector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()), 1.0e-15);
+            assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
+            assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
+            assertEquals(0.0, Vector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()), 1.0e-15);
         }
 
     }
 
     @Test
-    public void testRodriguesSpecialCases() {
+    void testRodriguesSpecialCases() {
 
         // identity
         double[][] identity = new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO).getModifiedRodrigues(1.0);
         for (double[] row : identity) {
             for (double element : row) {
-                Assertions.assertEquals(0.0, element, Precision.SAFE_MIN);
+                assertEquals(0.0, element, Precision.SAFE_MIN);
             }
         }
         AngularCoordinates acId = AngularCoordinates.createFromModifiedRodrigues(identity);
-        Assertions.assertEquals(0.0, acId.getRotation().getAngle(), Precision.SAFE_MIN);
-        Assertions.assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
+        assertEquals(0.0, acId.getRotation().getAngle(), Precision.SAFE_MIN);
+        assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
 
         // PI angle rotation (which is singular for non-modified Rodrigues vector)
         RandomGenerator random = new Well1024a(0x2158523e6accb859l);
@@ -487,15 +490,15 @@ public class AngularCoordinatesTest {
             AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI, RotationConvention.VECTOR_OPERATOR),
                                                                  Vector3D.ZERO, Vector3D.ZERO);
             AngularCoordinates rebuilt = AngularCoordinates.createFromModifiedRodrigues(original.getModifiedRodrigues(1.0));
-            Assertions.assertEquals(FastMath.PI, rebuilt.getRotation().getAngle(), 1.0e-15);
-            Assertions.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR))), 1.0e-15);
-            Assertions.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-16);
+            assertEquals(FastMath.PI, rebuilt.getRotation().getAngle(), 1.0e-15);
+            assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, rebuilt.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR))), 1.0e-15);
+            assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-16);
         }
 
     }
 
     @Test
-    public void testInverseCrossProducts()
+    void testInverseCrossProducts()
         {
         checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_J);
         checkInverse(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO);
@@ -509,7 +512,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testInverseCrossProductsFailures() {
+    void testInverseCrossProductsFailures() {
         checkInverseFailure(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.PLUS_J, Vector3D.PLUS_I,  Vector3D.PLUS_K);
         checkInverseFailure(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO,    Vector3D.PLUS_K);
         checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.MINUS_I, Vector3D.PLUS_K);
@@ -519,7 +522,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testRandomInverseCrossProducts() {
+    void testRandomInverseCrossProducts() {
         RandomGenerator generator = new Well1024a(0x52b29d8f6ac2d64bl);
         for (int i = 0; i < 10000; ++i) {
             Vector3D omega = randomVector(generator, 10 * generator.nextDouble() + 1.0);
@@ -538,7 +541,7 @@ public class AngularCoordinatesTest {
     private void checkInverseFailure(Vector3D omega, Vector3D v1, Vector3D c1, Vector3D v2, Vector3D c2) {
         try {
             checkInverse(omega, v1, c1, v2, c2);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (MathIllegalArgumentException miae) {
             // expected
         }
@@ -554,22 +557,22 @@ public class AngularCoordinatesTest {
                                                                  double.class);
             inverse.setAccessible(true);
             Vector3D rebuilt = (Vector3D) inverse.invoke(null, v1, c1, v2, c2, 1.0e-9);
-            Assertions.assertEquals(0.0, Vector3D.distance(omega, rebuilt), 5.0e-12 * omega.getNorm());
+            assertEquals(0.0, Vector3D.distance(omega, rebuilt), 5.0e-12 * omega.getNorm());
         } catch (NoSuchMethodException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         } catch (SecurityException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         } catch (IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         } catch (IllegalArgumentException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         } catch (InvocationTargetException e) {
             throw (MathIllegalArgumentException) e.getCause();
         }
     }
 
     @Test
-    public void testRandomPVCoordinates() {
+    void testRandomPVCoordinates() {
         RandomGenerator generator = new Well1024a(0x49eb5b92d1f94b89l);
         for (int i = 0; i < 100; ++i) {
             Rotation r           = randomRotation(generator);
@@ -583,13 +586,13 @@ public class AngularCoordinatesTest {
                 PVCoordinates u1 = inv.applyTo(v1);
                 PVCoordinates u2 = inv.applyTo(v2);
                 AngularCoordinates rebuilt = new AngularCoordinates(u1, u2, v1, v2, 1.0e-9);
-                Assertions.assertEquals(0.0,
+                assertEquals(0.0,
                                     Rotation.distance(r, rebuilt.getRotation()),
                                     4.0e-14);
-                Assertions.assertEquals(0.0,
+                assertEquals(0.0,
                                     Vector3D.distance(omega, rebuilt.getRotationRate()),
                                     3.0e-12 * omega.getNorm());
-                Assertions.assertEquals(0.0,
+                assertEquals(0.0,
                                     Vector3D.distance(omegaDot, rebuilt.getRotationAcceleration()),
                                     2.0e-6 * omegaDot.getNorm());
             }
@@ -597,7 +600,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testCancellingDerivatives() {
+    void testCancellingDerivatives() {
         PVCoordinates u1 = new PVCoordinates(new Vector3D(-0.4466591282528639,   -0.009657376949231283,  -0.894652087807798),
                                              new Vector3D(-8.897296517803556E-4,  2.7825250920407674E-4,  4.411979658413134E-4),
                                              new Vector3D( 4.753127475302486E-7,  1.0209400376727623E-8,  9.515403756524403E-7));
@@ -609,12 +612,12 @@ public class AngularCoordinatesTest {
         AngularCoordinates ac = new AngularCoordinates(u1, u2, v1, v2, 1.0e-9);
         PVCoordinates v1Computed = ac.applyTo(u1);
         PVCoordinates v2Computed = ac.applyTo(u2);
-        Assertions.assertEquals(0, Vector3D.distance(v1.getPosition(),     v1Computed.getPosition()),     1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(v2.getPosition(),     v2Computed.getPosition()),     1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(v1.getVelocity(),     v1Computed.getVelocity()),     1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(v2.getVelocity(),     v2Computed.getVelocity()),     1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(v1.getAcceleration(), v1Computed.getAcceleration()), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(v2.getAcceleration(), v2Computed.getAcceleration()), 1.0e-15);
+        assertEquals(0, Vector3D.distance(v1.getPosition(),     v1Computed.getPosition()),     1.0e-15);
+        assertEquals(0, Vector3D.distance(v2.getPosition(),     v2Computed.getPosition()),     1.0e-15);
+        assertEquals(0, Vector3D.distance(v1.getVelocity(),     v1Computed.getVelocity()),     1.0e-15);
+        assertEquals(0, Vector3D.distance(v2.getVelocity(),     v2Computed.getVelocity()),     1.0e-15);
+        assertEquals(0, Vector3D.distance(v1.getAcceleration(), v1Computed.getAcceleration()), 1.0e-15);
+        assertEquals(0, Vector3D.distance(v2.getAcceleration(), v2Computed.getAcceleration()), 1.0e-15);
     }
 
     private Vector3D randomVector(RandomGenerator random, double norm) {

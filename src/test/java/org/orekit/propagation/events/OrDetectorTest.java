@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,12 +26,16 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Unit tests for {@link BooleanDetector#orCombine(EventDetector...)}.
  *
  * @author Evan Ward
  */
-public class OrDetectorTest {
+class OrDetectorTest {
 
     /** first operand. */
     private MockDetector a;
@@ -45,7 +48,7 @@ public class OrDetectorTest {
 
     /** create subject under test and dependencies. */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         a = new MockDetector();
         b = new MockDetector();
         s = null;
@@ -56,38 +59,38 @@ public class OrDetectorTest {
      * check {@link BooleanDetector#g(SpacecraftState)}.
      */
     @Test
-    public void testG() {
+    void testG() {
         // test zero cases
         a.g = b.g = 0.0;
-        Assertions.assertEquals(0.0, or.g(s), 0);
+        assertEquals(0.0, or.g(s), 0);
         a.g = -1;
         b.g = 0;
-        Assertions.assertEquals(0.0, or.g(s), 0);
+        assertEquals(0.0, or.g(s), 0);
         a.g = 0;
         b.g = -1;
-        Assertions.assertEquals(0.0, or.g(s), 0);
+        assertEquals(0.0, or.g(s), 0);
 
         // test negative cases
         a.g = -1;
         b.g = -1;
-        Assertions.assertTrue(or.g(s) < 0, "negative");
+        assertTrue(or.g(s) < 0, "negative");
 
         // test positive cases
         a.g = 0;
         b.g = 1;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
         a.g = 1;
         b.g = -1;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
         a.g = 1;
         b.g = 0;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
         a.g = -1;
         b.g = 1;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
         a.g = 1;
         b.g = 1;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
 
     }
 
@@ -95,32 +98,32 @@ public class OrDetectorTest {
      * check when there is numeric cancellation between the two g values.
      */
     @Test
-    public void testCancellation() {
+    void testCancellation() {
         a.g = -1e-10;
         b.g = -1e10;
-        Assertions.assertTrue(or.g(s) < 0, "negative");
+        assertTrue(or.g(s) < 0, "negative");
         a.g = -1e10;
         b.g = -1e-10;
-        Assertions.assertTrue(or.g(s) < 0, "negative");
+        assertTrue(or.g(s) < 0, "negative");
         a.g = -1e10;
         b.g = 1e-10;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
         a.g = 1e-10;
         b.g = -1e10;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
         a.g = 1e10;
         b.g = -1e-10;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
         a.g = -1e-10;
         b.g = 1e10;
-        Assertions.assertTrue(or.g(s) > 0, "positive");
+        assertTrue(or.g(s) > 0, "positive");
     }
 
     /**
      * Check wrapped detectors are initialized.
      */
     @Test
-    public void testInit() {
+    void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
@@ -138,7 +141,7 @@ public class OrDetectorTest {
         or.init(s, t);
 
         // verify
-        Assertions.assertEquals(2, or.getDetectors().size());
+        assertEquals(2, or.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
         Mockito.verify(c).init(s, t, or);
@@ -146,11 +149,11 @@ public class OrDetectorTest {
 
     /** check when no operands are passed to the constructor. */
     @Test
-    public void testZeroDetectors() {
+    void testZeroDetectors() {
         // action
         try {
             BooleanDetector.orCombine(Collections.emptyList());
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (NoSuchElementException e) {
             // expected
         }

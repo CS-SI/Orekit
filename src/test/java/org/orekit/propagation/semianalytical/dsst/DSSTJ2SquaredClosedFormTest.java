@@ -25,7 +25,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -54,38 +53,42 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.text.ParseException;
 
-public class DSSTJ2SquaredClosedFormTest {
+class DSSTJ2SquaredClosedFormTest {
 
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
         provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testShortPeriodZeis() {
+    void testShortPeriodZeis() {
         DSSTJ2SquaredClosedForm j2Squared = new DSSTJ2SquaredClosedForm(new ZeisModel(), provider);
         AuxiliaryElements auxiliaryElements = Mockito.mock(AuxiliaryElements.class);
         FieldAuxiliaryElements<Binary64> fAuxiliaryElements = Mockito.mock(FieldAuxiliaryElements.class);
         Binary64[] emptyArray = MathArrays.buildArray(Binary64Field.getInstance(), 0);
 
-        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, new double[0]).isEmpty());
-        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(fAuxiliaryElements, PropagationType.MEAN, emptyArray).isEmpty());
+        assertTrue(j2Squared.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, new double[0]).isEmpty());
+        assertTrue(j2Squared.initializeShortPeriodTerms(fAuxiliaryElements, PropagationType.MEAN, emptyArray).isEmpty());
         j2Squared.updateShortPeriodTerms(new double[0]);
         j2Squared.updateShortPeriodTerms(emptyArray);
-        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, new double[0]).isEmpty());
-        Assertions.assertTrue(j2Squared.initializeShortPeriodTerms(fAuxiliaryElements, PropagationType.MEAN, emptyArray).isEmpty());
+        assertTrue(j2Squared.initializeShortPeriodTerms(auxiliaryElements, PropagationType.MEAN, new double[0]).isEmpty());
+        assertTrue(j2Squared.initializeShortPeriodTerms(fAuxiliaryElements, PropagationType.MEAN, emptyArray).isEmpty());
     }
+
     /**
      * Non regression test for mean element rates using Zeis formulation of J2-squared
      */
     @Test
-    public void testGetMeanElementRateZeis() {
+    void testGetMeanElementRateZeis() {
 
         // Spacecraft state
         final Orbit orbit = createOrbit(200000.0, 210000.0);
@@ -101,19 +104,19 @@ public class DSSTJ2SquaredClosedFormTest {
         final double[] elements = j2Squared.getMeanElementRate(state, auxiliaryElements, j2Squared.getParameters());
   
         // Verify
-        Assertions.assertEquals(0.0,                     elements[0], 1.e-25);
-        Assertions.assertEquals(2.5668006482691996E-14,  elements[1], 1.e-25);
-        Assertions.assertEquals(7.052226821361117E-14,   elements[2], 1.e-25);
-        Assertions.assertEquals(3.6576370779863025E-10,  elements[3], 1.e-25);
-        Assertions.assertEquals(-4.3590021280959657E-10, elements[4], 1.e-25);
-        Assertions.assertEquals(1.2618917692354564E-8,   elements[5], 1.e-25);
+        assertEquals(0.0,                     elements[0], 1.e-25);
+        assertEquals(2.5668006482691996E-14,  elements[1], 1.e-25);
+        assertEquals(7.052226821361117E-14,   elements[2], 1.e-25);
+        assertEquals(3.6576370779863025E-10,  elements[3], 1.e-25);
+        assertEquals(-4.3590021280959657E-10, elements[4], 1.e-25);
+        assertEquals(1.2618917692354564E-8,   elements[5], 1.e-25);
     }
 
     /**
      * Non regression test for "field" mean element rates using Zeis formulation of J2-squared
      */
     @Test
-    public void testFieldGetMeanElementRateZeis() {
+    void testFieldGetMeanElementRateZeis() {
 
         // Field
         final Field<Binary64> field = Binary64Field.getInstance();
@@ -133,12 +136,12 @@ public class DSSTJ2SquaredClosedFormTest {
         final Binary64[] elements = j2Squared.getMeanElementRate(state, auxiliaryElements, j2Squared.getParameters(field));
   
         // Verify
-        Assertions.assertEquals(0.0,                     elements[0].getReal(), 1.e-25);
-        Assertions.assertEquals(2.5668006482691996E-14,  elements[1].getReal(), 1.e-25);
-        Assertions.assertEquals(7.052226821361117E-14,   elements[2].getReal(), 1.e-25);
-        Assertions.assertEquals(3.6576370779863025E-10,  elements[3].getReal(), 1.e-25);
-        Assertions.assertEquals(-4.3590021280959657E-10, elements[4].getReal(), 1.e-25);
-        Assertions.assertEquals(1.2618917692354564E-8,   elements[5].getReal(), 1.e-25);
+        assertEquals(0.0,                     elements[0].getReal(), 1.e-25);
+        assertEquals(2.5668006482691996E-14,  elements[1].getReal(), 1.e-25);
+        assertEquals(7.052226821361117E-14,   elements[2].getReal(), 1.e-25);
+        assertEquals(3.6576370779863025E-10,  elements[3].getReal(), 1.e-25);
+        assertEquals(-4.3590021280959657E-10, elements[4].getReal(), 1.e-25);
+        assertEquals(1.2618917692354564E-8,   elements[5].getReal(), 1.e-25);
 
     }
 
@@ -183,9 +186,9 @@ public class DSSTJ2SquaredClosedFormTest {
         final double differenceWithJ2Squared    = FastMath.abs(Vector3D.distance(propagatedNum, propagatedDsstWithJ2Squared));
 
         // Verify
-        Assertions.assertTrue(differenceWithJ2Squared < differenceWithoutJ2Squared);
-        Assertions.assertEquals(0.0, differenceWithoutJ2Squared, currentDifferenceWithoutJ2Squared); // Difference between DSST and numerical without J2-Squared
-        Assertions.assertEquals(0.0, differenceWithJ2Squared, currentDifferenceWithJ2Squared); // Difference between DSST and numerical with J2-Squared (not 0.0 due to J2-squared short periods which are not implemented)
+        assertTrue(differenceWithJ2Squared < differenceWithoutJ2Squared);
+        assertEquals(0.0, differenceWithoutJ2Squared, currentDifferenceWithoutJ2Squared); // Difference between DSST and numerical without J2-Squared
+        assertEquals(0.0, differenceWithJ2Squared, currentDifferenceWithJ2Squared); // Difference between DSST and numerical with J2-Squared (not 0.0 due to J2-squared short periods which are not implemented)
 
     }
 
@@ -196,7 +199,7 @@ public class DSSTJ2SquaredClosedFormTest {
      * The objective is that (2) accuracy compared to the numerical propagator is better than (1)
      */
     @Test
-    public void testComparisonWithNumericalVeryLeo() {
+    void testComparisonWithNumericalVeryLeo() {
         doTestComparisonWithNumerical(200000.0, 210000.0, 20461.1, 6013.1);
     }
 
@@ -207,7 +210,7 @@ public class DSSTJ2SquaredClosedFormTest {
      * The objective is that (2) accuracy compared to the numerical propagator is better than (1)
      */
     @Test
-    public void testComparisonWithNumericalLeo() {
+    void testComparisonWithNumericalLeo() {
         doTestComparisonWithNumerical(650000.0, 680000.0, 15291.5, 4653.4);
     }
 
@@ -218,7 +221,7 @@ public class DSSTJ2SquaredClosedFormTest {
      * The objective is that (2) accuracy compared to the numerical propagator is better than (1)
      */
     @Test
-    public void testComparisonWithNumericalMeo() {
+    void testComparisonWithNumericalMeo() {
         doTestComparisonWithNumerical(5622000.0, 5959000.0, 1595.6, 689.6);
     }
 
@@ -226,7 +229,7 @@ public class DSSTJ2SquaredClosedFormTest {
      * The the computation of the mean element rate derivatives
      */
     @Test
-    public void testMeanElementRateDerivatives() {
+    void testMeanElementRateDerivatives() {
 
         // Spacecraft state
         final OrbitType orbitType = OrbitType.EQUINOCTIAL;
@@ -304,7 +307,7 @@ public class DSSTJ2SquaredClosedFormTest {
             for (int n = 0; n < 6; ++n) {
                 if (meanElementRatesJacobian[m][n] != 0.0) {
                     double error = FastMath.abs((meanElementRatesJacobian[m][n] - meanElementRatesJacobianRef[m][n]) / meanElementRatesJacobianRef[m][n]);
-                    Assertions.assertEquals(0, error, 3.19E-8);
+                    assertEquals(0, error, 3.19E-8);
                 }
             }
         }

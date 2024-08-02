@@ -16,11 +16,9 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -56,6 +54,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.io.FileNotFoundException;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 
@@ -63,7 +65,7 @@ import java.util.Collections;
 class DSSTStateTransitionMatrixGeneratorTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }
@@ -129,8 +131,8 @@ class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobianI    = harvester2.getParametersJacobian(intermediate);
 
         // intermediate state has really different matrices, they are still building up
-        Assertions.assertEquals(0.158497, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-6);
-        Assertions.assertEquals(0.499960, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-6);
+        assertEquals(0.158497, stmI.subtract(stm1).getNorm1() / stm1.getNorm1(),                1.0e-6);
+        assertEquals(0.499960, jacobianI.subtract(jacobian1).getNorm1() / jacobian1.getNorm1(), 1.0e-6);
 
         // restarting propagation where we left it
         final SpacecraftState     state2       = propagator2.propagate(t0.shiftedBy(dt));
@@ -138,12 +140,12 @@ class DSSTStateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
-        MatcherAssert.assertThat(stm2,
+        assertThat(stm2,
                 OrekitMatchers.matrixCloseTo(stm1, 2e-11 * stm1.getNorm1()));
-        Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
-        MatcherAssert.assertThat(jacobian2,
+        assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
+        assertThat(jacobian2,
                 OrekitMatchers.matrixCloseTo(jacobian1, 4e-11));
-        Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 1.0e-8 * jacobian1.getNorm1());
+        assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 1.0e-8 * jacobian1.getNorm1());
 
     }
 
@@ -207,7 +209,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((pickUp.getStm().getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, tolerance);
+                    assertEquals(0, error, tolerance);
                 }
             }
         }
@@ -334,17 +336,17 @@ class DSSTStateTransitionMatrixGeneratorTest {
         RealMatrix dYdY0MEAN = harvesterMEAN.getStateTransitionMatrix(finalMEAN);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 6; ++j) {
-                Assertions.assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
+                assertEquals(i == j ? 1.0 : 0.0, dYdY0MEAN.getEntry(i, j), 1e-9);
             }
         }
         RealMatrix dYdPMEAN = harvesterMEAN.getParametersJacobian(finalMEAN);
-        Assertions.assertEquals(6, dYdPMEAN.getRowDimension());
-        Assertions.assertEquals(1, dYdPMEAN.getColumnDimension());
+        assertEquals(6, dYdPMEAN.getRowDimension());
+        assertEquals(1, dYdPMEAN.getColumnDimension());
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(0.0, dYdPMEAN.getEntry(i, 0), 1e-9);
+            assertEquals(0.0, dYdPMEAN.getEntry(i, 0), 1e-9);
         }
-        Assertions.assertEquals(OrbitType.EQUINOCTIAL, harvesterMEAN.getOrbitType());
-        Assertions.assertEquals(PositionAngleType.MEAN, harvesterMEAN.getPositionAngleType());
+        assertEquals(OrbitType.EQUINOCTIAL, harvesterMEAN.getOrbitType());
+        assertEquals(PositionAngleType.MEAN, harvesterMEAN.getPositionAngleType());
 
         // FIXME With the addition of the Extended Semi-analytical Kalman Filter, the following
         //       test doesn't work.

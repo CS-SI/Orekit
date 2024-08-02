@@ -16,7 +16,6 @@
  */
 package org.orekit.gnss.metric.messages.ssr;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -28,12 +27,17 @@ import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
 
 import java.util.ArrayList;
 
-public class SsrIm201Test {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class SsrIm201Test {
 
     private double eps = 1.0e-13;
 
     @Test
-    public void testPerfectValue() {
+    void testPerfectValue() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060
                          "001" +                              // IGS SSR version
@@ -73,58 +77,58 @@ public class SsrIm201Test {
         final SsrIm201 im201 = (SsrIm201) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Ionospheric model
-        Assertions.assertNotNull(im201.getIonosphericModel());
+        assertNotNull(im201.getIonosphericModel());
 
         // Verify size
-        Assertions.assertEquals(1,                            im201.getData().size());
+        assertEquals(1,                            im201.getData().size());
 
         // Verify header
-        Assertions.assertEquals(201,                          im201.getTypeCode());
-        Assertions.assertEquals(517695.0,                     im201.getHeader().getSsrEpoch1s(), eps);
-        Assertions.assertEquals(30.0,                         im201.getHeader().getSsrUpdateInterval(), eps);
-        Assertions.assertEquals(0,                            im201.getHeader().getSsrMultipleMessageIndicator());
-        Assertions.assertEquals(7,                            im201.getHeader().getIodSsr());
-        Assertions.assertEquals(3951,                         im201.getHeader().getSsrProviderId());
-        Assertions.assertEquals(1,                            im201.getHeader().getSsrSolutionId());
-        Assertions.assertEquals(0.05,                         im201.getHeader().getVtecQualityIndicator(), eps);
-        Assertions.assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
+        assertEquals(201,                          im201.getTypeCode());
+        assertEquals(517695.0,                     im201.getHeader().getSsrEpoch1s(), eps);
+        assertEquals(30.0,                         im201.getHeader().getSsrUpdateInterval(), eps);
+        assertEquals(0,                            im201.getHeader().getSsrMultipleMessageIndicator());
+        assertEquals(7,                            im201.getHeader().getIodSsr());
+        assertEquals(3951,                         im201.getHeader().getSsrProviderId());
+        assertEquals(1,                            im201.getHeader().getSsrSolutionId());
+        assertEquals(0.05,                         im201.getHeader().getVtecQualityIndicator(), eps);
+        assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
 
         // Verify data
         final SsrIm201Data data = im201.getData().get(0);
         final double[][] cnm = data.getCnm();
         final double[][] snm = data.getSnm();
-        Assertions.assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
-        Assertions.assertEquals(3,                 data.getSphericalHarmonicsDegree());
-        Assertions.assertEquals(2,                 data.getSphericalHarmonicsOrder());
-        Assertions.assertEquals(94.945,            cnm[0][0], eps);
-        Assertions.assertEquals(110.625,           cnm[1][0], eps);
-        Assertions.assertEquals(136.380,           cnm[2][0], eps);
-        Assertions.assertEquals(85.995,            cnm[3][0], eps);
-        Assertions.assertEquals(0.0,               cnm[0][1], eps);
-        Assertions.assertEquals(95.905,            cnm[1][1], eps);
-        Assertions.assertEquals(95.030,            cnm[2][1], eps);
-        Assertions.assertEquals(53.345,            cnm[3][1], eps);
-        Assertions.assertEquals(0.0,               cnm[0][2], eps);
-        Assertions.assertEquals(0.0,               cnm[1][2], eps);
-        Assertions.assertEquals(19.745,            cnm[2][2], eps);
-        Assertions.assertEquals(156.380,           cnm[3][2], eps);
-        Assertions.assertEquals(0.0,               snm[0][0], eps);
-        Assertions.assertEquals(0.0,               snm[1][0], eps);
-        Assertions.assertEquals(0.0,               snm[2][0], eps);
-        Assertions.assertEquals(0.0,               snm[3][0], eps);
-        Assertions.assertEquals(0.0,               snm[0][1], eps);
-        Assertions.assertEquals(158.305,           snm[1][1], eps);
-        Assertions.assertEquals(13.020,            snm[2][1], eps);
-        Assertions.assertEquals(135.885,           snm[3][1], eps);
-        Assertions.assertEquals(0.0,               snm[0][2], eps);
-        Assertions.assertEquals(0.0,               snm[1][2], eps);
-        Assertions.assertEquals(135.860,           snm[2][2], eps);
-        Assertions.assertEquals(64.225,            snm[3][2], eps);
+        assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
+        assertEquals(3,                 data.getSphericalHarmonicsDegree());
+        assertEquals(2,                 data.getSphericalHarmonicsOrder());
+        assertEquals(94.945,            cnm[0][0], eps);
+        assertEquals(110.625,           cnm[1][0], eps);
+        assertEquals(136.380,           cnm[2][0], eps);
+        assertEquals(85.995,            cnm[3][0], eps);
+        assertEquals(0.0,               cnm[0][1], eps);
+        assertEquals(95.905,            cnm[1][1], eps);
+        assertEquals(95.030,            cnm[2][1], eps);
+        assertEquals(53.345,            cnm[3][1], eps);
+        assertEquals(0.0,               cnm[0][2], eps);
+        assertEquals(0.0,               cnm[1][2], eps);
+        assertEquals(19.745,            cnm[2][2], eps);
+        assertEquals(156.380,           cnm[3][2], eps);
+        assertEquals(0.0,               snm[0][0], eps);
+        assertEquals(0.0,               snm[1][0], eps);
+        assertEquals(0.0,               snm[2][0], eps);
+        assertEquals(0.0,               snm[3][0], eps);
+        assertEquals(0.0,               snm[0][1], eps);
+        assertEquals(158.305,           snm[1][1], eps);
+        assertEquals(13.020,            snm[2][1], eps);
+        assertEquals(135.885,           snm[3][1], eps);
+        assertEquals(0.0,               snm[0][2], eps);
+        assertEquals(0.0,               snm[1][2], eps);
+        assertEquals(135.860,           snm[2][2], eps);
+        assertEquals(64.225,            snm[3][2], eps);
 
     }
 
     @Test
-    public void testPerfectValue2() {
+    void testPerfectValue2() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060
                          "001" +                              // IGS SSR version
@@ -164,55 +168,55 @@ public class SsrIm201Test {
         final SsrIm201 im201 = (SsrIm201) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assertions.assertEquals(1,                            im201.getData().size());
+        assertEquals(1,                            im201.getData().size());
 
         // Verify header
-        Assertions.assertEquals(201,                          im201.getTypeCode());
-        Assertions.assertEquals(517695.0,                     im201.getHeader().getSsrEpoch1s(), eps);
-        Assertions.assertEquals(7200.0,                       im201.getHeader().getSsrUpdateInterval(), eps);
-        Assertions.assertEquals(0,                            im201.getHeader().getSsrMultipleMessageIndicator());
-        Assertions.assertEquals(7,                            im201.getHeader().getIodSsr());
-        Assertions.assertEquals(3951,                         im201.getHeader().getSsrProviderId());
-        Assertions.assertEquals(1,                            im201.getHeader().getSsrSolutionId());
-        Assertions.assertEquals(0.05,                         im201.getHeader().getVtecQualityIndicator(), eps);
-        Assertions.assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
+        assertEquals(201,                          im201.getTypeCode());
+        assertEquals(517695.0,                     im201.getHeader().getSsrEpoch1s(), eps);
+        assertEquals(7200.0,                       im201.getHeader().getSsrUpdateInterval(), eps);
+        assertEquals(0,                            im201.getHeader().getSsrMultipleMessageIndicator());
+        assertEquals(7,                            im201.getHeader().getIodSsr());
+        assertEquals(3951,                         im201.getHeader().getSsrProviderId());
+        assertEquals(1,                            im201.getHeader().getSsrSolutionId());
+        assertEquals(0.05,                         im201.getHeader().getVtecQualityIndicator(), eps);
+        assertEquals(1,                            im201.getHeader().getNumberOfIonosphericLayers());
 
         // Verify data
         final SsrIm201Data data = im201.getData().get(0);
         final double[][] cnm = data.getCnm();
         final double[][] snm = data.getSnm();
-        Assertions.assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
-        Assertions.assertEquals(3,                 data.getSphericalHarmonicsDegree());
-        Assertions.assertEquals(2,                 data.getSphericalHarmonicsOrder());
-        Assertions.assertEquals(94.945,            cnm[0][0], eps);
-        Assertions.assertEquals(110.625,           cnm[1][0], eps);
-        Assertions.assertEquals(136.380,           cnm[2][0], eps);
-        Assertions.assertEquals(85.995,            cnm[3][0], eps);
-        Assertions.assertEquals(0.0,               cnm[0][1], eps);
-        Assertions.assertEquals(95.905,            cnm[1][1], eps);
-        Assertions.assertEquals(95.030,            cnm[2][1], eps);
-        Assertions.assertEquals(53.345,            cnm[3][1], eps);
-        Assertions.assertEquals(0.0,               cnm[0][2], eps);
-        Assertions.assertEquals(0.0,               cnm[1][2], eps);
-        Assertions.assertEquals(19.745,            cnm[2][2], eps);
-        Assertions.assertEquals(156.380,           cnm[3][2], eps);
-        Assertions.assertEquals(0.0,               snm[0][0], eps);
-        Assertions.assertEquals(0.0,               snm[1][0], eps);
-        Assertions.assertEquals(0.0,               snm[2][0], eps);
-        Assertions.assertEquals(0.0,               snm[3][0], eps);
-        Assertions.assertEquals(0.0,               snm[0][1], eps);
-        Assertions.assertEquals(158.305,           snm[1][1], eps);
-        Assertions.assertEquals(13.020,            snm[2][1], eps);
-        Assertions.assertEquals(135.885,           snm[3][1], eps);
-        Assertions.assertEquals(0.0,               snm[0][2], eps);
-        Assertions.assertEquals(0.0,               snm[1][2], eps);
-        Assertions.assertEquals(135.860,           snm[2][2], eps);
-        Assertions.assertEquals(64.225,            snm[3][2], eps);
+        assertEquals(650000,            data.getHeightIonosphericLayer(), eps);
+        assertEquals(3,                 data.getSphericalHarmonicsDegree());
+        assertEquals(2,                 data.getSphericalHarmonicsOrder());
+        assertEquals(94.945,            cnm[0][0], eps);
+        assertEquals(110.625,           cnm[1][0], eps);
+        assertEquals(136.380,           cnm[2][0], eps);
+        assertEquals(85.995,            cnm[3][0], eps);
+        assertEquals(0.0,               cnm[0][1], eps);
+        assertEquals(95.905,            cnm[1][1], eps);
+        assertEquals(95.030,            cnm[2][1], eps);
+        assertEquals(53.345,            cnm[3][1], eps);
+        assertEquals(0.0,               cnm[0][2], eps);
+        assertEquals(0.0,               cnm[1][2], eps);
+        assertEquals(19.745,            cnm[2][2], eps);
+        assertEquals(156.380,           cnm[3][2], eps);
+        assertEquals(0.0,               snm[0][0], eps);
+        assertEquals(0.0,               snm[1][0], eps);
+        assertEquals(0.0,               snm[2][0], eps);
+        assertEquals(0.0,               snm[3][0], eps);
+        assertEquals(0.0,               snm[0][1], eps);
+        assertEquals(158.305,           snm[1][1], eps);
+        assertEquals(13.020,            snm[2][1], eps);
+        assertEquals(135.885,           snm[3][1], eps);
+        assertEquals(0.0,               snm[0][2], eps);
+        assertEquals(0.0,               snm[1][2], eps);
+        assertEquals(135.860,           snm[2][2], eps);
+        assertEquals(64.225,            snm[3][2], eps);
 
     }
 
     @Test
-    public void testNullMessage() {
+    void testNullMessage() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060
                         "001" +                              // IGS SSR version
@@ -252,18 +256,18 @@ public class SsrIm201Test {
 
        final SsrIm201 im201 = (SsrIm201) new IgsSsrMessagesParser(messages).parse(message, false);
 
-       Assertions.assertNull(im201);
+       assertNull(im201);
     }
 
     @Test
-    public void testEmptyMessage() {
+    void testEmptyMessage() {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
             new IgsSsrMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
+            assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
         }
 
     }

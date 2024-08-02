@@ -27,7 +27,6 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.Context;
@@ -55,7 +54,11 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class OneWayGNSSPhaseTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class OneWayGNSSPhaseTest {
 
     private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
@@ -64,7 +67,7 @@ public class OneWayGNSSPhaseTest {
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest One-way GNSS phase Values\n");
@@ -78,7 +81,7 @@ public class OneWayGNSSPhaseTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -108,7 +111,7 @@ public class OneWayGNSSPhaseTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -191,7 +194,7 @@ public class OneWayGNSSPhaseTest {
                                                                                                              state,
                                                                                                              ephemeris.propagate(state.getDate())
                                                                                                          });
-                    Assertions.assertEquals(RADIO_WAVE.getWavelength(), ((OneWayGNSSPhase) measurement).getWavelength(), 1.0e-15);
+                    assertEquals(RADIO_WAVE.getWavelength(), ((OneWayGNSSPhase) measurement).getWavelength(), 1.0e-15);
                     final double phaseEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError  = phaseEstimated-phaseObserved;
                     absoluteErrors.add(absoluteError);
@@ -250,14 +253,14 @@ public class OneWayGNSSPhaseTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 6.7e-7);
-        Assertions.assertEquals(0.0, absErrorsMin,    3.2e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    5.7e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 5.4e-12);
-        Assertions.assertEquals(0.0, relErrorsMax,    1.6e-10);
+        assertEquals(0.0, absErrorsMedian, 6.7e-7);
+        assertEquals(0.0, absErrorsMin,    3.2e-6);
+        assertEquals(0.0, absErrorsMax,    5.7e-7);
+        assertEquals(0.0, relErrorsMedian, 5.4e-12);
+        assertEquals(0.0, relErrorsMax,    1.6e-10);
 
         // Test measurement type
-        Assertions.assertEquals(OneWayGNSSPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(OneWayGNSSPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -334,8 +337,8 @@ public class OneWayGNSSPhaseTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 8.0, 5).value(states[index]);
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -408,12 +411,12 @@ public class OneWayGNSSPhaseTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean printResults,
@@ -481,8 +484,8 @@ public class OneWayGNSSPhaseTest {
                     for (int i = 0; i < drivers.length; ++i) {
                         for (Span<String> span = drivers[i].getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                             final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(drivers[i], span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                            assertEquals(1, measurement.getDimension());
+                            assertEquals(1, gradient.length);
                             
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
@@ -549,14 +552,14 @@ public class OneWayGNSSPhaseTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 
     @Test
-    public void testIssue734() {
+    void testIssue734() {
 
         Utils.setDataRoot("regular-data");
 
@@ -569,21 +572,21 @@ public class OneWayGNSSPhaseTest {
                                                           new AmbiguityCache());
 
         // First check
-        Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-        Assertions.assertFalse(phase.getAmbiguityDriver().isSelected());
+        assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        assertFalse(phase.getAmbiguityDriver().isSelected());
 
         // Perform some changes in ambiguity driver
         phase.getAmbiguityDriver().setValue(1234.0);
         phase.getAmbiguityDriver().setSelected(true);
 
         // Second check
-        Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-        Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
+        assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
             if (driver instanceof AmbiguityDriver) {
-                Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-                Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
+                assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+                assertTrue(phase.getAmbiguityDriver().isSelected());
             }
         }
 

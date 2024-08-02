@@ -18,12 +18,14 @@
 package org.orekit.errors;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.exception.DummyLocalizable;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.PrintWriter;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.StringWriter;
 
 /**
@@ -31,16 +33,16 @@ import java.io.StringWriter;
  *
  * @author Evan Ward
  */
-public class OrekitExceptionTest {
+class OrekitExceptionTest {
 
     /** Check {@link OrekitException#getMessage()} does not throw a NPE. */
     @Test
-    public void testNullString() {
+    void testNullString() {
         // action
         OrekitException exception = new OrekitException(new DummyLocalizable(null));
 
         // verify
-        Assertions.assertEquals(exception.getMessage(), "");
+        assertEquals("", exception.getMessage());
     }
 
     /**
@@ -48,7 +50,7 @@ public class OrekitExceptionTest {
      * throws an exception a useful message and stack trace is still printed.
      */
     @Test
-    public void testBadMessage() {
+    void testBadMessage() {
         // setup
         StringWriter writer = new StringWriter();
         PrintWriter printer = new PrintWriter(writer);
@@ -65,9 +67,9 @@ public class OrekitExceptionTest {
 
         // verify
         String actual = writer.toString();
-        MatcherAssert.assertThat(actual,
+        assertThat(actual,
                 CoreMatchers.containsString(message.getSourceString()));
-        MatcherAssert.assertThat(actual,
+        assertThat(actual,
                 CoreMatchers.containsString("IllegalStateException: bad message"));
     }
 

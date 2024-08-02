@@ -33,7 +33,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -81,13 +80,18 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class AttitudesSequenceTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class AttitudesSequenceTest {
 
     private AbsoluteDate lastChange;
     private boolean inEclipse;
 
     @Test
-    public void testDayNightSwitch() {
+    void testDayNightSwitch() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -159,15 +163,15 @@ public class AttitudesSequenceTest {
 
             if (currentState.getDate().durationFrom(lastChange) > 300) {
                 if (inEclipse) {
-                    Assertions.assertTrue(eclipseAngle <= 0);
-                    Assertions.assertEquals(0.0, pointingOffset, 1.0e-6);
+                    assertTrue(eclipseAngle <= 0);
+                    assertEquals(0.0, pointingOffset, 1.0e-6);
                 } else {
-                    Assertions.assertTrue(eclipseAngle >= 0);
-                    Assertions.assertEquals(0.767215, pointingOffset, 1.0e-6);
+                    assertTrue(eclipseAngle >= 0);
+                    assertEquals(0.767215, pointingOffset, 1.0e-6);
                 }
             } else {
                 // we are in transition
-                Assertions.assertTrue(pointingOffset <= 0.7672155,
+                assertTrue(pointingOffset <= 0.7672155,
                         pointingOffset + " " + (0.767215 - pointingOffset));
             }
         });
@@ -178,16 +182,16 @@ public class AttitudesSequenceTest {
         // as we have 2 switch events (even if they share the same underlying event detector),
         // and these events are triggered at both eclipse entry and exit, we get 8
         // raw events on 2 orbits
-        Assertions.assertEquals(8, logger.getLoggedEvents().size());
+        assertEquals(8, logger.getLoggedEvents().size());
 
         // we have 4 attitudes switch on 2 orbits, 2 of each type
-        Assertions.assertEquals(2, dayToNightHandler.dates.size());
-        Assertions.assertEquals(2, nightToDayHandler.dates.size());
+        assertEquals(2, dayToNightHandler.dates.size());
+        assertEquals(2, nightToDayHandler.dates.size());
 
     }
 
     @Test
-    public void testDayNightSwitchField() {
+    void testDayNightSwitchField() {
         doTestDayNightSwitchField(Binary64Field.getInstance());
     }
 
@@ -280,15 +284,15 @@ public class AttitudesSequenceTest {
 
             if (currentState.getDate().durationFrom(lastChange).getReal() > 300) {
                 if (inEclipse) {
-                    Assertions.assertTrue(eclipseAngle <= 0);
-                    Assertions.assertEquals(0.0, pointingOffset.getReal(), 1.0e-6);
+                    assertTrue(eclipseAngle <= 0);
+                    assertEquals(0.0, pointingOffset.getReal(), 1.0e-6);
                 } else {
-                    Assertions.assertTrue(eclipseAngle >= 0);
-                    Assertions.assertEquals(0.767215, pointingOffset.getReal(), 1.0e-6);
+                    assertTrue(eclipseAngle >= 0);
+                    assertEquals(0.767215, pointingOffset.getReal(), 1.0e-6);
                 }
             } else {
                 // we are in transition
-                Assertions.assertTrue(pointingOffset.getReal() <= 0.7672155,
+                assertTrue(pointingOffset.getReal() <= 0.7672155,
                         pointingOffset.getReal() + " " + (0.767215 - pointingOffset.getReal()));
             }
         });
@@ -299,16 +303,16 @@ public class AttitudesSequenceTest {
         // as we have 2 switch events (even if they share the same underlying event detector),
         // and these events are triggered at both eclipse entry and exit, we get 8
         // raw events on 2 orbits
-        Assertions.assertEquals(8, logger.getLoggedEvents().size());
+        assertEquals(8, logger.getLoggedEvents().size());
 
         // we have 4 attitudes switch on 2 orbits, 2 of each type
-        Assertions.assertEquals(2, dayToNightHandler.dates.size());
-        Assertions.assertEquals(2, nightToDayHandler.dates.size());
+        assertEquals(2, dayToNightHandler.dates.size());
+        assertEquals(2, nightToDayHandler.dates.size());
 
     }
 
     @Test
-    public void testBackwardPropagation() {
+    void testBackwardPropagation() {
 
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
@@ -339,21 +343,21 @@ public class AttitudesSequenceTest {
                                                                     Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                     Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
         propagator.resetInitialState(initialState);
-        Assertions.assertEquals(42.0, propagator.getInitialState().getAdditionalState("fortyTwo")[0], 1.0e-10);
+        assertEquals(42.0, propagator.getInitialState().getAdditionalState("fortyTwo")[0], 1.0e-10);
 
         // Register the switching events to the propagator
         attitudesSequence.registerSwitchEvents(propagator);
 
         SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(-10000.0));
-        Assertions.assertEquals(42.0, finalState.getAdditionalState("fortyTwo")[0], 1.0e-10);
-        Assertions.assertEquals(1, handler.dates.size());
-        Assertions.assertEquals(-500.0, handler.dates.get(0).durationFrom(initialDate), 1.0e-3);
-        Assertions.assertEquals(-490.0, finalState.getDate().durationFrom(initialDate), 1.0e-3);
+        assertEquals(42.0, finalState.getAdditionalState("fortyTwo")[0], 1.0e-10);
+        assertEquals(1, handler.dates.size());
+        assertEquals(-500.0, handler.dates.get(0).durationFrom(initialDate), 1.0e-3);
+        assertEquals(-490.0, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
     }
 
     @Test
-    public void testTooShortTransition() {
+    void testTooShortTransition() {
         double threshold      = 1.5;
         double transitionTime = 0.5;
         try {
@@ -364,16 +368,16 @@ public class AttitudesSequenceTest {
                                                           withThreshold(threshold),
                                                           true, false, transitionTime,
                                                           AngularDerivativesFilter.USE_R, null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH, oe.getSpecifier());
-            Assertions.assertEquals(transitionTime, (Double) oe.getParts()[0], 1.0e-10);
-            Assertions.assertEquals(threshold, (Double) oe.getParts()[1], 1.0e-10);
+            assertEquals(OrekitMessages.TOO_SHORT_TRANSITION_TIME_FOR_ATTITUDES_SWITCH, oe.getSpecifier());
+            assertEquals(transitionTime, (Double) oe.getParts()[0], 1.0e-10);
+            assertEquals(threshold, (Double) oe.getParts()[1], 1.0e-10);
         }
     }
 
     @Test
-    public void testOutOfSyncCalls() {
+    void testOutOfSyncCalls() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -449,7 +453,7 @@ public class AttitudesSequenceTest {
      * this test have been completed to test the issue 552 fix
      */
     @Test
-    public void testResetDuringTransitionForward() {
+    void testResetDuringTransitionForward() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -499,7 +503,7 @@ public class AttitudesSequenceTest {
         Rotation nadirR  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
         Rotation targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
         final double reorientationAngle = Rotation.distance(nadirR, targetR);
-        Assertions.assertEquals(0.5 * reorientationAngle, Rotation.distance(state.getAttitude().getRotation(), nadirR),
+        assertEquals(0.5 * reorientationAngle, Rotation.distance(state.getAttitude().getRotation(), nadirR),
                 0.03 * reorientationAngle);
 
         // check that if we restart a forward propagation from an intermediate state
@@ -510,14 +514,14 @@ public class AttitudesSequenceTest {
         state = propagator.propagate(midTransition, afterTransition);
         targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
 
-        Assertions.assertEquals(targetR.getQ0(), state.getAttitude().getRotation().getQ0(), 1.0e-16);
-        Assertions.assertEquals(targetR.getQ1(), state.getAttitude().getRotation().getQ1(), 1.0e-16);
-        Assertions.assertEquals(targetR.getQ2(), state.getAttitude().getRotation().getQ2(), 1.0e-16);
-        Assertions.assertEquals(targetR.getQ3(), state.getAttitude().getRotation().getQ3(), 1.0e-16);
+        assertEquals(targetR.getQ0(), state.getAttitude().getRotation().getQ0(), 1.0e-16);
+        assertEquals(targetR.getQ1(), state.getAttitude().getRotation().getQ1(), 1.0e-16);
+        assertEquals(targetR.getQ2(), state.getAttitude().getRotation().getQ2(), 1.0e-16);
+        assertEquals(targetR.getQ3(), state.getAttitude().getRotation().getQ3(), 1.0e-16);
     }
 
     @Test
-    public void testResetDuringTransitionBackward() {
+    void testResetDuringTransitionBackward() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -566,7 +570,7 @@ public class AttitudesSequenceTest {
         Rotation nadirR  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
         Rotation targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
         final double reorientationAngle = Rotation.distance(nadirR, targetR);
-        Assertions.assertEquals(0.5 * reorientationAngle, Rotation.distance(state.getAttitude().getRotation(), targetR),
+        assertEquals(0.5 * reorientationAngle, Rotation.distance(state.getAttitude().getRotation(), targetR),
                 0.03 * reorientationAngle);
 
 
@@ -576,7 +580,7 @@ public class AttitudesSequenceTest {
      * Test for the issue 551 fix
      */
     @Test
-    public void testAnalyticalPropagatorTransition() {
+    void testAnalyticalPropagatorTransition() {
         // Define initial state
         final AbsoluteDate initialDate = new AbsoluteDate(2017, 03, 27, 0, 0, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
@@ -611,33 +615,33 @@ public class AttitudesSequenceTest {
         SpacecraftState stateBefore = propagator.propagate(initialDate, initialDate.shiftedBy(-1200));
 
         // Check that the dates are correct
-        Assertions.assertEquals(1200, stateAfter.getDate().durationFrom(initialDate), 1.0E-3);
-        Assertions.assertEquals(-1200, stateBefore.getDate().durationFrom(initialDate), 1.0E-3);
+        assertEquals(1200, stateAfter.getDate().durationFrom(initialDate), 1.0E-3);
+        assertEquals(-1200, stateBefore.getDate().durationFrom(initialDate), 1.0E-3);
 
         // Check that the attitudes are correct
-        Assertions.assertEquals(
+        assertEquals(
                 before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ0(),
                 stateBefore.getAttitude().getRotation().getQ0(), 1.0E-16);
-        Assertions.assertEquals(
+        assertEquals(
                 before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ1(),
                 stateBefore.getAttitude().getRotation().getQ1(), 1.0E-16);
-        Assertions.assertEquals(
+        assertEquals(
                 before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ2(),
                 stateBefore.getAttitude().getRotation().getQ2(), 1.0E-16);
-        Assertions.assertEquals(
+        assertEquals(
                 before.getAttitude(stateBefore.getOrbit(), stateBefore.getDate(), stateBefore.getFrame()).getRotation().getQ3(),
                 stateBefore.getAttitude().getRotation().getQ3(), 1.0E-16);
 
-        Assertions.assertEquals(
+        assertEquals(
                 after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ0(),
                 stateAfter.getAttitude().getRotation().getQ0(), 1.0E-16);
-        Assertions.assertEquals(
+        assertEquals(
                 after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ1(),
                 stateAfter.getAttitude().getRotation().getQ1(), 1.0E-16);
-        Assertions.assertEquals(
+        assertEquals(
                 after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ2(),
                 stateAfter.getAttitude().getRotation().getQ2(), 1.0E-16);
-        Assertions.assertEquals(
+        assertEquals(
                 after.getAttitude(stateAfter.getOrbit(), stateAfter.getDate(), stateAfter.getFrame()).getRotation().getQ3(),
                 stateAfter.getAttitude().getRotation().getQ3(), 1.0E-16);
     }
@@ -656,7 +660,7 @@ public class AttitudesSequenceTest {
         // THEN
         final Attitude attitude = attitudesSequence.getAttitude(mockPvCoordinatesProvider, date, frame);
         final Rotation expectedRotation = attitude.getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
     @Test
@@ -676,7 +680,7 @@ public class AttitudesSequenceTest {
         // THEN
         final FieldAttitude<Gradient> attitude = attitudesSequence.getAttitude(pvCoordinatesProvider, fieldDate, mockFrame);
         final FieldRotation<Gradient> expectedRotation = attitude.getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+        assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
     private static class TestAttitudeProvider implements AttitudeProvider {
@@ -714,8 +718,8 @@ public class AttitudesSequenceTest {
         @Override
         public void switchOccurred(AttitudeProvider previous, AttitudeProvider next,
                                    SpacecraftState state) {
-            Assertions.assertSame(previous, expectedPrevious);
-            Assertions.assertSame(next, expectedNext);
+            assertSame(previous, expectedPrevious);
+            assertSame(next, expectedNext);
             dates.add(state.getDate());
         }
 
@@ -727,9 +731,9 @@ public class AttitudesSequenceTest {
     }
 
     private void checkEqualAttitudes(final Attitude expected, final Attitude tested) {
-        Assertions.assertEquals(0.0, Rotation.distance(expected.getRotation(), tested.getRotation()), 1.0e-14);
-        Assertions.assertEquals(0.0, Vector3D.distance(expected.getSpin(), tested.getSpin()), 1.0e-11);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0, Rotation.distance(expected.getRotation(), tested.getRotation()), 1.0e-14);
+        assertEquals(0.0, Vector3D.distance(expected.getSpin(), tested.getSpin()), 1.0e-11);
+        assertEquals(0.0,
                 Vector3D.distance(expected.getRotationAcceleration(), tested.getRotationAcceleration()), 1.0e-9);
     }
 
@@ -738,12 +742,12 @@ public class AttitudesSequenceTest {
         final Rotation r2 = limit2.getRotation();
         final Rotation t  = tested.getRotation();
         final double reorientationAngle = Rotation.distance(r1, r2);
-        Assertions.assertTrue(Rotation.distance(t, r1) < reorientationAngle);
-        Assertions.assertTrue(Rotation.distance(t, r2) < reorientationAngle);
+        assertTrue(Rotation.distance(t, r1) < reorientationAngle);
+        assertTrue(Rotation.distance(t, r2) < reorientationAngle);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential");
     }
 

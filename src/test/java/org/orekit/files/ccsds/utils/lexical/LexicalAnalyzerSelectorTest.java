@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.utils.lexical;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -24,133 +23,136 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.utils.FileFormat;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-public class LexicalAnalyzerSelectorTest {
+class LexicalAnalyzerSelectorTest {
 
     @Test
-    public void testUCS4BigEndianBinary() {
+    void testUCS4BigEndianBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UCS-4-BE.xml"));
     }
 
     @Test
-    public void testUCS4BigEndianByteOrderMarkBinary() {
+    void testUCS4BigEndianByteOrderMarkBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UCS-4-BE-BOM.xml"));
     }
 
     @Test
-    public void testUCS4LittleEndianBinary() {
+    void testUCS4LittleEndianBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UCS-4-LE.xml"));
     }
 
     @Test
-    public void testUCS4LittleEndianByteOrderMarkBinary() {
+    void testUCS4LittleEndianByteOrderMarkBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UCS-4-LE-BOM.xml"));
     }
 
     @Test
-    public void testUTF16BigEndianBinary() {
+    void testUTF16BigEndianBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UTF-16-BE.xml"));
     }
 
     @Test
-    public void testUTF16BigEndianCharacter() {
+    void testUTF16BigEndianCharacter() {
         checkFormat(FileFormat.XML, characterSource("/ccsds/lexical/minimalist-UTF-16-BE.xml", StandardCharsets.UTF_16BE));
     }
 
     @Test
-    public void testUTF16BigEndianByteOrderMarkBinary() {
+    void testUTF16BigEndianByteOrderMarkBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UTF-16-BE-BOM.xml"));
     }
 
     @Test
-    public void testUTF16BigEndianByteOrderMarkCharacter() {
+    void testUTF16BigEndianByteOrderMarkCharacter() {
         checkFormat(FileFormat.XML, characterSource("/ccsds/lexical/minimalist-UTF-16-BE-BOM.xml", StandardCharsets.UTF_16BE));
     }
 
     @Test
-    public void testUTF16LittleEndianBinary() {
+    void testUTF16LittleEndianBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UTF-16-LE.xml"));
     }
 
     @Test
-    public void testUTF16LittleEndianCharacter() {
+    void testUTF16LittleEndianCharacter() {
         checkFormat(FileFormat.XML, characterSource("/ccsds/lexical/minimalist-UTF-16-LE.xml", StandardCharsets.UTF_16LE));
     }
 
     @Test
-    public void testUTF16LittleEndianByteOrderMarkBinary() {
+    void testUTF16LittleEndianByteOrderMarkBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UTF-16-LE-BOM.xml"));
     }
 
     @Test
-    public void testUTF16LittleEndianByteOrderMarkCharacter() {
+    void testUTF16LittleEndianByteOrderMarkCharacter() {
         checkFormat(FileFormat.XML, characterSource("/ccsds/lexical/minimalist-UTF-16-LE-BOM.xml", StandardCharsets.UTF_16LE));
     }
 
     @Test
-    public void testUTF8Binary() {
+    void testUTF8Binary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UTF-8.xml"));
     }
 
     @Test
-    public void testUTF8Character() {
+    void testUTF8Character() {
         checkFormat(FileFormat.XML, characterSource("/ccsds/lexical/minimalist-UTF-8.xml", StandardCharsets.UTF_8));
     }
 
     @Test
-    public void testUTF8ByteOrderMarkBinary() {
+    void testUTF8ByteOrderMarkBinary() {
         checkFormat(FileFormat.XML, binarySource("/ccsds/lexical/minimalist-UTF-8-BOM.xml"));
     }
 
     @Test
-    public void testUTF8ByteOrderMarkCharacter() {
+    void testUTF8ByteOrderMarkCharacter() {
         checkFormat(FileFormat.XML, characterSource("/ccsds/lexical/minimalist-UTF-8-BOM.xml", StandardCharsets.UTF_8));
     }
 
     @Test
-    public void testKVNBinary() {
+    void testKVNBinary() {
         checkFormat(FileFormat.KVN, binarySource("/ccsds/lexical/minimalist-UTF-8.kvn"));
     }
 
     @Test
-    public void testKVNCharacter() {
+    void testKVNCharacter() {
         checkFormat(FileFormat.KVN, characterSource("/ccsds/lexical/minimalist-UTF-8.kvn", StandardCharsets.UTF_8));
     }
 
     @Test
-    public void testNullBinary() throws IOException {
+    void testNullBinary() throws IOException {
         try {
             LexicalAnalyzerSelector.select(new DataSource("empty", (DataSource.StreamOpener) () -> null));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assertions.assertEquals("empty", oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            assertEquals("empty", oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testNullCharacters() throws IOException {
+    void testNullCharacters() throws IOException {
         try {
             LexicalAnalyzerSelector.select(new DataSource("empty", (DataSource.ReaderOpener) () -> null));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assertions.assertEquals("empty", oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            assertEquals("empty", oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testTooSmallBinary() throws IOException {
+    void testTooSmallBinary() throws IOException {
         checkFormat(FileFormat.KVN, new DataSource("small", () -> new ByteArrayInputStream(new byte[] { 0x3c, 0x3f, 0x78 })));
     }
 
     @Test
-    public void testTooSmallCharacters() throws IOException {
+    void testTooSmallCharacters() throws IOException {
         checkFormat(FileFormat.KVN, new DataSource("small", () -> new StringReader("<?x")));
     }
 
@@ -165,9 +167,9 @@ public class LexicalAnalyzerSelectorTest {
     private void checkFormat(FileFormat expected, DataSource source) {
         try {
             final LexicalAnalyzer analyzer = LexicalAnalyzerSelector.select(source);
-            Assertions.assertEquals(expected, analyzer instanceof XmlLexicalAnalyzer ? FileFormat.XML : FileFormat.KVN);
+            assertEquals(expected, analyzer instanceof XmlLexicalAnalyzer ? FileFormat.XML : FileFormat.KVN);
         } catch (IOException ioe) {
-            Assertions.fail(ioe.getLocalizedMessage());
+            fail(ioe.getLocalizedMessage());
         }
     }
 }

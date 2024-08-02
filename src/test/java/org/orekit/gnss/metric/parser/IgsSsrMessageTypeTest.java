@@ -16,28 +16,30 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 
-public class IgsSsrMessageTypeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class IgsSsrMessageTypeTest {
 
     @Test
-    public void testUnknownMessageNumber() {
+    void testUnknownMessageNumber() {
         try {
             IgsSsrMessageType.getMessageType("-1");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException re) {
-            Assertions.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, re.getSpecifier());
-            Assertions.assertEquals("-1", re.getParts()[0]);
+            assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, re.getSpecifier());
+            assertEquals("-1", re.getParts()[0]);
         }
     }
 
     @Test
-    public void testIrnssMessage() {
-        Assertions.assertEquals(SatelliteSystem.IRNSS, IgsSsrMessageType.messageNumberToSatelliteSystem(141));
+    void testIrnssMessage() {
+        assertEquals(SatelliteSystem.IRNSS, IgsSsrMessageType.messageNumberToSatelliteSystem(141));
     }
 
 }

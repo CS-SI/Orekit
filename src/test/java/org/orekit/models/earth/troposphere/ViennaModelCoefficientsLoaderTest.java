@@ -17,23 +17,25 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateTimeComponents;
 
-public class ViennaModelCoefficientsLoaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class ViennaModelCoefficientsLoaderTest {
 
     private static double epsilon = 5.0e-16;
 
-    @Test
     /**
      * Regular test for 19th of November 2018 with Vienna 1 model
      * @throws OrekitException if file does not exist or data cannot be read properly
      */
-    public void testRegularFileVienna1() {
+    @Test
+    void testRegularFileVienna1() {
 
         Utils.setDataRoot("vmf1-tropospheric-coefficients");
 
@@ -46,21 +48,21 @@ public class ViennaModelCoefficientsLoaderTest {
         final double a[]       = tropoLoader.getA();
         final double delays[]  = tropoLoader.getZenithDelay();
 
-        Assertions.assertEquals(0.00127935, a[0], epsilon);
-        Assertions.assertEquals(0.00064084, a[1], epsilon);
+        assertEquals(0.00127935, a[0], epsilon);
+        assertEquals(0.00064084, a[1], epsilon);
 
-        Assertions.assertEquals(2.3131, delays[0], epsilon);
-        Assertions.assertEquals(0.3086, delays[1], epsilon);
+        assertEquals(2.3131, delays[0], epsilon);
+        assertEquals(0.3086, delays[1], epsilon);
 
-        Assertions.assertEquals("VMFG_20181119.H18", tropoLoader.getSupportedNames());
+        assertEquals("VMFG_20181119.H18", tropoLoader.getSupportedNames());
     }
 
-    @Test
     /**
      * Regular test for 25th of November 2018 with Vienna 3 model
      * @throws OrekitException if file does not exist or data cannot be read properly
      */
-    public void testRegularFile5x5Vienna3() {
+    @Test
+    void testRegularFile5x5Vienna3() {
 
         Utils.setDataRoot("vmf3-5x5-tropospheric-coefficients");
 
@@ -73,21 +75,21 @@ public class ViennaModelCoefficientsLoaderTest {
         final double a[]       = tropoLoader.getA();
         final double delays[]  = tropoLoader.getZenithDelay();
 
-        Assertions.assertEquals(0.00117002, a[0], epsilon);
-        Assertions.assertEquals(0.00045484, a[1], epsilon);
+        assertEquals(0.00117002, a[0], epsilon);
+        assertEquals(0.00045484, a[1], epsilon);
 
-        Assertions.assertEquals(2.3203, delays[0], epsilon);
-        Assertions.assertEquals(0.0191, delays[1], epsilon);
+        assertEquals(2.3203, delays[0], epsilon);
+        assertEquals(0.0191, delays[1], epsilon);
 
-        Assertions.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
+        assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
     }
 
-    @Test
     /**
      * Regular test for 25th of November 2018 with Vienna 3 model
      * @throws OrekitException if file does not exist or data cannot be read properly
      */
-    public void testRegularFile1x1Vienna3() {
+    @Test
+    void testRegularFile1x1Vienna3() {
 
         Utils.setDataRoot("vmf3-1x1-tropospheric-coefficients");
 
@@ -100,17 +102,17 @@ public class ViennaModelCoefficientsLoaderTest {
         final double a[]       = tropoLoader.getA();
         final double delays[]  = tropoLoader.getZenithDelay();
 
-        Assertions.assertEquals(0.00127606, a[0], epsilon);
-        Assertions.assertEquals(0.00056388, a[1], epsilon);
+        assertEquals(0.00127606, a[0], epsilon);
+        assertEquals(0.00056388, a[1], epsilon);
 
-        Assertions.assertEquals(2.3117, delays[0], epsilon);
-        Assertions.assertEquals(0.2239, delays[1], epsilon);
+        assertEquals(2.3117, delays[0], epsilon);
+        assertEquals(0.2239, delays[1], epsilon);
 
-        Assertions.assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
+        assertEquals("VMF3_20181125.H00", tropoLoader.getSupportedNames());
     }
 
     @Test
-    public void testEquality() {
+    void testEquality() {
 
         // Commons parameters
         Utils.setDataRoot("vmf3-1x1-tropospheric-coefficients");
@@ -134,10 +136,10 @@ public class ViennaModelCoefficientsLoaderTest {
         model1.loadViennaCoefficients(dateTimeComponents);
         model2.loadViennaCoefficients(dateTimeComponents);
 
-        Assertions.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
-        Assertions.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
-        Assertions.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
-        Assertions.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
+        assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
+        assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
+        assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
+        assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
         // Test longitude = 180° and longitude = -180°
         longitude1 = FastMath.toRadians(180.0);
@@ -149,10 +151,10 @@ public class ViennaModelCoefficientsLoaderTest {
         model1.loadViennaCoefficients(dateTimeComponents);
         model2.loadViennaCoefficients(dateTimeComponents);
 
-        Assertions.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
-        Assertions.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
-        Assertions.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
-        Assertions.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
+        assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
+        assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
+        assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
+        assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
         // Test longitude = 0° and longitude = 360°
         longitude1 = FastMath.toRadians(0.0);
@@ -164,18 +166,18 @@ public class ViennaModelCoefficientsLoaderTest {
         model1.loadViennaCoefficients(dateTimeComponents);
         model2.loadViennaCoefficients(dateTimeComponents);
 
-        Assertions.assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
-        Assertions.assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
-        Assertions.assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
-        Assertions.assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
+        assertEquals(model1.getA()[0],           model2.getA()[0],           epsilon);
+        assertEquals(model1.getA()[1],           model2.getA()[1],           epsilon);
+        assertEquals(model1.getZenithDelay()[0], model2.getZenithDelay()[0], epsilon);
+        assertEquals(model1.getZenithDelay()[1], model2.getZenithDelay()[1], epsilon);
 
     }
 
-    @Test
     /**
      * Test of a corrupted file with improper data.
      */
-    public void testCorruptedFileBadData() {
+    @Test
+    void testCorruptedFileBadData() {
 
         final double latitude  = FastMath.toRadians(14.0);
         final double longitude = FastMath.toRadians(67.5);
@@ -187,18 +189,18 @@ public class ViennaModelCoefficientsLoaderTest {
 
         try {
             tropoLoader.loadViennaCoefficients();
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
 
-    @Test
     /**
      * Test for a file that cannot be found
      */
-    public void testAbsentFile() {
+    @Test
+    void testAbsentFile() {
 
         Utils.setDataRoot("vmf1-tropospheric-coefficients");
         final double latitude  = FastMath.toRadians(14.0);
@@ -208,12 +210,12 @@ public class ViennaModelCoefficientsLoaderTest {
 
         try {
             tropoLoader.loadViennaCoefficients(dateTimeComponents);
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE,
+            assertEquals(OrekitMessages.VIENNA_ACOEF_OR_ZENITH_DELAY_NOT_AVAILABLE_FOR_DATE,
                                 oe.getSpecifier());
-            Assertions.assertEquals(dateTimeComponents.toString(),
+            assertEquals(dateTimeComponents.toString(),
                                 (String) oe.getParts()[0]);
         }
     }

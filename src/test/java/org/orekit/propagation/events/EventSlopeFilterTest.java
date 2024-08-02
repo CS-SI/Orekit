@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -39,7 +38,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class EventSlopeFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class EventSlopeFilterTest {
 
     private AbsoluteDate     iniDate;
     private Propagator       propagator;
@@ -49,26 +53,26 @@ public class EventSlopeFilterTest {
     private double earthRadius = 6400000.;
 
     @Test
-    public void testEnums() {
+    void testEnums() {
         // this test is here only for test coverage ...
 
-        Assertions.assertEquals(5, Transformer.values().length);
-        Assertions.assertSame(Transformer.UNINITIALIZED, Transformer.valueOf("UNINITIALIZED"));
-        Assertions.assertSame(Transformer.PLUS,          Transformer.valueOf("PLUS"));
-        Assertions.assertSame(Transformer.MINUS,         Transformer.valueOf("MINUS"));
-        Assertions.assertSame(Transformer.MIN,           Transformer.valueOf("MIN"));
-        Assertions.assertSame(Transformer.MAX,           Transformer.valueOf("MAX"));
+        assertEquals(5, Transformer.values().length);
+        assertSame(Transformer.UNINITIALIZED, Transformer.valueOf("UNINITIALIZED"));
+        assertSame(Transformer.PLUS,          Transformer.valueOf("PLUS"));
+        assertSame(Transformer.MINUS,         Transformer.valueOf("MINUS"));
+        assertSame(Transformer.MIN,           Transformer.valueOf("MIN"));
+        assertSame(Transformer.MAX,           Transformer.valueOf("MAX"));
 
-        Assertions.assertEquals(2, FilterType.values().length);
-        Assertions.assertSame(FilterType.TRIGGER_ONLY_DECREASING_EVENTS,
+        assertEquals(2, FilterType.values().length);
+        assertSame(FilterType.TRIGGER_ONLY_DECREASING_EVENTS,
                           FilterType.valueOf("TRIGGER_ONLY_DECREASING_EVENTS"));
-        Assertions.assertSame(FilterType.TRIGGER_ONLY_INCREASING_EVENTS,
+        assertSame(FilterType.TRIGGER_ONLY_INCREASING_EVENTS,
                           FilterType.valueOf("TRIGGER_ONLY_INCREASING_EVENTS"));
 
     }
 
     @Test
-    public void testReplayForward() {
+    void testReplayForward() {
         EclipseDetector detector =
                 new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
                                      new OneAxisEllipsoid(earthRadius,
@@ -80,14 +84,14 @@ public class EventSlopeFilterTest {
         final EventSlopeFilter<EclipseDetector> filter =
                 new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS).
                 withMaxIter(200);
-        Assertions.assertSame(detector, filter.getDetector());
-        Assertions.assertEquals(200, filter.getMaxIterationCount());
+        assertSame(detector, filter.getDetector());
+        assertEquals(200, filter.getMaxIterationCount());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(filter);
         propagator.propagate(iniDate, iniDate.shiftedBy(7 * Constants.JULIAN_DAY));
-        Assertions.assertEquals(102, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(102, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -96,13 +100,13 @@ public class EventSlopeFilterTest {
             // and in this example get stuck with Transformer.MAX
             // transformer, hence the g function is always positive
             // in the test range
-            Assertions.assertTrue(filter.g(currentState) > 0);
+            assertTrue(filter.g(currentState) > 0);
         });
         propagator.propagate(iniDate.shiftedBy(-3600), iniDate.shiftedBy(Constants.JULIAN_DAY + 3600));
     }
 
     @Test
-    public void testReplayBackward() {
+    void testReplayBackward() {
         EclipseDetector detector =
                         new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
                                             new OneAxisEllipsoid(earthRadius,
@@ -115,13 +119,13 @@ public class EventSlopeFilterTest {
         final EventSlopeFilter<EclipseDetector> filter =
                 new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS).
                 withMaxIter(200);
-        Assertions.assertEquals(200, filter.getMaxIterationCount());
+        assertEquals(200, filter.getMaxIterationCount());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(filter);
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY), iniDate);
-        Assertions.assertEquals(  0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(102, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(  0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(102, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -130,14 +134,14 @@ public class EventSlopeFilterTest {
                 // and in this example get stuck with Transformer.MIN
                 // transformer, hence the g function is always negative
                 // in the test range
-                Assertions.assertTrue(filter.g(currentState) < 0);
+                assertTrue(filter.g(currentState) < 0);
             });
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY + 3600),
                              iniDate.shiftedBy(6 * Constants.JULIAN_DAY + 3600));
     }
 
     @Test
-    public void testUmbra() {
+    void testUmbra() {
         EclipseDetector detector =
                         new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
                                             new OneAxisEllipsoid(earthRadius,
@@ -151,27 +155,27 @@ public class EventSlopeFilterTest {
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new EventSlopeFilter<EclipseDetector>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
 
     }
 
     @Test
-    public void testPenumbra() {
+    void testPenumbra() {
         EclipseDetector detector =
                         new EclipseDetector(CelestialBodyFactory.getSun(), sunRadius,
                                             new OneAxisEllipsoid(earthRadius,
@@ -185,8 +189,8 @@ public class EventSlopeFilterTest {
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -194,9 +198,9 @@ public class EventSlopeFilterTest {
               new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
         propagator.addEventDetector(outOfEclipseDetector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(0, ((Counter) detector.getHandler()).getDecreasingCounter());
-        Assertions.assertEquals(FilterType.TRIGGER_ONLY_INCREASING_EVENTS, outOfEclipseDetector.getFilter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(FilterType.TRIGGER_ONLY_INCREASING_EVENTS, outOfEclipseDetector.getFilter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -204,14 +208,14 @@ public class EventSlopeFilterTest {
               new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
         propagator.addEventDetector(enteringEclipseDetector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
-        Assertions.assertEquals(FilterType.TRIGGER_ONLY_DECREASING_EVENTS, enteringEclipseDetector.getFilter());
+        assertEquals(0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(FilterType.TRIGGER_ONLY_DECREASING_EVENTS, enteringEclipseDetector.getFilter());
 
     }
 
     @Test
-    public void testForwardIncreasingStartPos() {
+    void testForwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -223,7 +227,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardIncreasingStartZero() {
+    void testForwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -235,7 +239,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardIncreasingStartNeg() {
+    void testForwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -247,7 +251,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartPos() {
+    void testForwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -258,7 +262,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartZero() {
+    void testForwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -269,7 +273,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartNeg() {
+    void testForwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -280,7 +284,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartPos() {
+    void testBackwardIncreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -292,7 +296,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartZero() {
+    void testBackwardIncreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -304,7 +308,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartNeg() {
+    void testBackwardIncreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -316,7 +320,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartPos() {
+    void testBackwardDecreasingStartPos() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -327,7 +331,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartZero() {
+    void testBackwardDecreasingStartZero() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -338,7 +342,7 @@ public class EventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartNeg() {
+    void testBackwardDecreasingStartNeg() {
 
         SpacecraftState s = propagator.getInitialState();
         double startLatitude = earth.transform(s.getPosition(),
@@ -360,7 +364,7 @@ public class EventSlopeFilterTest {
 
                     @Override
                     public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
-                        Assertions.assertEquals(filter.getTriggeredIncreasing(), increasing);
+                        assertEquals(filter.getTriggeredIncreasing(), increasing);
                         count[0]++;
                         return Action.RESET_STATE;
                     }
@@ -372,13 +376,13 @@ public class EventSlopeFilterTest {
                     }
 
                 });
-        Assertions.assertSame(earth, detector.getBody());
+        assertSame(earth, detector.getBody());
         propagator.addEventDetector(new EventSlopeFilter<EventDetector>(detector, filter));
         AbsoluteDate target = propagator.getInitialState().getDate().shiftedBy(dt);
         SpacecraftState finalState = propagator.propagate(target);
-        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(target), 1.0e-10);
-        Assertions.assertEquals(expected, count[0]);
-        Assertions.assertEquals(expected, count[1]);
+        assertEquals(0.0, finalState.getDate().durationFrom(target), 1.0e-10);
+        assertEquals(expected, count[0]);
+        assertEquals(expected, count[1]);
     }
 
     private static class Counter implements EventHandler {
@@ -416,7 +420,7 @@ public class EventSlopeFilterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             double mu  = 3.9860047e14;
@@ -431,12 +435,12 @@ public class EventSlopeFilterTest {
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate    = null;
         propagator = null;
         earth      = null;

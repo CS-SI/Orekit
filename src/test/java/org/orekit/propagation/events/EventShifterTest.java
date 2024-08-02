@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -40,9 +39,15 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
-public class EventShifterTest {
+class EventShifterTest {
 
     private double           mu;
     private AbsoluteDate     iniDate;
@@ -53,7 +58,7 @@ public class EventShifterTest {
     private double earthRadius = 6400000.;
 
     @Test
-    public void testNegNeg() {
+    void testNegNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         EclipseDetector raw = createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3);
         final EventHandler h = raw.getHandler();
@@ -75,15 +80,15 @@ public class EventShifterTest {
 
         });
         EventShifter shifter = new EventShifter(raw, true, -15, -20).withMaxIter(200);
-        Assertions.assertEquals(-15, shifter.getIncreasingTimeShift(), 1.0e-15);
-        Assertions.assertEquals(-20, shifter.getDecreasingTimeShift(), 1.0e-15);
-        Assertions.assertEquals(200, shifter.getMaxIterationCount());
-        Assertions.assertEquals(100, raw.getMaxIterationCount());
+        assertEquals(-15, shifter.getIncreasingTimeShift(), 1.0e-15);
+        assertEquals(-20, shifter.getDecreasingTimeShift(), 1.0e-15);
+        assertEquals(200, shifter.getMaxIterationCount());
+        assertEquals(100, raw.getMaxIterationCount());
         propagator.addEventDetector(shifter);
         propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
                                                      false, -5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
-        Assertions.assertEquals(6, log.size());
+        assertEquals(6, log.size());
         log.get(0).checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
         log.get(1).checkExpected(log.get(2).getDT(),      "unshifted decreasing");
         log.get(3).checkExpected(log.get(5).getDT() - 15, "shifted increasing");
@@ -91,14 +96,14 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testNegPos() {
+    void testNegPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                      true, -15,  20));
         propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
                                                      false, -5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
-        Assertions.assertEquals(6, log.size());
+        assertEquals(6, log.size());
         log.get(1).checkExpected(log.get(0).getDT(),      "unshifted decreasing");
         log.get(2).checkExpected(log.get(0).getDT() + 20, "shifted decreasing");
         log.get(3).checkExpected(log.get(5).getDT() - 15, "shifted increasing");
@@ -106,14 +111,14 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testPosNeg() {
+    void testPosNeg() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                      true,  15, -20));
         propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
                                                      false,  5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
-        Assertions.assertEquals(6, log.size());
+        assertEquals(6, log.size());
         log.get(0).checkExpected(log.get(2).getDT() - 20, "shifted decreasing");
         log.get(1).checkExpected(log.get(2).getDT(),      "unshifted decreasing");
         log.get(4).checkExpected(log.get(3).getDT(),      "unshifted increasing");
@@ -121,14 +126,14 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testPosPos() {
+    void testPosPos() {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
         propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
                                                      true,  15,  20));
         propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
                                                      false,  5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
-        Assertions.assertEquals(6, log.size());
+        assertEquals(6, log.size());
         log.get(1).checkExpected(log.get(0).getDT(),      "unshifted decreasing");
         log.get(2).checkExpected(log.get(0).getDT() + 20, "shifted decreasing");
         log.get(4).checkExpected(log.get(3).getDT(),      "unshifted increasing");
@@ -136,7 +141,7 @@ public class EventShifterTest {
     }
 
     @Test
-    public void testIncreasingError() {
+    void testIncreasingError() {
         final EclipseDetector raw0000 = createRawDetector("raw increasing",    "raw decreasing", 2.0e-9);
         final EclipseDetector raw0010 = createRawDetector("-10s increasing",   "-10s decreasing", 2.0e-3);
         final EclipseDetector raw0100 = createRawDetector("-100s increasing",  "-100s decreasing", 3.0e-2);
@@ -144,9 +149,9 @@ public class EventShifterTest {
         final EventShifter shift0010 = new EventShifter(raw0010, true,   -10,   -10);
         final EventShifter shift0100 = new EventShifter(raw0100, true,  -100,  -100);
         final EventShifter shift1000 = new EventShifter(raw1000, true, -1000, -1000);
-        Assertions.assertSame(raw0010, shift0010.getDetector());
-        Assertions.assertSame(raw0100, shift0100.getDetector());
-        Assertions.assertSame(raw1000, shift1000.getDetector());
+        assertSame(raw0010, shift0010.getDetector());
+        assertSame(raw0100, shift0100.getDetector());
+        assertSame(raw1000, shift1000.getDetector());
         propagator.addEventDetector(raw0000);
         propagator.addEventDetector(shift0010);
         propagator.addEventDetector(shift0100);
@@ -161,7 +166,7 @@ public class EventShifterTest {
         // [25942.717, 28019.331]
         // [31853.335, 33929.916]
         // [37763.954, 39840.500]
-        Assertions.assertEquals(28, log.size());
+        assertEquals(28, log.size());
         for (int i = 0; i < log.size() / 4; ++i) {
             EventEntry ref = log.get(4 * i + 3);
             String increasingOrDecreasing = ref.getName().split(" ")[1];
@@ -173,14 +178,14 @@ public class EventShifterTest {
         for (EventEntry entry : log) {
             double error = entry.getTimeError();
             if (entry.name.contains("10s")) {
-                Assertions.assertTrue(error > 1.0e-6);
-                Assertions.assertTrue(error < 3.0e-6);
+                assertTrue(error > 1.0e-6);
+                assertTrue(error < 3.0e-6);
             } else if (entry.name.contains("100s")) {
-                Assertions.assertTrue(error > 0.001);
-                Assertions.assertTrue(error < 0.003);
+                assertTrue(error > 0.001);
+                assertTrue(error < 0.003);
             } else if (entry.name.contains("1000s")) {
-                Assertions.assertTrue(error > 0.7);
-                Assertions.assertTrue(error < 1.1);
+                assertTrue(error > 0.7);
+                assertTrue(error < 1.1);
             }
         }
     }
@@ -203,7 +208,7 @@ public class EventShifterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             mu  = 3.9860047e14;
@@ -222,12 +227,12 @@ public class EventShifterTest {
                 new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
             log = new ArrayList<EventEntry>();
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate = null;
         propagator = null;
         log = null;
@@ -249,8 +254,8 @@ public class EventShifterTest {
 
         public void checkExpected(final double expectedDT, final String name) {
             this.expectedDT = expectedDT;
-            Assertions.assertEquals(expectedDT, dt, tolerance);
-            Assertions.assertEquals(name, this.name);
+            assertEquals(expectedDT, dt, tolerance);
+            assertEquals(name, this.name);
         }
 
         public double getDT() {

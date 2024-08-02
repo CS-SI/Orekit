@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events.intervals;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -30,6 +29,9 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class ApsideDetectionAdaptableIntervalFactoryTest {
 
     @Test
@@ -41,7 +43,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         // WHEN
         final double value = forwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit));
         // THEN
-        Assertions.assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
+        assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
     }
 
     @Test
@@ -53,7 +55,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         // WHEN
         final double value = backwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit));
         // THEN
-        Assertions.assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
+        assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
     }
 
     @Test
@@ -71,10 +73,10 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
         // THEN
-        Assertions.assertNotEquals(targetDate, terminalState.getDate());
+        assertNotEquals(targetDate, terminalState.getDate());
         final int countWithDefaultAdaptableInterval = countWithConstantAdaptableInterval(initialOrbit, targetDate,
                 periapsisDetector);
-        Assertions.assertTrue(countWithDefaultAdaptableInterval > forwardAdaptableIntervalWithCounter.count);
+        assertTrue(countWithDefaultAdaptableInterval > forwardAdaptableIntervalWithCounter.count);
     }
 
     @Test
@@ -92,10 +94,10 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(-initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
         // THEN
-        Assertions.assertNotEquals(targetDate, terminalState.getDate());
+        assertNotEquals(targetDate, terminalState.getDate());
         final int countWithDefaultAdaptableInterval = countWithConstantAdaptableInterval(initialOrbit, targetDate,
                 periapsisDetector);
-        Assertions.assertTrue(countWithDefaultAdaptableInterval > backwardAdaptableIntervalWithCounter.count);
+        assertTrue(countWithDefaultAdaptableInterval > backwardAdaptableIntervalWithCounter.count);
     }
 
     @Test
@@ -113,10 +115,10 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
         // THEN
-        Assertions.assertNotEquals(targetDate, terminalState.getDate());
+        assertNotEquals(targetDate, terminalState.getDate());
         final int countWithDefaultAdaptableInterval = countWithConstantAdaptableInterval(initialOrbit, targetDate,
                 apoapsisDetector);
-        Assertions.assertTrue(countWithDefaultAdaptableInterval > forwardAdaptableIntervalWithCounter.count);
+        assertTrue(countWithDefaultAdaptableInterval > forwardAdaptableIntervalWithCounter.count);
     }
 
     @Test
@@ -134,10 +136,10 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(-initialOrbit.getKeplerianPeriod() * 2);
         final SpacecraftState terminalState = propagator.propagate(targetDate);
         // THEN
-        Assertions.assertNotEquals(targetDate, terminalState.getDate());
+        assertNotEquals(targetDate, terminalState.getDate());
         final int countWithDefaultAdaptableInterval = countWithConstantAdaptableInterval(initialOrbit, targetDate,
                 apoapsisDetector);
-        Assertions.assertTrue(countWithDefaultAdaptableInterval > backwardAdaptableIntervalWithCounter.count);
+        assertTrue(countWithDefaultAdaptableInterval > backwardAdaptableIntervalWithCounter.count);
     }
 
 

@@ -33,7 +33,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -81,6 +80,8 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldDSSTAtmosphericDragTest {
 
@@ -155,12 +156,12 @@ class FieldDSSTAtmosphericDragTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(-3.415320567871035E-5,   elements[0].getReal(), 2.0e-20);
-        Assertions.assertEquals(6.276312897745139E-13,   elements[1].getReal(), 2.9e-27);
-        Assertions.assertEquals(-9.303357008691404E-13,  elements[2].getReal(), 2.7e-27);
-        Assertions.assertEquals(-7.052316604063199E-14,  elements[3].getReal(), 2.0e-28);
-        Assertions.assertEquals(-6.793277250493389E-14,  elements[4].getReal(), 9.0e-29);
-        Assertions.assertEquals(-1.3565284454826392E-15, elements[5].getReal(), 2.0e-28);
+        assertEquals(-3.415320567871035E-5,   elements[0].getReal(), 2.0e-20);
+        assertEquals(6.276312897745139E-13,   elements[1].getReal(), 2.9e-27);
+        assertEquals(-9.303357008691404E-13,  elements[2].getReal(), 2.7e-27);
+        assertEquals(-7.052316604063199E-14,  elements[3].getReal(), 2.0e-28);
+        assertEquals(-6.793277250493389E-14,  elements[4].getReal(), 9.0e-29);
+        assertEquals(-1.3565284454826392E-15, elements[5].getReal(), 2.0e-28);
 
     }
 
@@ -227,12 +228,12 @@ class FieldDSSTAtmosphericDragTest {
             }
         }
 
-        Assertions.assertEquals( 0.03966657233267546,     y[0].getReal(), 1.0e-12);
-        Assertions.assertEquals(-1.52943814431705860e-8,  y[1].getReal(), 1.0e-20);
-        Assertions.assertEquals(-2.36149298285122150e-8,  y[2].getReal(), 1.0e-20);
-        Assertions.assertEquals(-5.90158033654432200e-11, y[3].getReal(), 1.0e-20);
-        Assertions.assertEquals( 1.02876397430619780e-11, y[4].getReal(), 1.0e-20);
-        Assertions.assertEquals( 2.53842752377756140e-8,  y[5].getReal(), 1.0e-20);
+        assertEquals( 0.03966657233267546,     y[0].getReal(), 1.0e-12);
+        assertEquals(-1.52943814431705860e-8,  y[1].getReal(), 1.0e-20);
+        assertEquals(-2.36149298285122150e-8,  y[2].getReal(), 1.0e-20);
+        assertEquals(-5.90158033654432200e-11, y[3].getReal(), 1.0e-20);
+        assertEquals( 1.02876397430619780e-11, y[4].getReal(), 1.0e-20);
+        assertEquals( 2.53842752377756140e-8,  y[5].getReal(), 1.0e-20);
 
     }
 
@@ -355,7 +356,7 @@ class FieldDSSTAtmosphericDragTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assertions.assertEquals(0, error, 2.6e-2);
+                assertEquals(0, error, 2.6e-2);
             }
         }
 
@@ -504,7 +505,7 @@ class FieldDSSTAtmosphericDragTest {
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(shortPeriodJacobianRef[i][0],
+            assertEquals(shortPeriodJacobianRef[i][0],
                                 shortPeriodJacobian[i][0],
                                 FastMath.abs(shortPeriodJacobianRef[i][0] * tolerance));
         }
@@ -586,7 +587,7 @@ class FieldDSSTAtmosphericDragTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

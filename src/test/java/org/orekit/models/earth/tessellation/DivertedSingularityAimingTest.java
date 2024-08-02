@@ -25,7 +25,6 @@ import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.geometry.spherical.twod.SphericalPolygonsSet;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -35,21 +34,23 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class DivertedSingularityAimingTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class DivertedSingularityAimingTest {
 
     @Test
-    public void testSingularityOutside() {
-        Assertions.assertEquals(1, aiming.getSingularPoints().size());
+    void testSingularityOutside() {
+        assertEquals(1, aiming.getSingularPoints().size());
         final GeodeticPoint singularity = aiming.getSingularPoints().get(0);
-        Assertions.assertEquals(Location.OUTSIDE, aoi.checkPoint(toS2Point(singularity)));
+        assertEquals(Location.OUTSIDE, aoi.checkPoint(toS2Point(singularity)));
     }
 
     @Test
-    public void testAroundSingularity() throws IOException {
+    void testAroundSingularity() throws IOException {
 
         GeodeticPoint singularityGP = aiming.getSingularPoints().get(0);
         Vector3D singularity = earth.transform(singularityGP);
-        Assertions.assertEquals(GeodeticPoint.SOUTH_POLE.getLatitude(), singularityGP.getLatitude(), 1.0e-10);
+        assertEquals(GeodeticPoint.SOUTH_POLE.getLatitude(), singularityGP.getLatitude(), 1.0e-10);
 
         // in a small disk (less than 1cm radius) around singularity, aiming direction changes a lot
         double lat = GeodeticPoint.SOUTH_POLE.getLatitude() + 1.0e-9;
@@ -59,20 +60,20 @@ public class DivertedSingularityAimingTest {
         GeodeticPoint gp090  = new GeodeticPoint(lat, 0.5 * FastMath.PI, 0.0);
         Vector3D      p090   = earth.transform(gp090);
         Vector3D      dir090 = aiming.alongTileDirection(p090, gp090);
-        Assertions.assertEquals(0.0064, Vector3D.distance(singularity, p000), 1.0e-4);
-        Assertions.assertEquals(0.0064, Vector3D.distance(singularity, p090), 1.0e-4);
-        Assertions.assertEquals(FastMath.PI, Vector3D.angle(dir000, dir090), 5.0e-7);
+        assertEquals(0.0064, Vector3D.distance(singularity, p000), 1.0e-4);
+        assertEquals(0.0064, Vector3D.distance(singularity, p090), 1.0e-4);
+        assertEquals(FastMath.PI, Vector3D.angle(dir000, dir090), 5.0e-7);
 
     }
 
     @Test
-    public void testOppositeSingularity() throws IOException {
+    void testOppositeSingularity() throws IOException {
 
         GeodeticPoint singularityGP = aiming.getSingularPoints().get(0);
         Vector3D singularity = earth.transform(singularityGP);
         Vector3D opposite    = singularity.negate();
         GeodeticPoint oppositeGP = earth.transform(opposite, earth.getBodyFrame(), null);
-        Assertions.assertEquals(GeodeticPoint.NORTH_POLE.getLatitude(), oppositeGP.getLatitude(), 1.0e-10);
+        assertEquals(GeodeticPoint.NORTH_POLE.getLatitude(), oppositeGP.getLatitude(), 1.0e-10);
 
         // around opposite of singularity, aiming direction is almost constant
         // (as we use dipole field to model aiming direction, there is only one singularity)
@@ -82,8 +83,8 @@ public class DivertedSingularityAimingTest {
             GeodeticPoint gp = new GeodeticPoint(lat, lon, 0.0);
             Vector3D      p  = earth.transform(gp);
             Vector3D      dir = aiming.alongTileDirection(p, gp);
-            Assertions.assertEquals(0.0064, Vector3D.distance(opposite, p), 1.0e-4);
-            Assertions.assertEquals(0.0, Vector3D.angle(refDir, dir), 1.1e-9);
+            assertEquals(0.0064, Vector3D.distance(opposite, p), 1.0e-4);
+            assertEquals(0.0, Vector3D.angle(refDir, dir), 1.1e-9);
         }
 
     }
@@ -93,7 +94,7 @@ public class DivertedSingularityAimingTest {
      * It was fixed by upgrading to Hipparchus 2.3. 
      */
     @Test
-    public void testIssue969() throws IOException {
+    void testIssue969() throws IOException {
 
         // Given
         // -----
@@ -125,17 +126,17 @@ public class DivertedSingularityAimingTest {
         final GeodeticPoint singularGP = singularGPs.get(0);
 
         // Singular list size
-        Assertions.assertEquals(1, singularGPs.size());
+        assertEquals(1, singularGPs.size());
 
         // Check center
-        Assertions.assertEquals(9.0794674733, FastMath.toDegrees(centerGP.getLatitude()), 1.0e-10);
-        Assertions.assertEquals(-5., FastMath.toDegrees(centerGP.getLongitude()), 1.0e-14);
-        Assertions.assertEquals(0., FastMath.toDegrees(centerGP.getAltitude()), 0.);
+        assertEquals(9.0794674733, FastMath.toDegrees(centerGP.getLatitude()), 1.0e-10);
+        assertEquals(-5., FastMath.toDegrees(centerGP.getLongitude()), 1.0e-14);
+        assertEquals(0., FastMath.toDegrees(centerGP.getAltitude()), 0.);
 
         // Check singularity (should be at the antipodes of center)
-        Assertions.assertEquals(-9.0794674733, FastMath.toDegrees(singularGP.getLatitude()), 1.0e-10);
-        Assertions.assertEquals(175., FastMath.toDegrees(singularGP.getLongitude()), 1.0e-13);
-        Assertions.assertEquals(0., FastMath.toDegrees(singularGP.getAltitude()), 0.);
+        assertEquals(-9.0794674733, FastMath.toDegrees(singularGP.getLatitude()), 1.0e-10);
+        assertEquals(175., FastMath.toDegrees(singularGP.getLongitude()), 1.0e-13);
+        assertEquals(0., FastMath.toDegrees(singularGP.getAltitude()), 0.);
 
     }
 
@@ -144,7 +145,7 @@ public class DivertedSingularityAimingTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -158,7 +159,7 @@ public class DivertedSingularityAimingTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         earth  = null;
         aoi    = null;
         aiming = null;

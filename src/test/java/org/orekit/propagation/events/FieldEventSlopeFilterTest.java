@@ -21,7 +21,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -42,7 +41,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
-public class FieldEventSlopeFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class FieldEventSlopeFilterTest {
 
     private FieldAbsoluteDate<Binary64>     iniDate;
     private FieldPropagator<Binary64>       propagator;
@@ -52,26 +56,26 @@ public class FieldEventSlopeFilterTest {
     private double earthRadius = 6400000.;
 
     @Test
-    public void testEnums() {
+    void testEnums() {
         // this test is here only for test coverage ...
 
-        Assertions.assertEquals(5, Transformer.values().length);
-        Assertions.assertSame(Transformer.UNINITIALIZED, Transformer.valueOf("UNINITIALIZED"));
-        Assertions.assertSame(Transformer.PLUS,          Transformer.valueOf("PLUS"));
-        Assertions.assertSame(Transformer.MINUS,         Transformer.valueOf("MINUS"));
-        Assertions.assertSame(Transformer.MIN,           Transformer.valueOf("MIN"));
-        Assertions.assertSame(Transformer.MAX,           Transformer.valueOf("MAX"));
+        assertEquals(5, Transformer.values().length);
+        assertSame(Transformer.UNINITIALIZED, Transformer.valueOf("UNINITIALIZED"));
+        assertSame(Transformer.PLUS,          Transformer.valueOf("PLUS"));
+        assertSame(Transformer.MINUS,         Transformer.valueOf("MINUS"));
+        assertSame(Transformer.MIN,           Transformer.valueOf("MIN"));
+        assertSame(Transformer.MAX,           Transformer.valueOf("MAX"));
 
-        Assertions.assertEquals(2, FilterType.values().length);
-        Assertions.assertSame(FilterType.TRIGGER_ONLY_DECREASING_EVENTS,
+        assertEquals(2, FilterType.values().length);
+        assertSame(FilterType.TRIGGER_ONLY_DECREASING_EVENTS,
                           FilterType.valueOf("TRIGGER_ONLY_DECREASING_EVENTS"));
-        Assertions.assertSame(FilterType.TRIGGER_ONLY_INCREASING_EVENTS,
+        assertSame(FilterType.TRIGGER_ONLY_INCREASING_EVENTS,
                           FilterType.valueOf("TRIGGER_ONLY_INCREASING_EVENTS"));
 
     }
 
     @Test
-    public void testReplayForward() {
+    void testReplayForward() {
         FieldEclipseDetector<Binary64> detector =
                 new FieldEclipseDetector<>(Binary64Field.getInstance(),
                                            CelestialBodyFactory.getSun(), sunRadius,
@@ -84,14 +88,14 @@ public class FieldEventSlopeFilterTest {
         final FieldEventSlopeFilter<FieldEclipseDetector<Binary64>, Binary64> filter =
                 new FieldEventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS).
                 withMaxIter(200);
-        Assertions.assertSame(detector, filter.getDetector());
-        Assertions.assertEquals(200, filter.getMaxIterationCount());
+        assertSame(detector, filter.getDetector());
+        assertEquals(200, filter.getMaxIterationCount());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(filter);
         propagator.propagate(iniDate, iniDate.shiftedBy(7 * Constants.JULIAN_DAY));
-        Assertions.assertEquals(102, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(102, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -100,13 +104,13 @@ public class FieldEventSlopeFilterTest {
             // and in this example get stuck with Transformer.MAX
             // transformer, hence the g function is always positive
             // in the test range
-            Assertions.assertTrue(filter.g(currentState).getReal() > 0);
+            assertTrue(filter.g(currentState).getReal() > 0);
         });
         propagator.propagate(iniDate.shiftedBy(-3600), iniDate.shiftedBy(Constants.JULIAN_DAY + 3600));
     }
 
     @Test
-    public void testReplayBackward() {
+    void testReplayBackward() {
         FieldEclipseDetector<Binary64> detector =
                         new FieldEclipseDetector<>(Binary64Field.getInstance(),
                                                    CelestialBodyFactory.getSun(), sunRadius,
@@ -120,13 +124,13 @@ public class FieldEventSlopeFilterTest {
         final FieldEventSlopeFilter<FieldEclipseDetector<Binary64>, Binary64> filter =
                 new FieldEventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS).
                 withMaxIter(200);
-        Assertions.assertEquals(200, filter.getMaxIterationCount());
+        assertEquals(200, filter.getMaxIterationCount());
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(filter);
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY), iniDate);
-        Assertions.assertEquals(  0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(102, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(  0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(102, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
@@ -135,14 +139,14 @@ public class FieldEventSlopeFilterTest {
                 // and in this example get stuck with Transformer.MIN
                 // transformer, hence the g function is always negative
                 // in the test range
-                Assertions.assertTrue(filter.g(currentState).getReal() < 0);
+                assertTrue(filter.g(currentState).getReal() < 0);
             });
         propagator.propagate(iniDate.shiftedBy(7 * Constants.JULIAN_DAY + 3600),
                              iniDate.shiftedBy(6 * Constants.JULIAN_DAY + 3600));
     }
 
     @Test
-    public void testUmbra() {
+    void testUmbra() {
         FieldEclipseDetector<Binary64> detector =
                         new FieldEclipseDetector<>(Binary64Field.getInstance(),
                                                    CelestialBodyFactory.getSun(), sunRadius,
@@ -157,27 +161,27 @@ public class FieldEventSlopeFilterTest {
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new FieldEventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new FieldEventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
 
     }
 
     @Test
-    public void testPenumbra() {
+    void testPenumbra() {
         FieldEclipseDetector<Binary64> detector =
                         new FieldEclipseDetector<>(Binary64Field.getInstance(),
                                                    CelestialBodyFactory.getSun(), sunRadius,
@@ -192,27 +196,27 @@ public class FieldEventSlopeFilterTest {
         propagator.clearEventsDetectors();
         propagator.addEventDetector(detector);
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new FieldEventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals(14, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getDecreasingCounter());
         ((Counter) detector.getHandler()).reset();
 
         propagator.clearEventsDetectors();
         propagator.addEventDetector(new FieldEventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_DECREASING_EVENTS));
         propagator.propagate(iniDate, iniDate.shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
-        Assertions.assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
+        assertEquals( 0, ((Counter) detector.getHandler()).getIncreasingCounter());
+        assertEquals(15, ((Counter) detector.getHandler()).getDecreasingCounter());
 
     }
 
     @Test
-    public void testForwardIncreasingStartPos() {
+    void testForwardIncreasingStartPos() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -224,7 +228,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardIncreasingStartZero() {
+    void testForwardIncreasingStartZero() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -236,7 +240,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardIncreasingStartNeg() {
+    void testForwardIncreasingStartNeg() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -248,7 +252,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartPos() {
+    void testForwardDecreasingStartPos() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -259,7 +263,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartZero() {
+    void testForwardDecreasingStartZero() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -270,7 +274,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testForwardDecreasingStartNeg() {
+    void testForwardDecreasingStartNeg() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -281,7 +285,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartPos() {
+    void testBackwardIncreasingStartPos() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -293,7 +297,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartZero() {
+    void testBackwardIncreasingStartZero() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -305,7 +309,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardIncreasingStartNeg() {
+    void testBackwardIncreasingStartNeg() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -317,7 +321,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartPos() {
+    void testBackwardDecreasingStartPos() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -328,7 +332,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartZero() {
+    void testBackwardDecreasingStartZero() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -339,7 +343,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @Test
-    public void testBackwardDecreasingStartNeg() {
+    void testBackwardDecreasingStartNeg() {
 
         FieldSpacecraftState<Binary64> s = propagator.getInitialState();
         Binary64 startLatitude = earth.transform(s.getPosition(),
@@ -360,7 +364,7 @@ public class FieldEventSlopeFilterTest {
 
                     @Override
                     public Action eventOccurred(FieldSpacecraftState<Binary64> s, FieldEventDetector<Binary64> detector, boolean increasing) {
-                        Assertions.assertEquals(filter.getTriggeredIncreasing(), increasing);
+                        assertEquals(filter.getTriggeredIncreasing(), increasing);
                         count[0]++;
                         return Action.RESET_STATE;
                     }
@@ -372,13 +376,13 @@ public class FieldEventSlopeFilterTest {
                     }
 
                 });
-        Assertions.assertSame(earth, detector.getBody());
+        assertSame(earth, detector.getBody());
         propagator.addEventDetector(new FieldEventSlopeFilter<>(detector, filter));
         FieldAbsoluteDate<Binary64> target = propagator.getInitialState().getDate().shiftedBy(dt);
         FieldSpacecraftState<Binary64> finalState = propagator.propagate(target);
-        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(target).getReal(), 1.0e-10);
-        Assertions.assertEquals(expected, count[0]);
-        Assertions.assertEquals(expected, count[1]);
+        assertEquals(0.0, finalState.getDate().durationFrom(target).getReal(), 1.0e-10);
+        assertEquals(expected, count[0]);
+        assertEquals(expected, count[1]);
     }
 
     private static class Counter implements FieldEventHandler<Binary64> {
@@ -416,7 +420,7 @@ public class FieldEventSlopeFilterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             Binary64 mu  = new Binary64(3.9860047e14);
@@ -436,12 +440,12 @@ public class FieldEventSlopeFilterTest {
                                          FramesFactory.getITRF(IERSConventions.IERS_2010, true));
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate    = null;
         propagator = null;
         earth      = null;

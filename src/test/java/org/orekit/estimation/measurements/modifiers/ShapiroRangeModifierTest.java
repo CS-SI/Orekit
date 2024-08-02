@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -36,15 +35,18 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 
-public class ShapiroRangeModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ShapiroRangeModifierTest {
 
     @Test
-    public void testShapiroOneWay() {
+    void testShapiroOneWay() {
         doTestShapiro(false, 0.006850703, 0.008320738, 0.010297508);
     }
 
     @Test
-    public void testShapiroTwoWay() {
+    void testShapiroTwoWay() {
         doTestShapiro(true, 0.006850703, 0.008320739, 0.010297503);
     }
 
@@ -90,8 +92,8 @@ public class ShapiroRangeModifierTest {
 
             Range range = (Range) measurement;
             EstimatedMeasurementBase<Range> evalNoMod = range.estimateWithoutDerivatives(12, 17, new SpacecraftState[] { refstate });
-            Assertions.assertEquals(12, evalNoMod.getIteration());
-            Assertions.assertEquals(17, evalNoMod.getCount());
+            assertEquals(12, evalNoMod.getIteration());
+            assertEquals(17, evalNoMod.getCount());
 
             // add modifier
             range.addModifier(modifier);
@@ -99,16 +101,16 @@ public class ShapiroRangeModifierTest {
             for (final EstimationModifier<Range> existing : range.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assertions.assertTrue(found);
+            assertTrue(found);
             EstimatedMeasurementBase<Range> eval = range.estimateWithoutDerivatives( new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
 
-        Assertions.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
-        Assertions.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
-        Assertions.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
+        assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
+        assertEquals(expectedMean, stat.getMean(), 1.0e-9);
+        assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
 
     }
 

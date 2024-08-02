@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,22 +31,25 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-public class MendesPavlisModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class MendesPavlisModelTest {
 
     private static final double epsilon = 1e-6;
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testZenithDelay() {
+    void testZenithDelay() {
 
         // Site:   McDonald Observatory
         //         latitude:  30.67166667 °
@@ -96,14 +98,14 @@ public class MendesPavlisModelTest {
 
         final double[] computedDelay = model.computeZenithDelay(point, date);
 
-        Assertions.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
-        Assertions.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
-        Assertions.assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
+        assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
+        assertEquals(expectedWetDelay,                      computedDelay[1], precision);
+        assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
 
     }
 
     @Test
-    public void testMappingFactors() {
+    void testMappingFactors() {
 
         // Site:   McDonald Observatory
         //         latitude:  30.67166667 °
@@ -150,12 +152,12 @@ public class MendesPavlisModelTest {
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
-        Assertions.assertEquals(expectedMapping, computedMapping[0], 5.0e-8);
-        Assertions.assertEquals(expectedMapping, computedMapping[1], 5.0e-8);
+        assertEquals(expectedMapping, computedMapping[0], 5.0e-8);
+        assertEquals(expectedMapping, computedMapping[1], 5.0e-8);
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         final double elevation = 10d;
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
@@ -165,12 +167,12 @@ public class MendesPavlisModelTest {
                                             point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                             model.getParameters(), date).getDelay();
-        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
+        assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         MendesPavlisModel model = MendesPavlisModel.getStandardModel(0.6943, TroposphericModelUtils.MICRO_M);
@@ -181,14 +183,14 @@ public class MendesPavlisModelTest {
                                                  point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  model.getParameters(), date).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Deprecated
     @Test
-    public void testDeprecatedConstructor1() {
+    void testDeprecatedConstructor1() {
 
         // Site:   McDonald Observatory
         //         latitude:  30.67166667 °
@@ -237,15 +239,15 @@ public class MendesPavlisModelTest {
 
         final double[] computedDelay = model.computeZenithDelay(point, date);
 
-        Assertions.assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
-        Assertions.assertEquals(expectedWetDelay,                      computedDelay[1], precision);
-        Assertions.assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
+        assertEquals(expectedHydroDelay, computedDelay[0],                    precision);
+        assertEquals(expectedWetDelay,                      computedDelay[1], precision);
+        assertEquals(expectedDelay,      computedDelay[0] + computedDelay[1], precision);
 
     }
 
     @Deprecated
     @Test
-    public void testDeprecatedConstructor2() {
+    void testDeprecatedConstructor2() {
         final double elevation = 10d;
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
@@ -256,8 +258,8 @@ public class MendesPavlisModelTest {
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                             model.getParameters(), date).
                             getDelay();
-        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
+        assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
 
 }

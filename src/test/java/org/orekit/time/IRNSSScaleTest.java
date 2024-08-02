@@ -16,62 +16,63 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.utils.Constants;
 
-public class IRNSSScaleTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class IRNSSScaleTest {
 
     @Test
-    public void testArbitrary() {
+    void testArbitrary() {
         AbsoluteDate tIRNSS =
             new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00, TimeScalesFactory.getIRNSS());
         AbsoluteDate tUTC =
             new AbsoluteDate(new DateComponents(1999, 3, 3), new TimeComponents(23, 59, 47),
                              TimeScalesFactory.getUTC());
-        Assertions.assertEquals(tUTC, tIRNSS);
+        assertEquals(tUTC, tIRNSS);
     }
 
     @Test
-    public void testConstant() {
+    void testConstant() {
         TimeScale scale = TimeScalesFactory.getIRNSS();
         double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assertions.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
+            assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
         }
     }
 
     @Test
-    public void testSymmetry() {
+    void testSymmetry() {
         TimeScale scale = TimeScalesFactory.getIRNSS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
-            Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
     @Test
-    public void testDuringLeap() {
+    void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getIRNSS();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assertions.assertEquals(61, utc.minuteDuration(during));
-        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assertions.assertEquals(60, scale.minuteDuration(during));
-        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        assertEquals(61, utc.minuteDuration(during));
+        assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        assertEquals(60, scale.minuteDuration(during));
+        assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -42,10 +41,13 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ShapiroOneWayGNSSRangeModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ShapiroOneWayGNSSRangeModifierTest {
 
     @Test
-    public void testShapiro() {
+    void testShapiro() {
         doTestShapiro(0.000047764, 0.000086953, 0.000164659);
     }
 
@@ -101,16 +103,16 @@ public class ShapiroOneWayGNSSRangeModifierTest {
             for (final EstimationModifier<OneWayGNSSRange> existing : sr.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assertions.assertTrue(found);
+            assertTrue(found);
             EstimatedMeasurementBase<OneWayGNSSRange> eval = sr.estimateWithoutDerivatives(states);
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
 
-        Assertions.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
-        Assertions.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
-        Assertions.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
+        assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
+        assertEquals(expectedMean, stat.getMean(), 1.0e-9);
+        assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
 
     }
 

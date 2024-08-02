@@ -21,18 +21,19 @@ import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 public class SampledClockModelTest {
 
     @Test
-    public void testCubicNoRate() {
+    void testCubicNoRate() {
         final PolynomialFunction c       = new PolynomialFunction(FastMath.scalb(1.0, -6),
                                                                   FastMath.scalb(1.0, -7),
                                                                   FastMath.scalb(1.0, -8),
@@ -47,21 +48,21 @@ public class SampledClockModelTest {
         final SampledClockModel clockModel = new SampledClockModel(sample, 4);
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final ClockOffset co = clockModel.getOffset(t0.shiftedBy(dt));
-            Assertions.assertEquals(dt,                co.getDate().durationFrom(t0), 1.0e-15);
-            Assertions.assertEquals(c.value(dt),       co.getOffset(),                1.0e-15);
-            Assertions.assertEquals(cDot.value(dt),    co.getRate(),                  1.0e-15);
-            Assertions.assertEquals(cDotDot.value(dt), co.getAcceleration(),          1.0e-15);
+            assertEquals(dt,                co.getDate().durationFrom(t0), 1.0e-15);
+            assertEquals(c.value(dt),       co.getOffset(),                1.0e-15);
+            assertEquals(cDot.value(dt),    co.getRate(),                  1.0e-15);
+            assertEquals(cDotDot.value(dt), co.getAcceleration(),          1.0e-15);
         }
 
-        Assertions.assertEquals(t0, clockModel.getCache().getEarliest().getDate());
-        Assertions.assertEquals(t0.shiftedBy(9.9375), clockModel.getCache().getLatest().getDate());
-        Assertions.assertEquals(4, clockModel.getCache().getMaxNeighborsSize());
-        Assertions.assertEquals(160, clockModel.getCache().getAll().size());
+        assertEquals(t0, clockModel.getCache().getEarliest().getDate());
+        assertEquals(t0.shiftedBy(9.9375), clockModel.getCache().getLatest().getDate());
+        assertEquals(4, clockModel.getCache().getMaxNeighborsSize());
+        assertEquals(160, clockModel.getCache().getAll().size());
 
     }
 
     @Test
-    public void testCubicNoAcceleration() {
+    void testCubicNoAcceleration() {
         final PolynomialFunction c       = new PolynomialFunction(FastMath.scalb(1.0, -6),
                                                                   FastMath.scalb(1.0, -7),
                                                                   FastMath.scalb(1.0, -8),
@@ -76,15 +77,15 @@ public class SampledClockModelTest {
         final SampledClockModel clockModel = new SampledClockModel(sample, 2);
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final ClockOffset co = clockModel.getOffset(t0.shiftedBy(dt));
-            Assertions.assertEquals(dt,                co.getDate().durationFrom(t0), 1.0e-15);
-            Assertions.assertEquals(c.value(dt),       co.getOffset(),                1.0e-15);
-            Assertions.assertEquals(cDot.value(dt),    co.getRate(),                  1.0e-15);
-            Assertions.assertEquals(cDotDot.value(dt), co.getAcceleration(),          1.0e-15);
+            assertEquals(dt,                co.getDate().durationFrom(t0), 1.0e-15);
+            assertEquals(c.value(dt),       co.getOffset(),                1.0e-15);
+            assertEquals(cDot.value(dt),    co.getRate(),                  1.0e-15);
+            assertEquals(cDotDot.value(dt), co.getAcceleration(),          1.0e-15);
         }
     }
 
     @Test
-    public void testCubicNoRateField() {
+    void testCubicNoRateField() {
         doTestCubicNoRate(Binary64Field.getInstance());
     }
 
@@ -105,15 +106,15 @@ public class SampledClockModelTest {
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
             final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
-            Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
-            Assertions.assertEquals(c.value(dtF).getReal(),       co.getOffset().getReal(),       1.0e-15);
-            Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
-            Assertions.assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
+            assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
+            assertEquals(c.value(dtF).getReal(),       co.getOffset().getReal(),       1.0e-15);
+            assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
+            assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
         }
     }
 
     @Test
-    public void testCubicNoAccelerationField() {
+    void testCubicNoAccelerationField() {
         doTestCubicNoAcceleration(Binary64Field.getInstance());
     }
 
@@ -134,15 +135,15 @@ public class SampledClockModelTest {
         for (double dt = 0.02; dt < 0.98; dt += 0.02) {
             final T dtF = field.getZero().newInstance(dt);
             final FieldClockOffset<T> co = clockModel.getOffset(t0F.shiftedBy(dtF));
-            Assertions.assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
-            Assertions.assertEquals(c.value(dtF).getReal(),       co.getOffset().getReal(),       1.0e-15);
-            Assertions.assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
-            Assertions.assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
+            assertEquals(dt, co.getDate().durationFrom(t0).getReal(),                  1.0e-15);
+            assertEquals(c.value(dtF).getReal(),       co.getOffset().getReal(),       1.0e-15);
+            assertEquals(cDot.value(dtF).getReal(),    co.getRate().getReal(),         1.0e-15);
+            assertEquals(cDotDot.value(dtF).getReal(), co.getAcceleration().getReal(), 1.0e-15);
         }
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 

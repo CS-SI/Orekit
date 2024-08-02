@@ -25,7 +25,6 @@ import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -51,11 +50,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.units.UnitsConverter;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Test class for MagneticFieldDetector.
  * @author Romaric Her
  */
-public class MagneticFieldDetectorTest {
+class MagneticFieldDetectorTest {
 
     Propagator propagator;
     Frame eme2000;
@@ -70,7 +71,7 @@ public class MagneticFieldDetectorTest {
     double saaValidationWidth = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(200);
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         // Initialize context
         Utils.setDataRoot("regular-data:earth");
 
@@ -88,7 +89,7 @@ public class MagneticFieldDetectorTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         // Clear the context
         DataContext.getDefault().getDataProvidersManager().clearProviders();
         DataContext.getDefault().getDataProvidersManager().clearLoadedDataNames();
@@ -108,7 +109,7 @@ public class MagneticFieldDetectorTest {
      * Test for the magnetic field detector based on the WMM at sea level
      */
     @Test
-    public void magneticFieldDetectorWMMSeaLevelTest() {
+    void magneticFieldDetectorWMMSeaLevelTest() {
         initializePropagator();
         double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
@@ -124,7 +125,7 @@ public class MagneticFieldDetectorTest {
      * Test for the magnetic field detector based on the IGRF at sea level
      */
     @Test
-    public void magneticFieldDetectorIGRFSeaLevelTest() {
+    void magneticFieldDetectorIGRFSeaLevelTest() {
         initializePropagator();
         double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
@@ -140,7 +141,7 @@ public class MagneticFieldDetectorTest {
      * Test for the magnetic field detector based on the WMM at satellite's altitude.
      */
     @Test
-    public void magneticFieldDetectorWMMTrueAltitudeTest() {
+    void magneticFieldDetectorWMMTrueAltitudeTest() {
         initializePropagator();
         double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
@@ -156,7 +157,7 @@ public class MagneticFieldDetectorTest {
      * Test for the magnetic field detector based on the IGRF at satellite's altitude.
      */
     @Test
-    public void magneticFieldDetectorIGRFTrueAltitudeTest() {
+    void magneticFieldDetectorIGRFTrueAltitudeTest() {
         initializePropagator();
         double threshold = UnitsConverter.NANO_TESLAS_TO_TESLAS.convert(45000);
 
@@ -172,7 +173,7 @@ public class MagneticFieldDetectorTest {
      * Test for the SAA detector based on the WMM at sea level
      */
     @Test
-    public void saaDetectorWMMSeaLevelTest() {
+    void saaDetectorWMMSeaLevelTest() {
         initializePropagator();
 
         double altitude = 0;
@@ -194,7 +195,7 @@ public class MagneticFieldDetectorTest {
      * Test for the SAA detector based on the IGRF at sea level
      */
     @Test
-    public void saaDetectorIGRFSeaLevelTest() {
+    void saaDetectorIGRFSeaLevelTest() {
         initializePropagator();
 
         double altitude = 0;
@@ -216,7 +217,7 @@ public class MagneticFieldDetectorTest {
      * Test for the SAA detector based on the WMM at satellite's altitude.
      */
     @Test
-    public void saaDetectorWMMTrueAltitudeTest() {
+    void saaDetectorWMMTrueAltitudeTest() {
         initializePropagator();
 
         double altitude = 600000;
@@ -238,7 +239,7 @@ public class MagneticFieldDetectorTest {
      * Test for the SAA detector based on the IGRF at satellite's altitude.
      */
     @Test
-    public void saaDetectorIGRFTrueAltitudeTest() {
+    void saaDetectorIGRFTrueAltitudeTest() {
         initializePropagator();
 
         double altitude = 600000;
@@ -425,7 +426,7 @@ public class MagneticFieldDetectorTest {
                 altitude = 0;
             }
             double meas = field.calculateField(geo.getLatitude(), geo.getLongitude(), altitude).getTotalIntensity();
-            Assertions.assertEquals(threshold, meas, 1e-12);
+            assertEquals(threshold, meas, 1e-12);
         }
     }
 
@@ -443,9 +444,9 @@ public class MagneticFieldDetectorTest {
             Vector2D point = new Vector2D(geo.getLongitude(), geo.getLatitude());
 
             //Check that the event is outside the "smaller than SAA" geographical zone
-            Assertions.assertTrue(saaIn.checkPoint(point).equals(Location.OUTSIDE));
+            assertEquals(Location.OUTSIDE, saaIn.checkPoint(point));
             //Check that the event is inside the "bigger than SAA" geographical zone
-            Assertions.assertTrue(saaOut.checkPoint(point).equals(Location.INSIDE));
+            assertEquals(Location.INSIDE, saaOut.checkPoint(point));
 
         }
     }

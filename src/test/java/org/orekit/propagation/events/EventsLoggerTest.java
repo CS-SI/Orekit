@@ -21,7 +21,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -41,7 +40,11 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.List;
 
-public class EventsLoggerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class EventsLoggerTest {
 
     private double               mu;
     private AbsoluteDate         iniDate;
@@ -52,55 +55,55 @@ public class EventsLoggerTest {
     private EventDetector        penumbraDetector;
 
     @Test
-    public void testLogUmbra() {
+    void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
         EventDetector monitored = ((AbstractDetector<?>) logger.monitorDetector(umbraDetector)).
                 withMaxIter(200);
-        Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
-        Assertions.assertEquals(200, monitored.getMaxIterationCount());
+        assertEquals(100, umbraDetector.getMaxIterationCount());
+        assertEquals(200, monitored.getMaxIterationCount());
         propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assertions.assertEquals(11, count);
+        assertEquals(11, count);
         checkCounts(logger, 3, 3, 0, 0);
     }
 
     @Test
-    public void testLogPenumbra() {
+    void testLogPenumbra() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(umbraDetector);
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assertions.assertEquals(11, count);
+        assertEquals(11, count);
         checkCounts(logger, 0, 0, 2, 3);
     }
 
     @Test
-    public void testLogAll() {
+    void testLogAll() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
-        Assertions.assertEquals(11, count);
+        assertEquals(11, count);
         checkCounts(logger, 3, 3, 2, 3);
     }
 
     @Test
-    public void testImmutableList() {
+    void testImmutableList() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
         List<EventsLogger.LoggedEvent> firstList = logger.getLoggedEvents();
-        Assertions.assertEquals(11, firstList.size());
+        assertEquals(11, firstList.size());
         propagator.propagate(iniDate.shiftedBy(30000));
         List<EventsLogger.LoggedEvent> secondList = logger.getLoggedEvents();
-        Assertions.assertEquals(11, firstList.size());
-        Assertions.assertEquals(20, secondList.size());
+        assertEquals(11, firstList.size());
+        assertEquals(20, secondList.size());
         for (int i = 0; i < firstList.size(); ++i) {
 
             EventsLogger.LoggedEvent e1 = firstList.get(i);
@@ -108,28 +111,28 @@ public class EventsLoggerTest {
             PVCoordinates pv1 = e1.getState().getPVCoordinates();
             PVCoordinates pv2 = e2.getState().getPVCoordinates();
 
-            Assertions.assertTrue(e1.getEventDetector() == e2.getEventDetector());
-            Assertions.assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-10);
-            Assertions.assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-10);
-            Assertions.assertEquals(e1.isIncreasing(), e2.isIncreasing());
+            assertTrue(e1.getEventDetector() == e2.getEventDetector());
+            assertEquals(0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-10);
+            assertEquals(0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-10);
+            assertEquals(e1.isIncreasing(), e2.isIncreasing());
 
         }
     }
 
     @Test
-    public void testClearLog() {
+    void testClearLog() {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
         count = 0;
         propagator.propagate(iniDate.shiftedBy(16215));
         List<EventsLogger.LoggedEvent> firstList = logger.getLoggedEvents();
-        Assertions.assertEquals(11, firstList.size());
+        assertEquals(11, firstList.size());
         logger.clearLoggedEvents();
         propagator.propagate(iniDate.shiftedBy(30000));
         List<EventsLogger.LoggedEvent> secondList = logger.getLoggedEvents();
-        Assertions.assertEquals(11, firstList.size());
-        Assertions.assertEquals( 9, secondList.size());
+        assertEquals(11, firstList.size());
+        assertEquals( 9, secondList.size());
     }
 
     private void checkCounts(EventsLogger logger,
@@ -155,10 +158,10 @@ public class EventsLoggerTest {
                 }
             }
         }
-        Assertions.assertEquals(expectedUmbraIncreasingCount,    umbraIncreasingCount);
-        Assertions.assertEquals(expectedUmbraDecreasingCount,    umbraDecreasingCount);
-        Assertions.assertEquals(expectedPenumbraIncreasingCount, penumbraIncreasingCount);
-        Assertions.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
+        assertEquals(expectedUmbraIncreasingCount,    umbraIncreasingCount);
+        assertEquals(expectedUmbraDecreasingCount,    umbraDecreasingCount);
+        assertEquals(expectedPenumbraIncreasingCount, penumbraIncreasingCount);
+        assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
     private EventDetector buildDetector(final boolean totalEclipse) {
@@ -191,7 +194,7 @@ public class EventsLoggerTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             mu  = 3.9860047e14;
@@ -216,12 +219,12 @@ public class EventsLoggerTest {
             umbraDetector = buildDetector(true);
             penumbraDetector = buildDetector(false);
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate = null;
         initialState = null;
         propagator = null;

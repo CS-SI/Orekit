@@ -16,11 +16,9 @@
  */
 package org.orekit.frames;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -32,16 +30,19 @@ import org.orekit.utils.IERSConventions;
 
 import java.util.stream.Stream;
 
-public class HelmertTransformationTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class HelmertTransformationTest {
 
     @Test
-    public void testHelmert20052008() {
+    void testHelmert20052008() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         HelmertTransformation.Predefined ht = HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005;
-        Assertions.assertEquals(ITRFVersion.ITRF_2008, ht.getOrigin());
-        Assertions.assertEquals(ITRFVersion.ITRF_2005, ht.getDestination());
-        Assertions.assertEquals(new AbsoluteDate(2000, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
+        assertEquals(ITRFVersion.ITRF_2008, ht.getOrigin());
+        assertEquals(ITRFVersion.ITRF_2005, ht.getDestination());
+        assertEquals(new AbsoluteDate(2000, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
                             ht.getTransformation().getEpoch());
         Frame itrf2005 = ht.createTransformedITRF(itrf2008, "2005");
         Vector3D pos2005 = new Vector3D(1234567.8, 2345678.9, 3456789.0);
@@ -54,8 +55,8 @@ public class HelmertTransformationTest {
                                                         0.3,  0.0,  0.0, 0.000, 0.000, 0.000,
                                                        pos2005, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
-        MatcherAssert.assertThat(
+        assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
+        assertThat(
                 itrf2005.getStaticTransformTo(itrf2008, date).transformPosition(pos2005),
                 OrekitMatchers.vectorCloseTo(pos2008, 0));
 
@@ -66,15 +67,15 @@ public class HelmertTransformationTest {
                                                0.3,  0.0,  0.0, 0.000, 0.000, 0.000,
                                               pos2005, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
-        MatcherAssert.assertThat(
+        assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
+        assertThat(
                 itrf2005.getStaticTransformTo(itrf2008, date).transformPosition(pos2005),
                 OrekitMatchers.vectorCloseTo(pos2008, 0));
 
     }
 
     @Test
-    public void testHelmert20002005() {
+    void testHelmert20002005() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -91,7 +92,7 @@ public class HelmertTransformationTest {
                                                        -0.2,  0.1, -1.8, 0.000, 0.000, 0.000,
                                                        pos2000, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2000.getNorm()));
+        assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2000.getNorm()));
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2005 = itrf2000.getTransformTo(itrf2005, date).transformPosition(pos2000);
@@ -100,12 +101,12 @@ public class HelmertTransformationTest {
                                                -0.2,  0.1, -1.8, 0.000, 0.000, 0.000,
                                                pos2000, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2000.getNorm()));
+        assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2000.getNorm()));
 
     }
 
     @Test
-    public void testHelmert19972000() {
+    void testHelmert19972000() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -122,7 +123,7 @@ public class HelmertTransformationTest {
                                                         0.0, -0.6,  -1.4, 0.000, 0.000, 0.002,
                                                        pos2000, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), 2.0e-11 * pos97.getNorm());
+        assertEquals(0.0, error.getNorm(), 2.0e-11 * pos97.getNorm());
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2000 = itrf97.getTransformTo(itrf2000, date).transformPosition(pos97);
@@ -131,12 +132,12 @@ public class HelmertTransformationTest {
                                                0.0, -0.6,  -1.4, 0.000, 0.000, 0.002,
                                                pos2000, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), 6.0e-11 * pos97.getNorm());
+        assertEquals(0.0, error.getNorm(), 6.0e-11 * pos97.getNorm());
 
     }
 
     @Test
-    public void testHelmert19932000() {
+    void testHelmert19932000() {
         // for this test, we arbitrarily assume FramesFactory provides an ITRF 2008
         Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame itrf2000 =
@@ -153,7 +154,7 @@ public class HelmertTransformationTest {
                                                        -2.9, -0.2,  -0.6, -0.11, -0.19,  0.07,
                                                        pos2000, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos93.getNorm()));
+        assertEquals(0.0, error.getNorm(), FastMath.ulp(pos93.getNorm()));
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2000 = itrf93.getTransformTo(itrf2000, date).transformPosition(pos93);
@@ -162,22 +163,22 @@ public class HelmertTransformationTest {
                                               -2.9, -0.2,  -0.6, -0.11, -0.19,  0.07,
                                               pos2000, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assertions.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos93.getNorm()));
+        assertEquals(0.0, error.getNorm(), FastMath.ulp(pos93.getNorm()));
 
     }
 
     @Test
-    public void test2020PivotVs2014Pivot() {
+    void test2020PivotVs2014Pivot() {
         doTestPivot(2020, 2014);
     }
 
     @Test
-    public void test2020PivotVs2008Pivot() {
+    void test2020PivotVs2008Pivot() {
         doTestPivot(2020, 2008);
     }
 
     @Test
-    public void test2014PivotVs2008Pivot() {
+    void test2014PivotVs2008Pivot() {
         doTestPivot(2014, 2008);
     }
 
@@ -206,14 +207,14 @@ public class HelmertTransformationTest {
                     // which would correspond to simply add the offsets, velocities, rotations and rate,
                     // which is what is done in the reference documents. Anyway, the non-commutativity
                     // errors are well below models accuracy
-                    Assertions.assertEquals(0, t.getTranslation().getNorm(),  6.0e-6);
-                    Assertions.assertEquals(0, t.getVelocity().getNorm(),     2.0e-22);
-                    Assertions.assertEquals(0, t.getRotation().getAngle(),    2.0e-12);
-                    Assertions.assertEquals(0, t.getRotationRate().getNorm(), 2.0e-32);
+                    assertEquals(0, t.getTranslation().getNorm(),  6.0e-6);
+                    assertEquals(0, t.getVelocity().getNorm(),     2.0e-22);
+                    assertEquals(0, t.getRotation().getAngle(),    2.0e-12);
+                    assertEquals(0, t.getRotationRate().getNorm(), 2.0e-32);
                     final StaticTransform st = itrfXFrom2.getStaticTransformTo(itrfXFrom1, date);
-                    MatcherAssert.assertThat(st.getTranslation(),
+                    assertThat(st.getTranslation(),
                                              OrekitMatchers.vectorCloseTo(t.getTranslation(), 0));
-                    MatcherAssert.assertThat(Rotation.distance(st.getRotation(), t.getRotation()),
+                    assertThat(Rotation.distance(st.getRotation(), t.getRotation()),
                                              OrekitMatchers.closeTo(0, 0));
                 }
             }
@@ -237,7 +238,7 @@ public class HelmertTransformationTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

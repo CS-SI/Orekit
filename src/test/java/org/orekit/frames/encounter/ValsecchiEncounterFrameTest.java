@@ -31,7 +31,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -39,6 +38,9 @@ import org.orekit.TestUtils;
 import org.orekit.frames.LOF;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ValsecchiEncounterFrameTest {
 
@@ -110,7 +112,7 @@ class ValsecchiEncounterFrameTest {
         final boolean returnedInertialFlag = encounterLOF.isQuasiInertial();
 
         // Then
-        Assertions.assertTrue(returnedInertialFlag);
+        assertTrue(returnedInertialFlag);
 
     }
 
@@ -195,7 +197,7 @@ class ValsecchiEncounterFrameTest {
         // THEN
         final String expectedName = "VALSECCHI_ENCOUNTER_LOF";
 
-        Assertions.assertEquals(expectedName, name);
+        assertEquals(expectedName, name);
     }
 
 }

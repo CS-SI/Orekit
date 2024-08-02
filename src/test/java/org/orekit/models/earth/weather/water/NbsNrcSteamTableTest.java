@@ -19,7 +19,7 @@ package org.orekit.models.earth.weather.water;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
-public class NbsNrcSteamTableTest extends AbstractWaterVaporPressureProviderTest {
+class NbsNrcSteamTableTest extends AbstractWaterVaporPressureProviderTest {
 
     protected WaterVaporPressureProvider buildProvider() {
         return new NbsNrcSteamTable();

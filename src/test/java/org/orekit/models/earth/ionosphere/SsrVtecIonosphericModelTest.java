@@ -22,7 +22,6 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -53,12 +52,15 @@ import org.orekit.utils.ParameterDriver;
 
 import java.util.Collections;
 
-public class SsrVtecIonosphericModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class SsrVtecIonosphericModelTest {
 
     private SsrIm201 vtecMessage;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
 
         // Header
@@ -85,7 +87,7 @@ public class SsrVtecIonosphericModelTest {
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
 
         // Frequency
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
@@ -113,12 +115,12 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
-        Assertions.assertEquals(13.488, delay, 0.001);
+        assertEquals(13.488, delay, 0.001);
 
     }
 
     @Test
-    public void testFieldDelay() {
+    void testFieldDelay() {
         doTestFieldDelay(Binary64Field.getInstance());
     }
 
@@ -150,11 +152,11 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
-        Assertions.assertEquals(13.488, delay.getReal(), 0.001);
+        assertEquals(13.488, delay.getReal(), 0.001);
     }
 
     @Test
-    public void testZeroDelay() {
+    void testZeroDelay() {
         // Frequency
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
 
@@ -181,11 +183,11 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
-        Assertions.assertEquals(0.0, delay, Double.MIN_VALUE);
+        assertEquals(0.0, delay, Double.MIN_VALUE);
     }
 
     @Test
-    public void testFieldZeroDelay() {
+    void testFieldZeroDelay() {
         doTestFieldZeroDelay(Binary64Field.getInstance());
     }
 
@@ -217,11 +219,11 @@ public class SsrVtecIonosphericModelTest {
 
         // Delay
         final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
-        Assertions.assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
+        assertEquals(0.0, delay.getReal(), Double.MIN_VALUE);
     }
 
     @Test
-    public void testDelayStateDerivatives() {
+    void testDelayStateDerivatives() {
 
         // Frequency
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
@@ -311,12 +313,12 @@ public class SsrVtecIonosphericModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.3e-11);
+            assertEquals(compDeriv[i + 1], refDeriv[0][i], 2.3e-11);
         }
     }
 
     @Test
-    public void testDelayRange() {
+    void testDelayRange() {
 
         // Frequency
         final double frequency = PredefinedGnssSignal.G01.getFrequency();
@@ -346,14 +348,14 @@ public class SsrVtecIonosphericModelTest {
                 final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(latitude), FastMath.toRadians(longitude), height);
                 final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
                 final double delay = model.pathDelay(state, baseFrame, frequency, model.getParameters());
-                Assertions.assertTrue(delay >= 0 && delay < 20.0);
+                assertTrue(delay >= 0 && delay < 20.0);
             }
         }
 
     }
 
     @Test
-    public void testFieldDelayRange() {
+    void testFieldDelayRange() {
         doTestFieldDelayRange(Binary64Field.getInstance());
     }
 
@@ -387,7 +389,7 @@ public class SsrVtecIonosphericModelTest {
                 final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(latitude), FastMath.toRadians(longitude), height);
                 final TopocentricFrame baseFrame = new TopocentricFrame(earth, point, "topo");
                 final T delay = model.pathDelay(state, baseFrame, frequency, model.getParameters(field));
-                Assertions.assertTrue(delay.getReal() >= 0 && delay.getReal() < 20.0);
+                assertTrue(delay.getReal() >= 0 && delay.getReal() < 20.0);
             }
         }
 

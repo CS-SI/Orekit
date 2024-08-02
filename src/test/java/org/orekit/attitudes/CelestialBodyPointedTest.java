@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -44,6 +43,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CelestialBodyPointedTest {
 
@@ -70,7 +71,7 @@ class CelestialBodyPointedTest {
         final Rotation actualRotation = celestialBodyPointed.getAttitudeRotation(orbit, orbit.getDate(), frame);
         // THEN
         final Rotation expectedRotation = celestialBodyPointed.getAttitude(orbit, orbit.getDate(), frame).getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
     @Test
@@ -97,7 +98,7 @@ class CelestialBodyPointedTest {
         final FieldRotation<Complex> actualRotation = celestialBodyPointed.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), frame);
         // THEN
         final FieldRotation<Complex> expectedRotation = celestialBodyPointed.getAttitude(fieldOrbit, fieldOrbit.getDate(), frame).getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+        assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
     @Test
@@ -121,13 +122,13 @@ class CelestialBodyPointedTest {
 
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D zDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assertions.assertEquals(0,
+        assertEquals(0,
                      Vector3D.dotProduct(zDirection, Vector3D.crossProduct(xDirection, Vector3D.PLUS_K)),
                      1.0e-15);
 
         // the following statement checks we take parallax into account
         // Sun-Earth-Sat are in quadrature, with distance (Earth, Sat) == distance(Sun, Earth) / 5000
-        Assertions.assertEquals(FastMath.atan(1.0 / 5000.0),
+        assertEquals(FastMath.atan(1.0 / 5000.0),
                             Vector3D.angle(xDirection,
                                            sun.getPosition(date, frame)),
                                            1.0e-15);
@@ -142,12 +143,12 @@ class CelestialBodyPointedTest {
                                                        a0.getRotation());
         double evolutionAngleMinus = Rotation.distance(aMinus.getRotation(),
                                                        a0.getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(a0.getRotation(),
                                                        aPlus.shiftedBy(-h).getRotation());
         double evolutionAnglePlus  = Rotation.distance(a0.getRotation(),
                                                        aPlus.getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
     }
 
@@ -159,13 +160,13 @@ class CelestialBodyPointedTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

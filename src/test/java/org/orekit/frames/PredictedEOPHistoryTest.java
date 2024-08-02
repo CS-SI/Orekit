@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,11 +35,14 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PredictedEOPHistoryTest {
+
+class PredictedEOPHistoryTest {
 
     @Test
-    public void testExtensionDates() {
+    void testExtensionDates() {
 
         // truncate EOP between 2018 and 2020
         final int mjdLimit = new DateComponents(2021, 1, 1).getMJD();
@@ -61,16 +63,16 @@ public class PredictedEOPHistoryTest {
                                                                      SingleParameterFitter.createDefaultPoleFitterShortTermPrediction(),
                                                                      SingleParameterFitter.createDefaultNutationFitterShortTermPrediction(),
                                                                      SingleParameterFitter.createDefaultNutationFitterShortTermPrediction()));
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 new AbsoluteDate(2018, 1, 1, 0, 0, 0.0, utc).durationFrom(predicted.getStartDate()),
                                 1.0e-10);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 new AbsoluteDate(2021, 1, 30, 0, 0, 0.0, utc).durationFrom(predicted.getEndDate()),
                                 1.0e-10);
     }
 
     @Test
-    public void testCommonCoverage() {
+    void testCommonCoverage() {
 
         // truncate EOP between 2018 and 2021
         final int mjdLimit = new DateComponents(2022, 1, 1).getMJD();
@@ -119,19 +121,19 @@ public class PredictedEOPHistoryTest {
             maxErrordx   = FastMath.max(maxErrordx,   FastMath.abs(rawNroNC[0]              - predNroNC[0]));
             maxErrordy   = FastMath.max(maxErrordy,   FastMath.abs(rawNroNC[1]              - predNroNC[1]));
         }
-        Assertions.assertEquals(0.0, maxErrorUT1,  1.0e-15);
-        Assertions.assertEquals(0.0, maxErrorLOD,  1.0e-15);
-        Assertions.assertEquals(0.0, maxErrorXp,   1.0e-15);
-        Assertions.assertEquals(0.0, maxErrorYp,   1.0e-15);
-        Assertions.assertEquals(0.0, maxErrordPsi, 1.0e-15);
-        Assertions.assertEquals(0.0, maxErrordEps, 1.0e-15);
-        Assertions.assertEquals(0.0, maxErrordx,   1.0e-15);
-        Assertions.assertEquals(0.0, maxErrordy,   1.0e-15);
+        assertEquals(0.0, maxErrorUT1,  1.0e-15);
+        assertEquals(0.0, maxErrorLOD,  1.0e-15);
+        assertEquals(0.0, maxErrorXp,   1.0e-15);
+        assertEquals(0.0, maxErrorYp,   1.0e-15);
+        assertEquals(0.0, maxErrordPsi, 1.0e-15);
+        assertEquals(0.0, maxErrordEps, 1.0e-15);
+        assertEquals(0.0, maxErrordx,   1.0e-15);
+        assertEquals(0.0, maxErrordy,   1.0e-15);
     }
 
     @Test
     @Deprecated
-    public void testDeprecated() {
+    void testDeprecated() {
 
         // truncate EOP between 2018 and 2021
         final int mjdLimit = new DateComponents(2022, 1, 1).getMJD();
@@ -165,17 +167,17 @@ public class PredictedEOPHistoryTest {
             final AbsoluteDate   date      = truncatedEOP.getEndDate().shiftedBy(dt);
             maxErrorUT1  = FastMath.max(maxErrorUT1,  FastMath.abs(trueEOP.getUT1MinusUTC(date) - predicted.getUT1MinusUTC(date)));
         }
-        Assertions.assertEquals(4.563, maxErrorUT1, 0.001);
+        assertEquals(4.563, maxErrorUT1, 0.001);
 
     }
 
     @Test
-    public void testAccuracyShortTerm() {
+    void testAccuracyShortTerm() {
         doTestAccuracy(true, 0.148, 0.580, 1.528, 7.842, 316.165, 6077.182, 40759.430);
     }
 
     @Test
-    public void testAccuracyLongTerm() {
+    void testAccuracyLongTerm() {
         doTestAccuracy(false, 1.518, 1.993, 2.298, 3.013, 7.398, 17.582, 27.296);
     }
 
@@ -254,18 +256,18 @@ public class PredictedEOPHistoryTest {
 
         }
 
-        Assertions.assertEquals(expectedMax001, maxError001Days, 0.001);
-        Assertions.assertEquals(expectedMax003, maxError003Days, 0.001);
-        Assertions.assertEquals(expectedMax005, maxError005Days, 0.001);
-        Assertions.assertEquals(expectedMax010, maxError010Days, 0.001);
-        Assertions.assertEquals(expectedMax030, maxError030Days, 0.001);
-        Assertions.assertEquals(expectedMax060, maxError060Days, 0.001);
-        Assertions.assertEquals(expectedMax090, maxError090Days, 0.001);
+        assertEquals(expectedMax001, maxError001Days, 0.001);
+        assertEquals(expectedMax003, maxError003Days, 0.001);
+        assertEquals(expectedMax005, maxError005Days, 0.001);
+        assertEquals(expectedMax010, maxError010Days, 0.001);
+        assertEquals(expectedMax030, maxError030Days, 0.001);
+        assertEquals(expectedMax060, maxError060Days, 0.001);
+        assertEquals(expectedMax090, maxError090Days, 0.001);
 
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         final EOPHistory raw = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
 
         PredictedEOPHistory predicted = new PredictedEOPHistory(raw,
@@ -280,34 +282,34 @@ public class PredictedEOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(predicted);
 
-        Assertions.assertTrue(bos.size() > 215000);
-        Assertions.assertTrue(bos.size() < 216000);
+        assertTrue(bos.size() > 215000);
+        assertTrue(bos.size() < 216000);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         PredictedEOPHistory deserialized  = (PredictedEOPHistory) ois.readObject();
-        Assertions.assertEquals(predicted.getStartDate(), deserialized.getStartDate());
-        Assertions.assertEquals(predicted.getEndDate(), deserialized.getEndDate());
-        Assertions.assertEquals(predicted.getEntries().size(), deserialized.getEntries().size());
+        assertEquals(predicted.getStartDate(), deserialized.getStartDate());
+        assertEquals(predicted.getEndDate(), deserialized.getEndDate());
+        assertEquals(predicted.getEntries().size(), deserialized.getEntries().size());
         for (int i = 0; i < predicted.getEntries().size(); ++i) {
             EOPEntry e1 = predicted.getEntries().get(i);
             EOPEntry e2 = deserialized.getEntries().get(i);
-            Assertions.assertEquals(e1.getMjd(),         e2.getMjd());
-            Assertions.assertEquals(e1.getDate(),        e2.getDate());
-            Assertions.assertEquals(e1.getUT1MinusUTC(), e2.getUT1MinusUTC(), 1.0e-10);
-            Assertions.assertEquals(e1.getLOD(),         e2.getLOD(),         1.0e-10);
-            Assertions.assertEquals(e1.getDdEps(),       e2.getDdEps(),       1.0e-10);
-            Assertions.assertEquals(e1.getDdPsi(),       e2.getDdPsi(),       1.0e-10);
-            Assertions.assertEquals(e1.getDx(),          e2.getDx(),          1.0e-10);
-            Assertions.assertEquals(e1.getDy(),          e2.getDy(),          1.0e-10);
-            Assertions.assertEquals(e1.getX(),           e2.getX(),           1.0e-10);
-            Assertions.assertEquals(e1.getY(),           e2.getY(),           1.0e-10);
+            assertEquals(e1.getMjd(),         e2.getMjd());
+            assertEquals(e1.getDate(),        e2.getDate());
+            assertEquals(e1.getUT1MinusUTC(), e2.getUT1MinusUTC(), 1.0e-10);
+            assertEquals(e1.getLOD(),         e2.getLOD(),         1.0e-10);
+            assertEquals(e1.getDdEps(),       e2.getDdEps(),       1.0e-10);
+            assertEquals(e1.getDdPsi(),       e2.getDdPsi(),       1.0e-10);
+            assertEquals(e1.getDx(),          e2.getDx(),          1.0e-10);
+            assertEquals(e1.getDy(),          e2.getDy(),          1.0e-10);
+            assertEquals(e1.getX(),           e2.getX(),           1.0e-10);
+            assertEquals(e1.getY(),           e2.getY(),           1.0e-10);
         }
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("eop-prediction");
         FramesFactory.clearEOPHistoryLoaders();
         FramesFactory.addDefaultEOP2000HistoryLoaders("none", "none", "^eopc04_14_IAU2000\\.[0-9][0-9]\\.txt$",
@@ -316,17 +318,17 @@ public class PredictedEOPHistoryTest {
         trueEOP = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
 
         // raw history between 2018 and 2022
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 new AbsoluteDate(2018, 1, 1, 0, 0, 0.0, utc).durationFrom(trueEOP.getStartDate()),
                                 1.0e-10);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 new AbsoluteDate(2022, 12, 31, 0, 0, 0.0, utc).durationFrom(trueEOP.getEndDate()),
                                 1.0e-10);
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         utc          = null;
         trueEOP      = null;
     }

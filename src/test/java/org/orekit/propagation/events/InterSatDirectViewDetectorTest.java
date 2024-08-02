@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -42,10 +41,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
 
-public class InterSatDirectViewDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class InterSatDirectViewDetectorTest {
 
     @Test
-    public void testFormationFlying() {
+    void testFormationFlying() {
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -60,7 +62,7 @@ public class InterSatDirectViewDetectorTest {
                                                    o1.getAlphaM() + 2.2e-6, PositionAngleType.MEAN, o1.getFrame(),
                                                    o1.getDate(),
                                                    Constants.EIGEN5C_EARTH_MU);
-        Assertions.assertEquals(o1.getKeplerianPeriod(), o2.getKeplerianPeriod(), 1.0e-10);
+        assertEquals(o1.getKeplerianPeriod(), o2.getKeplerianPeriod(), 1.0e-10);
         final Propagator p = new KeplerianPropagator(o1);
         final EventsLogger logger = new EventsLogger();
         p.addEventDetector(logger.monitorDetector(new InterSatDirectViewDetector(earth, o2).
@@ -68,15 +70,15 @@ public class InterSatDirectViewDetectorTest {
         p.setStepHandler(10.0, state -> {
             Vector3D pos1 = state.getPosition();
             Vector3D pos2 = o2.getPosition(state.getDate(), state.getFrame());
-            Assertions.assertTrue(Vector3D.distance(pos1, pos2) >  8100.0);
-            Assertions.assertTrue(Vector3D.distance(pos1, pos2) < 16400.0);
+            assertTrue(Vector3D.distance(pos1, pos2) >  8100.0);
+            assertTrue(Vector3D.distance(pos1, pos2) < 16400.0);
         });
         p.propagate(o1.getDate().shiftedBy(o1.getKeplerianPeriod()));
-        Assertions.assertEquals(0, logger.getLoggedEvents().size());
+        assertEquals(0, logger.getLoggedEvents().size());
     }
 
     @Test
-    public void testLeoMeo() {
+    void testLeoMeo() {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -99,7 +101,7 @@ public class InterSatDirectViewDetectorTest {
                                                     withMaxCheck(10.0).
                                                     withHandler(new GrazingHandler())));
         pA.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
-        Assertions.assertEquals(7, loggerA.getLoggedEvents().size());
+        assertEquals(7, loggerA.getLoggedEvents().size());
 
         // LEO as secondary, MEO as primary
         Propagator pB = new KeplerianPropagator(o2);
@@ -108,12 +110,12 @@ public class InterSatDirectViewDetectorTest {
                                                     withMaxCheck(10.0).
                                                     withHandler(new GrazingHandler())));
         pB.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
-        Assertions.assertEquals(7, loggerB.getLoggedEvents().size());
+        assertEquals(7, loggerB.getLoggedEvents().size());
 
     }
 
     @Test
-    public void testSkimmingAltitude() {
+    void testSkimmingAltitude() {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       FramesFactory.getITRF(IERSConventions.IERS_2010, true));
@@ -135,7 +137,7 @@ public class InterSatDirectViewDetectorTest {
         pA.addEventDetector(loggerA.monitorDetector(new InterSatDirectViewDetector(earth, o2).
                                                     withMaxCheck(10.0)));
         pA.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
-        Assertions.assertEquals(7, loggerA.getLoggedEvents().size());
+        assertEquals(7, loggerA.getLoggedEvents().size());
 
         // skimming altitude at 500km
         Propagator pB = new KeplerianPropagator(o2);
@@ -144,7 +146,7 @@ public class InterSatDirectViewDetectorTest {
                                                     withMaxCheck(10.0).
                                                     withSkimmingAltitude(500000.0)));
         pB.propagate(o1.getDate().shiftedBy(4 * o1.getKeplerianPeriod()));
-        Assertions.assertEquals(7, loggerB.getLoggedEvents().size());
+        assertEquals(7, loggerB.getLoggedEvents().size());
 
         for (int i = 0; i < loggerA.getLoggedEvents().size(); ++i) {
             final LoggedEvent leA = loggerA.getLoggedEvents().get(i);
@@ -152,11 +154,11 @@ public class InterSatDirectViewDetectorTest {
             if (leA.isIncreasing()) {
                 // this is an inter-visibility start
                 // it should start earlier with skimming altitude at 0km
-                Assertions.assertTrue(leA.getDate().isBefore(leB));
+                assertTrue(leA.getDate().isBefore(leB));
             } else {
                 // this is an inter-visibility end
                 // it should end earlier with skimming altitude at 500km
-                Assertions.assertTrue(leB.getDate().isBefore(leA));                
+                assertTrue(leB.getDate().isBefore(leA));                
             }
         }
 
@@ -179,9 +181,9 @@ public class InterSatDirectViewDetectorTest {
                                                                "grazing");
             final TrackingCoordinates tcPrimary   = topo.getTrackingCoordinates(pPrimary, frame, grazingDate);
             final TrackingCoordinates tcSecondary = topo.getTrackingCoordinates(psecondary, frame, grazingDate);
-            Assertions.assertEquals(  0.0, FastMath.toDegrees(tcPrimary.getElevation()), 2.0e-4);
-            Assertions.assertEquals(  0.0, FastMath.toDegrees(tcSecondary.getElevation()), 2.0e-4);
-            Assertions.assertEquals(180.0,
+            assertEquals(  0.0, FastMath.toDegrees(tcPrimary.getElevation()), 2.0e-4);
+            assertEquals(  0.0, FastMath.toDegrees(tcSecondary.getElevation()), 2.0e-4);
+            assertEquals(180.0,
                                 FastMath.abs(FastMath.toDegrees(tcSecondary.getAzimuth() - tcPrimary.getAzimuth())),
                                 6.0e-14);
             return Action.CONTINUE;
@@ -189,7 +191,7 @@ public class InterSatDirectViewDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

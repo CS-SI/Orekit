@@ -29,7 +29,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -58,10 +57,12 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.function.Function;
 
-public class AlignedAndConstrainedTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class AlignedAndConstrainedTest {
 
     @Test
-    public void testAlignmentsEarthSun() {
+    void testAlignmentsEarthSun() {
         doTestAlignment(Vector3D.PLUS_K, PredefinedTarget.EARTH,
                         Vector3D.PLUS_I, PredefinedTarget.SUN,
                         t -> Vector3D.ZERO,
@@ -70,7 +71,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testAlignmentsEarthSunField() {
+    void testAlignmentsEarthSunField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.PLUS_K, PredefinedTarget.EARTH,
@@ -81,14 +82,14 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testDerivativesEarthSun() {
+    void testDerivativesEarthSun() {
         doTestDerivatives(Vector3D.PLUS_K, PredefinedTarget.EARTH,
                           Vector3D.PLUS_I, PredefinedTarget.SUN,
                           2.0e-15);
     }
 
     @Test
-    public void testAlignmentsNadirNorth() {
+    void testAlignmentsNadirNorth() {
         doTestAlignment(Vector3D.PLUS_K, PredefinedTarget.NADIR,
                         Vector3D.PLUS_I, PredefinedTarget.NORTH,
                         t -> {
@@ -104,7 +105,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testAlignmentsNadirNorthField() {
+    void testAlignmentsNadirNorthField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.PLUS_K, PredefinedTarget.NADIR,
@@ -124,14 +125,14 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testDerivativesNadirNorth() {
+    void testDerivativesNadirNorth() {
         doTestDerivatives(Vector3D.PLUS_K, PredefinedTarget.NADIR,
                           Vector3D.PLUS_I, PredefinedTarget.NORTH,
                           2.0e-15);
     }
 
     @Test
-    public void testAlignmentsVelocityMomentum() {
+    void testAlignmentsVelocityMomentum() {
         doTestAlignment(Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
                         Vector3D.MINUS_K, PredefinedTarget.MOMENTUM,
                         t -> orbit.shiftedBy(t.durationFrom(orbit.getDate())).getPVCoordinates().getVelocity().normalize(),
@@ -140,7 +141,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testAlignmentsVelocityMomentumField() {
+    void testAlignmentsVelocityMomentumField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
@@ -151,14 +152,14 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testDerivativesVelocityMomentum() {
+    void testDerivativesVelocityMomentum() {
         doTestDerivatives(Vector3D.MINUS_J, PredefinedTarget.VELOCITY,
                           Vector3D.MINUS_K, PredefinedTarget.MOMENTUM,
                           7.0e-16);
     }
 
     @Test
-    public void testAlignmentsStationEast() {
+    void testAlignmentsStationEast() {
         doTestAlignment(Vector3D.PLUS_K, new GroundPointTarget(station),
                         Vector3D.PLUS_I, PredefinedTarget.EAST,
                         t -> earth.getBodyFrame().getTransformTo(eme2000, t).transformPosition(station),
@@ -172,7 +173,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testAlignmentsStationEastField() {
+    void testAlignmentsStationEastField() {
         final Binary64Field field = Binary64Field.getInstance();
         doTestAlignment(field,
                         Vector3D.PLUS_K, new GroundPointTarget(station),
@@ -188,7 +189,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @Test
-    public void testDerivativesStationEast() {
+    void testDerivativesStationEast() {
         doTestDerivatives(Vector3D.PLUS_K, new GroundPointTarget(station),
                           Vector3D.PLUS_I, PredefinedTarget.EAST,
                           7.0e-13);
@@ -226,10 +227,10 @@ public class AlignedAndConstrainedTest {
                 // reference is a position
                 secondaryDir = secondaryP.subtract(satP);
             }
-            Assertions.assertEquals(0,
+            assertEquals(0,
                                     Vector3D.angle(inertToSat.transformVector(primaryDir), primarySat),
                                     primaryTolerance);
-            Assertions.assertEquals(0,
+            assertEquals(0,
                                     Vector3D.angle(inertToSat.transformVector(Vector3D.crossProduct(primaryDir,
                                                                                                     secondaryDir)),
                                                    Vector3D.crossProduct(primarySat, secondarySat)),
@@ -275,10 +276,10 @@ public class AlignedAndConstrainedTest {
                 // reference is a position
                 secondaryDir = secondaryP.subtract(satP);
             }
-            Assertions.assertEquals(0,
+            assertEquals(0,
                                     FieldVector3D.angle(inertToSat.transformVector(primaryDir), primarySatF).getReal(),
                                     primaryTolerance);
-            Assertions.assertEquals(0,
+            assertEquals(0,
                                     FieldVector3D.angle(inertToSat.transformVector(FieldVector3D.crossProduct(primaryDir,
                                                                                                               secondaryDir)),
                                                         FieldVector3D.crossProduct(primarySatF, secondarySatF)).getReal(),
@@ -314,10 +315,10 @@ public class AlignedAndConstrainedTest {
                                                        getOrientation().
                                                        toUnivariateDerivative1Rotation();
 
-        Assertions.assertEquals(qDot[0].getDerivative(1), r.getQ0().getDerivative(1), tolerance);
-        Assertions.assertEquals(qDot[1].getDerivative(1), r.getQ1().getDerivative(1), tolerance);
-        Assertions.assertEquals(qDot[2].getDerivative(1), r.getQ2().getDerivative(1), tolerance);
-        Assertions.assertEquals(qDot[3].getDerivative(1), r.getQ3().getDerivative(1), tolerance);
+        assertEquals(qDot[0].getDerivative(1), r.getQ0().getDerivative(1), tolerance);
+        assertEquals(qDot[1].getDerivative(1), r.getQ1().getDerivative(1), tolerance);
+        assertEquals(qDot[2].getDerivative(1), r.getQ2().getDerivative(1), tolerance);
+        assertEquals(qDot[3].getDerivative(1), r.getQ3().getDerivative(1), tolerance);
 
     }
 
@@ -326,7 +327,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         eme2000 = FramesFactory.getEME2000();
         orbit = new KeplerianOrbit(new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
@@ -342,7 +343,7 @@ public class AlignedAndConstrainedTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         eme2000 = null;
         orbit   = null;
         earth   = null;

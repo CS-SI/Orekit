@@ -23,8 +23,9 @@ import org.hipparchus.random.UniformRandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /** This class compares and tests different methods for computing value and 1st-order derivative of Jacobi polynomials.
  * 
@@ -34,7 +35,7 @@ import org.junit.jupiter.api.Test;
  * @author Maxime Journot
  * @since 11.3.3
  */
-public class JacobiPolynomialsTest {
+class JacobiPolynomialsTest {
 
     /** Threshold for test on value. */
     private static final double epsValue      = 1.e-20;
@@ -67,7 +68,7 @@ public class JacobiPolynomialsTest {
      * <p>Values for the polynomials are uniformly drawn between [-1, 1] to reproduce a random cos
      */
     @Test
-    public void testValueAndDerivative() {
+    void testValueAndDerivative() {
 
         // GIVEN
         // -----
@@ -112,7 +113,7 @@ public class JacobiPolynomialsTest {
         // ----
 
         // Check the number of tests performed
-        Assertions.assertEquals(668, nTest);
+        assertEquals(668, nTest);
     }
 
     /** Test value and derivative for a given polynomial and input value.
@@ -155,9 +156,9 @@ public class JacobiPolynomialsTest {
         }
 
         // Test value directly (absolute difference, should be a clean 0.)
-        Assertions.assertEquals(refValue, testValue, epsValue);
+        assertEquals(refValue, testValue, epsValue);
 
         // Test relative difference for derivative (if possible)
-        Assertions.assertEquals(0., diffDer, epsDer);
+        assertEquals(0., diffDer, epsDer);
     }
 }

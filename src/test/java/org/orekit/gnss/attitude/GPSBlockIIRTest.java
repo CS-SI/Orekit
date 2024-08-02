@@ -19,45 +19,45 @@ package org.orekit.gnss.attitude;
 import org.junit.jupiter.api.Test;
 
 
-public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
+class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
+    void testPatchedLargeNegativeBeta() {
         doTestAxes("patched-eclips/beta-large-negative-BLOCK-IIR.txt", 8.0e-15, 8.8e-16, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
+    void testPatchedSmallNegativeBeta() {
         doTestAxes("patched-eclips/beta-small-negative-BLOCK-IIR.txt", 5.4e-13, 9.6e-16, false);
     }
 
     @Test
-    public void testPatchedCrossingBeta() {
+    void testPatchedCrossingBeta() {
         doTestAxes("patched-eclips/beta-crossing-BLOCK-IIR.txt", 5.2e-5, 8.7e-16, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
+    void testPatchedSmallPositiveBeta() {
         doTestAxes("patched-eclips/beta-small-positive-BLOCK-IIR.txt", 1.2e-12, 9.4e-16, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
+    void testPatchedLargePositiveBeta() {
         doTestAxes("patched-eclips/beta-large-positive-BLOCK-IIR.txt", 6.7e-15, 9.1e-16, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
+    void testOriginalLargeNegativeBeta() {
         doTestAxes("original-eclips/beta-large-negative-BLOCK-IIR.txt", 8.0e-15, 8.8e-16, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
+    void testOriginalSmallNegativeBeta() {
         doTestAxes("original-eclips/beta-small-negative-BLOCK-IIR.txt", 6.5e-4, 9.6e-16, false);
     }
 
     @Test
-    public void testOriginalCrossingBeta() {
+    void testOriginalCrossingBeta() {
         // the very high threshold (1.68 radians) is due to the same probable bugs in original eclips
         // as the corresponding test for block-IIA. There are non-normalized vectors in the
         // "original-eclips/beta-crossing-BLOCK-IIR.txt" (one of them having a norm greater than 43000!)
@@ -69,12 +69,12 @@ public class GPSBlockIIRTest extends AbstractGNSSAttitudeProviderTest {
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
+    void testOriginalSmallPositiveBeta() {
         doTestAxes("original-eclips/beta-small-positive-BLOCK-IIR.txt", 7.4e-4, 9.4e-16, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
+    void testOriginalLargePositiveBeta() {
         doTestAxes("original-eclips/beta-large-positive-BLOCK-IIR.txt", 6.7e-15, 9.1e-16, false);
     }
 

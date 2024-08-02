@@ -22,10 +22,11 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
 
     protected AbstractLambdaMethod buildReducer() {
         return new ModifiedLambdaMethod();
@@ -49,8 +50,8 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
         return(Z);
    }
 
-   @Test
-   public void testReduction() {
+    @Test
+    void testReduction() {
 
         RandomGenerator random = new Well19937a(0xf824c33093974ee5l);
         for (int k = 0; k < 1000; ++k) {
@@ -85,7 +86,7 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
 
         //Check the covariance are the same
         double norm                   = filteredCovariance.subtract(RebuiltCov).getNorm1();
-        Assertions.assertEquals(0.0, norm, 1e-11);
+        assertEquals(0.0, norm, 1e-11);
 
         //Check the floatAmbiguities have been well transform by Z transformation
         RealMatrix a = MatrixUtils.createColumnRealMatrix(floatAmbiguities);
@@ -95,7 +96,7 @@ public class ModifiedLambdaMethodTest extends AbstractLambdaMethodTest {
         RealMatrix zRef = invZ.transposeMultiply(a);
         double[] zComputed = getDecorrelated(reducer);
         for(int i= 0; i<zComputed.length; i++) {
-            Assertions.assertEquals(zRef.getEntry(i, 0),zComputed[i],1e-6);
+            assertEquals(zRef.getEntry(i, 0),zComputed[i],1e-6);
         }
     }
 }

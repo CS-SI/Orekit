@@ -18,15 +18,16 @@ package org.orekit.data;
 
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-public class NutationCodecTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class NutationCodecTest {
 
     @Test
-    public void testKeySymmetry() {
+    void testKeySymmetry() {
 
         RandomGenerator random = new Well1024a(0x8fef7f6f99ad5d56l);
         int[] multipliers = new int[15];
@@ -42,7 +43,7 @@ public class NutationCodecTest {
             long key = NutationCodec.encode(multipliers);
             int[] rebuilt = NutationCodec.decode(key);
             for (int k = 0; k < multipliers.length; ++k) {
-                Assertions.assertEquals(multipliers[k], rebuilt[k]);
+                assertEquals(multipliers[k], rebuilt[k]);
             }
         }
 

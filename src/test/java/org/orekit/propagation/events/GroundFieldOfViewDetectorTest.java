@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -42,15 +41,18 @@ import org.orekit.utils.IERSConventions;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 /**
  * Unit tests for {@link GroundFieldOfViewDetector}.
  *
  * @author Evan Ward
  */
-public class GroundFieldOfViewDetectorTest {
+class GroundFieldOfViewDetectorTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -59,7 +61,7 @@ public class GroundFieldOfViewDetectorTest {
      * zenith pointing.
      */
     @Test
-    public void testCaseSimilarToElevationDetector() {
+    void testCaseSimilarToElevationDetector() {
         //setup
         double pi = FastMath.PI;
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH; //arbitrary date
@@ -101,8 +103,8 @@ public class GroundFieldOfViewDetectorTest {
         GroundFieldOfViewDetector fovDetector =
                 new GroundFieldOfViewDetector(topo, fov)
                         .withMaxCheck(5.0);
-        Assertions.assertSame(topo, fovDetector.getFrame());
-        Assertions.assertSame(fov, fovDetector.getFOV());
+        assertSame(topo, fovDetector.getFrame());
+        assertSame(fov, fovDetector.getFOV());
         logger = new EventsLogger();
 
         prop = new KeplerianPropagator(orbit);
@@ -111,13 +113,13 @@ public class GroundFieldOfViewDetectorTest {
         List<LoggedEvent> actual = logger.getLoggedEvents();
 
         //verify
-        Assertions.assertEquals(2, expected.size());
-        Assertions.assertEquals(2, actual.size());
+        assertEquals(2, expected.size());
+        assertEquals(2, actual.size());
         for (int i = 0; i < 2; i++) {
             AbsoluteDate expectedDate = expected.get(i).getState().getDate();
             AbsoluteDate actualDate = actual.get(i).getState().getDate();
             // same event times to within 1s.
-            Assertions.assertEquals(expectedDate.durationFrom(actualDate), 0.0, 1.0);
+            assertEquals(0.0, expectedDate.durationFrom(actualDate), 1.0);
         }
 
     }

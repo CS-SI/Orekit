@@ -19,7 +19,6 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import org.orekit.estimation.measurements.AngularAzEl;
@@ -34,6 +33,8 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.orekit.utils.Constants;
 
 /**
@@ -42,13 +43,13 @@ import org.orekit.utils.Constants;
  * @author Asquier Julien
  * @since 11.3.2
  */
-public class IodGaussTest extends AbstractIodTest {
+class IodGaussTest extends AbstractIodTest {
 
-     /** Value from example of Vallado , example 7.2.
+    /** Value from example of Vallado , example 7.2.
      * Caution : Values will not be strictly the same as with Vallado results due to difference of use in
      * EOP. It was verified that the differences came from this. see issue #982 and topic related on Orekit forum. */
     @Test
-    public void testGaussVallado() {
+    void testGaussVallado() {
 
         final AbsoluteDate obsDate2 = new AbsoluteDate(2012, 8, 20,
                                                        11, 48, 28, TimeScalesFactory.getUTC());
@@ -90,13 +91,13 @@ public class IodGaussTest extends AbstractIodTest {
 
         // Expected results from Vallado example, with Orekit EOP (difference existing from the Vallado example)
         final PVCoordinates pvOrbit = estimatedOrbit.getPVCoordinates();
-        Assertions.assertEquals(6313395.577554352, pvOrbit.getPosition().getX(), 10E-12);
-        Assertions.assertEquals(5247523.665414684, pvOrbit.getPosition().getY(), 10E-12);
-        Assertions.assertEquals(6467724.780943674, pvOrbit.getPosition().getZ(), 10E-12);
+        assertEquals(6313395.577554352, pvOrbit.getPosition().getX(), 10E-12);
+        assertEquals(5247523.665414684, pvOrbit.getPosition().getY(), 10E-12);
+        assertEquals(6467724.780943674, pvOrbit.getPosition().getZ(), 10E-12);
 
-        Assertions.assertEquals(-4101.302835071493, pvOrbit.getVelocity().getX(), 10E-12);
-        Assertions.assertEquals(4699.692868088214, pvOrbit.getVelocity().getY(), 10E-12);
-        Assertions.assertEquals(1692.5478178378698, pvOrbit.getVelocity().getZ(), 10E-12);
+        assertEquals(-4101.302835071493, pvOrbit.getVelocity().getX(), 10E-12);
+        assertEquals(4699.692868088214, pvOrbit.getVelocity().getY(), 10E-12);
+        assertEquals(1692.5478178378698, pvOrbit.getVelocity().getZ(), 10E-12);
     }
 
     /** Non-regression test case based on LEO-1 case:
@@ -104,7 +105,7 @@ public class IodGaussTest extends AbstractIodTest {
      * results on 10^-1 order of magnitude compared to the relative error results of the paper.
      */
     @Test
-    public void testGaussLeoSSO() {
+    void testGaussLeoSSO() {
 
         final DateComponents dateComp = new DateComponents(DateComponents.FIFTIES_EPOCH, 21915);
         final AbsoluteDate   obsDate2 = new AbsoluteDate(dateComp, TimeScalesFactory.getUTC());
@@ -127,14 +128,14 @@ public class IodGaussTest extends AbstractIodTest {
         final double relativeRangeError3    = getRelativeRangeError(estimatedOrbit3, kepOrbitRef);
         final double relativeVelocityError3 = getRelativeVelocityError(estimatedOrbit3, kepOrbitRef);
 
-        Assertions.assertEquals(0, relativeRangeError1, 10E-6);
-        Assertions.assertEquals(0, relativeVelocityError1, 10E-6);
+        assertEquals(0, relativeRangeError1, 10E-6);
+        assertEquals(0, relativeVelocityError1, 10E-6);
 
-        Assertions.assertEquals(0, relativeRangeError2, 10E-4);
-        Assertions.assertEquals(0, relativeVelocityError2, 10E-4);
+        assertEquals(0, relativeRangeError2, 10E-4);
+        assertEquals(0, relativeVelocityError2, 10E-4);
 
-        Assertions.assertEquals(0, relativeRangeError3, 10E-3);
-        Assertions.assertEquals(0, relativeVelocityError3, 10E-3);
+        assertEquals(0, relativeRangeError3, 10E-3);
+        assertEquals(0, relativeVelocityError3, 10E-3);
 
     }
 
@@ -143,7 +144,7 @@ public class IodGaussTest extends AbstractIodTest {
      *   results on 10^-1 order of magnitude compared to the relative error results of the paper.
      */
     @Test
-    public void testGaussMEO() {
+    void testGaussMEO() {
 
         final DateComponents dateComp = new DateComponents(DateComponents.FIFTIES_EPOCH, 21915);
         final AbsoluteDate   obsDate2 = new AbsoluteDate(dateComp, TimeScalesFactory.getUTC());
@@ -166,14 +167,14 @@ public class IodGaussTest extends AbstractIodTest {
         final double relativeRangeError3    = getRelativeRangeError(estimatedOrbit3, kepOrbitRef);
         final double relativeVelocityError3 = getRelativeVelocityError(estimatedOrbit3, kepOrbitRef);
 
-        Assertions.assertEquals(0, relativeRangeError1, 10E-6);
-        Assertions.assertEquals(0, relativeVelocityError1, 10E-6);
+        assertEquals(0, relativeRangeError1, 10E-6);
+        assertEquals(0, relativeVelocityError1, 10E-6);
 
-        Assertions.assertEquals(0, relativeRangeError2, 10E-4);
-        Assertions.assertEquals(0, relativeVelocityError2, 10E-4);
+        assertEquals(0, relativeRangeError2, 10E-4);
+        assertEquals(0, relativeVelocityError2, 10E-4);
 
-        Assertions.assertEquals(0, relativeRangeError3, 10E-3);
-        Assertions.assertEquals(0, relativeVelocityError3, 10E-3);
+        assertEquals(0, relativeRangeError3, 10E-3);
+        assertEquals(0, relativeVelocityError3, 10E-3);
 
     }
 
@@ -182,7 +183,7 @@ public class IodGaussTest extends AbstractIodTest {
      * results on 10^-1 order of magnitude compared to the relative error results of the paper.
      */
     @Test
-    public void testGaussGEO() {
+    void testGaussGEO() {
 
         final DateComponents dateComp = new DateComponents(DateComponents.FIFTIES_EPOCH, 21915);
         final AbsoluteDate   obsDate2 = new AbsoluteDate(dateComp, TimeScalesFactory.getUTC());
@@ -205,14 +206,14 @@ public class IodGaussTest extends AbstractIodTest {
         final double relativeRangeError3    = getRelativeRangeError(estimatedOrbit3, kepOrbitRef);
         final double relativeVelocityError3 = getRelativeVelocityError(estimatedOrbit3, kepOrbitRef);
 
-        Assertions.assertEquals(0, relativeRangeError1, 10E-6);
-        Assertions.assertEquals(0, relativeVelocityError1, 10E-6);
+        assertEquals(0, relativeRangeError1, 10E-6);
+        assertEquals(0, relativeVelocityError1, 10E-6);
 
-        Assertions.assertEquals(0, relativeRangeError2, 10E-4);
-        Assertions.assertEquals(0, relativeVelocityError2, 10E-4);
+        assertEquals(0, relativeRangeError2, 10E-4);
+        assertEquals(0, relativeVelocityError2, 10E-4);
 
-        Assertions.assertEquals(0, relativeRangeError3, 10E-3);
-        Assertions.assertEquals(0, relativeVelocityError3, 10E-3);
+        assertEquals(0, relativeRangeError3, 10E-3);
+        assertEquals(0, relativeVelocityError3, 10E-3);
 
     }
 
@@ -221,7 +222,7 @@ public class IodGaussTest extends AbstractIodTest {
      * was not made due to not having good tuning parameters
      */
     @Test
-    public void testGaussComparisonLeoSSO() {
+    void testGaussComparisonLeoSSO() {
         final DateComponents dateComp = new DateComponents(DateComponents.FIFTIES_EPOCH, 21915);
         final AbsoluteDate   obsDate2 = new AbsoluteDate(dateComp, TimeScalesFactory.getUTC());
         final KeplerianOrbit kepOrbitRef = new KeplerianOrbit(7197934.0, 0., FastMath.toRadians(98.71),
@@ -283,22 +284,22 @@ public class IodGaussTest extends AbstractIodTest {
         final double relativeRangeError4    = getRelativeRangeError(estimatedGauss, estimatedLambert);
         final double relativeVelocityError4 = getRelativeVelocityError(estimatedGauss, estimatedLambert);
 
-        Assertions.assertEquals(0, relativeRangeError1, 10E-2);
-        Assertions.assertEquals(0, relativeVelocityError1, 10E-2);
+        assertEquals(0, relativeRangeError1, 10E-2);
+        assertEquals(0, relativeVelocityError1, 10E-2);
 
-        Assertions.assertEquals(0, relativeRangeError2, 10E-2);
-        Assertions.assertEquals(0, relativeVelocityError2, 10E-2);
+        assertEquals(0, relativeRangeError2, 10E-2);
+        assertEquals(0, relativeVelocityError2, 10E-2);
 
-        Assertions.assertEquals(0, relativeRangeError3, 10E-2);
-        Assertions.assertEquals(0, relativeVelocityError3, 10E-2);
+        assertEquals(0, relativeRangeError3, 10E-2);
+        assertEquals(0, relativeVelocityError3, 10E-2);
 
-        Assertions.assertEquals(0, relativeRangeError4, 10E-2);
-        Assertions.assertEquals(0, relativeVelocityError4, 10E-2);
+        assertEquals(0, relativeRangeError4, 10E-2);
+        assertEquals(0, relativeVelocityError4, 10E-2);
 
     }
 
     @Test
-    public void testLaplaceKeplerianWithAzEl() {
+    void testLaplaceKeplerianWithAzEl() {
         // Settings
         final AbsoluteDate date = new AbsoluteDate(2019, 9, 29, 22, 0, 2.0, TimeScalesFactory.getUTC());
         final KeplerianOrbit kep = new KeplerianOrbit(6798938.970424857, 0.0021115522920270016, 0.9008866630545347,
@@ -317,8 +318,8 @@ public class IodGaussTest extends AbstractIodTest {
 
         // Verify
         final TimeStampedPVCoordinates truth = prop.getPVCoordinates(azEl2.getDate(), gcrf);
-        Assertions.assertEquals(0.0, Vector3D.distance(truth.getPosition(), estOrbit.getPosition()), 262.0);
-        Assertions.assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getPVCoordinates().getVelocity()), 0.3);
+        assertEquals(0.0, Vector3D.distance(truth.getPosition(), estOrbit.getPosition()), 262.0);
+        assertEquals(0.0, Vector3D.distance(truth.getVelocity(), estOrbit.getPVCoordinates().getVelocity()), 0.3);
     }
 
     // Private method to have a gauss estimated orbit

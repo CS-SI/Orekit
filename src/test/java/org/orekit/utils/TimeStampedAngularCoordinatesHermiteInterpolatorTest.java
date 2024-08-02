@@ -17,7 +17,6 @@
 
 package org.orekit.utils;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -30,7 +29,6 @@ import org.hipparchus.ode.sampling.ODEFixedStepHandler;
 import org.hipparchus.ode.sampling.StepNormalizer;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -40,12 +38,16 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 
 import java.util.ArrayList;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
 class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
 
     @Test
-    public void testInterpolationAroundPI() {
+    void testInterpolationAroundPI() {
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
 
@@ -77,12 +79,12 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
         AbsoluteDate                  t            = new AbsoluteDate("2012-01-01T00:00:01.000", TimeScalesFactory.getTAI());
         TimeStampedAngularCoordinates interpolated = interpolator.interpolate(t, sample);
 
-        Assertions.assertEquals(FastMath.toRadians(180), interpolated.getRotation().getAngle(), 1.0e-12);
+        assertEquals(FastMath.toRadians(180), interpolated.getRotation().getAngle(), 1.0e-12);
 
     }
 
     @Test
-    public void testInterpolationWithoutAcceleration() {
+    void testInterpolationWithoutAcceleration() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.05 * FastMath.PI;
@@ -92,13 +94,13 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
         double[] errors = interpolationErrors(reference, 1.0);
-        Assertions.assertEquals(0.0, errors[0], 1.4e-15);
-        Assertions.assertEquals(0.0, errors[1], 3.0e-15);
-        Assertions.assertEquals(0.0, errors[2], 3.0e-14);
+        assertEquals(0.0, errors[0], 1.4e-15);
+        assertEquals(0.0, errors[1], 3.0e-15);
+        assertEquals(0.0, errors[2], 3.0e-14);
     }
 
     @Test
-    public void testInterpolationWithAcceleration() {
+    void testInterpolationWithAcceleration() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.05 * FastMath.PI;
@@ -110,13 +112,13 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   new Vector3D(eta, Vector3D.PLUS_J));
         double[] errors = interpolationErrors(reference, 1.0);
-        Assertions.assertEquals(0.0, errors[0], 3.0e-5);
-        Assertions.assertEquals(0.0, errors[1], 2.0e-4);
-        Assertions.assertEquals(0.0, errors[2], 4.6e-3);
+        assertEquals(0.0, errors[0], 3.0e-5);
+        assertEquals(0.0, errors[1], 2.0e-4);
+        assertEquals(0.0, errors[2], 4.6e-3);
     }
 
     @Test
-    public void testInterpolationNeedOffsetWrongRate() {
+    void testInterpolationNeedOffsetWrongRate() {
         AbsoluteDate date  = AbsoluteDate.GALILEO_EPOCH;
         double       omega = 2.0 * FastMath.PI;
         TimeStampedAngularCoordinates reference =
@@ -141,14 +143,14 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
             TimeStampedAngularCoordinates interpolated = interpolator.interpolate(s.getDate(), sample);
             Rotation                      r            = interpolated.getRotation();
             Vector3D                      rate         = interpolated.getRotationRate();
-            Assertions.assertEquals(0.0, Rotation.distance(s.getRotation(), r), 2.0e-14);
-            Assertions.assertEquals(0.0, Vector3D.distance(s.getRotationRate(), rate), 2.0e-13);
+            assertEquals(0.0, Rotation.distance(s.getRotation(), r), 2.0e-14);
+            assertEquals(0.0, Vector3D.distance(s.getRotationRate(), rate), 2.0e-13);
         }
 
     }
 
     @Test
-    public void testInterpolationRotationOnly() {
+    void testInterpolationRotationOnly() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.5 * FastMath.PI;
@@ -173,8 +175,8 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
             TimeStampedAngularCoordinates interpolated = interpolator.interpolate(date.shiftedBy(dt), sample);
             Rotation                      r            = interpolated.getRotation();
             Vector3D                      rate         = interpolated.getRotationRate();
-            Assertions.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 3.0e-4);
-            Assertions.assertEquals(0.0, Vector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate), 1.0e-2);
+            assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 3.0e-4);
+            assertEquals(0.0, Vector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate), 1.0e-2);
         }
 
     }
@@ -185,7 +187,7 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
      * by zero in the interpolation code.
      */
     @Test
-    public void testInterpolationSmallSample() {
+    void testInterpolationSmallSample() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.5 * FastMath.PI;
@@ -209,18 +211,18 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
         final TimeStampedAngularCoordinates actual = interpolator.interpolate(t, sample);
 
         // verify
-        MatcherAssert.assertThat(actual.getDate(),
+        assertThat(actual.getDate(),
                 OrekitMatchers.durationFrom(t, OrekitMatchers.closeTo(0, 0)));
-        MatcherAssert.assertThat(actual.getRotation(),
+        assertThat(actual.getRotation(),
                 OrekitMatchers.distanceIs(r, OrekitMatchers.closeTo(0, FastMath.ulp(1.0))));
-        MatcherAssert.assertThat(actual.getRotationRate(),
+        assertThat(actual.getRotationRate(),
                 OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
-        MatcherAssert.assertThat(actual.getRotationAcceleration(),
+        assertThat(actual.getRotationAcceleration(),
                 OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
     }
 
     @Test
-    public void testInterpolationGTODIssue() {
+    void testInterpolationGTODIssue() {
         AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
         double[][] params = new double[][] {
                 { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },
@@ -242,10 +244,10 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
         for (double dt = 0; dt < 29000; dt += 120) {
             TimeStampedAngularCoordinates shifted      = sample.get(0).shiftedBy(dt);
             TimeStampedAngularCoordinates interpolated = interpolator.interpolate(t0.shiftedBy(dt), sample);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                     Rotation.distance(shifted.getRotation(), interpolated.getRotation()),
                                     1.3e-7);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                     Vector3D.distance(shifted.getRotationRate(), interpolated.getRotationRate()),
                                     1.0e-11);
         }
@@ -334,9 +336,9 @@ class TimeStampedAngularCoordinatesHermiteInterpolatorTest {
         // Then
         final AngularDerivativesFilter expectedFilter = AngularDerivativesFilter.USE_RR;
 
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                 interpolator.getExtrapolationThreshold());
-        Assertions.assertEquals(expectedFilter, interpolator.getFilter());
+        assertEquals(expectedFilter, interpolator.getFilter());
     }
 
 }

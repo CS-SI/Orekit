@@ -22,7 +22,6 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
@@ -32,6 +31,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AttitudeProviderTest {
 
@@ -61,7 +62,7 @@ class AttitudeProviderTest {
         // THEN
         final Rotation expectedRotation = attitudeProvider.getAttitude(mockPvCoordinatesProvider, date, REFERENCE_FRAME)
                 .getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
     @Test
@@ -86,7 +87,7 @@ class AttitudeProviderTest {
         // THEN
         final FieldRotation<T> expectedRotation = attitudeProvider.getAttitude(mockPvCoordinatesProvider, fieldDate, REFERENCE_FRAME)
                 .getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+        assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
 }

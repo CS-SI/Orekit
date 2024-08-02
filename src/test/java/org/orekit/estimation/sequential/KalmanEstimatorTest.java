@@ -24,7 +24,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -61,16 +60,19 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class KalmanEstimatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class KalmanEstimatorTest {
 
     @Test
-    public void testMissingPropagatorBuilder() {
+    void testMissingPropagatorBuilder() {
         try {
             new KalmanEstimatorBuilder().
             build();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+            assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -79,7 +81,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianPV() {
+    void testKeplerianPV() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -147,7 +149,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianRange() {
+    void testKeplerianRange() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -228,7 +230,7 @@ public class KalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeWithOnBoardAntennaOffset() {
+    void testKeplerianRangeWithOnBoardAntennaOffset() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -324,7 +326,7 @@ public class KalmanEstimatorTest {
      * Cartesian formalism
      */
     @Test
-    public void testCartesianRangeRate() {
+    void testCartesianRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -405,7 +407,7 @@ public class KalmanEstimatorTest {
      * Circular formalism
      */
     @Test
-    public void testCircularAzimuthElevation() {
+    void testCircularAzimuthElevation() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -483,7 +485,7 @@ public class KalmanEstimatorTest {
      * Equinoctial formalism
      */
     @Test
-    public void testEquinoctialRightAscensionDeclination() {
+    void testEquinoctialRightAscensionDeclination() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -561,7 +563,7 @@ public class KalmanEstimatorTest {
      *  Keplerian formalism
      */
     @Test
-    public void testKeplerianRangeAzElAndRangeRate() {
+    void testKeplerianRangeAzElAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -665,7 +667,7 @@ public class KalmanEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerianRangeAndRangeRate() {
+    void testKeplerianRangeAndRangeRate() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -750,7 +752,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testMultiSat() {
+    void testMultiSat() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -804,12 +806,12 @@ public class KalmanEstimatorTest {
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assertions.assertEquals("a[0]", a0Driver.getName());
+        assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assertions.assertEquals("a[1]", a1Driver.getName());
+        assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -823,11 +825,11 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assertions.assertEquals(4.7246,
+        assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPosition(),
                                               before.getPosition()),
                             1.0e-3);
-        Assertions.assertEquals(0.0010514,
+        assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
@@ -854,10 +856,10 @@ public class KalmanEstimatorTest {
         for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
             }
         }
 
@@ -867,7 +869,7 @@ public class KalmanEstimatorTest {
      * Test of a wrapped exception in a Kalman observer
      */
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -915,7 +917,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void testIssue695() {
+    void testIssue695() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -929,15 +931,15 @@ public class KalmanEstimatorTest {
         MeasurementDecorator decorated = KalmanEstimatorUtil.decorate(position, context.initialOrbit.getDate());
 
         // Verify time
-        Assertions.assertEquals(0.0, decorated.getTime(), 1.0e-15);
+        assertEquals(0.0, decorated.getTime(), 1.0e-15);
         // Verify covariance matrix
         final RealMatrix covariance = decorated.getCovariance();
         for (int i = 0; i < covariance.getRowDimension(); i++) {
             for (int j = 0; j < covariance.getColumnDimension(); j++) {
                 if (i == j) {
-                    Assertions.assertEquals(1.0, covariance.getEntry(i, j), 1.0e-15);
+                    assertEquals(1.0, covariance.getEntry(i, j), 1.0e-15);
                 } else {
-                    Assertions.assertEquals(0.0, covariance.getEntry(i, j), 1.0e-15);
+                    assertEquals(0.0, covariance.getEntry(i, j), 1.0e-15);
                 }
             }
         }
@@ -945,7 +947,7 @@ public class KalmanEstimatorTest {
     }
 
     @Test
-    public void tesIssue696() {
+    void tesIssue696() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -1013,12 +1015,12 @@ public class KalmanEstimatorTest {
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assertions.assertEquals("a[0]", a0Driver.getName());
+        assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assertions.assertEquals("a[1]", a1Driver.getName());
+        assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -1032,11 +1034,11 @@ public class KalmanEstimatorTest {
                                                     closeOrbit.getFrame(),
                                                     closeOrbit.getDate(),
                                                     closeOrbit.getMu());
-        Assertions.assertEquals(4.7246,
+        assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPosition(),
                                               before.getPosition()),
                             1.0e-3);
-        Assertions.assertEquals(0.0010514,
+        assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
@@ -1063,17 +1065,17 @@ public class KalmanEstimatorTest {
         for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
             }
         }
 
     }
 
     @Test
-    public void tesIssue850() {
+    void tesIssue850() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -1134,9 +1136,9 @@ public class KalmanEstimatorTest {
         final Vector3D pos2 = estimated[1].getInitialState().getPosition();
 
         // Verify
-        Assertions.assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
-        Assertions.assertEquals(0.0, pos1.distance(context.initialOrbit.getPosition()), 1.0e-12);
-        Assertions.assertEquals(0.0, pos2.distance(context.initialOrbit.getPosition()), 1.0e-12);
+        assertEquals(0.0, pos1.distance(pos2), 1.0e-12);
+        assertEquals(0.0, pos1.distance(context.initialOrbit.getPosition()), 1.0e-12);
+        assertEquals(0.0, pos2.distance(context.initialOrbit.getPosition()), 1.0e-12);
 
     }
 

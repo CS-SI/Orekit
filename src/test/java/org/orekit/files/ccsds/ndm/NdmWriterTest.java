@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm;
 
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -32,6 +31,11 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,15 +47,15 @@ import java.util.List;
  * Test class for CCSDS Navigation Data Message writing.<p>
  * @author Luc Maisonobe
  */
-public class NdmWriterTest {
+class NdmWriterTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testOpm() throws IOException {
+    void testOpm() throws IOException {
         final String name = "/ccsds/ndm/NDM-opm.xml";
         final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
@@ -65,11 +69,11 @@ public class NdmWriterTest {
         final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         NdmTestUtils.checkContainer(ndm, new ParserBuilder().buildNdmParser().parseMessage(source2));
-        Assertions.assertTrue(caw.toString().contains("<ndm xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-3.0.0-master-3.0.xsd\">"));
+        assertTrue(caw.toString().contains("<ndm xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"https://sanaregistry.org/r/ndmxml_unqualified/ndmxml-3.0.0-master-3.0.xsd\">"));
     }
 
     @Test
-    public void testOpmApm() throws IOException {
+    void testOpmApm() throws IOException {
         final String name = "/ccsds/ndm/NDM-ocm-apm.xml";
         final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
@@ -82,11 +86,11 @@ public class NdmWriterTest {
         final byte[]      bytes  = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
         NdmTestUtils.checkContainer(ndm, new ParserBuilder().buildNdmParser().parseMessage(source2));
-        Assertions.assertTrue(caw.toString().contains("<ndm>"));
+        assertTrue(caw.toString().contains("<ndm>"));
     }
 
     @Test
-    public void testMisplacedComments() throws IOException {
+    void testMisplacedComments() throws IOException {
         final String name = "/ccsds/ndm/NDM-opm.xml";
         final DataSource source = new DataSource(name, () -> NdmWriterTest.class.getResourceAsStream(name));
         final Ndm ndm = new ParserBuilder().buildNdmParser().parseMessage(source);
@@ -103,16 +107,16 @@ public class NdmWriterTest {
             }
             try {
                 writer.writeComment(generator, "we are not allowed to put comments after constituents");
-                Assertions.fail("an exception should have been thrown");
+                fail("an exception should have been thrown");
             } catch (OrekitException oe) {
-                Assertions.assertEquals(OrekitMessages.ATTEMPT_TO_GENERATE_MALFORMED_FILE, oe.getSpecifier());
-                Assertions.assertEquals("dummy.xml", oe.getParts()[0]);
+                assertEquals(OrekitMessages.ATTEMPT_TO_GENERATE_MALFORMED_FILE, oe.getSpecifier());
+                assertEquals("dummy.xml", oe.getParts()[0]);
             }
         }
     }
 
     @Test
-    public void testRandomizedNdm() throws IOException {
+    void testRandomizedNdm() throws IOException {
 
         final ParserBuilder pb = new ParserBuilder().
                                       withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).

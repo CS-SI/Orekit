@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -42,13 +41,16 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
+
+class OnBoardAntennaOneWayGNSSPhaseModifierTest {
 
     private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     @Test
-    public void testPreliminary() {
+    void testPreliminary() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -104,14 +106,14 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             OneWayGNSSPhase sr = (OneWayGNSSPhase) spacecraftCenteredMeasurements.get(i);
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() >= -1.0);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() <= -0.36);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() >= -1.0);
+            assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * RADIO_WAVE.getWavelength() <= -0.36);
         }
     }
 
     @Test
-    public void testEffect() {
+    void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -170,8 +172,8 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
             sr.addModifier(modifier);
             EstimatedMeasurementBase<OneWayGNSSPhase> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0] * RADIO_WAVE.getWavelength(), estimated.getEstimatedValue()[0] * RADIO_WAVE.getWavelength(), 6.0e-5);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertEquals(ar.getObservedValue()[0] * RADIO_WAVE.getWavelength(), estimated.getEstimatedValue()[0] * RADIO_WAVE.getWavelength(), 6.0e-5);
         }
 
     }

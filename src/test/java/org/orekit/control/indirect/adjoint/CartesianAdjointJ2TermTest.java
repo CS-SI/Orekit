@@ -3,7 +3,6 @@ package org.orekit.control.indirect.adjoint;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
@@ -11,6 +10,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CartesianAdjointJ2TermTest {
 
@@ -28,9 +29,9 @@ class CartesianAdjointJ2TermTest {
         final double actualrEq = cartesianAdjointJ2Term.getrEq();
         final double actualJ2 = cartesianAdjointJ2Term.getJ2();
         // THEN
-        Assertions.assertEquals(expectedJ2, actualJ2);
-        Assertions.assertEquals(expectedMu, actualMu);
-        Assertions.assertEquals(expectedrEq, actualrEq);
+        assertEquals(expectedJ2, actualJ2);
+        assertEquals(expectedMu, actualMu);
+        assertEquals(expectedrEq, actualrEq);
     }
 
     @Test
@@ -51,7 +52,7 @@ class CartesianAdjointJ2TermTest {
         }
         final double[] contributionDouble = j2Term.getVelocityAdjointContribution(date, positionVelocity, doubleAdjoint);
         for (int i = 0; i < contribution.length; i++) {
-            Assertions.assertEquals(contribution[i] * 2, contributionDouble[i]);
+            assertEquals(contribution[i] * 2, contributionDouble[i]);
         }
     }
 
@@ -82,7 +83,7 @@ class CartesianAdjointJ2TermTest {
         }
         final double[] contribution = j2Term.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint);
         for (int i = 0; i < contribution.length; i++) {
-            Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i]);
+            assertEquals(fieldContribution[i].getReal(), contribution[i]);
         }
     }
 

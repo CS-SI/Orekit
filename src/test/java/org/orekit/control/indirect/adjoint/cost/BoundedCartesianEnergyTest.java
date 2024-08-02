@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -37,6 +36,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,11 +57,11 @@ class BoundedCartesianEnergyTest {
         final Stream<EventDetector> eventDetectorStream = boundedCartesianEnergy.getEventDetectors();
         // THEN
         final List<EventDetector> eventDetectors = eventDetectorStream.collect(Collectors.toList());
-        Assertions.assertEquals(1, eventDetectors.size());
-        Assertions.assertInstanceOf(BoundedCartesianEnergy.EnergyCostAdjointSingularityDetector.class, eventDetectors.get(0));
+        assertEquals(1, eventDetectors.size());
+        assertInstanceOf(BoundedCartesianEnergy.EnergyCostAdjointSingularityDetector.class, eventDetectors.get(0));
         final BoundedCartesianEnergy.EnergyCostAdjointSingularityDetector singularityDetector =
                 (BoundedCartesianEnergy.EnergyCostAdjointSingularityDetector) eventDetectors.get(0);
-        Assertions.assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, true));
+        assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, true));
     }
 
     @Test
@@ -72,11 +76,11 @@ class BoundedCartesianEnergyTest {
         final Stream<FieldEventDetector<Complex>> eventDetectorStream = boundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
         final List<FieldEventDetector<Complex>> eventDetectors = eventDetectorStream.collect(Collectors.toList());
-        Assertions.assertEquals(1, eventDetectors.size());
-        Assertions.assertInstanceOf(BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector.class, eventDetectors.get(0));
+        assertEquals(1, eventDetectors.size());
+        assertInstanceOf(BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector.class, eventDetectors.get(0));
         final BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector<Complex> singularityDetector =
                 (BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector<Complex>) eventDetectors.get(0);
-        Assertions.assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, true));
+        assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, true));
     }
 
     @Test
@@ -95,8 +99,8 @@ class BoundedCartesianEnergyTest {
         final Stream<FieldEventDetector<Complex>> fieldEventDetectorStream = boundedCartesianEnergy.getFieldEventDetectors(field);
         // THEN
         final List<FieldEventDetector<Complex>> fieldEventDetectors = fieldEventDetectorStream.collect(Collectors.toList());
-        Assertions.assertEquals(1, fieldEventDetectors.size());
-        Assertions.assertInstanceOf(BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector.class, fieldEventDetectors.get(0));
+        assertEquals(1, fieldEventDetectors.size());
+        assertInstanceOf(BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector.class, fieldEventDetectors.get(0));
         final BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector<Complex> fieldSingularityDetector =
                 (BoundedCartesianEnergy.FieldEnergyCostAdjointSingularityDetector<Complex>) fieldEventDetectors.get(0);
         final Complex gValue = fieldSingularityDetector.g(new FieldSpacecraftState<>(field, state));
@@ -104,7 +108,7 @@ class BoundedCartesianEnergyTest {
         final BoundedCartesianEnergy.EnergyCostAdjointSingularityDetector singularityDetector =
                 (BoundedCartesianEnergy.EnergyCostAdjointSingularityDetector) eventDetectors.get(0);
         final double expectedG = singularityDetector.g(state);
-        Assertions.assertEquals(expectedG, gValue.getReal());
+        assertEquals(expectedG, gValue.getReal());
     }
 
     @Test
@@ -126,7 +130,7 @@ class BoundedCartesianEnergyTest {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
         final Vector3D thrustVector = boundedCartesianEnergy.getThrustVector(adjoint, mass.getReal());
-        Assertions.assertEquals(thrustVector, fieldThrustVector.toVector3D());
+        assertEquals(thrustVector, fieldThrustVector.toVector3D());
     }
 
     @Test
@@ -146,7 +150,7 @@ class BoundedCartesianEnergyTest {
         // WHEN
         boundedCartesianEnergy.updateAdjointDerivatives(adjoint, mass, derivatives);
         // THEN
-        Assertions.assertNotEquals(0., derivatives[6]);
+        assertNotEquals(0., derivatives[6]);
     }
 
     @Test
@@ -166,7 +170,7 @@ class BoundedCartesianEnergyTest {
         // THEN
         final Vector3D expectedThrustVector = new UnboundedCartesianEnergy("", massRateFactor)
                 .getThrustVector(adjoint, mass).scalarMultiply(maximumThrustMagnitude);
-        Assertions.assertEquals(0., expectedThrustVector.subtract(thrustVector).getNorm(), 1e-12);
+        assertEquals(0., expectedThrustVector.subtract(thrustVector).getNorm(), 1e-12);
     }
 
     @Test
@@ -186,7 +190,7 @@ class BoundedCartesianEnergyTest {
         // WHEN
         boundedCartesianEnergy.updateAdjointDerivatives(fieldAdjoint, mass, derivatives);
         // THEN
-        Assertions.assertNotEquals(0., derivatives[6].getReal());
+        assertNotEquals(0., derivatives[6].getReal());
     }
 
     @Test
@@ -206,6 +210,6 @@ class BoundedCartesianEnergyTest {
         // THEN
         final FieldVector3D<Complex> expectedThrustVector = new UnboundedCartesianEnergy("", massRateFactor)
                 .getThrustVector(fieldAdjoint, mass).scalarMultiply(maximumThrustMagnitude);
-        Assertions.assertEquals(expectedThrustVector, fieldThrustVector);
+        assertEquals(expectedThrustVector, fieldThrustVector);
     }
 }

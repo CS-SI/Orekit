@@ -16,52 +16,53 @@
  */
 package org.orekit.gnss.metric.messages.rtcm;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.gnss.metric.messages.common.UserRangeAccuracy;
 
-public class UserRangeAccuracyTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class UserRangeAccuracyTest {
 
     private final double eps = 0.1;
 
     @Test
-    public void testAccuracy() {
+    void testAccuracy() {
         AccuracyProvider ura;
 
         // Index = 0
         ura = new UserRangeAccuracy(0);
-        Assertions.assertEquals(2.0, ura.getAccuracy(), eps);
+        assertEquals(2.0, ura.getAccuracy(), eps);
         // Index = 1
         ura = new UserRangeAccuracy(1);
-        Assertions.assertEquals(2.8, ura.getAccuracy(), eps);
+        assertEquals(2.8, ura.getAccuracy(), eps);
         // Index = 2
         ura = new UserRangeAccuracy(2);
-        Assertions.assertEquals(4.0, ura.getAccuracy(), eps);
+        assertEquals(4.0, ura.getAccuracy(), eps);
         // Index = 3
         ura = new UserRangeAccuracy(3);
-        Assertions.assertEquals(5.7, ura.getAccuracy(), eps);
+        assertEquals(5.7, ura.getAccuracy(), eps);
         // Index = 4
         ura = new UserRangeAccuracy(4);
-        Assertions.assertEquals(8.0, ura.getAccuracy(), eps);
+        assertEquals(8.0, ura.getAccuracy(), eps);
         // Index = 5
         ura = new UserRangeAccuracy(5);
-        Assertions.assertEquals(11.3, ura.getAccuracy(), eps);
+        assertEquals(11.3, ura.getAccuracy(), eps);
         // Index = 6
         ura = new UserRangeAccuracy(6);
-        Assertions.assertEquals(16.0, ura.getAccuracy(), eps);
+        assertEquals(16.0, ura.getAccuracy(), eps);
         // Index = 7
         ura = new UserRangeAccuracy(7);
-        Assertions.assertEquals(32.0, ura.getAccuracy(), eps);
+        assertEquals(32.0, ura.getAccuracy(), eps);
         // Index = 8
         ura = new UserRangeAccuracy(8);
-        Assertions.assertEquals(64.0, ura.getAccuracy(), eps);
+        assertEquals(64.0, ura.getAccuracy(), eps);
         // Index = 10
         ura = new UserRangeAccuracy(10);
-        Assertions.assertEquals(256.0, ura.getAccuracy(), eps);
+        assertEquals(256.0, ura.getAccuracy(), eps);
         // Index = 16
         ura = new UserRangeAccuracy(16);
-        Assertions.assertEquals(8192.0, ura.getAccuracy(), eps);
+        assertEquals(8192.0, ura.getAccuracy(), eps);
     }
 
 }

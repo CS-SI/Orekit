@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.generation;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -40,6 +39,9 @@ import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 
 import java.util.SortedSet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMeasurement<T>> {
 
@@ -72,7 +74,7 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
        AbsoluteDate t1     = context.initialOrbit.getDate().shiftedBy(endPeriod   * period);
        generator.generate(t0, t1);
        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
-       Assertions.assertEquals(expectedMeasurements, measurements.size());
+       assertEquals(expectedMeasurements, measurements.size());
        Propagator propagator = buildPropagator();
        double maxError = 0;
        AbsoluteDate previous = null;
@@ -81,15 +83,15 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
        for (EstimatedMeasurementBase<?> measurement : measurements) {
            AbsoluteDate date = measurement.getDate();
            double[] m = measurement.getObservedValue();
-           Assertions.assertTrue(date.compareTo(tInf) >= 0);
-           Assertions.assertTrue(date.compareTo(tSup) <= 0);
+           assertTrue(date.compareTo(tInf) >= 0);
+           assertTrue(date.compareTo(tSup) <= 0);
            if (previous != null) {
                if (t0.isBefore(t1)) {
                    // measurements are expected to be chronological
-                   Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                   assertTrue(date.durationFrom(previous) >= 0.999999 * step);
                } else {
                    // measurements are expected to be reverse chronological
-                   Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                   assertTrue(previous.durationFrom(date) >= 0.999999 * step);
                }
            }
            previous = date;
@@ -102,7 +104,7 @@ public abstract class AbstractGroundMeasurementBuilderTest<T extends ObservedMea
                maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
            }
        }
-       Assertions.assertEquals(0.0, maxError, tolerance);
+       assertEquals(0.0, maxError, tolerance);
     }
 
     @BeforeEach

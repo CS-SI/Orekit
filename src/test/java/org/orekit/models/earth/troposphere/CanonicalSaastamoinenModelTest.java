@@ -19,7 +19,6 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -31,16 +30,19 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CanonicalSaastamoinenModelTest {
+
+class CanonicalSaastamoinenModelTest {
 
     @Test
-    public void testComparisonToModifiedModelLowElevation() {
+    void testComparisonToModifiedModelLowElevation() {
         doTestComparisonToModifiedModel(FastMath.toRadians(5), -13.4, 0.14);
     }
 
     @Test
-    public void testComparisonToModifiedModelHighElevation() {
+    void testComparisonToModifiedModelHighElevation() {
         doTestComparisonToModifiedModel(FastMath.toRadians(60), -1.36, 0.002);
     }
 
@@ -49,9 +51,9 @@ public class CanonicalSaastamoinenModelTest {
         final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, elevation, 0.0);
         final CanonicalSaastamoinenModel canonical = new CanonicalSaastamoinenModel();
         final ModifiedSaastamoinenModel  modified  = ModifiedSaastamoinenModel.getStandardModel();
-        Assertions.assertTrue(canonical.getParametersDrivers().isEmpty());
+        assertTrue(canonical.getParametersDrivers().isEmpty());
         canonical.setLowElevationThreshold(0.125);
-        Assertions.assertEquals(0.125, canonical.getLowElevationThreshold(), 1.0e-12);
+        assertEquals(0.125, canonical.getLowElevationThreshold(), 1.0e-12);
         canonical.setLowElevationThreshold(CanonicalSaastamoinenModel.DEFAULT_LOW_ELEVATION_THRESHOLD);
         for (double height = 0; height < 5000; height += 100) {
             final GeodeticPoint location = new GeodeticPoint(0.0, 0.0, height);
@@ -61,10 +63,10 @@ public class CanonicalSaastamoinenModelTest {
             final double modifiedDelay  = modified.pathDelay(trackingCoordinates, location,
                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                              null, AbsoluteDate.J2000_EPOCH).getDelay();
-            Assertions.assertTrue(modifiedDelay - canonicalDelay > minDifference);
-            Assertions.assertTrue(modifiedDelay - canonicalDelay < maxDifference);
+            assertTrue(modifiedDelay - canonicalDelay > minDifference);
+            assertTrue(modifiedDelay - canonicalDelay < maxDifference);
             final Binary64Field field = Binary64Field.getInstance();
-            Assertions.assertEquals(canonicalDelay,
+            assertEquals(canonicalDelay,
                                     canonical.pathDelay(new FieldTrackingCoordinates<>(field, trackingCoordinates),
                                                         new FieldGeodeticPoint<>(field, location),
                                                         new FieldPressureTemperatureHumidity<>(field,
@@ -76,7 +78,7 @@ public class CanonicalSaastamoinenModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("atmosphere");
     }
 

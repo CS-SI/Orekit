@@ -20,7 +20,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,11 +33,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class OsculatingToMeanElementsConverterTest {
+
+class OsculatingToMeanElementsConverterTest {
 
     @Test
-    public void testTrivial() throws Exception {
+    void testTrivial() throws Exception {
         final AbsoluteDate date = new AbsoluteDate("2011-12-12T11:57:20.000", TimeScalesFactory.getUTC());
         final Orbit orbit1 = new CircularOrbit(7204535.848109436, -4.484755873986251E-4, 0.0011562979012178316,
                                                FastMath.toRadians(98.74341600466741), FastMath.toRadians(43.32990110790338),
@@ -59,17 +60,17 @@ public class OsculatingToMeanElementsConverterTest {
 
         final double eps  = 1.e-15;
 
-        Assertions.assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
-        Assertions.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
-        Assertions.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
-        Assertions.assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
-        Assertions.assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
-        Assertions.assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
+        assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
+        assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
+        assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
+        assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
+        assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
+        assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
                             MathUtils.normalizeAngle(meanOrbit.getLM(), FastMath.PI), eps);
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

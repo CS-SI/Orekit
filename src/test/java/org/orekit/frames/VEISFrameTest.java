@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -27,11 +26,13 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class VEISFrameTest {
+
+class VEISFrameTest {
 
     @Test
-    public void testRefLEO() {
+    void testRefLEO() {
 
         AbsoluteDate date0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                               new TimeComponents(07, 51, 28.386009),
@@ -62,13 +63,13 @@ public class VEISFrameTest {
             new PVCoordinates(new Vector3D(5168161.5980523797, 6065377.6711138152, 6380344.5327578690),
                               new Vector3D(-4736.2464648667, 843.3525998501, 5531.9312750395));
         PVCoordinates delta0 = new PVCoordinates(t0.transformPVCoordinates(pvJ2000), pvVEIS);
-        Assertions.assertEquals(0.0, delta0.getPosition().getNorm(), 7.0e-4);
-        Assertions.assertEquals(0.0, delta0.getVelocity().getNorm(), 8.0e-5);
+        assertEquals(0.0, delta0.getPosition().getNorm(), 7.0e-4);
+        assertEquals(0.0, delta0.getVelocity().getNorm(), 8.0e-5);
 
     }
 
     @Test
-    public void testRefGEO() {
+    void testRefGEO() {
 
         AbsoluteDate date0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
                                               TimeComponents.H00,
@@ -98,13 +99,13 @@ public class VEISFrameTest {
                               new Vector3D(801.6573208750, -2967.4549256851, -0.9288811067));
 
         PVCoordinates delta0 = new PVCoordinates(t0.transformPVCoordinates(pvJ2000), pvVEIS);
-        Assertions.assertEquals(0.0, delta0.getPosition().getNorm(), 4.0e-4);
-        Assertions.assertEquals(0.0, delta0.getVelocity().getNorm(), 4.0e-4);
+        assertEquals(0.0, delta0.getPosition().getNorm(), 4.0e-4);
+        assertEquals(0.0, delta0.getVelocity().getNorm(), 4.0e-4);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

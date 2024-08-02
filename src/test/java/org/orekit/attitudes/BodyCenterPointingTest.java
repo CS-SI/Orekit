@@ -31,7 +31,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -65,6 +64,11 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
 
@@ -92,7 +96,7 @@ class BodyCenterPointingTest {
         final Vector3D actualPosition = earthCenterAttitudeLaw.getTargetPosition(circ, date, circ.getFrame());
         // Check that target is on Earth surface
         final Vector3D expectedPosition = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame()).getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     @Test
@@ -103,7 +107,7 @@ class BodyCenterPointingTest {
         final FieldVector3D<Complex> actualPosition = earthCenterAttitudeLaw.getTargetPosition(fieldCircularOrbit, fieldCircularOrbit.getDate(), circ.getFrame());
         // Check that target is on Earth surface
         final FieldVector3D<Complex> expectedPosition = earthCenterAttitudeLaw.getTargetPV(fieldCircularOrbit, fieldCircularOrbit.getDate(), circ.getFrame()).getPosition();
-        Assertions.assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-10);
+        assertEquals(0., expectedPosition.subtract(actualPosition).getNorm().getReal(), 1e-10);
     }
 
     /** Test if target is on Earth surface
@@ -116,8 +120,8 @@ class BodyCenterPointingTest {
 
         // Check that target is on Earth surface
         GeodeticPoint gp = earth.transform(target.getPosition(), circ.getFrame(), date);
-        Assertions.assertEquals(0.0, gp.getAltitude(), 1.0e-10);
-        Assertions.assertEquals(date, target.getDate());
+        assertEquals(0.0, gp.getAltitude(), 1.0e-10);
+        assertEquals(date, target.getDate());
 
     }
 
@@ -150,7 +154,7 @@ class BodyCenterPointingTest {
                                      2.0e-8);
 
         // Check that the line contains Earth center
-        Assertions.assertTrue(pointingLine.contains(Vector3D.ZERO));
+        assertTrue(pointingLine.contains(Vector3D.ZERO));
 
     }
 
@@ -208,10 +212,10 @@ class BodyCenterPointingTest {
         double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
         double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
 
-        Assertions.assertEquals(q0DotRef, q0Dot, 5.0e-9);
-        Assertions.assertEquals(q1DotRef, q1Dot, 5.0e-9);
-        Assertions.assertEquals(q2DotRef, q2Dot, 5.0e-9);
-        Assertions.assertEquals(q3DotRef, q3Dot, 5.0e-9);
+        assertEquals(q0DotRef, q0Dot, 5.0e-9);
+        assertEquals(q1DotRef, q1Dot, 5.0e-9);
+        assertEquals(q2DotRef, q2Dot, 5.0e-9);
+        assertEquals(q3DotRef, q3Dot, 5.0e-9);
 
     }
 
@@ -247,19 +251,19 @@ class BodyCenterPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assertions.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
+        assertTrue(spin0.getNorm() > 1.0e-3);
+        assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-13);
 
     }
 
@@ -271,7 +275,7 @@ class BodyCenterPointingTest {
 
     @Test
     @DefaultDataContext
-    public void doxBodyCenterInPointingDirectionTest() {
+    void doxBodyCenterInPointingDirectionTest() {
         doTestBodyCenterInPointingDirection(Binary64Field.getInstance());
     }
 
@@ -321,8 +325,8 @@ class BodyCenterPointingTest {
         // Check that target is on Earth surface
         GeodeticPoint gp = earth.transform(target.getPosition().toVector3D(), circ.getFrame(), date.toAbsoluteDate());
 
-        Assertions.assertEquals(0.0, gp.getAltitude(), 1.0e-8); //less precision because i suppose we are working with Keplerian instead of circular
-        Assertions.assertEquals(date, target.getDate());
+        assertEquals(0.0, gp.getAltitude(), 1.0e-8); //less precision because i suppose we are working with Keplerian instead of circular
+        assertEquals(date, target.getDate());
 
     }
 
@@ -384,7 +388,7 @@ class BodyCenterPointingTest {
                                      2.0e-8);
 
         // Check that the line contains Earth center
-        Assertions.assertTrue(pointingLine.contains(Vector3D.ZERO));
+        assertTrue(pointingLine.contains(Vector3D.ZERO));
 
     }
 
@@ -467,10 +471,10 @@ class BodyCenterPointingTest {
         double q2Dot = 0.5 * MathArrays.linearCombination( q3.getReal(), oX.getReal(),  q0.getReal(), oY.getReal(), -q1.getReal(), oZ.getReal());
         double q3Dot = 0.5 * MathArrays.linearCombination(-q2.getReal(), oX.getReal(),  q1.getReal(), oY.getReal(),  q0.getReal(), oZ.getReal());
 
-        Assertions.assertEquals(q0DotRef, q0Dot, 5.0e-9);
-        Assertions.assertEquals(q1DotRef, q1Dot, 5.0e-9);
-        Assertions.assertEquals(q2DotRef, q2Dot, 5.0e-9);
-        Assertions.assertEquals(q3DotRef, q3Dot, 5.0e-9);
+        assertEquals(q0DotRef, q0Dot, 5.0e-9);
+        assertEquals(q1DotRef, q1Dot, 5.0e-9);
+        assertEquals(q2DotRef, q2Dot, 5.0e-9);
+        assertEquals(q3DotRef, q3Dot, 5.0e-9);
 
     }
 
@@ -532,25 +536,25 @@ class BodyCenterPointingTest {
                                                        s0.getAttitude().getRotation());
         T evolutionAngleMinus = FieldRotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus.getReal(), 1.0e-6 * evolutionAngleMinus.getReal());
+        assertEquals(0.0, errorAngleMinus.getReal(), 1.0e-6 * evolutionAngleMinus.getReal());
         T errorAnglePlus      = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(zero.add(-h)).getAttitude().getRotation());
         T evolutionAnglePlus  = FieldRotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus.getReal(), 1.0e-6 * evolutionAnglePlus.getReal());
+        assertEquals(0.0, errorAnglePlus.getReal(), 1.0e-6 * evolutionAnglePlus.getReal());
 
         FieldVector3D<T> spin0 = s0.getAttitude().getSpin();
         FieldVector3D<T> reference = FieldAngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assertions.assertTrue(spin0.getNorm().getReal() > 1.0e-3);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.1e-13);
+        assertTrue(spin0.getNorm().getReal() > 1.0e-3);
+        assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.1e-13);
 
     }
 
     @BeforeEach
     @DefaultDataContext
-    public void setUp() {
+    void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
@@ -581,13 +585,13 @@ class BodyCenterPointingTest {
             earthCenterAttitudeLaw = new BodyCenterPointing(circ.getFrame(), earth);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         earth = null;
         eme2000ToItrf = null;

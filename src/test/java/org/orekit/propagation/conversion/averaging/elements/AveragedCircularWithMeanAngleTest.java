@@ -1,7 +1,8 @@
 package org.orekit.propagation.conversion.averaging.elements;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AveragedCircularWithMeanAngleTest {
 
@@ -12,12 +13,12 @@ class AveragedCircularWithMeanAngleTest {
         // WHEN
         final double[] elementsAsArray = elements.toArray();
         // THEN
-        Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), elementsAsArray[0]);
-        Assertions.assertEquals(elements.getAveragedCircularEx(), elementsAsArray[1]);
-        Assertions.assertEquals(elements.getAveragedCircularEy(), elementsAsArray[2]);
-        Assertions.assertEquals(elements.getAveragedInclination(), elementsAsArray[3]);
-        Assertions.assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(), elementsAsArray[4]);
-        Assertions.assertEquals(elements.getAveragedMeanLatitudeArgument(), elementsAsArray[5]);
+        assertEquals(elements.getAveragedSemiMajorAxis(), elementsAsArray[0]);
+        assertEquals(elements.getAveragedCircularEx(), elementsAsArray[1]);
+        assertEquals(elements.getAveragedCircularEy(), elementsAsArray[2]);
+        assertEquals(elements.getAveragedInclination(), elementsAsArray[3]);
+        assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(), elementsAsArray[4]);
+        assertEquals(elements.getAveragedMeanLatitudeArgument(), elementsAsArray[5]);
     }
 
 }

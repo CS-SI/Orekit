@@ -21,10 +21,11 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class FieldHansenThirdBodyLinearTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class FieldHansenThirdBodyLinearTest {
 
 
     private static <T extends CalculusFieldElement<T>> T hansen(int n, int s, T chi, final Field<T> field) {
@@ -46,61 +47,61 @@ public class FieldHansenThirdBodyLinearTest {
     }
 
     @Test
-    public void testLinearVsRecursive00() {
+    void testLinearVsRecursive00() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero, zero.add(1.1e-12), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive01() {
+    void testLinearVsRecursive01() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.1), zero.add(2.8e-13), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive02() {
+    void testLinearVsRecursive02() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.2), zero.add(9.5e-14), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive03() {
+    void testLinearVsRecursive03() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.3), zero.add(6.0e-14), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive04() {
+    void testLinearVsRecursive04() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.4), zero.add(1.5e-14), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive05() {
+    void testLinearVsRecursive05() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.5), zero.add(6.4e-15), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive06() {
+    void testLinearVsRecursive06() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.6), zero.add(3.7e-15), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive07() {
+    void testLinearVsRecursive07() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.7), zero.add(1.7e-15), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive08() {
+    void testLinearVsRecursive08() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.8), zero.add(1.6e-15), Binary64Field.getInstance());
     }
 
     @Test
-    public void testLinearVsRecursive09() {
+    void testLinearVsRecursive09() {
         final Binary64 zero = Binary64Field.getInstance().getZero();
         doTestLinearVsRecursive(zero.add(0.9), zero.add(8.9e-16), Binary64Field.getInstance());
     }
@@ -127,7 +128,7 @@ public class FieldHansenThirdBodyLinearTest {
                 maxRelativeError = FastMath.max(maxRelativeError, relativeError);
             }
         }
-        Assertions.assertEquals(0.0, maxRelativeError.getReal(), tol.getReal());
+        assertEquals(0.0, maxRelativeError.getReal(), tol.getReal());
 
     }
 

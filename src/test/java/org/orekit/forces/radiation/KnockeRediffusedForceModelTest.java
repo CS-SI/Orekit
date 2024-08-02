@@ -26,7 +26,6 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -56,6 +55,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * This force model was developed according to "EARTH RADIATION PRESSURE EFFECTS ON SATELLITES", 1988, by P. C. Knocke, J. C. Ries, and B. D. Tapley.
  * It was confronted to the results that are presented in this paper and reached satisfying performances.
@@ -65,7 +66,7 @@ import org.orekit.utils.PVCoordinates;
 class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -384,7 +385,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
 
         final SpacecraftState finalState = propagator.propagate(date0.shiftedBy(duration));
 
-        Assertions.assertTrue(finalState.getDate().equals(date0.shiftedBy(duration)));
+        assertEquals(finalState.getDate(), date0.shiftedBy(duration));
     }
 
     /** Knocke model specialized step handler. */
@@ -423,9 +424,9 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
             final double crossTrackAcceleration = knockeAcceleration.dotProduct(crossTrackUnit);
 
             // Check values
-            Assertions.assertEquals(2.5e-10, radialAcceleration, 1.5e-10);
-            Assertions.assertEquals(0.0, alongTrackAcceleration, 5e-11);
-            Assertions.assertEquals(0.0, crossTrackAcceleration, 5e-12);
+            assertEquals(2.5e-10, radialAcceleration, 1.5e-10);
+            assertEquals(0.0, alongTrackAcceleration, 5e-11);
+            assertEquals(0.0, crossTrackAcceleration, 5e-12);
         }
 
     }

@@ -17,70 +17,74 @@
 package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-public class FlattenerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class FlattenerTest {
 
     @Test
-    public void testFullTriangle() {
+    void testFullTriangle() {
         final Flattener full = new Flattener(5, 5);
-        Assertions.assertEquals(5, full.getDegree());
-        Assertions.assertEquals(5, full.getOrder());
-        Assertions.assertEquals(21, full.arraySize());
-        Assertions.assertEquals( 0, full.index(5, 5));
-        Assertions.assertEquals( 1, full.index(4, 4));
-        Assertions.assertEquals( 2, full.index(5, 4));
-        Assertions.assertEquals( 3, full.index(3, 3));
-        Assertions.assertEquals( 4, full.index(4, 3));
-        Assertions.assertEquals( 5, full.index(5, 3));
-        Assertions.assertEquals( 6, full.index(2, 2));
-        Assertions.assertEquals( 7, full.index(3, 2));
-        Assertions.assertEquals( 8, full.index(4, 2));
-        Assertions.assertEquals( 9, full.index(5, 2));
-        Assertions.assertEquals(10, full.index(1, 1));
-        Assertions.assertEquals(11, full.index(2, 1));
-        Assertions.assertEquals(12, full.index(3, 1));
-        Assertions.assertEquals(13, full.index(4, 1));
-        Assertions.assertEquals(14, full.index(5, 1));
-        Assertions.assertEquals(15, full.index(0, 0));
-        Assertions.assertEquals(16, full.index(1, 0));
-        Assertions.assertEquals(17, full.index(2, 0));
-        Assertions.assertEquals(18, full.index(3, 0));
-        Assertions.assertEquals(19, full.index(4, 0));
-        Assertions.assertEquals(20, full.index(5, 0));
+        assertEquals(5, full.getDegree());
+        assertEquals(5, full.getOrder());
+        assertEquals(21, full.arraySize());
+        assertEquals( 0, full.index(5, 5));
+        assertEquals( 1, full.index(4, 4));
+        assertEquals( 2, full.index(5, 4));
+        assertEquals( 3, full.index(3, 3));
+        assertEquals( 4, full.index(4, 3));
+        assertEquals( 5, full.index(5, 3));
+        assertEquals( 6, full.index(2, 2));
+        assertEquals( 7, full.index(3, 2));
+        assertEquals( 8, full.index(4, 2));
+        assertEquals( 9, full.index(5, 2));
+        assertEquals(10, full.index(1, 1));
+        assertEquals(11, full.index(2, 1));
+        assertEquals(12, full.index(3, 1));
+        assertEquals(13, full.index(4, 1));
+        assertEquals(14, full.index(5, 1));
+        assertEquals(15, full.index(0, 0));
+        assertEquals(16, full.index(1, 0));
+        assertEquals(17, full.index(2, 0));
+        assertEquals(18, full.index(3, 0));
+        assertEquals(19, full.index(4, 0));
+        assertEquals(20, full.index(5, 0));
     }
 
     @Test
-    public void testTruncatedTriangle() {
+    void testTruncatedTriangle() {
         final Flattener truncated = new Flattener(5, 3);
-        Assertions.assertEquals(5, truncated.getDegree());
-        Assertions.assertEquals(3, truncated.getOrder());
-        Assertions.assertEquals(18, truncated.arraySize());
-        Assertions.assertEquals( 0, truncated.index(3, 3));
-        Assertions.assertEquals( 1, truncated.index(4, 3));
-        Assertions.assertEquals( 2, truncated.index(5, 3));
-        Assertions.assertEquals( 3, truncated.index(2, 2));
-        Assertions.assertEquals( 4, truncated.index(3, 2));
-        Assertions.assertEquals( 5, truncated.index(4, 2));
-        Assertions.assertEquals( 6, truncated.index(5, 2));
-        Assertions.assertEquals( 7, truncated.index(1, 1));
-        Assertions.assertEquals( 8, truncated.index(2, 1));
-        Assertions.assertEquals( 9, truncated.index(3, 1));
-        Assertions.assertEquals(10, truncated.index(4, 1));
-        Assertions.assertEquals(11, truncated.index(5, 1));
-        Assertions.assertEquals(12, truncated.index(0, 0));
-        Assertions.assertEquals(13, truncated.index(1, 0));
-        Assertions.assertEquals(14, truncated.index(2, 0));
-        Assertions.assertEquals(15, truncated.index(3, 0));
-        Assertions.assertEquals(16, truncated.index(4, 0));
-        Assertions.assertEquals(17, truncated.index(5, 0));
+        assertEquals(5, truncated.getDegree());
+        assertEquals(3, truncated.getOrder());
+        assertEquals(18, truncated.arraySize());
+        assertEquals( 0, truncated.index(3, 3));
+        assertEquals( 1, truncated.index(4, 3));
+        assertEquals( 2, truncated.index(5, 3));
+        assertEquals( 3, truncated.index(2, 2));
+        assertEquals( 4, truncated.index(3, 2));
+        assertEquals( 5, truncated.index(4, 2));
+        assertEquals( 6, truncated.index(5, 2));
+        assertEquals( 7, truncated.index(1, 1));
+        assertEquals( 8, truncated.index(2, 1));
+        assertEquals( 9, truncated.index(3, 1));
+        assertEquals(10, truncated.index(4, 1));
+        assertEquals(11, truncated.index(5, 1));
+        assertEquals(12, truncated.index(0, 0));
+        assertEquals(13, truncated.index(1, 0));
+        assertEquals(14, truncated.index(2, 0));
+        assertEquals(15, truncated.index(3, 0));
+        assertEquals(16, truncated.index(4, 0));
+        assertEquals(17, truncated.index(5, 0));
     }
 
     @Test
-    public void testFlatten() {
+    void testFlatten() {
         final Flattener flattener = new Flattener(5, 3);
         double[][] triangular = {
             { 12 },
@@ -92,28 +96,28 @@ public class FlattenerTest {
         };
         final double[] flat = flattener.flatten(triangular);
         for (int i = 0; i < flat.length; ++i) {
-            Assertions.assertEquals(i, flat[i], 1.0e-15);
+            assertEquals(i, flat[i], 1.0e-15);
         }
     }
 
     @Test
-    public void testSize() {
+    void testSize() {
         for (int degree = 0; degree <= 60; ++degree) {
             for (int order = 0; order <= degree; ++order) {
-                Assertions.assertEquals(loop(degree, order, degree, 0) + 1,
+                assertEquals(loop(degree, order, degree, 0) + 1,
                                     new Flattener(degree, order).arraySize());
             }
         }
     }
 
     @Test
-    public void testIndices() {
+    void testIndices() {
         for (int degree = 0; degree <= 60; ++degree) {
             for (int order = 0; order <= degree; ++order) {
                 final Flattener flattener = new Flattener(degree, order);
                 for (int n = 0; n <= degree; ++n) {
                     for (int m = 0; m <= FastMath.min(n, order); ++m) {
-                        Assertions.assertEquals(loop(degree, order, n, m),
+                        assertEquals(loop(degree, order, n, m),
                                             flattener.index(n, m));
                     }
                 }
@@ -122,29 +126,29 @@ public class FlattenerTest {
     }
 
     @Test
-    public void testLimits() {
+    void testLimits() {
         for (int degree = 0; degree <= 20; ++degree) {
             for (int order = 0; order <= degree; ++order) {
                 final Flattener flattener = new Flattener(degree, order);
-                Assertions.assertEquals(degree, flattener.getDegree());
-                Assertions.assertEquals(order, flattener.getOrder());
+                assertEquals(degree, flattener.getDegree());
+                assertEquals(order, flattener.getOrder());
                 for (int n = -2; n < degree + 2; ++n) {
                     for (int m = -2; m <= FastMath.min(n, order) + 2; ++m) {
                         if (n < 0 || n > degree || m < 0 || m > FastMath.min(n, order)) {
                             try {
                                 flattener.index(n, m);
-                                Assertions.fail("an exception should have been thrown");
+                                fail("an exception should have been thrown");
                             } catch (OrekitException oe) {
-                                Assertions.assertEquals(OrekitMessages.WRONG_DEGREE_OR_ORDER, oe.getSpecifier());
-                                Assertions.assertEquals(n,      ((Integer) oe.getParts()[0]).intValue());
-                                Assertions.assertEquals(m,      ((Integer) oe.getParts()[1]).intValue());
-                                Assertions.assertEquals(degree, ((Integer) oe.getParts()[2]).intValue());
-                                Assertions.assertEquals(order,  ((Integer) oe.getParts()[3]).intValue());
-                                Assertions.assertFalse(flattener.withinRange(n, m));
+                                assertEquals(OrekitMessages.WRONG_DEGREE_OR_ORDER, oe.getSpecifier());
+                                assertEquals(n,      ((Integer) oe.getParts()[0]).intValue());
+                                assertEquals(m,      ((Integer) oe.getParts()[1]).intValue());
+                                assertEquals(degree, ((Integer) oe.getParts()[2]).intValue());
+                                assertEquals(order,  ((Integer) oe.getParts()[3]).intValue());
+                                assertFalse(flattener.withinRange(n, m));
                             }
                         } else {
-                            Assertions.assertTrue(flattener.index(n, m) >= 0);
-                            Assertions.assertTrue(flattener.withinRange(n, m));
+                            assertTrue(flattener.index(n, m) >= 0);
+                            assertTrue(flattener.withinRange(n, m));
                         }
                     }
                 }

@@ -18,7 +18,6 @@ package org.orekit.gnss.metric.messages.rtcm;
 
 import java.util.ArrayList;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1063;
@@ -27,7 +26,9 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 
-public class Rtcm1063Test {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class Rtcm1063Test {
 
     private double eps = 1.0e-13;
 
@@ -36,7 +37,7 @@ public class Rtcm1063Test {
     private ArrayList<Integer> messages;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         final String m = "010000100111" +                      // Message number
                          "01111110011000111" +                 // GLONASS Epoch Time 1s
@@ -65,32 +66,32 @@ public class Rtcm1063Test {
     }
 
     @Test
-    public void testPerfectValue() {
+    void testPerfectValue() {
         final Rtcm1063 rtcm1063 = (Rtcm1063) new RtcmMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assertions.assertEquals(1,                            rtcm1063.getData().size());
+        assertEquals(1,                            rtcm1063.getData().size());
 
         // Verify header
-        Assertions.assertEquals(1063,                         rtcm1063.getTypeCode());
-        Assertions.assertEquals(64711.0,                      rtcm1063.getHeader().getEpochTime1s(), eps);
-        Assertions.assertEquals(30.0,                         rtcm1063.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
-        Assertions.assertEquals(0,                            rtcm1063.getHeader().getMultipleMessageIndicator());
-        Assertions.assertEquals(7,                            rtcm1063.getHeader().getIodSsr());
-        Assertions.assertEquals(3951,                         rtcm1063.getHeader().getSsrProviderId());
-        Assertions.assertEquals(1,                            rtcm1063.getHeader().getSsrSolutionId());
-        Assertions.assertEquals(1,                            rtcm1063.getHeader().getNumberOfSatellites());
+        assertEquals(1063,                         rtcm1063.getTypeCode());
+        assertEquals(64711.0,                      rtcm1063.getHeader().getEpochTime1s(), eps);
+        assertEquals(30.0,                         rtcm1063.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        assertEquals(0,                            rtcm1063.getHeader().getMultipleMessageIndicator());
+        assertEquals(7,                            rtcm1063.getHeader().getIodSsr());
+        assertEquals(3951,                         rtcm1063.getHeader().getSsrProviderId());
+        assertEquals(1,                            rtcm1063.getHeader().getSsrSolutionId());
+        assertEquals(1,                            rtcm1063.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite R01
         final RtcmOrbitCorrectionData r01 = rtcm1063.getDataMap().get("R01").get(0);
-        Assertions.assertEquals(1,                            r01.getSatelliteID());
-        Assertions.assertEquals(132,                          r01.getGnssIod());
-        Assertions.assertEquals(18.0095,                      r01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
-        Assertions.assertEquals(122.8668,                     r01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
-        Assertions.assertEquals(122.8668,                     r01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
-        Assertions.assertEquals(0.090047,                     r01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
-        Assertions.assertEquals(0.614332,                     r01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
-        Assertions.assertEquals(0.614332,                     r01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
+        assertEquals(1,                            r01.getSatelliteID());
+        assertEquals(132,                          r01.getGnssIod());
+        assertEquals(18.0095,                      r01.getOrbitCorrection().getDeltaOrbitRadial(),        eps);
+        assertEquals(122.8668,                     r01.getOrbitCorrection().getDeltaOrbitAlongTrack(),    eps);
+        assertEquals(122.8668,                     r01.getOrbitCorrection().getDeltaOrbitCrossTrack(),    eps);
+        assertEquals(0.090047,                     r01.getOrbitCorrection().getDotOrbitDeltaRadial(),     eps);
+        assertEquals(0.614332,                     r01.getOrbitCorrection().getDotOrbitDeltaAlongTrack(), eps);
+        assertEquals(0.614332,                     r01.getOrbitCorrection().getDotOrbitDeltaCrossTrack(), eps);
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

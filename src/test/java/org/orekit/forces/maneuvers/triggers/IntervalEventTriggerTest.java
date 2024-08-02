@@ -24,7 +24,6 @@ import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.errors.OrekitException;
@@ -42,7 +41,10 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
-public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEventTrigger<DateDetector>> {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<IntervalEventTrigger<DateDetector>> {
 
     public static class IntervalDates extends IntervalEventTrigger<DateDetector> {
 
@@ -80,15 +82,15 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
     }
 
     @Test
-    public void testComponents() {
+    void testComponents() {
         IntervalDates trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
                                               AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    dates = trigger.getFiringIntervalDetector().getDates();
-        Assertions.assertEquals(1,     trigger.getEventDetectors().count());
-        Assertions.assertEquals(1,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
-        Assertions.assertEquals(2,     dates.size());
-        Assertions.assertEquals(  0.0, dates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
-        Assertions.assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        assertEquals(1,     trigger.getEventDetectors().count());
+        assertEquals(1,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
+        assertEquals(2,     dates.size());
+        assertEquals(  0.0, dates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        assertEquals(100.0, dates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
     @Test
@@ -102,9 +104,9 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
         Mockito.when(mockedDetector.withHandler(Mockito.any(EventHandler.class))).thenReturn(mockedDetector);
         final TestIntervalEventTrigger trigger = new TestIntervalEventTrigger(mockedDetector);
         // WHEN & THEN
-        final Exception actualException = Assertions.assertThrows(Exception.class,
+        final Exception actualException = assertThrows(Exception.class,
                 () -> trigger.init(mockedState, date));
-        Assertions.assertEquals(expectedException, actualException);
+        assertEquals(expectedException, actualException);
     }
 
     @SuppressWarnings("unchecked")
@@ -121,9 +123,9 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
         Mockito.when(mockedDetector.withHandler(Mockito.any(EventHandler.class))).thenReturn(mockedDetector);
         final TestIntervalEventTrigger trigger = new TestIntervalEventTrigger(mockedDetector);
         // WHEN & THEN
-        final Exception actualException = Assertions.assertThrows(Exception.class,
+        final Exception actualException = assertThrows(Exception.class,
                 () -> trigger.init(mockedState, date));
-        Assertions.assertEquals(expectedException, actualException);
+        assertEquals(expectedException, actualException);
     }
 
     private static class TestIntervalEventTrigger extends IntervalEventTrigger<DateDetector> {

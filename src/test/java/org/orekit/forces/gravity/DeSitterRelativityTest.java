@@ -27,7 +27,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -56,7 +55,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
     /** speed of light */
     private static final double c = Constants.SPEED_OF_LIGHT;
@@ -133,7 +135,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
      * equal to -20.2 milliarcsecs per year.
      */
     @Test
-    public void testSmallEffectOnOrbit() {
+    void testSmallEffectOnOrbit() {
         // Setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
 	final Frame frame = FramesFactory.getGCRF();
@@ -161,11 +163,11 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
         double dpDeg = FastMath.toDegrees(dp);
         // change in right ascension of the ascending node in milliarcseconds per year
         double milliArcsecPerYear = 1.0e3 * dpDeg * 3600 / dtYears;
-        Assertions.assertEquals(-19.2, milliArcsecPerYear, 1.0);
+        assertEquals(-19.2, milliArcsecPerYear, 1.0);
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization
@@ -195,7 +197,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -206,14 +208,14 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         DeSitterRelativity relativity = new DeSitterRelativity();
-        Assertions.assertFalse(relativity.dependsOnPositionOnly());
+        assertFalse(relativity.dependsOnPositionOnly());
         final String name = relativity.getSun().getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
     }
 
     @Test
-    public void RealFieldGradientTest() {
+    void RealFieldGradientTest() {
 
         final int freeParameters = 6;
         Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
@@ -270,7 +272,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         DeSitterRelativity relativity = new DeSitterRelativity();
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -288,7 +290,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         DeSitterRelativity relativity = new DeSitterRelativity();
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -306,7 +308,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

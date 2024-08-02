@@ -16,9 +16,10 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UnnormalizedSphericalHarmonicsProviderTest {
 
@@ -31,7 +32,7 @@ class UnnormalizedSphericalHarmonicsProviderTest {
         // WHEN
         final double actualC20 = testUnnormalizedProvider.getUnnormalizedC20(date);
         // THEN
-        Assertions.assertEquals(expectedC20, actualC20, 0.);
+        assertEquals(expectedC20, actualC20, 0.);
     }
 
     private static class TestUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProvider {

@@ -29,18 +29,19 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class TimeStampedFieldPVCoordinatesTest {
 
     @Test
-    public void testLinearConstructors() {
+    void testLinearConstructors() {
         DSFactory factory = new DSFactory(6, 1);
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv1 =
                 new TimeStampedFieldPVCoordinates<>(AbsoluteDate.CCSDS_EPOCH,
@@ -114,21 +115,21 @@ public class TimeStampedFieldPVCoordinatesTest {
     }
 
     @Test
-    public void testToDerivativeStructureVector1() {
+    void testToDerivativeStructureVector1() {
         FieldVector3D<FieldDerivativeStructure<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
                                                     new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                 toDerivativeStructureVector(1);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(1, fv.getX().getFreeParameters());
+        assertEquals(1, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
         checkPV(new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
@@ -139,42 +140,42 @@ public class TimeStampedFieldPVCoordinatesTest {
             FieldVector3D<Binary64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                                   new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10))).
                             shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
 
         TimeStampedFieldPVCoordinates<Binary64> fpv =
                         new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                             fv);
-        Assertions.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
 
     }
 
     @Test
-    public void testToDerivativeStructureVector2() {
+    void testToDerivativeStructureVector2() {
         FieldVector3D<FieldDerivativeStructure<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
                                                     new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                 toDerivativeStructureVector(2);
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2).doubleValue(), 1.0e-15);
+        assertEquals(1, fv.getX().getFreeParameters());
+        assertEquals(2, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(  10.0, fv.getX().getPartialDerivative(2).doubleValue(), 1.0e-15);
+        assertEquals(  -1.0, fv.getY().getPartialDerivative(2).doubleValue(), 1.0e-15);
+        assertEquals(-100.0, fv.getZ().getPartialDerivative(2).doubleValue(), 1.0e-15);
         checkPV(new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
@@ -186,42 +187,42 @@ public class TimeStampedFieldPVCoordinatesTest {
                                                                   new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
                                                                   new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                             shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
 
         TimeStampedFieldPVCoordinates<Binary64> fpv =
                         new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                             fv);
-        Assertions.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
-        Assertions.assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
+        assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
+        assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
+        assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
 
     }
 
     @Test
-    public void testToUnivariateDerivative1Vector() {
+    void testToUnivariateDerivative1Vector() {
         FieldVector3D<FieldUnivariateDerivative1<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
                                                     new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                 toUnivariateDerivative1Vector();
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(1, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(1, fv.getX().getFreeParameters());
+        assertEquals(1, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
         checkPV(new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
@@ -232,42 +233,42 @@ public class TimeStampedFieldPVCoordinatesTest {
             FieldVector3D<Binary64> p = new FieldPVCoordinates<>(new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                                   new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10))).
                             shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
 
         TimeStampedFieldPVCoordinates<Binary64> fpv =
                         new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                             fv);
-        Assertions.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
 
     }
 
     @Test
-    public void testToUnivariateDerivative2Vector() {
+    void testToUnivariateDerivative2Vector() {
         FieldVector3D<FieldUnivariateDerivative2<Binary64>> fv =
                 new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
                                                     new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                 toUnivariateDerivative2Vector();
-        Assertions.assertEquals(1, fv.getX().getFreeParameters());
-        Assertions.assertEquals(2, fv.getX().getOrder());
-        Assertions.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  10.0, fv.getX().getPartialDerivative(2).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fv.getY().getPartialDerivative(2).doubleValue(), 1.0e-15);
-        Assertions.assertEquals(-100.0, fv.getZ().getPartialDerivative(2).doubleValue(), 1.0e-15);
+        assertEquals(1, fv.getX().getFreeParameters());
+        assertEquals(2, fv.getX().getOrder());
+        assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fv.getX().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(  -0.1, fv.getY().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals( -10.0, fv.getZ().getPartialDerivative(1).doubleValue(), 1.0e-15);
+        assertEquals(  10.0, fv.getX().getPartialDerivative(2).doubleValue(), 1.0e-15);
+        assertEquals(  -1.0, fv.getY().getPartialDerivative(2).doubleValue(), 1.0e-15);
+        assertEquals(-100.0, fv.getZ().getPartialDerivative(2).doubleValue(), 1.0e-15);
         checkPV(new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                     new FieldVector3D<>(new Binary64( 1), new Binary64( 0.1), new Binary64( 10)),
                                                     new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
@@ -279,28 +280,28 @@ public class TimeStampedFieldPVCoordinatesTest {
                                                                   new FieldVector3D<>(new Binary64(-1), new Binary64(-0.1), new Binary64(-10)),
                                                                   new FieldVector3D<>(new Binary64(10), new Binary64(-1.0), new Binary64(-100))).
                             shiftedBy(dt).getPosition();
-            Assertions.assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
-            Assertions.assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getX().doubleValue(), fv.getX().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getY().doubleValue(), fv.getY().taylor(dt).doubleValue(), 1.0e-14);
+            assertEquals(p.getZ().doubleValue(), fv.getZ().taylor(dt).doubleValue(), 1.0e-14);
         }
 
         TimeStampedFieldPVCoordinates<Binary64> fpv =
                         new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getGalileoEpoch(Binary64Field.getInstance()),
                                                             fv);
-        Assertions.assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
-        Assertions.assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
-        Assertions.assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
-        Assertions.assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
-        Assertions.assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
-        Assertions.assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
-        Assertions.assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
+        assertEquals(   1.0, fpv.getPosition().getX().getReal(), 1.0e-10);
+        assertEquals(   0.1, fpv.getPosition().getY().getReal(), 1.0e-10);
+        assertEquals(  10.0, fpv.getPosition().getZ().getReal(), 1.0e-10);
+        assertEquals(  -1.0, fpv.getVelocity().getX().getReal(), 1.0e-15);
+        assertEquals(  -0.1, fpv.getVelocity().getY().getReal(), 1.0e-15);
+        assertEquals( -10.0, fpv.getVelocity().getZ().getReal(), 1.0e-15);
+        assertEquals(  10.0, fpv.getAcceleration().getX().getReal(), 1.0e-15);
+        assertEquals(  -1.0, fpv.getAcceleration().getY().getReal(), 1.0e-15);
+        assertEquals(-100.0, fpv.getAcceleration().getZ().getReal(), 1.0e-15);
 
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
         FieldVector3D<DerivativeStructure> p1 = createVector(  1,  0.1,   10, 4);
         FieldVector3D<DerivativeStructure> v1 = createVector( -1, -0.1,  -10, 4);
         FieldVector3D<DerivativeStructure> a1 = createVector( 10,  1.0,  100, 4);
@@ -309,24 +310,24 @@ public class TimeStampedFieldPVCoordinatesTest {
         FieldVector3D<DerivativeStructure> a2 = createVector( 10,  1.0,  100, 4);
         checkPV(new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH, p2, v2, a2),
                 new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH.shiftedBy(1.0), p1, v1, a1).shiftedBy(-1.0), 1.0e-15);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             TimeStampedFieldPVCoordinates.estimateVelocity(p1, p2, -1.0).subtract(createVector(-6, -0.6, -60, 4)).getNorm().getReal(),
                             1.0e-15);
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Utils.setDataRoot("regular-data");
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv =
             new TimeStampedFieldPVCoordinates<>(AbsoluteDate.J2000_EPOCH,
                                                 createVector( 1,  0.1,  10, 4),
                                                 createVector(-1, -0.1, -10, 4),
                                                 createVector(10,  1.0, 100, 4));
-        Assertions.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
+        assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
     }
 
     @Test
-    public void testIssue510() {
+    void testIssue510() {
         DSFactory factory = new DSFactory(1, 1);
         TimeStampedFieldPVCoordinates<DerivativeStructure> pv =
                         new TimeStampedFieldPVCoordinates<>(FieldAbsoluteDate.getJ2000Epoch(factory.getDerivativeField()),
@@ -339,10 +340,10 @@ public class TimeStampedFieldPVCoordinatesTest {
                                                             FieldVector3D.getZero(factory.getDerivativeField()));
         DerivativeStructure dt = factory.variable(0, 1.0);
         TimeStampedFieldPVCoordinates<DerivativeStructure> shifted = pv.shiftedBy(dt);
-        Assertions.assertEquals(1.0, shifted.getDate().durationFrom(pv.getDate()).getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(pv.getVelocity().getX().getValue(), shifted.getPosition().getX().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(pv.getVelocity().getY().getValue(), shifted.getPosition().getY().getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(pv.getVelocity().getZ().getValue(), shifted.getPosition().getZ().getPartialDerivative(1), 1.0e-15);
+        assertEquals(1.0, shifted.getDate().durationFrom(pv.getDate()).getPartialDerivative(1), 1.0e-15);
+        assertEquals(pv.getVelocity().getX().getValue(), shifted.getPosition().getX().getPartialDerivative(1), 1.0e-15);
+        assertEquals(pv.getVelocity().getY().getValue(), shifted.getPosition().getY().getPartialDerivative(1), 1.0e-15);
+        assertEquals(pv.getVelocity().getZ().getValue(), shifted.getPosition().getZ().getPartialDerivative(1), 1.0e-15);
 
     }
 
@@ -357,14 +358,14 @@ public class TimeStampedFieldPVCoordinatesTest {
         // WHEN
         final TimeStampedFieldPVCoordinates<Complex> fieldPV = new TimeStampedFieldPVCoordinates<>(field, expectedPV);
         // THEN
-        Assertions.assertEquals(expectedPV.getDate(), fieldPV.getDate().toAbsoluteDate());
-        Assertions.assertEquals(expectedPV.getPosition(), fieldPV.getPosition().toVector3D());
-        Assertions.assertEquals(expectedPV.getVelocity(), fieldPV.getVelocity().toVector3D());
-        Assertions.assertEquals(expectedPV.getAcceleration(), fieldPV.getAcceleration().toVector3D());
+        assertEquals(expectedPV.getDate(), fieldPV.getDate().toAbsoluteDate());
+        assertEquals(expectedPV.getPosition(), fieldPV.getPosition().toVector3D());
+        assertEquals(expectedPV.getVelocity(), fieldPV.getVelocity().toVector3D());
+        assertEquals(expectedPV.getAcceleration(), fieldPV.getAcceleration().toVector3D());
     }
 
     @Test
-    public void testIssue774() {
+    void testIssue774() {
         doTestIssue774(Binary64Field.getInstance());
     }
 
@@ -385,21 +386,21 @@ public class TimeStampedFieldPVCoordinatesTest {
                         new TimeStampedFieldPVCoordinates<>(date, pv);
 
         // Verify
-        Assertions.assertEquals(0.0, date.durationFrom(timeStamped.getDate()).getReal(), Double.MIN_VALUE);
+        assertEquals(0.0, date.durationFrom(timeStamped.getDate()).getReal(), Double.MIN_VALUE);
     }
 
     private <T extends CalculusFieldElement<T>> void checkPV(TimeStampedFieldPVCoordinates<T> expected,
                                                          TimeStampedFieldPVCoordinates<T> real, double epsilon) {
-        Assertions.assertEquals(expected.getDate(), real.getDate());
-        Assertions.assertEquals(expected.getPosition().getX().getReal(),     real.getPosition().getX().getReal(), epsilon);
-        Assertions.assertEquals(expected.getPosition().getY().getReal(),     real.getPosition().getY().getReal(), epsilon);
-        Assertions.assertEquals(expected.getPosition().getZ().getReal(),     real.getPosition().getZ().getReal(), epsilon);
-        Assertions.assertEquals(expected.getVelocity().getX().getReal(),     real.getVelocity().getX().getReal(), epsilon);
-        Assertions.assertEquals(expected.getVelocity().getY().getReal(),     real.getVelocity().getY().getReal(), epsilon);
-        Assertions.assertEquals(expected.getVelocity().getZ().getReal(),     real.getVelocity().getZ().getReal(), epsilon);
-        Assertions.assertEquals(expected.getAcceleration().getX().getReal(), real.getAcceleration().getX().getReal(), epsilon);
-        Assertions.assertEquals(expected.getAcceleration().getY().getReal(), real.getAcceleration().getY().getReal(), epsilon);
-        Assertions.assertEquals(expected.getAcceleration().getZ().getReal(), real.getAcceleration().getZ().getReal(), epsilon);
+        assertEquals(expected.getDate(), real.getDate());
+        assertEquals(expected.getPosition().getX().getReal(),     real.getPosition().getX().getReal(), epsilon);
+        assertEquals(expected.getPosition().getY().getReal(),     real.getPosition().getY().getReal(), epsilon);
+        assertEquals(expected.getPosition().getZ().getReal(),     real.getPosition().getZ().getReal(), epsilon);
+        assertEquals(expected.getVelocity().getX().getReal(),     real.getVelocity().getX().getReal(), epsilon);
+        assertEquals(expected.getVelocity().getY().getReal(),     real.getVelocity().getY().getReal(), epsilon);
+        assertEquals(expected.getVelocity().getZ().getReal(),     real.getVelocity().getZ().getReal(), epsilon);
+        assertEquals(expected.getAcceleration().getX().getReal(), real.getAcceleration().getX().getReal(), epsilon);
+        assertEquals(expected.getAcceleration().getY().getReal(), real.getAcceleration().getY().getReal(), epsilon);
+        assertEquals(expected.getAcceleration().getZ().getReal(), real.getAcceleration().getZ().getReal(), epsilon);
     }
 
     public static FieldVector3D<DerivativeStructure> createVector(double x, double y, double z, int params) {

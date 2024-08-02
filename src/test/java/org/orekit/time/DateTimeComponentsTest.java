@@ -18,18 +18,21 @@ package org.orekit.time;
 
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.utils.Constants;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class DateTimeComponentsTest {
+
+class DateTimeComponentsTest {
 
     @SuppressWarnings("unlikely-arg-type")
     @Test
-    public void testComparisons() {
+    void testComparisons() {
         DateTimeComponents[] dates = {
                 new DateTimeComponents(2003,  1,  1, 7, 15, 33),
                 new DateTimeComponents(2003,  1,  1, 7, 15, 34),
@@ -41,69 +44,69 @@ public class DateTimeComponentsTest {
         };
         for (int i = 0; i < dates.length; ++i) {
             for (int j = 0; j < dates.length; ++j) {
-                Assertions.assertEquals(i  < j, dates[i].compareTo(dates[j])  < 0);
-                Assertions.assertEquals(i  > j, dates[j].compareTo(dates[i])  < 0);
-                Assertions.assertEquals(i == j, dates[i].compareTo(dates[j]) == 0);
-                Assertions.assertEquals(i  > j, dates[i].compareTo(dates[j])  > 0);
-                Assertions.assertEquals(i  < j, dates[j].compareTo(dates[i])  > 0);
+                assertEquals(i  < j, dates[i].compareTo(dates[j])  < 0);
+                assertEquals(i  > j, dates[j].compareTo(dates[i])  < 0);
+                assertEquals(i == j, dates[i].compareTo(dates[j]) == 0);
+                assertEquals(i  > j, dates[i].compareTo(dates[j])  > 0);
+                assertEquals(i  < j, dates[j].compareTo(dates[i])  > 0);
             }
         }
-        Assertions.assertFalse(dates[0].equals(this));
-        Assertions.assertFalse(dates[0].equals(dates[0].getDate()));
-        Assertions.assertFalse(dates[0].equals(dates[0].getTime()));
+        assertNotEquals(dates[0], this);
+        assertNotEquals(dates[0], dates[0].getDate());
+        assertNotEquals(dates[0], dates[0].getTime());
     }
 
     @Test
-    public void testOffset() {
+    void testOffset() {
         DateTimeComponents reference = new DateTimeComponents(2005, 12, 31, 23, 59, 59);
         DateTimeComponents expected  = new DateTimeComponents(2006,  1,  1,  0,  0,  0);
-        Assertions.assertEquals(expected, new DateTimeComponents(reference, 1));
+        assertEquals(expected, new DateTimeComponents(reference, 1));
     }
 
     @Test
-    public void testSymmetry() {
+    void testSymmetry() {
         DateTimeComponents reference1 = new DateTimeComponents(2005, 12, 31, 12, 0, 0);
         DateTimeComponents reference2 = new DateTimeComponents(2006,  1,  1,  1, 2, 3);
         for (double dt = -100000; dt < 100000; dt += 100) {
-            Assertions.assertEquals(dt, new DateTimeComponents(reference1, dt).offsetFrom(reference1), 1.0e-15);
-            Assertions.assertEquals(dt, new DateTimeComponents(reference2, dt).offsetFrom(reference2), 1.0e-15);
+            assertEquals(dt, new DateTimeComponents(reference1, dt).offsetFrom(reference1), 1.0e-15);
+            assertEquals(dt, new DateTimeComponents(reference2, dt).offsetFrom(reference2), 1.0e-15);
         }
     }
 
     @Test
-    public void testString() {
+    void testString() {
         final DateTimeComponents date =
             new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.H12);
-        Assertions.assertEquals("2000-01-01T12:00:00.000+00:00", date.toString());
+        assertEquals("2000-01-01T12:00:00.000+00:00", date.toString());
     }
 
     @Test
-    public void testMonth() {
-        Assertions.assertEquals(new DateTimeComponents(2011, 2, 23),
+    void testMonth() {
+        assertEquals(new DateTimeComponents(2011, 2, 23),
                             new DateTimeComponents(2011, Month.FEBRUARY, 23));
-        Assertions.assertEquals(new DateTimeComponents(2011, 2, 23, 1, 2, 3.4),
+        assertEquals(new DateTimeComponents(2011, 2, 23, 1, 2, 3.4),
                             new DateTimeComponents(2011, Month.FEBRUARY, 23, 1, 2, 3.4));
     }
 
     @Test
-    public void testParse() {
+    void testParse() {
         String s = "2000-01-02T03:04:05.000";
-        Assertions.assertEquals(s, DateTimeComponents.parseDateTime(s).toStringWithoutUtcOffset());
+        assertEquals(s, DateTimeComponents.parseDateTime(s).toStringWithoutUtcOffset());
         s = "2000-01-02T03:04:05.000+00:00";
-        Assertions.assertEquals(s, DateTimeComponents.parseDateTime(s).toString());
+        assertEquals(s, DateTimeComponents.parseDateTime(s).toString());
     }
 
     @Test
-    public void testBadDay() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testBadDay() {
+        assertThrows(IllegalArgumentException.class, () -> {
             DateTimeComponents.parseDateTime("2000-02-30T03:04:05.000+00:00");
         });
     }
 
     @Test
-    public void testLocalTime() {
+    void testLocalTime() {
         final DateTimeComponents dtc = DateTimeComponents.parseDateTime("2000-02-29T03:04:05.000+00:01");
-        Assertions.assertEquals(1, dtc.getTime().getMinutesFromUTC());
+        assertEquals(1, dtc.getTime().getMinutesFromUTC());
     }
 
     /**
@@ -111,7 +114,7 @@ public class DateTimeComponentsTest {
      * handles UTC.
      */
     @Test
-    public void testToStringRfc3339() {
+    void testToStringRfc3339() {
         // setup
         int m = 779; // 12 hours, 59 minutes
         final double sixtyOne = FastMath.nextDown(61.0);
@@ -153,11 +156,11 @@ public class DateTimeComponentsTest {
                 new DateComponents(year, month, day),
                 new TimeComponents(hour, minute, second, minutesFromUtc));
 
-        MatcherAssert.assertThat(actual.toStringRfc3339(), CoreMatchers.is(expected));
+        assertThat(actual.toStringRfc3339(), CoreMatchers.is(expected));
     }
 
     @Test
-    public void testToStringRounding() {
+    void testToStringRounding() {
         // these tests were copied from AbsoluteDateTest
         check(2015, 9, 30, 7, 54, 60 - 9.094947e-13, 60,
                 "2015-09-30T07:54:59.99999999999909+00:00",
@@ -192,36 +195,36 @@ public class DateTimeComponentsTest {
                        int minuteDuration, String full, String medium, String shor) {
         DateTimeComponents dtc =
                 new DateTimeComponents(year, month, day, hour, minute, second);
-        MatcherAssert.assertThat(dtc.toString(minuteDuration), CoreMatchers.is(medium));
-        MatcherAssert.assertThat(dtc.toString(minuteDuration, 3), CoreMatchers.is(medium));
-        MatcherAssert.assertThat(dtc.toString(minuteDuration, 0), CoreMatchers.is(shor));
-        MatcherAssert.assertThat(dtc.toString(minuteDuration, 14), CoreMatchers.is(full));
+        assertThat(dtc.toString(minuteDuration), CoreMatchers.is(medium));
+        assertThat(dtc.toString(minuteDuration, 3), CoreMatchers.is(medium));
+        assertThat(dtc.toString(minuteDuration, 0), CoreMatchers.is(shor));
+        assertThat(dtc.toString(minuteDuration, 14), CoreMatchers.is(full));
     }
 
     @Test
-    public void testToStringRoundingUtcOffset() {
+    void testToStringRoundingUtcOffset() {
         DateTimeComponents dtc =
                 new DateTimeComponents(new DateComponents(2000, 12, 31), new TimeComponents(23, 59, 59.9, -92));
-        MatcherAssert.assertThat(dtc.toString(60), CoreMatchers.is("2000-12-31T23:59:59.900-01:32"));
-        MatcherAssert.assertThat(dtc.toString(60, 3), CoreMatchers.is("2000-12-31T23:59:59.900-01:32"));
-        MatcherAssert.assertThat(dtc.toString(60, 0), CoreMatchers.is("2001-01-01T00:00:00-01:32"));
-        MatcherAssert.assertThat(dtc.toString(60, 14), CoreMatchers.is("2000-12-31T23:59:59.90000000000000-01:32"));
+        assertThat(dtc.toString(60), CoreMatchers.is("2000-12-31T23:59:59.900-01:32"));
+        assertThat(dtc.toString(60, 3), CoreMatchers.is("2000-12-31T23:59:59.900-01:32"));
+        assertThat(dtc.toString(60, 0), CoreMatchers.is("2001-01-01T00:00:00-01:32"));
+        assertThat(dtc.toString(60, 14), CoreMatchers.is("2000-12-31T23:59:59.90000000000000-01:32"));
     }
 
     @Test
-    public void testToStringWithoutUtcOffsetRoundingUtcOffset() {
+    void testToStringWithoutUtcOffsetRoundingUtcOffset() {
         DateTimeComponents dtc =
                 new DateTimeComponents(new DateComponents(2000, 12, 31), new TimeComponents(23, 59, 59.9, -92));
-        MatcherAssert.assertThat(dtc.toStringWithoutUtcOffset(60, 3), CoreMatchers.is("2000-12-31T23:59:59.900"));
-        MatcherAssert.assertThat(dtc.toStringWithoutUtcOffset(60, 0), CoreMatchers.is("2001-01-01T00:00:00"));
-        MatcherAssert.assertThat(dtc.toStringWithoutUtcOffset(60, 14), CoreMatchers.is("2000-12-31T23:59:59.90000000000000"));
+        assertThat(dtc.toStringWithoutUtcOffset(60, 3), CoreMatchers.is("2000-12-31T23:59:59.900"));
+        assertThat(dtc.toStringWithoutUtcOffset(60, 0), CoreMatchers.is("2001-01-01T00:00:00"));
+        assertThat(dtc.toStringWithoutUtcOffset(60, 14), CoreMatchers.is("2000-12-31T23:59:59.90000000000000"));
     }
 
     @Test
-    public void testOffsetFromWithTimeUnit() {
+    void testOffsetFromWithTimeUnit() {
         DateTimeComponents reference = new DateTimeComponents(2023, 1, 1, 23, 13, 59.12334567);
         for (TimeUnit timeUnit : TimeUnit.values()) {
-            Assertions.assertEquals(0, reference.offsetFrom(reference, timeUnit));
+            assertEquals(0, reference.offsetFrom(reference, timeUnit));
 
             long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
             for (int i = 1; i <= 365; i++) {
@@ -229,9 +232,9 @@ public class DateTimeComponentsTest {
                 DateTimeComponents plusDays = new DateTimeComponents(reference,i, TimeUnit.DAYS);
 
 
-                Assertions.assertEquals(i * dayInTimeUnit, reference.offsetFrom(minusDays, timeUnit));
+                assertEquals(i * dayInTimeUnit, reference.offsetFrom(minusDays, timeUnit));
 
-                Assertions.assertEquals(-i * dayInTimeUnit, reference.offsetFrom(plusDays, timeUnit));
+                assertEquals(-i * dayInTimeUnit, reference.offsetFrom(plusDays, timeUnit));
             }
 
             for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
@@ -239,10 +242,10 @@ public class DateTimeComponentsTest {
                 DateTimeComponents plus =  new DateTimeComponents(reference,ns, TimeUnit.NANOSECONDS);
 
                 double deltaInTimeUnit = ns / (double) timeUnit.toNanos(1);
-                Assertions.assertEquals(FastMath.round(deltaInTimeUnit), reference.offsetFrom(minus, timeUnit),
+                assertEquals(FastMath.round(deltaInTimeUnit), reference.offsetFrom(minus, timeUnit),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
 
-                Assertions.assertEquals(FastMath.round(-deltaInTimeUnit), reference.offsetFrom(plus, timeUnit),
+                assertEquals(FastMath.round(-deltaInTimeUnit), reference.offsetFrom(plus, timeUnit),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
             }
 

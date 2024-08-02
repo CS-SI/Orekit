@@ -16,13 +16,11 @@
  */
 package org.orekit.frames;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -38,19 +36,25 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.Random;
 
-public class FrameTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class FrameTest {
 
     @Test
-    public void testSameFrameRoot() {
+    void testSameFrameRoot() {
         Random random = new Random(0x29448c7d58b95565l);
         Frame  frame  = FramesFactory.getEME2000();
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
-        Assertions.assertTrue(frame.getDepth() > 0);
-        Assertions.assertEquals(frame.getParent().getDepth() + 1, frame.getDepth());
+        assertTrue(frame.getDepth() > 0);
+        assertEquals(frame.getParent().getDepth() + 1, frame.getDepth());
     }
 
     @Test
-    public void testSameFrameNoRoot() {
+    void testSameFrameNoRoot() {
         Random random = new Random(0xc6e88d0f53e29116l);
         Transform t   = randomTransform(random);
         Frame frame   = new Frame(FramesFactory.getEME2000(), t, null, true);
@@ -58,7 +62,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testSimilarFrames() {
+    void testSimilarFrames() {
         Random random = new Random(0x1b868f67a83666e5l);
         Transform t   = randomTransform(random);
         Frame frame1  = new Frame(FramesFactory.getEME2000(), t, null, true);
@@ -67,7 +71,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testFromParent() {
+    void testFromParent() {
         Random random = new Random(0xb92fba1183fe11b8l);
         Transform fromEME2000  = randomTransform(random);
         Frame frame = new Frame(FramesFactory.getEME2000(), fromEME2000, null);
@@ -76,7 +80,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testDecomposedTransform() {
+    void testDecomposedTransform() {
         Random random = new Random(0xb7d1a155e726da57l);
         Transform t1  = randomTransform(random);
         Transform t2  = randomTransform(random);
@@ -91,7 +95,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testFindCommon() {
+    void testFindCommon() {
 
         Random random = new Random(0xb7d1a155e726da57l);
         Transform t1  = randomTransform(random);
@@ -101,9 +105,9 @@ public class FrameTest {
         Frame R1 = new Frame(FramesFactory.getEME2000(), t1, "R1");
         Frame R2 = new Frame(R1, t2, "R2");
         Frame R3 = new Frame(R2, t3, "R3");
-        Assertions.assertTrue(R1.getDepth() > 0);
-        Assertions.assertEquals(R1.getDepth() + 1, R2.getDepth());
-        Assertions.assertEquals(R2.getDepth() + 1, R3.getDepth());
+        assertTrue(R1.getDepth() > 0);
+        assertEquals(R1.getDepth() + 1, R2.getDepth());
+        assertEquals(R2.getDepth() + 1, R3.getDepth());
 
         Transform T = R1.getTransformTo(R3, new AbsoluteDate());
 
@@ -114,7 +118,7 @@ public class FrameTest {
     }
 
     @Test
-    public void testDepthAndAncestor() {
+    void testDepthAndAncestor() {
         Random random = new Random(0x01f8d3b944123044l);
         Frame root = Frame.getRoot();
 
@@ -125,34 +129,34 @@ public class FrameTest {
         Frame f5 = new Frame(f3,   randomTransform(random), "f5");
         Frame f6 = new Frame(f5,   randomTransform(random), "f6");
 
-        Assertions.assertEquals(0, root.getDepth());
-        Assertions.assertEquals(1, f1.getDepth());
-        Assertions.assertEquals(2, f2.getDepth());
-        Assertions.assertEquals(2, f3.getDepth());
-        Assertions.assertEquals(3, f4.getDepth());
-        Assertions.assertEquals(3, f5.getDepth());
-        Assertions.assertEquals(4, f6.getDepth());
+        assertEquals(0, root.getDepth());
+        assertEquals(1, f1.getDepth());
+        assertEquals(2, f2.getDepth());
+        assertEquals(2, f3.getDepth());
+        assertEquals(3, f4.getDepth());
+        assertEquals(3, f5.getDepth());
+        assertEquals(4, f6.getDepth());
 
-        Assertions.assertTrue(root == f1.getAncestor(1));
-        Assertions.assertTrue(root == f6.getAncestor(4));
-        Assertions.assertTrue(f1   == f6.getAncestor(3));
-        Assertions.assertTrue(f3   == f6.getAncestor(2));
-        Assertions.assertTrue(f5   == f6.getAncestor(1));
-        Assertions.assertTrue(f6   == f6.getAncestor(0));
+        assertTrue(root == f1.getAncestor(1));
+        assertTrue(root == f6.getAncestor(4));
+        assertTrue(f1   == f6.getAncestor(3));
+        assertTrue(f3   == f6.getAncestor(2));
+        assertTrue(f5   == f6.getAncestor(1));
+        assertTrue(f6   == f6.getAncestor(0));
 
         try {
             f6.getAncestor(5);
-            Assertions.fail("an exception should have been triggered");
+            fail("an exception should have been triggered");
         } catch (IllegalArgumentException iae) {
             // expected behavior
         } catch (Exception e) {
-            Assertions.fail("wrong exception caught: " + e.getClass().getName());
+            fail("wrong exception caught: " + e.getClass().getName());
         }
 
     }
 
     @Test
-    public void testIsChildOf() {
+    void testIsChildOf() {
         Random random = new Random(0xb7d1a155e726da78l);
         Frame eme2000 = FramesFactory.getEME2000();
 
@@ -166,29 +170,29 @@ public class FrameTest {
         Frame f9 = new Frame(f7     , randomTransform(random), "f9");
 
         // check if the root frame can be an ancestor of another frame
-        Assertions.assertEquals(false, eme2000.isChildOf(f5));
+        assertFalse(eme2000.isChildOf(f5));
 
         // check if a frame which belongs to the same branch than the 2nd frame is a branch of it
-        Assertions.assertEquals(true, f5.isChildOf(f1));
+        assertTrue(f5.isChildOf(f1));
 
         // check if a random frame is the child of the root frame
-        Assertions.assertEquals(true, f9.isChildOf(eme2000));
+        assertTrue(f9.isChildOf(eme2000));
 
         // check that a frame is not its own child
-        Assertions.assertEquals(false, f4.isChildOf(f4));
+        assertFalse(f4.isChildOf(f4));
 
         // check if a frame which belongs to a different branch than the 2nd frame can be a child for it
-        Assertions.assertEquals(false, f9.isChildOf(f5));
+        assertFalse(f9.isChildOf(f5));
 
         // check if the root frame is not a child of itself
-        Assertions.assertEquals(false, eme2000.isChildOf(eme2000));
+        assertFalse(eme2000.isChildOf(eme2000));
 
-        Assertions.assertEquals(false, f9.isChildOf(f8));
+        assertFalse(f9.isChildOf(f8));
 
     }
 
     @Test
-    public void testH0m9() {
+    void testH0m9() {
         AbsoluteDate h0         = new AbsoluteDate("2010-07-01T10:42:09", TimeScalesFactory.getUTC());
         Frame itrf              = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame rotatingPadFrame  = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -209,10 +213,10 @@ public class FrameTest {
         Vector3D vEme2000 = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvEme2000 = new PVCoordinates(pEme2000, vEme2000);
         PVCoordinates pvH0m9 = eme2000.getTransformTo(frozenLaunchFrame, h0M9).transformPVCoordinates(pvEme2000);
-        Assertions.assertEquals(vEme2000.getNorm(), pvH0m9.getVelocity().getNorm(), 1.0e-6);
+        assertEquals(vEme2000.getNorm(), pvH0m9.getVelocity().getNorm(), 1.0e-6);
         Vector3D pH0m9 = eme2000.getStaticTransformTo(frozenLaunchFrame, h0M9)
                 .transformPosition(pvEme2000.getPosition());
-        MatcherAssert.assertThat(pH0m9,
+        assertThat(pH0m9,
                 OrekitMatchers.vectorCloseTo(pvH0m9.getPosition(), 1e-15));
 
         // this frame is fixed with respect to EME2000 but rotates with respect to the non-frozen one
@@ -231,8 +235,8 @@ public class FrameTest {
             minA2 = FastMath.min(minA2, a2);
             maxA2 = FastMath.max(maxA2, a2);
         }
-        Assertions.assertEquals(0, maxA1 - minA1, 1.0e-12);
-        Assertions.assertEquals(FastMath.PI, maxA2 - minA2, 0.01);
+        assertEquals(0, maxA1 - minA1, 1.0e-12);
+        assertEquals(FastMath.PI, maxA2 - minA2, 0.01);
 
     }
 
@@ -263,9 +267,9 @@ public class FrameTest {
                                       random.nextDouble(),
                                       random.nextDouble());
             Vector3D b = transform.transformVector(a);
-            Assertions.assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
+            assertEquals(0, a.subtract(b).getNorm(), 1.0e-10);
             Vector3D c = transform.transformPosition(a);
-            Assertions.assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
+            assertEquals(0, a.subtract(c).getNorm(), 1.0e-10);
         }
     }
 
@@ -279,11 +283,11 @@ public class FrameTest {
         final KinematicTransform kinematicTransform = oldFrame.getKinematicTransformTo(newFrame, date);
         // THEN
         final Transform transform = oldFrame.getTransformTo(newFrame, date);
-        Assertions.assertEquals(date, kinematicTransform.getDate());
-        Assertions.assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
-        Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
-        Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+        assertEquals(date, kinematicTransform.getDate());
+        assertEquals(transform.getCartesian().getPosition(), kinematicTransform.getTranslation());
+        assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
+        assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
+        assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
     }
 
     @Test
@@ -306,12 +310,12 @@ public class FrameTest {
         // THEN
         final KinematicTransform kinematicTransform = oldFrame.getKinematicTransformTo(newFrame,
                 fieldDate.toAbsoluteDate());
-        Assertions.assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
-        Assertions.assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
+        assertEquals(kinematicTransform.getDate(), fieldKinematicTransform.getDate());
+        assertEquals(kinematicTransform.getTranslation(), fieldKinematicTransform.getTranslation().toVector3D());
+        assertEquals(kinematicTransform.getVelocity(), fieldKinematicTransform.getVelocity().toVector3D());
+        assertEquals(0., Rotation.distance(kinematicTransform.getRotation(),
                 fieldKinematicTransform.getRotation().toRotation()));
-        Assertions.assertEquals(kinematicTransform.getRotationRate(),
+        assertEquals(kinematicTransform.getRotationRate(),
                 fieldKinematicTransform.getRotationRate().toVector3D());
     }
 
@@ -320,7 +324,7 @@ public class FrameTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

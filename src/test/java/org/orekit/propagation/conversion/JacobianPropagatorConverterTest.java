@@ -27,7 +27,6 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -56,13 +55,16 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JacobianPropagatorConverterTest {
+class JacobianPropagatorConverterTest {
 
     private double mu;
     private double dP;
@@ -74,41 +76,41 @@ public class JacobianPropagatorConverterTest {
     private double crossSection;
 
     @Test
-    public void testDerivativesNothing() {
+    void testDerivativesNothing() {
         try {
             doTestDerivatives(1.0, 1.0);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (MathIllegalArgumentException miae) {
-            Assertions.assertEquals(LocalizedCoreFormats.AT_LEAST_ONE_COLUMN, miae.getSpecifier());
+            assertEquals(LocalizedCoreFormats.AT_LEAST_ONE_COLUMN, miae.getSpecifier());
         }
     }
 
     @Test
-    public void testDerivativesOrbitOnly() {
+    void testDerivativesOrbitOnly() {
         doTestDerivatives(4.8e-9, 3.5e-12,
                           "Px", "Py", "Pz", "Vx", "Vy", "Vz");
     }
 
     @Test
-    public void testDerivativesPositionAndDrag() {
+    void testDerivativesPositionAndDrag() {
         doTestDerivatives(5.1e-9, 4.8e-12,
                           "Px", "Py", "Pz", DragSensitive.DRAG_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesDrag() {
+    void testDerivativesDrag() {
         doTestDerivatives(3.2e-9, 3.2e-12,
                           DragSensitive.DRAG_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesCentralAttraction() {
+    void testDerivativesCentralAttraction() {
         doTestDerivatives(3.6e-9, 4.0e-12,
                           NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
     @Test
-    public void testDerivativesAllParameters() {
+    void testDerivativesAllParameters() {
         doTestDerivatives(1.1e-8, 1.1e-11,
                           "Px", "Py", "Pz", "Vx", "Vy", "Vz",
                           DragSensitive.DRAG_COEFFICIENT,
@@ -167,7 +169,7 @@ public class JacobianPropagatorConverterTest {
             setSample.invoke(fitter, sample);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                         IllegalArgumentException | InvocationTargetException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
 
         MultivariateVectorFunction   f = fitter.getObjectiveFunction();
@@ -201,13 +203,13 @@ public class JacobianPropagatorConverterTest {
                 }
             }
         }
-        Assertions.assertEquals(0.0, maxErrorP, tolP);
-        Assertions.assertEquals(0.0, maxErrorV, tolV);
+        assertEquals(0.0, maxErrorP, tolP);
+        assertEquals(0.0, maxErrorV, tolV);
 
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
 
         Utils.setDataRoot("regular-data:potential/shm-format");
         gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),

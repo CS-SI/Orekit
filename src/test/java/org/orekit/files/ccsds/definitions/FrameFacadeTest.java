@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.definitions;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,71 +41,76 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 import java.util.Arrays;
 
-public class FrameFacadeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class FrameFacadeTest {
 
     /**
      * Configure access to Orekit data folder for simple unit tests.
      */
     @BeforeAll
-    public static void configureOrekitDataAccess() {
+    static void configureOrekitDataAccess() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testMapCelestial() {
+    void testMapCelestial() {
         for (CelestialBodyFrame cbf : CelestialBodyFrame.values()) {
             FrameFacade ff = FrameFacade.parse(cbf.name(),
                                                IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                true, true, true);
-            Assertions.assertSame(cbf, ff.asCelestialBodyFrame());
-            Assertions.assertNull(ff.asOrbitRelativeFrame());
-            Assertions.assertNull(ff.asSpacecraftBodyFrame());
+            assertSame(cbf, ff.asCelestialBodyFrame());
+            assertNull(ff.asOrbitRelativeFrame());
+            assertNull(ff.asSpacecraftBodyFrame());
         }
     }
 
     @Test
-    public void testMapLOF() {
+    void testMapLOF() {
         for (OrbitRelativeFrame orf : OrbitRelativeFrame.values()) {
             FrameFacade ff = FrameFacade.parse(orf.name(),
                                                IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                true, true, true);
-            Assertions.assertNull(ff.asCelestialBodyFrame());
-            Assertions.assertSame(orf, ff.asOrbitRelativeFrame());
-            Assertions.assertNull(ff.asSpacecraftBodyFrame());
+            assertNull(ff.asCelestialBodyFrame());
+            assertSame(orf, ff.asOrbitRelativeFrame());
+            assertNull(ff.asSpacecraftBodyFrame());
         }
     }
 
     @Test
-    public void testMapSpacecraft() {
+    void testMapSpacecraft() {
         for (SpacecraftBodyFrame.BaseEquipment be : SpacecraftBodyFrame.BaseEquipment.values()) {
             for (String label : Arrays.asList("1", "2", "A", "B")) {
                 SpacecraftBodyFrame sbf = new SpacecraftBodyFrame(be, label);
                 FrameFacade ff = FrameFacade.parse(sbf.toString(),
                                                    IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                                    true, true, true);
-                Assertions.assertNull(ff.asCelestialBodyFrame());
-                Assertions.assertNull(ff.asOrbitRelativeFrame());
-                Assertions.assertEquals(be, ff.asSpacecraftBodyFrame().getBaseEquipment());
-                Assertions.assertEquals(label, ff.asSpacecraftBodyFrame().getLabel());
+                assertNull(ff.asCelestialBodyFrame());
+                assertNull(ff.asOrbitRelativeFrame());
+                assertEquals(be, ff.asSpacecraftBodyFrame().getBaseEquipment());
+                assertEquals(label, ff.asSpacecraftBodyFrame().getLabel());
             }
         }
     }
 
     @Test
-    public void testUnknownFrame() {
+    void testUnknownFrame() {
         final String name = "unknown";
         FrameFacade ff = FrameFacade.parse(name,
                                            IERSConventions.IERS_2010, true, DataContext.getDefault(),
                                            true, true, true);
-        Assertions.assertNull(ff.asFrame());
-        Assertions.assertNull(ff.asCelestialBodyFrame());
-        Assertions.assertNull(ff.asOrbitRelativeFrame());
-        Assertions.assertNull(ff.asSpacecraftBodyFrame());
-        Assertions.assertEquals(name, ff.getName());
+        assertNull(ff.asFrame());
+        assertNull(ff.asCelestialBodyFrame());
+        assertNull(ff.asOrbitRelativeFrame());
+        assertNull(ff.asSpacecraftBodyFrame());
+        assertEquals(name, ff.getName());
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -115,7 +119,7 @@ public class FrameFacadeTest {
      * between RTN and TNW local orbital frame.
      */
     @Test
-    public void testGetTransformLofToLofAtPeriapsis() {
+    void testGetTransformLofToLofAtPeriapsis() {
 
         // Given
         final Frame pivotFrame = FramesFactory.getGCRF();
@@ -153,7 +157,7 @@ public class FrameFacadeTest {
         final Frame nonInertialPivotFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         // When & Then
-        Assertions.assertThrows(OrekitException.class, () -> {
+        assertThrows(OrekitException.class, () -> {
             FrameFacade.getTransform(frameFacadeInMock, frameFacadeOutMock, nonInertialPivotFrame, dateMock,
                                      pvCoordinatesProviderMock);
         });
@@ -182,11 +186,11 @@ public class FrameFacadeTest {
                                 null, null, "Celestial body frame");
 
         // When & Then
-        Assertions.assertThrows(OrekitException.class, () -> {
+        assertThrows(OrekitException.class, () -> {
             FrameFacade.getTransform(inputSpacecraftBody, output, pivot, dateMock, pvProviderMock);
         });
 
-        Assertions.assertThrows(OrekitException.class, () -> {
+        assertThrows(OrekitException.class, () -> {
             FrameFacade.getTransform(inputCelestial, output, pivot, dateMock, pvProviderMock);
         });
     }
@@ -209,7 +213,7 @@ public class FrameFacadeTest {
                                 null, null, "Celestial body frame");
 
         // When & Then
-        Assertions.assertThrows(OrekitException.class, () -> {
+        assertThrows(OrekitException.class, () -> {
             FrameFacade.getTransform(inputNullLOFType, output, pivot, dateMock, pvProviderMock);
         });
     }
@@ -292,9 +296,9 @@ public class FrameFacadeTest {
     }
 
     private void validateVector3D(final Vector3D expected, final Vector3D computed, final double threshold) {
-        Assertions.assertEquals(expected.getX(), computed.getX(), threshold);
-        Assertions.assertEquals(expected.getY(), computed.getY(), threshold);
-        Assertions.assertEquals(expected.getZ(), computed.getZ(), threshold);
+        assertEquals(expected.getX(), computed.getX(), threshold);
+        assertEquals(expected.getY(), computed.getY(), threshold);
+        assertEquals(expected.getZ(), computed.getZ(), threshold);
 
     }
 
@@ -308,7 +312,7 @@ public class FrameFacadeTest {
     private void validateMatrix(double[][] data, double[][] expected, double threshold) {
         for (int i = 0; i < data.length; i++) {
             for (int j = 0; j < data[0].length; j++) {
-                Assertions.assertEquals(expected[i][j], data[i][j], threshold);
+                assertEquals(expected[i][j], data[i][j], threshold);
             }
         }
     }

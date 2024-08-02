@@ -19,11 +19,12 @@ package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class KinematicTransformTest {
 
@@ -36,7 +37,7 @@ class KinematicTransformTest {
                 KinematicTransform.getIdentity());
         // THEN
         final Vector3D expectedCompositeVelocity = kinematicTransform.getVelocity();
-        Assertions.assertEquals(expectedCompositeVelocity, actualCompositeVelocity);
+        assertEquals(expectedCompositeVelocity, actualCompositeVelocity);
     }
 
     @Test
@@ -48,7 +49,7 @@ class KinematicTransformTest {
                 KinematicTransform.getIdentity());
         // THEN
         final Vector3D expectedCompositeRotationRate = kinematicTransform.getRotationRate();
-        Assertions.assertEquals(expectedCompositeRotationRate, actualCompositeRotationRate);
+        assertEquals(expectedCompositeRotationRate, actualCompositeRotationRate);
     }
 
     @Test
@@ -83,8 +84,8 @@ class KinematicTransformTest {
         final double[] expectedVelocity = pvCoordinates.getVelocity().toArray();
         final double[] actualVelocity = reconvertedPV.getVelocity().toArray();
         for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(expectedPosition[i], actualPosition[i], tolerance);
-            Assertions.assertEquals(expectedVelocity[i], actualVelocity[i], tolerance);
+            assertEquals(expectedPosition[i], actualPosition[i], tolerance);
+            assertEquals(expectedVelocity[i], actualVelocity[i], tolerance);
         }
     }
 
@@ -96,11 +97,11 @@ class KinematicTransformTest {
         // WHEN
         final KinematicTransform kinematicTransform = KinematicTransform.of(expectedDate, pvCoordinates);
         // THEN
-        Assertions.assertEquals(expectedDate, kinematicTransform.getDate());
-        Assertions.assertEquals(pvCoordinates.getPosition(), kinematicTransform.getTranslation());
-        Assertions.assertEquals(pvCoordinates.getVelocity(), kinematicTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(Rotation.IDENTITY, kinematicTransform.getRotation()));
-        Assertions.assertEquals(Vector3D.ZERO, kinematicTransform.getRotationRate());
+        assertEquals(expectedDate, kinematicTransform.getDate());
+        assertEquals(pvCoordinates.getPosition(), kinematicTransform.getTranslation());
+        assertEquals(pvCoordinates.getVelocity(), kinematicTransform.getVelocity());
+        assertEquals(0., Rotation.distance(Rotation.IDENTITY, kinematicTransform.getRotation()));
+        assertEquals(Vector3D.ZERO, kinematicTransform.getRotationRate());
     }
 
     @Test
@@ -112,11 +113,11 @@ class KinematicTransformTest {
         final KinematicTransform kinematicTransform = KinematicTransform.of(expectedDate, expectedRotation,
                 expectedRotationRate);
         // THEN
-        Assertions.assertEquals(expectedDate, kinematicTransform.getDate());
-        Assertions.assertEquals(Vector3D.ZERO, kinematicTransform.getTranslation());
-        Assertions.assertEquals(Vector3D.ZERO, kinematicTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, kinematicTransform.getRotation()));
-        Assertions.assertEquals(expectedRotationRate, kinematicTransform.getRotationRate());
+        assertEquals(expectedDate, kinematicTransform.getDate());
+        assertEquals(Vector3D.ZERO, kinematicTransform.getTranslation());
+        assertEquals(Vector3D.ZERO, kinematicTransform.getVelocity());
+        assertEquals(0., Rotation.distance(expectedRotation, kinematicTransform.getRotation()));
+        assertEquals(expectedRotationRate, kinematicTransform.getRotationRate());
     }
 
     @Test
@@ -127,11 +128,11 @@ class KinematicTransformTest {
         final KinematicTransform composedTransform = KinematicTransform.compose(kinematicTransform.getDate(),
                 kinematicTransform, inverseKinematicTransform);
         // THEN
-        Assertions.assertEquals(kinematicTransform.getDate(), composedTransform.getDate());
-        Assertions.assertEquals(Vector3D.ZERO, composedTransform.getTranslation());
-        Assertions.assertEquals(Vector3D.ZERO, composedTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(Rotation.IDENTITY, composedTransform.getRotation()));
-        Assertions.assertEquals(Vector3D.ZERO, composedTransform.getRotationRate());
+        assertEquals(kinematicTransform.getDate(), composedTransform.getDate());
+        assertEquals(Vector3D.ZERO, composedTransform.getTranslation());
+        assertEquals(Vector3D.ZERO, composedTransform.getVelocity());
+        assertEquals(0., Rotation.distance(Rotation.IDENTITY, composedTransform.getRotation()));
+        assertEquals(Vector3D.ZERO, composedTransform.getRotationRate());
     }
 
     private KinematicTransform createArbitraryKineticTransform() {

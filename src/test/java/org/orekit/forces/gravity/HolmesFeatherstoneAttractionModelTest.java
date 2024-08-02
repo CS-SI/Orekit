@@ -39,7 +39,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -88,8 +87,15 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceModelTest {
+
+class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceModelTest {
 
     private static final int SCALING = 930;
 
@@ -406,7 +412,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testRelativeNumericPrecision() {
+    void testRelativeNumericPrecision() {
 
         // this test is similar in spirit to section 4.2 of Holmes and Featherstone paper,
         // but reduced to lower degree since our reference implementation is MUCH slower
@@ -415,7 +421,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
         HolmesFeatherstoneAttractionModel model =
                 new HolmesFeatherstoneAttractionModel(itrf, provider);
-        Assertions.assertTrue(model.dependsOnPositionOnly());
+        assertTrue(model.dependsOnPositionOnly());
 
 
         // Note that despite it uses adjustable high accuracy, the reference model
@@ -435,13 +441,13 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             Dfp refValue = refModel.nonCentralPart(null, position);
             double value = model.nonCentralPart(null, position, model.getMu());
             double relativeError = error(refValue, value).divide(refValue).toDouble();
-            Assertions.assertEquals(0, relativeError, 7.0e-15);
+            assertEquals(0, relativeError, 7.0e-15);
         }
 
     }
 
     @Test
-    public void testValue() {
+    void testValue() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -457,7 +463,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                 double refValue = provider.getMu() / position.getNorm() +
                                   model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position, model.getMu());
                 double  value   = model.value(AbsoluteDate.GPS_EPOCH, position, model.getMu());
-                Assertions.assertEquals(refValue, value, 1.0e-15 * FastMath.abs(refValue));
+                assertEquals(refValue, value, 1.0e-15 * FastMath.abs(refValue));
             }
         }
 
@@ -469,7 +475,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() {
+    void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 4);
         DerivativeStructure a_0 = factory.variable(0, 7201009.7124401);
         DerivativeStructure e_0 = factory.variable(1, 5e-3);
@@ -539,7 +545,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() {
+    void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 0);
         DerivativeStructure a_0 = factory.variable(0, 7201009.7124401);
         DerivativeStructure e_0 = factory.variable(1, 1e-3);
@@ -600,12 +606,13 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         SpacecraftState finalState_R = NP.propagate(target.toAbsoluteDate());
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
-        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
+
     @Test
-    public void testGradient() {
+    void testGradient() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -628,14 +635,14 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                 double errorZ = refGradient[2] - gradient[2];
                 double relativeError = FastMath.sqrt(errorX * errorX + errorY * errorY + errorZ * errorZ) /
                                        norm;
-                Assertions.assertEquals(0, relativeError, 3.0e-12);
+                assertEquals(0, relativeError, 3.0e-12);
             }
         }
 
     }
 
     @Test
-    public void testHessian() {
+    void testHessian() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -659,7 +666,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                         normE2 += error * error;
                     }
                 }
-                Assertions.assertEquals(0, FastMath.sqrt(normE2 / normH2), 5.0e-12);
+                assertEquals(0, FastMath.sqrt(normE2 / normH2), 5.0e-12);
             }
         }
 
@@ -801,7 +808,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     // rough test to determine if J2 alone creates heliosynchronism
     @Test
-    public void testHelioSynchronous()
+    void testHelioSynchronous()
         {
 
         // initialization
@@ -832,7 +839,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         propagator.setStepHandler(Constants.JULIAN_DAY, new SpotStepHandler());
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.propagate(date.shiftedBy(7 * Constants.JULIAN_DAY));
-        Assertions.assertTrue(propagator.getCalls() < 9200);
+        assertTrue(propagator.getCalls() < 9200);
 
     }
 
@@ -854,7 +861,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             Vector3D normal = currentState.getPVCoordinates().getMomentum();
             double angle = Vector3D.angle(sunPos , normal);
             if (! Double.isNaN(previous)) {
-                Assertions.assertEquals(previous, angle, 0.0013);
+                assertEquals(previous, angle, 0.0013);
             }
             previous = angle;
         }
@@ -863,7 +870,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
-    public void testEcksteinHechlerReference() {
+    void testEcksteinHechlerReference() {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -899,7 +906,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
                                                          unnormalizedC20, unnormalizedC30, unnormalizedC40,
                                                          unnormalizedC50, unnormalizedC60));
         propagator.propagate(date.shiftedBy(50000));
-        Assertions.assertTrue(propagator.getCalls() < 1100);
+        assertTrue(propagator.getCalls() < 1100);
 
     }
 
@@ -929,17 +936,17 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             Vector3D W = EHPOrbit.getPVCoordinates().getMomentum().normalize();
             Vector3D N = Vector3D.crossProduct(W, T);
 
-            Assertions.assertTrue(dif.getNorm() < 111);
-            Assertions.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, T)) < 111);
-            Assertions.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, N)) <  54);
-            Assertions.assertTrue(FastMath.abs(Vector3D.dotProduct(dif, W)) <  12);
+            assertTrue(dif.getNorm() < 111);
+            assertTrue(FastMath.abs(Vector3D.dotProduct(dif, T)) < 111);
+            assertTrue(FastMath.abs(Vector3D.dotProduct(dif, N)) <  54);
+            assertTrue(FastMath.abs(Vector3D.dotProduct(dif, W)) <  12);
 
         }
 
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -965,7 +972,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -989,7 +996,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testTimeDependentField() {
+    void testTimeDependentField() {
 
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -1026,12 +1033,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             maxDeltaN = FastMath.max(maxDeltaN, FastMath.abs(Vector3D.dotProduct(delta, n)));
             maxDeltaW = FastMath.max(maxDeltaW, FastMath.abs(Vector3D.dotProduct(delta, w)));
         }
-        Assertions.assertTrue(maxDeltaT > 0.65);
-        Assertions.assertTrue(maxDeltaT < 0.85);
-        Assertions.assertTrue(maxDeltaN > 0.02);
-        Assertions.assertTrue(maxDeltaN < 0.03);
-        Assertions.assertTrue(maxDeltaW > 0.05);
-        Assertions.assertTrue(maxDeltaW < 0.10);
+        assertTrue(maxDeltaT > 0.65);
+        assertTrue(maxDeltaT < 0.85);
+        assertTrue(maxDeltaN > 0.02);
+        assertTrue(maxDeltaN < 0.03);
+        assertTrue(maxDeltaW > 0.05);
+        assertTrue(maxDeltaW < 0.10);
 
     }
 
@@ -1051,7 +1058,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobian()
+    void testStateJacobian()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1074,7 +1081,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         propagator.setOrbitType(integrationType);
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
-        Assertions.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         propagator.addForceModel(hfModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);
@@ -1084,7 +1091,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVs80Implementation()
+    void testStateJacobianVs80Implementation()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1102,7 +1109,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
-        Assertions.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVs80Implementation(state, hfModel,
@@ -1112,7 +1119,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationGradient()
+    void testStateJacobianVs80ImplementationGradient()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1130,7 +1137,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
-        Assertions.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVs80ImplementationGradient(state, hfModel,
@@ -1140,7 +1147,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferences()
+    void testStateJacobianVsFiniteDifferences()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1158,7 +1165,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
-        Assertions.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVsFiniteDifferences(state, hfModel, Utils.defaultLaw(),
@@ -1167,7 +1174,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesGradient()
+    void testStateJacobianVsFiniteDifferencesGradient()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1185,7 +1192,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
-        Assertions.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
+        assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         SpacecraftState state = new SpacecraftState(orbit);
 
         checkStateJacobianVsFiniteDifferencesGradient(state, hfModel, Utils.defaultLaw(),
@@ -1194,7 +1201,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testIssue996() {
+    void testIssue996() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1216,30 +1223,30 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         NormalizedSphericalHarmonicsProvider provider00 = GravityFieldFactory.getNormalizedProvider(0,  0);
         HolmesFeatherstoneAttractionModel hfModel00 = new HolmesFeatherstoneAttractionModel(itrf, provider00);
 
-        Assertions.assertEquals(0., hfModel00.nonCentralPart(date, pos, mu));
-        Assertions.assertEquals(mu / pos.getNorm(), hfModel00.value(date, pos, mu));
-        Assertions.assertArrayEquals(zeroGradient, hfModel00.gradient(date, pos, mu));
+        assertEquals(0., hfModel00.nonCentralPart(date, pos, mu));
+        assertEquals(mu / pos.getNorm(), hfModel00.value(date, pos, mu));
+        assertArrayEquals(zeroGradient, hfModel00.gradient(date, pos, mu));
 
         NormalizedSphericalHarmonicsProvider provider10 = GravityFieldFactory.getNormalizedProvider(1,  0);
         HolmesFeatherstoneAttractionModel hfModel10 = new HolmesFeatherstoneAttractionModel(itrf, provider10);
 
-        Assertions.assertEquals(0., hfModel10.nonCentralPart(date, pos, mu));
-        Assertions.assertEquals(mu / pos.getNorm(), hfModel10.value(date, pos, mu));
-        Assertions.assertArrayEquals(zeroGradient, hfModel10.gradient(date, pos, mu));
+        assertEquals(0., hfModel10.nonCentralPart(date, pos, mu));
+        assertEquals(mu / pos.getNorm(), hfModel10.value(date, pos, mu));
+        assertArrayEquals(zeroGradient, hfModel10.gradient(date, pos, mu));
 
         NormalizedSphericalHarmonicsProvider provider11 = GravityFieldFactory.getNormalizedProvider(1,  1);
         HolmesFeatherstoneAttractionModel hfModel11 = new HolmesFeatherstoneAttractionModel(itrf, provider11);
 
-        Assertions.assertEquals(0., hfModel11.nonCentralPart(date, pos, mu));
-        Assertions.assertEquals(mu / pos.getNorm(), hfModel11.value(date, pos, mu));
-        Assertions.assertArrayEquals(zeroGradient, hfModel11.gradient(date, pos, mu));
+        assertEquals(0., hfModel11.nonCentralPart(date, pos, mu));
+        assertEquals(mu / pos.getNorm(), hfModel11.value(date, pos, mu));
+        assertArrayEquals(zeroGradient, hfModel11.gradient(date, pos, mu));
 
     }
 
 
     @Test
     @DisplayName("Test that acceleration derivatives with respect to absolute date are not equal to zero.")
-    public void testIssue1070() {
+    void testIssue1070() {
         // GIVEN
         // Define possibly shifted absolute date
         final int freeParameters = 1;
@@ -1268,11 +1275,11 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
         // THEN
         final double[] derivatives = accelerationVector.getNormSq().getGradient();
-        Assertions.assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
+        assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         itrf   = null;
         propagator = null;
         Utils.setDataRoot("regular-data");
@@ -1303,12 +1310,12 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
             integrator.setInitialStepSize(60);
             propagator = new NumericalPropagator(integrator);
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         itrf       = null;
         propagator = null;
     }

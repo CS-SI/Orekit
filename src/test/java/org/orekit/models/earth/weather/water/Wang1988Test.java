@@ -19,7 +19,7 @@ package org.orekit.models.earth.weather.water;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
-public class Wang1988Test extends AbstractWaterVaporPressureProviderTest {
+class Wang1988Test extends AbstractWaterVaporPressureProviderTest {
 
     protected WaterVaporPressureProvider buildProvider() {
         return new Wang1988();

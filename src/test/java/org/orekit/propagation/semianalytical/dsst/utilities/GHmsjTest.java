@@ -19,10 +19,11 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.random.MersenneTwister;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class GHmsjTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class GHmsjTest {
 
     private static final double eps = 1e-10;
 
@@ -30,7 +31,7 @@ public class GHmsjTest {
      *  If they give same results, we assume them to be consistent.
      */
     @Test
-    public void testGHmsj() {
+    void testGHmsj() {
         final int sMax = 30;
         final int mMax = 20;
         final MersenneTwister random = new MersenneTwister(123456);
@@ -44,8 +45,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] GHmsj = getGHmsj(k, h, a, b, m, s, j);
-                    Assertions.assertEquals(GHmsj[0], gMSJ.getGmsj(m, s, j), FastMath.abs(eps * GHmsj[0]));
-                    Assertions.assertEquals(GHmsj[1], gMSJ.getHmsj(m, s, j), FastMath.abs(eps * GHmsj[1]));
+                    assertEquals(GHmsj[0], gMSJ.getGmsj(m, s, j), FastMath.abs(eps * GHmsj[0]));
+                    assertEquals(GHmsj[1], gMSJ.getHmsj(m, s, j), FastMath.abs(eps * GHmsj[1]));
                 }
             }
         }
@@ -55,7 +56,7 @@ public class GHmsjTest {
      *  If they give same results, we assume them to be consistent.
      */
     @Test
-    public void testdGHdk() {
+    void testdGHdk() {
         final int sMax = 30;
         final int mMax = 20;
         final MersenneTwister random = new MersenneTwister(456789);
@@ -69,8 +70,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHdk = getdGHdk(k, h, a, b, m, s, j);
-                    Assertions.assertEquals(dGHdk[0], gMSJ.getdGmsdk(m, s, j), FastMath.abs(eps * dGHdk[0]));
-                    Assertions.assertEquals(dGHdk[1], gMSJ.getdHmsdk(m, s, j), FastMath.abs(eps * dGHdk[1]));
+                    assertEquals(dGHdk[0], gMSJ.getdGmsdk(m, s, j), FastMath.abs(eps * dGHdk[0]));
+                    assertEquals(dGHdk[1], gMSJ.getdHmsdk(m, s, j), FastMath.abs(eps * dGHdk[1]));
                 }
             }
         }
@@ -80,7 +81,7 @@ public class GHmsjTest {
      *  If they give same results, we assume them to be consistent.
      */
     @Test
-    public void testdGHdh() {
+    void testdGHdh() {
         final int sMax = 30;
         final int mMax = 20;
         final MersenneTwister random = new MersenneTwister(123789);
@@ -94,8 +95,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHdh = getdGHdh(k, h, a, b, m, s, j);
-                    Assertions.assertEquals(dGHdh[0], gMSJ.getdGmsdh(m, s, j), FastMath.abs(eps * dGHdh[0]));
-                    Assertions.assertEquals(dGHdh[1], gMSJ.getdHmsdh(m, s, j), FastMath.abs(eps * dGHdh[1]));
+                    assertEquals(dGHdh[0], gMSJ.getdGmsdh(m, s, j), FastMath.abs(eps * dGHdh[0]));
+                    assertEquals(dGHdh[1], gMSJ.getdHmsdh(m, s, j), FastMath.abs(eps * dGHdh[1]));
                 }
             }
         }
@@ -105,7 +106,7 @@ public class GHmsjTest {
      *  If they give same results, we assume them to be consistent.
      */
     @Test
-    public void testdGHdAlpha() {
+    void testdGHdAlpha() {
         final int sMax = 30;
         final int mMax = 20;
         final MersenneTwister random = new MersenneTwister(123456789);
@@ -119,8 +120,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHda = getdGHda(k, h, a, b, m, s, j);
-                    Assertions.assertEquals(dGHda[0], gMSJ.getdGmsdAlpha(m, s, j), FastMath.abs(eps * dGHda[0]));
-                    Assertions.assertEquals(dGHda[1], gMSJ.getdHmsdAlpha(m, s, j), FastMath.abs(eps * dGHda[1]));
+                    assertEquals(dGHda[0], gMSJ.getdGmsdAlpha(m, s, j), FastMath.abs(eps * dGHda[0]));
+                    assertEquals(dGHda[1], gMSJ.getdHmsdAlpha(m, s, j), FastMath.abs(eps * dGHda[1]));
                 }
             }
         }
@@ -130,7 +131,7 @@ public class GHmsjTest {
      *  If they give same results, we assume them to be consistent.
      */
     @Test
-    public void testdGHdBeta() {
+    void testdGHdBeta() {
         final int sMax = 30;
         final int mMax = 20;
         final MersenneTwister random = new MersenneTwister(987654321);
@@ -144,8 +145,8 @@ public class GHmsjTest {
                 for (int m = 2; m <= mMax; m+=2) {
                     final int j = m / 2;
                     final double[] dGHdb = getdGHdb(k, h, a, b, m, s, j);
-                    Assertions.assertEquals(dGHdb[0], gMSJ.getdGmsdBeta(m, s, j), FastMath.abs(eps * dGHdb[0]));
-                    Assertions.assertEquals(dGHdb[1], gMSJ.getdHmsdBeta(m, s, j), FastMath.abs(eps * dGHdb[1]));
+                    assertEquals(dGHdb[0], gMSJ.getdGmsdBeta(m, s, j), FastMath.abs(eps * dGHdb[0]));
+                    assertEquals(dGHdb[1], gMSJ.getdHmsdBeta(m, s, j), FastMath.abs(eps * dGHdb[1]));
                 }
             }
         }

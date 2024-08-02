@@ -21,21 +21,24 @@ import org.hipparchus.Field;
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.lang.reflect.Method;
 
-public class FieldGammaMnsFunctionTest {
+class FieldGammaMnsFunctionTest {
 
     int      nMax;
 
     @Test
-    public void testIndex()
-        throws NoSuchMethodException, SecurityException,
-               IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    void testIndex()
+            throws NoSuchMethodException, SecurityException,
+            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Method indexM = FieldGammaMnsFunction.class.getDeclaredMethod("index",
                                                                  Integer.TYPE, Integer.TYPE, Integer.TYPE);
         indexM.setAccessible(true);
@@ -43,15 +46,15 @@ public class FieldGammaMnsFunctionTest {
         for (int n = 0; n <= nMax; ++n) {
             for (int m = 0; m <= n; ++m) {
                 for (int s = -n; s <= n; ++s) {
-                    Assertions.assertEquals(i++, indexM.invoke(null, m, n, s));
+                    assertEquals(i++, indexM.invoke(null, m, n, s));
                 }
             }
         }
     }
 
     @Test
-    public void testPrecomputedRatios()
-        throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void testPrecomputedRatios()
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         doTestPrecomputedRatios(Binary64Field.getInstance());
     }
 
@@ -68,15 +71,15 @@ public class FieldGammaMnsFunctionTest {
                 for (int s = -n; s <= n; ++s) {
                     // compare against naive implementation
                     double r = naiveRatio(m, n, s);
-                    Assertions.assertEquals(r, precomputed[i++], 2.0e-14 * r);
+                    assertEquals(r, precomputed[i++], 2.0e-14 * r);
                 }
             }
         }
     }
 
     @Test
-    public void testReallocate()
-        throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void testReallocate()
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         doTestReallocate(Binary64Field.getInstance());
     }
 
@@ -88,19 +91,19 @@ public class FieldGammaMnsFunctionTest {
         precomputedF.set(null, new double[0]);
         new FieldGammaMnsFunction<>(nMax, zero.add(0.5), +1, field);
         double[] orginalPrecomputed = (double[]) precomputedF.get(null);
-        Assertions.assertEquals((nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6, orginalPrecomputed.length);
+        assertEquals((nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6, orginalPrecomputed.length);
         new FieldGammaMnsFunction<>(nMax + 3, zero.add(0.5), +1, field);
         double[] reallocatedPrecomputed = (double[]) precomputedF.get(null);
-        Assertions.assertEquals((nMax + 4) * (nMax + 5) * (4 * nMax + 15) / 6, reallocatedPrecomputed.length);
+        assertEquals((nMax + 4) * (nMax + 5) * (4 * nMax + 15) / 6, reallocatedPrecomputed.length);
         for (int i = 0; i < orginalPrecomputed.length; ++i) {
-            Assertions.assertEquals(orginalPrecomputed[i], reallocatedPrecomputed[i],
+            assertEquals(orginalPrecomputed[i], reallocatedPrecomputed[i],
                                 1.0e-15 * orginalPrecomputed[i]);
         }
     }
 
 
     @Test
-    public void testValue() {
+    void testValue() {
         doTestValue(Binary64Field.getInstance());
     }
 
@@ -116,10 +119,10 @@ public class FieldGammaMnsFunctionTest {
                             final T v = naiveValue(bigI, gamma, m, n, s, field);
                             final T g = gammaMNS.getValue(m, n, s);
                             if (Double.isInfinite(v.getReal())) {
-                                Assertions.assertTrue(Double.isInfinite(g.getReal()));
-                                Assertions.assertTrue(v.multiply(g).getReal() > 0);
+                                assertTrue(Double.isInfinite(g.getReal()));
+                                assertTrue(v.multiply(g).getReal() > 0);
                             } else {
-                                Assertions.assertEquals(v.getReal(), g.getReal(), FastMath.abs(v).multiply(2.0e-14).getReal());
+                                assertEquals(v.getReal(), g.getReal(), FastMath.abs(v).multiply(2.0e-14).getReal());
                             }
                         }
                     }
@@ -148,7 +151,7 @@ public class FieldGammaMnsFunctionTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         nMax = 12;
     }
 }

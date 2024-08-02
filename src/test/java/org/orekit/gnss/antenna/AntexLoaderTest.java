@@ -21,7 +21,6 @@ import java.net.URL;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -35,23 +34,28 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TimeSpanMap;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class AntexLoaderTest {
+
+class AntexLoaderTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:antex");
     }
 
     @Test
-    public void testSmallAntex14File() throws URISyntaxException {
+    void testSmallAntex14File() throws URISyntaxException {
 
         final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs14-small.atx");
         AntexLoader  loader = new AntexLoader(new DataSource(url.toURI()),
                                               TimeScalesFactory.getGPS());
 
-        Assertions.assertEquals(16, loader.getSatellitesAntennas().size());
+        assertEquals(16, loader.getSatellitesAntennas().size());
 
         checkSatellite(loader.getSatellitesAntennas().get( 0), 1992, 11, 22, 2008, 10, 16,
                        SatelliteSystem.GPS,     "BLOCK IIA",   SatelliteType.BLOCK_IIA, 32, 1,
@@ -174,28 +178,28 @@ public class AntexLoaderTest {
                        SatelliteSystem.IRNSS,   "IRNSS-1IGSO", SatelliteType.IRNSS_1IGSO, 4, 4,
                        "2015-018A", PredefinedGnssSignal.I05, 321.0, 13.0, 0.0);
 
-        Assertions.assertEquals( 3, loader.getReceiversAntennas().size());
-        Assertions.assertEquals("3S-02-TSADM     NONE",  loader.getReceiversAntennas().get(0).getType());
-        Assertions.assertEquals("",                      loader.getReceiversAntennas().get(0).getSerialNumber());
-        Assertions.assertEquals("3S-02-TSATE     NONE",  loader.getReceiversAntennas().get(1).getType());
-        Assertions.assertEquals("",                      loader.getReceiversAntennas().get(1).getSerialNumber());
-        Assertions.assertEquals("AERAT1675_120   SPKE",  loader.getReceiversAntennas().get(2).getType());
-        Assertions.assertEquals("",                      loader.getReceiversAntennas().get(2).getSerialNumber());
-        Assertions.assertEquals("IGS14_1972",            loader.getReceiversAntennas().get(2).getSinexCode());
-        Assertions.assertEquals(1, loader.getReceiversAntennas().get(2).getRadioWaves().size());
-        Assertions.assertTrue(loader.getReceiversAntennas().get(2).getRadioWaves().get(0).closeTo(PredefinedGnssSignal.G01));
+        assertEquals( 3, loader.getReceiversAntennas().size());
+        assertEquals("3S-02-TSADM     NONE",  loader.getReceiversAntennas().get(0).getType());
+        assertEquals("",                      loader.getReceiversAntennas().get(0).getSerialNumber());
+        assertEquals("3S-02-TSATE     NONE",  loader.getReceiversAntennas().get(1).getType());
+        assertEquals("",                      loader.getReceiversAntennas().get(1).getSerialNumber());
+        assertEquals("AERAT1675_120   SPKE",  loader.getReceiversAntennas().get(2).getType());
+        assertEquals("",                      loader.getReceiversAntennas().get(2).getSerialNumber());
+        assertEquals("IGS14_1972",            loader.getReceiversAntennas().get(2).getSinexCode());
+        assertEquals(1, loader.getReceiversAntennas().get(2).getRadioWaves().size());
+        assertTrue(loader.getReceiversAntennas().get(2).getRadioWaves().get(0).closeTo(PredefinedGnssSignal.G01));
         try {
             loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.E06);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FREQUENCY_FOR_ANTENNA, oe.getSpecifier());
-            Assertions.assertSame(PredefinedGnssSignal.E06, oe.getParts()[0]);
-            Assertions.assertEquals("AERAT1675_120   SPKE", oe.getParts()[1]);
+            assertEquals(OrekitMessages.UNSUPPORTED_FREQUENCY_FOR_ANTENNA, oe.getSpecifier());
+            assertSame(PredefinedGnssSignal.E06, oe.getParts()[0]);
+            assertEquals("AERAT1675_120   SPKE", oe.getParts()[1]);
         }
-        Assertions.assertEquals(-0.00001, loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.G01).getX(), 1.0e-15);
-        Assertions.assertEquals(+0.00057, loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.G01).getY(), 1.0e-15);
-        Assertions.assertEquals(+0.08051, loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.G01).getZ(), 1.0e-15);
-        Assertions.assertEquals(-0.00249,
+        assertEquals(-0.00001, loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.G01).getX(), 1.0e-15);
+        assertEquals(+0.00057, loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.G01).getY(), 1.0e-15);
+        assertEquals(+0.08051, loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.G01).getZ(), 1.0e-15);
+        assertEquals(-0.00249,
                             loader.getReceiversAntennas().get(2).getPhaseCenterVariation(PredefinedGnssSignal.G01,
                                                                                          new Vector3D(FastMath.toRadians(60.0),
                                                                                                       FastMath.toRadians(55.0))),
@@ -204,88 +208,88 @@ public class AntexLoaderTest {
     }
 
     @Test
-    public void testSmallAntex20File() throws URISyntaxException {
+    void testSmallAntex20File() throws URISyntaxException {
 
         final URL url = AntexLoaderTest.class.getClassLoader().getResource("antex/igs20-small.atx");
         AntexLoader  loader = new AntexLoader(new DataSource(url.toURI()),
                                               TimeScalesFactory.getGPS());
-        Assertions.assertEquals(12, loader.getSatellitesAntennas().size());
-        Assertions.assertEquals(3,  loader.getReceiversAntennas().size());
+        assertEquals(12, loader.getSatellitesAntennas().size());
+        assertEquals(3,  loader.getReceiversAntennas().size());
     }
 
     @Test
-    public void testWrongColumns() {
+    void testWrongColumns() {
         try {
             new AntexLoader("^igs14-wrong-columns\\.atx$");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.WRONG_COLUMNS_NUMBER, oe.getSpecifier());
-            Assertions.assertEquals(25, ((Integer) oe.getParts()[1]).intValue());
-            Assertions.assertEquals(17, ((Integer) oe.getParts()[2]).intValue());
-            Assertions.assertEquals(10, ((Integer) oe.getParts()[3]).intValue());
+            assertEquals(OrekitMessages.WRONG_COLUMNS_NUMBER, oe.getSpecifier());
+            assertEquals(25, ((Integer) oe.getParts()[1]).intValue());
+            assertEquals(17, ((Integer) oe.getParts()[2]).intValue());
+            assertEquals(10, ((Integer) oe.getParts()[3]).intValue());
         }
     }
 
     @Test
-    public void testUnknownFrequency() {
+    void testUnknownFrequency() {
         try {
             new AntexLoader("^igs14-unknown-rinex-frequency\\.atx$");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNKNOWN_RINEX_FREQUENCY, oe.getSpecifier());
-            Assertions.assertEquals("U99", (String) oe.getParts()[0]);
-            Assertions.assertEquals(23, ((Integer) oe.getParts()[2]).intValue());
+            assertEquals(OrekitMessages.UNKNOWN_RINEX_FREQUENCY, oe.getSpecifier());
+            assertEquals("U99", (String) oe.getParts()[0]);
+            assertEquals(23, ((Integer) oe.getParts()[2]).intValue());
         }
     }
 
     @Test
-    public void testMismatchedFrequencies() {
+    void testMismatchedFrequencies() {
         try {
             new AntexLoader("^igs14-mismatched-frequencies\\.atx$");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.MISMATCHED_FREQUENCIES, oe.getSpecifier());
-            Assertions.assertEquals(88, ((Integer) oe.getParts()[1]).intValue());
-            Assertions.assertEquals("E01", "" + oe.getParts()[2]);
-            Assertions.assertEquals("E06", "" + oe.getParts()[3]);
+            assertEquals(OrekitMessages.MISMATCHED_FREQUENCIES, oe.getSpecifier());
+            assertEquals(88, ((Integer) oe.getParts()[1]).intValue());
+            assertEquals("E01", "" + oe.getParts()[2]);
+            assertEquals("E06", "" + oe.getParts()[3]);
         }
     }
 
     @Test
-    public void testWrongLabel() {
+    void testWrongLabel() {
         try {
             new AntexLoader("^igs14-unknown-label\\.atx$");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(17, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertEquals("THIS IS NOT AN ANTEX LABEL", ((String) oe.getParts()[2]).substring(60).trim());
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(17, ((Integer) oe.getParts()[0]).intValue());
+            assertEquals("THIS IS NOT AN ANTEX LABEL", ((String) oe.getParts()[2]).substring(60).trim());
         }
     }
 
-    @Test
     /**
      * This test is related to issue-622.
      */
-    public void testUnknownNumberFrequencies() {
+    @Test
+    void testUnknownNumberFrequencies() {
         try {
             new AntexLoader("^igs14-unknown-nb-frequencies\\.atx$");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(21, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertEquals("END OF FREQUENCY", ((String) oe.getParts()[2]).substring(60).trim());
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(21, ((Integer) oe.getParts()[0]).intValue());
+            assertEquals("END OF FREQUENCY", ((String) oe.getParts()[2]).substring(60).trim());
         }
     }
 
     @Test
-    public void testCorruptedFile() {
+    void testCorruptedFile() {
         try {
             new AntexLoader("^igs14-corrupted\\.atx$");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(21, ((Integer) oe.getParts()[0]).intValue());
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(21, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
@@ -305,19 +309,19 @@ public class AntexLoaderTest {
                                                         23, 59, 59.9999999,
                                                         TimeScalesFactory.getGPS());
         final SatelliteAntenna antenna = tsm.get(startDate.shiftedBy(oneMilliSecond));
-        Assertions.assertEquals(system,         antenna.getSatelliteSystem());
-        Assertions.assertEquals(type,           antenna.getType());
-        Assertions.assertEquals(satType,        antenna.getSatelliteType());
-        Assertions.assertEquals(satCode,        antenna.getSatelliteCode());
-        Assertions.assertEquals(prnNumber,      antenna.getPrnNumber());
-        Assertions.assertEquals(cosparId,       antenna.getCosparID());
-        Assertions.assertEquals(0.0,            startDate.durationFrom(antenna.getValidFrom()), 1.0e-10);
+        assertEquals(system,         antenna.getSatelliteSystem());
+        assertEquals(type,           antenna.getType());
+        assertEquals(satType,        antenna.getSatelliteType());
+        assertEquals(satCode,        antenna.getSatelliteCode());
+        assertEquals(prnNumber,      antenna.getPrnNumber());
+        assertEquals(cosparId,       antenna.getCosparID());
+        assertEquals(0.0,            startDate.durationFrom(antenna.getValidFrom()), 1.0e-10);
         if (endDate == AbsoluteDate.FUTURE_INFINITY) {
-            Assertions.assertSame(endDate, antenna.getValidUntil());
+            assertSame(endDate, antenna.getValidUntil());
         } else {
-            Assertions.assertEquals(0.0,            endDate.durationFrom(antenna.getValidUntil()), 1.0e-10);
+            assertEquals(0.0,            endDate.durationFrom(antenna.getValidUntil()), 1.0e-10);
         }
-        Assertions.assertEquals(phaseCenterVariation * 0.001,
+        assertEquals(phaseCenterVariation * 0.001,
                             antenna.getPhaseCenterVariation(radioWave,
                                                             new Vector3D(FastMath.toRadians(az),
                                                                          FastMath.toRadians(90 - pol))),

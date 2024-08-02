@@ -1,7 +1,8 @@
 package org.orekit.propagation.conversion.averaging.elements;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AveragedEquinoctialWithMeanAngleTest {
 
@@ -12,12 +13,12 @@ class AveragedEquinoctialWithMeanAngleTest {
         // WHEN
         final double[] elementsAsArray = elements.toArray();
         // THEN
-        Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), elementsAsArray[0]);
-        Assertions.assertEquals(elements.getAveragedEquinoctialEx(), elementsAsArray[1]);
-        Assertions.assertEquals(elements.getAveragedEquinoctialEy(), elementsAsArray[2]);
-        Assertions.assertEquals(elements.getAveragedHx(), elementsAsArray[3]);
-        Assertions.assertEquals(elements.getAveragedHy(), elementsAsArray[4]);
-        Assertions.assertEquals(elements.getAveragedMeanLongitudeArgument(), elementsAsArray[5]);
+        assertEquals(elements.getAveragedSemiMajorAxis(), elementsAsArray[0]);
+        assertEquals(elements.getAveragedEquinoctialEx(), elementsAsArray[1]);
+        assertEquals(elements.getAveragedEquinoctialEy(), elementsAsArray[2]);
+        assertEquals(elements.getAveragedHx(), elementsAsArray[3]);
+        assertEquals(elements.getAveragedHy(), elementsAsArray[4]);
+        assertEquals(elements.getAveragedMeanLongitudeArgument(), elementsAsArray[5]);
     }
 
 }

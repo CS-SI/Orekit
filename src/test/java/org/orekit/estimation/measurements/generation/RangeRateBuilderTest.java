@@ -27,7 +27,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.RangeRate;
 import org.orekit.estimation.measurements.modifiers.Bias;
 
-public class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRate> {
+class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<RangeRate> {
 
     private static final double SIGMA = 0.01;
     private static final double BIAS  = 0.002;
@@ -50,12 +50,12 @@ public class RangeRateBuilderTest extends AbstractGroundMeasurementBuilderTest<R
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0x02c925b8812d8992l, 0.4, 0.9, 128, 2.4 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0x34ce85d26d51cd91l, -0.2, -0.6, 100, 3.3 * SIGMA);
     }
 

@@ -24,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -48,6 +47,10 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 class LofOffsetPointingTest {
@@ -87,14 +90,14 @@ class LofOffsetPointingTest {
         final BodyCenterPointing centerLaw = new BodyCenterPointing(circ.getFrame(), earthSpheric);
         final Rotation centerRot = centerLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         final double angleBodyCenter = centerRot.composeInverse(lofRot, RotationConvention.VECTOR_OPERATOR).getAngle();
-        Assertions.assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
+        assertEquals(0., angleBodyCenter, Utils.epsilonAngle);
 
         // Compare to nadir pointing law
         //*******************************
         final NadirPointing nadirLaw = new NadirPointing(circ.getFrame(), earthSpheric);
         final Rotation nadirRot = nadirLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
         final double angleNadir = nadirRot.composeInverse(lofRot, RotationConvention.VECTOR_OPERATOR).getAngle();
-        Assertions.assertEquals(0., angleNadir, Utils.epsilonAngle);
+        assertEquals(0., angleNadir, Utils.epsilonAngle);
 
     }
 
@@ -108,9 +111,9 @@ class LofOffsetPointingTest {
         final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
         try {
             pointing.getTargetPV(circ, date, circ.getFrame());
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND, oe.getSpecifier());
+            assertEquals(OrekitMessages.ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND, oe.getSpecifier());
         }
     }
 
@@ -143,19 +146,19 @@ class LofOffsetPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assertions.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-10);
+        assertTrue(spin0.getNorm() > 1.0e-3);
+        assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-10);
 
     }
 
@@ -215,20 +218,20 @@ class LofOffsetPointingTest {
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
         final double tolerance = 1e-15;
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), tolerance);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), tolerance);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), tolerance);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), tolerance);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), tolerance);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), tolerance);
 
         final Rotation rotationD = provider.getAttitudeRotation(orbit, date, frame);
         final FieldRotation<T> rotationF = provider.getAttitudeRotation(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(rotationD, rotationF.toRotation()), tolerance);
+        assertEquals(0.0, Rotation.distance(rotationD, rotationF.toRotation()), tolerance);
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
 
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     6.0e-9);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     5.0e-13);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 2.0e-6);
+        assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     6.0e-9);
+        assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     5.0e-13);
+        assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 2.0e-6);
     }
 
     @Test
@@ -244,7 +247,7 @@ class LofOffsetPointingTest {
         final Rotation actualRotation = pointing.getAttitudeRotation(circ, circ.getDate(), circ.getFrame());
         // THEN
         final Rotation expectedRotation = pointing.getAttitude(circ, circ.getDate(), circ.getFrame()).getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
     @Test
@@ -260,7 +263,7 @@ class LofOffsetPointingTest {
         final Vector3D targetPosition = pointing.getTargetPosition(circ, circ.getDate(), circ.getFrame());
         // THEN
         final Vector3D expectedPosition = pointing.getTargetPV(circ, circ.getDate(), circ.getFrame()).getPosition();
-        Assertions.assertEquals(expectedPosition, targetPosition);
+        assertEquals(expectedPosition, targetPosition);
     }
 
     @Test
@@ -277,11 +280,11 @@ class LofOffsetPointingTest {
         final FieldVector3D<Complex> targetPosition = pointing.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
         // THEN
         final FieldVector3D<Complex> expectedPosition = pointing.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(0., expectedPosition.subtract(targetPosition).getNorm().getReal(), 1e-10);
+        assertEquals(0., expectedPosition.subtract(targetPosition).getNorm().getReal(), 1e-10);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
@@ -302,13 +305,13 @@ class LofOffsetPointingTest {
                 new OneAxisEllipsoid(6378136.460, 0., frameItrf);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         frameItrf = null;
         earthSpheric = null;

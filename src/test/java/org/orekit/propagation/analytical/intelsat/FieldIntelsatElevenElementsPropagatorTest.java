@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical.intelsat;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
@@ -33,34 +32,37 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
-public class FieldIntelsatElevenElementsPropagatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+class FieldIntelsatElevenElementsPropagatorTest {
 
     private static FieldIntelsatElevenElements<Binary64> ELEMENTS;
 
     @Test
-    public void testCannotResetIntermediateState() {
+    void testCannotResetIntermediateState() {
         FieldIntelsatElevenElementsPropagator<Binary64> propagator = new FieldIntelsatElevenElementsPropagator<>(ELEMENTS);
         try {
             propagator.resetIntermediateState(null, false);
         }
         catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.NON_RESETABLE_STATE);
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testCannotResetInitialState() {
+    void testCannotResetInitialState() {
         FieldIntelsatElevenElementsPropagator<Binary64> propagator = new FieldIntelsatElevenElementsPropagator<>(ELEMENTS);
         try {
             propagator.resetInitialState(null);
         }
         catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.NON_RESETABLE_STATE);
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testPropagation() {
+    void testPropagation() {
         // Reference: Intelsat calculator for spacecraft 4521 (used 2023/12/07)
         // https://www.intelsat.com/resources/tools/
         FieldIntelsatElevenElementsPropagator<Binary64> propagator = new FieldIntelsatElevenElementsPropagator<>(ELEMENTS);
@@ -68,35 +70,35 @@ public class FieldIntelsatElevenElementsPropagatorTest {
         double referenceLatitude170Hours = 0.0257;
         double tolerance = 0.0001;
         propagator.propagateInEcef(ELEMENTS.getEpoch().shiftedBy(170 * 3600.0));
-        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
-        Assertions.assertEquals(referenceLongitude170Hours, propagator.getEastLongitudeDegrees().getValue().getReal(), tolerance);
-        Assertions.assertEquals(referenceLatitude170Hours, propagator.getGeocentricLatitudeDegrees().getValue().getReal(), tolerance);
+        assertNotNull(propagator.getIntelsatElevenElements());
+        assertEquals(referenceLongitude170Hours, propagator.getEastLongitudeDegrees().getValue().getReal(), tolerance);
+        assertEquals(referenceLatitude170Hours, propagator.getGeocentricLatitudeDegrees().getValue().getReal(), tolerance);
     }
 
     @Test
-    public void testOrbitElementsAtT0() {
+    void testOrbitElementsAtT0() {
         // Reference use of the Intelsat's 11 elements propagator developed in STK
         FieldIntelsatElevenElementsPropagator<Binary64> propagator = new FieldIntelsatElevenElementsPropagator<>(ELEMENTS, FramesFactory.getTOD(IERSConventions.IERS_2010, false),
                                                                                                                  FramesFactory.getITRF(IERSConventions.IERS_2010, false));
         KeplerianOrbit orbit = ((FieldKeplerianOrbit<Binary64>) OrbitType.KEPLERIAN.convertType(
                 propagator.propagateOrbit(ELEMENTS.getEpoch(), propagator.getParameters(ELEMENTS.getEpoch().getField())))).toOrbit();
-        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
-        Assertions.assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue().getReal(), 0.0001);
-        Assertions.assertEquals(0.0378, propagator.getGeocentricLatitudeDegrees().getValue().getReal(), 0.0001);
-        Assertions.assertEquals(-1.529465e-6, propagator.getEastLongitudeDegrees().getFirstDerivative().getReal(), 1.0e-12);
-        Assertions.assertEquals(-1.01044e-7, propagator.getGeocentricLatitudeDegrees().getFirstDerivative().getReal(), 1.0e-12);
-        Assertions.assertEquals(42172456.005, propagator.getOrbitRadius().getValue().getReal(), 1.0e-3);
-        Assertions.assertEquals(0.797, propagator.getOrbitRadius().getFirstDerivative().getReal(), 1.0e-3);
-        Assertions.assertEquals(42166413.453, orbit.getA(), 4.0e-2);
-        Assertions.assertEquals(0.000296, orbit.getE(), 1.0e-6);
-        Assertions.assertEquals(0.037825, FastMath.toDegrees(orbit.getI()), 1.0e-6);
-        Assertions.assertEquals(282.488, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getRightAscensionOfAscendingNode(), FastMath.PI)), 4.0e-3);
-        Assertions.assertEquals(333.151, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPerigeeArgument(), FastMath.PI)), 4.0e-3);
-        Assertions.assertEquals(118.919, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getAnomaly(PositionAngleType.MEAN), FastMath.PI)), 1.0e-3);
+        assertNotNull(propagator.getIntelsatElevenElements());
+        assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue().getReal(), 0.0001);
+        assertEquals(0.0378, propagator.getGeocentricLatitudeDegrees().getValue().getReal(), 0.0001);
+        assertEquals(-1.529465e-6, propagator.getEastLongitudeDegrees().getFirstDerivative().getReal(), 1.0e-12);
+        assertEquals(-1.01044e-7, propagator.getGeocentricLatitudeDegrees().getFirstDerivative().getReal(), 1.0e-12);
+        assertEquals(42172456.005, propagator.getOrbitRadius().getValue().getReal(), 1.0e-3);
+        assertEquals(0.797, propagator.getOrbitRadius().getFirstDerivative().getReal(), 1.0e-3);
+        assertEquals(42166413.453, orbit.getA(), 4.0e-2);
+        assertEquals(0.000296, orbit.getE(), 1.0e-6);
+        assertEquals(0.037825, FastMath.toDegrees(orbit.getI()), 1.0e-6);
+        assertEquals(282.488, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getRightAscensionOfAscendingNode(), FastMath.PI)), 4.0e-3);
+        assertEquals(333.151, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPerigeeArgument(), FastMath.PI)), 4.0e-3);
+        assertEquals(118.919, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getAnomaly(PositionAngleType.MEAN), FastMath.PI)), 1.0e-3);
     }
 
     @BeforeAll
-    public static void initialize() {
+    static void initialize() {
         Binary64 zero = new Binary64(0.0);
         // Reference elements from Intelsat website (spacecraft 4521)
         ELEMENTS = new FieldIntelsatElevenElements<>(new FieldAbsoluteDate<>(zero.getField(), "2023-12-04T00:00:00.000", TimeScalesFactory.getUTC()), zero.add(302.0058),

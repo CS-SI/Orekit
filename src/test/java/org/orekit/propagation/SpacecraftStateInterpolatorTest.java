@@ -21,7 +21,6 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,6 +66,10 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,7 +83,7 @@ class SpacecraftStateInterpolatorTest {
     private Propagator            absPVPropagator;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data:potential/icgem-format");
             double mu  = 3.9860047e14;
@@ -118,12 +121,12 @@ class SpacecraftStateInterpolatorTest {
             absPVPropagator = setUpNumericalPropagator();
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mass            = Double.NaN;
         orbit           = null;
         attitudeLaw     = null;
@@ -131,7 +134,7 @@ class SpacecraftStateInterpolatorTest {
     }
 
     @Test
-    public void testOrbitInterpolation()
+    void testOrbitInterpolation()
             throws OrekitException {
 
         // Given
@@ -160,7 +163,7 @@ class SpacecraftStateInterpolatorTest {
     }
 
     @Test
-    public void testAbsPVAInterpolation()
+    void testAbsPVAInterpolation()
             throws OrekitException {
 
         // Given
@@ -328,12 +331,12 @@ class SpacecraftStateInterpolatorTest {
             maxErrorD = FastMath.max(maxErrorD,
                     FastMath.abs(interpolated.getAdditionalStateDerivative("quadratic-dot")[0] - dt * dt));
         }
-        Assertions.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
-        Assertions.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assertions.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
-        Assertions.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
-        Assertions.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
-        Assertions.assertEquals(expectedErrorD, maxErrorD, 2.0e-10);
+        assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
+        assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
+        assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
+        assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
+        assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
+        assertEquals(expectedErrorD, maxErrorD, 2.0e-10);
     }
 
     /**
@@ -377,10 +380,10 @@ class SpacecraftStateInterpolatorTest {
                             propagated.getAttitude().getRotation())));
             maxErrorM = FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass() - propagated.getMass()));
         }
-        Assertions.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
-        Assertions.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assertions.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
-        Assertions.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
+        assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
+        assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
+        assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
+        assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
     }
 
     @Test
@@ -407,10 +410,10 @@ class SpacecraftStateInterpolatorTest {
                 new SpacecraftStateInterpolator(2, inertialFrameMock, inertialFrameMock);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                 () -> stateInterpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(
+        assertEquals(
                 "one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration",
                 thrown.getMessage());
     }
@@ -423,14 +426,14 @@ class SpacecraftStateInterpolatorTest {
         Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                 () -> new SpacecraftStateInterpolator(
                         AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
                         AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                         inertialFrameMock, null, null,
                         null, null, null));
 
-        Assertions.assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
+        assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
                 + "absolute position-velocity-acceleration interpolator", thrown.getMessage());
     }
 
@@ -464,10 +467,10 @@ class SpacecraftStateInterpolatorTest {
                         inertialFrame, orbitInterpolatorMock, null, null, null, null);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class, () ->
                 interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals("wrong interpolator defined for this spacecraft state type (orbit or absolute PV)",
+        assertEquals("wrong interpolator defined for this spacecraft state type (orbit or absolute PV)",
                 thrown.getMessage());
     }
 
@@ -517,7 +520,7 @@ class SpacecraftStateInterpolatorTest {
         final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
 
         // THEN
-        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
+        assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
     @SuppressWarnings("deprecation")
@@ -569,7 +572,7 @@ class SpacecraftStateInterpolatorTest {
         final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
 
         // THEN
-        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
+        assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
     @Test
@@ -591,11 +594,11 @@ class SpacecraftStateInterpolatorTest {
                         inertialFrame, orbitInterpolatorMock, null, null, null, null);
 
         // When & Then
-        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        OrekitIllegalArgumentException thrown = assertThrows(OrekitIllegalArgumentException.class, () ->
                 interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
-        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+        assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
@@ -628,12 +631,12 @@ class SpacecraftStateInterpolatorTest {
                         massInterpolatorMock, attitudeInterpolatorMock, additionalInterpolatorMock);
 
         // Then
-        Assertions.assertEquals(inertialFrameMock, interpolator.getOutputFrame());
-        Assertions.assertEquals(orbitInterpolatorMock, interpolator.getOrbitInterpolator().get());
-        Assertions.assertEquals(absPVInterpolatorMock, interpolator.getAbsPVAInterpolator().get());
-        Assertions.assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
-        Assertions.assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
-        Assertions.assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
+        assertEquals(inertialFrameMock, interpolator.getOutputFrame());
+        assertEquals(orbitInterpolatorMock, interpolator.getOrbitInterpolator().get());
+        assertEquals(absPVInterpolatorMock, interpolator.getAbsPVAInterpolator().get());
+        assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
+        assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
+        assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
 
     }
 
@@ -651,7 +654,7 @@ class SpacecraftStateInterpolatorTest {
                         inertialFrameMock, inertialFrameMock);
 
         // Then
-        Assertions.assertEquals(extrapolationThreshold, interpolator.getExtrapolationThreshold());
+        assertEquals(extrapolationThreshold, interpolator.getExtrapolationThreshold());
 
     }
 
@@ -662,7 +665,7 @@ class SpacecraftStateInterpolatorTest {
         final FakeStateInterpolator fakeStateInterpolator = new FakeStateInterpolator();
 
         // WHEN & THEN
-        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+        assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
     }
 
     private static class FakeStateInterpolator extends AbstractTimeInterpolator<SpacecraftState> {

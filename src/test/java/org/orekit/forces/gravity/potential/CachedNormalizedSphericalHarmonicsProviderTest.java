@@ -17,15 +17,16 @@
 package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /** @author Evan Ward */
-public class CachedNormalizedSphericalHarmonicsProviderTest {
+class CachedNormalizedSphericalHarmonicsProviderTest {
 
 
     private static final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -35,37 +36,37 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     private CachedNormalizedSphericalHarmonicsProvider cache;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         raw = new QuadraticProvider(date);
         cache = new CachedNormalizedSphericalHarmonicsProvider(raw, step, interpolationPoints, maxSlots, slotSpan, newSlotInterval);
     }
 
     @Test
-    public void testGetReferenceDate() {
+    void testGetReferenceDate() {
         AbsoluteDate actualDate = cache.getReferenceDate();
-        Assertions.assertEquals(actualDate, date);
+        assertEquals(date, actualDate);
     }
 
     @Test
-    public void testLimits() {
-        Assertions.assertEquals(2, cache.getMaxDegree());
-        Assertions.assertEquals(2, cache.getMaxOrder());
+    void testLimits() {
+        assertEquals(2, cache.getMaxDegree());
+        assertEquals(2, cache.getMaxOrder());
     }
 
     @Test
-    public void testBody() {
-        Assertions.assertEquals(1, cache.getMu(), 1.0e-15);
-        Assertions.assertEquals(1, cache.getAe(), 1.0e-15);
+    void testBody() {
+        assertEquals(1, cache.getMu(), 1.0e-15);
+        assertEquals(1, cache.getAe(), 1.0e-15);
     }
 
     @Test
-    public void testGetTideSystem() {
+    void testGetTideSystem() {
         TideSystem actualSystem = cache.getTideSystem();
-        Assertions.assertEquals(actualSystem, TideSystem.UNKNOWN);
+        assertEquals(TideSystem.UNKNOWN, actualSystem);
     }
 
     @Test
-    public void testInterpolation() {
+    void testInterpolation() {
         //setup
         //generate points on grid with date as the origin
         cache.onDate(date);
@@ -81,14 +82,14 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         double tol = Precision.EPSILON;
         for (int n = 0; n < raw.getMaxDegree(); n++) {
             for (int m = 0; m < n; m++) {
-                Assertions.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
-                Assertions.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
+                assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
+                assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
             }
         }
     }
 
     @Test
-    public void testReverseEntryGeneration() {
+    void testReverseEntryGeneration() {
         //setup
         //generate points on grid with date as the origin
         cache.onDate(date);
@@ -103,8 +104,8 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         double tol = Precision.EPSILON;
         for (int n = 0; n < raw.getMaxDegree(); n++) {
             for (int m = 0; m < n; m++) {
-                Assertions.assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
-                Assertions.assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
+                assertEquals(expected.getNormalizedCnm(n, m), actual.getNormalizedCnm(n, m), tol);
+                assertEquals(expected.getNormalizedSnm(n, m), actual.getNormalizedSnm(n, m), tol);
             }
         }
     }

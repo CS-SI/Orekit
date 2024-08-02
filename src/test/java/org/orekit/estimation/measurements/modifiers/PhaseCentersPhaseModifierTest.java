@@ -21,7 +21,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -42,10 +41,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
-public class PhaseCentersPhaseModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PhaseCentersPhaseModifierTest {
 
     @Test
-    public void testPreliminary() {
+    void testPreliminary() {
 
         // this test does not check PhaseCentersPhaseModifier at all,
         // it just checks PhaseMeasurementCreator behaves as necessary for the other test
@@ -89,13 +91,13 @@ public class PhaseCentersPhaseModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             Phase sr = (Phase) spacecraftCenteredMeasurements.get(i);
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() >= +xOffset);
-            Assertions.assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() <= -xOffset);
+            assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() >= +xOffset);
+            assertTrue((ar.getObservedValue()[0] - sr.getObservedValue()[0]) * sr.getWavelength() <= -xOffset);
         }
     }
 
     @Test
-    public void testEffect() {
+    void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -157,8 +159,8 @@ public class PhaseCentersPhaseModifierTest {
             sr.addModifier(modifier);
             EstimatedMeasurementBase<Phase> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
+            assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);
         }
 
     }

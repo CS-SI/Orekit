@@ -19,7 +19,6 @@ package org.orekit.models.earth.tessellation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,61 +33,64 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class AlongTrackAimingTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class AlongTrackAimingTest {
 
     @Test
-    public void testAscending() {
+    void testAscending() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
         for (double latitude = FastMath.toRadians(-50.21); latitude < FastMath.toRadians(50.21); latitude += 0.001) {
             final GeodeticPoint gp = new GeodeticPoint(latitude, 0.0, 0.0);
             final Vector3D aiming = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-            Assertions.assertEquals(1.0, aiming.getNorm(), 1.0e-12);
+            assertEquals(1.0, aiming.getNorm(), 1.0e-12);
             final double elevation = 0.5 * FastMath.PI - Vector3D.angle(aiming, gp.getZenith());
             final double azimuth = FastMath.atan2(Vector3D.dotProduct(aiming, gp.getEast()),
                                                   Vector3D.dotProduct(aiming, gp.getNorth()));
-            Assertions.assertEquals(0.0, FastMath.toDegrees(elevation), 1.0e-6);
+            assertEquals(0.0, FastMath.toDegrees(elevation), 1.0e-6);
             if (FastMath.abs(FastMath.toDegrees(latitude)) > 49.6) {
-                Assertions.assertTrue(FastMath.toDegrees(azimuth) > 80.0);
+                assertTrue(FastMath.toDegrees(azimuth) > 80.0);
             }
             if (FastMath.abs(FastMath.toDegrees(latitude)) < 5.0) {
-                Assertions.assertTrue(FastMath.toDegrees(azimuth) < 37.0);
+                assertTrue(FastMath.toDegrees(azimuth) < 37.0);
             }
-            Assertions.assertTrue(FastMath.toDegrees(azimuth) > 36.7);
+            assertTrue(FastMath.toDegrees(azimuth) > 36.7);
         }
     }
 
     @Test
-    public void testDescending() {
+    void testDescending() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, false);
         for (double latitude = FastMath.toRadians(-50.21); latitude < FastMath.toRadians(50.21); latitude += 0.001) {
             final GeodeticPoint gp = new GeodeticPoint(latitude, 0.0, 0.0);
             final Vector3D aiming = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-            Assertions.assertEquals(1.0, aiming.getNorm(), 1.0e-12);
+            assertEquals(1.0, aiming.getNorm(), 1.0e-12);
             final double elevation = 0.5 * FastMath.PI - Vector3D.angle(aiming, gp.getZenith());
             final double azimuth = MathUtils.normalizeAngle(FastMath.atan2(Vector3D.dotProduct(aiming, gp.getEast()),
                                                                            Vector3D.dotProduct(aiming, gp.getNorth())),
                                                             FastMath.PI);
-            Assertions.assertEquals(0.0, FastMath.toDegrees(elevation), 1.0e-6);
+            assertEquals(0.0, FastMath.toDegrees(elevation), 1.0e-6);
             if (FastMath.abs(FastMath.toDegrees(latitude)) > 49.7) {
-                Assertions.assertTrue(FastMath.toDegrees(azimuth) < 99.0);
+                assertTrue(FastMath.toDegrees(azimuth) < 99.0);
             }
             if (FastMath.abs(FastMath.toDegrees(latitude)) < 5.0) {
-                Assertions.assertTrue(FastMath.toDegrees(azimuth) > 143);
+                assertTrue(FastMath.toDegrees(azimuth) > 143);
             }
-            Assertions.assertTrue(FastMath.toDegrees(azimuth) < 143.3);
+            assertTrue(FastMath.toDegrees(azimuth) < 143.3);
         }
     }
 
     @Test
-    public void testTooNorthernLatitudePrograde() {
+    void testTooNorthernLatitudePrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), 0.0, 0.0);
         final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-        Assertions.assertEquals(0.0, Vector3D.angle(direction, gp.getEast()), 1.0e-15);
+        assertEquals(0.0, Vector3D.angle(direction, gp.getEast()), 1.0e-15);
     }
 
     @Test
-    public void testTooNorthernLatitudeRetrograde() {
+    void testTooNorthernLatitudeRetrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid,
                                                                  new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(130.), FastMath.toRadians(270.),
                                                                                    FastMath.toRadians(5.300), PositionAngleType.MEAN,
@@ -98,19 +100,19 @@ public class AlongTrackAimingTest {
                                                                  true);
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(51.0), 0.0, 0.0);
         final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-        Assertions.assertEquals(0.0, Vector3D.angle(direction, gp.getWest()), 1.0e-15);
+        assertEquals(0.0, Vector3D.angle(direction, gp.getWest()), 1.0e-15);
     }
 
     @Test
-    public void testTooSouthernLatitudePrograde() {
+    void testTooSouthernLatitudePrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid, orbit, true);
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(-51.0), 0.0, 0.0);
         final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-        Assertions.assertEquals(0.0, Vector3D.angle(direction, gp.getEast()), 1.0e-15);
+        assertEquals(0.0, Vector3D.angle(direction, gp.getEast()), 1.0e-15);
     }
 
     @Test
-    public void testTooSouthernLatitudeRetrrograde() {
+    void testTooSouthernLatitudeRetrrograde() {
         final AlongTrackAiming tileAiming = new AlongTrackAiming(ellipsoid,
                                                                  new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(130.), FastMath.toRadians(270.),
                                                                                    FastMath.toRadians(5.300), PositionAngleType.MEAN,
@@ -120,11 +122,11 @@ public class AlongTrackAimingTest {
                                                                  true);
         final GeodeticPoint gp = new GeodeticPoint(FastMath.toRadians(-51.0), 0.0, 0.0);
         final Vector3D direction = tileAiming.alongTileDirection(ellipsoid.transform(gp), gp);
-        Assertions.assertEquals(0.0, Vector3D.angle(direction, gp.getWest()), 1.0e-15);
+        assertEquals(0.0, Vector3D.angle(direction, gp.getWest()), 1.0e-15);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
                                   FastMath.toRadians(5.300), PositionAngleType.MEAN,

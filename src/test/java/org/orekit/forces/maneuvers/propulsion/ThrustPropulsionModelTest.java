@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,6 +29,8 @@ import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.ParameterDriver;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ThrustPropulsionModelTest {
     @Test
@@ -90,7 +91,7 @@ class ThrustPropulsionModelTest {
         final Vector3D expectedDirection = Vector3D.ZERO;
 
         // Assert that returned direction is a zero vector
-        Assertions.assertEquals(expectedDirection, returnedDirection);
+        assertEquals(expectedDirection, returnedDirection);
     }
 
     @Test
@@ -151,6 +152,6 @@ class ThrustPropulsionModelTest {
         final Vector3D expectedDirection = thrustVectorToReturn.normalize();
 
         // Assert that returned direction is a zero vector
-        Assertions.assertEquals(expectedDirection, returnedDirection);
+        assertEquals(expectedDirection, returnedDirection);
     }
 }

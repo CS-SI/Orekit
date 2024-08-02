@@ -24,7 +24,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -43,7 +42,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-public class FieldAdditionalDerivativesProvidersTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FieldAdditionalDerivativesProvidersTest {
 
     private double                       mu;
     private AbsoluteDate                 initDate;
@@ -53,29 +56,29 @@ public class FieldAdditionalDerivativesProvidersTest {
     /** Test for issue #401
      *  with a numerical propagator */
     @Test
-    public void testInitNumerical() {
+    void testInitNumerical() {
         doTestInitNumerical(Binary64Field.getInstance());
     }
 
     /** Test for issue #401
      *  with a DSST propagator */
     @Test
-    public void testInitDSST() {
+    void testInitDSST() {
         doTestInitDSST(Binary64Field.getInstance());
     }
 
     @Test
-    public void testResetState() {
+    void testResetState() {
         doTestResetState(Binary64Field.getInstance());
     }
 
     @Test
-    public void testYield() {
+    void testYield() {
         doTestYield(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCoupling() {
+    void testCoupling() {
         doTestCoupling(Binary64Field.getInstance());
     }
 
@@ -85,7 +88,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         final double rate      = 1.5;
         final double dt        = 600.0;
         Linear<T> linear = new Linear<>("linear", reference, rate);
-        Assertions.assertFalse(linear.wasCalled());
+        assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
@@ -98,8 +101,8 @@ public class FieldAdditionalDerivativesProvidersTest {
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assertions.assertTrue(linear.wasCalled());
-        Assertions.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
+        assertTrue(linear.wasCalled());
+        assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
 
     }
 
@@ -109,7 +112,7 @@ public class FieldAdditionalDerivativesProvidersTest {
         final double rate      = 1.5;
         final double dt        = 600.0;
         Linear<T> linear = new Linear<>("linear", reference, rate);
-        Assertions.assertFalse(linear.wasCalled());
+        assertFalse(linear.wasCalled());
 
         // action
         AdaptiveStepsizeFieldIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 200,
@@ -122,8 +125,8 @@ public class FieldAdditionalDerivativesProvidersTest {
         FieldSpacecraftState<T> finalState = propagatorDSST.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assertions.assertTrue(linear.wasCalled());
-        Assertions.assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
+        assertTrue(linear.wasCalled());
+        assertEquals(reference + dt * rate, finalState.getAdditionalState(linear.getName())[0].getReal(), 1.0e-10);
 
     }
 
@@ -132,11 +135,11 @@ public class FieldAdditionalDerivativesProvidersTest {
         final double reference1 = 3.5;
         final double rate1      = 1.5;
         Linear<T> linear1 = new Linear<>("linear-1", reference1, rate1);
-        Assertions.assertFalse(linear1.wasCalled());
+        assertFalse(linear1.wasCalled());
         final double reference2 = 4.5;
         final double rate2      = 1.25;
         Linear<T> linear2 = new Linear<>("linear-2", reference2, rate2);
-        Assertions.assertFalse(linear2.wasCalled());
+        assertFalse(linear2.wasCalled());
         final double dt = 600;
 
         // action
@@ -152,10 +155,10 @@ public class FieldAdditionalDerivativesProvidersTest {
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assertions.assertTrue(linear1.wasCalled());
-        Assertions.assertTrue(linear2.wasCalled());
-        Assertions.assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0].getReal(), 1.0e-10);
-        Assertions.assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0].getReal(), 1.0e-10);
+        assertTrue(linear1.wasCalled());
+        assertTrue(linear2.wasCalled());
+        assertEquals(reference1 + dt * rate1, finalState.getAdditionalState(linear1.getName())[0].getReal(), 1.0e-10);
+        assertEquals(reference2 + dt * rate2, finalState.getAdditionalState(linear2.getName())[0].getReal(), 1.0e-10);
 
     }
 
@@ -182,10 +185,10 @@ public class FieldAdditionalDerivativesProvidersTest {
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assertions.assertEquals(init1 + dt * rate, finalState.getAdditionalState(yield1.getName())[0].getReal(),           1.0e-10);
-        Assertions.assertEquals(init2 + dt * rate, finalState.getAdditionalState(yield2.getName())[0].getReal(),           1.0e-10);
-        Assertions.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield1.getName())[0].getReal(), 1.0e-10);
-        Assertions.assertEquals(rate,              finalState.getAdditionalStateDerivative(yield2.getName())[0].getReal(), 1.0e-10);
+        assertEquals(init1 + dt * rate, finalState.getAdditionalState(yield1.getName())[0].getReal(),           1.0e-10);
+        assertEquals(init2 + dt * rate, finalState.getAdditionalState(yield2.getName())[0].getReal(),           1.0e-10);
+        assertEquals(rate,              finalState.getAdditionalStateDerivative(yield1.getName())[0].getReal(), 1.0e-10);
+        assertEquals(rate,              finalState.getAdditionalStateDerivative(yield2.getName())[0].getReal(), 1.0e-10);
 
     }
 
@@ -208,17 +211,17 @@ public class FieldAdditionalDerivativesProvidersTest {
         FieldSpacecraftState<T> finalState = propagatorNumerical.propagate(new FieldAbsoluteDate<>(field, initDate).shiftedBy(dt));
 
         // verify
-        Assertions.assertEquals(coupling.secondaryInit + dt.getReal() * coupling.secondaryRate,
+        assertEquals(coupling.secondaryInit + dt.getReal() * coupling.secondaryRate,
                             finalState.getAdditionalState(coupling.getName())[0].getReal(),
                             1.0e-10);
-        Assertions.assertEquals(initialState.getA() + dt.getReal() * coupling.smaRate,
+        assertEquals(initialState.getA() + dt.getReal() * coupling.smaRate,
                             finalState.getA().getReal(),
                             1.0e-10);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
         mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
@@ -232,7 +235,7 @@ public class FieldAdditionalDerivativesProvidersTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         initDate     = null;
         initialState = null;
         tolerance    = null;
@@ -254,7 +257,7 @@ public class FieldAdditionalDerivativesProvidersTest {
 
         @Override
         public void init(FieldSpacecraftState<T> initiaState, FieldAbsoluteDate<T> target) {
-            Assertions.assertEquals(expectedAtInit, initiaState.getAdditionalState(getName())[0].getReal(), 1.0e-15);
+            assertEquals(expectedAtInit, initiaState.getAdditionalState(getName())[0].getReal(), 1.0e-15);
             called = true;
         }
 

@@ -16,53 +16,55 @@
  */
 package org.orekit.utils.units;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for {@link Lexer}.
  *
  * @author Luc Maisonobe
  */
-public class UnitsConverterTest {
+class UnitsConverterTest {
 
     @Test
-    public void testTime() {
+    void testTime() {
         final UnitsConverter day2second = new UnitsConverter(Unit.DAY, Unit.SECOND);
-        Assertions.assertEquals(388800.0, day2second.convert(4.5), 1.0e-9);
+        assertEquals(388800.0, day2second.convert(4.5), 1.0e-9);
     }
 
     @Test
-    public void testAngle() {
+    void testAngle() {
         final UnitsConverter rev2deg = new UnitsConverter(Unit.REVOLUTION, Unit.DEGREE);
-        Assertions.assertEquals(360.0, rev2deg.convert(1.0), 1.0e-12);
+        assertEquals(360.0, rev2deg.convert(1.0), 1.0e-12);
     }
 
     @Test
-    public void testRotationRate() {
+    void testRotationRate() {
 
     }
 
     @Test
-    public void testPressure() {
+    void testPressure() {
         final double atm = 1013.25;
         final Unit mbar  = Unit.parse("mbar");
         final Unit hPa   = Unit.parse("hPa");
         final UnitsConverter mbar2hPa = new UnitsConverter(mbar, hPa);
-        Assertions.assertEquals(atm, mbar2hPa.convert(atm), 1.0e-12);
+        assertEquals(atm, mbar2hPa.convert(atm), 1.0e-12);
     }
 
     @Test
-    public void testIncompatibleUnits() {
+    void testIncompatibleUnits() {
         try {
             new UnitsConverter(Unit.parse("km³/s²"), Unit.parse("MΩ"));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
-            Assertions.assertEquals("km³/s²", oe.getParts()[0]);
-            Assertions.assertEquals("MΩ", oe.getParts()[1]);
+            assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            assertEquals("km³/s²", oe.getParts()[0]);
+            assertEquals("MΩ", oe.getParts()[1]);
         }
     }
 

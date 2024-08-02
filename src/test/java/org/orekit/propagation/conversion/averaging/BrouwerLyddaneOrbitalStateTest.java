@@ -1,6 +1,5 @@
 package org.orekit.propagation.conversion.averaging;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -13,10 +12,12 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.averaging.elements.AveragedKeplerianWithMeanAngle;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class BrouwerLyddaneOrbitalStateTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential");
     }
     
@@ -32,7 +33,7 @@ class BrouwerLyddaneOrbitalStateTest {
         final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) averagedState.getOrbitType()
                 .convertType(orbit);
         // THEN
-        Assertions.assertEquals(averagedState.getDate(), keplerianOrbit.getDate());
+        assertEquals(averagedState.getDate(), keplerianOrbit.getDate());
         compareOrbitalElements(averagedState.getAveragedElements(), keplerianOrbit,
                 averagedState.getPositionAngleType());
     }
@@ -40,14 +41,14 @@ class BrouwerLyddaneOrbitalStateTest {
     private void compareOrbitalElements(final AveragedKeplerianWithMeanAngle elements,
                                         final KeplerianOrbit keplerianOrbit,
                                         final PositionAngleType positionAngleType) {
-        Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), keplerianOrbit.getA(), 1e4);
-        Assertions.assertEquals(elements.getAveragedEccentricity(), keplerianOrbit.getE(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedInclination(), keplerianOrbit.getI(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedPerigeeArgument(),
+        assertEquals(elements.getAveragedSemiMajorAxis(), keplerianOrbit.getA(), 1e4);
+        assertEquals(elements.getAveragedEccentricity(), keplerianOrbit.getE(), 1e-3);
+        assertEquals(elements.getAveragedInclination(), keplerianOrbit.getI(), 1e-3);
+        assertEquals(elements.getAveragedPerigeeArgument(),
                 keplerianOrbit.getPerigeeArgument(), 1e-2);
-        Assertions.assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(),
+        assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(),
                 keplerianOrbit.getRightAscensionOfAscendingNode(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedMeanAnomaly(),
+        assertEquals(elements.getAveragedMeanAnomaly(),
                 keplerianOrbit.getAnomaly(positionAngleType), 1e-2);
     }
 

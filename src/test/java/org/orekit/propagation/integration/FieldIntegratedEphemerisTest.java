@@ -28,7 +28,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
@@ -52,37 +51,44 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class FieldIntegratedEphemerisTest {
+
+class FieldIntegratedEphemerisTest {
 
     @Test
-    public void testNormalKeplerIntegration() {
+    void testNormalKeplerIntegration() {
         doTestNormalKeplerIntegration(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGetFrame() {
+    void testGetFrame() {
         doTestGetFrame(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAdditionalState() {
+    void testAdditionalState() {
         doTestAdditionalState(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNoReset() {
+    void testNoReset() {
         doTestNoReset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAdditionalDerivatives() {
+    void testAdditionalDerivatives() {
         doTestAdditionalDerivatives(Binary64Field.getInstance());
     }
 
     /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
     @Test
-    public void testIssue949() {
+    void testIssue949() {
         doTestIssue949(Binary64Field.getInstance());
     }
 
@@ -100,7 +106,7 @@ public class FieldIntegratedEphemerisTest {
         final FieldEphemerisGenerator<T> generator1 = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
-        Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
+        assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = generator1.getGeneratedEphemeris();
 
         // tests
@@ -111,7 +117,7 @@ public class FieldIntegratedEphemerisTest {
             FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPosition();
             FieldVector3D<T> numPosition = numericIntermediateOrbit.getPosition();
 
-            Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 5.0e-2);
+            assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 5.0e-2);
         }
 
         // test inv
@@ -126,7 +132,7 @@ public class FieldIntegratedEphemerisTest {
         FieldVector3D<T> kepPosition = keplerIntermediateOrbit.getPosition();
         FieldVector3D<T> numPosition = numericIntermediateOrbit.getPosition();
 
-        Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 3.0e-3);
+        assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 3.0e-3);
 
     }
 
@@ -138,12 +144,12 @@ public class FieldIntegratedEphemerisTest {
         final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
-        Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
+        assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         //action
-        Assertions.assertNotNull(ephemeris.getFrame());
-        Assertions.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+        assertNotNull(ephemeris.getFrame());
+        assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
     }
 
     private <T extends CalculusFieldElement<T>>  void doTestAdditionalState(Field<T> field) {
@@ -155,7 +161,7 @@ public class FieldIntegratedEphemerisTest {
         final FieldEphemerisGenerator<T> generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new FieldSpacecraftState<>(initialOrbit));
         numericalPropagator.propagate(finalDate);
-        Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
+        assertTrue(numericalPropagator.getCalls() < 3200);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         ephemeris.addAdditionalStateProvider(new FieldAdditionalStateProvider<T>() {
 
@@ -174,20 +180,20 @@ public class FieldIntegratedEphemerisTest {
 
         //action
         FieldSpacecraftState<T> s = ephemeris.propagate(initialOrbit.getDate().shiftedBy(20.0));
-        Assertions.assertEquals(20.0, s.getAdditionalState("time-since-start")[0].getReal(), 1.0e-10);
+        assertEquals(20.0, s.getAdditionalState("time-since-start")[0].getReal(), 1.0e-10);
 
         // check various protected methods
         try {
 
             Method getDrivers = ephemeris.getClass().getDeclaredMethod("getParametersDrivers", (Class[]) null);
             getDrivers.setAccessible(true);
-            Assertions.assertTrue(((List<?>) getDrivers.invoke(ephemeris, (Object[]) null)).isEmpty());
+            assertTrue(((List<?>) getDrivers.invoke(ephemeris, (Object[]) null)).isEmpty());
 
             Method getMass = ephemeris.getClass().getDeclaredMethod("getMass", FieldAbsoluteDate.class);
             getMass.setAccessible(true);
             @SuppressWarnings("unchecked")
             T mass = (T) getMass.invoke(ephemeris, finalDate);
-            Assertions.assertEquals(1000.0, mass.getReal(), 1.0e-10);
+            assertEquals(1000.0, mass.getReal(), 1.0e-10);
 
             Method propagateOrbit = ephemeris.getClass().getDeclaredMethod("propagateOrbit",
                                                                            FieldAbsoluteDate.class,
@@ -195,11 +201,11 @@ public class FieldIntegratedEphemerisTest {
             propagateOrbit.setAccessible(true);
             @SuppressWarnings("unchecked")
             FieldOrbit<T> orbit = (FieldOrbit<T>) propagateOrbit.invoke(ephemeris, finalDate, null);
-            Assertions.assertEquals(initialOrbit.getA().getReal(), orbit.getA().getReal(), 1.0e-10);
+            assertEquals(initialOrbit.getA().getReal(), orbit.getA().getReal(), 1.0e-10);
 
         } catch (IllegalAccessException | NoSuchMethodException | SecurityException |
                  IllegalArgumentException | InvocationTargetException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
 
     }
@@ -221,9 +227,9 @@ public class FieldIntegratedEphemerisTest {
 
         try {
             ephemeris.propagate(initialOrbit.getDate(), finalDate);
-            Assertions.fail("an exception should habe been thrown");
+            fail("an exception should habe been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
 
     }
@@ -276,25 +282,25 @@ public class FieldIntegratedEphemerisTest {
         final FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
 
         // WHEN & THEN
-        Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
+        assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
 
     }
 
     private <T extends CalculusFieldElement<T>> void checkState(final double dt, final FieldSpacecraftState<T> state,
                                                                 final DerivativesProvider<T> provider) {
 
-        Assertions.assertTrue(state.hasAdditionalState(provider.getName()));
-        Assertions.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
+        assertTrue(state.hasAdditionalState(provider.getName()));
+        assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
-            Assertions.assertEquals(i * dt,
+            assertEquals(i * dt,
                                 state.getAdditionalState(provider.getName())[i].getReal(),
                                 4.0e-15 * i * dt);
         }
 
-        Assertions.assertTrue(state.hasAdditionalStateDerivative(provider.getName()));
-        Assertions.assertEquals(provider.getDimension(), state.getAdditionalStateDerivative(provider.getName()).length);
+        assertTrue(state.hasAdditionalStateDerivative(provider.getName()));
+        assertEquals(provider.getDimension(), state.getAdditionalStateDerivative(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
-            Assertions.assertEquals(i,
+            assertEquals(i,
                                 state.getAdditionalStateDerivative(provider.getName())[i].getReal(),
                                 2.0e-14 * i);
         }
@@ -302,7 +308,7 @@ public class FieldIntegratedEphemerisTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         mu = 3.9860047e14;
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));

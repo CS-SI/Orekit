@@ -21,7 +21,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -29,10 +28,12 @@ import org.orekit.data.DataSource;
 import org.orekit.data.UnixCompressFilter;
 import org.orekit.time.AbstractTimeInterpolator;
 
-public class SP3CoordinateHermiteInterpolatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class SP3CoordinateHermiteInterpolatorTest {
 
     @Test
-    public void testNoRates() throws IOException, URISyntaxException {
+    void testNoRates() throws IOException, URISyntaxException {
         final String ex = "/sp3/gbm18432.sp3.Z";
 
         final SP3Parser           parser      = new SP3Parser();
@@ -40,7 +41,7 @@ public class SP3CoordinateHermiteInterpolatorTest {
         final SP3                 file        = parser.parse(new UnixCompressFilter().filter(compressed));
         final List<SP3Coordinate> coordinates = file.getEphemeris("G03").getSegments().get(0).getCoordinates();
 
-        Assertions.assertEquals(288, coordinates.size());
+        assertEquals(288, coordinates.size());
 
         SP3CoordinateHermiteInterpolator interpolator =
                         new SP3CoordinateHermiteInterpolator(6,
@@ -59,27 +60,27 @@ public class SP3CoordinateHermiteInterpolatorTest {
                                                    interpolated.getClockCorrection(), interpolated.getClockAccuracy(),
                                                    0.0, interpolated.getClockRateAccuracy(),
                                                    false, false, false, false));
-        Assertions.assertEquals(2836.973124,  interpolated.getVelocity().getNorm(), 1.0e-6);
-        Assertions.assertEquals(1.126333e-11, interpolated.getClockRateChange(),    1.0e-17);
+        assertEquals(2836.973124,  interpolated.getVelocity().getNorm(), 1.0e-6);
+        assertEquals(1.126333e-11, interpolated.getClockRateChange(),    1.0e-17);
 
         // check between sample points
         SP3Coordinate pointB  = coordinates.get(118);
         SP3Coordinate between = interpolator.interpolate(pointA.getDate().shiftedBy(0.5 * file.getHeader().getEpochInterval()),
                                                          coordinates);
-        Assertions.assertEquals(426076.123,
+        assertEquals(426076.123,
                                 Vector3D.distance(pointA.getPosition(), between.getPosition()),
                                 1.0e-3);
-        Assertions.assertEquals(427183.849,
+        assertEquals(427183.849,
                                 Vector3D.distance(pointB.getPosition(), between.getPosition()),
                                 1.0e-3);
-        Assertions.assertEquals(853194.644,
+        assertEquals(853194.644,
                                 Vector3D.distance(pointA.getPosition(), pointB.getPosition()),
                                 1.0e-3);
 
     }
 
     @Test
-    public void testRates() throws IOException, URISyntaxException {
+    void testRates() throws IOException, URISyntaxException {
         final String ex = "/sp3/issue895-minutes-increment.sp3";
 
         final SP3Parser           parser      = new SP3Parser();
@@ -87,7 +88,7 @@ public class SP3CoordinateHermiteInterpolatorTest {
         final SP3                 file        = parser.parse(source);
         final List<SP3Coordinate> coordinates = file.getEphemeris("L51").getSegments().get(0).getCoordinates();
 
-        Assertions.assertEquals(91, coordinates.size());
+        assertEquals(91, coordinates.size());
 
         SP3CoordinateHermiteInterpolator interpolator =
                         new SP3CoordinateHermiteInterpolator(6,
@@ -99,8 +100,8 @@ public class SP3CoordinateHermiteInterpolatorTest {
         SP3Coordinate interpolated = interpolator.interpolate(pointA.getDate(), coordinates);
 
         SP3TestUtils.checkEquals(pointA, interpolated);
-        Assertions.assertEquals(5996.687746,                       interpolated.getVelocity().getNorm(), 1.0e-6);
-        Assertions.assertEquals(SP3Utils.DEFAULT_CLOCK_RATE_VALUE,
+        assertEquals(5996.687746,                       interpolated.getVelocity().getNorm(), 1.0e-6);
+        assertEquals(SP3Utils.DEFAULT_CLOCK_RATE_VALUE,
                                 SP3Utils.CLOCK_RATE_UNIT.fromSI(interpolated.getClockRateChange()),
                                 1.0e-6);
 
@@ -108,20 +109,20 @@ public class SP3CoordinateHermiteInterpolatorTest {
         SP3Coordinate pointB  = coordinates.get(55);
         SP3Coordinate between = interpolator.interpolate(pointA.getDate().shiftedBy(0.5 * file.getHeader().getEpochInterval()),
                                                          coordinates);
-        Assertions.assertEquals(359788.254,
+        assertEquals(359788.254,
                                 Vector3D.distance(pointA.getPosition(), between.getPosition()),
                                 1.0e-3);
-        Assertions.assertEquals(359793.589,
+        assertEquals(359793.589,
                                 Vector3D.distance(pointB.getPosition(), between.getPosition()),
                                 1.0e-3);
-        Assertions.assertEquals(719498.945,
+        assertEquals(719498.945,
                                 Vector3D.distance(pointA.getPosition(), pointB.getPosition()),
                                 1.0e-3);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -16,144 +16,146 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class MonthTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class MonthTest {
 
     @Test
-    public void testUpperCaseName() {
-        Assertions.assertEquals("JANUARY",   Month.JANUARY.getUpperCaseName());
-        Assertions.assertEquals("FEBRUARY",  Month.FEBRUARY.getUpperCaseName());
-        Assertions.assertEquals("MARCH",     Month.MARCH.getUpperCaseName());
-        Assertions.assertEquals("APRIL",     Month.APRIL.getUpperCaseName());
-        Assertions.assertEquals("MAY",       Month.MAY.getUpperCaseName());
-        Assertions.assertEquals("JUNE",      Month.JUNE.getUpperCaseName());
-        Assertions.assertEquals("JULY",      Month.JULY.getUpperCaseName());
-        Assertions.assertEquals("AUGUST",    Month.AUGUST.getUpperCaseName());
-        Assertions.assertEquals("SEPTEMBER", Month.SEPTEMBER.getUpperCaseName());
-        Assertions.assertEquals("OCTOBER",   Month.OCTOBER.getUpperCaseName());
-        Assertions.assertEquals("NOVEMBER",  Month.NOVEMBER.getUpperCaseName());
-        Assertions.assertEquals("DECEMBER",  Month.DECEMBER.getUpperCaseName());
+    void testUpperCaseName() {
+        assertEquals("JANUARY",   Month.JANUARY.getUpperCaseName());
+        assertEquals("FEBRUARY",  Month.FEBRUARY.getUpperCaseName());
+        assertEquals("MARCH",     Month.MARCH.getUpperCaseName());
+        assertEquals("APRIL",     Month.APRIL.getUpperCaseName());
+        assertEquals("MAY",       Month.MAY.getUpperCaseName());
+        assertEquals("JUNE",      Month.JUNE.getUpperCaseName());
+        assertEquals("JULY",      Month.JULY.getUpperCaseName());
+        assertEquals("AUGUST",    Month.AUGUST.getUpperCaseName());
+        assertEquals("SEPTEMBER", Month.SEPTEMBER.getUpperCaseName());
+        assertEquals("OCTOBER",   Month.OCTOBER.getUpperCaseName());
+        assertEquals("NOVEMBER",  Month.NOVEMBER.getUpperCaseName());
+        assertEquals("DECEMBER",  Month.DECEMBER.getUpperCaseName());
     }
 
     @Test
-    public void testLowerCaseName() {
-        Assertions.assertEquals("january",   Month.JANUARY.getLowerCaseName());
-        Assertions.assertEquals("february",  Month.FEBRUARY.getLowerCaseName());
-        Assertions.assertEquals("march",     Month.MARCH.getLowerCaseName());
-        Assertions.assertEquals("april",     Month.APRIL.getLowerCaseName());
-        Assertions.assertEquals("may",       Month.MAY.getLowerCaseName());
-        Assertions.assertEquals("june",      Month.JUNE.getLowerCaseName());
-        Assertions.assertEquals("july",      Month.JULY.getLowerCaseName());
-        Assertions.assertEquals("august",    Month.AUGUST.getLowerCaseName());
-        Assertions.assertEquals("september", Month.SEPTEMBER.getLowerCaseName());
-        Assertions.assertEquals("october",   Month.OCTOBER.getLowerCaseName());
-        Assertions.assertEquals("november",  Month.NOVEMBER.getLowerCaseName());
-        Assertions.assertEquals("december",  Month.DECEMBER.getLowerCaseName());
+    void testLowerCaseName() {
+        assertEquals("january",   Month.JANUARY.getLowerCaseName());
+        assertEquals("february",  Month.FEBRUARY.getLowerCaseName());
+        assertEquals("march",     Month.MARCH.getLowerCaseName());
+        assertEquals("april",     Month.APRIL.getLowerCaseName());
+        assertEquals("may",       Month.MAY.getLowerCaseName());
+        assertEquals("june",      Month.JUNE.getLowerCaseName());
+        assertEquals("july",      Month.JULY.getLowerCaseName());
+        assertEquals("august",    Month.AUGUST.getLowerCaseName());
+        assertEquals("september", Month.SEPTEMBER.getLowerCaseName());
+        assertEquals("october",   Month.OCTOBER.getLowerCaseName());
+        assertEquals("november",  Month.NOVEMBER.getLowerCaseName());
+        assertEquals("december",  Month.DECEMBER.getLowerCaseName());
     }
 
     @Test
-    public void testCapitalizedCaseName() {
-        Assertions.assertEquals("January",   Month.JANUARY.getCapitalizedName());
-        Assertions.assertEquals("February",  Month.FEBRUARY.getCapitalizedName());
-        Assertions.assertEquals("March",     Month.MARCH.getCapitalizedName());
-        Assertions.assertEquals("April",     Month.APRIL.getCapitalizedName());
-        Assertions.assertEquals("May",       Month.MAY.getCapitalizedName());
-        Assertions.assertEquals("June",      Month.JUNE.getCapitalizedName());
-        Assertions.assertEquals("July",      Month.JULY.getCapitalizedName());
-        Assertions.assertEquals("August",    Month.AUGUST.getCapitalizedName());
-        Assertions.assertEquals("September", Month.SEPTEMBER.getCapitalizedName());
-        Assertions.assertEquals("October",   Month.OCTOBER.getCapitalizedName());
-        Assertions.assertEquals("November",  Month.NOVEMBER.getCapitalizedName());
-        Assertions.assertEquals("December",  Month.DECEMBER.getCapitalizedName());
+    void testCapitalizedCaseName() {
+        assertEquals("January",   Month.JANUARY.getCapitalizedName());
+        assertEquals("February",  Month.FEBRUARY.getCapitalizedName());
+        assertEquals("March",     Month.MARCH.getCapitalizedName());
+        assertEquals("April",     Month.APRIL.getCapitalizedName());
+        assertEquals("May",       Month.MAY.getCapitalizedName());
+        assertEquals("June",      Month.JUNE.getCapitalizedName());
+        assertEquals("July",      Month.JULY.getCapitalizedName());
+        assertEquals("August",    Month.AUGUST.getCapitalizedName());
+        assertEquals("September", Month.SEPTEMBER.getCapitalizedName());
+        assertEquals("October",   Month.OCTOBER.getCapitalizedName());
+        assertEquals("November",  Month.NOVEMBER.getCapitalizedName());
+        assertEquals("December",  Month.DECEMBER.getCapitalizedName());
     }
 
     @Test
-    public void testUpperCaseAbbreviation() {
-        Assertions.assertEquals("JAN",       Month.JANUARY.getUpperCaseAbbreviation());
-        Assertions.assertEquals("FEB",       Month.FEBRUARY.getUpperCaseAbbreviation());
-        Assertions.assertEquals("MAR",       Month.MARCH.getUpperCaseAbbreviation());
-        Assertions.assertEquals("APR",       Month.APRIL.getUpperCaseAbbreviation());
-        Assertions.assertEquals("MAY",       Month.MAY.getUpperCaseAbbreviation());
-        Assertions.assertEquals("JUN",       Month.JUNE.getUpperCaseAbbreviation());
-        Assertions.assertEquals("JUL",       Month.JULY.getUpperCaseAbbreviation());
-        Assertions.assertEquals("AUG",       Month.AUGUST.getUpperCaseAbbreviation());
-        Assertions.assertEquals("SEP",       Month.SEPTEMBER.getUpperCaseAbbreviation());
-        Assertions.assertEquals("OCT",       Month.OCTOBER.getUpperCaseAbbreviation());
-        Assertions.assertEquals("NOV",       Month.NOVEMBER.getUpperCaseAbbreviation());
-        Assertions.assertEquals("DEC",       Month.DECEMBER.getUpperCaseAbbreviation());
+    void testUpperCaseAbbreviation() {
+        assertEquals("JAN",       Month.JANUARY.getUpperCaseAbbreviation());
+        assertEquals("FEB",       Month.FEBRUARY.getUpperCaseAbbreviation());
+        assertEquals("MAR",       Month.MARCH.getUpperCaseAbbreviation());
+        assertEquals("APR",       Month.APRIL.getUpperCaseAbbreviation());
+        assertEquals("MAY",       Month.MAY.getUpperCaseAbbreviation());
+        assertEquals("JUN",       Month.JUNE.getUpperCaseAbbreviation());
+        assertEquals("JUL",       Month.JULY.getUpperCaseAbbreviation());
+        assertEquals("AUG",       Month.AUGUST.getUpperCaseAbbreviation());
+        assertEquals("SEP",       Month.SEPTEMBER.getUpperCaseAbbreviation());
+        assertEquals("OCT",       Month.OCTOBER.getUpperCaseAbbreviation());
+        assertEquals("NOV",       Month.NOVEMBER.getUpperCaseAbbreviation());
+        assertEquals("DEC",       Month.DECEMBER.getUpperCaseAbbreviation());
     }
 
     @Test
-    public void testLowerCaseAbbreviation() {
-        Assertions.assertEquals("jan",       Month.JANUARY.getLowerCaseAbbreviation());
-        Assertions.assertEquals("feb",       Month.FEBRUARY.getLowerCaseAbbreviation());
-        Assertions.assertEquals("mar",       Month.MARCH.getLowerCaseAbbreviation());
-        Assertions.assertEquals("apr",       Month.APRIL.getLowerCaseAbbreviation());
-        Assertions.assertEquals("may",       Month.MAY.getLowerCaseAbbreviation());
-        Assertions.assertEquals("jun",       Month.JUNE.getLowerCaseAbbreviation());
-        Assertions.assertEquals("jul",       Month.JULY.getLowerCaseAbbreviation());
-        Assertions.assertEquals("aug",       Month.AUGUST.getLowerCaseAbbreviation());
-        Assertions.assertEquals("sep",       Month.SEPTEMBER.getLowerCaseAbbreviation());
-        Assertions.assertEquals("oct",       Month.OCTOBER.getLowerCaseAbbreviation());
-        Assertions.assertEquals("nov",       Month.NOVEMBER.getLowerCaseAbbreviation());
-        Assertions.assertEquals("dec",       Month.DECEMBER.getLowerCaseAbbreviation());
+    void testLowerCaseAbbreviation() {
+        assertEquals("jan",       Month.JANUARY.getLowerCaseAbbreviation());
+        assertEquals("feb",       Month.FEBRUARY.getLowerCaseAbbreviation());
+        assertEquals("mar",       Month.MARCH.getLowerCaseAbbreviation());
+        assertEquals("apr",       Month.APRIL.getLowerCaseAbbreviation());
+        assertEquals("may",       Month.MAY.getLowerCaseAbbreviation());
+        assertEquals("jun",       Month.JUNE.getLowerCaseAbbreviation());
+        assertEquals("jul",       Month.JULY.getLowerCaseAbbreviation());
+        assertEquals("aug",       Month.AUGUST.getLowerCaseAbbreviation());
+        assertEquals("sep",       Month.SEPTEMBER.getLowerCaseAbbreviation());
+        assertEquals("oct",       Month.OCTOBER.getLowerCaseAbbreviation());
+        assertEquals("nov",       Month.NOVEMBER.getLowerCaseAbbreviation());
+        assertEquals("dec",       Month.DECEMBER.getLowerCaseAbbreviation());
     }
 
     @Test
-    public void testCapitalizedCaseAbbreviation() {
-        Assertions.assertEquals("Jan",       Month.JANUARY.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Feb",       Month.FEBRUARY.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Mar",       Month.MARCH.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Apr",       Month.APRIL.getCapitalizedAbbreviation());
-        Assertions.assertEquals("May",       Month.MAY.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Jun",       Month.JUNE.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Jul",       Month.JULY.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Aug",       Month.AUGUST.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Sep",       Month.SEPTEMBER.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Oct",       Month.OCTOBER.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Nov",       Month.NOVEMBER.getCapitalizedAbbreviation());
-        Assertions.assertEquals("Dec",       Month.DECEMBER.getCapitalizedAbbreviation());
+    void testCapitalizedCaseAbbreviation() {
+        assertEquals("Jan",       Month.JANUARY.getCapitalizedAbbreviation());
+        assertEquals("Feb",       Month.FEBRUARY.getCapitalizedAbbreviation());
+        assertEquals("Mar",       Month.MARCH.getCapitalizedAbbreviation());
+        assertEquals("Apr",       Month.APRIL.getCapitalizedAbbreviation());
+        assertEquals("May",       Month.MAY.getCapitalizedAbbreviation());
+        assertEquals("Jun",       Month.JUNE.getCapitalizedAbbreviation());
+        assertEquals("Jul",       Month.JULY.getCapitalizedAbbreviation());
+        assertEquals("Aug",       Month.AUGUST.getCapitalizedAbbreviation());
+        assertEquals("Sep",       Month.SEPTEMBER.getCapitalizedAbbreviation());
+        assertEquals("Oct",       Month.OCTOBER.getCapitalizedAbbreviation());
+        assertEquals("Nov",       Month.NOVEMBER.getCapitalizedAbbreviation());
+        assertEquals("Dec",       Month.DECEMBER.getCapitalizedAbbreviation());
     }
 
     @Test
-    public void testParsing() {
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth("   AUGUST "));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth(" august  "));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth("August"));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth("\tAUG"));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth("august"));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth("Aug"));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth("aUgUsT  "));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth(" 8 "));
-        Assertions.assertEquals(Month.AUGUST, Month.parseMonth("00008"));
+    void testParsing() {
+        assertEquals(Month.AUGUST, Month.parseMonth("   AUGUST "));
+        assertEquals(Month.AUGUST, Month.parseMonth(" august  "));
+        assertEquals(Month.AUGUST, Month.parseMonth("August"));
+        assertEquals(Month.AUGUST, Month.parseMonth("\tAUG"));
+        assertEquals(Month.AUGUST, Month.parseMonth("august"));
+        assertEquals(Month.AUGUST, Month.parseMonth("Aug"));
+        assertEquals(Month.AUGUST, Month.parseMonth("aUgUsT  "));
+        assertEquals(Month.AUGUST, Month.parseMonth(" 8 "));
+        assertEquals(Month.AUGUST, Month.parseMonth("00008"));
     }
 
     @Test
-    public void testParsingErrorEmpty() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testParsingErrorEmpty() {
+        assertThrows(IllegalArgumentException.class, () -> {
             Month.parseMonth("  ");
         });
     }
 
     @Test
-    public void testParsingErrorTooLow() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testParsingErrorTooLow() {
+        assertThrows(IllegalArgumentException.class, () -> {
             Month.parseMonth("0");
         });
     }
 
     @Test
-    public void testParsingErrorTooHigh() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testParsingErrorTooHigh() {
+        assertThrows(IllegalArgumentException.class, () -> {
             Month.parseMonth("13");
         });
     }
 
     @Test
-    public void testParsingErrorCorruptedString() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testParsingErrorCorruptedString() {
+        assertThrows(IllegalArgumentException.class, () -> {
             Month.parseMonth("AUGUSTE");
         });
     }

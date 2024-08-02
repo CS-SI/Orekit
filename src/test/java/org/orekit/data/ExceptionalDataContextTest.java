@@ -16,9 +16,7 @@
  */
 package org.orekit.data;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -40,55 +38,60 @@ import org.orekit.time.LazyLoadedTimeScales;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Test for {@link ExceptionalDataContext}.
  *
  * @author Evan Ward
  */
-public class ExceptionalDataContextTest {
+class ExceptionalDataContextTest {
 
     /** Check the methods throw exceptions. */
     @Test
-    public void testThrows() {
+    void testThrows() {
         // setup
         ExceptionalDataContext context = new ExceptionalDataContext();
 
         // verify
         try {
             context.getCelestialBodies();
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            assertEquals(OrekitMessages.EXCEPTIONAL_DATA_CONTEXT, e.getSpecifier());
         }
         try {
             context.getFrames();
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            assertEquals(OrekitMessages.EXCEPTIONAL_DATA_CONTEXT, e.getSpecifier());
         }
         try {
             context.getGeoMagneticFields();
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            assertEquals(OrekitMessages.EXCEPTIONAL_DATA_CONTEXT, e.getSpecifier());
         }
         try {
             context.getGravityFields();
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            assertEquals(OrekitMessages.EXCEPTIONAL_DATA_CONTEXT, e.getSpecifier());
         }
         try {
             context.getTimeScales();
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            assertEquals(OrekitMessages.EXCEPTIONAL_DATA_CONTEXT, e.getSpecifier());
         }
     }
 
     /** Check it can be set as the default data context with the right precautions. */
     @Test
-    public void testDefault() {
+    void testDefault() {
         // setup
         Utils.setDataRoot("regular-data");
         // hack to initialize static fields that need the default data context
@@ -109,16 +112,16 @@ public class ExceptionalDataContextTest {
         AttitudeProvider attitude = new FrameAlignedProvider(eci);
         Propagator propagator = new KeplerianPropagator(orbit, attitude);
         SpacecraftState state = propagator.propagate(date.shiftedBy(86400));
-        MatcherAssert.assertThat(
+        assertThat(
                 state.getPosition(ecef).getNorm(),
                 OrekitMatchers.relativelyCloseTo(a, 10));
 
         // verify using default data context throws an exception
         try {
             new NumericalPropagator(new ClassicalRungeKuttaIntegrator(60.0));
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(e.getSpecifier(), OrekitMessages.EXCEPTIONAL_DATA_CONTEXT);
+            assertEquals(OrekitMessages.EXCEPTIONAL_DATA_CONTEXT, e.getSpecifier());
         }
 
     }
@@ -129,7 +132,7 @@ public class ExceptionalDataContextTest {
      */
     private void hack() {
         Object o = AbsoluteDate.ARBITRARY_EPOCH;
-        Assertions.assertNotNull(o);
+        assertNotNull(o);
     }
 
 }

@@ -30,7 +30,6 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.UncorrelatedRandomVectorGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -50,15 +49,19 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class CR3BPForceModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class CR3BPForceModelTest {
 
     private CR3BPSystem syst;
 
     @Test
-    public void testModel() {
+    void testModel() {
                 
         final double mu = new CR3BPForceModel(syst).getParameters(new AbsoluteDate())[0];
-        Assertions.assertEquals(0.0121, mu, 1E-3);
+        assertEquals(0.0121, mu, 1E-3);
         
      // Time settings
         final AbsoluteDate initialDate =
@@ -115,7 +118,7 @@ public class CR3BPForceModelTest {
         propagator.clearStepHandlers();
         final SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(integrationTime));
 
-        Assertions.assertNotEquals(initialState.getPosition().getX(), finalState.getPosition().getX(), 1E-2);
+        assertNotEquals(initialState.getPosition().getX(), finalState.getPosition().getX(), 1E-2);
     }
 
     /**Testing if the propagation between the FieldPropagation and the propagation
@@ -124,7 +127,7 @@ public class CR3BPForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() {
+    void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure fpx = factory.variable(0, 0.8);
         DerivativeStructure fpy = factory.variable(1, 0.2);
@@ -179,10 +182,10 @@ public class CR3BPForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assertions.assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
-        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
+        assertEquals(finPVC_DS.toPVCoordinates().getPosition().getX(), finPVC_R.getPosition().getX(), FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        assertEquals(finPVC_DS.toPVCoordinates().getPosition().getY(), finPVC_R.getPosition().getY(), FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        assertEquals(finPVC_DS.toPVCoordinates().getPosition().getZ(), finPVC_R.getPosition().getZ(), FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        assertTrue(forceModel.dependsOnPositionOnly());
         long number = 23091991;
         RandomGenerator RG = new Well19937a(number);
         GaussianRandomGenerator NGG = new GaussianRandomGenerator(RG);
@@ -272,15 +275,14 @@ public class CR3BPForceModelTest {
                 maxA = 0;
             }
         }
-        Assertions.assertEquals(0, maxP, 4.2e-11);
-        Assertions.assertEquals(0, maxV, 1.4e-12);
-        Assertions.assertEquals(0, maxA, 8.5e-12);
+        assertEquals(0, maxP, 4.2e-11);
+        assertEquals(0, maxV, 1.4e-12);
+        assertEquals(0, maxA, 8.5e-12);
     }
 
 
-
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
 
         this.syst = CR3BPFactory.getEarthMoonCR3BP();

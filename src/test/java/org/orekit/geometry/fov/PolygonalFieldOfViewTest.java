@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -49,10 +48,14 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.List;
 
-public class PolygonalFieldOfViewTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class PolygonalFieldOfViewTest {
 
     @Test
-    public void testRegularPolygon() {
+    void testRegularPolygon() {
         double delta          = 0.25;
         double margin         = 0.01;
         double maxAreaError   = 0;
@@ -75,23 +78,23 @@ public class PolygonalFieldOfViewTest {
                     // method, so we cannot check the error accurately
                     // we know however that the fast method will underestimate the offset
 
-                    Assertions.assertTrue(offset > 0);
-                    Assertions.assertTrue(offset <= theoreticalOffset + 5e-16);
+                    assertTrue(offset > 0);
+                    assertTrue(offset <= theoreticalOffset + 5e-16);
                 } else {
                     double offsetError = theoreticalOffset - offset;
                     maxOffsetError = FastMath.max(FastMath.abs(offsetError), maxOffsetError);
                 }
-                Assertions.assertEquals(-margin,
+                assertEquals(-margin,
                                     fov.offsetFromBoundary(fov.projectToBoundary(v), 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                     1.0e-12);
             }
         }
-        Assertions.assertEquals(0.0, maxAreaError,   5.0e-14);
-        Assertions.assertEquals(0.0, maxOffsetError, 2.0e-15);
+        assertEquals(0.0, maxAreaError,   5.0e-14);
+        assertEquals(0.0, maxOffsetError, 2.0e-15);
     }
 
     @Test
-    public void testNoFootprintInside() {
+    void testNoFootprintInside() {
         Utils.setDataRoot("regular-data");
         PolygonalFieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K,
                                                             DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
@@ -103,14 +106,14 @@ public class PolygonalFieldOfViewTest {
         Transform fovToBody   = new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(5e6, 3e6, 2e6));
         try {
             fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
+            assertEquals(OrekitMessages.POINT_INSIDE_ELLIPSOID, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testNadirHexagonalFootprint() {
+    void testNadirHexagonalFootprint() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
@@ -120,7 +123,7 @@ public class PolygonalFieldOfViewTest {
     }
 
     @Test
-    public void testRollPitchYawHexagonalFootprint() {
+    void testRollPitchYawHexagonalFootprint() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
@@ -133,7 +136,7 @@ public class PolygonalFieldOfViewTest {
     }
 
     @Test
-    public void testFOVPartiallyTruncatedAtLimb() {
+    void testFOVPartiallyTruncatedAtLimb() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
@@ -143,7 +146,7 @@ public class PolygonalFieldOfViewTest {
     }
 
     @Test
-    public void testFOVLargerThanEarth() {
+    void testFOVLargerThanEarth() {
         doTest(new PolygonalFieldOfView(Vector3D.PLUS_K,
                                         DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                         Vector3D.PLUS_I,
@@ -153,7 +156,7 @@ public class PolygonalFieldOfViewTest {
     }
 
     @Test
-    public void testFOVLargerThanEarthOld() {
+    void testFOVLargerThanEarthOld() {
         Utils.setDataRoot("regular-data");
         PolygonalFieldOfView fov = new PolygonalFieldOfView(Vector3D.PLUS_K,
                                                             DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
@@ -176,15 +179,15 @@ public class PolygonalFieldOfViewTest {
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(1.0));
         Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
-        Assertions.assertEquals(1, footprint.size());
+        assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
-        Assertions.assertEquals(234, loop.size());
+        assertEquals(234, loop.size());
         double minEl   = Double.POSITIVE_INFINITY;
         double maxEl = 0;
         double minDist = Double.POSITIVE_INFINITY;
         double maxDist = 0;
         for (int i = 0; i < loop.size(); ++i) {
-            Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
+            assertEquals(0.0, loop.get(i).getAltitude(), 3.0e-7);
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "atLimb");
             final double elevation = topo.
                                      getTrackingCoordinates(state.getPosition(), state.getFrame(), state.getDate()).
@@ -195,14 +198,14 @@ public class PolygonalFieldOfViewTest {
             minDist = FastMath.min(minDist, dist);
             maxDist = FastMath.max(maxDist, dist);
         }
-        Assertions.assertEquals(0.0,       FastMath.toDegrees(minEl), 2.0e-12);
-        Assertions.assertEquals(0.0,       FastMath.toDegrees(maxEl), 1.7e-12);
-        Assertions.assertEquals(5323036.6, minDist, 1.0);
-        Assertions.assertEquals(5347029.8, maxDist, 1.0);
+        assertEquals(0.0,       FastMath.toDegrees(minEl), 2.0e-12);
+        assertEquals(0.0,       FastMath.toDegrees(maxEl), 1.7e-12);
+        assertEquals(5323036.6, minDist, 1.0);
+        assertEquals(5347029.8, maxDist, 1.0);
     }
 
     @Test
-    public void testFOVAwayFromEarth() {
+    void testFOVAwayFromEarth() {
         PolygonalFieldOfView fov = new PolygonalFieldOfView(Vector3D.MINUS_K,
                                                             DefiningConeType.INSIDE_CONE_TOUCHING_POLYGON_AT_EDGES_MIDDLE,
                                                             Vector3D.PLUS_I,
@@ -215,7 +218,7 @@ public class PolygonalFieldOfViewTest {
                                               state.toTransform().getInverse(),
                                               inertToBody);
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(1.0));
-        Assertions.assertEquals(0, footprint.size());
+        assertEquals(0, footprint.size());
     }
 
     private void doTest(final PolygonalFieldOfView fov, final AttitudeProvider attitude, final int expectedPoints,
@@ -232,16 +235,16 @@ public class PolygonalFieldOfViewTest {
         List<List<GeodeticPoint>> footprint = fov.getFootprint(fovToBody, earth, FastMath.toRadians(0.1));
         Vector3D subSat = earth.projectToGround(state.getPosition(earth.getBodyFrame()),
                                                 state.getDate(), earth.getBodyFrame());
-        Assertions.assertEquals(1, footprint.size());
+        assertEquals(1, footprint.size());
         List<GeodeticPoint> loop = footprint.get(0);
-        Assertions.assertEquals(expectedPoints, loop.size());
+        assertEquals(expectedPoints, loop.size());
         double minEl     = Double.POSITIVE_INFINITY;
         double maxEl     = 0;
         double minDist   = Double.POSITIVE_INFINITY;
         double maxDist   = 0;
         for (int i = 0; i < loop.size(); ++i) {
 
-            Assertions.assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
+            assertEquals(0.0, loop.get(i).getAltitude(), 9.0e-9);
 
             TopocentricFrame topo = new TopocentricFrame(earth, loop.get(i), "onFootprint");
             final double elevation = topo.
@@ -249,13 +252,13 @@ public class PolygonalFieldOfViewTest {
                                      getElevation();
             if (elevation > 0.001) {
                 Vector3D los = fovToBody.getStaticInverse().transformPosition(earth.transform(loop.get(i)));
-                Assertions.assertEquals(-fov.getMargin(),
+                assertEquals(-fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.0, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                     4.0e-15);
-                Assertions.assertEquals(0.125 - fov.getMargin(),
+                assertEquals(0.125 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.125, VisibilityTrigger.VISIBLE_ONLY_WHEN_FULLY_IN_FOV),
                                     4.0e-15);
-                Assertions.assertEquals(-0.125 - fov.getMargin(),
+                assertEquals(-0.125 - fov.getMargin(),
                                     fov.offsetFromBoundary(los, 0.125, VisibilityTrigger.VISIBLE_AS_SOON_AS_PARTIALLY_IN_FOV),
                                     4.0e-15);
             }
@@ -267,15 +270,15 @@ public class PolygonalFieldOfViewTest {
 
         }
 
-        Assertions.assertEquals(expectedMinElevation, FastMath.toDegrees(minEl), 0.001);
-        Assertions.assertEquals(expectedMaxElevation, FastMath.toDegrees(maxEl), 0.001);
-        Assertions.assertEquals(expectedMinDist,      minDist,                   1.0);
-        Assertions.assertEquals(expectedMaxDist,      maxDist,                   1.0);
+        assertEquals(expectedMinElevation, FastMath.toDegrees(minEl), 0.001);
+        assertEquals(expectedMaxElevation, FastMath.toDegrees(maxEl), 0.001);
+        assertEquals(expectedMinDist,      minDist,                   1.0);
+        assertEquals(expectedMaxDist,      maxDist,                   1.0);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -287,7 +290,7 @@ public class PolygonalFieldOfViewTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         earth = null;
         orbit = null;
     }

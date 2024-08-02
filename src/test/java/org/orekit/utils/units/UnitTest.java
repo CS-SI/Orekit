@@ -22,62 +22,68 @@ import java.util.Collections;
 import org.hipparchus.fraction.Fraction;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for {@link Lexer}.
  *
  * @author Luc Maisonobe
  */
-public class UnitTest {
+class UnitTest {
 
     @Test
-    public void testTime() {
-        Assertions.assertEquals(       1.0, Unit.SECOND.toSI(1.0), 1.0e-10);
-        Assertions.assertEquals(      60.0, Unit.MINUTE.toSI(1.0), 1.0e-10);
-        Assertions.assertEquals(    3600.0, Unit.HOUR.toSI(1.0),   1.0e-10);
-        Assertions.assertEquals(   86400.0, Unit.DAY.toSI(1.0),    1.0e-10);
-        Assertions.assertEquals(31557600.0, Unit.YEAR.toSI(1.0),   1.0e-10);
-        Assertions.assertEquals(31557600.0, Unit.YEAR.toSI(Double.valueOf(1.0)),   1.0e-10);
-        Assertions.assertEquals(31557600.0, Unit.YEAR.toSI(new Binary64(1.0)).getReal(),   1.0e-10);
-        Assertions.assertEquals(1.0,        Unit.SECOND.fromSI(     1.0), 1.0e-10);
-        Assertions.assertEquals(1.0,        Unit.MINUTE.fromSI(    60.0), 1.0e-10);
-        Assertions.assertEquals(1.0,        Unit.HOUR.fromSI(    3600.0), 1.0e-10);
-        Assertions.assertEquals(1.0,        Unit.DAY.fromSI(    86400.0), 1.0e-10);
-        Assertions.assertEquals(1.0,        Unit.YEAR.fromSI(31557600.0), 1.0e-10);
-        Assertions.assertEquals(1.0,        Unit.YEAR.fromSI(Double.valueOf(31557600.0)), 1.0e-10);
-        Assertions.assertEquals(1.0,        Unit.YEAR.fromSI(new Binary64(31557600.0)).getReal(), 1.0e-10);
-        Assertions.assertEquals(365.25,     Unit.DAY.fromSI(Unit.YEAR.toSI(1.0)), 1.0e-10);
+    void testTime() {
+        assertEquals(       1.0, Unit.SECOND.toSI(1.0), 1.0e-10);
+        assertEquals(      60.0, Unit.MINUTE.toSI(1.0), 1.0e-10);
+        assertEquals(    3600.0, Unit.HOUR.toSI(1.0),   1.0e-10);
+        assertEquals(   86400.0, Unit.DAY.toSI(1.0),    1.0e-10);
+        assertEquals(31557600.0, Unit.YEAR.toSI(1.0),   1.0e-10);
+        assertEquals(31557600.0, Unit.YEAR.toSI(Double.valueOf(1.0)),   1.0e-10);
+        assertEquals(31557600.0, Unit.YEAR.toSI(new Binary64(1.0)).getReal(),   1.0e-10);
+        assertEquals(1.0,        Unit.SECOND.fromSI(     1.0), 1.0e-10);
+        assertEquals(1.0,        Unit.MINUTE.fromSI(    60.0), 1.0e-10);
+        assertEquals(1.0,        Unit.HOUR.fromSI(    3600.0), 1.0e-10);
+        assertEquals(1.0,        Unit.DAY.fromSI(    86400.0), 1.0e-10);
+        assertEquals(1.0,        Unit.YEAR.fromSI(31557600.0), 1.0e-10);
+        assertEquals(1.0,        Unit.YEAR.fromSI(Double.valueOf(31557600.0)), 1.0e-10);
+        assertEquals(1.0,        Unit.YEAR.fromSI(new Binary64(31557600.0)).getReal(), 1.0e-10);
+        assertEquals(365.25,     Unit.DAY.fromSI(Unit.YEAR.toSI(1.0)), 1.0e-10);
     }
 
     @Test
-    public void testSI() {
-        Assertions.assertTrue(Unit.PERCENT.sameDimensionSI().sameDimension(Unit.ONE));
-        Assertions.assertEquals("1", Unit.PERCENT.sameDimensionSI().getName());
-        Assertions.assertEquals("m³.s⁻²", Unit.parse("km**3/s**2").sameDimensionSI().getName());
-        Assertions.assertEquals("m⁻³.s⁻⁶.rad^(2/5)", Unit.parse("µas^(2/5)/(h**(2)×m)³").sameDimensionSI().getName());
+    void testSI() {
+        assertTrue(Unit.PERCENT.sameDimensionSI().sameDimension(Unit.ONE));
+        assertEquals("1", Unit.PERCENT.sameDimensionSI().getName());
+        assertEquals("m³.s⁻²", Unit.parse("km**3/s**2").sameDimensionSI().getName());
+        assertEquals("m⁻³.s⁻⁶.rad^(2/5)", Unit.parse("µas^(2/5)/(h**(2)×m)³").sameDimensionSI().getName());
 
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         final Unit u1 = Unit.parse("kg/m³");
         final Unit u2 = Unit.parse("kg/m^3");
-        Assertions.assertNotSame(u1, u2);
-        Assertions.assertEquals(u1, u2);
-        Assertions.assertNotEquals(u1.getName(), u2.getName());
-        Assertions.assertNotEquals(u1, Unit.parse("A").alias(u1.getName()));
-        Assertions.assertNotEquals(u1, null);
-        Assertions.assertNotEquals(u1, u1.getName());
-        Assertions.assertEquals(19160943, u1.hashCode());
+        assertNotSame(u1, u2);
+        assertEquals(u1, u2);
+        assertNotEquals(u1.getName(), u2.getName());
+        assertNotEquals(u1, Unit.parse("A").alias(u1.getName()));
+        assertNotEquals(null, u1);
+        assertNotEquals(u1, u1.getName());
+        assertEquals(19160943, u1.hashCode());
     }
 
     @Test
-    public void testReference() {
+    void testReference() {
         checkReference(Unit.NONE,                         "n/a",                     1.0,  0,  0,  0,  0, 0);
         checkReference(Unit.ONE,                            "1",                     1.0,  0,  0,  0,  0, 0);
         checkReference(Unit.PERCENT,                        "%",                    0.01,  0,  0,  0,  0, 0);
@@ -114,29 +120,29 @@ public class UnitTest {
     private void checkReference(final Unit unit, final String name, final double scale,
                                 final int mass, final int length, final int time,
                                 final int current, final int angle) {
-        Assertions.assertEquals(name, unit.toString());
-        Assertions.assertEquals(scale, unit.getScale(), 1.0e-10);
-        Assertions.assertEquals(new Fraction(mass),     unit.getMass());
-        Assertions.assertEquals(new Fraction(length),   unit.getLength());
-        Assertions.assertEquals(new Fraction(time),     unit.getTime());
-        Assertions.assertEquals(new Fraction(current),  unit.getCurrent());
-        Assertions.assertEquals(new Fraction(angle),    unit.getAngle());
+        assertEquals(name, unit.toString());
+        assertEquals(scale, unit.getScale(), 1.0e-10);
+        assertEquals(new Fraction(mass),     unit.getMass());
+        assertEquals(new Fraction(length),   unit.getLength());
+        assertEquals(new Fraction(time),     unit.getTime());
+        assertEquals(new Fraction(current),  unit.getCurrent());
+        assertEquals(new Fraction(angle),    unit.getAngle());
     }
 
     @Test
-    public void testNotAUnit() {
-        Assertions.assertSame(Unit.NONE, Unit.parse("n/a"));
+    void testNotAUnit() {
+        assertSame(Unit.NONE, Unit.parse("n/a"));
     }
 
     @Test
-    public void testOneUnit() {
+    void testOneUnit() {
         checkReference("1",
                        1.0,
                        Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
     }
 
     @Test
-    public void testND() {
+    void testND() {
         // nd does not mean "not defined", but nano-day…
         checkReference("nd",
                        Prefix.NANO.getFactor() * Constants.JULIAN_DAY,
@@ -144,42 +150,42 @@ public class UnitTest {
     }
 
     @Test
-    public void testPredefinedUnit() {
+    void testPredefinedUnit() {
         checkReference("MHz",
                        1.0e6,
                        Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
     }
 
     @Test
-    public void testSquareRoot() {
+    void testSquareRoot() {
         checkReference("km/√d",
                        1000.0 / FastMath.sqrt(Constants.JULIAN_DAY),
                        Fraction.ZERO, Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
     }
 
     @Test
-    public void testChain() {
+    void testChain() {
         checkReference("kg.m^(3/4).s⁻¹",
                        1.0,
                        Fraction.ONE, new Fraction(3, 4), Fraction.MINUS_ONE, Fraction.ZERO);
     }
 
     @Test
-    public void testExponents() {
+    void testExponents() {
         checkReference("µas^⅖/(h**(2)×m)³",
                        FastMath.pow(FastMath.toRadians(1.0 / 3.6e9), 0.4) / FastMath.pow(3600, 6),
                        Fraction.ZERO, new Fraction(-3, 1), new Fraction(-6, 1), new Fraction(2, 5));
     }
 
     @Test
-    public void testCompoundInSquareRoot() {
+    void testCompoundInSquareRoot() {
         checkReference("km/√(kg.s)",
                        1000.0,
                        new Fraction(-1, 2), Fraction.ONE, new Fraction(-1, 2), Fraction.ZERO);
     }
 
     @Test
-    public void testLeftAssociativity() {
+    void testLeftAssociativity() {
         checkReference("(kg/m)/s²",
                        1.0,
                        Fraction.ONE, Fraction.MINUS_ONE, new Fraction(-2), Fraction.ZERO);
@@ -192,7 +198,7 @@ public class UnitTest {
     }
 
     @Test
-    public void testCcsdsRoot() {
+    void testCcsdsRoot() {
         checkReference("km**0.5/s",
                        FastMath.sqrt(1000.0),
                        Fraction.ZERO, Fraction.ONE_HALF, Fraction.MINUS_ONE, Fraction.ZERO);
@@ -202,21 +208,21 @@ public class UnitTest {
     }
 
     @Test
-    public void testNumber() {
+    void testNumber() {
         checkReference("#/yr",
                        1.0 / Constants.JULIAN_YEAR,
                        Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
     }
 
     @Test
-    public void testReciprocal() {
+    void testReciprocal() {
         checkReference("1/s",
                        1.0,
                        Fraction.ZERO, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
     }
 
     @Test
-    public void testSeveralMicro() {
+    void testSeveralMicro() {
         checkReference("µs", // here we use U+00B5, MICRO SIGN
                        1.0e-6,
                        Fraction.ZERO, Fraction.ZERO, Fraction.ONE, Fraction.ZERO);
@@ -226,102 +232,102 @@ public class UnitTest {
     }
 
     @Test
-    public void testEmpty() {
+    void testEmpty() {
         expectFailure("");
     }
 
     @Test
-    public void testIncompleteExponent1() {
+    void testIncompleteExponent1() {
         expectFailure("m.g^(2/)");
     }
 
     @Test
-    public void testIncompleteExponent2() {
+    void testIncompleteExponent2() {
         expectFailure("m.g^(2m)");
     }
 
     @Test
-    public void testMissingClosingParenthesis() {
+    void testMissingClosingParenthesis() {
         expectFailure("m.(W");
     }
 
     @Test
-    public void testGarbageOnInput() {
+    void testGarbageOnInput() {
         expectFailure("kg+s");
     }
 
     @Test
-    public void testFactor() {
+    void testFactor() {
         checkReference("kg/3s",
                        1.0 / 3.0,
                        Fraction.ONE, Fraction.ZERO, Fraction.MINUS_ONE, Fraction.ZERO);
     }
 
     @Test
-    public void testMissingUnit() {
+    void testMissingUnit() {
         expectFailure("km/√");
     }
 
     @Test
-    public void testRootAndPower() {
+    void testRootAndPower() {
         expectFailure("km/√d³");
     }
 
     @Test
-    public void testRootAndParenthesisedPower() {
+    void testRootAndParenthesisedPower() {
         checkReference("km/√(d³)",
                        1000.0 / (Constants.JULIAN_DAY * FastMath.sqrt(Constants.JULIAN_DAY)),
                        Fraction.ZERO, Fraction.ONE, new Fraction(-3, 2), Fraction.ZERO);
     }
 
     @Test
-    public void checkWrongNumber() {
+    void checkWrongNumber() {
         try {
             Unit.ensureCompatible("some description",
                                     Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                     false,
                                     Collections.singletonList(Unit.KILOMETRE));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.WRONG_NB_COMPONENTS, oe.getSpecifier());
-            Assertions.assertEquals("some description", oe.getParts()[0]);
-            Assertions.assertEquals(3, ((Integer) oe.getParts()[1]).intValue());
-            Assertions.assertEquals(1, ((Integer) oe.getParts()[2]).intValue());
+            assertEquals(OrekitMessages.WRONG_NB_COMPONENTS, oe.getSpecifier());
+            assertEquals("some description", oe.getParts()[0]);
+            assertEquals(3, ((Integer) oe.getParts()[1]).intValue());
+            assertEquals(1, ((Integer) oe.getParts()[2]).intValue());
         }
     }
 
     @Test
-    public void checkWrongUnitsDimension() {
+    void checkWrongUnitsDimension() {
         try {
             Unit.ensureCompatible(null,
                                     Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                     false,
                                     Arrays.asList(Unit.METRE, Unit.SECOND, Unit.METRE));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
-            Assertions.assertEquals("m", oe.getParts()[0]);
-            Assertions.assertEquals("s", oe.getParts()[1]);
+            assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            assertEquals("m", oe.getParts()[0]);
+            assertEquals("s", oe.getParts()[1]);
         }
     }
 
     @Test
-    public void checkWrongUnitsScale() {
+    void checkWrongUnitsScale() {
         try {
             Unit.ensureCompatible(null,
                                     Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                     false,
                                     Arrays.asList(Unit.METRE, Unit.KILOMETRE, Unit.METRE));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
-            Assertions.assertEquals("m",  oe.getParts()[0]);
-            Assertions.assertEquals("km", oe.getParts()[1]);
+            assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            assertEquals("m",  oe.getParts()[0]);
+            assertEquals("km", oe.getParts()[1]);
         }
     }
 
     @Test
-    public void checkCorrectUnitsScale() {
+    void checkCorrectUnitsScale() {
         Unit.ensureCompatible(null,
                                 Arrays.asList(Unit.METRE, Unit.METRE, Unit.METRE),
                                 true,
@@ -332,21 +338,21 @@ public class UnitTest {
                                 final Fraction mass, final Fraction length,
                                 final Fraction time, final Fraction angle) {
         final Unit unit = Unit.parse(unitSpecification);
-        Assertions.assertEquals(unitSpecification, unit.toString());
-        Assertions.assertEquals(scale,  unit.getScale(), 1.0e-10 * scale);
-        Assertions.assertEquals(mass,   unit.getMass());
-        Assertions.assertEquals(length, unit.getLength());
-        Assertions.assertEquals(time,   unit.getTime());
-        Assertions.assertEquals(angle,  unit.getAngle());
+        assertEquals(unitSpecification, unit.toString());
+        assertEquals(scale,  unit.getScale(), 1.0e-10 * scale);
+        assertEquals(mass,   unit.getMass());
+        assertEquals(length, unit.getLength());
+        assertEquals(time,   unit.getTime());
+        assertEquals(angle,  unit.getAngle());
     }
 
     private void expectFailure(final String unitSpecification) {
         try {
             Unit.parse(unitSpecification);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());
-            Assertions.assertEquals(unitSpecification, oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());
+            assertEquals(unitSpecification, oe.getParts()[0]);
         }
     }
 

@@ -19,7 +19,6 @@ package org.orekit.forces.gravity;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -49,15 +48,19 @@ import org.orekit.utils.LoveNumbers;
 import org.orekit.utils.OrekitConfiguration;
 
 import java.lang.reflect.Field;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
 
-public class SolidTidesFieldTest {
+class SolidTidesFieldTest {
 
     @Test
-    public void testConventions2003() throws NoSuchFieldException, IllegalAccessException {
+    void testConventions2003() throws NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
         SolidTidesField tidesField =
@@ -73,34 +76,34 @@ public class SolidTidesFieldTest {
         fieldReal.setAccessible(true);
         LoveNumbers love = (LoveNumbers) fieldReal.get(tidesField);
 
-        Assertions.assertEquals(0.30190, love.getReal(2, 0), 1.0e-10);
-        Assertions.assertEquals(0.29830, love.getReal(2, 1), 1.0e-10);
-        Assertions.assertEquals(0.30102, love.getReal(2, 2), 1.0e-10);
-        Assertions.assertEquals(0.093,   love.getReal(3, 0), 1.0e-10);
-        Assertions.assertEquals(0.093,   love.getReal(3, 1), 1.0e-10);
-        Assertions.assertEquals(0.093,   love.getReal(3, 2), 1.0e-10);
-        Assertions.assertEquals(0.094,   love.getReal(3, 3), 1.0e-10);
+        assertEquals(0.30190, love.getReal(2, 0), 1.0e-10);
+        assertEquals(0.29830, love.getReal(2, 1), 1.0e-10);
+        assertEquals(0.30102, love.getReal(2, 2), 1.0e-10);
+        assertEquals(0.093,   love.getReal(3, 0), 1.0e-10);
+        assertEquals(0.093,   love.getReal(3, 1), 1.0e-10);
+        assertEquals(0.093,   love.getReal(3, 2), 1.0e-10);
+        assertEquals(0.094,   love.getReal(3, 3), 1.0e-10);
 
-        Assertions.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
-        Assertions.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
-        Assertions.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
+        assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
+        assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
+        assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
 
-        Assertions.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
-        Assertions.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
-        Assertions.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
+        assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
+        assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
+        assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
 
     }
 
     @Test
-    public void testConventions2010() throws NoSuchFieldException, IllegalAccessException {
+    void testConventions2010() throws NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         SolidTidesField tidesField =
@@ -116,29 +119,29 @@ public class SolidTidesFieldTest {
         fieldReal.setAccessible(true);
         LoveNumbers love = (LoveNumbers) fieldReal.get(tidesField);
 
-        Assertions.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
-        Assertions.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
-        Assertions.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
+        assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
+        assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
+        assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
+        assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
 
 
-        Assertions.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
-        Assertions.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
-        Assertions.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
-        Assertions.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
+        assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
+        assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
+        assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
+        assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
 
     }
 
     @Test
-    public void testK1Example()
-        throws NoSuchFieldException, IllegalAccessException,
-               NoSuchMethodException, InvocationTargetException {
+    void testK1Example()
+            throws NoSuchFieldException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         // the reference for this test is the example at the bottom of page 86, IERS conventions 2010 section 6.2.1
         final PoissonSeriesParser k21Parser =
                 new PoissonSeriesParser(18).
@@ -198,16 +201,16 @@ public class SolidTidesFieldTest {
             }
             frequencyDependentPart.invoke(tf, date, cachedCNM, cachedSNM);
             double thetaPlusPi = gmstFunction.value(date) + FastMath.PI;
-            Assertions.assertEquals(470.9e-12 * FastMath.sin(thetaPlusPi) - 30.2e-12 * FastMath.cos(thetaPlusPi),
+            assertEquals(470.9e-12 * FastMath.sin(thetaPlusPi) - 30.2e-12 * FastMath.cos(thetaPlusPi),
                                 cachedCNM[2][1], 2.0e-25);
-            Assertions.assertEquals(470.9e-12 * FastMath.cos(thetaPlusPi) + 30.2e-12 * FastMath.sin(thetaPlusPi),
+            assertEquals(470.9e-12 * FastMath.cos(thetaPlusPi) + 30.2e-12 * FastMath.sin(thetaPlusPi),
                                 cachedSNM[2][1], 2.0e-25);
         }
 
     }
 
     @Test
-    public void testDeltaCnmSnm() {
+    void testDeltaCnmSnm() {
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getNormalizedProvider(8, 8);
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -242,14 +245,14 @@ public class SolidTidesFieldTest {
         for (int n = 0; n < refDeltaCnm.length; ++n) {
             double threshold = (n == 2) ? 1.3e-17 : 3.1e-21;
             for (int m = 0; m <= n; ++m) {
-                Assertions.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
-                Assertions.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
+                assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
+                assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
             }
         }
     }
 
     @Test
-    public void testInterpolationAccuracy() {
+    void testInterpolationAccuracy() {
 
         // The shortest periods are slightly below one half day for the tidal waves
         // considered here. This implies the sampling rate should be fast enough.
@@ -308,15 +311,15 @@ public class SolidTidesFieldTest {
                 }
             }
         }
-        Assertions.assertEquals(0.0, stat.getMean(), 2.7e-12);
-        Assertions.assertTrue(stat.getStandardDeviation() < 2.0e-9);
-        Assertions.assertTrue(stat.getMin() > -9.0e-8);
-        Assertions.assertTrue(stat.getMax() <  2.2e-7);
+        assertEquals(0.0, stat.getMean(), 2.7e-12);
+        assertTrue(stat.getStandardDeviation() < 2.0e-9);
+        assertTrue(stat.getMin() > -9.0e-8);
+        assertTrue(stat.getMax() <  2.2e-7);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
     }
 

@@ -28,7 +28,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -57,8 +56,12 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class LofOffsetTest {
+
+class LofOffsetTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -80,18 +83,18 @@ public class LofOffsetTest {
      * Testing of the getters.
      */
     @Test
-    public void testGetters() {
+    void testGetters() {
         final Rotation expectedRotation = new Rotation(RotationOrder.XYZ, RotationConvention.VECTOR_OPERATOR, 0, 0, 0).revert();
         final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
-        Assertions.assertEquals(LOFType.LVLH_CCSDS, lofOffset.getLof());
-        Assertions.assertEquals(orbit.getFrame(), lofOffset.getInertialFrame());
-        Assertions.assertEquals(expectedRotation.getAngle(), lofOffset.getOffset().getAngle());
+        assertEquals(LOFType.LVLH_CCSDS, lofOffset.getLof());
+        assertEquals(orbit.getFrame(), lofOffset.getInertialFrame());
+        assertEquals(expectedRotation.getAngle(), lofOffset.getOffset().getAngle());
     }
 
     /** Test is the lof offset is the one expected
      */
     @Test
-    public void testZero() {
+    void testZero() {
 
         //  Satellite position
 
@@ -103,14 +106,15 @@ public class LofOffsetTest {
         final Vector3D momentumEME2000 = pvSatEME2000.getMomentum();
         final Vector3D momentumLof = lofOffsetRot.applyTo(momentumEME2000);
         final double cosinus = FastMath.cos(Vector3D.dotProduct(momentumLof, Vector3D.PLUS_K));
-        Assertions.assertEquals(1., cosinus, Utils.epsilonAngle);
+        assertEquals(1., cosinus, Utils.epsilonAngle);
 
     }
+
     /** Test if the lof offset is the one expected
      */
     @Test
     @DefaultDataContext
-    public void testOffset() {
+    void testOffset() {
 
         //  Satellite position
         final CircularOrbit circ =
@@ -147,14 +151,14 @@ public class LofOffsetTest {
 
         // Compose rotations : target pointing attitudes
         final double angleCompo = targetRot.composeInverse(lofOffsetRot, RotationConvention.VECTOR_OPERATOR).getAngle();
-        Assertions.assertEquals(0., angleCompo, Utils.epsilonAngle);
+        assertEquals(0., angleCompo, Utils.epsilonAngle);
 
     }
 
     /** Test is the target pointed is the one expected
      */
     @Test
-    public void testTarget()
+    void testTarget()
         {
 
         // Create target point and target pointing law towards that point
@@ -180,14 +184,14 @@ public class LofOffsetTest {
                 lofOffsetPtLaw.getTargetPV(orbit, date, earthSpheric.getBodyFrame()).getPosition();
         final GeodeticPoint targetRes = earthSpheric.transform(pTargetRes, earthSpheric.getBodyFrame(), date);
 
-        Assertions.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
-        Assertions.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
+        assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
+        assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
 
     }
 
     @Test
     @DefaultDataContext
-    public void testSpin() {
+    void testSpin() {
 
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0.1, 0.2, 0.3);
 
@@ -212,24 +216,24 @@ public class LofOffsetTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-10);
+        assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-10);
 
     }
 
     @Test
     @DefaultDataContext
-    public void testAnglesSign() {
+    void testAnglesSign() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
@@ -266,7 +270,7 @@ public class LofOffsetTest {
 
     @Test
     @DefaultDataContext
-    public void testRetrieveAngles() {
+    void testRetrieveAngles() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -285,18 +289,18 @@ public class LofOffsetTest {
         Rotation alignedAtt = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS).getAttitude(orbit, date, orbit.getFrame()).getRotation();
         Rotation offsetProper = offsetAtt.compose(alignedAtt.revert(), RotationConvention.VECTOR_OPERATOR);
         double[] anglesV = offsetProper.revert().getAngles(order, RotationConvention.VECTOR_OPERATOR);
-        Assertions.assertEquals(alpha1, anglesV[0], 1.0e-11);
-        Assertions.assertEquals(alpha2, anglesV[1], 1.0e-11);
-        Assertions.assertEquals(alpha3, anglesV[2], 1.0e-11);
+        assertEquals(alpha1, anglesV[0], 1.0e-11);
+        assertEquals(alpha2, anglesV[1], 1.0e-11);
+        assertEquals(alpha3, anglesV[2], 1.0e-11);
         double[] anglesF = offsetProper.getAngles(order, RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(alpha1, anglesF[0], 1.0e-11);
-        Assertions.assertEquals(alpha2, anglesF[1], 1.0e-11);
-        Assertions.assertEquals(alpha3, anglesF[2], 1.0e-11);
+        assertEquals(alpha1, anglesF[0], 1.0e-11);
+        assertEquals(alpha2, anglesF[1], 1.0e-11);
+        assertEquals(alpha3, anglesF[2], 1.0e-11);
     }
 
     @Test
     @DefaultDataContext
-    public void testTypesField() {
+    void testTypesField() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -322,11 +326,11 @@ public class LofOffsetTest {
         Vector3D zLof = o.getPosition().normalize().negate();
         Vector3D yLof = o.getPVCoordinates().getMomentum().normalize().negate();
         Vector3D xLof = Vector3D.crossProduct(yLof, zLof);
-        Assertions.assertTrue(Vector3D.dotProduct(xLof, o.getPVCoordinates().getVelocity()) > 0);
+        assertTrue(Vector3D.dotProduct(xLof, o.getPVCoordinates().getVelocity()) > 0);
         Vector3D v = a.getRotation().applyInverseTo(satVector);
-        Assertions.assertEquals(expectedX, Vector3D.dotProduct(v, xLof), threshold);
-        Assertions.assertEquals(expectedY, Vector3D.dotProduct(v, yLof), threshold);
-        Assertions.assertEquals(expectedZ, Vector3D.dotProduct(v, zLof), threshold);
+        assertEquals(expectedX, Vector3D.dotProduct(v, xLof), threshold);
+        assertEquals(expectedY, Vector3D.dotProduct(v, yLof), threshold);
+        assertEquals(expectedZ, Vector3D.dotProduct(v, zLof), threshold);
     }
 
     private <T extends CalculusFieldElement<T>> void checkField(final Field<T> field, final AttitudeProvider provider,
@@ -337,9 +341,9 @@ public class LofOffsetTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
     @Test
@@ -351,7 +355,7 @@ public class LofOffsetTest {
         final Rotation actualRotation = lofOffset.getAttitudeRotation(orbit, date, itrf);
         // THEN
         final Rotation expectedRotation = lofOffset.getAttitude(orbit, date, itrf).getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
     }
 
     @Test
@@ -375,12 +379,12 @@ public class LofOffsetTest {
         final FieldRotation<T> actualRotation = lofOffset.getAttitudeRotation(fieldState.getOrbit(), fieldState.getDate(), itrf);
         // THEN
         final FieldRotation<T> expectedRotation = lofOffset.getAttitude(fieldState.getOrbit(), fieldState.getDate(), itrf).getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
+        assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
     @BeforeEach
     @DefaultDataContext
-    public void setUp() {
+    void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
@@ -409,13 +413,13 @@ public class LofOffsetTest {
 
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
         earthSpheric = null;

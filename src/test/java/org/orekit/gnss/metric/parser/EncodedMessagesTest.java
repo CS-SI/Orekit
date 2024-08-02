@@ -16,23 +16,24 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class EncodedMessagesTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class EncodedMessagesTest {
 
     @Test
-    public void testBasicUse() {
+    void testBasicUse() {
 
         // Initialization
         final MockEncodedMessages message = new MockEncodedMessages();
         message.start();
 
         // Verify
-        Assertions.assertEquals(1, DataType.BIT_1.decode(message).intValue());
-        Assertions.assertEquals(2, DataType.BIT_2.decode(message).intValue());
-        Assertions.assertEquals(3, DataType.BIT_3.decode(message).intValue());
-        Assertions.assertEquals(4, DataType.BIT_4.decode(message).intValue());
+        assertEquals(1, DataType.BIT_1.decode(message).intValue());
+        assertEquals(2, DataType.BIT_2.decode(message).intValue());
+        assertEquals(3, DataType.BIT_3.decode(message).intValue());
+        assertEquals(4, DataType.BIT_4.decode(message).intValue());
     }
 
     private class MockEncodedMessages implements EncodedMessage {

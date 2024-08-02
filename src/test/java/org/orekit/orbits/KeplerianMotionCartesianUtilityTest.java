@@ -20,12 +20,13 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class KeplerianMotionCartesianUtilityTest {
 
@@ -71,8 +72,8 @@ class KeplerianMotionCartesianUtilityTest {
     private void comparePV(final PVCoordinates pvCoordinates, final PVCoordinates otherPVCoordinates) {
         final double expectedValue = 0.;
         final PVCoordinates relativePV = new PVCoordinates(pvCoordinates, otherPVCoordinates);
-        Assertions.assertEquals(expectedValue, relativePV.getPosition().getNorm(), TOLERANCE_DISTANCE);
-        Assertions.assertEquals(expectedValue, relativePV.getVelocity().getNorm(), TOLERANCE_SPEED);
+        assertEquals(expectedValue, relativePV.getPosition().getNorm(), TOLERANCE_DISTANCE);
+        assertEquals(expectedValue, relativePV.getVelocity().getNorm(), TOLERANCE_SPEED);
     }
 
     @Test

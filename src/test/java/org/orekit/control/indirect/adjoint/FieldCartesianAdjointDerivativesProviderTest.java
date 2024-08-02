@@ -21,7 +21,6 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
@@ -38,6 +37,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class FieldCartesianAdjointDerivativesProviderTest {
 
     @Test
@@ -53,7 +56,7 @@ class FieldCartesianAdjointDerivativesProviderTest {
         Mockito.when(mockedOrbit.getType()).thenReturn(OrbitType.EQUINOCTIAL);
         Mockito.when(mockedState.getOrbit()).thenReturn(mockedOrbit);
         // WHEN
-        Assertions.assertThrows(OrekitException.class, () -> derivativesProvider.init(mockedState, null));
+        assertThrows(OrekitException.class, () -> derivativesProvider.init(mockedState, null));
     }
 
     @Test
@@ -76,14 +79,14 @@ class FieldCartesianAdjointDerivativesProviderTest {
         // WHEN
         final FieldSpacecraftState<Binary64> terminalState = propagator.propagate(initialState.getDate().shiftedBy(1000.));
         // THEN
-        Assertions.assertTrue(propagator.isAdditionalStateManaged(name));
+        assertTrue(propagator.isAdditionalStateManaged(name));
         final Binary64[] adjoint = terminalState.getAdditionalState(name);
-        Assertions.assertEquals(0., adjoint[0].getReal());
-        Assertions.assertEquals(0., adjoint[1].getReal());
-        Assertions.assertEquals(0., adjoint[2].getReal());
-        Assertions.assertEquals(0., adjoint[3].getReal());
-        Assertions.assertEquals(0., adjoint[4].getReal());
-        Assertions.assertEquals(0., adjoint[5].getReal());
+        assertEquals(0., adjoint[0].getReal());
+        assertEquals(0., adjoint[1].getReal());
+        assertEquals(0., adjoint[2].getReal());
+        assertEquals(0., adjoint[3].getReal());
+        assertEquals(0., adjoint[4].getReal());
+        assertEquals(0., adjoint[5].getReal());
     }
 
     @Test
@@ -98,13 +101,13 @@ class FieldCartesianAdjointDerivativesProviderTest {
         // THEN
         final Binary64[] increment = combinedDerivatives.getMainStateDerivativesIncrements();
         for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(0., increment[i].getReal());
+            assertEquals(0., increment[i].getReal());
         }
         final double mass = state.getMass().getReal();
-        Assertions.assertEquals(1., increment[3].getReal() * mass);
-        Assertions.assertEquals(2., increment[4].getReal() * mass);
-        Assertions.assertEquals(3., increment[5].getReal() * mass);
-        Assertions.assertEquals(-10., increment[6].getReal());
+        assertEquals(1., increment[3].getReal() * mass);
+        assertEquals(2., increment[4].getReal() * mass);
+        assertEquals(3., increment[5].getReal() * mass);
+        assertEquals(-10., increment[6].getReal());
     }
 
     private static FieldSpacecraftState<Binary64> getState(final String name) {

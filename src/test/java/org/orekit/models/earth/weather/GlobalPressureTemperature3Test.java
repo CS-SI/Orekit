@@ -24,7 +24,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -41,12 +40,16 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class GlobalPressureTemperature3Test {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class GlobalPressureTemperature3Test {
 
     private static double epsilon = 1.0e-12;
 
     @Test
-    public void testProvidedParameters() throws IOException, URISyntaxException {
+    void testProvidedParameters() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -70,22 +73,22 @@ public class GlobalPressureTemperature3Test {
         final PressureTemperatureHumidity   pth      = model.getWeatherParameters(location, date);
         final AzimuthalGradientCoefficients gradient = model.getGradientCoefficients(location, date);
 
-        Assertions.assertEquals(0.0012594,      a.getAh(),                   1.0e-7);
-        Assertions.assertEquals(0.0005648,      a.getAw(),                   1.0e-7);
-        Assertions.assertEquals(273.15 + 21.50, pth.getTemperature(),        1.0e-2);
-        Assertions.assertEquals(1000.72,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           1.0e-2);
-        Assertions.assertEquals(16.38,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 1.0e-2);
-        Assertions.assertEquals(273.15 +  9.41, pth.getTm(),                 1.0e-2);
-        Assertions.assertEquals(3.105482,       pth.getLambda(),             1.0e-6);
-        Assertions.assertEquals(-18.5382468,    gradient.getGnh(),           1.0e-7);
-        Assertions.assertEquals(  0.4685513,    gradient.getGeh(),           1.0e-7);
-        Assertions.assertEquals( -4.4695832,    gradient.getGnw(),           1.0e-7);
-        Assertions.assertEquals(  0.1445528,    gradient.getGew(),           1.0e-7);
+        assertEquals(0.0012594,      a.getAh(),                   1.0e-7);
+        assertEquals(0.0005648,      a.getAw(),                   1.0e-7);
+        assertEquals(273.15 + 21.50, pth.getTemperature(),        1.0e-2);
+        assertEquals(1000.72,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()),           1.0e-2);
+        assertEquals(16.38,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()), 1.0e-2);
+        assertEquals(273.15 +  9.41, pth.getTm(),                 1.0e-2);
+        assertEquals(3.105482,       pth.getLambda(),             1.0e-6);
+        assertEquals(-18.5382468,    gradient.getGnh(),           1.0e-7);
+        assertEquals(  0.4685513,    gradient.getGeh(),           1.0e-7);
+        assertEquals( -4.4695832,    gradient.getGnw(),           1.0e-7);
+        assertEquals(  0.1445528,    gradient.getGew(),           1.0e-7);
 
     }
 
     @Test
-    public void testFieldProvidedParameters() throws IOException, URISyntaxException {
+    void testFieldProvidedParameters() throws IOException, URISyntaxException {
         doTestFieldProvidedParameters(Binary64Field.getInstance());
     }
 
@@ -114,22 +117,22 @@ public class GlobalPressureTemperature3Test {
         final FieldPressureTemperatureHumidity<T>   pth      = model.getWeatherParameters(location, date);
         final FieldAzimuthalGradientCoefficients<T> gradient = model.getGradientCoefficients(location, date);
 
-        Assertions.assertEquals(0.0012594,      a.getAh().getReal(),                   1.0e-7);
-        Assertions.assertEquals(0.0005648,      a.getAw().getReal(),                   1.0e-7);
-        Assertions.assertEquals(273.15 + 21.50, pth.getTemperature().getReal(),        1.0e-2);
-        Assertions.assertEquals(1000.72,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()).getReal(),           1.0e-2);
-        Assertions.assertEquals(16.38,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()).getReal(), 1.0e-2);
-        Assertions.assertEquals(273.15 +  9.41, pth.getTm().getReal(),                 1.0e-2);
-        Assertions.assertEquals(3.105482,       pth.getLambda().getReal(),             1.0e-6);
-        Assertions.assertEquals(-18.5382468,    gradient.getGnh().getReal(),           1.0e-7);
-        Assertions.assertEquals(  0.4685513,    gradient.getGeh().getReal(),           1.0e-7);
-        Assertions.assertEquals( -4.4695832,    gradient.getGnw().getReal(),           1.0e-7);
-        Assertions.assertEquals(  0.1445528,    gradient.getGew().getReal(),           1.0e-7);
+        assertEquals(0.0012594,      a.getAh().getReal(),                   1.0e-7);
+        assertEquals(0.0005648,      a.getAw().getReal(),                   1.0e-7);
+        assertEquals(273.15 + 21.50, pth.getTemperature().getReal(),        1.0e-2);
+        assertEquals(1000.72,        TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getPressure()).getReal(),           1.0e-2);
+        assertEquals(16.38,          TroposphericModelUtils.HECTO_PASCAL.fromSI(pth.getWaterVaporPressure()).getReal(), 1.0e-2);
+        assertEquals(273.15 +  9.41, pth.getTm().getReal(),                 1.0e-2);
+        assertEquals(3.105482,       pth.getLambda().getReal(),             1.0e-6);
+        assertEquals(-18.5382468,    gradient.getGnh().getReal(),           1.0e-7);
+        assertEquals(  0.4685513,    gradient.getGeh().getReal(),           1.0e-7);
+        assertEquals( -4.4695832,    gradient.getGnw().getReal(),           1.0e-7);
+        assertEquals(  0.1445528,    gradient.getGew().getReal(),           1.0e-7);
 
     }
 
     @Test
-    public void testEquality() throws IOException, URISyntaxException {
+    void testEquality() throws IOException, URISyntaxException {
         doTestEquality("gpt-grid/gpt3_15.grd");
     }
 
@@ -154,11 +157,11 @@ public class GlobalPressureTemperature3Test {
         ViennaACoefficients         a2        = model.getA(location2, date);
         PressureTemperatureHumidity pth2      = model.getWeatherParameters(location2, date);
 
-        Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
-        Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
-        Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
-        Assertions.assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
+        assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
+        assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
+        assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
+        assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
+        assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
 
         // Test longitude = 180° and longitude = -180°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(180.0), height);
@@ -168,11 +171,11 @@ public class GlobalPressureTemperature3Test {
         a2        = model.getA(location2, date);
         pth2      = model.getWeatherParameters(location2, date);
 
-        Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
-        Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
-        Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
-        Assertions.assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
+        assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
+        assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
+        assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
+        assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
+        assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
 
         // Test longitude = 0° and longitude = 360°
         location1 = new GeodeticPoint(latitude, FastMath.toRadians(0.0), height);
@@ -182,16 +185,16 @@ public class GlobalPressureTemperature3Test {
         a2        = model.getA(location2, date);
         pth2      = model.getWeatherParameters(location2, date);
 
-        Assertions.assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
-        Assertions.assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
-        Assertions.assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
-        Assertions.assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
-        Assertions.assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
+        assertEquals(pth1.getTemperature(),        pth2.getTemperature(),        epsilon);
+        assertEquals(pth1.getPressure(),           pth2.getPressure(),           epsilon);
+        assertEquals(pth1.getWaterVaporPressure(), pth2.getWaterVaporPressure(), epsilon);
+        assertEquals(a1.getAh(),                   a2.getAh(),                   epsilon);
+        assertEquals(a1.getAw(),                   a2.getAw(),                   epsilon);
 
     }
 
     @Test
-    public void testCorruptedFileBadData() throws IOException, URISyntaxException {
+    void testCorruptedFileBadData() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -199,17 +202,17 @@ public class GlobalPressureTemperature3Test {
         final URL url = GlobalPressureTemperature3Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature3(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
+            assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
     }
 
     @Test
-    public void testCorruptedIrregularGrid() throws IOException, URISyntaxException {
+    void testCorruptedIrregularGrid() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -217,16 +220,16 @@ public class GlobalPressureTemperature3Test {
         final URL url = GlobalPressureTemperature3Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature3(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
-            Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
+            assertEquals(OrekitMessages.IRREGULAR_OR_INCOMPLETE_GRID, oe.getSpecifier());
+            assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
         }
 
     }
 
     @Test
-    public void testCorruptedIncompleteHeader() throws IOException, URISyntaxException {
+    void testCorruptedIncompleteHeader() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -234,17 +237,17 @@ public class GlobalPressureTemperature3Test {
         final URL url = GlobalPressureTemperature3Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature3(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+            assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
     }
 
     @Test
-    public void testCorruptedMissingSeasonalColumns() throws IOException, URISyntaxException {
+    void testCorruptedMissingSeasonalColumns() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -252,17 +255,17 @@ public class GlobalPressureTemperature3Test {
         final URL url = GlobalPressureTemperature3Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature3(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+            assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
     }
 
     @Test
-    public void testCorruptedMissingDataFields() throws IOException, URISyntaxException {
+    void testCorruptedMissingDataFields() throws IOException, URISyntaxException {
 
         Utils.setDataRoot("regular-data");
 
@@ -270,11 +273,11 @@ public class GlobalPressureTemperature3Test {
         final URL url = GlobalPressureTemperature3Test.class.getClassLoader().getResource("gpt-grid/" + fileName);
         try {
             new GlobalPressureTemperature3(new DataSource(url.toURI()), TimeScalesFactory.getUTC());
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(4, ((Integer) oe.getParts()[0]).intValue());
+            assertTrue(((String) oe.getParts()[1]).endsWith(fileName));
         }
 
     }

@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -33,19 +32,21 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UTCScale;
 
 import java.util.PrimitiveIterator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Random;
 import java.util.stream.DoubleStream;
 
 /** Unit tests for {@link ConstantPVCoordinatesProvider}. */
-public class ConstantPVCoordinatesProviderTest {
+class ConstantPVCoordinatesProviderTest {
     /** Set up test data. */
     @BeforeEach
-    public void setup() {
+    void setup() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void verifyEllipsoidLocation() {
+    void verifyEllipsoidLocation() {
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final OneAxisEllipsoid body = ReferenceEllipsoid.getWgs84(itrf);
 
@@ -65,24 +66,24 @@ public class ConstantPVCoordinatesProviderTest {
 
         // verify at epoch
         final TimeStampedPVCoordinates tpvItrf = pvProv.getPVCoordinates(epoch, itrf);
-        Assertions.assertEquals(epoch, tpvItrf.getDate());
-        Assertions.assertEquals(tpvItrf.getPosition(), posItrf);
-        Assertions.assertEquals(tpvItrf.getVelocity(), velItrf);
-        Assertions.assertEquals(tpvItrf.getAcceleration(), Vector3D.ZERO);
+        assertEquals(epoch, tpvItrf.getDate());
+        assertEquals(tpvItrf.getPosition(), posItrf);
+        assertEquals(tpvItrf.getVelocity(), velItrf);
+        assertEquals(Vector3D.ZERO, tpvItrf.getAcceleration());
 
         final PVCoordinates pvGcrf = itrf.getTransformTo(gcrf, epoch).transformPVCoordinates(pvItrf);
         final TimeStampedPVCoordinates tpvGcrf = pvProv.getPVCoordinates(epoch, gcrf);
-        Assertions.assertEquals(epoch, tpvGcrf.getDate());
-        Assertions.assertEquals(pvGcrf.getPosition(), tpvGcrf.getPosition());
-        Assertions.assertEquals(pvGcrf.getVelocity(), tpvGcrf.getVelocity());
-        Assertions.assertEquals(pvGcrf.getAcceleration(), tpvGcrf.getAcceleration());
+        assertEquals(epoch, tpvGcrf.getDate());
+        assertEquals(pvGcrf.getPosition(), tpvGcrf.getPosition());
+        assertEquals(pvGcrf.getVelocity(), tpvGcrf.getVelocity());
+        assertEquals(pvGcrf.getAcceleration(), tpvGcrf.getAcceleration());
 
         final PVCoordinates pvEme2000 = itrf.getTransformTo(eme2000, epoch).transformPVCoordinates(pvItrf);
         final TimeStampedPVCoordinates tpvEME2000 = pvProv.getPVCoordinates(epoch, eme2000);
-        Assertions.assertEquals(epoch, tpvEME2000.getDate());
-        Assertions.assertEquals(pvEme2000.getPosition(), tpvEME2000.getPosition());
-        Assertions.assertEquals(pvEme2000.getVelocity(), tpvEME2000.getVelocity());
-        Assertions.assertEquals(pvEme2000.getAcceleration(), tpvEME2000.getAcceleration());
+        assertEquals(epoch, tpvEME2000.getDate());
+        assertEquals(pvEme2000.getPosition(), tpvEME2000.getPosition());
+        assertEquals(pvEme2000.getVelocity(), tpvEME2000.getVelocity());
+        assertEquals(pvEme2000.getAcceleration(), tpvEME2000.getAcceleration());
 
         final Random rand = new Random();
         final DoubleStream stream = rand.doubles(1., 604800.); // stream of seconds within a week
@@ -92,26 +93,26 @@ public class ConstantPVCoordinatesProviderTest {
 
             // verify itrf
             final TimeStampedPVCoordinates actualItrf = pvProv.getPVCoordinates(date, itrf);
-            Assertions.assertEquals(date, actualItrf.getDate());
-            Assertions.assertEquals(posItrf, actualItrf.getPosition());
-            Assertions.assertEquals(velItrf, actualItrf.getVelocity());
-            Assertions.assertEquals(Vector3D.ZERO, actualItrf.getAcceleration());
+            assertEquals(date, actualItrf.getDate());
+            assertEquals(posItrf, actualItrf.getPosition());
+            assertEquals(velItrf, actualItrf.getVelocity());
+            assertEquals(Vector3D.ZERO, actualItrf.getAcceleration());
 
             // verify gcrf
             final PVCoordinates expectedGcrf = itrf.getTransformTo(gcrf, date).transformPVCoordinates(pvItrf);
             final TimeStampedPVCoordinates actualGcrf = pvProv.getPVCoordinates(date, gcrf);
-            Assertions.assertEquals(date, actualGcrf.getDate());
-            Assertions.assertEquals(expectedGcrf.getPosition(), actualGcrf.getPosition());
-            Assertions.assertEquals(expectedGcrf.getVelocity(), actualGcrf.getVelocity());
-            Assertions.assertEquals(expectedGcrf.getAcceleration(), actualGcrf.getAcceleration());
+            assertEquals(date, actualGcrf.getDate());
+            assertEquals(expectedGcrf.getPosition(), actualGcrf.getPosition());
+            assertEquals(expectedGcrf.getVelocity(), actualGcrf.getVelocity());
+            assertEquals(expectedGcrf.getAcceleration(), actualGcrf.getAcceleration());
 
             // verify eme2000
             final PVCoordinates expectedEme2000 = itrf.getTransformTo(eme2000, date).transformPVCoordinates(pvItrf);
             final TimeStampedPVCoordinates actualEme2000 = pvProv.getPVCoordinates(date, eme2000);
-            Assertions.assertEquals(date, actualEme2000.getDate());
-            Assertions.assertEquals(expectedEme2000.getPosition(), actualEme2000.getPosition());
-            Assertions.assertEquals(expectedEme2000.getVelocity(), actualEme2000.getVelocity());
-            Assertions.assertEquals(expectedEme2000.getAcceleration(), actualEme2000.getAcceleration());
+            assertEquals(date, actualEme2000.getDate());
+            assertEquals(expectedEme2000.getPosition(), actualEme2000.getPosition());
+            assertEquals(expectedEme2000.getVelocity(), actualEme2000.getVelocity());
+            assertEquals(expectedEme2000.getAcceleration(), actualEme2000.getAcceleration());
         }
     }
 }

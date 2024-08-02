@@ -16,12 +16,14 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.ssa.collision.shorttermencounter.probability.twod.ShortTermEncounter2DPOCMethodType;
 
-public class PocMethodTypeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class PocMethodTypeTest {
 
     @Test
     void testConversionToCCSDSName() {
@@ -36,9 +38,9 @@ public class PocMethodTypeTest {
         final String ccsdsChan2003   = chan2003.getCCSDSName();
 
         // THEN
-        Assertions.assertEquals(ccsdsAlfano2005, "ALFANO-2005");
-        Assertions.assertEquals(ccsdsChan1997, "CHAN-1997");
-        Assertions.assertEquals(ccsdsChan2003, "CHAN-2003");
+        assertEquals("ALFANO-2005", ccsdsAlfano2005);
+        assertEquals("CHAN-1997", ccsdsChan1997);
+        assertEquals("CHAN-2003", ccsdsChan2003);
     }
 
     @Test
@@ -71,16 +73,16 @@ public class PocMethodTypeTest {
         final ShortTermEncounter2DPOCMethodType mckinley2006Equivalent = mckinley2006.getMethodType();
 
         // Then
-        Assertions.assertNull(akellaalFriend2000Equivalent);
-        Assertions.assertNull(foster1992Equivalent);
-        Assertions.assertNull(patera2001Equivalent);
-        Assertions.assertNull(patera2003Equivalent);
-        Assertions.assertNull(chan2003Equivalent);
-        Assertions.assertNull(alfanoTubes2007Equivalent);
-        Assertions.assertNull(alfanoVoxels2006Equivalent);
-        Assertions.assertNull(alfanoParal2007Equivalent);
-        Assertions.assertNull(alfanoMaxProbabilityEquivalent);
-        Assertions.assertNull(mckinley2006Equivalent);
+        assertNull(akellaalFriend2000Equivalent);
+        assertNull(foster1992Equivalent);
+        assertNull(patera2001Equivalent);
+        assertNull(patera2003Equivalent);
+        assertNull(chan2003Equivalent);
+        assertNull(alfanoTubes2007Equivalent);
+        assertNull(alfanoVoxels2006Equivalent);
+        assertNull(alfanoParal2007Equivalent);
+        assertNull(alfanoMaxProbabilityEquivalent);
+        assertNull(mckinley2006Equivalent);
 
     }
 
@@ -100,10 +102,10 @@ public class PocMethodTypeTest {
         final ShortTermEncounter2DPOCMethodType patera2005Equivalent   = patera2005.getMethodType();
 
         // Then
-        Assertions.assertEquals(ShortTermEncounter2DPOCMethodType.CHAN_1997, chan1997Equivalent);
-        Assertions.assertEquals(ShortTermEncounter2DPOCMethodType.ALFRIEND_1999, alfriend1999Equivalent);
-        Assertions.assertEquals(ShortTermEncounter2DPOCMethodType.ALFANO_2005, alfano2005Equivalent);
-        Assertions.assertEquals(ShortTermEncounter2DPOCMethodType.PATERA_2005, patera2005Equivalent);
+        assertEquals(ShortTermEncounter2DPOCMethodType.CHAN_1997, chan1997Equivalent);
+        assertEquals(ShortTermEncounter2DPOCMethodType.ALFRIEND_1999, alfriend1999Equivalent);
+        assertEquals(ShortTermEncounter2DPOCMethodType.ALFANO_2005, alfano2005Equivalent);
+        assertEquals(ShortTermEncounter2DPOCMethodType.PATERA_2005, patera2005Equivalent);
 
     }
 }

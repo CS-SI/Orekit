@@ -32,7 +32,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -47,12 +46,15 @@ import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /** Tests for the class UnivariateprocessNoise. */
-public class UnivariateprocessNoiseTest {
+class UnivariateprocessNoiseTest {
 
     /** Basic test for getters. */
     @Test
-    public void testUnivariateProcessNoiseGetters() {
+    void testUnivariateProcessNoiseGetters() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -89,13 +91,13 @@ public class UnivariateprocessNoiseTest {
                                                                                propagationParametersEvolution,
                                                                                measurementsParametersEvolution);
 
-        Assertions.assertEquals(LOFType.TNW, processNoise.getLofType());
-        Assertions.assertEquals(PositionAngleType.TRUE, processNoise.getPositionAngleType());
-        Assertions.assertEquals(initialCovarianceMatrix,
+        assertEquals(LOFType.TNW, processNoise.getLofType());
+        assertEquals(PositionAngleType.TRUE, processNoise.getPositionAngleType());
+        assertEquals(initialCovarianceMatrix,
                                 processNoise.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
-        Assertions.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoise.getLofCartesianOrbitalParametersEvolution());
-        Assertions.assertArrayEquals(propagationParametersEvolution, processNoise.getPropagationParametersEvolution());
-        Assertions.assertArrayEquals(measurementsParametersEvolution, processNoise.getMeasurementsParametersEvolution());
+        assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoise.getLofCartesianOrbitalParametersEvolution());
+        assertArrayEquals(propagationParametersEvolution, processNoise.getPropagationParametersEvolution());
+        assertArrayEquals(measurementsParametersEvolution, processNoise.getMeasurementsParametersEvolution());
 
         final UnivariateProcessNoise processNoiseOld = new UnivariateProcessNoise(initialCovarianceMatrix,
                                                                                   lofType,
@@ -103,17 +105,17 @@ public class UnivariateprocessNoiseTest {
                                                                                   lofCartesianOrbitalParametersEvolution,
                                                                                   propagationParametersEvolution);
 
-        Assertions.assertEquals(LOFType.TNW, processNoiseOld.getLofType());
-        Assertions.assertEquals(PositionAngleType.TRUE, processNoiseOld.getPositionAngleType());
-        Assertions.assertEquals(initialCovarianceMatrix,
+        assertEquals(LOFType.TNW, processNoiseOld.getLofType());
+        assertEquals(PositionAngleType.TRUE, processNoiseOld.getPositionAngleType());
+        assertEquals(initialCovarianceMatrix,
                                 processNoiseOld.getInitialCovarianceMatrix(new SpacecraftState(context.initialOrbit)));
-        Assertions.assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoiseOld.getLofCartesianOrbitalParametersEvolution());
-        Assertions.assertArrayEquals(propagationParametersEvolution, processNoiseOld.getPropagationParametersEvolution());
+        assertArrayEquals(lofCartesianOrbitalParametersEvolution, processNoiseOld.getLofCartesianOrbitalParametersEvolution());
+        assertArrayEquals(propagationParametersEvolution, processNoiseOld.getPropagationParametersEvolution());
     }
 
     /** Test UnivariateProcessNoise class with Cartesian parameters. */
     @Test
-    public void testProcessNoiseCartesian() {
+    void testProcessNoiseCartesian() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -142,7 +144,7 @@ public class UnivariateprocessNoiseTest {
 
     /** Test UnivariateProcessNoise class with Keplerian parameters. */
     @Test
-    public void testProcessNoiseKeplerian() {
+    void testProcessNoiseKeplerian() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -171,7 +173,7 @@ public class UnivariateprocessNoiseTest {
 
     /** Test UnivariateProcessNoise class with Circular parameters. */
     @Test
-    public void testProcessNoiseCircular() {
+    void testProcessNoiseCircular() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -200,7 +202,7 @@ public class UnivariateprocessNoiseTest {
 
     /** Test UnivariateProcessNoise class with Equinoctial parameters. */
     @Test
-    public void testProcessNoiseEquinoctial() {
+    void testProcessNoiseEquinoctial() {
 
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -548,13 +550,13 @@ public class UnivariateprocessNoiseTest {
         }
 
         // Test the values
-        Assertions.assertArrayEquals(new double[6],
+        assertArrayEquals(new double[6],
                                      orbitalRelativeValues,
                                      relativeTolerance);
-        Assertions.assertArrayEquals(new double[propagationParametersSize],
+        assertArrayEquals(new double[propagationParametersSize],
                                      propagationRelativeValues,
                                      relativeTolerance);
-        Assertions.assertArrayEquals(new double[measurementsParametersSize],
+        assertArrayEquals(new double[measurementsParametersSize],
                                      measurementsRelativeValues,
                                      relativeTolerance);
     }
@@ -570,10 +572,10 @@ public class UnivariateprocessNoiseTest {
                                                    small,
                                                    new GaussianRandomGenerator(new Well1024a(0x366a26b94e520f41l)));
     }
-    
+
     /** Test LOF orbital covariance matrix value from Cartesian formalism definition. */
     @Test
-    public void testLofOrbitalCovarianceFromCartesian() {
+    void testLofOrbitalCovarianceFromCartesian() {
         
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -595,10 +597,10 @@ public class UnivariateprocessNoiseTest {
         doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngleType, lofType,
                            print, relativeTolerance);
     }
-    
+
     /** Test LOF orbital covariance matrix value from Keplerian formalism definition. */
     @Test
-    public void testLofOrbitalCovarianceFromKeplerian() {
+    void testLofOrbitalCovarianceFromKeplerian() {
         
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -620,10 +622,10 @@ public class UnivariateprocessNoiseTest {
         doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngleType, lofType,
                            print, relativeTolerance);
     }
-    
+
     /** Test LOF orbital covariance matrix value from Circular formalism definition. */
     @Test
-    public void testLofOrbitalCovarianceFromCircular() {
+    void testLofOrbitalCovarianceFromCircular() {
         
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -645,10 +647,10 @@ public class UnivariateprocessNoiseTest {
         doTestLofCartesianOrbitalCovarianceFormal(context, orbitType, positionAngleType, lofType,
                            print, relativeTolerance);
     }
-    
+
     /** Test LOF orbital covariance matrix value from Equinoctial formalism definition. */
     @Test
-    public void testLofOrbitalCovarianceFromEquinoctial() {
+    void testLofOrbitalCovarianceFromEquinoctial() {
         
         // Create context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -822,7 +824,7 @@ public class UnivariateprocessNoiseTest {
             System.out.format(Locale.US, "\tΔDiagonal norm in Cartesian LOF     = %10.4e%n", dDiag);
             System.out.format(Locale.US, "\tΔNon-Diagonal norm in Cartesian LOF = %10.4e%n%n", dNonDiag);
         }
-        Assertions.assertEquals(0.,  dDiag   , relativeTolerance);
-        Assertions.assertEquals(0.,  dNonDiag, relativeTolerance);
+        assertEquals(0.,  dDiag   , relativeTolerance);
+        assertEquals(0.,  dNonDiag, relativeTolerance);
     }
 }

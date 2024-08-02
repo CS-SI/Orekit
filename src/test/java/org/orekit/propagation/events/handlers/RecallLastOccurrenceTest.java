@@ -17,12 +17,15 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RecallLastOccurrenceTest {
 
@@ -38,8 +41,8 @@ class RecallLastOccurrenceTest {
         // WHEN
         final Action action = recallLastOccurrence.eventOccurred(mockedState, null, true);
         // THEN
-        Assertions.assertEquals(expectedDate, recallLastOccurrence.getLastOccurrence());
-        Assertions.assertEquals(ACTION, action);
+        assertEquals(expectedDate, recallLastOccurrence.getLastOccurrence());
+        assertEquals(ACTION, action);
     }
 
     @Test
@@ -51,8 +54,8 @@ class RecallLastOccurrenceTest {
         // WHEN
         final SpacecraftState actualState = recallLastOccurrence.resetState(null, mockedState);
         // THEN
-        Assertions.assertEquals(mockedState, actualState);
-        Assertions.assertNull(recallLastOccurrence.getLastOccurrence());
+        assertEquals(mockedState, actualState);
+        assertNull(recallLastOccurrence.getLastOccurrence());
     }
 
     @Test
@@ -64,8 +67,8 @@ class RecallLastOccurrenceTest {
         // WHEN
         recallLastOccurrence.init(mockedState, AbsoluteDate.ARBITRARY_EPOCH, null);
         // THEN
-        Assertions.assertTrue(testHandler.isInitialized);
-        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, recallLastOccurrence.getLastOccurrence());
+        assertTrue(testHandler.isInitialized);
+        assertEquals(AbsoluteDate.FUTURE_INFINITY, recallLastOccurrence.getLastOccurrence());
     }
 
     @Test
@@ -77,8 +80,8 @@ class RecallLastOccurrenceTest {
         // WHEN
         recallLastOccurrence.init(mockedState, AbsoluteDate.ARBITRARY_EPOCH, null);
         // THEN
-        Assertions.assertTrue(testHandler.isInitialized);
-        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY, recallLastOccurrence.getLastOccurrence());
+        assertTrue(testHandler.isInitialized);
+        assertEquals(AbsoluteDate.PAST_INFINITY, recallLastOccurrence.getLastOccurrence());
     }
 
     private SpacecraftState mockState(final AbsoluteDate date) {

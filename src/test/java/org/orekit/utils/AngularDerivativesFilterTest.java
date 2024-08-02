@@ -16,45 +16,47 @@
  */
 package org.orekit.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class AngularDerivativesFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class AngularDerivativesFilterTest {
 
     @Test
-    public void testList() {
-        Assertions.assertEquals(3, AngularDerivativesFilter.values().length);
+    void testList() {
+        assertEquals(3, AngularDerivativesFilter.values().length);
     }
 
     @Test
-    public void testOrder() {
-        Assertions.assertEquals(0, AngularDerivativesFilter.USE_R.getMaxOrder(), 0);
-        Assertions.assertEquals(1, AngularDerivativesFilter.USE_RR.getMaxOrder(), 0);
-        Assertions.assertEquals(2, AngularDerivativesFilter.USE_RRA.getMaxOrder(), 0);
+    void testOrder() {
+        assertEquals(0, AngularDerivativesFilter.USE_R.getMaxOrder(), 0);
+        assertEquals(1, AngularDerivativesFilter.USE_RR.getMaxOrder(), 0);
+        assertEquals(2, AngularDerivativesFilter.USE_RRA.getMaxOrder(), 0);
     }
 
     @Test
-    public void testBuildFromOrder() {
-        Assertions.assertEquals(AngularDerivativesFilter.USE_R,   AngularDerivativesFilter.getFilter(0));
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RR,  AngularDerivativesFilter.getFilter(1));
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RRA, AngularDerivativesFilter.getFilter(2));
+    void testBuildFromOrder() {
+        assertEquals(AngularDerivativesFilter.USE_R,   AngularDerivativesFilter.getFilter(0));
+        assertEquals(AngularDerivativesFilter.USE_RR,  AngularDerivativesFilter.getFilter(1));
+        assertEquals(AngularDerivativesFilter.USE_RRA, AngularDerivativesFilter.getFilter(2));
     }
 
     @Test
-    public void testNoNegativeOrder() {
+    void testNoNegativeOrder() {
         try {
             AngularDerivativesFilter.getFilter(-1);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }
     }
 
     @Test
-    public void testNoOrder3() {
+    void testNoOrder3() {
         try {
             AngularDerivativesFilter.getFilter(3);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }

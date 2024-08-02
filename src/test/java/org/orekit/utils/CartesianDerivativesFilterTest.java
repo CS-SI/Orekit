@@ -16,45 +16,47 @@
  */
 package org.orekit.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CartesianDerivativesFilterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class CartesianDerivativesFilterTest {
 
     @Test
-    public void testList() {
-        Assertions.assertEquals(3, CartesianDerivativesFilter.values().length);
+    void testList() {
+        assertEquals(3, CartesianDerivativesFilter.values().length);
     }
 
     @Test
-    public void testOrder() {
-        Assertions.assertEquals(0, CartesianDerivativesFilter.USE_P.getMaxOrder(), 0);
-        Assertions.assertEquals(1, CartesianDerivativesFilter.USE_PV.getMaxOrder(), 0);
-        Assertions.assertEquals(2, CartesianDerivativesFilter.USE_PVA.getMaxOrder(), 0);
+    void testOrder() {
+        assertEquals(0, CartesianDerivativesFilter.USE_P.getMaxOrder(), 0);
+        assertEquals(1, CartesianDerivativesFilter.USE_PV.getMaxOrder(), 0);
+        assertEquals(2, CartesianDerivativesFilter.USE_PVA.getMaxOrder(), 0);
     }
 
     @Test
-    public void testBuildFromOrder() {
-        Assertions.assertEquals(CartesianDerivativesFilter.USE_P,  CartesianDerivativesFilter.getFilter(0));
-        Assertions.assertEquals(CartesianDerivativesFilter.USE_PV, CartesianDerivativesFilter.getFilter(1));
-        Assertions.assertEquals(CartesianDerivativesFilter.USE_PVA, CartesianDerivativesFilter.getFilter(2));
+    void testBuildFromOrder() {
+        assertEquals(CartesianDerivativesFilter.USE_P,  CartesianDerivativesFilter.getFilter(0));
+        assertEquals(CartesianDerivativesFilter.USE_PV, CartesianDerivativesFilter.getFilter(1));
+        assertEquals(CartesianDerivativesFilter.USE_PVA, CartesianDerivativesFilter.getFilter(2));
     }
 
     @Test
-    public void testNoNegativeOrder() {
+    void testNoNegativeOrder() {
         try {
             CartesianDerivativesFilter.getFilter(-1);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }
     }
 
     @Test
-    public void testNoOrder3() {
+    void testNoOrder3() {
         try {
             CartesianDerivativesFilter.getFilter(3);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (IllegalArgumentException iae) {
             // expected
         }

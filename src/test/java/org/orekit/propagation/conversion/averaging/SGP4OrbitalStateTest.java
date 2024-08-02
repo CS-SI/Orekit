@@ -1,6 +1,5 @@
 package org.orekit.propagation.conversion.averaging;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -13,10 +12,12 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.conversion.averaging.elements.AveragedKeplerianWithMeanAngle;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class SGP4OrbitalStateTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -28,8 +29,8 @@ class SGP4OrbitalStateTest {
         final Orbit orbit = averagedState.toOsculatingOrbit();
         final KeplerianOrbit keplerianOrbit = (KeplerianOrbit) averagedState.getOrbitType().convertType(orbit);
         // THEN
-        Assertions.assertEquals(averagedState.getDate(), keplerianOrbit.getDate());
-        Assertions.assertEquals(averagedState.getFrame(), keplerianOrbit.getFrame());
+        assertEquals(averagedState.getDate(), keplerianOrbit.getDate());
+        assertEquals(averagedState.getFrame(), keplerianOrbit.getFrame());
         compareOrbitalElements(averagedState.getAveragedElements(), keplerianOrbit,
                 averagedState.getPositionAngleType());
     }
@@ -37,14 +38,14 @@ class SGP4OrbitalStateTest {
     private void compareOrbitalElements(final AveragedKeplerianWithMeanAngle elements,
                                         final KeplerianOrbit keplerianOrbit,
                                         final PositionAngleType positionAngleType) {
-        Assertions.assertEquals(elements.getAveragedSemiMajorAxis(), keplerianOrbit.getA(), 1e3);
-        Assertions.assertEquals(elements.getAveragedEccentricity(), keplerianOrbit.getE(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedInclination(), keplerianOrbit.getI(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedPerigeeArgument(),
+        assertEquals(elements.getAveragedSemiMajorAxis(), keplerianOrbit.getA(), 1e3);
+        assertEquals(elements.getAveragedEccentricity(), keplerianOrbit.getE(), 1e-3);
+        assertEquals(elements.getAveragedInclination(), keplerianOrbit.getI(), 1e-3);
+        assertEquals(elements.getAveragedPerigeeArgument(),
                 keplerianOrbit.getPerigeeArgument(), 1e-2);
-        Assertions.assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(),
+        assertEquals(elements.getAveragedRightAscensionOfTheAscendingNode(),
                 keplerianOrbit.getRightAscensionOfAscendingNode(), 1e-3);
-        Assertions.assertEquals(elements.getAveragedMeanAnomaly(),
+        assertEquals(elements.getAveragedMeanAnomaly(),
                 keplerianOrbit.getAnomaly(positionAngleType), 1e-2);
     }
 
@@ -59,11 +60,11 @@ class SGP4OrbitalStateTest {
         final SGP4OrbitalState orbitalState = SGP4OrbitalState.of(tle, teme);
         // THEN
         final AveragedKeplerianWithMeanAngle elements = orbitalState.getAveragedElements();
-        Assertions.assertEquals(tle.getE(), elements.getAveragedEccentricity());
-        Assertions.assertEquals(tle.getI(), elements.getAveragedInclination());
-        Assertions.assertEquals(tle.getRaan(), elements.getAveragedRightAscensionOfTheAscendingNode());
-        Assertions.assertEquals(tle.getPerigeeArgument(), elements.getAveragedPerigeeArgument());
-        Assertions.assertEquals(tle.getMeanAnomaly(), elements.getAveragedMeanAnomaly());
+        assertEquals(tle.getE(), elements.getAveragedEccentricity());
+        assertEquals(tle.getI(), elements.getAveragedInclination());
+        assertEquals(tle.getRaan(), elements.getAveragedRightAscensionOfTheAscendingNode());
+        assertEquals(tle.getPerigeeArgument(), elements.getAveragedPerigeeArgument());
+        assertEquals(tle.getMeanAnomaly(), elements.getAveragedMeanAnomaly());
     }
 
 }

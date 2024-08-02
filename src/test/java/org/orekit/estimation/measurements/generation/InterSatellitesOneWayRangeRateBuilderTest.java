@@ -23,7 +23,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -49,7 +48,10 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.SortedSet;
 
-public class InterSatellitesOneWayRangeRateBuilderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class InterSatellitesOneWayRangeRateBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
@@ -72,12 +74,12 @@ public class InterSatellitesOneWayRangeRateBuilderTest {
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0x5006ca3f1e03ea93L, 0.0, 1.2, 2.4 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0xd7643ffbaff67906L, 0.0, -1.0, 3.0 * SIGMA);
     }
 
@@ -129,15 +131,15 @@ public class InterSatellitesOneWayRangeRateBuilderTest {
         for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assertions.assertTrue(date.compareTo(tInf) >= 0);
-            Assertions.assertTrue(date.compareTo(tSup) <= 0);
+            assertTrue(date.compareTo(tInf) >= 0);
+            assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 if (t0.isBefore(t1)) {
                     // measurements are expected to be chronological
-                    Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                    assertTrue(date.durationFrom(previous) >= 0.999999 * step);
                 } else {
                     // measurements are expected to be reverse chronological
-                    Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                    assertTrue(previous.durationFrom(date) >= 0.999999 * step);
                 }
             }
             previous = date;
@@ -152,11 +154,11 @@ public class InterSatellitesOneWayRangeRateBuilderTest {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }
         }
-        Assertions.assertEquals(0.0, maxError, tolerance);
+        assertEquals(0.0, maxError, tolerance);
      }
 
-     @BeforeEach
-     public void setUp() {
+    @BeforeEach
+    void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

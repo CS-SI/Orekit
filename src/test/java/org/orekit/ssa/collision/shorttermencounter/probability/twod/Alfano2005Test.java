@@ -30,7 +30,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -61,6 +60,10 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.List;
 
 class Alfano2005Test {
@@ -89,7 +92,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.742e-3, result.getValue(), 1e-6);
+        assertEquals(9.742e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -106,7 +109,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.181e-3, result.getValue(), 1e-6);
+        assertEquals(9.181e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -123,7 +126,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.571e-3, result.getValue(), 1e-6);
+        assertEquals(6.571e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -140,7 +143,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.125e-3, result.getValue(), 1e-6);
+        assertEquals(6.125e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -157,7 +160,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue(), 1e-8);
+        assertEquals(1.577e-5, result.getValue(), 1e-8);
     }
 
     @Test
@@ -174,7 +177,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue(), 1e-8);
+        assertEquals(1.011e-5, result.getValue(), 1e-8);
     }
 
     @Test
@@ -191,7 +194,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue(), 1e-11);
+        assertEquals(6.443e-8, result.getValue(), 1e-11);
     }
 
     @Test
@@ -208,7 +211,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.219e-27, result.getValue(), 1e-30);
+        assertEquals(3.219e-27, result.getValue(), 1e-30);
     }
 
     @Test
@@ -225,7 +228,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue(), 1e-9);
+        assertEquals(3.033e-6, result.getValue(), 1e-9);
     }
 
     @Test
@@ -242,7 +245,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.656e-28, result.getValue(), 1e-31);
+        assertEquals(9.656e-28, result.getValue(), 1e-31);
     }
 
     @Test
@@ -259,7 +262,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue(), 1e-7);
+        assertEquals(1.039e-4, result.getValue(), 1e-7);
     }
 
     @Test
@@ -276,7 +279,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.564e-9, result.getValue(), 1e-12);
+        assertEquals(1.564e-9, result.getValue(), 1e-12);
     }
 
     @Test
@@ -293,7 +296,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.9002e-3, result.getValue(), 1e-7);
+        assertEquals(1.9002e-3, result.getValue(), 1e-7);
     }
 
     @Test
@@ -310,7 +313,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0553e-11, result.getValue(), 1e-15);
+        assertEquals(2.0553e-11, result.getValue(), 1e-15);
     }
 
     @Test
@@ -327,7 +330,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2004e-5, result.getValue(), 1e-9);
+        assertEquals(7.2004e-5, result.getValue(), 1e-9);
     }
 
     @Test
@@ -344,7 +347,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3904e-7, result.getValue(), 1e-11);
+        assertEquals(5.3904e-7, result.getValue(), 1e-11);
     }
 
     @Test
@@ -361,7 +364,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.1652e-20, result.getValue(), 1e-24);
+        assertEquals(2.1652e-20, result.getValue(), 1e-24);
     }
 
     @Test
@@ -378,7 +381,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.0038e-1, result.getValue(), 1e-5);
+        assertEquals(1.0038e-1, result.getValue(), 1e-5);
     }
 
     @Test
@@ -395,7 +398,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(4.4510e-2, result.getValue(), 1e-6);
+        assertEquals(4.4510e-2, result.getValue(), 1e-6);
     }
 
     @Test
@@ -418,7 +421,7 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(collision);
 
         // THEN
-        Assertions.assertEquals(9.742e-3, result.getValue(), 1e-6);
+        assertEquals(9.742e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -467,7 +470,7 @@ class Alfano2005Test {
                                                              secondaryCovariance, secondaryRadius);
 
         // THEN
-        Assertions.assertEquals(0.21464810889751232, result.getValue(), 1e-17);
+        assertEquals(0.21464810889751232, result.getValue(), 1e-17);
     }
 
     @Disabled("Statistics on alfano methods with armellin data : Values found in the data are" +
@@ -486,8 +489,8 @@ class Alfano2005Test {
                         armellinDataRowList);
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 1e-9);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 1e-9);
+        assertTrue(statistics.getMean() <= 1e-9);
+        assertTrue(statistics.getStandardDeviation() <= 1e-9);
     }
 
     @Test
@@ -504,7 +507,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.742e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.742e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -521,7 +524,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.181e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.181e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -538,7 +541,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.571e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.571e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -555,7 +558,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.125e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.125e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -572,7 +575,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
     }
 
     @Test
@@ -589,7 +592,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
     }
 
     @Test
@@ -606,7 +609,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
+        assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
     }
 
     @Test
@@ -623,7 +626,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.219e-27, result.getValue().getReal(), 1e-30);
+        assertEquals(3.219e-27, result.getValue().getReal(), 1e-30);
     }
 
     @Test
@@ -640,7 +643,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
+        assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
     }
 
     @Test
@@ -657,7 +660,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.656e-28, result.getValue().getReal(), 1e-31);
+        assertEquals(9.656e-28, result.getValue().getReal(), 1e-31);
     }
 
     @Test
@@ -674,7 +677,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
+        assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
     }
 
     @Test
@@ -691,7 +694,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.564e-9, result.getValue().getReal(), 1e-12);
+        assertEquals(1.564e-9, result.getValue().getReal(), 1e-12);
     }
 
     @Test
@@ -708,7 +711,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.9002e-3, result.getValue().getReal(), 1e-7);
+        assertEquals(1.9002e-3, result.getValue().getReal(), 1e-7);
     }
 
     @Test
@@ -725,7 +728,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0553e-11, result.getValue().getReal(), 1e-15);
+        assertEquals(2.0553e-11, result.getValue().getReal(), 1e-15);
     }
 
     @Test
@@ -742,7 +745,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2004e-5, result.getValue().getReal(), 1e-9);
+        assertEquals(7.2004e-5, result.getValue().getReal(), 1e-9);
     }
 
     @Test
@@ -759,7 +762,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3904e-7, result.getValue().getReal(), 1e-11);
+        assertEquals(5.3904e-7, result.getValue().getReal(), 1e-11);
     }
 
     @Test
@@ -776,7 +779,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.1652e-20, result.getValue().getReal(), 1e-24);
+        assertEquals(2.1652e-20, result.getValue().getReal(), 1e-24);
     }
 
     @Test
@@ -793,7 +796,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.0038e-1, result.getValue().getReal(), 1e-5);
+        assertEquals(1.0038e-1, result.getValue().getReal(), 1e-5);
     }
 
     @Test
@@ -810,7 +813,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(4.4510e-2, result.getValue().getReal(), 1e-6);
+        assertEquals(4.4510e-2, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -840,8 +843,8 @@ class Alfano2005Test {
                 method.compute(xmNominal, ymNominal, sigmaXNominal, sigmaYNominal, radiusNominal + dRadius).getValue();
 
         // THEN
-        Assertions.assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
-        Assertions.assertEquals(exactResult, taylorResult, 1e-15);
+        assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
+        assertEquals(exactResult, taylorResult, 1e-15);
     }
 
     @Test
@@ -869,7 +872,7 @@ class Alfano2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(collision);
 
         // THEN
-        Assertions.assertEquals(9.742e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.742e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -945,7 +948,7 @@ class Alfano2005Test {
                                                                             secondary, secondaryCovariance, secondaryRadius);
 
         // THEN
-        Assertions.assertEquals(0.21464810889751232, result.getValue().getReal(), 1e-17);
+        assertEquals(0.21464810889751232, result.getValue().getReal(), 1e-17);
     }
 
 
@@ -1106,6 +1109,6 @@ class Alfano2005Test {
         final ProbabilityOfCollision result = method.compute(cdm, combinedHbr);
 
         // Then
-        Assertions.assertEquals(expected, result.getValue(), tolerance);
+        assertEquals(expected, result.getValue(), tolerance);
     }
 }

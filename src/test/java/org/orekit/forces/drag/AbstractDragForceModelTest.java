@@ -24,7 +24,6 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.frames.Frame;
@@ -40,6 +39,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -64,9 +64,9 @@ class AbstractDragForceModelTest {
         // THEN
         final Gradient expectedGradient = testDragForceModel.getGradientDensityWrtStateUsingFiniteDifferences(date,
                 frame, fieldPosition);
-        Assertions.assertEquals(expectedGradient.getValue(), actualGradient.getValue());
+        assertEquals(expectedGradient.getValue(), actualGradient.getValue());
         for (int i = 0; i < freeParameters; i++) {
-            Assertions.assertEquals(expectedGradient.getPartialDerivative(i), actualGradient.getPartialDerivative(i), 1e-10);
+            assertEquals(expectedGradient.getPartialDerivative(i), actualGradient.getPartialDerivative(i), 1e-10);
         }
     }
 
@@ -88,11 +88,11 @@ class AbstractDragForceModelTest {
         // THEN
         final DerivativeStructure expectedDS = testDragForceModel.getDSDensityWrtStateUsingFiniteDifferences(date,
                 frame, fieldPosition);
-        Assertions.assertEquals(expectedDS.getValue(), actualDS.getValue());
+        assertEquals(expectedDS.getValue(), actualDS.getValue());
         final double[] actualDerivatives = actualDS.getAllDerivatives();
         final double[] expectedDerivatives = expectedDS.getAllDerivatives();
         for (int i = 1; i < expectedDerivatives.length; i++) {
-            Assertions.assertEquals(expectedDerivatives[i], actualDerivatives[i], 1e-10);
+            assertEquals(expectedDerivatives[i], actualDerivatives[i], 1e-10);
         }
     }
 
@@ -136,10 +136,10 @@ class AbstractDragForceModelTest {
         }
     }
 
+    // This test was added to increase overall conditions coverage in the scope of issue 1453
     @Test
     @SuppressWarnings("unchecked")
-    // This test was added to increase overall conditions coverage in the scope of issue 1453
-    public void testIssue1453() {
+    void testIssue1453() {
         // GIVEN
         // Load Orekit data
         Utils.setDataRoot("regular-data");

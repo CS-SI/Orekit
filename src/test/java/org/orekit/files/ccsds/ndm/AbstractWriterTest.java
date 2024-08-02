@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
@@ -31,6 +30,10 @@ import org.orekit.files.ccsds.utils.lexical.MessageParser;
 import org.orekit.utils.Constants;
 
 import java.io.BufferedReader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
@@ -84,8 +87,8 @@ public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, 
                try (InputStream       is  = new ByteArrayInputStream(bytes);
                     InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
                     BufferedReader    br  = new BufferedReader(isr)) {
-                    Assertions.assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", br.readLine());
-                    Assertions.assertEquals("<" + writer.getRoot() +
+                    assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", br.readLine());
+                    assertEquals("<" + writer.getRoot() +
                                             " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
                                             " xsi:noNamespaceSchemaLocation=\"" + XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION +
                                             "\" id=\"" + writer.getFormatVersionKey() +
@@ -96,7 +99,7 @@ public abstract class AbstractWriterTest<H extends Header, S extends Segment<?, 
             }
 
         } catch (IOException ioe) {
-            Assertions.fail(ioe.getLocalizedMessage());
+            fail(ioe.getLocalizedMessage());
         }
     }
 

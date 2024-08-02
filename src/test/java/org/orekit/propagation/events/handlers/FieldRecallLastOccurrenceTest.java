@@ -19,13 +19,16 @@ package org.orekit.propagation.events.handlers;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.ode.events.Action;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FieldRecallLastOccurrenceTest {
 
@@ -41,8 +44,8 @@ class FieldRecallLastOccurrenceTest {
         // WHEN
         final Action action = recallLastOccurrence.eventOccurred(mockedState, null, true);
         // THEN
-        Assertions.assertEquals(expectedDate, recallLastOccurrence.getLastOccurrence());
-        Assertions.assertEquals(ACTION, action);
+        assertEquals(expectedDate, recallLastOccurrence.getLastOccurrence());
+        assertEquals(ACTION, action);
     }
 
     @Test
@@ -54,8 +57,8 @@ class FieldRecallLastOccurrenceTest {
         // WHEN
         final FieldSpacecraftState<Complex> actualState = recallLastOccurrence.resetState(null, mockedState);
         // THEN
-        Assertions.assertEquals(mockedState, actualState);
-        Assertions.assertNull(recallLastOccurrence.getLastOccurrence());
+        assertEquals(mockedState, actualState);
+        assertNull(recallLastOccurrence.getLastOccurrence());
     }
 
     @Test
@@ -68,7 +71,7 @@ class FieldRecallLastOccurrenceTest {
         // WHEN
         recallLastOccurrence.init(mockedState, FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance()), null);
         // THEN
-        Assertions.assertTrue(testHandler.isInitialized);
+        assertTrue(testHandler.isInitialized);
     }
 
     @SuppressWarnings("unchecked")

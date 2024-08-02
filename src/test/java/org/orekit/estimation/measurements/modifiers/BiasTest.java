@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.modifiers;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -38,11 +37,14 @@ import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
 
-public class BiasTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class BiasTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testEstimateBias() {
+    void testEstimateBias() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -122,7 +124,7 @@ public class BiasTest {
                                      0.0,  3.7e-7,
                                      0.0,  1.7e-10);
         for (int i = 0; i < stationsRangeBiases.length; ++i) {
-            Assertions.assertEquals(realStationsBiases[i],
+            assertEquals(realStationsBiases[i],
                                 stationsRangeBiases[i].getParametersDrivers().get(0).getValue(),
                                 3.3e-6);
         }
@@ -130,17 +132,17 @@ public class BiasTest {
     }
 
     @Test
-    public void testTooSmallScale() {
+    void testTooSmallScale() {
         try {
             new Bias<Range>(new String[] { "OK", "not-OK" },
                             new double[] { 1000.0,    1000.0 },
                             new double[] {    1.0,    0.0 },
                             new double[] { -10000.0, -10000.0 },
                             new double[] { +10000.0, +10000.0 });
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("not-OK", oe.getParts()[0]);
+            assertEquals(OrekitMessages.TOO_SMALL_SCALE_FOR_PARAMETER, oe.getSpecifier());
+            assertEquals("not-OK", oe.getParts()[0]);
         }
     }
 }

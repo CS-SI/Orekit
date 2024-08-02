@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -39,6 +38,10 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.List;
 
 class FieldOrbitBlenderTest {
@@ -95,7 +98,7 @@ class FieldOrbitBlenderTest {
         OrbitBlenderTest.assertOrbit(propagator.propagate(interpolationDate3).getOrbit().toOrbit(),
                                      orbitBlender.interpolate(interpolationDate3, orbitSample).toOrbit(), epsilon);
 
-        Assertions.assertEquals(outputFrame, orbitBlender.getOutputInertialFrame());
+        assertEquals(outputFrame, orbitBlender.getOutputInertialFrame());
     }
 
     @Test
@@ -143,12 +146,12 @@ class FieldOrbitBlenderTest {
         Mockito.when(nonInertialFrame.isPseudoInertial()).thenReturn(false);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> new FieldOrbitBlender<>(blendingFunctionMock,
                                                                                  propagatorMock,
                                                                                  nonInertialFrame));
 
-        Assertions.assertEquals("non pseudo-inertial frame \"null\"", thrown.getMessage());
+        assertEquals("non pseudo-inertial frame \"null\"", thrown.getMessage());
     }
 
 }

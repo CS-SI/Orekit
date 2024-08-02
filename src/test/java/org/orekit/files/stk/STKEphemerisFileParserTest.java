@@ -45,22 +45,22 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 /**
  * Unit tests for {@link STKEphemerisFileParser}.
  */
-public final class STKEphemerisFileParserTest {
+final class STKEphemerisFileParserTest {
 
   private static final double MU = Constants.WGS84_EARTH_MU;
   private static UTCScale UTC;
 
-  @BeforeAll
-  public static void setUp() {
+    @BeforeAll
+    static void setUp() {
       Utils.setDataRoot("regular-data");
       UTC = TimeScalesFactory.getUTC();
   }
 
-  /**
-   * Tests {@link STKEphemerisFileParser#parse(DataSource)} throws an exception if the file is empty.
-   */
-  @Test
-  public void testParseEmptyFile() {
+    /**
+     * Tests {@link STKEphemerisFileParser#parse(DataSource)} throws an exception if the file is empty.
+     */
+    @Test
+    void testParseEmptyFile() {
     final EnumMap<STKCoordinateSystem, Frame> frameMapping = new EnumMap<>(STKCoordinateSystem.class);
     final Frame frame = FramesFactory.getGCRF();
     frameMapping.put(STKCoordinateSystem.ICRF, frame);
@@ -69,12 +69,12 @@ public final class STKEphemerisFileParserTest {
     assertThrows(OrekitException.class, () -> parser.parse(source));
   }
 
-  /**
-   * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
-   * EphemerisTimePos format and which has a single segment.
-   */
-  @Test
-  public void testParseEphemerisTimePosWithSingleSegment() {
+    /**
+     * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
+     * EphemerisTimePos format and which has a single segment.
+     */
+    @Test
+    void testParseEphemerisTimePosWithSingleSegment() {
     final String ex = "/stk/stk_02674_p.e";
     final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -130,12 +130,12 @@ public final class STKEphemerisFileParserTest {
     assertEquals(Vector3D.ZERO, coordinates.get(10).getAcceleration());
   }
 
-  /**
-   * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
-   * EphemerisTimePosVel format and which has a single segment.
-   */
-  @Test
-  public void testParseEphemerisTimePosVelWithSingleSegment() {
+    /**
+     * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
+     * EphemerisTimePosVel format and which has a single segment.
+     */
+    @Test
+    void testParseEphemerisTimePosVelWithSingleSegment() {
     final String ex = "/stk/stk_02674_pv.e";
     final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -194,12 +194,12 @@ public final class STKEphemerisFileParserTest {
     assertEquals(Vector3D.ZERO, coordinates.get(10).getAcceleration());
   }
 
-  /**
-   * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
-   * EphemerisTimePosVel format and which has multiple segments.
-   */
-  @Test
-  public void testParseEphemerisTimePosVelWithMultipleSegments() {
+    /**
+     * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
+     * EphemerisTimePosVel format and which has multiple segments.
+     */
+    @Test
+    void testParseEphemerisTimePosVelWithMultipleSegments() {
     final String ex = "/stk/stk_impulsive_maneuver.e";
     final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -290,12 +290,12 @@ public final class STKEphemerisFileParserTest {
     assertEquals(Vector3D.ZERO, coordinates2.get(5).getAcceleration());
   }
 
-  /**
-   * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
-   * EphemerisTimePosVelAcc format and which has a single segment.
-   */
-  @Test
-  public void testParseEphemerisTimePosVelAccWithSingleSegment() {
+    /**
+     * Tests {@link STKEphemerisFileParser#parse(DataSource)} correctly parses a file using the
+     * EphemerisTimePosVelAcc format and which has a single segment.
+     */
+    @Test
+    void testParseEphemerisTimePosVelAccWithSingleSegment() {
     final String ex = "/stk/stk_02674_pva.e";
     final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -357,11 +357,11 @@ public final class STKEphemerisFileParserTest {
         coordinates.get(10).getAcceleration());
   }
 
-  /**
-   * Tests {@link STKEphemerisFileParser#parse(DataSource)} when the coordinate system is invalid.
-   */
-  @Test
-  public void testParseInvalidCoordinateSystem() {
+    /**
+     * Tests {@link STKEphemerisFileParser#parse(DataSource)} when the coordinate system is invalid.
+     */
+    @Test
+    void testParseInvalidCoordinateSystem() {
     final String ex = "/stk/stk_invalid_coordinate_system.e";
     final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -374,11 +374,11 @@ public final class STKEphemerisFileParserTest {
     assertThrows(OrekitException.class, () -> parser.parse(source));
   }
 
-  /**
-   * Tests {@link STKEphemerisFileParser#parse(DataSource)} when the coordinate system is not mapped.
-   */
-  @Test
-  public void testParseUnmappedCoordinateSystem() {
+    /**
+     * Tests {@link STKEphemerisFileParser#parse(DataSource)} when the coordinate system is not mapped.
+     */
+    @Test
+    void testParseUnmappedCoordinateSystem() {
     final String ex = "/stk/stk_02674_p.e";
     final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 

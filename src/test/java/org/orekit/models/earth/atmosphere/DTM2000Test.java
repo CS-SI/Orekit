@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.SolarInputs97to05;
@@ -49,10 +48,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.TimeZone;
 
-public class DTM2000Test {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+class DTM2000Test {
 
     @Test
-    public void testWithOriginalTestsCases() {
+    void testWithOriginalTestsCases() {
 
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -83,27 +85,27 @@ public class DTM2000Test {
 
         // Computation and results
         myRo = atm.getDensity(185, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 //      IDEM., day=275
 
         roTestCase=    2.8524195214905e-17* 1000;
 
         myRo = atm.getDensity(275, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 //      IDEM., day=355
 
         roTestCase=    1.7343324462212e-17* 1000;
 
         myRo = atm.getDensity(355, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assertions.assertEquals(roTestCase, myRo , roTestCase * 2e-14);
+        assertEquals(roTestCase, myRo , roTestCase * 2e-14);
 //      IDEM., day=85
 
         roTestCase=    2.9983740796297e-17* 1000;
 
         myRo = atm.getDensity(85, 800*1000, 0, FastMath.toRadians(40), 16*FastMath.PI/12, 150, 150, 0, 0);
-        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 
 //      alt=500.
@@ -132,7 +134,7 @@ public class DTM2000Test {
         roTestCase =    1.5699108952425600E-016* 1000;
 
         myRo = atm.getDensity(15, 500*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
-        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
 //      IDEM., alt=800.
 //      ro=    1.9556768571305D-18
@@ -147,12 +149,12 @@ public class DTM2000Test {
         // the best approach. Indeed, we are able to get the same results as original fortran
         roTestCase =    2.4123751406975562E-018* 1000;
         myRo = atm.getDensity(15, 800*1000, 0, FastMath.toRadians(-70), 16*FastMath.PI/12, 70, 70, 0, 0);
-        Assertions.assertEquals(roTestCase, myRo , roTestCase * 1e-14);
+        assertEquals(roTestCase, myRo , roTestCase * 1e-14);
 
     }
 
     @Test
-    public void testNonEarthRotationAxisAlignedFrame() {
+    void testNonEarthRotationAxisAlignedFrame() {
         //setup
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -172,11 +174,11 @@ public class DTM2000Test {
         final double actual = atm.getDensity(date, pFrame, frame);
 
         //verify
-        Assertions.assertEquals(atm.getDensity(date, pEcef, ecef), actual, 0.0);
+        assertEquals(atm.getDensity(date, pEcef, ecef), actual, 0.0);
     }
 
     @Test
-    public void testField() {
+    void testField() {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         CelestialBody sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
@@ -193,7 +195,7 @@ public class DTM2000Test {
                         Binary64 rho64 = atm.getDensity(185, new Binary64(alti*1000),
                                                          new Binary64(lon), new Binary64(lat),
                                                          new Binary64(hl), 50, 150, 0, 0);
-                        Assertions.assertEquals(rhoD, rho64.getReal(), rhoD * 1e-14);
+                        assertEquals(rhoD, rho64.getReal(), rhoD * 1e-14);
                     }
                 }
             }
@@ -203,7 +205,7 @@ public class DTM2000Test {
 
     /** Test issue 1365: NaN appears during integration due to bad computation of density. */
     @Test
-    public void testIssue1365() {
+    void testIssue1365() {
 
         // GIVEN
         // -----
@@ -246,15 +248,15 @@ public class DTM2000Test {
         // ----
 
         // Check that densities are not NaN
-        Assertions.assertFalse(Double.isNaN(density));
-        Assertions.assertFalse(Double.isNaN(fieldDensity.getReal()));
+        assertFalse(Double.isNaN(density));
+        assertFalse(Double.isNaN(fieldDensity.getReal()));
     }
 
     /** Test issue 539. Density computation should be independent of user's default time zone.
      * See <a href="https://gitlab.orekit.org/orekit/orekit/issues/539"> issue 539 on Orekit forge.</a>
      */
     @Test
-    public void testTimeZoneIndependantIssue539() {
+    void testTimeZoneIndependantIssue539() {
 
         // Prepare input: Choose a date in summer time for "GMT+1" time zone.
         // So that after 22h in GMT we are in the next day in local time
@@ -286,14 +288,14 @@ public class DTM2000Test {
         double rhoParis = atm.getDensity(date, position, gcrf);
 
         // Check that the 2 densities are equal
-        Assertions.assertEquals(0., rhoUtc - rhoParis, 0.);
+        assertEquals(0., rhoUtc - rhoParis, 0.);
 
         // Set back default time zone to what it was before the test, to avoid any interference with another routine
         TimeZone.setDefault(defaultTZ);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

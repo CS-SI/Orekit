@@ -23,13 +23,14 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldKinematicTransformTest {
 
@@ -41,12 +42,12 @@ class FieldKinematicTransformTest {
         final FieldKinematicTransform<Complex> fieldKinematicTransform = FieldKinematicTransform.of(ComplexField.getInstance(),
                 kinematicTransform);
         // THEN
-        Assertions.assertEquals(fieldKinematicTransform.getDate(), kinematicTransform.getDate());
-        Assertions.assertEquals(fieldKinematicTransform.getTranslation().toVector3D(), kinematicTransform.getTranslation());
-        Assertions.assertEquals(fieldKinematicTransform.getVelocity().toVector3D(), kinematicTransform.getVelocity());
-        Assertions.assertEquals(0., Rotation.distance(fieldKinematicTransform.getRotation().toRotation(),
+        assertEquals(fieldKinematicTransform.getDate(), kinematicTransform.getDate());
+        assertEquals(fieldKinematicTransform.getTranslation().toVector3D(), kinematicTransform.getTranslation());
+        assertEquals(fieldKinematicTransform.getVelocity().toVector3D(), kinematicTransform.getVelocity());
+        assertEquals(0., Rotation.distance(fieldKinematicTransform.getRotation().toRotation(),
                 kinematicTransform.getRotation()));
-        Assertions.assertEquals(fieldKinematicTransform.getRotationRate().toVector3D(),
+        assertEquals(fieldKinematicTransform.getRotationRate().toVector3D(),
                 kinematicTransform.getRotationRate());
     }
 
@@ -66,12 +67,12 @@ class FieldKinematicTransformTest {
         // THEN
         final KinematicTransform kinematicTransform = createKinematicTransform(fieldKinematicTransform);
         final KinematicTransform inverse = kinematicTransform.getInverse();
-        Assertions.assertEquals(inverse.getDate(), fieldInverse.getDate());
-        Assertions.assertEquals(inverse.getTranslation(), fieldInverse.getTranslation().toVector3D());
-        Assertions.assertEquals(inverse.getVelocity(), fieldInverse.getVelocity().toVector3D());
-        Assertions.assertEquals(0., Rotation.distance(inverse.getRotation(),
+        assertEquals(inverse.getDate(), fieldInverse.getDate());
+        assertEquals(inverse.getTranslation(), fieldInverse.getTranslation().toVector3D());
+        assertEquals(inverse.getVelocity(), fieldInverse.getVelocity().toVector3D());
+        assertEquals(0., Rotation.distance(inverse.getRotation(),
                 fieldInverse.getRotation().toRotation()));
-        Assertions.assertEquals(inverse.getRotationRate(), fieldInverse.getRotationRate().toVector3D());
+        assertEquals(inverse.getRotationRate(), fieldInverse.getRotationRate().toVector3D());
     }
 
     @Test
@@ -85,7 +86,7 @@ class FieldKinematicTransformTest {
         // THEN
         final KinematicTransform kinematicTransform = createKinematicTransform(fieldKinematicTransform);
         final Vector3D expectedCompositeVelocity = kinematicTransform.getVelocity();
-        Assertions.assertEquals(expectedCompositeVelocity, actualCompositeVelocity.toVector3D());
+        assertEquals(expectedCompositeVelocity, actualCompositeVelocity.toVector3D());
     }
 
     @Test
@@ -99,7 +100,7 @@ class FieldKinematicTransformTest {
         // THEN
         final KinematicTransform kinematicTransform = createKinematicTransform(fieldKinematicTransform);
         final Vector3D expectedCompositeRotationRate = kinematicTransform.getRotationRate();
-        Assertions.assertEquals(expectedCompositeRotationRate, actualCompositeRotationRate.toVector3D());
+        assertEquals(expectedCompositeRotationRate, actualCompositeRotationRate.toVector3D());
     }
 
     @Test
@@ -144,8 +145,8 @@ class FieldKinematicTransformTest {
         final double[] expectedVelocity = pvCoordinates.getVelocity().toArray();
         final double[] actualVelocity = reconvertedPV.getVelocity().toArray();
         for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(expectedPosition[i], actualPosition[i], tolerance);
-            Assertions.assertEquals(expectedVelocity[i], actualVelocity[i], tolerance);
+            assertEquals(expectedPosition[i], actualPosition[i], tolerance);
+            assertEquals(expectedVelocity[i], actualVelocity[i], tolerance);
         }
     }
 

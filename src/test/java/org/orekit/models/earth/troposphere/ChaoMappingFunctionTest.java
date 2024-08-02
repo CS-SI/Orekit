@@ -18,7 +18,7 @@ package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
 
-public class ChaoMappingFunctionTest extends AbstractMappingFunctionTest {
+class ChaoMappingFunctionTest extends AbstractMappingFunctionTest {
 
     protected TroposphereMappingFunction buildMappingFunction() {
         return new ChaoMappingFunction();

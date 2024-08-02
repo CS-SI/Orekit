@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataLoader;
@@ -32,6 +31,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 
 import java.io.BufferedReader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,10 +41,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QZSSAlmanacTest {
+class QZSSAlmanacTest {
 
     @Test
-    public void testLoadData() throws IOException, ParseException, OrekitException {
+    void testLoadData() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("regular-data");
         // the parser for reading Yuma files with a pattern
         QZSSYUMAParser reader = new QZSSYUMAParser(".*\\.yum$");
@@ -52,36 +53,36 @@ public class QZSSAlmanacTest {
         final InputStream in = getClass().getResourceAsStream(fileName);
         reader.loadData(in, fileName);
 
-        Assertions.assertEquals(".*\\.yum$", reader.getSupportedNames());
+        assertEquals(".*\\.yum$", reader.getSupportedNames());
 
         // Checks the whole file read
-        Assertions.assertEquals(4, reader.getAlmanacs().size());
-        Assertions.assertEquals(4, reader.getPRNNumbers().size());
+        assertEquals(4, reader.getAlmanacs().size());
+        assertEquals(4, reader.getPRNNumbers().size());
 
         // Checks the last almanac read
         final QZSSAlmanac alm = reader.getAlmanacs().get(reader.getAlmanacs().size() - 1);
-        Assertions.assertEquals(199, alm.getPRN());
-        Assertions.assertEquals(1015, alm.getWeek());
-        Assertions.assertEquals(262144.0, alm.getTime(), 0.);
-        Assertions.assertEquals(6493.484863, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
-        Assertions.assertEquals(1.387596130E-04, alm.getE(), FastMath.ulp(8E-05));
-        Assertions.assertEquals(0.0007490141,  alm.getI0(), 0.);
-        Assertions.assertEquals(0., alm.getIDot(), 0.);
-        Assertions.assertEquals(9.194173760E-01, alm.getOmega0(), 0.);
-        Assertions.assertEquals(9.714690370E-10, alm.getOmegaDot(), FastMath.ulp(-8E-09));
-        Assertions.assertEquals(2.722442515, alm.getPa(), 0.);
-        Assertions.assertEquals(-1.158294811, alm.getM0(), 0.);
-        Assertions.assertEquals(6.351470947E-04, alm.getAf0(), 0.);
-        Assertions.assertEquals(0.0, alm.getAf1(), 0.);
-        Assertions.assertEquals(0, alm.getHealth());
-        Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(1015, 262144.0, SatelliteSystem.QZSS).getDate()) == 0);
-        Assertions.assertEquals(0., alm.getCic(), 0.);
-        Assertions.assertEquals(0., alm.getCis(), 0.);
-        Assertions.assertEquals(0., alm.getCrc(), 0.);
-        Assertions.assertEquals(0., alm.getCrs(), 0.);
-        Assertions.assertEquals(0., alm.getCuc(), 0.);
-        Assertions.assertEquals(0., alm.getCus(), 0.);
+        assertEquals(199, alm.getPRN());
+        assertEquals(1015, alm.getWeek());
+        assertEquals(262144.0, alm.getTime(), 0.);
+        assertEquals(6493.484863, FastMath.sqrt(alm.getSma()), FastMath.ulp(5.E+03));
+        assertEquals(1.387596130E-04, alm.getE(), FastMath.ulp(8E-05));
+        assertEquals(0.0007490141,  alm.getI0(), 0.);
+        assertEquals(0., alm.getIDot(), 0.);
+        assertEquals(9.194173760E-01, alm.getOmega0(), 0.);
+        assertEquals(9.714690370E-10, alm.getOmegaDot(), FastMath.ulp(-8E-09));
+        assertEquals(2.722442515, alm.getPa(), 0.);
+        assertEquals(-1.158294811, alm.getM0(), 0.);
+        assertEquals(6.351470947E-04, alm.getAf0(), 0.);
+        assertEquals(0.0, alm.getAf1(), 0.);
+        assertEquals(0, alm.getHealth());
+        assertEquals("YUMA", alm.getSource());
+        assertEquals(0, alm.getDate().durationFrom(new GNSSDate(1015, 262144.0, SatelliteSystem.QZSS).getDate()));
+        assertEquals(0., alm.getCic(), 0.);
+        assertEquals(0., alm.getCis(), 0.);
+        assertEquals(0., alm.getCrc(), 0.);
+        assertEquals(0., alm.getCrs(), 0.);
+        assertEquals(0., alm.getCuc(), 0.);
+        assertEquals(0., alm.getCus(), 0.);
     }
 
     /**

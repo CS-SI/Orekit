@@ -16,10 +16,12 @@
  */
 package org.orekit.orbits;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CircularLatitudeArgumentUtilityTest {
 
@@ -37,7 +39,7 @@ class CircularLatitudeArgumentUtilityTest {
         final double actualLatitudeArgument = CircularLatitudeArgumentUtility.trueToMean(EX, EY,
                 intermediateLatitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
+        assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
     }
 
     @Test
@@ -50,7 +52,7 @@ class CircularLatitudeArgumentUtilityTest {
         final double actualLatitudeArgument = CircularLatitudeArgumentUtility.trueToEccentric(EX, EY,
                 intermediateLatitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
+        assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
     }
 
     @Test
@@ -63,7 +65,7 @@ class CircularLatitudeArgumentUtilityTest {
         final double actualLatitudeArgument = CircularLatitudeArgumentUtility.meanToEccentric(EX, EY,
                 intermediateLatitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
+        assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
     }
 
     @Test
@@ -71,7 +73,7 @@ class CircularLatitudeArgumentUtilityTest {
         // GIVEN
         final double nanLatitudeArgument = Double.NaN;
         // WHEN & THEN
-        Assertions.assertThrows(OrekitException.class, () -> CircularLatitudeArgumentUtility.meanToEccentric(EX, EY,
+        assertThrows(OrekitException.class, () -> CircularLatitudeArgumentUtility.meanToEccentric(EX, EY,
                 nanLatitudeArgument), OrekitMessages.UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT.toString());
     }
 

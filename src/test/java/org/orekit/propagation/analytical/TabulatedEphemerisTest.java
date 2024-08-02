@@ -20,7 +20,6 @@ import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -48,14 +47,18 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Arrays;
 import java.util.List;
 
 
-public class TabulatedEphemerisTest {
+class TabulatedEphemerisTest {
 
     @Test
-    public void testInterpolationFullEcksteinHechlerOrbit() {
+    void testInterpolationFullEcksteinHechlerOrbit() {
         // with full Eckstein-Hechler Cartesian orbit,
         // including non-Keplerian acceleration, interpolation is very good
         checkInterpolation(new StateFilter() {
@@ -66,7 +69,7 @@ public class TabulatedEphemerisTest {
     }
 
     @Test
-    public void testInterpolationKeplerianAcceleration() {
+    void testInterpolationKeplerianAcceleration() {
         // with Keplerian-only acceleration, interpolation is quite wrong
         checkInterpolation(new StateFilter() {
             public SpacecraftState filter(SpacecraftState state) {
@@ -127,9 +130,9 @@ public class TabulatedEphemerisTest {
         eck.addAdditionalStateProvider(provider);
         try {
             eck.addAdditionalStateProvider(provider);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
+            assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
                                 oe.getSpecifier());
         }
         List<SpacecraftState> tab = new ArrayList<SpacecraftState>(nbIntervals + 1);
@@ -145,7 +148,7 @@ public class TabulatedEphemerisTest {
                     new SpacecraftStateInterpolator(interpolationPoints, frame, frame);
 
             new Ephemeris(tab, interpolator);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
             // expected
         }
@@ -153,8 +156,8 @@ public class TabulatedEphemerisTest {
                 new SpacecraftStateInterpolator(2, frame, frame);
         Ephemeris te = new Ephemeris(tab, interpolator);
 
-        Assertions.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
-        Assertions.assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
+        assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
+        assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
 
         double maxP     = 0;
         double maxV    = 0;
@@ -170,8 +173,8 @@ public class TabulatedEphemerisTest {
                                                    c2.getPVCoordinates().getVelocity()));
         }
 
-        Assertions.assertEquals(expectedDP, maxP, 0.1 * expectedDP);
-        Assertions.assertEquals(expectedDV, maxV, 0.1 * expectedDV);
+        assertEquals(expectedDP, maxP, 0.1 * expectedDP);
+        assertEquals(expectedDV, maxV, 0.1 * expectedDV);
 
     }
 
@@ -180,7 +183,7 @@ public class TabulatedEphemerisTest {
     }
 
     @Test
-    public void testPiWraping() {
+    void testPiWraping() {
 
         TimeScale utc= TimeScalesFactory.getUTC();
         Frame frame = FramesFactory.getEME2000();
@@ -208,37 +211,37 @@ public class TabulatedEphemerisTest {
 
         AbsoluteDate tA = new AbsoluteDate(t0, 24 * 60);
         Vector3D pA = ephem.propagate(tA).getPosition(frame);
-        Assertions.assertEquals(1.766,
+        assertEquals(1.766,
                             Vector3D.distance(pA, s1.shiftedBy(tA.durationFrom(s1.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(0.000,
+        assertEquals(0.000,
                             Vector3D.distance(pA, s2.shiftedBy(tA.durationFrom(s2.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(1.556,
+        assertEquals(1.556,
                             Vector3D.distance(pA, s3.shiftedBy(tA.durationFrom(s3.getDate())).getPosition(frame)),
                             1.0e-3);
 
         AbsoluteDate tB = new AbsoluteDate(t0, 25 * 60);
         Vector3D pB = ephem.propagate(tB).getPosition(frame);
-        Assertions.assertEquals(2.646,
+        assertEquals(2.646,
                             Vector3D.distance(pB, s1.shiftedBy(tB.durationFrom(s1.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(2.619,
+        assertEquals(2.619,
                             Vector3D.distance(pB, s2.shiftedBy(tB.durationFrom(s2.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(2.632,
+        assertEquals(2.632,
                             Vector3D.distance(pB, s3.shiftedBy(tB.durationFrom(s3.getDate())).getPosition(frame)),
                             1.0e-3);
 
         AbsoluteDate tC = new AbsoluteDate(t0, 26 * 60);
         Vector3D pC = ephem.propagate(tC).getPosition(frame);
-        Assertions.assertEquals(6.851,
+        assertEquals(6.851,
                             Vector3D.distance(pC, s1.shiftedBy(tC.durationFrom(s1.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(1.605,
+        assertEquals(1.605,
                             Vector3D.distance(pC, s2.shiftedBy(tC.durationFrom(s2.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(0.000,
+        assertEquals(0.000,
                             Vector3D.distance(pC, s3.shiftedBy(tC.durationFrom(s3.getDate())).getPosition(frame)),
                             1.0e-3);
 
@@ -246,7 +249,7 @@ public class TabulatedEphemerisTest {
 
 
     @Test
-    public void testGetFrame() throws MathIllegalArgumentException, IllegalArgumentException, OrekitException {
+    void testGetFrame() throws MathIllegalArgumentException, IllegalArgumentException, OrekitException {
         // setup
         Frame frame = FramesFactory.getICRF();
         AbsoluteDate date = AbsoluteDate.JULIAN_EPOCH;
@@ -259,11 +262,11 @@ public class TabulatedEphemerisTest {
         Ephemeris ephem = new Ephemeris(Arrays.asList(state, state.shiftedBy(1)), interpolator);
 
         // action + verify
-        Assertions.assertSame(ephem.getFrame(), frame);
+        assertSame(ephem.getFrame(), frame);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
         ae  = 6.378137e6;
@@ -275,7 +278,7 @@ public class TabulatedEphemerisTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mu  = Double.NaN;
         ae  = Double.NaN;
         c20 = Double.NaN;

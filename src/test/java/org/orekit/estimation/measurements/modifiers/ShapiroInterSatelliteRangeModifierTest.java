@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -43,15 +42,18 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ShapiroInterSatelliteRangeModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ShapiroInterSatelliteRangeModifierTest {
 
     @Test
-    public void testShapiroOneWay() {
+    void testShapiroOneWay() {
         doTestShapiro(false, 0.000047764, 0.000086953, 0.000164659);
     }
 
     @Test
-    public void testShapiroTwoWay() {
+    void testShapiroTwoWay() {
         doTestShapiro(true, 0.000047764, 0.000086952, 0.000164656);
     }
 
@@ -121,16 +123,16 @@ public class ShapiroInterSatelliteRangeModifierTest {
             for (final EstimationModifier<InterSatellitesRange> existing : sr.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assertions.assertTrue(found);
+            assertTrue(found);
             EstimatedMeasurementBase<InterSatellitesRange> eval = sr.estimateWithoutDerivatives(states);
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
 
         }
 
-        Assertions.assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
-        Assertions.assertEquals(expectedMean, stat.getMean(), 1.0e-9);
-        Assertions.assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
+        assertEquals(expectedMin,  stat.getMin(),  1.0e-9);
+        assertEquals(expectedMean, stat.getMean(), 1.0e-9);
+        assertEquals(expectedMax,  stat.getMax(),  1.0e-9);
 
     }
 

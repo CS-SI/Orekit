@@ -22,7 +22,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.Incrementor;
 import org.hipparchus.util.Pair;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -39,12 +38,17 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Map;
 
-public class BatchLSModelTest {
+class BatchLSModelTest {
 
     @Test
-    public void testPerfectValue() {
+    void testPerfectValue() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -75,12 +79,12 @@ public class BatchLSModelTest {
             @Override
             public void modelCalled(final Orbit[] newOrbits,
                                     final Map<ObservedMeasurement<?>, EstimatedMeasurement<?>> newEvaluations) {
-                Assertions.assertEquals(1, newOrbits.length);
-                Assertions.assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
+                assertEquals(1, newOrbits.length);
+                assertEquals(0, context.initialOrbit.getDate().durationFrom(newOrbits[0].getDate()),
                         1.0e-15);
-                Assertions.assertEquals(0, Vector3D.distance(context.initialOrbit.getPosition(),
+                assertEquals(0, Vector3D.distance(context.initialOrbit.getPosition(),
                                   newOrbits[0].getPosition()), 1.0e-15);
-                Assertions.assertEquals(measurements.size(), newEvaluations.size());
+                assertEquals(measurements.size(), newEvaluations.size());
             }
         };
         final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
@@ -88,7 +92,7 @@ public class BatchLSModelTest {
         model.setEvaluationsCounter(new Incrementor(100));
 
         // Test forward propagation flag to true
-        Assertions.assertEquals(true, model.isForwardPropagation());
+        assertTrue(model.isForwardPropagation());
 
         // evaluate model on perfect start point
         final double[] normalizedProp = propagatorBuilder.getSelectedNormalizedParameters();
@@ -103,15 +107,15 @@ public class BatchLSModelTest {
         for (ObservedMeasurement<?> measurement : measurements) {
             for (int k = 0; k < measurement.getDimension(); ++k) {
                 // the value is already a weighted residual
-                Assertions.assertEquals(0.0, value.getFirst().getEntry(index++), 1.6e-7);
+                assertEquals(0.0, value.getFirst().getEntry(index++), 1.6e-7);
             }
         }
-        Assertions.assertEquals(index, value.getFirst().getDimension());
+        assertEquals(index, value.getFirst().getDimension());
 
     }
 
     @Test
-    public void testBackwardPropagation() {
+    void testBackwardPropagation() {
 
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -147,7 +151,7 @@ public class BatchLSModelTest {
         };
         final BatchLSModel model = new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver);
         // Test forward propagation flag to false
-        Assertions.assertEquals(false, model.isForwardPropagation());
+        assertFalse(model.isForwardPropagation());
     }
 
 }

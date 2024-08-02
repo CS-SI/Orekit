@@ -17,7 +17,6 @@
 package org.orekit.bodies;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -31,117 +30,120 @@ import org.orekit.utils.PVCoordinates;
 
 import java.io.IOException;
 
-public class JPLEphemeridesLoaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class JPLEphemeridesLoaderTest {
 
     @Test
-    public void testConstantsJPL() {
+    void testConstantsJPL() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                                      JPLEphemeridesLoader.EphemerisType.SUN);
-        Assertions.assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
-        Assertions.assertEquals(81.30056, loader.getLoadedEarthMoonMassRatio(), 1.0e-8);
-        Assertions.assertTrue(Double.isNaN(loader.getLoadedConstant("not-a-constant")));
+        assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
+        assertEquals(81.30056, loader.getLoadedEarthMoonMassRatio(), 1.0e-8);
+        assertTrue(Double.isNaN(loader.getLoadedConstant("not-a-constant")));
     }
 
     @Test
-    public void testConstantsInpop() {
+    void testConstantsInpop() {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES,
                                      JPLEphemeridesLoader.EphemerisType.SUN);
-        Assertions.assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
-        Assertions.assertEquals(81.30057, loader.getLoadedEarthMoonMassRatio(), 1.0e-8);
+        assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
+        assertEquals(81.30057, loader.getLoadedEarthMoonMassRatio(), 1.0e-8);
     }
 
     @Test
-    public void testGMJPL() {
+    void testGMJPL() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                                      JPLEphemeridesLoader.EphemerisType.SUN);
-        Assertions.assertEquals(22032.080e9,
+        assertEquals(22032.080e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
                             1.0e6);
-        Assertions.assertEquals(324858.599e9,
+        assertEquals(324858.599e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.VENUS),
                             1.0e6);
-        Assertions.assertEquals(42828.314e9,
+        assertEquals(42828.314e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MARS),
                             1.0e6);
-        Assertions.assertEquals(126712767.863e9,
+        assertEquals(126712767.863e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.JUPITER),
                             6.0e7);
-        Assertions.assertEquals(37940626.063e9,
+        assertEquals(37940626.063e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SATURN),
                             2.0e6);
-        Assertions.assertEquals(5794549.007e9,
+        assertEquals(5794549.007e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.URANUS),
                             1.0e6);
-        Assertions.assertEquals(6836534.064e9,
+        assertEquals(6836534.064e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.NEPTUNE),
                             1.0e6);
-        Assertions.assertEquals(981.601e9,
+        assertEquals(981.601e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.PLUTO),
                             1.0e6);
-        Assertions.assertEquals(132712440017.987e9,
+        assertEquals(132712440017.987e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SUN),
                             1.0e6);
-        Assertions.assertEquals(4902.801e9,
+        assertEquals(4902.801e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON),
                             1.0e6);
-        Assertions.assertEquals(403503.233e9,
+        assertEquals(403503.233e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.EARTH_MOON),
                             1.0e6);
     }
 
     @Test
-    public void testGMInpop() {
+    void testGMInpop() {
 
         Utils.setDataRoot("inpop");
 
         JPLEphemeridesLoader loader =
                 new JPLEphemeridesLoader("^inpop.*TCB.*littleendian.*\\.dat$",
                                          JPLEphemeridesLoader.EphemerisType.SUN);
-        Assertions.assertEquals(22032.081e9,
+        assertEquals(22032.081e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
                             1.0e6);
-        Assertions.assertEquals(324858.597e9,
+        assertEquals(324858.597e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.VENUS),
                             1.0e6);
-        Assertions.assertEquals(42828.376e9,
+        assertEquals(42828.376e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MARS),
                             1.0e6);
-        Assertions.assertEquals(126712764.535e9,
+        assertEquals(126712764.535e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.JUPITER),
                             6.0e7);
-        Assertions.assertEquals(37940585.443e9,
+        assertEquals(37940585.443e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SATURN),
                             2.0e6);
-        Assertions.assertEquals(5794549.099e9,
+        assertEquals(5794549.099e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.URANUS),
                             1.0e6);
-        Assertions.assertEquals(6836527.128e9,
+        assertEquals(6836527.128e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.NEPTUNE),
                             1.0e6);
-        Assertions.assertEquals(971.114e9,
+        assertEquals(971.114e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.PLUTO),
                             1.0e6);
-        Assertions.assertEquals(132712442110.032e9,
+        assertEquals(132712442110.032e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.SUN),
                             1.0e6);
-        Assertions.assertEquals(4902.800e9,
+        assertEquals(4902.800e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MOON),
                             1.0e6);
-        Assertions.assertEquals(403503.250e9,
+        assertEquals(403503.250e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.EARTH_MOON),
                             1.0e6);
     }
 
     @Test
-    public void testDerivative405() {
+    void testDerivative405() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()),
@@ -149,7 +151,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDerivative406() {
+    void testDerivative406() {
         Utils.setDataRoot("regular-data:regular-data/de406-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()),
@@ -157,7 +159,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDummyEarth() {
+    void testDummyEarth() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         JPLEphemeridesLoader loader =
                 new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
@@ -167,38 +169,38 @@ public class JPLEphemeridesLoaderTest {
         Frame eme2000 = FramesFactory.getEME2000();
         for (double h = 0; h < 86400; h += 60.0) {
             PVCoordinates pv = body.getPVCoordinates(date, eme2000);
-            Assertions.assertEquals(0, pv.getPosition().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0, pv.getVelocity().getNorm(), 1.0e-15);
+            assertEquals(0, pv.getPosition().getNorm(), 1.0e-15);
+            assertEquals(0, pv.getVelocity().getNorm(), 1.0e-15);
         }
     }
 
     @Test
-    public void testEndianness() {
+    void testEndianness() {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderInpopTCBBig =
                 new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type);
         CelestialBody bodysInpopTCBBig = loaderInpopTCBBig.loadCelestialBody(CelestialBodyFactory.MARS);
-        Assertions.assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
+        assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         JPLEphemeridesLoader loaderInpopTCBLittle =
                 new JPLEphemeridesLoader("^inpop.*_TCB_.*_littleendian\\.dat$", type);
         CelestialBody bodysInpopTCBLittle = loaderInpopTCBLittle.loadCelestialBody(CelestialBodyFactory.MARS);
-        Assertions.assertEquals(1.0, loaderInpopTCBLittle.getLoadedConstant("TIMESC"), 1.0e-10);
+        assertEquals(1.0, loaderInpopTCBLittle.getLoadedConstant("TIMESC"), 1.0e-10);
         AbsoluteDate t0 = new AbsoluteDate(1969, 7, 17, 10, 43, 23.4, TimeScalesFactory.getTT());
         Frame eme2000   = FramesFactory.getEME2000();
         for (double dt = 0; dt < 30 * Constants.JULIAN_DAY; dt += 3600) {
             AbsoluteDate date        = t0.shiftedBy(dt);
             Vector3D pInpopTCBBig    = bodysInpopTCBBig.getPosition(date, eme2000);
             Vector3D pInpopTCBLittle = bodysInpopTCBLittle.getPosition(date, eme2000);
-            Assertions.assertEquals(0.0, pInpopTCBBig.distance(pInpopTCBLittle), 1.0e-10);
+            assertEquals(0.0, pInpopTCBBig.distance(pInpopTCBLittle), 1.0e-10);
         }
         for (String name : DataContext.getDefault().getDataProvidersManager().getLoadedDataNames()) {
-            Assertions.assertTrue(name.contains("inpop"));
+            assertTrue(name.contains("inpop"));
         }
     }
 
     @Test
-    public void testInpopvsJPL() {
+    void testInpopvsJPL() {
         Utils.setDataRoot("regular-data:inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderDE405 =
@@ -207,11 +209,11 @@ public class JPLEphemeridesLoaderTest {
         JPLEphemeridesLoader loaderInpopTDBBig =
                 new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type);
         CelestialBody bodysInpopTDBBig = loaderInpopTDBBig.loadCelestialBody(CelestialBodyFactory.MARS);
-        Assertions.assertEquals(0.0, loaderInpopTDBBig.getLoadedConstant("TIMESC"), 1.0e-10);
+        assertEquals(0.0, loaderInpopTDBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         JPLEphemeridesLoader loaderInpopTCBBig =
                 new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type);
         CelestialBody bodysInpopTCBBig = loaderInpopTCBBig.loadCelestialBody(CelestialBodyFactory.MARS);
-        Assertions.assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
+        assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         AbsoluteDate t0 = new AbsoluteDate(1969, 7, 17, 10, 43, 23.4, TimeScalesFactory.getTT());
         Frame eme2000   = FramesFactory.getEME2000();
         for (double dt = 0; dt < 30 * Constants.JULIAN_DAY; dt += 3600) {
@@ -219,16 +221,16 @@ public class JPLEphemeridesLoaderTest {
             Vector3D pDE405          = bodysDE405.getPosition(date, eme2000);
             Vector3D pInpopTDBBig    = bodysInpopTDBBig.getPosition(date, eme2000);
             Vector3D pInpopTCBBig    = bodysInpopTCBBig.getPosition(date, eme2000);
-            Assertions.assertTrue(pDE405.distance(pInpopTDBBig) >  650.0);
-            Assertions.assertTrue(pDE405.distance(pInpopTDBBig) < 1050.0);
-            Assertions.assertTrue(pDE405.distance(pInpopTCBBig) > 1000.0);
-            Assertions.assertTrue(pDE405.distance(pInpopTCBBig) < 2000.0);
+            assertTrue(pDE405.distance(pInpopTDBBig) >  650.0);
+            assertTrue(pDE405.distance(pInpopTDBBig) < 1050.0);
+            assertTrue(pDE405.distance(pInpopTCBBig) > 1000.0);
+            assertTrue(pDE405.distance(pInpopTCBBig) < 2000.0);
         }
 
     }
 
     @Test
-    public void testOverlappingEphemeridesData() throws IOException {
+    void testOverlappingEphemeridesData() throws IOException {
         Utils.setDataRoot("overlapping-data/data.zip");
 
         // the data root contains two ephemerides files (JPL DE 405), which overlap in the period
@@ -285,12 +287,12 @@ public class JPLEphemeridesLoaderTest {
         Vector3D estimatedV = new Vector3D(-3 * c, d4, 32 * c, d3, -168 * c, d2, 672 * c, d1);
 
         Vector3D loadedV = body.getPVCoordinates(date, eme2000).getVelocity();
-        Assertions.assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 3.5e-10 * loadedV.getNorm());
-        Assertions.assertEquals(maxChunkDuration, loader.getMaxChunksDuration(), 1.0e-10);
+        assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 3.5e-10 * loadedV.getNorm());
+        assertEquals(maxChunkDuration, loader.getMaxChunksDuration(), 1.0e-10);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -18,7 +18,6 @@ package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -38,10 +37,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class LatitudeExtremumDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class LatitudeExtremumDetectorTest {
 
     @Test
-    public void testLEO() {
+    void testLEO() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -53,10 +55,10 @@ public class LatitudeExtremumDetectorTest {
                 withThreshold(1.e-6).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
-        Assertions.assertSame(earth, d.getBody());
+        assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        assertSame(earth, d.getBody());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -85,17 +87,17 @@ public class LatitudeExtremumDetectorTest {
             double latitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                                               earth.getBodyFrame(), null).getLatitude();
             if (e.isIncreasing()) {
-                Assertions.assertEquals(-81.863, FastMath.toDegrees(latitude), 0.001);
+                assertEquals(-81.863, FastMath.toDegrees(latitude), 0.001);
             } else {
-                Assertions.assertEquals(+81.863, FastMath.toDegrees(latitude), 0.001);
+                assertEquals(+81.863, FastMath.toDegrees(latitude), 0.001);
             }
         }
-        Assertions.assertEquals(29, logger.getLoggedEvents().size());
+        assertEquals(29, logger.getLoggedEvents().size());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,7 +33,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class RelativisticClockOneWayGNSSRangeRateModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class RelativisticClockOneWayGNSSRangeRateModifierTest {
 
     /** Date. */
     private static AbsoluteDate date;
@@ -43,7 +44,7 @@ public class RelativisticClockOneWayGNSSRangeRateModifierTest {
     private static SpacecraftState[] states;
 
     @Test
-    public void testRelativisticClockCorrection() {
+    void testRelativisticClockCorrection() {
 
         // Measurement
         final PVCoordinates delta = new PVCoordinates(states[1].getPVCoordinates(),
@@ -65,13 +66,13 @@ public class RelativisticClockOneWayGNSSRangeRateModifierTest {
         final EstimatedMeasurement<OneWayGNSSRangeRate> estimatedAfter = range.estimate(0, 0, states);
 
         // Verify
-        Assertions.assertEquals(1.63e-3, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-5);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(1.63e-3, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-5);
+        assertEquals(0, modifier.getParametersDrivers().size());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Data root
         Utils.setDataRoot("regular-data");
 

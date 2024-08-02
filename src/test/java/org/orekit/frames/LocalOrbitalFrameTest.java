@@ -30,7 +30,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,10 +44,16 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class LocalOrbitalFrameTest {
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class LocalOrbitalFrameTest {
 
     @Test
-    public void testIssue1282() {
+    void testIssue1282() {
         // GIVEN
         final Vector3D position = new Vector3D(0,0,1);
         final Vector3D velocity = new Vector3D(0,1,0);
@@ -59,20 +64,20 @@ public class LocalOrbitalFrameTest {
 
         // THEN
         final Rotation expectedRotation = new Rotation(Vector3D.MINUS_J,Vector3D.MINUS_I, Vector3D.PLUS_I, Vector3D.PLUS_K);
-        Assertions.assertArrayEquals(expectedRotation.getMatrix(), actualRotation.getMatrix());
+        assertArrayEquals(expectedRotation.getMatrix(), actualRotation.getMatrix());
     }
 
     @Test
-    public void testIssue977() {
+    void testIssue977() {
         LOFType type = LOFType.TNW;
         LocalOrbitalFrame lof = new LocalOrbitalFrame(FramesFactory.getGCRF(), type, provider, type.name());
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+        assertThrows(UnsupportedOperationException.class, () -> {
             lof.getTransformProvider().getTransform(FieldAbsoluteDate.getJ2000Epoch(Binary64Field.getInstance()));
         });
     }
 
     @Test
-    public void testTNW() {
+    void testTNW() {
         AbsoluteDate  date = initDate.shiftedBy(400);
         PVCoordinates pv   = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.TNW, date,
@@ -83,7 +88,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testQSW() {
+    void testQSW() {
         AbsoluteDate  date = initDate.shiftedBy(400);
         PVCoordinates pv   = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.QSW, date,
@@ -94,7 +99,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testLVLH() {
+    void testLVLH() {
         AbsoluteDate  date = initDate.shiftedBy(400);
         PVCoordinates pv   = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.LVLH, date,
@@ -105,7 +110,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testLVLH_CCSDS() {
+    void testLVLH_CCSDS() {
         AbsoluteDate  date = initDate.shiftedBy(400);
         PVCoordinates pv   = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.LVLH_CCSDS, date,
@@ -116,7 +121,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testVVLH() {
+    void testVVLH() {
         AbsoluteDate  date = initDate.shiftedBy(400);
         PVCoordinates pv   = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.VVLH, date,
@@ -127,7 +132,7 @@ public class LocalOrbitalFrameTest {
     }
 
     @Test
-    public void testVNC() {
+    void testVNC() {
         AbsoluteDate  date = initDate.shiftedBy(400);
         PVCoordinates pv   = provider.getPVCoordinates(date, inertialFrame);
         checkFrame(LOFType.VNC, date,
@@ -604,23 +609,23 @@ public class LocalOrbitalFrameTest {
     void should_return_expected_boolean() {
 
         // Local orbital frame considered as pseudo-inertial
-        Assertions.assertTrue(LOFType.TNW_INERTIAL.isQuasiInertial());
-        Assertions.assertTrue(LOFType.NTW_INERTIAL.isQuasiInertial());
-        Assertions.assertTrue(LOFType.QSW_INERTIAL.isQuasiInertial());
-        Assertions.assertTrue(LOFType.VNC_INERTIAL.isQuasiInertial());
-        Assertions.assertTrue(LOFType.LVLH_INERTIAL.isQuasiInertial());
-        Assertions.assertTrue(LOFType.LVLH_CCSDS_INERTIAL.isQuasiInertial());
-        Assertions.assertTrue(LOFType.EQW.isQuasiInertial());
-        Assertions.assertTrue(LOFType.VVLH_INERTIAL.isQuasiInertial());
+        assertTrue(LOFType.TNW_INERTIAL.isQuasiInertial());
+        assertTrue(LOFType.NTW_INERTIAL.isQuasiInertial());
+        assertTrue(LOFType.QSW_INERTIAL.isQuasiInertial());
+        assertTrue(LOFType.VNC_INERTIAL.isQuasiInertial());
+        assertTrue(LOFType.LVLH_INERTIAL.isQuasiInertial());
+        assertTrue(LOFType.LVLH_CCSDS_INERTIAL.isQuasiInertial());
+        assertTrue(LOFType.EQW.isQuasiInertial());
+        assertTrue(LOFType.VVLH_INERTIAL.isQuasiInertial());
 
         // Local orbital frame considered as non pseudo-inertial
-        Assertions.assertFalse(LOFType.TNW.isQuasiInertial());
-        Assertions.assertFalse(LOFType.NTW.isQuasiInertial());
-        Assertions.assertFalse(LOFType.QSW.isQuasiInertial());
-        Assertions.assertFalse(LOFType.VNC.isQuasiInertial());
-        Assertions.assertFalse(LOFType.LVLH.isQuasiInertial());
-        Assertions.assertFalse(LOFType.LVLH_CCSDS.isQuasiInertial());
-        Assertions.assertFalse(LOFType.VVLH.isQuasiInertial());
+        assertFalse(LOFType.TNW.isQuasiInertial());
+        assertFalse(LOFType.NTW.isQuasiInertial());
+        assertFalse(LOFType.QSW.isQuasiInertial());
+        assertFalse(LOFType.VNC.isQuasiInertial());
+        assertFalse(LOFType.LVLH.isQuasiInertial());
+        assertFalse(LOFType.LVLH_CCSDS.isQuasiInertial());
+        assertFalse(LOFType.VVLH.isQuasiInertial());
 
     }
 
@@ -702,23 +707,23 @@ public class LocalOrbitalFrameTest {
         PVCoordinates pv2 = provider.getPVCoordinates(date, FramesFactory.getGCRF());
         Vector3D      p2  = pv2.getPosition();
         Vector3D      v2  = pv2.getVelocity();
-        Assertions.assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
-        Assertions.assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
+        assertEquals(0, p1.subtract(p2).getNorm(), 1.0e-14 * p1.getNorm());
+        assertEquals(0, v1.subtract(v2).getNorm(), 1.0e-14 * v1.getNorm());
 
         Vector3D xDirection = t.transformVector(Vector3D.PLUS_I);
         Vector3D yDirection = t.transformVector(Vector3D.PLUS_J);
         Vector3D zDirection = t.transformVector(Vector3D.PLUS_K);
-        Assertions.assertEquals(0, Vector3D.angle(expectedXDirection, xDirection), 2.0e-15);
-        Assertions.assertEquals(0, Vector3D.angle(expectedYDirection, yDirection), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.angle(expectedZDirection, zDirection), 1.0e-15);
-        Assertions.assertEquals(0, Vector3D.angle(expectedRotationDirection, t.getRotationRate()), 1.0e-15);
+        assertEquals(0, Vector3D.angle(expectedXDirection, xDirection), 2.0e-15);
+        assertEquals(0, Vector3D.angle(expectedYDirection, yDirection), 1.0e-15);
+        assertEquals(0, Vector3D.angle(expectedZDirection, zDirection), 1.0e-15);
+        assertEquals(0, Vector3D.angle(expectedRotationDirection, t.getRotationRate()), 1.0e-15);
 
-        Assertions.assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
+        assertEquals(initialOrbit.getKeplerianMeanMotion(), t.getRotationRate().getNorm(), 1.0e-7);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         initialOrbit =

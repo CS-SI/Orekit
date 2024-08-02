@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DirectoryCrawler;
@@ -32,6 +31,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
@@ -41,7 +46,7 @@ import java.util.function.Supplier;
  *
  * @author Evan Ward
  */
-public class FramesTest {
+class FramesTest {
 
     /** Time scales for testing. */
     private TimeScales timeScales;
@@ -52,7 +57,7 @@ public class FramesTest {
      * @throws IOException on error.
      */
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         final String leapPath = "/USNO/tai-utc.dat";
         final String eopPath = "/rapid-data-columns/finals2000A.daily";
         final ITRFVersionConfiguration configuration = new ITRFVersionConfiguration(
@@ -82,7 +87,7 @@ public class FramesTest {
 
     /** Check {@link Frames#of(TimeScales, Supplier)}. */
     @Test
-    public void testOf() {
+    void testOf() {
         // action
         Frames frames = Frames.of(timeScales, () -> null);
         Frame itrf = frames.getITRF(IERSConventions.IERS_2010, true);
@@ -92,43 +97,43 @@ public class FramesTest {
         EOPHistory eopFull = ((ITRFProvider) itrfFull.getTransformProvider()).getEOPHistory();
 
         // verify
-        Assertions.assertEquals(eopHistory.getConventions(), IERSConventions.IERS_2010);
-        Assertions.assertEquals(eopFull.getConventions(), IERSConventions.IERS_2010);
-        Assertions.assertEquals(eopHistory.getTimeScales(), timeScales);
-        Assertions.assertEquals(eopFull.getTimeScales(), timeScales);
+        assertEquals(IERSConventions.IERS_2010, eopHistory.getConventions());
+        assertEquals(IERSConventions.IERS_2010, eopFull.getConventions());
+        assertEquals(eopHistory.getTimeScales(), timeScales);
+        assertEquals(eopFull.getTimeScales(), timeScales);
         // share EOP history when conventions and tidal corrections are the same
-        Assertions.assertSame(
+        assertSame(
                 timeScales.getUT1(IERSConventions.IERS_2010, true).getEOPHistory(),
                 eopHistory);
-        Assertions.assertSame(
+        assertSame(
                 eopHistory,
                 ((ITRFProvider) itrfEquinox.getTransformProvider()).getEOPHistory());
         // changing tidal corrections still shares the same data, with derivatives added
-        Assertions.assertNotEquals(eopFull, eopHistory);
+        assertNotEquals(eopFull, eopHistory);
         final int n = 181;
         List<EOPEntry> entries = eopHistory.getEntries();
         List<EOPEntry> entriesFull = eopFull.getEntries();
-        Assertions.assertEquals(n, entries.size());
-        Assertions.assertEquals(n, entriesFull.size());
+        assertEquals(n, entries.size());
+        assertEquals(n, entriesFull.size());
         for (int i = 0; i < n; i++) {
-            Assertions.assertEquals(entries.get(i).getMjd(),         entriesFull.get(i).getMjd());
-            Assertions.assertEquals(entries.get(i).getDate(),        entriesFull.get(i).getDate());
-            Assertions.assertEquals(entries.get(i).getUT1MinusUTC(), entriesFull.get(i).getUT1MinusUTC(), 1.0e-15);
-            Assertions.assertEquals(entries.get(i).getX(),           entriesFull.get(i).getX(),           1.0e-15);
-            Assertions.assertEquals(entries.get(i).getY(),           entriesFull.get(i).getY(),           1.0e-15);
-            Assertions.assertEquals(entries.get(i).getDdPsi(),       entriesFull.get(i).getDdPsi(),       1.0e-15);
-            Assertions.assertEquals(entries.get(i).getDdEps(),       entriesFull.get(i).getDdEps(),       1.0e-15);
-            Assertions.assertEquals(entries.get(i).getDx(),          entriesFull.get(i).getDx(),          1.0e-15);
-            Assertions.assertEquals(entries.get(i).getDy(),          entriesFull.get(i).getDy(),          1.0e-15);
-            Assertions.assertEquals(entries.get(i).getITRFType(),    entriesFull.get(i).getITRFType());
+            assertEquals(entries.get(i).getMjd(),         entriesFull.get(i).getMjd());
+            assertEquals(entries.get(i).getDate(),        entriesFull.get(i).getDate());
+            assertEquals(entries.get(i).getUT1MinusUTC(), entriesFull.get(i).getUT1MinusUTC(), 1.0e-15);
+            assertEquals(entries.get(i).getX(),           entriesFull.get(i).getX(),           1.0e-15);
+            assertEquals(entries.get(i).getY(),           entriesFull.get(i).getY(),           1.0e-15);
+            assertEquals(entries.get(i).getDdPsi(),       entriesFull.get(i).getDdPsi(),       1.0e-15);
+            assertEquals(entries.get(i).getDdEps(),       entriesFull.get(i).getDdEps(),       1.0e-15);
+            assertEquals(entries.get(i).getDx(),          entriesFull.get(i).getDx(),          1.0e-15);
+            assertEquals(entries.get(i).getDy(),          entriesFull.get(i).getDy(),          1.0e-15);
+            assertEquals(entries.get(i).getITRFType(),    entriesFull.get(i).getITRFType());
         }
         // ICRF
-        Assertions.assertEquals(null, frames.getICRF());
+        assertNull(frames.getICRF());
     }
 
     /** Check transforms between frames from different data contexts. */
     @Test
-    public void testComparison() {
+    void testComparison() {
         // setup
         Frames frames = Frames.of(timeScales, () -> null);
         LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
@@ -138,7 +143,7 @@ public class FramesTest {
         AbsoluteDate date = new AbsoluteDate(2011, 5, 1, timeScales.getUTC());
 
         // verify
-        Assertions.assertSame(frames.getGCRF(), other.getGCRF());
+        assertSame(frames.getGCRF(), other.getGCRF());
         Frame itrf = frames.getITRF(IERSConventions.IERS_2010, true);
         Frame otherItrf = other.getITRF(IERSConventions.IERS_2010, true);
         Transform transform = itrf.getTransformTo(otherItrf, date);
@@ -148,7 +153,7 @@ public class FramesTest {
                 0.2449186 / Constants.JULIAN_DAY * 2 * FastMath.PI,
                 0.341136 * Constants.ARC_SECONDS_TO_RADIANS,
                 0.3e-3 * Constants.ARC_SECONDS_TO_RADIANS).getNorm();
-        Assertions.assertEquals(expected, angle, 1e-2 * expected);
+        assertEquals(expected, angle, 1e-2 * expected);
     }
 
 }

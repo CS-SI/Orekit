@@ -21,7 +21,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
@@ -52,6 +51,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class IntegratedEphemerisTest {
 
     @Test
@@ -67,7 +73,7 @@ class IntegratedEphemerisTest {
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(finalDate);
-        Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
+        assertTrue(numericalPropagator.getCalls() < 3200);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // tests
@@ -77,7 +83,7 @@ class IntegratedEphemerisTest {
             SpacecraftState numericIntermediateOrbit = ephemeris.propagate(intermediateDate);
             Vector3D kepPosition = keplerIntermediateOrbit.getPosition();
             Vector3D numPosition = numericIntermediateOrbit.getPosition();
-            Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 0.06);
+            assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 0.06);
         }
 
         // test inv
@@ -91,7 +97,7 @@ class IntegratedEphemerisTest {
         SpacecraftState numericIntermediateOrbit = invEphemeris.propagate(intermediateDate);
         Vector3D kepPosition = keplerIntermediateOrbit.getPosition();
         Vector3D numPosition = numericIntermediateOrbit.getPosition();
-        Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
+        assertEquals(0, kepPosition.subtract(numPosition).getNorm(), 10e-2);
 
     }
 
@@ -112,8 +118,8 @@ class IntegratedEphemerisTest {
                 RealMatrix dYdY0 = harvester.getStateTransitionMatrix(state);
                 harvester.getParametersJacobian(state); // no parameters, this is a no-op and should work
                 RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
-                Assertions.assertTrue(deltaId.getNorm1() >  100);
-                Assertions.assertTrue(deltaId.getNorm1() < 3100);
+                assertTrue(deltaId.getNorm1() >  100);
+                assertTrue(deltaId.getNorm1() < 3100);
             }
 
         });
@@ -129,12 +135,12 @@ class IntegratedEphemerisTest {
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(finalDate);
-        Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
+        assertTrue(numericalPropagator.getCalls() < 3200);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         //action
-        Assertions.assertNotNull(ephemeris.getFrame());
-        Assertions.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+        assertNotNull(ephemeris.getFrame());
+        assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
     }
 
     @Test
@@ -145,17 +151,17 @@ class IntegratedEphemerisTest {
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
         numericalPropagator.propagate(finalDate);
-        Assertions.assertTrue(numericalPropagator.getCalls() < 3200);
+        assertTrue(numericalPropagator.getCalls() < 3200);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // verify
-        Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof FrameAlignedProvider);
+        assertTrue(ephemeris.getAttitudeProvider() instanceof FrameAlignedProvider);
 
         // action
         CelestialBody sun = CelestialBodyFactory.getSun();
         ephemeris.setAttitudeProvider(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
                                                                Vector3D.PLUS_I, Vector3D.PLUS_K));
-        Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof CelestialBodyPointed);
+        assertTrue(ephemeris.getAttitudeProvider() instanceof CelestialBodyPointed);
 
     }
 
@@ -185,13 +191,13 @@ class IntegratedEphemerisTest {
         }
 
         // Test getters
-        Assertions.assertEquals(SpacecraftState.DEFAULT_MASS, ephemeris.getMass(initialOrbit.getDate()));
+        assertEquals(SpacecraftState.DEFAULT_MASS, ephemeris.getMass(initialOrbit.getDate()));
         assertOrbit(initialOrbit, ephemeris.propagateOrbit(initialOrbit.getDate()), 1e-8);
 
         // Test error thrown when trying to reset intermediate state
-        Exception thrown = Assertions.assertThrows(OrekitException.class,
+        Exception thrown = assertThrows(OrekitException.class,
                                                    () -> ephemeris.resetIntermediateState(new SpacecraftState(initialOrbit), true));
-        Assertions.assertEquals(
+        assertEquals(
                 "reset state not allowed", thrown.getMessage());
 
     }
@@ -215,13 +221,13 @@ class IntegratedEphemerisTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // WHEN & THEN
-        Assertions.assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
+        assertDoesNotThrow(() -> ephemeris.propagate(ephemeris.getMaxDate()), "No error should have been thrown");
 
     }
 
     public static void assertOrbit(final Orbit expected, final Orbit actual, final double epsilon) {
-        Assertions.assertEquals(expected.getMu(), actual.getMu());
-        Assertions.assertEquals(expected.getType(), actual.getType());
+        assertEquals(expected.getMu(), actual.getMu());
+        assertEquals(expected.getType(), actual.getType());
         AbsolutePVCoordinatesTest.assertPV(expected.getPVCoordinates(expected.getFrame()),
                                            actual.getPVCoordinates(expected.getFrame()),
                                            epsilon);
@@ -229,22 +235,22 @@ class IntegratedEphemerisTest {
 
     private void checkState(final double dt, final SpacecraftState state, final DerivativesProvider provider) {
 
-        Assertions.assertTrue(state.hasAdditionalState(provider.getName()));
-        Assertions.assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
+        assertTrue(state.hasAdditionalState(provider.getName()));
+        assertEquals(provider.getDimension(), state.getAdditionalState(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
-            Assertions.assertEquals(i * dt, state.getAdditionalState(provider.getName())[i], 4.0e-15 * i * dt);
+            assertEquals(i * dt, state.getAdditionalState(provider.getName())[i], 4.0e-15 * i * dt);
         }
 
-        Assertions.assertTrue(state.hasAdditionalStateDerivative(provider.getName()));
-        Assertions.assertEquals(provider.getDimension(), state.getAdditionalStateDerivative(provider.getName()).length);
+        assertTrue(state.hasAdditionalStateDerivative(provider.getName()));
+        assertEquals(provider.getDimension(), state.getAdditionalStateDerivative(provider.getName()).length);
         for (int i = 0; i < provider.getDimension(); ++i) {
-            Assertions.assertEquals(i, state.getAdditionalStateDerivative(provider.getName())[i], 2.0e-14 * i);
+            assertEquals(i, state.getAdditionalStateDerivative(provider.getName())[i], 2.0e-14 * i);
         }
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));

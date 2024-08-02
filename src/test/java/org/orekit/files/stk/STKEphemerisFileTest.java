@@ -17,8 +17,8 @@
 package org.orekit.files.stk;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.stk.STKEphemerisFile.STKCoordinateSystem;
@@ -26,13 +26,13 @@ import org.orekit.files.stk.STKEphemerisFile.STKCoordinateSystem;
 /**
  * Unit tests for {@link STKEphemerisFile}.
  */
-public final class STKEphemerisFileTest {
+final class STKEphemerisFileTest {
 
-  /**
-   * Tests parsing of {@link STKCoordinateSystem}.
-   */
-  @Test
-  public void testParseSTKCoordinateSystem() {
+    /**
+     * Tests parsing of {@link STKCoordinateSystem}.
+     */
+    @Test
+    void testParseSTKCoordinateSystem() {
       assertEquals(STKCoordinateSystem.ICRF, STKCoordinateSystem.parse("ICRF"));
       assertEquals(STKCoordinateSystem.J2000, STKCoordinateSystem.parse("J2000"));
       assertEquals(STKCoordinateSystem.INERTIAL, STKCoordinateSystem.parse("Inertial"));
@@ -40,7 +40,7 @@ public final class STKEphemerisFileTest {
       assertEquals(STKCoordinateSystem.TRUE_OF_DATE, STKCoordinateSystem.parse("TrueOfDate"));
       assertEquals(STKCoordinateSystem.MEAN_OF_DATE, STKCoordinateSystem.parse("MeanOfDate"));
       assertEquals(STKCoordinateSystem.TEME_OF_DATE, STKCoordinateSystem.parse("TemeOfDate"));
-      final OrekitException exception = Assertions.assertThrows(OrekitException.class, () -> STKCoordinateSystem.parse("asdf"));
+      final OrekitException exception = assertThrows(OrekitException.class, () -> STKCoordinateSystem.parse("asdf"));
       assertEquals("STK coordinate system \"asdf\" is invalid or not yet supported", exception.getMessage());
   }
 

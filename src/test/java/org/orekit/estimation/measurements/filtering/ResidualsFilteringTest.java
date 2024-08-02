@@ -25,7 +25,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -64,14 +63,16 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.SortedSet;
 
-public class ResidualsFilteringTest {
+class ResidualsFilteringTest {
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
@@ -113,7 +114,7 @@ public class ResidualsFilteringTest {
 
 
     @Test
-    public void testFilterWithoutRejection() {
+    void testFilterWithoutRejection() {
 
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
@@ -152,11 +153,11 @@ public class ResidualsFilteringTest {
                 processMeasurements.add(meas.getObservedMeasurement());
             }
         }
-        Assertions.assertEquals(processMeasurements.size(), measurements.size());
+        assertEquals(processMeasurements.size(), measurements.size());
     }
 
     @Test
-    public void testFilterWithRejection() {
+    void testFilterWithRejection() {
 
         //Create the initial orbit
         final AbsoluteDate date = new AbsoluteDate(2016, 2, 13, 0, 1, 30.0, TimeScalesFactory.getUTC());
@@ -194,6 +195,6 @@ public class ResidualsFilteringTest {
                 processMeasurements.add(meas.getObservedMeasurement());
             }
         }
-        Assertions.assertEquals(2, measurements.size()-processMeasurements.size());
+        assertEquals(2, measurements.size()-processMeasurements.size());
     }
 }

@@ -33,7 +33,6 @@ import org.hipparchus.ode.nonstiff.MidpointFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ThreeEighthesFieldIntegrator;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -51,7 +50,10 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 
-public class FieldODEIntegratorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class FieldODEIntegratorTest {
 
     @Test
     @DisplayName("Test FieldODEIntegrator builders")
@@ -240,7 +242,7 @@ public class FieldODEIntegratorTest {
         final double step = 0;
 
         // When & Then
-        Assertions.assertThrows(MathIllegalArgumentException.class, () -> new MidpointFieldIntegratorBuilder<>(step));
+        assertThrows(MathIllegalArgumentException.class, () -> new MidpointFieldIntegratorBuilder<>(step));
     }
 
     private void assertBuiltIntegrator(final FieldODEIntegrator<Binary64> referenceIntegrator,
@@ -280,17 +282,17 @@ public class FieldODEIntegratorTest {
 
         // Assert that results given with reference and built integrators are the same
         final double assertionTolerance = 1e-15;
-        Assertions.assertEquals(referencePropagatedOrbit.getA().getReal(), builtPropagatedOrbit.getA().getReal(),
+        assertEquals(referencePropagatedOrbit.getA().getReal(), builtPropagatedOrbit.getA().getReal(),
                                 assertionTolerance);
-        Assertions.assertEquals(referencePropagatedOrbit.getEquinoctialEx().getReal(),
+        assertEquals(referencePropagatedOrbit.getEquinoctialEx().getReal(),
                                 builtPropagatedOrbit.getEquinoctialEx().getReal(), assertionTolerance);
-        Assertions.assertEquals(referencePropagatedOrbit.getEquinoctialEy().getReal(),
+        assertEquals(referencePropagatedOrbit.getEquinoctialEy().getReal(),
                                 builtPropagatedOrbit.getEquinoctialEy().getReal(), assertionTolerance);
-        Assertions.assertEquals(referencePropagatedOrbit.getHx().getReal(), builtPropagatedOrbit.getHx().getReal(),
+        assertEquals(referencePropagatedOrbit.getHx().getReal(), builtPropagatedOrbit.getHx().getReal(),
                                 assertionTolerance);
-        Assertions.assertEquals(referencePropagatedOrbit.getHy().getReal(), builtPropagatedOrbit.getHy().getReal(),
+        assertEquals(referencePropagatedOrbit.getHy().getReal(), builtPropagatedOrbit.getHy().getReal(),
                                 assertionTolerance);
-        Assertions.assertEquals(referencePropagatedOrbit.getLM().getReal(), builtPropagatedOrbit.getLM().getReal(),
+        assertEquals(referencePropagatedOrbit.getLM().getReal(), builtPropagatedOrbit.getLM().getReal(),
                                 assertionTolerance);
     }
 

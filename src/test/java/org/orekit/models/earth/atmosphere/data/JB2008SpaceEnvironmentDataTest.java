@@ -30,15 +30,15 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 
-public class JB2008SpaceEnvironmentDataTest {
+class JB2008SpaceEnvironmentDataTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
     }
 
     @Test
-    public void testIssue1116() throws URISyntaxException {
+    void testIssue1116() throws URISyntaxException {
         final URL urlSolfsmy = JB2008SpaceEnvironmentDataTest.class.getClassLoader().getResource("atmosphere/SOLFSMY_trunc.txt");
         final URL urlDtc = JB2008SpaceEnvironmentDataTest.class.getClassLoader().getResource("atmosphere/DTCFILE_trunc.TXT");
         JB2008SpaceEnvironmentData JBData = new JB2008SpaceEnvironmentData(new DataSource(urlSolfsmy.toURI()), new DataSource(urlDtc.toURI()));

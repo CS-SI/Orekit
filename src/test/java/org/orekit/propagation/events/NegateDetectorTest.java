@@ -17,26 +17,27 @@
 package org.orekit.propagation.events;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Unit tests for {@link NegateDetector}.
  *
  * @author Evan Ward
  */
-public class NegateDetectorTest {
+class NegateDetectorTest {
 
     /**
      * check {@link NegateDetector#init(SpacecraftState, AbsoluteDate)}.
      */
     @Test
-    public void testInit() {
+    void testInit() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
@@ -59,7 +60,7 @@ public class NegateDetectorTest {
      * check g function is negated.
      */
     @Test
-    public void testG() {
+    void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
@@ -69,15 +70,15 @@ public class NegateDetectorTest {
 
         // verify + to -
         Mockito.when(a.g(s)).thenReturn(1.0);
-        MatcherAssert.assertThat(detector.g(s), CoreMatchers.is(-1.0));
+        assertThat(detector.g(s), CoreMatchers.is(-1.0));
         // verify - to +
         Mockito.when(a.g(s)).thenReturn(-1.0);
-        MatcherAssert.assertThat(detector.g(s), CoreMatchers.is(1.0));
+        assertThat(detector.g(s), CoreMatchers.is(1.0));
     }
 
     /** Check a with___ method. */
     @Test
-    public void testCreate() {
+    void testCreate() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
@@ -88,7 +89,7 @@ public class NegateDetectorTest {
         NegateDetector actual = detector.withMaxCheck(100);
 
         //verify
-        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
-        Assertions.assertTrue(actual.getOriginal() == a);
+        assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
+        assertTrue(actual.getOriginal() == a);
     }
 }

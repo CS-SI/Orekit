@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.Test;
@@ -30,18 +29,20 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.function.ToDoubleFunction;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
 /**
  * Unit tests for {@link FunctionalDetector}
  *
  * @author Evan Ward
  */
-public class FunctionalDetectorTest {
+class FunctionalDetectorTest {
 
     /**
      * Check {@link FunctionalDetector}.
      */
     @Test
-    public void testFunctionalDetector() {
+    void testFunctionalDetector() {
         // setup
         ToDoubleFunction<SpacecraftState> g = SpacecraftState::getMass;
         EventHandler handler = (s, detector, increasing) -> Action.STOP;
@@ -55,10 +56,10 @@ public class FunctionalDetectorTest {
                 .withFunction(g);
 
         // verify
-        MatcherAssert.assertThat(detector.getMaxIterationCount(), CoreMatchers.is(1));
-        MatcherAssert.assertThat(detector.getThreshold(), CoreMatchers.is(2.0));
-        MatcherAssert.assertThat(detector.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(3.0));
-        MatcherAssert.assertThat(detector.getHandler(), CoreMatchers.is(handler));
+        assertThat(detector.getMaxIterationCount(), CoreMatchers.is(1));
+        assertThat(detector.getThreshold(), CoreMatchers.is(2.0));
+        assertThat(detector.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(3.0));
+        assertThat(detector.getHandler(), CoreMatchers.is(handler));
         SpacecraftState state = new SpacecraftState(
                 new CartesianOrbit(
                         new PVCoordinates(
@@ -68,9 +69,9 @@ public class FunctionalDetectorTest {
                         AbsoluteDate.CCSDS_EPOCH,
                         4),
                 5);
-        MatcherAssert.assertThat(detector.g(state), CoreMatchers.is(5.0));
-        MatcherAssert.assertThat(detector.getHandler().eventOccurred(null, detector, false), CoreMatchers.is(Action.STOP));
-        MatcherAssert.assertThat(detector.getFunction(), CoreMatchers.is(g));
+        assertThat(detector.g(state), CoreMatchers.is(5.0));
+        assertThat(detector.getHandler().eventOccurred(null, detector, false), CoreMatchers.is(Action.STOP));
+        assertThat(detector.getFunction(), CoreMatchers.is(g));
     }
 
 }

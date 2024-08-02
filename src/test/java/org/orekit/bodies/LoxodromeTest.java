@@ -19,7 +19,6 @@ package org.orekit.bodies;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -29,8 +28,11 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /** Unit tests for {@link Loxodrome} and {@link LoxodromeArc}. */
-public class LoxodromeTest {
+class LoxodromeTest {
     private GeodeticPoint newYork;
     private GeodeticPoint london;
     private GeodeticPoint berlin;
@@ -39,7 +41,7 @@ public class LoxodromeTest {
     private OneAxisEllipsoid earth;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         Utils.setDataRoot("regular-data");
 
         newYork = new GeodeticPoint(FastMath.toRadians(40.714268), FastMath.toRadians(-74.005974), 0);
@@ -55,20 +57,20 @@ public class LoxodromeTest {
     /** Verify short distance.
      */
     @Test
-    public void verifyShortDistance() {
+    void verifyShortDistance() {
         // short distance: new york - philadelphia
         executeTest("new york - philadelphia", newYork, philadelphia, FastMath.toRadians(229.31), 1., 5.);
     }
 
     @Test
-    public void verifyLongDistance() {
+    void verifyLongDistance() {
         executeTest("new york - london", newYork, london, FastMath.toRadians(78.09), 30., 6_000.);
         executeTest("berlin - perth", berlin, perth, FastMath.toRadians(132.89), 90., 35_000.);
     }
 
     void executeTest(final String header, final GeodeticPoint start, final GeodeticPoint stop, final double expectedAzimuth, final double numericalError, final double pointError) {
         final double az = earth.azimuthBetweenPoints(start, stop);
-        Assertions.assertEquals(expectedAzimuth, az, 1e-4);
+        assertEquals(expectedAzimuth, az, 1e-4);
 
         final Loxodrome lox = new Loxodrome(start, az, earth);
         final LoxodromeArc arc = new LoxodromeArc(start, stop, earth);
@@ -80,11 +82,11 @@ public class LoxodromeTest {
         final double error2 = earth.transform(actual).distance(earth.transform(stop));
 
         // over short distances, analytic answer within 1m of numerical computation
-        Assertions.assertTrue(error1 < numericalError,header + " analytic answer not within " + numericalError + "m of numerical answer [error=" + error1 + "m]");
+        assertTrue(error1 < numericalError,header + " analytic answer not within " + numericalError + "m of numerical answer [error=" + error1 + "m]");
         // over short distances, analytic answer is within 5m of actual lat/lon
-        Assertions.assertTrue(error2 < pointError,header + " computed destination not within " + pointError + "m of actual answer.[error=" + error2 + "m]");
+        assertTrue(error2 < pointError,header + " computed destination not within " + pointError + "m of actual answer.[error=" + error2 + "m]");
         // verify accuracy to 0.001%
-        Assertions.assertEquals(0.0, error1 / arc.getDistance(), 1e-5,header + " accuracy beyond allowable tolerance");
+        assertEquals(0.0, error1 / arc.getDistance(), 1e-5,header + " accuracy beyond allowable tolerance");
     }
 
     GeodeticPoint highFidelityPointAtDistance(final GeodeticPoint start, final double azimuth, final double distance) {

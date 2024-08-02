@@ -26,7 +26,6 @@ import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -40,6 +39,12 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -49,7 +54,7 @@ import java.lang.reflect.Method;
 import java.util.function.Function;
 
 
-public class CartesianOrbitTest {
+class CartesianOrbitTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -58,8 +63,8 @@ public class CartesianOrbitTest {
     private double mu;
 
     @Test
-    public void testCartesianToCartesian()
-        throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    void testCartesianToCartesian()
+            throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -68,21 +73,21 @@ public class CartesianOrbitTest {
 
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        Assertions.assertEquals(p.getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getX()));
-        Assertions.assertEquals(p.getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getY()));
-        Assertions.assertEquals(p.getPosition().getZ(), pvCoordinates.getPosition().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getZ()));
-        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getX(), pvCoordinates.getVelocity().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getX()));
-        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getY(), pvCoordinates.getVelocity().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getY()));
-        Assertions.assertEquals(p.getPVCoordinates().getVelocity().getZ(), pvCoordinates.getVelocity().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getZ()));
+        assertEquals(p.getPosition().getX(), pvCoordinates.getPosition().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getX()));
+        assertEquals(p.getPosition().getY(), pvCoordinates.getPosition().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getY()));
+        assertEquals(p.getPosition().getZ(), pvCoordinates.getPosition().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getPosition().getZ()));
+        assertEquals(p.getPVCoordinates().getVelocity().getX(), pvCoordinates.getVelocity().getX(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getX()));
+        assertEquals(p.getPVCoordinates().getVelocity().getY(), pvCoordinates.getVelocity().getY(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getY()));
+        assertEquals(p.getPVCoordinates().getVelocity().getZ(), pvCoordinates.getVelocity().getZ(), Utils.epsilonTest * FastMath.abs(pvCoordinates.getVelocity().getZ()));
 
         Method initPV = CartesianOrbit.class.getDeclaredMethod("initPVCoordinates", new Class[0]);
         initPV.setAccessible(true);
-        Assertions.assertSame(p.getPVCoordinates(), initPV.invoke(p, new Object[0]));
+        assertSame(p.getPVCoordinates(), initPV.invoke(p, new Object[0]));
 
     }
 
     @Test
-    public void testCartesianToEquinoctial() {
+    void testCartesianToEquinoctial() {
 
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -90,36 +95,36 @@ public class CartesianOrbitTest {
 
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
 
-        Assertions.assertEquals(42255170.0028257,  p.getA(), Utils.epsilonTest * p.getA());
-        Assertions.assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(p.getE()));
-        Assertions.assertEquals(-0.206274396964359e-02, p.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(p.getE()));
-        Assertions.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), p.getE(), Utils.epsilonAngle * FastMath.abs(p.getE()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), p.getI()), p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, p.getLM()), p.getLM(), Utils.epsilonAngle * FastMath.abs(p.getLM()));
+        assertEquals(42255170.0028257,  p.getA(), Utils.epsilonTest * p.getA());
+        assertEquals(0.592732497856475e-03,  p.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(p.getE()));
+        assertEquals(-0.206274396964359e-02, p.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(p.getE()));
+        assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), p.getE(), Utils.epsilonAngle * FastMath.abs(p.getE()));
+        assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), p.getI()), p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
+        assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, p.getLM()), p.getLM(), Utils.epsilonAngle * FastMath.abs(p.getLM()));
 
         // trigger a specific path in copy constructor
         CartesianOrbit q = new CartesianOrbit(p);
 
-        Assertions.assertEquals(42255170.0028257,  q.getA(), Utils.epsilonTest * q.getA());
-        Assertions.assertEquals(0.592732497856475e-03,  q.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(q.getE()));
-        Assertions.assertEquals(-0.206274396964359e-02, q.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(q.getE()));
-        Assertions.assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), q.getE(), Utils.epsilonAngle * FastMath.abs(q.getE()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), q.getI()), q.getI(), Utils.epsilonAngle * FastMath.abs(q.getI()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, q.getLM()), q.getLM(), Utils.epsilonAngle * FastMath.abs(q.getLM()));
+        assertEquals(42255170.0028257,  q.getA(), Utils.epsilonTest * q.getA());
+        assertEquals(0.592732497856475e-03,  q.getEquinoctialEx(), Utils.epsilonE * FastMath.abs(q.getE()));
+        assertEquals(-0.206274396964359e-02, q.getEquinoctialEy(), Utils.epsilonE * FastMath.abs(q.getE()));
+        assertEquals(FastMath.sqrt(FastMath.pow(0.592732497856475e-03, 2)+FastMath.pow(-0.206274396964359e-02, 2)), q.getE(), Utils.epsilonAngle * FastMath.abs(q.getE()));
+        assertEquals(MathUtils.normalizeAngle(2*FastMath.asin(FastMath.sqrt((FastMath.pow(0.128021863908325e-03, 2)+FastMath.pow(-0.352136186881817e-02, 2))/4.)), q.getI()), q.getI(), Utils.epsilonAngle * FastMath.abs(q.getI()));
+        assertEquals(MathUtils.normalizeAngle(0.234498139679291e+01, q.getLM()), q.getLM(), Utils.epsilonAngle * FastMath.abs(q.getLM()));
 
-        Assertions.assertTrue(Double.isNaN(q.getADot()));
-        Assertions.assertTrue(Double.isNaN(q.getEquinoctialExDot()));
-        Assertions.assertTrue(Double.isNaN(q.getEquinoctialEyDot()));
-        Assertions.assertTrue(Double.isNaN(q.getHxDot()));
-        Assertions.assertTrue(Double.isNaN(q.getHyDot()));
-        Assertions.assertTrue(Double.isNaN(q.getLvDot()));
-        Assertions.assertTrue(Double.isNaN(q.getEDot()));
-        Assertions.assertTrue(Double.isNaN(q.getIDot()));
+        assertTrue(Double.isNaN(q.getADot()));
+        assertTrue(Double.isNaN(q.getEquinoctialExDot()));
+        assertTrue(Double.isNaN(q.getEquinoctialEyDot()));
+        assertTrue(Double.isNaN(q.getHxDot()));
+        assertTrue(Double.isNaN(q.getHyDot()));
+        assertTrue(Double.isNaN(q.getLvDot()));
+        assertTrue(Double.isNaN(q.getEDot()));
+        assertTrue(Double.isNaN(q.getIDot()));
 
     }
 
     @Test
-    public void testCartesianToKeplerian(){
+    void testCartesianToKeplerian(){
 
         Vector3D position = new Vector3D(-26655470.0, 29881667.0, -113657.0);
         Vector3D velocity = new Vector3D(-1125.0, -1122.0, 195.0);
@@ -129,22 +134,22 @@ public class CartesianOrbitTest {
         CartesianOrbit p = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(p);
 
-        Assertions.assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
-        Assertions.assertEquals(0.743502611664700, p.getE(), Utils.epsilonE     * FastMath.abs(p.getE()));
-        Assertions.assertEquals(0.122182096220906, p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
+        assertEquals(22979265.3030773,  p.getA(), Utils.epsilonTest  * p.getA());
+        assertEquals(0.743502611664700, p.getE(), Utils.epsilonE     * FastMath.abs(p.getE()));
+        assertEquals(0.122182096220906, p.getI(), Utils.epsilonAngle * FastMath.abs(p.getI()));
         double pa = kep.getPerigeeArgument();
-        Assertions.assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa), pa,
+        assertEquals(MathUtils.normalizeAngle(3.09909041016672, pa), pa,
                      Utils.epsilonAngle * FastMath.abs(pa));
         double raan = kep.getRightAscensionOfAscendingNode();
-        Assertions.assertEquals(MathUtils.normalizeAngle(2.32231010979999, raan), raan,
+        assertEquals(MathUtils.normalizeAngle(2.32231010979999, raan), raan,
                      Utils.epsilonAngle * FastMath.abs(raan));
         double m = kep.getMeanAnomaly();
-        Assertions.assertEquals(MathUtils.normalizeAngle(3.22888977629034, m), m,
+        assertEquals(MathUtils.normalizeAngle(3.22888977629034, m), m,
                      Utils.epsilonAngle * FastMath.abs(FastMath.abs(m)));
     }
 
     @Test
-    public void testPositionVelocityNorms(){
+    void testPositionVelocityNorms(){
 
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -162,19 +167,19 @@ public class CartesianOrbitTest {
         double na = FastMath.sqrt(mu / a);
 
         // validation of: r = a .(1 - e2) / (1 + e.cos(v))
-        Assertions.assertEquals(a * epsilon * epsilon / ksi,
+        assertEquals(a * epsilon * epsilon / ksi,
                      p.getPosition().getNorm(),
                      Utils.epsilonTest * FastMath.abs(p.getPosition().getNorm()));
 
         // validation of: V = sqrt(mu.(1+2e.cos(v)+e2)/a.(1-e2) )
-        Assertions.assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
+        assertEquals(na * FastMath.sqrt(ksi * ksi + nu * nu) / epsilon,
                      p.getPVCoordinates().getVelocity().getNorm(),
                      Utils.epsilonTest * FastMath.abs(p.getPVCoordinates().getVelocity().getNorm()));
 
     }
 
     @Test
-    public void testGeometry() {
+    void testGeometry() {
 
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -194,8 +199,8 @@ public class CartesianOrbitTest {
 
             // test if the norm of the position is in the range [perigee radius, apogee radius]
             // Warning: these tests are without absolute value by choice
-            Assertions.assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
-            Assertions.assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
+            assertTrue((position.getNorm() - apogeeRadius)  <= (  apogeeRadius * Utils.epsilonTest));
+            assertTrue((position.getNorm() - perigeeRadius) >= (- perigeeRadius * Utils.epsilonTest));
             // Assertions.assertTrue(position.getNorm() <= apogeeRadius);
             // Assertions.assertTrue(position.getNorm() >= perigeeRadius);
 
@@ -205,14 +210,14 @@ public class CartesianOrbitTest {
             // at this stage of computation, all the vectors (position, velocity and momemtum) are normalized here
 
             // test of orthogonality between position and momentum
-            Assertions.assertTrue(FastMath.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
+            assertTrue(FastMath.abs(Vector3D.dotProduct(position, momentum)) < Utils.epsilonTest);
             // test of orthogonality between velocity and momentum
-            Assertions.assertTrue(FastMath.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
+            assertTrue(FastMath.abs(Vector3D.dotProduct(velocity, momentum)) < Utils.epsilonTest);
         }
     }
 
     @Test
-    public void testHyperbola1() {
+    void testHyperbola1() {
         CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 2.5, 0.3, 0, 0, 0.0,
                                                                      PositionAngleType.TRUE,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -225,16 +230,16 @@ public class CartesianOrbitTest {
             PVCoordinates pv = orbit.shiftedBy(dt).getPVCoordinates();
             double d1 = Vector3D.distance(pv.getPosition(), focus1);
             double d2 = Vector3D.distance(pv.getPosition(), focus2);
-            Assertions.assertEquals(-2 * orbit.getA(), FastMath.abs(d1 - d2), 1.0e-6);
+            assertEquals(-2 * orbit.getA(), FastMath.abs(d1 - d2), 1.0e-6);
             CartesianOrbit rebuilt =
                 new CartesianOrbit(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
-            Assertions.assertEquals(-10000000.0, rebuilt.getA(), 1.0e-6);
-            Assertions.assertEquals(2.5, rebuilt.getE(), 1.0e-13);
+            assertEquals(-10000000.0, rebuilt.getA(), 1.0e-6);
+            assertEquals(2.5, rebuilt.getE(), 1.0e-13);
         }
     }
 
     @Test
-    public void testHyperbola2() {
+    void testHyperbola2() {
         CartesianOrbit orbit = new CartesianOrbit(new KeplerianOrbit(-10000000.0, 1.2, 0.3, 0, 0, -1.75,
                                                                      PositionAngleType.MEAN,
                                                                      FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -248,16 +253,16 @@ public class CartesianOrbitTest {
             PVCoordinates pv = orbit.shiftedBy(dt).getPVCoordinates();
             double d1 = Vector3D.distance(pv.getPosition(), focus1);
             double d2 = Vector3D.distance(pv.getPosition(), focus2);
-            Assertions.assertEquals(-2 * orbit.getA(), FastMath.abs(d1 - d2), 1.0e-6);
+            assertEquals(-2 * orbit.getA(), FastMath.abs(d1 - d2), 1.0e-6);
             CartesianOrbit rebuilt =
                 new CartesianOrbit(pv, orbit.getFrame(), orbit.getDate().shiftedBy(dt), mu);
-            Assertions.assertEquals(-10000000.0, rebuilt.getA(), 1.0e-6);
-            Assertions.assertEquals(1.2, rebuilt.getE(), 1.0e-13);
+            assertEquals(-10000000.0, rebuilt.getA(), 1.0e-6);
+            assertEquals(1.2, rebuilt.getE(), 1.0e-13);
         }
     }
 
     @Test
-    public void testNumericalIssue25() {
+    void testNumericalIssue25() {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
         Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
         CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(position, velocity),
@@ -265,48 +270,48 @@ public class CartesianOrbitTest {
                                                   new AbsoluteDate("2004-01-01T23:00:00.000",
                                                                    TimeScalesFactory.getUTC()),
                                                                    3.986004415E14);
-        Assertions.assertEquals(0.0, orbit.getE(), 2.0e-14);
+        assertEquals(0.0, orbit.getE(), 2.0e-14);
     }
 
     @Test
-    public void testSerialization()
-      throws IOException, ClassNotFoundException {
+    void testSerialization()
+            throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+        assertEquals(42255170.003, orbit.getA(), 1.0e-3);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 270);
-        Assertions.assertTrue(bos.size() < 320);
+        assertTrue(bos.size() > 270);
+        assertTrue(bos.size() < 320);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         CartesianOrbit deserialized  = (CartesianOrbit) ois.readObject();
         PVCoordinates dpv = new PVCoordinates(orbit.getPVCoordinates(), deserialized.getPVCoordinates());
-        Assertions.assertEquals(0.0, dpv.getPosition().getNorm(), 1.0e-10);
-        Assertions.assertEquals(0.0, dpv.getVelocity().getNorm(), 1.0e-10);
-        Assertions.assertTrue(Double.isNaN(orbit.getADot()) && Double.isNaN(deserialized.getADot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEDot()) && Double.isNaN(deserialized.getEDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getIDot()) && Double.isNaN(deserialized.getIDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEquinoctialExDot()) && Double.isNaN(deserialized.getEquinoctialExDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()) && Double.isNaN(deserialized.getEquinoctialEyDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHxDot()) && Double.isNaN(deserialized.getHxDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHyDot()) && Double.isNaN(deserialized.getHyDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getLvDot()) && Double.isNaN(deserialized.getLvDot()));
-        Assertions.assertEquals(orbit.getDate(), deserialized.getDate());
-        Assertions.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
+        assertEquals(0.0, dpv.getPosition().getNorm(), 1.0e-10);
+        assertEquals(0.0, dpv.getVelocity().getNorm(), 1.0e-10);
+        assertTrue(Double.isNaN(orbit.getADot()) && Double.isNaN(deserialized.getADot()));
+        assertTrue(Double.isNaN(orbit.getEDot()) && Double.isNaN(deserialized.getEDot()));
+        assertTrue(Double.isNaN(orbit.getIDot()) && Double.isNaN(deserialized.getIDot()));
+        assertTrue(Double.isNaN(orbit.getEquinoctialExDot()) && Double.isNaN(deserialized.getEquinoctialExDot()));
+        assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()) && Double.isNaN(deserialized.getEquinoctialEyDot()));
+        assertTrue(Double.isNaN(orbit.getHxDot()) && Double.isNaN(deserialized.getHxDot()));
+        assertTrue(Double.isNaN(orbit.getHyDot()) && Double.isNaN(deserialized.getHyDot()));
+        assertTrue(Double.isNaN(orbit.getLvDot()) && Double.isNaN(deserialized.getLvDot()));
+        assertEquals(orbit.getDate(), deserialized.getDate());
+        assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
 
     }
 
     @Test
-    public void testSerializationWithDerivatives()
-      throws IOException, ClassNotFoundException {
+    void testSerializationWithDerivatives()
+            throws IOException, ClassNotFoundException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         double r2 = position.getNormSq();
@@ -315,37 +320,37 @@ public class CartesianOrbitTest {
                                              1, new Vector3D(-0.1, 0.2, 0.3));
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+        assertEquals(42255170.003, orbit.getA(), 1.0e-3);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 320);
-        Assertions.assertTrue(bos.size() < 370);
+        assertTrue(bos.size() > 320);
+        assertTrue(bos.size() < 370);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         CartesianOrbit deserialized  = (CartesianOrbit) ois.readObject();
         PVCoordinates dpv = new PVCoordinates(orbit.getPVCoordinates(), deserialized.getPVCoordinates());
-        Assertions.assertEquals(0.0, dpv.getPosition().getNorm(), 1.0e-10);
-        Assertions.assertEquals(0.0, dpv.getVelocity().getNorm(), 1.0e-10);
-        Assertions.assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEDot(), deserialized.getEDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getIDot(), deserialized.getIDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialExDot(), deserialized.getEquinoctialExDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialEyDot(), deserialized.getEquinoctialEyDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHxDot(), deserialized.getHxDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHyDot(), deserialized.getHyDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getLvDot(), deserialized.getLvDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getDate(), deserialized.getDate());
-        Assertions.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
+        assertEquals(0.0, dpv.getPosition().getNorm(), 1.0e-10);
+        assertEquals(0.0, dpv.getVelocity().getNorm(), 1.0e-10);
+        assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
+        assertEquals(orbit.getEDot(), deserialized.getEDot(), 1.0e-10);
+        assertEquals(orbit.getIDot(), deserialized.getIDot(), 1.0e-10);
+        assertEquals(orbit.getEquinoctialExDot(), deserialized.getEquinoctialExDot(), 1.0e-10);
+        assertEquals(orbit.getEquinoctialEyDot(), deserialized.getEquinoctialEyDot(), 1.0e-10);
+        assertEquals(orbit.getHxDot(), deserialized.getHxDot(), 1.0e-10);
+        assertEquals(orbit.getHyDot(), deserialized.getHyDot(), 1.0e-10);
+        assertEquals(orbit.getLvDot(), deserialized.getLvDot(), 1.0e-10);
+        assertEquals(orbit.getDate(), deserialized.getDate());
+        assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
 
     }
 
     @Test
-    public void testDerivativesConversionSymmetry() {
+    void testDerivativesConversionSymmetry() {
         final AbsoluteDate date = new AbsoluteDate("2003-05-01T00:01:20.000", TimeScalesFactory.getUTC());
         Vector3D position     = new Vector3D(6893443.400234382, 1886406.1073757345, -589265.1150359757);
         Vector3D velocity     = new Vector3D(-281.1261461082365, -1231.6165642450928, -7348.756363469432);
@@ -353,26 +358,26 @@ public class CartesianOrbitTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
-        Assertions.assertTrue(orbit.hasDerivatives());
+        assertTrue(orbit.hasDerivatives());
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
-        Assertions.assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
+        assertEquals(0.0101, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-4);
 
         for (OrbitType type : OrbitType.values()) {
             Orbit converted = type.convertType(orbit);
-            Assertions.assertTrue(converted.hasDerivatives());
+            assertTrue(converted.hasDerivatives());
             CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
-            Assertions.assertTrue(rebuilt.hasDerivatives());
-            Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     2.0e-9);
-            Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     2.5e-12);
-            Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 4.9e-15);
+            assertTrue(rebuilt.hasDerivatives());
+            assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     2.0e-9);
+            assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     2.5e-12);
+            assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 4.9e-15);
         }
 
     }
 
     @Test
-    public void testDerivativesConversionSymmetryHyperbolic() {
+    void testDerivativesConversionSymmetryHyperbolic() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(224267911.905821, 290251613.109399, 45534292.777492);
         final Vector3D     velocity     = new Vector3D(-1494.068165293, 1124.771027677, 526.915286134);
@@ -380,25 +385,25 @@ public class CartesianOrbitTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
-        Assertions.assertTrue(orbit.hasDerivatives());
+        assertTrue(orbit.hasDerivatives());
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
-        Assertions.assertEquals(4.78e-4, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-6);
+        assertEquals(4.78e-4, Vector3D.distance(keplerianAcceleration, acceleration), 1.0e-6);
 
         OrbitType type = OrbitType.KEPLERIAN;
         Orbit converted = type.convertType(orbit);
-        Assertions.assertTrue(converted.hasDerivatives());
+        assertTrue(converted.hasDerivatives());
         CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
-        Assertions.assertTrue(rebuilt.hasDerivatives());
-        Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     1.0e-15);
-        Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 1.0e-15);
+        assertTrue(rebuilt.hasDerivatives());
+        assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     1.0e-15);
+        assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     1.0e-15);
+        assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 1.0e-15);
 
     }
 
     @Test
-    public void testShiftElliptic() {
+    void testShiftElliptic() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
@@ -407,7 +412,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testShiftCircular() {
+    void testShiftCircular() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(FastMath.sqrt(mu / position.getNorm()), position.orthogonal());
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
@@ -416,7 +421,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testShiftEquinoctial() {
+    void testShiftEquinoctial() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(FastMath.sqrt(mu / position.getNorm()), position.orthogonal());
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
@@ -425,7 +430,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testShiftHyperbolic() {
+    void testShiftHyperbolic() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(3 * FastMath.sqrt(mu / position.getNorm()), position.orthogonal());
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -434,7 +439,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue135() {
+    void testNumericalIssue135() {
         Vector3D position = new Vector3D(-6.7884943832e7, -2.1423006112e7, -3.1603915377e7);
         Vector3D velocity = new Vector3D(-4732.55, -2472.086, -3022.177);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -444,7 +449,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testNumericalIssue1015() {
+    void testNumericalIssue1015() {
         Vector3D position = new Vector3D(-1466739.735988, 1586390.713569, 6812901.677773);
         Vector3D velocity = new Vector3D(-9532.812, -4321.894, -1409.018);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
@@ -463,15 +468,15 @@ public class CartesianOrbitTest {
             Vector3D      pReference  = pvReference.getPosition();
             Vector3D      vReference  = pvReference.getVelocity();
 
-            Assertions.assertEquals(0, pTested.subtract(pReference).getNorm(), threshold * pReference.getNorm());
-            Assertions.assertEquals(0, vTested.subtract(vReference).getNorm(), threshold * vReference.getNorm());
+            assertEquals(0, pTested.subtract(pReference).getNorm(), threshold * pReference.getNorm());
+            assertEquals(0, vTested.subtract(vReference).getNorm(), threshold * vReference.getNorm());
 
         }
     }
 
     @Test
-    public void testNonInertialFrame() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testNonInertialFrame() throws IllegalArgumentException {
+        assertThrows(IllegalArgumentException.class, () -> {
             Vector3D position = new Vector3D(-26655470.0, 29881667.0, -113657.0);
             Vector3D velocity = new Vector3D(-1125.0, -1122.0, 195.0);
             PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
@@ -483,7 +488,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testJacobianReference() {
+    void testJacobianReference() {
 
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
@@ -496,7 +501,7 @@ public class CartesianOrbitTest {
         for (int i = 0; i < jacobian.length; i++) {
             double[] row    = jacobian[i];
             for (int j = 0; j < row.length; j++) {
-                Assertions.assertEquals((i == j) ? 1 : 0, row[j], 1.0e-15);
+                assertEquals((i == j) ? 1 : 0, row[j], 1.0e-15);
             }
         }
 
@@ -510,7 +515,7 @@ public class CartesianOrbitTest {
             }
 
             public void visit(int row, int column, double value) {
-                Assertions.assertEquals(row == column ? 1.0 : 0.0, value, 1.0e-15);
+                assertEquals(row == column ? 1.0 : 0.0, value, 1.0e-15);
             }
 
             public double end() {
@@ -521,7 +526,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testNonKeplerianDerivatives() {
+    void testNonKeplerianDerivatives() {
         final AbsoluteDate date         = new AbsoluteDate("2003-05-01T00:00:20.000", TimeScalesFactory.getUTC());
         final Vector3D     position     = new Vector3D(6896874.444705,  1956581.072644,  -147476.245054);
         final Vector3D     velocity     = new Vector3D(166.816407662, -1106.783301861, -7372.745712770);
@@ -531,34 +536,34 @@ public class CartesianOrbitTest {
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         final CartesianOrbit orbit = new CartesianOrbit(pv, frame, mu);
 
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
                             orbit.getADot(),
                             4.3e-8);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
                             orbit.getEquinoctialExDot(),
                             2.1e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
                             orbit.getEquinoctialEyDot(),
                             5.3e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
                             orbit.getHxDot(),
                             4.4e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
                             orbit.getHyDot(),
                             8.0e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
                             orbit.getLvDot(),
                             1.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
                             orbit.getLEDot(),
                             7.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
                             orbit.getLMDot(),
                             8.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
                             orbit.getEDot(),
                             7.0e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+        assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
                             orbit.getIDot(),
                             5.7e-16);
 
@@ -577,7 +582,7 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testEquatorialRetrograde() {
+    void testEquatorialRetrograde() {
         Vector3D position = new Vector3D(10000000.0, 0.0, 0.0);
         Vector3D velocity = new Vector3D(0.0, -6500.0, 0.0);
         double r2 = position.getNormSq();
@@ -586,30 +591,30 @@ public class CartesianOrbitTest {
                                              1, new Vector3D(-0.1, 0.2, 0.3));
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals(10637829.465, orbit.getA(), 1.0e-3);
-        Assertions.assertEquals(-738.145, orbit.getADot(), 1.0e-3);
-        Assertions.assertEquals(0.05995861, orbit.getE(), 1.0e-8);
-        Assertions.assertEquals(-6.523e-5, orbit.getEDot(), 1.0e-8);
-        Assertions.assertEquals(FastMath.PI, orbit.getI(), 1.0e-15);
-        Assertions.assertTrue(Double.isNaN(orbit.getIDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHx()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHxDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHy()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHyDot()));
+        assertEquals(10637829.465, orbit.getA(), 1.0e-3);
+        assertEquals(-738.145, orbit.getADot(), 1.0e-3);
+        assertEquals(0.05995861, orbit.getE(), 1.0e-8);
+        assertEquals(-6.523e-5, orbit.getEDot(), 1.0e-8);
+        assertEquals(FastMath.PI, orbit.getI(), 1.0e-15);
+        assertTrue(Double.isNaN(orbit.getIDot()));
+        assertTrue(Double.isNaN(orbit.getHx()));
+        assertTrue(Double.isNaN(orbit.getHxDot()));
+        assertTrue(Double.isNaN(orbit.getHy()));
+        assertTrue(Double.isNaN(orbit.getHyDot()));
     }
 
     @Test
-    public void testToString() {
+    void testToString() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals("Cartesian parameters: {P(-2.9536113E7, 3.0329259E7, -100125.0), V(-2194.0, -2141.0, -8.0)}",
+        assertEquals("Cartesian parameters: {P(-2.9536113E7, 3.0329259E7, -100125.0), V(-2194.0, -2141.0, -8.0)}",
                             orbit.toString());
     }
 
     @Test
-    public void testCopyNonKeplerianAcceleration() {
+    void testCopyNonKeplerianAcceleration() {
 
         final Frame eme2000     = FramesFactory.getEME2000();
 
@@ -628,11 +633,11 @@ public class CartesianOrbitTest {
         final Orbit shiftedOrbit = orbit.shiftedBy(10); // This works good
         final Orbit shiftedOrbitCopy = orbitCopy.shiftedBy(10); // This does not work
 
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(shiftedOrbit.getPosition(),
                                               shiftedOrbitCopy.getPosition()),
                             1.0e-10);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(shiftedOrbit.getPVCoordinates().getVelocity(),
                                               shiftedOrbitCopy.getPVCoordinates().getVelocity()),
                             1.0e-10);
@@ -640,16 +645,16 @@ public class CartesianOrbitTest {
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         final Vector3D position = new Vector3D(42164140, 0, 0);
         final PVCoordinates pv  = new PVCoordinates(position,
                                        new Vector3D(0, FastMath.sqrt(mu / position.getNorm()), 0));
         final Orbit orbit = new CartesianOrbit(pv, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertSame(orbit, orbit.getType().normalize(orbit, null));
+        assertSame(orbit, orbit.getType().normalize(orbit, null));
     }
 
     @Test
-    public void testIssue1139() {
+    void testIssue1139() {
 
         // Create
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
@@ -664,17 +669,17 @@ public class CartesianOrbitTest {
         CartesianOrbit p2 = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), shiftedEpoch, mu);
 
         // Verify
-        Assertions.assertEquals(dt, shiftedEpoch.durationFrom(date));
-        Assertions.assertEquals(dt, p2.durationFrom(p));
-        Assertions.assertEquals(dt, p2.getDate().durationFrom(p));
-        Assertions.assertEquals(dt, p2.durationFrom(p.getDate()));
-        Assertions.assertEquals(dt, p2.getDate().durationFrom(p.getDate()));
-        Assertions.assertEquals(-dt, p.durationFrom(p2));
+        assertEquals(dt, shiftedEpoch.durationFrom(date));
+        assertEquals(dt, p2.durationFrom(p));
+        assertEquals(dt, p2.getDate().durationFrom(p));
+        assertEquals(dt, p2.durationFrom(p.getDate()));
+        assertEquals(dt, p2.getDate().durationFrom(p.getDate()));
+        assertEquals(-dt, p.durationFrom(p2));
         
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         Utils.setDataRoot("regular-data");
 
@@ -686,7 +691,7 @@ public class CartesianOrbitTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
     }
 

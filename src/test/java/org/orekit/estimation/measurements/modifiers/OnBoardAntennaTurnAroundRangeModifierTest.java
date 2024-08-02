@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -35,10 +34,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 
-public class OnBoardAntennaTurnAroundRangeModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class OnBoardAntennaTurnAroundRangeModifierTest {
 
     @Test
-    public void testPreliminary() {
+    void testPreliminary() {
 
         // this test does not check OnBoardAntennaTurnAroundRangeModifier at all,
         // it just checks TurnAroundRangeMeasurementCreator behaves as necessary for the other test
@@ -70,14 +72,14 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             TurnAroundRange sr = (TurnAroundRange) spacecraftCenteredMeasurements.get(i);
             TurnAroundRange ar = (TurnAroundRange) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= 2.0 * xOffset);
-            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= 1.8 * xOffset);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= 2.0 * xOffset);
+            assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= 1.8 * xOffset);
         }
     }
 
     @Test
-    public void testEffect() {
+    void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -112,8 +114,8 @@ public class OnBoardAntennaTurnAroundRangeModifierTest {
             sr.addModifier(modifier);
             EstimatedMeasurementBase<TurnAroundRange> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             TurnAroundRange ar = (TurnAroundRange) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 5.0e-7);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 5.0e-7);
         }
 
     }

@@ -16,14 +16,15 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class OrderingTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class OrderingTest {
 
     @Test
-    public void testLTM() {
-        Assertions.assertEquals(10, Ordering.LTM.nbElements(4));
+    void testLTM() {
+        assertEquals(10, Ordering.LTM.nbElements(4));
         final CovarianceIndexer indexer = new CovarianceIndexer(4);
         checkIndexer(indexer, 0, 0, false);
         Ordering.LTM.update(indexer);
@@ -47,8 +48,8 @@ public class OrderingTest {
     }
 
     @Test
-    public void testUTM() {
-        Assertions.assertEquals(10, Ordering.UTM.nbElements(4));
+    void testUTM() {
+        assertEquals(10, Ordering.UTM.nbElements(4));
         final CovarianceIndexer indexer = new CovarianceIndexer(4);
         checkIndexer(indexer, 0, 0, false);
         Ordering.UTM.update(indexer);
@@ -72,8 +73,8 @@ public class OrderingTest {
     }
 
     @Test
-    public void testFULL() {
-        Assertions.assertEquals(9, Ordering.FULL.nbElements(3));
+    void testFULL() {
+        assertEquals(9, Ordering.FULL.nbElements(3));
         final CovarianceIndexer indexer = new CovarianceIndexer(3);
         checkIndexer(indexer, 0, 0, false);
         Ordering.FULL.update(indexer);
@@ -95,8 +96,8 @@ public class OrderingTest {
     }
 
     @Test
-    public void testLTMWCC() {
-        Assertions.assertEquals(9, Ordering.LTMWCC.nbElements(3));
+    void testLTMWCC() {
+        assertEquals(9, Ordering.LTMWCC.nbElements(3));
         final CovarianceIndexer indexer = new CovarianceIndexer(3);
         checkIndexer(indexer, 0, 0, false);
         Ordering.LTMWCC.update(indexer);
@@ -118,8 +119,8 @@ public class OrderingTest {
     }
 
     @Test
-    public void testUTMWCC() {
-        Assertions.assertEquals(9, Ordering.UTMWCC.nbElements(3));
+    void testUTMWCC() {
+        assertEquals(9, Ordering.UTMWCC.nbElements(3));
         final CovarianceIndexer indexer = new CovarianceIndexer(3);
         checkIndexer(indexer, 0, 0, false);
         Ordering.UTMWCC.update(indexer);
@@ -142,9 +143,9 @@ public class OrderingTest {
 
     private void checkIndexer(final CovarianceIndexer indexer,
                               final int row, final int column, final boolean crossCorrelation) {
-        Assertions.assertEquals(row,              indexer.getRow());
-        Assertions.assertEquals(column,           indexer.getColumn());
-        Assertions.assertEquals(crossCorrelation, indexer.isCrossCorrelation());
+        assertEquals(row,              indexer.getRow());
+        assertEquals(column,           indexer.getColumn());
+        assertEquals(crossCorrelation, indexer.isCrossCorrelation());
     }
 
 }

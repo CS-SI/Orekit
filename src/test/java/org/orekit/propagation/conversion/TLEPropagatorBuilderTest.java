@@ -17,7 +17,6 @@
 
 package org.orekit.propagation.conversion;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
@@ -25,9 +24,10 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
-public class TLEPropagatorBuilderTest {
+class TLEPropagatorBuilderTest {
 
     @Test
     void testClone() {
@@ -44,7 +44,7 @@ public class TLEPropagatorBuilderTest {
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
-        Assertions.assertEquals(builder.getTemplateTLE(), copyBuilder.getTemplateTLE());
+        assertEquals(builder.getTemplateTLE(), copyBuilder.getTemplateTLE());
 
     }
 }

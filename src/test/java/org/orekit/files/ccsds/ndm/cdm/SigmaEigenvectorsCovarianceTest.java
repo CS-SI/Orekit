@@ -16,43 +16,46 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /** Tests for SigmaEigenvectorsCovariance class.
  * These tests are used to increase condition coverage, other global tests are in CdmParser/WriterTest classes.
  */
-public class SigmaEigenvectorsCovarianceTest {
+class SigmaEigenvectorsCovarianceTest {
 
     /** Condition coverage on the checkScreenVolumeConditions method. */
     @Test
-    public void testConditions() {
+    void testConditions() {
 
         SigmaEigenvectorsCovariance cov = new SigmaEigenvectorsCovariance(false);
         
         // !isAltCovFlagSet() in validate method
         try {
             cov.validate(1.0);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD, oe.getSpecifier());
-            Assertions.assertEquals(CdmMetadataKey.ALT_COV_TYPE, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD, oe.getSpecifier());
+            assertEquals(CdmMetadataKey.ALT_COV_TYPE, oe.getParts()[0]);
         }
         
         // !isAltCovFlagSet() in setCsig3eigvec3 method
         try {
             cov.setCsig3eigvec3(null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD, oe.getSpecifier());
-            Assertions.assertEquals(CdmMetadataKey.ALT_COV_TYPE, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD, oe.getSpecifier());
+            assertEquals(CdmMetadataKey.ALT_COV_TYPE, oe.getParts()[0]);
         }
         
         // Check get/setCsig3eigvec3 when null
         cov = new SigmaEigenvectorsCovariance(true);
         cov.setCsig3eigvec3(null);
-        Assertions.assertEquals(null, cov.getCsig3eigvec3());
+        assertNull(cov.getCsig3eigvec3());
     }
 }

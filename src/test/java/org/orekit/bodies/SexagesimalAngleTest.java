@@ -18,10 +18,11 @@ package org.orekit.bodies;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link SexagesimalAngle}.
@@ -29,52 +30,52 @@ import java.util.Locale;
  * @author Luc Maisonobe
  *
  */
-public class SexagesimalAngleTest {
+class SexagesimalAngleTest {
 
     @Test
-    public void testZeroDMS() {
-        Assertions.assertEquals(0.0, new SexagesimalAngle(1, 0, 0, 0.0).getAngle(), 1.0e-15);
+    void testZeroDMS() {
+        assertEquals(0.0, new SexagesimalAngle(1, 0, 0, 0.0).getAngle(), 1.0e-15);
     }
 
     @Test
-    public void testZeroRadians() {
+    void testZeroRadians() {
         final SexagesimalAngle angle = new SexagesimalAngle(0.0);
-        Assertions.assertEquals(1,   angle.getSign());
-        Assertions.assertEquals(0,   angle.getDegree());
-        Assertions.assertEquals(0,   angle.getArcMinute());
-        Assertions.assertEquals(0.0, angle.getArcSecond(), 1.0e-15);
+        assertEquals(1,   angle.getSign());
+        assertEquals(0,   angle.getDegree());
+        assertEquals(0,   angle.getArcMinute());
+        assertEquals(0.0, angle.getArcSecond(), 1.0e-15);
     }
 
     @Test
-    public void testPositiveRighAngleDMS() {
-        Assertions.assertEquals(MathUtils.SEMI_PI, new SexagesimalAngle(1, 90, 0, 0.0).getAngle(), 1.0e-15);
+    void testPositiveRighAngleDMS() {
+        assertEquals(MathUtils.SEMI_PI, new SexagesimalAngle(1, 90, 0, 0.0).getAngle(), 1.0e-15);
     }
 
     @Test
-    public void testPositiveRighAngleRadians() {
+    void testPositiveRighAngleRadians() {
         final SexagesimalAngle angle = new SexagesimalAngle(MathUtils.SEMI_PI);
-        Assertions.assertEquals( 1,   angle.getSign());
-        Assertions.assertEquals(90,   angle.getDegree());
-        Assertions.assertEquals( 0,   angle.getArcMinute());
-        Assertions.assertEquals( 0.0, angle.getArcSecond(), 1.0e-15);
+        assertEquals( 1,   angle.getSign());
+        assertEquals(90,   angle.getDegree());
+        assertEquals( 0,   angle.getArcMinute());
+        assertEquals( 0.0, angle.getArcSecond(), 1.0e-15);
     }
 
     @Test
-    public void testNegativeRighAngleDMS() {
-        Assertions.assertEquals(-MathUtils.SEMI_PI, new SexagesimalAngle(-1, 90, 0, 0.0).getAngle(), 1.0e-15);
+    void testNegativeRighAngleDMS() {
+        assertEquals(-MathUtils.SEMI_PI, new SexagesimalAngle(-1, 90, 0, 0.0).getAngle(), 1.0e-15);
     }
 
     @Test
-    public void testNegativeRighAngleRadians() {
+    void testNegativeRighAngleRadians() {
         final SexagesimalAngle angle = new SexagesimalAngle(-MathUtils.SEMI_PI);
-        Assertions.assertEquals(-1,   angle.getSign());
-        Assertions.assertEquals(90,   angle.getDegree());
-        Assertions.assertEquals( 0,   angle.getArcMinute());
-        Assertions.assertEquals( 0.0, angle.getArcSecond(), 1.0e-15);
+        assertEquals(-1,   angle.getSign());
+        assertEquals(90,   angle.getDegree());
+        assertEquals( 0,   angle.getArcMinute());
+        assertEquals( 0.0, angle.getArcSecond(), 1.0e-15);
     }
 
     @Test
-    public void testIter() {
+    void testIter() {
         final String[] expected = new String[] {
             "00W 10′ 15.0″", "00W 09′ 45.0″", "00W 09′ 15.0″", "00W 08′ 45.0″", "00W 08′ 15.0″", "00W 07′ 45.0″",
             "00W 07′ 15.0″", "00W 06′ 45.0″", "00W 06′ 15.0″", "00W 05′ 45.0″", "00W 05′ 15.0″", "00W 04′ 45.0″",
@@ -92,7 +93,7 @@ public class SexagesimalAngleTest {
                                                    angle.getSign() < 0 ? 'W' : 'E',
                                                    angle.getArcMinute(),
                                                    angle.getArcSecond());
-            Assertions.assertEquals(expected[i], formatted);
+            assertEquals(expected[i], formatted);
         }
 
     }

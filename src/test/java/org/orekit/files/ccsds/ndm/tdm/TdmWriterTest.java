@@ -23,7 +23,7 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.section.Segment;
 
-public class TdmWriterTest extends AbstractWriterTest<TdmHeader, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
+class TdmWriterTest extends AbstractWriterTest<TdmHeader, Segment<TdmMetadata, ObservationsBlock>, Tdm> {
 
     protected TdmParser getParser() {
         return new ParserBuilder().
@@ -36,72 +36,72 @@ public class TdmWriterTest extends AbstractWriterTest<TdmHeader, Segment<TdmMeta
     }
 
     @Test
-    public void testWriteKvnExample15() {
+    void testWriteKvnExample15() {
         doTest("/ccsds/tdm/kvn/TDMExample15.txt");
     }
 
     @Test
-    public void testWriteKvnExample2() {
+    void testWriteKvnExample2() {
         doTest("/ccsds/tdm/kvn/TDMExample2.txt");
     }
 
     @Test
-    public void testWriteKvnExample4() {
+    void testWriteKvnExample4() {
         doTest("/ccsds/tdm/kvn/TDMExample4.txt");
     }
 
     @Test
-    public void testWriteKvnExample6() {
+    void testWriteKvnExample6() {
         doTest("/ccsds/tdm/kvn/TDMExample6.txt");
     }
 
     @Test
-    public void testWriteKvnExample8() {
+    void testWriteKvnExample8() {
         doTest("/ccsds/tdm/kvn/TDMExample8.txt");
     }
 
     @Test
-    public void testWriteKvnExampleAllKeywordsSequential() {
+    void testWriteKvnExampleAllKeywordsSequential() {
         doTest("/ccsds/tdm/kvn/TDMExampleAllKeywordsSequential.txt");
     }
 
     @Test
-    public void testWriteKvnExampleAllKeywordsSingleDiff() {
+    void testWriteKvnExampleAllKeywordsSingleDiff() {
         doTest("/ccsds/tdm/kvn/TDMExampleAllKeywordsSingleDiff.txt");
     }
 
     @Test
-    public void testWriteXmlExample15() {
+    void testWriteXmlExample15() {
         doTest("/ccsds/tdm/xml/TDMExample15.xml");
     }
 
     @Test
-    public void testWriteXmlExample2() {
+    void testWriteXmlExample2() {
         doTest("/ccsds/tdm/xml/TDMExample2.xml");
     }
 
     @Test
-    public void testWriteXmlExample4() {
+    void testWriteXmlExample4() {
         doTest("/ccsds/tdm/xml/TDMExample4.xml");
     }
 
     @Test
-    public void testWriteXmlExample6() {
+    void testWriteXmlExample6() {
         doTest("/ccsds/tdm/xml/TDMExample6.xml");
     }
 
     @Test
-    public void testWriteXmlExample8() {
+    void testWriteXmlExample8() {
         doTest("/ccsds/tdm/xml/TDMExample8.xml");
     }
 
     @Test
-    public void testWriteXmlExampleAllKeywordsSequential() {
+    void testWriteXmlExampleAllKeywordsSequential() {
         doTest("/ccsds/tdm/xml/TDMExampleAllKeywordsSequential.xml");
     }
 
     @Test
-    public void testWriteXmlExampleAllKeywordsSingleDiff() {
+    void testWriteXmlExampleAllKeywordsSingleDiff() {
         doTest("/ccsds/tdm/xml/TDMExampleAllKeywordsSingleDiff.xml");
     }
 

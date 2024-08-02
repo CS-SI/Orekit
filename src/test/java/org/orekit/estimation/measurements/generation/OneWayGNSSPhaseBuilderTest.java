@@ -25,7 +25,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -51,7 +50,10 @@ import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
-public class OneWayGNSSPhaseBuilderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class OneWayGNSSPhaseBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
@@ -80,12 +82,12 @@ public class OneWayGNSSPhaseBuilderTest {
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0x812bfe784826bab3L, 0.0, 1.2, 3.4 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0xb54896c361d88441L, 0.0, -1.0, 2.8 * SIGMA);
     }
 
@@ -137,15 +139,15 @@ public class OneWayGNSSPhaseBuilderTest {
         for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assertions.assertTrue(date.compareTo(tInf) >= 0);
-            Assertions.assertTrue(date.compareTo(tSup) <= 0);
+            assertTrue(date.compareTo(tInf) >= 0);
+            assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 if (t0.isBefore(t1)) {
                     // measurements are expected to be chronological
-                    Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                    assertTrue(date.durationFrom(previous) >= 0.999999 * step);
                 } else {
                     // measurements are expected to be reverse chronological
-                    Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                    assertTrue(previous.durationFrom(date) >= 0.999999 * step);
                 }
             }
             previous = date;
@@ -160,11 +162,11 @@ public class OneWayGNSSPhaseBuilderTest {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }
         }
-        Assertions.assertEquals(0.0, maxError, tolerance);
+        assertEquals(0.0, maxError, tolerance);
      }
 
-     @BeforeEach
-     public void setUp() {
+    @BeforeEach
+    void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

@@ -22,7 +22,6 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -62,15 +61,19 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FieldDSSTTesseralTest {
+class FieldDSSTTesseralTest {
 
     @Test
-    public void testGetMeanElementRate(){
+    void testGetMeanElementRate(){
         doTestGetMeanElementRate(Binary64Field.getInstance());
     }
 
@@ -125,17 +128,17 @@ public class FieldDSSTTesseralTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(7.120011500375922E-5,   elements[0].getReal(), 6.0e-19);
-        Assertions.assertEquals(-1.109767646425212E-11, elements[1].getReal(), 2.0e-26);
-        Assertions.assertEquals(2.3036711391089307E-11, elements[2].getReal(), 1.5e-26);
-        Assertions.assertEquals(2.499304852807308E-12,  elements[3].getReal(), 1.0e-27);
-        Assertions.assertEquals(1.3899097178558372E-13, elements[4].getReal(), 3.0e-27);
-        Assertions.assertEquals(5.795522421338584E-12,  elements[5].getReal(), 1.0e-26);
+        assertEquals(7.120011500375922E-5,   elements[0].getReal(), 6.0e-19);
+        assertEquals(-1.109767646425212E-11, elements[1].getReal(), 2.0e-26);
+        assertEquals(2.3036711391089307E-11, elements[2].getReal(), 1.5e-26);
+        assertEquals(2.499304852807308E-12,  elements[3].getReal(), 1.0e-27);
+        assertEquals(1.3899097178558372E-13, elements[4].getReal(), 3.0e-27);
+        assertEquals(5.795522421338584E-12,  elements[5].getReal(), 1.0e-26);
 
     }
 
     @Test
-    public void testShortPeriodTerms() {
+    void testShortPeriodTerms() {
         doTestShortPeriodTerms(Binary64Field.getInstance());
     }
 
@@ -187,16 +190,16 @@ public class FieldDSSTTesseralTest {
             }
         }
 
-        Assertions.assertEquals(5.192409957353236,      y[0].getReal(), 1.e-15);
-        Assertions.assertEquals(9.660364749662076E-7,   y[1].getReal(), 1.e-22);
-        Assertions.assertEquals(1.542008987162059E-6,   y[2].getReal(), 1.e-21);
-        Assertions.assertEquals(-4.9944146013126755E-8, y[3].getReal(), 1.e-22);
-        Assertions.assertEquals(-4.500974242661177E-8,  y[4].getReal(), 1.e-22);
-        Assertions.assertEquals(-2.785213556107612E-7,  y[5].getReal(), 1.e-21);
+        assertEquals(5.192409957353236,      y[0].getReal(), 1.e-15);
+        assertEquals(9.660364749662076E-7,   y[1].getReal(), 1.e-22);
+        assertEquals(1.542008987162059E-6,   y[2].getReal(), 1.e-21);
+        assertEquals(-4.9944146013126755E-8, y[3].getReal(), 1.e-22);
+        assertEquals(-4.500974242661177E-8,  y[4].getReal(), 1.e-22);
+        assertEquals(-2.785213556107612E-7,  y[5].getReal(), 1.e-21);
     }
 
     @Test
-    public void testIssue625() {
+    void testIssue625() {
         doTestIssue625(Binary64Field.getInstance());
     }
 
@@ -251,13 +254,13 @@ public class FieldDSSTTesseralTest {
 
         // Verify
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
+            assertEquals(elements[i].getReal(), elementsDefault[i].getReal(), Double.MIN_VALUE);
         }
 
     }
 
     @Test
-    public void testIssue736() {
+    void testIssue736() {
         doTestIssue736(Binary64Field.getInstance());
     }
 
@@ -298,14 +301,14 @@ public class FieldDSSTTesseralTest {
         // Its purpose is to verify that a NullPointerException does not
         // occur when calculating initial values of Hansen Coefficients
         for (int i = 0; i < elements.length; i++) {
-            Assertions.assertTrue(elements[i].getReal() != 0);
+            assertTrue(elements[i].getReal() != 0);
         }
 
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsStateDerivatives() {
+    void testShortPeriodTermsStateDerivatives() {
 
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -415,7 +418,7 @@ public class FieldDSSTTesseralTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assertions.assertEquals(0, error, 7.6e-10);
+                assertEquals(0, error, 7.6e-10);
             }
         }
 
@@ -423,7 +426,7 @@ public class FieldDSSTTesseralTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testShortPeriodTermsMuParametersDerivatives() {
+    void testShortPeriodTermsMuParametersDerivatives() {
 
         // Initial spacecraft state
         final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
@@ -549,7 +552,7 @@ public class FieldDSSTTesseralTest {
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(shortPeriodJacobianRef[i][0],
+            assertEquals(shortPeriodJacobianRef[i][0],
                                 shortPeriodJacobian[i][0],
                                 FastMath.abs(shortPeriodJacobianRef[i][0] * 2e-10));
         }
@@ -631,7 +634,7 @@ public class FieldDSSTTesseralTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

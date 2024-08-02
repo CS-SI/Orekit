@@ -25,7 +25,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -47,7 +46,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FixedStepSelector;
 import org.orekit.time.TimeScalesFactory;
 
-public class BistaticRangeRateBuilderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class BistaticRangeRateBuilderTest {
 
     private static final double SIGMA = 0.01;
     private static final double BIAS  = 0.002;
@@ -71,12 +73,12 @@ public class BistaticRangeRateBuilderTest {
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0xf50c0ce7c8c1dab2L, 0.0, 1.2, 3.2 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0x453a681440d01832L, 0.0, -1.2, 2.9 * SIGMA);
     }
 
@@ -116,15 +118,15 @@ public class BistaticRangeRateBuilderTest {
         for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assertions.assertTrue(date.compareTo(tInf) >= 0);
-            Assertions.assertTrue(date.compareTo(tSup) <= 0);
+            assertTrue(date.compareTo(tInf) >= 0);
+            assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 if (t0.isBefore(t1)) {
                     // measurements are expected to be chronological
-                    Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                    assertTrue(date.durationFrom(previous) >= 0.999999 * step);
                 } else {
                     // measurements are expected to be reverse chronological
-                    Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                    assertTrue(previous.durationFrom(date) >= 0.999999 * step);
                 }
             }
             previous = date;
@@ -137,11 +139,11 @@ public class BistaticRangeRateBuilderTest {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }
         }
-        Assertions.assertEquals(0.0, maxError, tolerance);
+        assertEquals(0.0, maxError, tolerance);
      }
 
-     @BeforeEach
-     public void setUp() {
+    @BeforeEach
+    void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

@@ -3,7 +3,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -21,6 +20,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 class FieldExtremumApproachDetectorTest {
@@ -28,7 +28,7 @@ class FieldExtremumApproachDetectorTest {
      * Test the detector on a keplerian orbit and detect extremum approach with Earth.
      */
     @Test
-    public void testStopPropagationClosestApproachByDefault() {
+    void testStopPropagationClosestApproachByDefault() {
         // Given
         // Loading Orekit data
         Utils.setDataRoot("regular-data");
@@ -66,7 +66,7 @@ class FieldExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod().multiply(2.)));
 
         // Then
-        Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate).getReal(),
+        assertEquals(stateAtEvent.getDate().durationFrom(initialDate).getReal(),
                                 orbit.getKeplerianPeriod().getReal(), 1e-9);
 
     }
@@ -75,7 +75,7 @@ class FieldExtremumApproachDetectorTest {
      * Test the detector on a keplerian orbit and detect extremum approach with Earth.
      */
     @Test
-    public void testStopPropagationFarthestApproachWithHandler() {
+    void testStopPropagationFarthestApproachWithHandler() {
 
         // Given
         // Loading Orekit data
@@ -115,7 +115,7 @@ class FieldExtremumApproachDetectorTest {
                 propagator.propagate(initialDate.shiftedBy(orbit.getKeplerianPeriod().multiply(2)));
 
         // Then
-        Assertions.assertEquals(stateAtEvent.getDate().durationFrom(initialDate).getReal(),
+        assertEquals(stateAtEvent.getDate().durationFrom(initialDate).getReal(),
                                 orbit.getKeplerianPeriod().divide(2).getReal(), 1e-7);
 
     }
@@ -135,7 +135,7 @@ class FieldExtremumApproachDetectorTest {
                 extremumApproachDetector.getSecondaryPVProvider();
 
         // Then
-        Assertions.assertEquals(secondaryPVProvider, returnedSecondaryPVProvider);
+        assertEquals(secondaryPVProvider, returnedSecondaryPVProvider);
     }
 
 }

@@ -26,7 +26,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,6 +53,9 @@ import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 class OrbitBlenderTest {
 
     private static SpacecraftState sergeiState;
@@ -64,7 +66,7 @@ class OrbitBlenderTest {
     private final  double          DEFAUTL_SERGEI_TABULATED_TIMESTEP = 2400;
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         StateCovarianceKeplerianHermiteInterpolatorTest.setUp();
         sergeiState = StateCovarianceKeplerianHermiteInterpolatorTest.generateSergeiReferenceState();
         sergeiOrbit = sergeiState.getOrbit();
@@ -72,8 +74,8 @@ class OrbitBlenderTest {
     }
 
     public static void assertOrbit(final Orbit expected, final Orbit actual, final double epsilon) {
-        Assertions.assertEquals(expected.getMu(), actual.getMu());
-        Assertions.assertEquals(expected.getType(), actual.getType());
+        assertEquals(expected.getMu(), actual.getMu());
+        assertEquals(expected.getType(), actual.getType());
         AbsolutePVCoordinatesTest.assertPV(expected.getPVCoordinates(expected.getFrame()),
                                            actual.getPVCoordinates(expected.getFrame()),
                                            epsilon);
@@ -208,12 +210,12 @@ class OrbitBlenderTest {
             System.out.format(Locale.US, "%.17f%n", statistics[0].getMax());
             System.out.format(Locale.US, "%.17f%n", statistics[1].getMax());
         }
-        Assertions.assertEquals(expectedMeanRMSPositionError, statistics[0].getMean(), tolerance);
-        Assertions.assertEquals(expectedMeanRMSVelocityError, statistics[1].getMean(), tolerance);
-        Assertions.assertEquals(expectedMedianRMSPositionError, statistics[0].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMedianRMSVelocityError, statistics[1].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMaxRMSPositionError, statistics[0].getMax(), tolerance);
-        Assertions.assertEquals(expectedMaxRMSVelocityError, statistics[1].getMax(), tolerance);
+        assertEquals(expectedMeanRMSPositionError, statistics[0].getMean(), tolerance);
+        assertEquals(expectedMeanRMSVelocityError, statistics[1].getMean(), tolerance);
+        assertEquals(expectedMedianRMSPositionError, statistics[0].getPercentile(50), tolerance);
+        assertEquals(expectedMedianRMSVelocityError, statistics[1].getPercentile(50), tolerance);
+        assertEquals(expectedMaxRMSPositionError, statistics[0].getMax(), tolerance);
+        assertEquals(expectedMaxRMSVelocityError, statistics[1].getMax(), tolerance);
     }
 
     @Test
@@ -460,7 +462,7 @@ class OrbitBlenderTest {
 
         // Then
         assertOrbit(previousTabulatedOrbit, blendedOrbit, 1e-11);
-        Assertions.assertEquals(outputFrame, orbitBlender.getOutputInertialFrame());
+        assertEquals(outputFrame, orbitBlender.getOutputInertialFrame());
     }
 
     @Test
@@ -479,12 +481,12 @@ class OrbitBlenderTest {
         Mockito.when(nonInertialFrame.getName()).thenReturn(frameName);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> new OrbitBlender(blendingFunctionMock,
                                                                           propagatorMock,
                                                                           nonInertialFrame));
 
-        Assertions.assertEquals(MessageFormat.format(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME.getSourceString(), frameName),
+        assertEquals(MessageFormat.format(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME.getSourceString(), frameName),
                                 thrown.getMessage());
     }
 
@@ -521,10 +523,10 @@ class OrbitBlenderTest {
         sample.add(orbit2Mock);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> interpolator.interpolate(new AbsoluteDate(), sample));
 
-        Assertions.assertEquals(MessageFormat.format(OrekitMessages.ORBITS_MUS_MISMATCH.getSourceString(), firstMu, secondMu),
+        assertEquals(MessageFormat.format(OrekitMessages.ORBITS_MUS_MISMATCH.getSourceString(), firstMu, secondMu),
                                 thrown.getMessage());
     }
 

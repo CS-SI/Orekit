@@ -29,7 +29,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -54,6 +53,10 @@ import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 public class FieldDateDetectorTest {
 
     private int evtno = 0;
@@ -64,34 +67,34 @@ public class FieldDateDetectorTest {
     private AbsoluteDate nodeDate;
 
     @Test
-    public void testSimpleTimer() {
+    void testSimpleTimer() {
         doTestSimpleTimer(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEmbeddedTimer() {
+    void testEmbeddedTimer() {
         doTestEmbeddedTimer(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAutoEmbeddedTimer() {
+    void testAutoEmbeddedTimer() {
         doTestAutoEmbeddedTimer(Binary64Field.getInstance());
     }
 
     @Test
-    public void testExceptionTimer() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testExceptionTimer() {
+        assertThrows(IllegalArgumentException.class, () -> {
             doTestExceptionTimer(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testGenericHandler() {
+    void testGenericHandler() {
         doTestGenericHandler(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue935() {
+    void testIssue935() {
         doTestIssue935(Binary64Field.getInstance());
     }
 
@@ -130,18 +133,18 @@ public class FieldDateDetectorTest {
             FieldSpacecraftState<T> restrictedPrev = restricted.getPreviousState();
             FieldSpacecraftState<T> restrictedCurr = restricted.getCurrentState();
             T restrictedDt = restrictedCurr.getDate().durationFrom(restrictedPrev.getDate());
-            Assertions.assertEquals(dt.multiply(0.5).getReal(), restrictedDt.getReal(), 1.0e-10);
+            assertEquals(dt.multiply(0.5).getReal(), restrictedDt.getReal(), 1.0e-10);
         });
         propagator.setOrbitType(OrbitType.EQUINOCTIAL);
         propagator.setInitialState(initialState.addAdditionalState("dummy", MathArrays.buildArray(field, 1)));
 
         FieldDateDetector<T>  dateDetector = new FieldDateDetector<>(field, toArray(iniDate.shiftedBy(2.0*dt))).
                         withMinGap(minGap).withThreshold(field.getZero().newInstance(threshold));
-        Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
+        assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate).getReal(), 1.0e-10);
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
-        Assertions.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
+        assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
     }
 
 
@@ -168,7 +171,7 @@ public class FieldDateDetectorTest {
         @SuppressWarnings("unchecked")
         FieldDateDetector<T> dateDetector = new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
                         withMinGap(minGap).withThreshold(field.getZero().newInstance(threshold));
-        Assertions.assertNull(dateDetector.getDate());
+        assertNull(dateDetector.getDate());
         FieldEventDetector<T> nodeDetector = new FieldNodeDetector<>(iniOrbit, iniOrbit.getFrame()).
                 withHandler(new FieldContinueOnEvent<T>() {
                     public Action eventOccurred(FieldSpacecraftState<T> s, FieldEventDetector<T> nd, boolean increasing) {
@@ -184,7 +187,7 @@ public class FieldDateDetectorTest {
         propagator.addEventDetector(dateDetector);
         final FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
-        Assertions.assertEquals(dt, finalState.getDate().durationFrom(nodeDate).getReal(), threshold);
+        assertEquals(dt, finalState.getDate().durationFrom(nodeDate).getReal(), threshold);
     }
 
 
@@ -223,7 +226,7 @@ public class FieldDateDetectorTest {
         propagator.addEventDetector(dateDetector);
         propagator.propagate(iniDate.shiftedBy(-100.*dt));
 
-        Assertions.assertEquals(100, evtno);
+        assertEquals(100, evtno);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestExceptionTimer(Field<T> field) {
@@ -317,7 +320,7 @@ public class FieldDateDetectorTest {
         FieldSpacecraftState<T> finalState = propagator.propagate(iniDate.shiftedBy(100 * dt));
 
         //verify
-        Assertions.assertEquals(dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
+        assertEquals(dt, finalState.getDate().durationFrom(iniDate).getReal(), threshold);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue935(Field<T> field) {
@@ -347,7 +350,7 @@ public class FieldDateDetectorTest {
         final FieldAbsoluteDate<T> startDate = getAbsoluteDateFromTimestamp(field, start);
         final FieldAbsoluteDate<T> endDate   = getAbsoluteDateFromTimestamp(field, end);
         FieldSpacecraftState<T> lastState = propagator.propagate(startDate, endDate.shiftedBy(1));
-        Assertions.assertEquals(0.0, lastState.getDate().durationFrom(endDate).getReal(), 1.0e-15);
+        assertEquals(0.0, lastState.getDate().durationFrom(endDate).getReal(), 1.0e-15);
 
     }
 
@@ -373,7 +376,7 @@ public class FieldDateDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
             Utils.setDataRoot("regular-data");
             mu = 3.9860047e14;
             dt = 60.;

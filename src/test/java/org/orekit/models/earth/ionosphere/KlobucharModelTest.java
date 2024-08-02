@@ -24,7 +24,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -52,7 +51,10 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class KlobucharModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class KlobucharModelTest {
 
     private static double epsilon = 1e-6;
 
@@ -62,7 +64,7 @@ public class KlobucharModelTest {
     private UTCScale utc;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         // Navigation message data
         // .3820D-07   .1490D-07  -.1790D-06   .0000D-00          ION ALPHA
         // .1430D+06   .0000D+00  -.3280D+06   .1130D+06          ION BETA
@@ -74,12 +76,12 @@ public class KlobucharModelTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         utc = null;
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         final double latitude = FastMath.toRadians(45);
         final double longitude = FastMath.toRadians(2);
         final double altitude = 500;
@@ -95,12 +97,12 @@ public class KlobucharModelTest {
                                              FastMath.toRadians(azimuth),
                                              1575.42e6, model.getParameters(date));
 
-        Assertions.assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
+        assertTrue(Precision.compareTo(delayMeters, 12., epsilon) < 0);
+        assertTrue(Precision.compareTo(delayMeters, 0., epsilon) > 0);
     }
 
     @Test
-    public void testFieldDelay() {
+    void testFieldDelay() {
         doTestFieldDelay(Binary64Field.getInstance());
     }
 
@@ -121,12 +123,12 @@ public class KlobucharModelTest {
                                         elevation, azimuth,
                                         1575.42e6, model.getParameters(field, date));
 
-        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 0., epsilon) > 0);
+        assertTrue(Precision.compareTo(delayMeters.getReal(), 12., epsilon) < 0);
+        assertTrue(Precision.compareTo(delayMeters.getReal(), 0., epsilon) > 0);
     }
 
     @Test
-    public void compareExpectedValue() throws IllegalArgumentException, OrekitException {
+    void compareExpectedValue() throws IllegalArgumentException, OrekitException {
         final double latitude = FastMath.toRadians(40);
         final double longitude = FastMath.toRadians(-100);
         final double altitude = 0.;
@@ -144,11 +146,11 @@ public class KlobucharModelTest {
                                                    FastMath.toRadians(azimuth),
                                                    1575.42e6, model.getParameters(date));
 
-        Assertions.assertEquals(23.784, delayMeters, 0.001);
+        assertEquals(23.784, delayMeters, 0.001);
     }
 
     @Test
-    public <T extends CalculusFieldElement<T>> void compareFieldExpectedValue() {
+ <T extends CalculusFieldElement<T>> void compareFieldExpectedValue() {
         doCompareFieldExpectedValue(Binary64Field.getInstance());
     }
 
@@ -173,11 +175,11 @@ public class KlobucharModelTest {
                                               elevation, azimuth,
                                               1575.42e6, model.getParameters(field, fieldDate));
 
-        Assertions.assertEquals(23.784, delayMeters.getReal(), 0.001);
+        assertEquals(23.784, delayMeters.getReal(), 0.001);
     }
 
     @Test
-    public void testEquality() {
+    void testEquality() {
         // Common parameters
         final AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 35, 04.245, TimeScalesFactory.getUTC());
 
@@ -208,11 +210,11 @@ public class KlobucharModelTest {
         double delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters(date));
 
         // Verify
-        Assertions.assertEquals(delayAzEl, delayState, 1.0e-6);
+        assertEquals(delayAzEl, delayState, 1.0e-6);
     }
 
     @Test
-    public <T extends CalculusFieldElement<T>> void testFieldEquality() {
+ <T extends CalculusFieldElement<T>> void testFieldEquality() {
         doTestFieldEquality(Binary64Field.getInstance());
     }
 
@@ -252,7 +254,7 @@ public class KlobucharModelTest {
         T delayState = model.pathDelay(state, topo, 1575.42e6, model.getParameters(field, dateF));
 
         // Verify
-        Assertions.assertEquals(delayAzEl.getReal(), delayState.getReal(), 1.0e-6);
+        assertEquals(delayAzEl.getReal(), delayState.getReal(), 1.0e-6);
     }
 
 }

@@ -17,7 +17,6 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -36,13 +35,16 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.orekit.Utils.assertParametersDriversValues;
 
 public class AbstractPropagatorBuilderTest {
 
     /** Test method resetOrbit. */
     @Test
-    public void testResetOrbit() {
+    void testResetOrbit() {
         // Load a context
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -74,14 +76,14 @@ public class AbstractPropagatorBuilderTest {
         propagatorBuilder.resetOrbit(newOrbit);
 
         // Check that the new orbit was properly set in the builder and
-        Assertions.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
+        assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
         final double[] stateVector = new double[6];
         propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit, PositionAngleType.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             final double expectedValue = stateVector[i++];
-            Assertions.assertEquals(expectedValue, driver.getValue(), 0.);
-            Assertions.assertEquals(expectedValue, driver.getReferenceValue(), 0.);
+            assertEquals(expectedValue, driver.getValue(), 0.);
+            assertEquals(expectedValue, driver.getReferenceValue(), 0.);
         }
     }
 
@@ -95,29 +97,29 @@ public class AbstractPropagatorBuilderTest {
     public static <B extends AbstractPropagatorBuilder> void assertPropagatorBuilderIsACopy(final B expected, final B actual){
 
         // They should not be the same instance
-        Assertions.assertNotEquals(expected, actual);
+        assertNotEquals(expected, actual);
 
-        Assertions.assertArrayEquals(expected.getSelectedNormalizedParameters(),
+        assertArrayEquals(expected.getSelectedNormalizedParameters(),
                                      actual.getSelectedNormalizedParameters());
 
         assertParametersDriversValues(expected.getOrbitalParametersDrivers(),
                                        actual.getOrbitalParametersDrivers());
 
-        Assertions.assertEquals(expected.getFrame(), actual.getFrame());
-        Assertions.assertEquals(expected.getMu(), actual.getMu());
-        Assertions.assertEquals(expected.getAttitudeProvider(), actual.getAttitudeProvider());
-        Assertions.assertEquals(expected.getOrbitType(), actual.getOrbitType());
-        Assertions.assertEquals(expected.getPositionAngleType(), actual.getPositionAngleType());
-        Assertions.assertEquals(expected.getPositionScale(), actual.getPositionScale());
-        Assertions.assertEquals(expected.getInitialOrbitDate(), actual.getInitialOrbitDate());
-        Assertions.assertEquals(expected.getAdditionalDerivativesProviders(), actual.getAdditionalDerivativesProviders());
+        assertEquals(expected.getFrame(), actual.getFrame());
+        assertEquals(expected.getMu(), actual.getMu());
+        assertEquals(expected.getAttitudeProvider(), actual.getAttitudeProvider());
+        assertEquals(expected.getOrbitType(), actual.getOrbitType());
+        assertEquals(expected.getPositionAngleType(), actual.getPositionAngleType());
+        assertEquals(expected.getPositionScale(), actual.getPositionScale());
+        assertEquals(expected.getInitialOrbitDate(), actual.getInitialOrbitDate());
+        assertEquals(expected.getAdditionalDerivativesProviders(), actual.getAdditionalDerivativesProviders());
 
         // Verify that the propagations give the same results
         AbsoluteDate targetEpoch = expected.getInitialOrbitDate().shiftedBy(7200.0);
         TimeStampedPVCoordinates expectedCoordinates = expected.buildPropagator().propagate(targetEpoch).getPVCoordinates();
         TimeStampedPVCoordinates actualCoordinates   = actual.buildPropagator().propagate(targetEpoch).getPVCoordinates();
-        Assertions.assertEquals(0.0, Vector3D.distance(expectedCoordinates.getPosition(), actualCoordinates.getPosition()));
-        Assertions.assertEquals(0.0, Vector3D.distance(expectedCoordinates.getVelocity(), actualCoordinates.getVelocity()));
+        assertEquals(0.0, Vector3D.distance(expectedCoordinates.getPosition(), actualCoordinates.getPosition()));
+        assertEquals(0.0, Vector3D.distance(expectedCoordinates.getVelocity(), actualCoordinates.getVelocity()));
 
     }
 }

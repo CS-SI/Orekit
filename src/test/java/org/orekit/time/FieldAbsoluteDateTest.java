@@ -25,7 +25,6 @@ import java.util.TimeZone;
 
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DSFactory;
@@ -54,7 +53,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldTuple;
 import org.hipparchus.util.Precision;
 import org.hipparchus.util.Tuple;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -64,140 +62,148 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 public class FieldAbsoluteDateTest {
 
     private TimeScale utc;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
     }
 
     @Test
-    public void testStandardEpoch() {
+    void testStandardEpoch() {
         doTestStandardEpoch(Binary64Field.getInstance());
     }
 
     @Test
-    public void testStandardEpochStrings() {
+    void testStandardEpochStrings() {
         doTestStandardEpochStrings(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJulianEpochRate() {
+    void testJulianEpochRate() {
         doTestJulianEpochRate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testBesselianEpochRate() {
+    void testBesselianEpochRate() {
         doTestBesselianEpochRate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testLieske() {
+    void testLieske() {
         doTestLieske(Binary64Field.getInstance());
     }
 
     @Test
-    public void testParse() {
+    void testParse() {
         doTestParse(Binary64Field.getInstance());
     }
 
     @Test
-    public void testLocalTimeParsing() {
+    void testLocalTimeParsing() {
         doTestLocalTimeParsing(Binary64Field.getInstance());
     }
 
     @Test
-    public void testTimeZoneDisplay() {
+    void testTimeZoneDisplay() {
         doTestTimeZoneDisplay(Binary64Field.getInstance());
     }
 
     @Test
-    public void testLocalTimeLeapSecond() throws IOException {
+    void testLocalTimeLeapSecond() throws IOException {
         doTestLocalTimeLeapSecond(Binary64Field.getInstance());
     }
 
     @Test
-    public void testTimeZoneLeapSecond() {
+    void testTimeZoneLeapSecond() {
         doTestTimeZoneLeapSecond(Binary64Field.getInstance());
     }
 
     @Test
-    public void testParseLeap() {
+    void testParseLeap() {
         doTestParseLeap(Binary64Field.getInstance());
     }
 
     @Test
-    public void testOutput() {
+    void testOutput() {
         doTestOutput(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJ2000() {
+    void testJ2000() {
         doTestJ2000(Binary64Field.getInstance());
     }
 
     @Test
-    public void testFraction() {
+    void testFraction() {
         doTestFraction(Binary64Field.getInstance());
     }
 
     @Test
-    public void testScalesOffset() {
+    void testScalesOffset() {
         doTestScalesOffset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testUTC() {
+    void testUTC() {
         doTestUTC(Binary64Field.getInstance());
     }
 
     @Test
-    public void test1970() {
+    void test1970() {
         doTest1970(Binary64Field.getInstance());
     }
 
     @Test
-    public void test1970Instant() {
+    void test1970Instant() {
         doTest1970Instant(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInstantAccuracy() {
+    void testInstantAccuracy() {
         doTestInstantAccuracy(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToInstant() {
+    void testToInstant() {
         doTestToInstant(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testUtcGpsOffset() {
+    void testUtcGpsOffset() {
         doTestUtcGpsOffset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGpsDate() {
+    void testGpsDate() {
         doTestGpsDate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testMJDDate() {
+    void testMJDDate() {
         doTestMJDDate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testJDDate() {
+    void testJDDate() {
         doTestJDDate(Binary64Field.getInstance());
     }
 
     /** Test issue 1310: get a date from a JD using a pivot timescale. */
     @Test
-    public void testIssue1310JDDateInTDB() {
+    void testIssue1310JDDateInTDB() {
 
         // Given
         // -----
@@ -218,159 +224,159 @@ public class FieldAbsoluteDateTest {
         // ----
 
         // Wrong date is too far from reference date
-        Assertions.assertEquals(0.0, wrongDate.durationFrom(refDate).getReal(), 1.270e-05);
+        assertEquals(0.0, wrongDate.durationFrom(refDate).getReal(), 1.270e-05);
 
         // Proper date is close enough from reference date
-        Assertions.assertEquals(0.0, properDate.durationFrom(refDate).getReal(), 2.132e-13);
+        assertEquals(0.0, properDate.durationFrom(refDate).getReal(), 2.132e-13);
     }
 
     @Test
-    public void testOffsets() {
+    void testOffsets() {
         doTestOffsets(Binary64Field.getInstance());
     }
 
     @Test
-    public void testBeforeAndAfterLeap() {
+    void testBeforeAndAfterLeap() {
         doTestBeforeAndAfterLeap(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSymmetry() {
+    void testSymmetry() {
         doTestSymmetry(Binary64Field.getInstance());
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         doTestEquals(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIsEqualTo() { doTestIsEqualTo(Binary64Field.getInstance()); }
+    void testIsEqualTo() { doTestIsEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsCloseTo() { doTestIsCloseTo(Binary64Field.getInstance()); }
+    void testIsCloseTo() { doTestIsCloseTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBefore() { doTestIsBefore(Binary64Field.getInstance()); }
+    void testIsBefore() { doTestIsBefore(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsAfter() { doTestIsAfter(Binary64Field.getInstance()); }
+    void testIsAfter() { doTestIsAfter(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBeforeOrEqualTo() { doTestIsBeforeOrEqualTo(Binary64Field.getInstance()); }
+    void testIsBeforeOrEqualTo() { doTestIsBeforeOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsAfterOrEqualTo() { doTestIsAfterOrEqualTo(Binary64Field.getInstance()); }
+    void testIsAfterOrEqualTo() { doTestIsAfterOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBetween() { doTestIsBetween(Binary64Field.getInstance()); }
+    void testIsBetween() { doTestIsBetween(Binary64Field.getInstance()); }
 
     @Test
-    public void testIsBetweenOrEqualTo() { doTestIsBetweenOrEqualTo(Binary64Field.getInstance()); }
+    void testIsBetweenOrEqualTo() { doTestIsBetweenOrEqualTo(Binary64Field.getInstance()); }
 
     @Test
-    public void testComponents() {
+    void testComponents() {
         doTestComponents(Binary64Field.getInstance());
     }
 
     @Test
-    public void testMonth() {
+    void testMonth() {
         doTestMonth(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSUnsegmentedNoExtension() {
+    void testCCSDSUnsegmentedNoExtension() {
         doTestCCSDSUnsegmentedNoExtension(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSUnsegmentedWithExtendedPreamble() {
+    void testCCSDSUnsegmentedWithExtendedPreamble() {
         doTestCCSDSUnsegmentedWithExtendedPreamble(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSDaySegmented() {
+    void testCCSDSDaySegmented() {
         doTestCCSDSDaySegmented(Binary64Field.getInstance());
     }
 
     @Test
-    public void testCCSDSCalendarSegmented() {
+    void testCCSDSCalendarSegmented() {
         doTestCCSDSCalendarSegmented(Binary64Field.getInstance());
     }
 
     @Test
-    public void testExpandedConstructors() {
+    void testExpandedConstructors() {
         doTestExpandedConstructors(Binary64Field.getInstance());
     }
 
     @Test
-    public void testHashcode() {
+    void testHashcode() {
         doTestHashcode(Binary64Field.getInstance());
     }
 
     @Test
-    public void testInfinity() {
+    void testInfinity() {
         doTestInfinity(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAccuracy() {
+    void testAccuracy() {
         doTestAccuracy(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAccuracyIssue348() {
+    void testAccuracyIssue348() {
         doTestAccuracyIssue348(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIterationAccuracy() {
+    void testIterationAccuracy() {
         doTestIterationAccuracy(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue142() {
+    void testIssue142() {
         doTestIssue142(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue148() {
+    void testIssue148() {
         doTestIssue148(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue149() {
+    void testIssue149() {
         doTestIssue149(Binary64Field.getInstance());
     }
 
     @Test
-    public void testWrapAtMinuteEnd() {
+    void testWrapAtMinuteEnd() {
         doTestWrapAtMinuteEnd(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue508() {
+    void testIssue508() {
         doTestIssue508(Binary64Field.getInstance());
     }
 
     @Test
-    public void testGetComponentsIssue681and676() {
+    void testGetComponentsIssue681and676() {
         doTestGetComponentsIssue681and676(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNegativeOffsetConstructor() {
+    void testNegativeOffsetConstructor() {
         doTestNegativeOffsetConstructor(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNegativeOffsetShift() {
+    void testNegativeOffsetShift() {
         doTestNegativeOffsetShift(Binary64Field.getInstance());
     }
-    
+
     /** Test for method {@link FieldAbsoluteDate#hasZeroField()}.*/
     @Test
-    public void testHasZeroField() {
+    void testHasZeroField() {
                        
         // DerivativeStructure
         // ----------
@@ -380,17 +386,17 @@ public class FieldAbsoluteDateTest {
         
         // Constant date returns true
         final FieldAbsoluteDate<DerivativeStructure> dsConstantDate = new FieldAbsoluteDate<>(dsField);
-        Assertions.assertTrue(dsConstantDate.hasZeroField());
-        Assertions.assertTrue(dsConstantDate.shiftedBy(dsField.getOne()).hasZeroField());
+        assertTrue(dsConstantDate.hasZeroField());
+        assertTrue(dsConstantDate.shiftedBy(dsField.getOne()).hasZeroField());
         
         // Variable date returns false
         final DerivativeStructure dsDt0 = dsFactory.variable(0, 10.);
         final DerivativeStructure dsDt1 = dsFactory.variable(1, -100.);
         final DerivativeStructure dsDt2 = dsFactory.variable(2, 100.);
-        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt0).hasZeroField());
-        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt1).hasZeroField());
-        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt2).hasZeroField());
-        Assertions.assertFalse(dsConstantDate.shiftedBy(dsDt0).shiftedBy(dsDt1).shiftedBy(dsDt2).hasZeroField());
+        assertFalse(dsConstantDate.shiftedBy(dsDt0).hasZeroField());
+        assertFalse(dsConstantDate.shiftedBy(dsDt1).hasZeroField());
+        assertFalse(dsConstantDate.shiftedBy(dsDt2).hasZeroField());
+        assertFalse(dsConstantDate.shiftedBy(dsDt0).shiftedBy(dsDt1).shiftedBy(dsDt2).hasZeroField());
         
         // UnivariateDerivative1
         // ---------------------
@@ -399,12 +405,12 @@ public class FieldAbsoluteDateTest {
         
         // Constant date returns true
         final FieldAbsoluteDate<UnivariateDerivative1> u1ConstantDate = new FieldAbsoluteDate<>(u1Field);
-        Assertions.assertTrue(u1ConstantDate.hasZeroField());
-        Assertions.assertTrue(u1ConstantDate.shiftedBy(u1Field.getOne()).hasZeroField());
-        Assertions.assertTrue(u1ConstantDate.shiftedBy(new UnivariateDerivative1(10., 0.)).hasZeroField());
+        assertTrue(u1ConstantDate.hasZeroField());
+        assertTrue(u1ConstantDate.shiftedBy(u1Field.getOne()).hasZeroField());
+        assertTrue(u1ConstantDate.shiftedBy(new UnivariateDerivative1(10., 0.)).hasZeroField());
         
         // Variable date returns false
-        Assertions.assertFalse(u1ConstantDate.shiftedBy(new UnivariateDerivative1(10., 10.)).hasZeroField());
+        assertFalse(u1ConstantDate.shiftedBy(new UnivariateDerivative1(10., 10.)).hasZeroField());
         
         // UnivariateDerivative1
         // ---------------------
@@ -413,12 +419,12 @@ public class FieldAbsoluteDateTest {
         
         // Constant date returns true
         final FieldAbsoluteDate<UnivariateDerivative2> u2ConstantDate = new FieldAbsoluteDate<>(u2Field);
-        Assertions.assertTrue(u2ConstantDate.hasZeroField());
-        Assertions.assertTrue(u2ConstantDate.shiftedBy(u2Field.getOne()).hasZeroField());
-        Assertions.assertTrue(u2ConstantDate.shiftedBy(new UnivariateDerivative2(10., 0., 0.)).hasZeroField());
+        assertTrue(u2ConstantDate.hasZeroField());
+        assertTrue(u2ConstantDate.shiftedBy(u2Field.getOne()).hasZeroField());
+        assertTrue(u2ConstantDate.shiftedBy(new UnivariateDerivative2(10., 0., 0.)).hasZeroField());
         
         // Variable date returns false
-        Assertions.assertFalse(u2ConstantDate.shiftedBy(new UnivariateDerivative2(10., 1., 2.)).hasZeroField());
+        assertFalse(u2ConstantDate.shiftedBy(new UnivariateDerivative2(10., 1., 2.)).hasZeroField());
         
         // Gradient
         // --------
@@ -427,18 +433,18 @@ public class FieldAbsoluteDateTest {
         
         // Constant date returns true
         final FieldAbsoluteDate<Gradient> gdConstantDate = new FieldAbsoluteDate<>(gdField);
-        Assertions.assertTrue(gdConstantDate.hasZeroField());
+        assertTrue(gdConstantDate.hasZeroField());
         
         // Variable date returns false
         final Gradient gdDt0 = Gradient.variable(2, 0, 10.);
         final Gradient gdDt1 = Gradient.variable(2, 1, -100.);
-        Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt0).hasZeroField());
-        Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt1).hasZeroField());
-        Assertions.assertFalse(gdConstantDate.shiftedBy(gdDt0).shiftedBy(gdDt1).hasZeroField());
+        assertFalse(gdConstantDate.shiftedBy(gdDt0).hasZeroField());
+        assertFalse(gdConstantDate.shiftedBy(gdDt1).hasZeroField());
+        assertFalse(gdConstantDate.shiftedBy(gdDt0).shiftedBy(gdDt1).hasZeroField());
 
         // SparseGradient
         final FieldAbsoluteDate<SparseGradient> sgdDate = new FieldAbsoluteDate<>(SparseGradient.createConstant(10.).getField());
-        Assertions.assertTrue(sgdDate.hasZeroField());
+        assertTrue(sgdDate.hasZeroField());
 
         // Complex
         // -------
@@ -447,12 +453,12 @@ public class FieldAbsoluteDateTest {
         
         // Complex with no imaginary part returns true
         final FieldAbsoluteDate<Complex> cxConstantDate = new FieldAbsoluteDate<>(cxField);
-        Assertions.assertTrue(cxConstantDate.hasZeroField());
+        assertTrue(cxConstantDate.hasZeroField());
 
-        Assertions.assertTrue(cxConstantDate.shiftedBy(new Complex(10., 0.)).hasZeroField());                
+        assertTrue(cxConstantDate.shiftedBy(new Complex(10., 0.)).hasZeroField());                
         
         // Complex with imaginary part returns true
-        Assertions.assertFalse(cxConstantDate.shiftedBy(new Complex(-100., 10.)).hasZeroField());
+        assertFalse(cxConstantDate.shiftedBy(new Complex(-100., 10.)).hasZeroField());
         
         // Others → Always return false
         // ----------------------------
@@ -460,66 +466,66 @@ public class FieldAbsoluteDateTest {
         // Binary64
         final Binary64Field b64Field = Binary64Field.getInstance();
         final FieldAbsoluteDate<Binary64> b64Date = new FieldAbsoluteDate<>(b64Field);
-        Assertions.assertFalse(b64Date.hasZeroField());
+        assertFalse(b64Date.hasZeroField());
         
         // Dfp
         final FieldAbsoluteDate<Dfp> dfpDate = new FieldAbsoluteDate<>(new DfpField(10));
-        Assertions.assertFalse(dfpDate.hasZeroField());
+        assertFalse(dfpDate.hasZeroField());
         
         // FieldComplex
         final FieldAbsoluteDate<FieldComplex<Complex>> fcxDate = new FieldAbsoluteDate<>(FieldComplexField.getField(cxField));
-        Assertions.assertFalse(fcxDate.hasZeroField());
+        assertFalse(fcxDate.hasZeroField());
         
         // FieldTuple
         final FieldAbsoluteDate<FieldTuple<DerivativeStructure>> ftpDate = new FieldAbsoluteDate<>(new FieldTuple<>(dsDt0, dsDt1).getField());
-        Assertions.assertFalse(ftpDate.hasZeroField());
+        assertFalse(ftpDate.hasZeroField());
 
         // Tuple
         final FieldAbsoluteDate<Tuple> tpDate = new FieldAbsoluteDate<>(new Tuple(0., 1., 2.).getField());
-        Assertions.assertFalse(tpDate.hasZeroField());
+        assertFalse(tpDate.hasZeroField());
         
         // FieldDerivativeStructure
         final FDSFactory<Binary64> fdsFactory = new FDSFactory<>(b64Field, 3, 1);
         final FieldAbsoluteDate<FieldDerivativeStructure<Binary64>> fdsDate = new FieldAbsoluteDate<>(fdsFactory.constant(1.).getField());
-        Assertions.assertFalse(fdsDate.hasZeroField());
+        assertFalse(fdsDate.hasZeroField());
         
         // FieldGradient
         final FieldAbsoluteDate<FieldGradient<Binary64>> fgdDate =
                         new FieldAbsoluteDate<>(new FieldGradient<Binary64>(fdsFactory.constant(1.)).getField());
-        Assertions.assertFalse(fgdDate.hasZeroField());
+        assertFalse(fgdDate.hasZeroField());
         
         // FieldUnivariateDerivative1
         FieldUnivariateDerivative1<Binary64> fu1 =  
                         new FieldUnivariateDerivative1<>(b64Field.getZero().newInstance(1.),
                                         b64Field.getOne());
         final FieldAbsoluteDate<FieldUnivariateDerivative1<Binary64>> fu1Date = new FieldAbsoluteDate<>(fu1.getField());
-        Assertions.assertFalse(fu1Date.hasZeroField());
+        assertFalse(fu1Date.hasZeroField());
         
         // FieldUnivariateDerivative2
         FieldUnivariateDerivative2<Binary64> fu2 =  
                         new FieldUnivariateDerivative2<>(b64Field.getZero().newInstance(1.),
                                         b64Field.getOne(), b64Field.getZero());
         final FieldAbsoluteDate<FieldUnivariateDerivative2<Binary64>> fu2Date = new FieldAbsoluteDate<>(fu2.getField());
-        Assertions.assertFalse(fu2Date.hasZeroField());
+        assertFalse(fu2Date.hasZeroField());
     }
 
     @Test
-    public void testDurationFromWithTimeUnit() {
+    void testDurationFromWithTimeUnit() {
         doTestDurationFromWithTimeUnit(Binary64Field.getInstance());
     }
 
     @Test
-    public void testConstructWithTimeUnitOffset() {
+    void testConstructWithTimeUnitOffset() {
         doTestConstructWithTimeUnitOffset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testShiftedByWithTimeUnit() {
+    void testShiftedByWithTimeUnit() {
         doTestShiftedByWithTimeUnit(Binary64Field.getInstance());
     }
 
     @Test
-    public void testToStringWithoutUtcOffset() {
+    void testToStringWithoutUtcOffset() {
         doTestToStringWithoutUtcOffset(Binary64Field.getInstance());
     }
 
@@ -537,33 +543,33 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> GPSEp = FieldAbsoluteDate.getGPSEpoch(field);
         FieldAbsoluteDate<T> JTTEP = FieldAbsoluteDate.getJ2000Epoch(field);
 
-        Assertions.assertEquals(-210866760000000l, JuEp.toDate(tt).getTime());
-        Assertions.assertEquals(-3506716800000l, MJuEp.toDate(tt).getTime());
-        Assertions.assertEquals(-631152000000l, FiEp.toDate(tt).getTime());
-        Assertions.assertEquals(-378691200000l, CCSDS.toDate(tai).getTime());
-        Assertions.assertEquals(935280019000l,  GaEp.toDate(tai).getTime());
-        Assertions.assertEquals(315964819000l,  GPSEp.toDate(tai).getTime());
-        Assertions.assertEquals(946728000000l,  JTTEP.toDate(tt).getTime());
+        assertEquals(-210866760000000l, JuEp.toDate(tt).getTime());
+        assertEquals(-3506716800000l, MJuEp.toDate(tt).getTime());
+        assertEquals(-631152000000l, FiEp.toDate(tt).getTime());
+        assertEquals(-378691200000l, CCSDS.toDate(tai).getTime());
+        assertEquals(935280019000l,  GaEp.toDate(tai).getTime());
+        assertEquals(315964819000l,  GPSEp.toDate(tai).getTime());
+        assertEquals(946728000000l,  JTTEP.toDate(tt).getTime());
 
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStandardEpochStrings(final Field<T> field) {
 
-        Assertions.assertEquals("-4712-01-01T12:00:00.000",
+        assertEquals("-4712-01-01T12:00:00.000",
                             FieldAbsoluteDate.getJulianEpoch(field).toString(TimeScalesFactory.getTT()));
-        Assertions.assertEquals("1858-11-17T00:00:00.000",
+        assertEquals("1858-11-17T00:00:00.000",
                             FieldAbsoluteDate.getModifiedJulianEpoch(field).toString(TimeScalesFactory.getTT()));
-        Assertions.assertEquals("1950-01-01T00:00:00.000",
+        assertEquals("1950-01-01T00:00:00.000",
                             FieldAbsoluteDate.getFiftiesEpoch(field).toString(TimeScalesFactory.getTT()));
-        Assertions.assertEquals("1958-01-01T00:00:00.000",
+        assertEquals("1958-01-01T00:00:00.000",
                             FieldAbsoluteDate.getCCSDSEpoch(field).toString(TimeScalesFactory.getTAI()));
-        Assertions.assertEquals("1999-08-21T23:59:47.000",
+        assertEquals("1999-08-21T23:59:47.000",
                             FieldAbsoluteDate.getGalileoEpoch(field).toString(TimeScalesFactory.getUTC()));
-        Assertions.assertEquals("1980-01-06T00:00:00.000",
+        assertEquals("1980-01-06T00:00:00.000",
                             FieldAbsoluteDate.getGPSEpoch(field).toString(TimeScalesFactory.getUTC()));
-        Assertions.assertEquals("2000-01-01T12:00:00.000",
+        assertEquals("2000-01-01T12:00:00.000",
                             FieldAbsoluteDate.getJ2000Epoch(field).toString(TimeScalesFactory.getTT()));
-        Assertions.assertEquals("1970-01-01T00:00:00.000",
+        assertEquals("1970-01-01T00:00:00.000",
                             FieldAbsoluteDate.getJavaEpoch(field).toString(TimeScalesFactory.getUTC()));
     }
 
@@ -573,7 +579,7 @@ public class FieldAbsoluteDateTest {
             FieldAbsoluteDate<T> j200i = FieldAbsoluteDate.createJulianEpoch(field.getZero().add(2000.0+i));
             FieldAbsoluteDate<T> j2000 = FieldAbsoluteDate.getJ2000Epoch(field);
             double expected    = i * Constants.JULIAN_YEAR;
-            Assertions.assertEquals(expected, j200i.durationFrom(j2000).getReal(), 4.0e-15 * expected);
+            assertEquals(expected, j200i.durationFrom(j2000).getReal(), 4.0e-15 * expected);
         }
 
     }
@@ -584,7 +590,7 @@ public class FieldAbsoluteDateTest {
             FieldAbsoluteDate<T> b195i = FieldAbsoluteDate.createBesselianEpoch(field.getZero().add(1950.0 + i));
             FieldAbsoluteDate<T> b1950 = FieldAbsoluteDate.createBesselianEpoch(field.getZero().add(1950.0));
             double expected    = i * Constants.BESSELIAN_YEAR;
-            Assertions.assertEquals(expected, b195i.durationFrom(b1950).getReal(), 4.0e-15 * expected);
+            assertEquals(expected, b195i.durationFrom(b1950).getReal(), 4.0e-15 * expected);
         }
 
     }
@@ -621,51 +627,51 @@ public class FieldAbsoluteDateTest {
     private <T extends CalculusFieldElement<T>> void checkEpochs(final Field<T> field, final double besselianEpoch, final double julianEpoch, final double epsilon) {
         final FieldAbsoluteDate<T> b = FieldAbsoluteDate.createBesselianEpoch(field.getZero().add(besselianEpoch));
         final FieldAbsoluteDate<T> j = FieldAbsoluteDate.createJulianEpoch(field.getZero().add(julianEpoch));
-        Assertions.assertEquals(0.0, b.durationFrom(j).getReal(), epsilon);
+        assertEquals(0.0, b.durationFrom(j).getReal(), epsilon);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestParse(final Field<T> field) {
 
-        Assertions.assertEquals(FieldAbsoluteDate.getModifiedJulianEpoch(field),
+        assertEquals(FieldAbsoluteDate.getModifiedJulianEpoch(field),
                             new FieldAbsoluteDate<>(field, "1858-W46-3", TimeScalesFactory.getTT()));
-        Assertions.assertEquals(FieldAbsoluteDate.getJulianEpoch(field),
+        assertEquals(FieldAbsoluteDate.getJulianEpoch(field),
                             new FieldAbsoluteDate<>(field, "-4712-01-01T12:00:00.000", TimeScalesFactory.getTT()));
-        Assertions.assertEquals(FieldAbsoluteDate.getFiftiesEpoch(field),
+        assertEquals(FieldAbsoluteDate.getFiftiesEpoch(field),
                             new FieldAbsoluteDate<>(field, "1950-01-01", TimeScalesFactory.getTT()));
-        Assertions.assertEquals(FieldAbsoluteDate.getCCSDSEpoch(field),
+        assertEquals(FieldAbsoluteDate.getCCSDSEpoch(field),
                             new FieldAbsoluteDate<>(field, "1958-001", TimeScalesFactory.getTAI()));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestLocalTimeParsing(final Field<T> field) {
         TimeScale utc = TimeScalesFactory.getUTC();
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, "2011-12-31T23:00:00",       utc),
+        assertEquals(new FieldAbsoluteDate<>(field, "2011-12-31T23:00:00",       utc),
                             new FieldAbsoluteDate<>(field, "2012-01-01T03:30:00+04:30", utc));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, "2011-12-31T23:00:00",       utc),
+        assertEquals(new FieldAbsoluteDate<>(field, "2011-12-31T23:00:00",       utc),
                             new FieldAbsoluteDate<>(field, "2012-01-01T03:30:00+0430",  utc));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, "2011-12-31T23:30:00",       utc),
+        assertEquals(new FieldAbsoluteDate<>(field, "2011-12-31T23:30:00",       utc),
                             new FieldAbsoluteDate<>(field, "2012-01-01T03:30:00+04",    utc));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, "2012-01-01T05:17:00",       utc),
+        assertEquals(new FieldAbsoluteDate<>(field, "2012-01-01T05:17:00",       utc),
                             new FieldAbsoluteDate<>(field, "2011-12-31T22:17:00-07:00", utc));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, "2012-01-01T05:17:00",       utc),
+        assertEquals(new FieldAbsoluteDate<>(field, "2012-01-01T05:17:00",       utc),
                             new FieldAbsoluteDate<>(field, "2011-12-31T22:17:00-0700",  utc));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, "2012-01-01T05:17:00",       utc),
+        assertEquals(new FieldAbsoluteDate<>(field, "2012-01-01T05:17:00",       utc),
                             new FieldAbsoluteDate<>(field, "2011-12-31T22:17:00-07",    utc));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestTimeZoneDisplay(final Field<T> field) {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, "2000-01-01T01:01:01.000", utc);
-        Assertions.assertEquals("2000-01-01T01:01:01.000Z",      date.toString());
-        Assertions.assertEquals("2000-01-01T11:01:01.000+10:00", date.toString( 600));
-        Assertions.assertEquals("1999-12-31T23:01:01.000-02:00", date.toString(-120));
+        assertEquals("2000-01-01T01:01:01.000Z",      date.toString());
+        assertEquals("2000-01-01T11:01:01.000+10:00", date.toString( 600));
+        assertEquals("1999-12-31T23:01:01.000-02:00", date.toString(-120));
 
         // winter time, Europe is one hour ahead of UTC
         final TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
-        Assertions.assertEquals("2001-01-22T11:30:00.000+01:00",
+        assertEquals("2001-01-22T11:30:00.000+01:00",
                             new FieldAbsoluteDate<>(field, "2001-01-22T10:30:00", utc).toString(tz));
 
         // summer time, Europe is two hours ahead of UTC
-        Assertions.assertEquals("2001-06-23T11:30:00.000+02:00",
+        assertEquals("2001-06-23T11:30:00.000+02:00",
                             new FieldAbsoluteDate<>(field, "2001-06-23T09:30:00", utc).toString(tz));
 
     }
@@ -675,20 +681,20 @@ public class FieldAbsoluteDateTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> beforeLeap = new FieldAbsoluteDate<>(field, "2012-06-30T23:59:59.8", utc);
         FieldAbsoluteDate<T> inLeap     = new FieldAbsoluteDate<>(field, "2012-06-30T23:59:60.5", utc);
-        Assertions.assertEquals(0.7, inLeap.durationFrom(beforeLeap).getReal(), 1.0e-12);
+        assertEquals(0.7, inLeap.durationFrom(beforeLeap).getReal(), 1.0e-12);
        for (int minutesFromUTC = -1500; minutesFromUTC < -1499; ++minutesFromUTC) {
             DateTimeComponents dtcBeforeLeap = beforeLeap.getComponents(minutesFromUTC);
             DateTimeComponents dtcInsideLeap = inLeap.getComponents(minutesFromUTC);
 
 
-            Assertions.assertEquals(dtcBeforeLeap.getDate(), dtcInsideLeap.getDate());
+            assertEquals(dtcBeforeLeap.getDate(), dtcInsideLeap.getDate());
 
-            Assertions.assertEquals(dtcBeforeLeap.getTime().getHour(), dtcInsideLeap.getTime().getHour());
-            Assertions.assertEquals(dtcBeforeLeap.getTime().getMinute(), dtcInsideLeap.getTime().getMinute());
-            Assertions.assertEquals(minutesFromUTC, dtcBeforeLeap.getTime().getMinutesFromUTC());
-            Assertions.assertEquals(minutesFromUTC, dtcInsideLeap.getTime().getMinutesFromUTC());
-            Assertions.assertEquals(59.8, dtcBeforeLeap.getTime().getSecond(), 1.0e-10);
-            Assertions.assertEquals(60.5, dtcInsideLeap.getTime().getSecond(), 1.0e-10);
+            assertEquals(dtcBeforeLeap.getTime().getHour(), dtcInsideLeap.getTime().getHour());
+            assertEquals(dtcBeforeLeap.getTime().getMinute(), dtcInsideLeap.getTime().getMinute());
+            assertEquals(minutesFromUTC, dtcBeforeLeap.getTime().getMinutesFromUTC());
+            assertEquals(minutesFromUTC, dtcInsideLeap.getTime().getMinutesFromUTC());
+            assertEquals(59.8, dtcBeforeLeap.getTime().getSecond(), 1.0e-10);
+            assertEquals(60.5, dtcInsideLeap.getTime().getSecond(), 1.0e-10);
         }
 
     }
@@ -698,16 +704,16 @@ public class FieldAbsoluteDateTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         final TimeZone tz = TimeZone.getTimeZone("Europe/Paris");
         FieldAbsoluteDate<T> localBeforeMidnight = new FieldAbsoluteDate<>(field, "2012-06-30T21:59:59.800", utc);
-        Assertions.assertEquals("2012-06-30T23:59:59.800+02:00",
+        assertEquals("2012-06-30T23:59:59.800+02:00",
                             localBeforeMidnight.toString(tz));
-        Assertions.assertEquals("2012-07-01T00:00:00.800+02:00",
+        assertEquals("2012-07-01T00:00:00.800+02:00",
                             localBeforeMidnight.shiftedBy(1.0).toString(tz));
 
         FieldAbsoluteDate<T> beforeLeap = new FieldAbsoluteDate<>(field, "2012-06-30T23:59:59.8", utc);
         FieldAbsoluteDate<T> inLeap     = new FieldAbsoluteDate<>(field, "2012-06-30T23:59:60.5", utc);
-        Assertions.assertEquals(0.7, inLeap.durationFrom(beforeLeap).getReal(), 1.0e-12);
-        Assertions.assertEquals("2012-07-01T01:59:59.800+02:00", beforeLeap.toString(tz));
-        Assertions.assertEquals("2012-07-01T01:59:60.500+02:00", inLeap.toString(tz));
+        assertEquals(0.7, inLeap.durationFrom(beforeLeap).getReal(), 1.0e-12);
+        assertEquals("2012-07-01T01:59:59.800+02:00", beforeLeap.toString(tz));
+        assertEquals("2012-07-01T01:59:60.500+02:00", inLeap.toString(tz));
 
     }
 
@@ -715,31 +721,31 @@ public class FieldAbsoluteDateTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> beforeLeap = new FieldAbsoluteDate<>(field, "2012-06-30T23:59:59.8", utc);
         FieldAbsoluteDate<T> inLeap     = new FieldAbsoluteDate<>(field, "2012-06-30T23:59:60.5", utc);
-        Assertions.assertEquals(0.7, inLeap.durationFrom(beforeLeap).getReal(), 1.0e-12);
-        Assertions.assertEquals("2012-06-30T23:59:60.500", inLeap.toString(utc));
+        assertEquals(0.7, inLeap.durationFrom(beforeLeap).getReal(), 1.0e-12);
+        assertEquals("2012-06-30T23:59:60.500", inLeap.toString(utc));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestOutput(final Field<T> field) {
         TimeScale tt = TimeScalesFactory.getTT();
-        Assertions.assertEquals("1950-01-01T01:01:01.000",
+        assertEquals("1950-01-01T01:01:01.000",
                             FieldAbsoluteDate.getFiftiesEpoch(field).shiftedBy(3661.0).toString(tt));
-        Assertions.assertEquals("2000-01-01T13:01:01.000",
+        assertEquals("2000-01-01T13:01:01.000",
                             FieldAbsoluteDate.getJ2000Epoch(field).shiftedBy(3661.0).toString(tt));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestJ2000(final Field<T> field) {
         FieldAbsoluteDate<T> FAD = new FieldAbsoluteDate<>(field);
-        Assertions.assertEquals("2000-01-01T12:00:00.000",
+        assertEquals("2000-01-01T12:00:00.000",
                             FAD.toString(TimeScalesFactory.getTT()));
-        Assertions.assertEquals("2000-01-01T11:59:27.816",
+        assertEquals("2000-01-01T11:59:27.816",
                             FAD.toString(TimeScalesFactory.getTAI()));
-        Assertions.assertEquals("2000-01-01T11:58:55.816",
+        assertEquals("2000-01-01T11:58:55.816",
                             FAD.toString(utc));
-        Assertions.assertEquals("2000-01-01T12:00:00.000",
+        assertEquals("2000-01-01T12:00:00.000",
                             FieldAbsoluteDate.getJ2000Epoch(field).toString(TimeScalesFactory.getTT()));
-        Assertions.assertEquals("2000-01-01T11:59:27.816",
+        assertEquals("2000-01-01T11:59:27.816",
                             FieldAbsoluteDate.getJ2000Epoch(field).toString(TimeScalesFactory.getTAI()));
-        Assertions.assertEquals("2000-01-01T11:58:55.816",
+        assertEquals("2000-01-01T11:58:55.816",
                             FieldAbsoluteDate.getJ2000Epoch(field).toString(utc));
     }
 
@@ -747,14 +753,14 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> d =
             new FieldAbsoluteDate<>(field, new DateComponents(2000, 01, 01), new TimeComponents(11, 59, 27.816),
                              TimeScalesFactory.getTAI());
-        Assertions.assertEquals(0, d.durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), 1.0e-10);
+        assertEquals(0, d.durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal(), 1.0e-10);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestScalesOffset(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2006, 02, 24),
                                                             new TimeComponents(15, 38, 00),
                                                             utc);
-        Assertions.assertEquals(33,
+        assertEquals(33,
                             date.timeScalesOffset(TimeScalesFactory.getTAI(), utc).getReal(),
                             1.0e-10);
     }
@@ -763,39 +769,39 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new DateComponents(2002, 01, 01),
                                                             new TimeComponents(00, 00, 01),
                                                             utc);
-        Assertions.assertEquals("2002-01-01T00:00:01.000Z", date.toString());
+        assertEquals("2002-01-01T00:00:01.000Z", date.toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTest1970(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, new Date(0l), utc);
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", date.toString());
+        assertEquals("1970-01-01T00:00:00.000Z", date.toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTest1970Instant(final Field<T> field) {
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, utc).toString());
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), utc).toString());
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, (UTCScale) utc).toString());
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), (UTCScale) utc).toString());
+        assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, utc).toString());
+        assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), utc).toString());
+        assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, (UTCScale) utc).toString());
+        assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), (UTCScale) utc).toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInstantAccuracy(final Field<T> field) {
-        Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), utc).toString());
-        Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), utc).toString());
-        Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), (UTCScale) utc).toString());
-        Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), (UTCScale) utc).toString());
+        assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), utc).toString());
+        assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), utc).toString());
+        assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), (UTCScale) utc).toString());
+        assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), (UTCScale) utc).toString());
     }
 
     public <T extends CalculusFieldElement<T>> void doTestToInstant(final Field<T> field) {
-        Assertions.assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant());
-        Assertions.assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+        assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant());
+        assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
 
         Instant expectedInstant = Instant.ofEpochSecond(519000, 123456789);
-        Assertions.assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant());
-        Assertions.assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+        assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant());
+        assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
 
-        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+        assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
             new FieldAbsoluteDate(field,"2024-05-15T09:32:36.123456789Z", utc).toInstant());
-        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+        assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
             new FieldAbsoluteDate(field, "2024-05-15T09:32:36.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
 
     }
@@ -814,12 +820,12 @@ public class FieldAbsoluteDateTest {
         // 13 seconds offset between GPS time and UTC in 2005
         long noLeapGap = ((9347 * 24 + 16) * 60 + 31) * 60 + 17;
         long realGap   = (long) date1.durationFrom(dateRef).getReal();
-        Assertions.assertEquals(13l, realGap - noLeapGap);
+        assertEquals(13l, realGap - noLeapGap);
 
         // 14 seconds offset between GPS time and UTC in 2006
         noLeapGap = ((9712 * 24 + 16) * 60 + 31) * 60 + 17;
         realGap   = (long) date2.durationFrom(dateRef).getReal();
-        Assertions.assertEquals(14l, realGap - noLeapGap);
+        assertEquals(14l, realGap - noLeapGap);
 
     }
 
@@ -828,22 +834,22 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> ref  = new FieldAbsoluteDate<>(field, new DateComponents(2006, 8, 9),
                                                             new TimeComponents(16, 31, 03),
                                                             utc);
-        Assertions.assertEquals(0, date.durationFrom(ref).getReal(), 1.0e-15);
+        assertEquals(0, date.durationFrom(ref).getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestMJDDate(final Field<T> field) {
         FieldAbsoluteDate<T> dateA = FieldAbsoluteDate.createMJDDate(51544, field.getZero().add(0.5 * Constants.JULIAN_DAY),
                                                                      TimeScalesFactory.getTT());
-        Assertions.assertEquals(0.0, FieldAbsoluteDate.getJ2000Epoch(field).durationFrom(dateA).getReal(), 1.0e-15);
+        assertEquals(0.0, FieldAbsoluteDate.getJ2000Epoch(field).durationFrom(dateA).getReal(), 1.0e-15);
         FieldAbsoluteDate<T> dateB = FieldAbsoluteDate.createMJDDate(53774, field.getZero(), TimeScalesFactory.getUTC());
         FieldAbsoluteDate<T> dateC = new FieldAbsoluteDate<>(field, "2006-02-08T00:00:00", TimeScalesFactory.getUTC());
-        Assertions.assertEquals(0.0, dateC.durationFrom(dateB).getReal(), 1.0e-15);
+        assertEquals(0.0, dateC.durationFrom(dateB).getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestJDDate(final Field<T> field) {
         final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createJDDate(2400000, field.getZero().add(0.5 * Constants.JULIAN_DAY),
                                                                          TimeScalesFactory.getTT());
-        Assertions.assertEquals(0.0, FieldAbsoluteDate.getModifiedJulianEpoch(field).durationFrom(date).getReal(), 1.0e-15);
+        assertEquals(0.0, FieldAbsoluteDate.getModifiedJulianEpoch(field).durationFrom(date).getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestOffsets(final Field<T> field) {
@@ -852,14 +858,14 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> leapEndUTC   = new FieldAbsoluteDate<>(field, 1977,  1,  1,  0,  0,  0, utc);
         FieldAbsoluteDate<T> leapStartTAI = new FieldAbsoluteDate<>(field, 1977,  1,  1,  0,  0, 14, tai);
         FieldAbsoluteDate<T> leapEndTAI   = new FieldAbsoluteDate<>(field, 1977,  1,  1,  0,  0, 16, tai);
-        Assertions.assertEquals(leapStartUTC, leapStartTAI);
-        Assertions.assertEquals(leapEndUTC, leapEndTAI);
-        Assertions.assertEquals(1, leapEndUTC.offsetFrom(leapStartUTC, utc).getReal(), 1.0e-10);
-        Assertions.assertEquals(1, leapEndTAI.offsetFrom(leapStartTAI, utc).getReal(), 1.0e-10);
-        Assertions.assertEquals(2, leapEndUTC.offsetFrom(leapStartUTC, tai).getReal(), 1.0e-10);
-        Assertions.assertEquals(2, leapEndTAI.offsetFrom(leapStartTAI, tai).getReal(), 1.0e-10);
-        Assertions.assertEquals(2, leapEndUTC.durationFrom(leapStartUTC).getReal(),    1.0e-10);
-        Assertions.assertEquals(2, leapEndTAI.durationFrom(leapStartTAI).getReal(),    1.0e-10);
+        assertEquals(leapStartUTC, leapStartTAI);
+        assertEquals(leapEndUTC, leapEndTAI);
+        assertEquals(1, leapEndUTC.offsetFrom(leapStartUTC, utc).getReal(), 1.0e-10);
+        assertEquals(1, leapEndTAI.offsetFrom(leapStartTAI, utc).getReal(), 1.0e-10);
+        assertEquals(2, leapEndUTC.offsetFrom(leapStartUTC, tai).getReal(), 1.0e-10);
+        assertEquals(2, leapEndTAI.offsetFrom(leapStartTAI, tai).getReal(), 1.0e-10);
+        assertEquals(2, leapEndUTC.durationFrom(leapStartUTC).getReal(),    1.0e-10);
+        assertEquals(2, leapEndTAI.durationFrom(leapStartTAI).getReal(),    1.0e-10);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestBeforeAndAfterLeap(final Field<T> field) {
@@ -873,13 +879,13 @@ public class FieldAbsoluteDateTest {
             FieldAbsoluteDate<T> d3 = new FieldAbsoluteDate<>(leapStart, dt, utc);
             FieldAbsoluteDate<T> d4 = new FieldAbsoluteDate<>(leapEnd,   dt, tai);
             FieldAbsoluteDate<T> d5 = new FieldAbsoluteDate<>(leapEnd,   dt, utc);
-            Assertions.assertTrue(FastMath.abs(d1.durationFrom(d2).getReal()) < 1.0e-10);
+            assertTrue(FastMath.abs(d1.durationFrom(d2).getReal()) < 1.0e-10);
             if (dt < 0) {
-                Assertions.assertTrue(FastMath.abs(d2.durationFrom(d3).getReal()) < 1.0e-10);
-                Assertions.assertTrue(d4.durationFrom(d5).getReal() > (1.0 - 1.0e-10));
+                assertTrue(FastMath.abs(d2.durationFrom(d3).getReal()) < 1.0e-10);
+                assertTrue(d4.durationFrom(d5).getReal() > (1.0 - 1.0e-10));
             } else {
-                Assertions.assertTrue(d2.durationFrom(d3).getReal() < (-1.0 + 1.0e-10));
-                Assertions.assertTrue(FastMath.abs(d4.durationFrom(d5).getReal()) < 1.0e-10);
+                assertTrue(d2.durationFrom(d3).getReal() < (-1.0 + 1.0e-10));
+                assertTrue(FastMath.abs(d4.durationFrom(d5).getReal()) < 1.0e-10);
             }
         }
     }
@@ -889,9 +895,9 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> leapStart = new FieldAbsoluteDate<>(field, 1977,  1,  1,  0,  0, 14, tai);
         for (int i = -10; i < 10; ++i) {
             final double dt = 1.1 * (2 * i - 1);
-            Assertions.assertEquals(dt, new FieldAbsoluteDate<>(leapStart, dt, utc).offsetFrom(leapStart, utc).getReal(), 1.0e-10);
-            Assertions.assertEquals(dt, new FieldAbsoluteDate<>(leapStart, dt, tai).offsetFrom(leapStart, tai).getReal(), 1.0e-10);
-            Assertions.assertEquals(dt, leapStart.shiftedBy(dt).durationFrom(leapStart).getReal(), 1.0e-10);
+            assertEquals(dt, new FieldAbsoluteDate<>(leapStart, dt, utc).offsetFrom(leapStart, utc).getReal(), 1.0e-10);
+            assertEquals(dt, new FieldAbsoluteDate<>(leapStart, dt, tai).offsetFrom(leapStart, tai).getReal(), 1.0e-10);
+            assertEquals(dt, leapStart.shiftedBy(dt).durationFrom(leapStart).getReal(), 1.0e-10);
         }
     }
 
@@ -904,17 +910,17 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> d2 = new FieldAbsoluteDate<>(field, new DateComponents(2006, 2, 25),
                                                           new TimeComponents(17, 10, 0),
                                                           utc).shiftedBy(34);
-        Assertions.assertTrue(d1.equals(d2));
-        Assertions.assertFalse(d1.equals(this));
+        assertEquals(d1, d2);
+        assertNotEquals(d1, this);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsEqualTo(final Field<T> field) {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
-        Assertions.assertTrue(present.isEqualTo(dates.present));
-        Assertions.assertTrue(present.isEqualTo(dates.presentToo));
-        Assertions.assertFalse(present.isEqualTo(dates.past));
-        Assertions.assertFalse(present.isEqualTo(dates.future));
+        assertTrue(present.isEqualTo(dates.present));
+        assertTrue(present.isEqualTo(dates.presentToo));
+        assertFalse(present.isEqualTo(dates.past));
+        assertFalse(present.isEqualTo(dates.future));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsCloseTo(final Field<T> field) {
@@ -922,79 +928,79 @@ public class FieldAbsoluteDateTest {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
         FieldTimeStamped<T> closeToPresent = new AnyFieldTimeStamped<>(field, dates.presentDate.shiftedBy(5));
-        Assertions.assertTrue(present.isCloseTo(present, tolerance));
-        Assertions.assertTrue(present.isCloseTo(dates.presentToo, tolerance));
-        Assertions.assertTrue(present.isCloseTo(closeToPresent, tolerance));
-        Assertions.assertFalse(present.isCloseTo(dates.past, tolerance));
-        Assertions.assertFalse(present.isCloseTo(dates.future, tolerance));
+        assertTrue(present.isCloseTo(present, tolerance));
+        assertTrue(present.isCloseTo(dates.presentToo, tolerance));
+        assertTrue(present.isCloseTo(closeToPresent, tolerance));
+        assertFalse(present.isCloseTo(dates.past, tolerance));
+        assertFalse(present.isCloseTo(dates.future, tolerance));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsBefore(final Field<T> field) {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
-        Assertions.assertFalse(present.isBefore(dates.past));
-        Assertions.assertFalse(present.isBefore(present));
-        Assertions.assertFalse(present.isBefore(dates.presentToo));
-        Assertions.assertTrue(present.isBefore(dates.future));
+        assertFalse(present.isBefore(dates.past));
+        assertFalse(present.isBefore(present));
+        assertFalse(present.isBefore(dates.presentToo));
+        assertTrue(present.isBefore(dates.future));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsAfter(final Field<T> field) {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
-        Assertions.assertTrue(present.isAfter(dates.past));
-        Assertions.assertFalse(present.isAfter(present));
-        Assertions.assertFalse(present.isAfter(dates.presentToo));
-        Assertions.assertFalse(present.isAfter(dates.future));
+        assertTrue(present.isAfter(dates.past));
+        assertFalse(present.isAfter(present));
+        assertFalse(present.isAfter(dates.presentToo));
+        assertFalse(present.isAfter(dates.future));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsBeforeOrEqualTo(final Field<T> field) {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
-        Assertions.assertFalse(present.isBeforeOrEqualTo(dates.past));
-        Assertions.assertTrue(present.isBeforeOrEqualTo(present));
-        Assertions.assertTrue(present.isBeforeOrEqualTo(dates.presentToo));
-        Assertions.assertTrue(present.isBeforeOrEqualTo(dates.future));
+        assertFalse(present.isBeforeOrEqualTo(dates.past));
+        assertTrue(present.isBeforeOrEqualTo(present));
+        assertTrue(present.isBeforeOrEqualTo(dates.presentToo));
+        assertTrue(present.isBeforeOrEqualTo(dates.future));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsAfterOrEqualTo(final Field<T> field) {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
-        Assertions.assertTrue(present.isAfterOrEqualTo(dates.past));
-        Assertions.assertTrue(present.isAfterOrEqualTo(present));
-        Assertions.assertTrue(present.isAfterOrEqualTo(dates.presentToo));
-        Assertions.assertFalse(present.isAfterOrEqualTo(dates.future));
+        assertTrue(present.isAfterOrEqualTo(dates.past));
+        assertTrue(present.isAfterOrEqualTo(present));
+        assertTrue(present.isAfterOrEqualTo(dates.presentToo));
+        assertFalse(present.isAfterOrEqualTo(dates.future));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsBetween(final Field<T> field) {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
-        Assertions.assertTrue(present.isBetween(dates.past, dates.future));
-        Assertions.assertTrue(present.isBetween(dates.future, dates.past));
-        Assertions.assertFalse(dates.past.getDate().isBetween(present, dates.future));
-        Assertions.assertFalse(dates.past.getDate().isBetween(dates.future, present));
-        Assertions.assertFalse(dates.future.getDate().isBetween(dates.past, present));
-        Assertions.assertFalse(dates.future.getDate().isBetween(present, dates.past));
-        Assertions.assertFalse(present.isBetween(present, dates.future));
-        Assertions.assertFalse(present.isBetween(dates.past, present));
-        Assertions.assertFalse(present.isBetween(dates.past, dates.past));
-        Assertions.assertFalse(present.isBetween(present, present));
-        Assertions.assertFalse(present.isBetween(present, dates.presentToo));
+        assertTrue(present.isBetween(dates.past, dates.future));
+        assertTrue(present.isBetween(dates.future, dates.past));
+        assertFalse(dates.past.getDate().isBetween(present, dates.future));
+        assertFalse(dates.past.getDate().isBetween(dates.future, present));
+        assertFalse(dates.future.getDate().isBetween(dates.past, present));
+        assertFalse(dates.future.getDate().isBetween(present, dates.past));
+        assertFalse(present.isBetween(present, dates.future));
+        assertFalse(present.isBetween(dates.past, present));
+        assertFalse(present.isBetween(dates.past, dates.past));
+        assertFalse(present.isBetween(present, present));
+        assertFalse(present.isBetween(present, dates.presentToo));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsBetweenOrEqualTo(final Field<T> field) {
         TestDates<T> dates = new TestDates<>(field);
         FieldAbsoluteDate<T> present = dates.getPresentFieldAbsoluteDate();
-        Assertions.assertTrue(present.isBetweenOrEqualTo(dates.past, dates.future));
-        Assertions.assertTrue(present.isBetweenOrEqualTo(dates.future, dates.past));
-        Assertions.assertFalse(dates.past.getDate().isBetweenOrEqualTo(present, dates.future));
-        Assertions.assertFalse(dates.past.getDate().isBetweenOrEqualTo(dates.future, present));
-        Assertions.assertFalse(dates.future.getDate().isBetweenOrEqualTo(dates.past, present));
-        Assertions.assertFalse(dates.future.getDate().isBetweenOrEqualTo(present, dates.past));
-        Assertions.assertTrue(present.isBetweenOrEqualTo(present, dates.future));
-        Assertions.assertTrue(present.isBetweenOrEqualTo(dates.past, present));
-        Assertions.assertFalse(present.isBetweenOrEqualTo(dates.past, dates.past));
-        Assertions.assertTrue(present.isBetweenOrEqualTo(present, present));
-        Assertions.assertTrue(present.isBetweenOrEqualTo(present, dates.presentToo));
+        assertTrue(present.isBetweenOrEqualTo(dates.past, dates.future));
+        assertTrue(present.isBetweenOrEqualTo(dates.future, dates.past));
+        assertFalse(dates.past.getDate().isBetweenOrEqualTo(present, dates.future));
+        assertFalse(dates.past.getDate().isBetweenOrEqualTo(dates.future, present));
+        assertFalse(dates.future.getDate().isBetweenOrEqualTo(dates.past, present));
+        assertFalse(dates.future.getDate().isBetweenOrEqualTo(present, dates.past));
+        assertTrue(present.isBetweenOrEqualTo(present, dates.future));
+        assertTrue(present.isBetweenOrEqualTo(dates.past, present));
+        assertFalse(present.isBetweenOrEqualTo(dates.past, dates.past));
+        assertTrue(present.isBetweenOrEqualTo(present, present));
+        assertTrue(present.isBetweenOrEqualTo(present, dates.presentToo));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestComponents(final Field<T> field) {
@@ -1011,11 +1017,11 @@ public class FieldAbsoluteDateTest {
             for (int j = 0; j < scales.length; ++j) {
                 DateTimeComponents pair = in.getComponents(scales[j]);
                 if (i == j) {
-                    Assertions.assertEquals(date, pair.getDate());
-                    Assertions.assertEquals(time, pair.getTime());
+                    assertEquals(date, pair.getDate());
+                    assertEquals(time, pair.getTime());
                 } else {
-                    Assertions.assertNotSame(date, pair.getDate());
-                    Assertions.assertNotSame(time, pair.getTime());
+                    assertNotSame(date, pair.getDate());
+                    assertNotSame(time, pair.getTime());
                 }
             }
         }
@@ -1023,9 +1029,9 @@ public class FieldAbsoluteDateTest {
 
     private <T extends CalculusFieldElement<T>> void doTestMonth(final Field<T> field) {
         TimeScale utc = TimeScalesFactory.getUTC();
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, 2011, 2, 23, utc),
+        assertEquals(new FieldAbsoluteDate<>(field, 2011, 2, 23, utc),
                             new FieldAbsoluteDate<>(field, 2011, Month.FEBRUARY, 23, utc));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, 2011, 2, 23, 1, 2, 3.4, utc),
+        assertEquals(new FieldAbsoluteDate<>(field, 2011, 2, 23, 1, 2, 3.4, utc),
                             new FieldAbsoluteDate<>(field, 2011, Month.FEBRUARY, 23, 1, 2, 3.4, utc));
     }
 
@@ -1039,11 +1045,11 @@ public class FieldAbsoluteDateTest {
                 // using CCSDS reference epoch
                 FieldAbsoluteDate<T> ccsds1 =
                                 FieldAbsoluteDate.parseCCSDSUnsegmentedTimeCode(field, (byte) preamble, (byte) 0x0, timeCCSDSEpoch, null);
-                Assertions.assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
+                assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
             } else {
                 try {
                     FieldAbsoluteDate.parseCCSDSUnsegmentedTimeCode(field, (byte) preamble, (byte) 0x0, timeCCSDSEpoch, null);
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException iae) {
                     // expected
                 }
@@ -1055,7 +1061,7 @@ public class FieldAbsoluteDateTest {
         byte[] timeJ2000Epoch = new byte[] { 0x04, 0x7E, -0x0B, -0x10, -0x07, 0x16, -0x79 };
         try {
             FieldAbsoluteDate.parseCCSDSUnsegmentedTimeCode(field, (byte) 0x2F, (byte) 0x0, timeJ2000Epoch, null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException iae) {
             // expected
         }
@@ -1064,7 +1070,7 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> ccsds3 =
                         FieldAbsoluteDate.parseCCSDSUnsegmentedTimeCode(field, (byte) 0x2F, (byte) 0x0, timeJ2000Epoch,
                                                                         FieldAbsoluteDate.getJ2000Epoch(field));
-        Assertions.assertEquals(0, ccsds3.durationFrom(reference).getReal(), lsb / 2);
+        assertEquals(0, ccsds3.durationFrom(reference).getReal(), lsb / 2);
 
     }
 
@@ -1088,7 +1094,7 @@ public class FieldAbsoluteDateTest {
         byte preamble2 = (byte) (coarseLength2 | fineLength2);
         FieldAbsoluteDate<T> ccsds1 =
                         FieldAbsoluteDate.parseCCSDSUnsegmentedTimeCode(field, preamble1, preamble2, timeCCSDSEpoch, null);
-        Assertions.assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
+        assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
 
     }
 
@@ -1103,11 +1109,11 @@ public class FieldAbsoluteDateTest {
 
                 FieldAbsoluteDate<T> ccsds1 =
                                 FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) preamble, timeCCSDSEpoch, null);
-                Assertions.assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
+                assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
             } else {
                 try {
                     FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) preamble, timeCCSDSEpoch, null);
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException iae) {
                     // expected
                 }
@@ -1119,7 +1125,7 @@ public class FieldAbsoluteDateTest {
         byte[] timeJ2000Epoch = new byte[] { 0x03, 0x69, 0x02, -0x4D, 0x2C, -0x6B, 0x00, -0x44, 0x61, 0x4E };
         try {
             FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) 0x4A, timeJ2000Epoch, null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException iae) {
             // expected
         }
@@ -1127,13 +1133,13 @@ public class FieldAbsoluteDateTest {
         // using J2000.0 epoch
         FieldAbsoluteDate<T> ccsds3 =
                         FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) 0x4A, timeJ2000Epoch, DateComponents.J2000_EPOCH);
-        Assertions.assertEquals(0, ccsds3.durationFrom(reference).getReal(), lsb / 2);
+        assertEquals(0, ccsds3.durationFrom(reference).getReal(), lsb / 2);
 
         // limit to microsecond
         byte[] timeMicrosecond = new byte[] { 0x03, 0x69, 0x02, -0x4D, 0x2C, -0x6B, 0x00, 0x0C };
         FieldAbsoluteDate<T> ccsds4 =
                         FieldAbsoluteDate.parseCCSDSDaySegmentedTimeCode(field, (byte) 0x49, timeMicrosecond, DateComponents.J2000_EPOCH);
-        Assertions.assertEquals(-0.345678e-6, ccsds4.durationFrom(reference).getReal(), lsb / 2);
+        assertEquals(-0.345678e-6, ccsds4.durationFrom(reference).getReal(), lsb / 2);
 
     }
 
@@ -1148,17 +1154,17 @@ public class FieldAbsoluteDateTest {
             if (preamble == 0x56) {
                 FieldAbsoluteDate<T> ccsds1 =
                     FAD.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeMonthDay);
-                Assertions.assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
+                assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
             } else {
                 try {
                     FAD.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeMonthDay);
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException iae) {
                     // expected
                 } catch (IllegalArgumentException iae) {
                     // should happen when preamble specifies day of year variation
                     // since there is no day 1303 (= 5 * 256 + 23) in any year ...
-                    Assertions.assertEquals(preamble & 0x08, 0x08);
+                    assertEquals(0x08, preamble & 0x08);
                 }
 
             }
@@ -1170,17 +1176,17 @@ public class FieldAbsoluteDateTest {
             if (preamble == 0x5E) {
                 FieldAbsoluteDate<T> ccsds1 =
                     FAD.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeDay);
-                Assertions.assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
+                assertEquals(0, ccsds1.durationFrom(reference).getReal(), lsb / 2);
             } else {
                 try {
                     FAD.parseCCSDSCalendarSegmentedTimeCode((byte) preamble, timeDay);
-                    Assertions.fail("an exception should have been thrown");
+                    fail("an exception should have been thrown");
                 } catch (OrekitException iae) {
                     // expected
                 } catch (IllegalArgumentException iae) {
                     // should happen when preamble specifies month of year / day of month variation
                     // since there is no month 0 in any year ...
-                    Assertions.assertEquals(preamble & 0x08, 0x00);
+                    assertEquals(0x00, preamble & 0x08);
                 }
 
             }
@@ -1190,25 +1196,25 @@ public class FieldAbsoluteDateTest {
         byte[] timeMicrosecond = new byte[] { 0x07, -0x2E, 0x00, -0x71, 0x0C, 0x22, 0x38, 0x4E, 0x5A, 0x0C };
         FieldAbsoluteDate<T> ccsds4 =
             FAD.parseCCSDSCalendarSegmentedTimeCode((byte) 0x5B, timeMicrosecond);
-        Assertions.assertEquals(-0.345678e-6, ccsds4.durationFrom(reference).getReal(), lsb / 2);
+        assertEquals(-0.345678e-6, ccsds4.durationFrom(reference).getReal(), lsb / 2);
 
     }
 
     private <T extends CalculusFieldElement<T>> void doTestExpandedConstructors(final Field<T> field) {
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 05, 28),
+        assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 05, 28),
                                                     new TimeComponents(15, 30, 0),
                                                     TimeScalesFactory.getUTC()),
                      new FieldAbsoluteDate<>(field, 2002, 05, 28, 15, 30, 0, TimeScalesFactory.getUTC()));
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 05, 28), TimeComponents.H00,
+        assertEquals(new FieldAbsoluteDate<>(field, new DateComponents(2002, 05, 28), TimeComponents.H00,
                                                     TimeScalesFactory.getUTC()),
                      new FieldAbsoluteDate<>(field, 2002, 05, 28, TimeScalesFactory.getUTC()));
         try {
             new FieldAbsoluteDate<>(field, 2002, 05, 28, 25, 30, 0, TimeScalesFactory.getUTC());
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.NON_EXISTENT_HMS_TIME, oiae.getSpecifier());
-            Assertions.assertEquals(25, ((Integer) oiae.getParts()[0]).intValue());
-            Assertions.assertEquals(30, ((Integer) oiae.getParts()[1]).intValue());
-            Assertions.assertEquals( 0, ((Double) oiae.getParts()[2]).doubleValue(), 1.0e-15);
+            assertEquals(OrekitMessages.NON_EXISTENT_HMS_TIME, oiae.getSpecifier());
+            assertEquals(25, ((Integer) oiae.getParts()[0]).intValue());
+            assertEquals(30, ((Integer) oiae.getParts()[1]).intValue());
+            assertEquals( 0, ((Double) oiae.getParts()[2]).doubleValue(), 1.0e-15);
         }
     }
 
@@ -1220,37 +1226,33 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> d2 = new FieldAbsoluteDate<>(field, new DateComponents(2006, 2, 25),
                                                           new TimeComponents(17, 10, 0),
                                                           utc).shiftedBy(34);
-        Assertions.assertEquals(d1.hashCode(), d2.hashCode());
-        Assertions.assertTrue(d1.hashCode() != d1.shiftedBy(1.0e-3).hashCode());
+        assertEquals(d1.hashCode(), d2.hashCode());
+        assertTrue(d1.hashCode() != d1.shiftedBy(1.0e-3).hashCode());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInfinity(final Field<T> field) {
-        Assertions.assertTrue(FieldAbsoluteDate.getJulianEpoch(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getJulianEpoch(field).compareTo(FieldAbsoluteDate.getFutureInfinity(field)) < 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getJ2000Epoch(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getJ2000Epoch(field).compareTo(FieldAbsoluteDate.getFutureInfinity(field)) < 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getPastInfinity(field).compareTo(FieldAbsoluteDate.getJulianEpoch(field)) < 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getPastInfinity(field).compareTo(FieldAbsoluteDate.getJ2000Epoch(field)) < 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getPastInfinity(field).compareTo(FieldAbsoluteDate.getFutureInfinity(field)) < 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getFutureInfinity(field).compareTo(FieldAbsoluteDate.getJulianEpoch(field)) > 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getFutureInfinity(field).compareTo(FieldAbsoluteDate.getJ2000Epoch(field)) > 0);
-        Assertions.assertTrue(FieldAbsoluteDate.getFutureInfinity(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
-        Assertions.assertTrue(Double.isInfinite(FieldAbsoluteDate.getFutureInfinity(field).durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal()));
-        Assertions.assertTrue(Double.isInfinite(FieldAbsoluteDate.getFutureInfinity(field).durationFrom(FieldAbsoluteDate.getPastInfinity(field)).getReal()));
-        Assertions.assertTrue(Double.isInfinite(FieldAbsoluteDate.getPastInfinity(field).durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal()));
-        Assertions.assertEquals("5881610-07-11T23:59:59.999Z",  FieldAbsoluteDate.getFutureInfinity(field).toString());
-        Assertions.assertEquals("-5877490-03-03T00:00:00.000Z", FieldAbsoluteDate.getPastInfinity(field).toString());
+        assertTrue(FieldAbsoluteDate.getJulianEpoch(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
+        assertTrue(FieldAbsoluteDate.getJulianEpoch(field).compareTo(FieldAbsoluteDate.getFutureInfinity(field)) < 0);
+        assertTrue(FieldAbsoluteDate.getJ2000Epoch(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
+        assertTrue(FieldAbsoluteDate.getJ2000Epoch(field).compareTo(FieldAbsoluteDate.getFutureInfinity(field)) < 0);
+        assertTrue(FieldAbsoluteDate.getPastInfinity(field).compareTo(FieldAbsoluteDate.getJulianEpoch(field)) < 0);
+        assertTrue(FieldAbsoluteDate.getPastInfinity(field).compareTo(FieldAbsoluteDate.getJ2000Epoch(field)) < 0);
+        assertTrue(FieldAbsoluteDate.getPastInfinity(field).compareTo(FieldAbsoluteDate.getFutureInfinity(field)) < 0);
+        assertTrue(FieldAbsoluteDate.getFutureInfinity(field).compareTo(FieldAbsoluteDate.getJulianEpoch(field)) > 0);
+        assertTrue(FieldAbsoluteDate.getFutureInfinity(field).compareTo(FieldAbsoluteDate.getJ2000Epoch(field)) > 0);
+        assertTrue(FieldAbsoluteDate.getFutureInfinity(field).compareTo(FieldAbsoluteDate.getPastInfinity(field)) > 0);
+        assertTrue(Double.isInfinite(FieldAbsoluteDate.getFutureInfinity(field).durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal()));
+        assertTrue(Double.isInfinite(FieldAbsoluteDate.getFutureInfinity(field).durationFrom(FieldAbsoluteDate.getPastInfinity(field)).getReal()));
+        assertTrue(Double.isInfinite(FieldAbsoluteDate.getPastInfinity(field).durationFrom(FieldAbsoluteDate.getJ2000Epoch(field)).getReal()));
+        assertEquals("5881610-07-11T23:59:59.999Z",  FieldAbsoluteDate.getFutureInfinity(field).toString());
+        assertEquals("-5877490-03-03T00:00:00.000Z", FieldAbsoluteDate.getPastInfinity(field).toString());
 
         final FieldAbsoluteDate<T> j2000     = FieldAbsoluteDate.getJ2000Epoch(field);
         final FieldAbsoluteDate<T> arbitrary = FieldAbsoluteDate.getArbitraryEpoch(field);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(Double.NEGATIVE_INFINITY)).getReal()
-                          == Double.POSITIVE_INFINITY);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(Double.POSITIVE_INFINITY)).getReal()
-                          == Double.NEGATIVE_INFINITY);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.NEGATIVE_INFINITY))).getReal()
-                          == Double.POSITIVE_INFINITY);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.POSITIVE_INFINITY))).getReal()
-                          == Double.NEGATIVE_INFINITY);
+        assertEquals(Double.POSITIVE_INFINITY, j2000.durationFrom(arbitrary.shiftedBy(Double.NEGATIVE_INFINITY)).getReal());
+        assertEquals(Double.NEGATIVE_INFINITY, j2000.durationFrom(arbitrary.shiftedBy(Double.POSITIVE_INFINITY)).getReal());
+        assertEquals(Double.POSITIVE_INFINITY, j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.NEGATIVE_INFINITY))).getReal());
+        assertEquals(Double.NEGATIVE_INFINITY, j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.POSITIVE_INFINITY))).getReal());
 
     }
 
@@ -1259,7 +1261,7 @@ public class FieldAbsoluteDateTest {
         double sec = 0.281;
         FieldAbsoluteDate<T> t = new FieldAbsoluteDate<>(field, 2010, 6, 21, 18, 42, sec, tai);
         double recomputedSec = t.getComponents(tai).getTime().getSecond();
-        Assertions.assertEquals(sec, recomputedSec, FastMath.ulp(sec));
+        assertEquals(sec, recomputedSec, FastMath.ulp(sec));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAccuracyIssue348(final Field<T> field)
@@ -1271,7 +1273,7 @@ public class FieldAbsoluteDateTest {
         AbsoluteDate tA = tF.toAbsoluteDate();
         double delta = -0.01;
         T recomputedDelta = tF.shiftedBy(delta).durationFrom(tA);
-        Assertions.assertEquals(delta, recomputedDelta.getReal(), 1.0e-17);
+        assertEquals(delta, recomputedDelta.getReal(), 1.0e-17);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIterationAccuracy(final Field<T> field) {
@@ -1299,38 +1301,38 @@ public class FieldAbsoluteDateTest {
             FieldAbsoluteDate<T> directDate = t0.shiftedBy(i * step);
             final T error = iteratedDate.durationFrom(directDate);
             mean += error.getReal() / (i * epsilon);
-            Assertions.assertEquals(0.0, iteratedDate.durationFrom(directDate).getReal(), maxErrorFactor * i * epsilon);
+            assertEquals(0.0, iteratedDate.durationFrom(directDate).getReal(), maxErrorFactor * i * epsilon);
         }
         mean /= nMax;
-        Assertions.assertEquals(expectedMean, mean, meanTolerance);
+        assertEquals(expectedMean, mean, meanTolerance);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue142(final Field<T> field) {
         final FieldAbsoluteDate<T> epoch = FieldAbsoluteDate.getJavaEpoch(field);
         final TimeScale utc = TimeScalesFactory.getUTC();
 
-        Assertions.assertEquals("1970-01-01T00:00:00.000", epoch.toString(utc));
-        Assertions.assertEquals(0.0, epoch.durationFrom(new FieldAbsoluteDate<>(field, 1970, 1, 1, utc)).getReal(), 1.0e-15);
-        Assertions.assertEquals(8.000082,
+        assertEquals("1970-01-01T00:00:00.000", epoch.toString(utc));
+        assertEquals(0.0, epoch.durationFrom(new FieldAbsoluteDate<>(field, 1970, 1, 1, utc)).getReal(), 1.0e-15);
+        assertEquals(8.000082,
                             epoch.durationFrom(new FieldAbsoluteDate<>(field, DateComponents.JAVA_EPOCH, TimeScalesFactory.getTAI())).getReal(),
                             1.0e-15);
 
         //Milliseconds - April 1, 2006, in UTC
         long msOffset = 1143849600000l;
         final FieldAbsoluteDate<T> ad = new FieldAbsoluteDate<>(epoch, msOffset / 1000, TimeScalesFactory.getUTC());
-        Assertions.assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
+        assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue148(final Field<T> field) {
         final TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2012, 6, 30, 23, 59, 50.0, utc);
         DateTimeComponents components = t0.shiftedBy(11.0 - 200 * Precision.EPSILON).getComponents(utc);
-        Assertions.assertEquals(2012, components.getDate().getYear());
-        Assertions.assertEquals(   6, components.getDate().getMonth());
-        Assertions.assertEquals(  30, components.getDate().getDay());
-        Assertions.assertEquals(  23, components.getTime().getHour());
-        Assertions.assertEquals(  59, components.getTime().getMinute());
-        Assertions.assertEquals(  61 - 200 * Precision.EPSILON,
+        assertEquals(2012, components.getDate().getYear());
+        assertEquals(   6, components.getDate().getMonth());
+        assertEquals(  30, components.getDate().getDay());
+        assertEquals(  23, components.getTime().getHour());
+        assertEquals(  59, components.getTime().getMinute());
+        assertEquals(  61 - 200 * Precision.EPSILON,
                             components.getTime().getSecond(), 1.0e-15);
     }
 
@@ -1338,12 +1340,12 @@ public class FieldAbsoluteDateTest {
         final TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field, 2012, 6, 30, 23, 59, 59, utc);
         DateTimeComponents components = t0.shiftedBy(1.0 - Precision.EPSILON).getComponents(utc);
-        Assertions.assertEquals(2012, components.getDate().getYear());
-        Assertions.assertEquals(   6, components.getDate().getMonth());
-        Assertions.assertEquals(  30, components.getDate().getDay());
-        Assertions.assertEquals(  23, components.getTime().getHour());
-        Assertions.assertEquals(  59, components.getTime().getMinute());
-        Assertions.assertEquals(  60 - Precision.EPSILON,
+        assertEquals(2012, components.getDate().getYear());
+        assertEquals(   6, components.getDate().getMonth());
+        assertEquals(  30, components.getDate().getDay());
+        assertEquals(  23, components.getTime().getHour());
+        assertEquals(  59, components.getTime().getMinute());
+        assertEquals(  60 - Precision.EPSILON,
                             components.getTime().getSecond(), 1.0e-15);
     }
 
@@ -1354,27 +1356,27 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> ref = date0.shiftedBy(496891466.0).shiftedBy(0.7320114066633323);
         FieldAbsoluteDate<T> date = ref.shiftedBy(33 * -597.9009700426262);
         DateTimeComponents dtc = date.getComponents(utc);
-        Assertions.assertEquals(2015, dtc.getDate().getYear());
-        Assertions.assertEquals(   9, dtc.getDate().getMonth());
-        Assertions.assertEquals(  30, dtc.getDate().getDay());
-        Assertions.assertEquals(   7, dtc.getTime().getHour());
-        Assertions.assertEquals(  54, dtc.getTime().getMinute());
-        Assertions.assertEquals(60 - 9.094947e-13, dtc.getTime().getSecond(), 1.0e-15);
-        Assertions.assertEquals("2015-09-30T07:54:59.99999999999909",
+        assertEquals(2015, dtc.getDate().getYear());
+        assertEquals(   9, dtc.getDate().getMonth());
+        assertEquals(  30, dtc.getDate().getDay());
+        assertEquals(   7, dtc.getTime().getHour());
+        assertEquals(  54, dtc.getTime().getMinute());
+        assertEquals(60 - 9.094947e-13, dtc.getTime().getSecond(), 1.0e-15);
+        assertEquals("2015-09-30T07:54:59.99999999999909",
                             date.toString(utc));
         FieldAbsoluteDate<T> beforeMidnight = new FieldAbsoluteDate<>(field, 2008, 2, 29, 23, 59, 59.9994, utc);
         FieldAbsoluteDate<T> stillBeforeMidnight = beforeMidnight.shiftedBy(2.0e-4);
-        Assertions.assertEquals(59.9994, beforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
-        Assertions.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
-        Assertions.assertEquals("2008-02-29T23:59:59.9994", beforeMidnight.toString(utc));
-        Assertions.assertEquals("2008-02-29T23:59:59.9996", stillBeforeMidnight.toString(utc));
+        assertEquals(59.9994, beforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
+        assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
+        assertEquals("2008-02-29T23:59:59.9994", beforeMidnight.toString(utc));
+        assertEquals("2008-02-29T23:59:59.9996", stillBeforeMidnight.toString(utc));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue508(final Field<T> field) {
         AbsoluteDate date = new AbsoluteDate(2000, 2, 24, 17, 5, 30.047, TimeScalesFactory.getUTC());
         FieldAbsoluteDate<T> tA = new FieldAbsoluteDate<>(field, date);
         FieldAbsoluteDate<T> tB = new FieldAbsoluteDate<>(date, field.getZero());
-        Assertions.assertEquals(0.0, tA.durationFrom(tB).getReal(), Precision.SAFE_MIN);
+        assertEquals(0.0, tA.durationFrom(tB).getReal(), Precision.SAFE_MIN);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestGetComponentsIssue681and676(
@@ -1454,16 +1456,16 @@ public class FieldAbsoluteDateTest {
         DateTimeComponents actual = date.shiftedBy(Double.NaN).getComponents(utc);
         DateComponents dc = actual.getDate();
         TimeComponents tc = actual.getTime();
-        MatcherAssert.assertThat(dc.getYear(), CoreMatchers.is(2009));
-        MatcherAssert.assertThat(dc.getMonth(), CoreMatchers.is(1));
-        MatcherAssert.assertThat(dc.getDay(), CoreMatchers.is(1));
-        MatcherAssert.assertThat(tc.getHour(), CoreMatchers.is(0));
-        MatcherAssert.assertThat(tc.getMinute(), CoreMatchers.is(0));
-        MatcherAssert.assertThat("second", tc.getSecond(), CoreMatchers.is(Double.NaN));
-        MatcherAssert.assertThat(tc.getMinutesFromUTC(), CoreMatchers.is(0));
+        assertThat(dc.getYear(), CoreMatchers.is(2009));
+        assertThat(dc.getMonth(), CoreMatchers.is(1));
+        assertThat(dc.getDay(), CoreMatchers.is(1));
+        assertThat(tc.getHour(), CoreMatchers.is(0));
+        assertThat(tc.getMinute(), CoreMatchers.is(0));
+        assertThat("second", tc.getSecond(), CoreMatchers.is(Double.NaN));
+        assertThat(tc.getMinutesFromUTC(), CoreMatchers.is(0));
         final double difference = new FieldAbsoluteDate<>(field, actual, utc)
                 .durationFrom(date).getReal();
-        MatcherAssert.assertThat(difference, CoreMatchers.is(Double.NaN));
+        assertThat(difference, CoreMatchers.is(Double.NaN));
     }
 
     @SuppressWarnings("unchecked")
@@ -1478,11 +1480,11 @@ public class FieldAbsoluteDateTest {
             epochField.setAccessible(true);
             java.lang.reflect.Field offsetField = FieldAbsoluteDate.class.getDeclaredField("offset");
             offsetField.setAccessible(true);
-            Assertions.assertEquals(624098367L, epochField.getLong(date));
-            Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), ((T) offsetField.get(date)).getReal(), 1.0e-20);
-            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(date).getReal(), 1.0e-20);
+            assertEquals(624098367L, epochField.getLong(date));
+            assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), ((T) offsetField.get(date)).getReal(), 1.0e-20);
+            assertEquals(Precision.EPSILON, after.durationFrom(date).getReal(), 1.0e-20);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
     }
 
@@ -1498,18 +1500,18 @@ public class FieldAbsoluteDateTest {
             epochField.setAccessible(true);
             java.lang.reflect.Field offsetField = FieldAbsoluteDate.class.getDeclaredField("offset");
             offsetField.setAccessible(true);
-            Assertions.assertEquals(624110398L, epochField.getLong(shifted));
-            Assertions.assertEquals(1.0 - 1.69267e-13, ((T) offsetField.get(shifted)).getReal(), 1.0e-15);
-            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted).getReal(), 1.0e-20);
+            assertEquals(624110398L, epochField.getLong(shifted));
+            assertEquals(1.0 - 1.69267e-13, ((T) offsetField.get(shifted)).getReal(), 1.0e-15);
+            assertEquals(Precision.EPSILON, after.durationFrom(shifted).getReal(), 1.0e-20);
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
+            fail(e.getLocalizedMessage());
         }
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDurationFromWithTimeUnit(final Field<T> field) {
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2023, 1, 1, 12, 13, 59.12334567, utc);
         for (TimeUnit timeUnit : TimeUnit.values()) {
-            Assertions.assertEquals(field.getZero(), reference.durationFrom(reference, timeUnit));
+            assertEquals(field.getZero(), reference.durationFrom(reference, timeUnit));
 
             long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
             for (int i = 1; i <= 365; i++) {
@@ -1517,16 +1519,16 @@ public class FieldAbsoluteDateTest {
                 FieldAbsoluteDate<T> plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
 
 
-                Assertions.assertEquals(field.getZero().add(i * dayInTimeUnit), reference.durationFrom(minusDays, timeUnit));
+                assertEquals(field.getZero().add(i * dayInTimeUnit), reference.durationFrom(minusDays, timeUnit));
 
-                Assertions.assertEquals(field.getZero().add(-i * dayInTimeUnit), reference.durationFrom(plusDays, timeUnit));
+                assertEquals(field.getZero().add(-i * dayInTimeUnit), reference.durationFrom(plusDays, timeUnit));
 
                 AbsoluteDate minusDaysA = minusDays.toAbsoluteDate();
                 AbsoluteDate plusDaysA = plusDays.toAbsoluteDate();
 
-                Assertions.assertEquals(field.getZero().add(i * dayInTimeUnit), reference.durationFrom(minusDaysA, timeUnit));
+                assertEquals(field.getZero().add(i * dayInTimeUnit), reference.durationFrom(minusDaysA, timeUnit));
 
-                Assertions.assertEquals(field.getZero().add(-i * dayInTimeUnit), reference.durationFrom(plusDaysA, timeUnit));
+                assertEquals(field.getZero().add(-i * dayInTimeUnit), reference.durationFrom(plusDaysA, timeUnit));
             }
 
             for (long ns = 1; ns <= 1_000_000_000; ns += 1_000_000) {
@@ -1534,19 +1536,19 @@ public class FieldAbsoluteDateTest {
                 FieldAbsoluteDate<T> plus = reference.shiftedBy(1e-9 * ns);
 
                 double deltaInTimeUnit = ns / (double) timeUnit.toNanos(1);
-                Assertions.assertEquals(field.getZero().add(FastMath.round(deltaInTimeUnit)), reference.durationFrom(minus, timeUnit),
+                assertEquals(field.getZero().add(FastMath.round(deltaInTimeUnit)), reference.durationFrom(minus, timeUnit),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
 
-                Assertions.assertEquals(field.getZero().add(FastMath.round(-deltaInTimeUnit)), reference.durationFrom(plus, timeUnit),
+                assertEquals(field.getZero().add(FastMath.round(-deltaInTimeUnit)), reference.durationFrom(plus, timeUnit),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
 
                 AbsoluteDate minusA = minus.toAbsoluteDate();
                 AbsoluteDate plusA = plus.toAbsoluteDate();
 
-                Assertions.assertEquals(field.getZero().add(FastMath.round(deltaInTimeUnit)), reference.durationFrom(minusA, timeUnit),
+                assertEquals(field.getZero().add(FastMath.round(deltaInTimeUnit)), reference.durationFrom(minusA, timeUnit),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
 
-                Assertions.assertEquals(field.getZero().add(FastMath.round(-deltaInTimeUnit)), reference.durationFrom(plusA, timeUnit),
+                assertEquals(field.getZero().add(FastMath.round(-deltaInTimeUnit)), reference.durationFrom(plusA, timeUnit),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
             }
 
@@ -1558,7 +1560,7 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2023, 1, 1, 12, 13, 59.12334567, utc);
 
         for (TimeUnit timeUnit : TimeUnit.values()) {
-            Assertions.assertEquals(0,
+            assertEquals(0,
                 FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(reference, 0, timeUnit)).getReal()), 1e-10);
 
             long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
@@ -1566,20 +1568,20 @@ public class FieldAbsoluteDateTest {
                 FieldAbsoluteDate<T> minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
                 FieldAbsoluteDate<T> plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
 
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minusDays, i * dayInTimeUnit, timeUnit)).getReal()),
                     1e-10,
                     String.format("TimeUnit: %s", timeUnit));
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plusDays, -i * dayInTimeUnit, timeUnit)).getReal()),
                     1e-10,
                     String.format("TimeUnit: %s", timeUnit));
 
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minusDays.toAbsoluteDate(), i * dayInTimeUnit, timeUnit, field)).getReal()),
                     1e-10,
                     String.format("TimeUnit: %s", timeUnit));
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plusDays.toAbsoluteDate(), -i * dayInTimeUnit, timeUnit, field)).getReal()),
                     1e-10,
                     String.format("TimeUnit: %s", timeUnit));
@@ -1594,20 +1596,20 @@ public class FieldAbsoluteDateTest {
                 FieldAbsoluteDate<T> plus = reference.shiftedBy(1e-9 * ns);
 
                 double deltaInTimeUnit =  ns / (double) timeUnit.toNanos(1);
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minus, FastMath.round(deltaInTimeUnit), timeUnit)).getReal()),
                     1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plus, FastMath.round(-deltaInTimeUnit), timeUnit)).getReal()),
                     1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
 
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(minus.toAbsoluteDate(), FastMath.round(deltaInTimeUnit), timeUnit, field)).getReal()),
                     1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(new FieldAbsoluteDate<>(plus.toAbsoluteDate(), FastMath.round(-deltaInTimeUnit), timeUnit, field)).getReal()),
                     1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
@@ -1619,7 +1621,7 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2023, 1, 1, 12, 13, 59.12334567, utc);
 
         for (TimeUnit timeUnit : TimeUnit.values()) {
-            Assertions.assertEquals(0,
+            assertEquals(0,
                 FastMath.abs(reference.durationFrom(reference.shiftedBy(0, timeUnit)).getReal()), 1e-10);
 
             long dayInTimeUnit = timeUnit.convert((long) Constants.JULIAN_DAY, TimeUnit.SECONDS);
@@ -1627,11 +1629,11 @@ public class FieldAbsoluteDateTest {
                 FieldAbsoluteDate<T> minusDays = reference.shiftedBy(-i * Constants.JULIAN_DAY);
                 FieldAbsoluteDate<T> plusDays = reference.shiftedBy(i* Constants.JULIAN_DAY);
 
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(minusDays.shiftedBy( i * dayInTimeUnit, timeUnit)).getReal()),
                     1e-10,
                     String.format("TimeUnit: %s", timeUnit));
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(plusDays.shiftedBy( -i * dayInTimeUnit, timeUnit)).getReal()),
                     1e-10,
                     String.format("TimeUnit: %s", timeUnit));
@@ -1647,11 +1649,11 @@ public class FieldAbsoluteDateTest {
                 FieldAbsoluteDate<T> plus = reference.shiftedBy(1e-9 * ns);
 
                 double deltaInTimeUnit =  ns / (double) timeUnit.toNanos(1);
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(minus.shiftedBy(FastMath.round(deltaInTimeUnit), timeUnit)).getReal()),
                     1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
-                Assertions.assertEquals(0,
+                assertEquals(0,
                     FastMath.abs(reference.durationFrom(plus.shiftedBy(FastMath.round(-deltaInTimeUnit), timeUnit)).getReal()),
                     1.0 / timeUnit.convert(1, TimeUnit.SECONDS),
                     String.format("TimeUnit: %s, ns: %d", timeUnit, ns));
@@ -1703,8 +1705,8 @@ public class FieldAbsoluteDateTest {
 
 
     private <T extends CalculusFieldElement<T>> void checkToStringNoOffset(final FieldAbsoluteDate<T> d, final String s) {
-        MatcherAssert.assertThat(d.toStringWithoutUtcOffset(utc, 3), CoreMatchers.is(s));
-        MatcherAssert.assertThat(
+        assertThat(d.toStringWithoutUtcOffset(utc, 3), CoreMatchers.is(s));
+        assertThat(
             d.getComponents(utc).toStringWithoutUtcOffset(utc.minuteDuration(d), 3),
             CoreMatchers.is(s));
     }
@@ -1715,18 +1717,18 @@ public class FieldAbsoluteDateTest {
         DateTimeComponents actual = date.getComponents(utc);
         DateComponents d = actual.getDate();
         TimeComponents t = actual.getTime();
-        MatcherAssert.assertThat(d.getYear(), CoreMatchers.is(year));
-        MatcherAssert.assertThat(d.getMonth(), CoreMatchers.is(month));
-        MatcherAssert.assertThat(d.getDay(), CoreMatchers.is(day));
-        MatcherAssert.assertThat(t.getHour(), CoreMatchers.is(hour));
-        MatcherAssert.assertThat(t.getMinute(), CoreMatchers.is(minute));
-        MatcherAssert.assertThat("second", t.getSecond(),
+        assertThat(d.getYear(), CoreMatchers.is(year));
+        assertThat(d.getMonth(), CoreMatchers.is(month));
+        assertThat(d.getDay(), CoreMatchers.is(day));
+        assertThat(t.getHour(), CoreMatchers.is(hour));
+        assertThat(t.getMinute(), CoreMatchers.is(minute));
+        assertThat("second", t.getSecond(),
                 OrekitMatchers.numberCloseTo(second, absTol, secondUlps));
-        MatcherAssert.assertThat(t.getMinutesFromUTC(), CoreMatchers.is(0));
+        assertThat(t.getMinutesFromUTC(), CoreMatchers.is(0));
         final double tol = FastMath.ulp(second) * roundTripUlps;
         final double difference = new FieldAbsoluteDate<>(date.getField(), actual, utc)
                 .durationFrom(date).getReal();
-        MatcherAssert.assertThat(difference,
+        assertThat(difference,
                 OrekitMatchers.closeTo(0, FastMath.max(absTol, tol)));
     }
 
@@ -1768,7 +1770,7 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
-    public void doTestGetJulianDatesWithBinar64() {
+    void doTestGetJulianDatesWithBinar64() {
         // GIVEN
         final Field<Binary64> field = Binary64Field.getInstance();
 
@@ -1795,13 +1797,13 @@ public class FieldAbsoluteDateTest {
 
         // THEN
         // source : Time/Date Converter - HEASARC - NASA
-        Assertions.assertEquals(2460496.0416667, jdDateDefaultData, 1.0e-6);
-        Assertions.assertEquals(60495.54166670, mjdDateDefaultData, 1.0e-6);
-        Assertions.assertEquals(jdDate, jdDateDefaultData);
-        Assertions.assertEquals(mjdDate, mjdDateDefaultData);
+        assertEquals(2460496.0416667, jdDateDefaultData, 1.0e-6);
+        assertEquals(60495.54166670, mjdDateDefaultData, 1.0e-6);
+        assertEquals(jdDate, jdDateDefaultData);
+        assertEquals(mjdDate, mjdDateDefaultData);
 
         // Assert that static method are correct when creating date from JD or MJD
-        Assertions.assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
-        Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
+        assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
+        assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
     }
 }

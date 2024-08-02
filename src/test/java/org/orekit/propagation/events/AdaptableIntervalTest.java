@@ -16,10 +16,11 @@
  */
 package org.orekit.propagation.events;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AdaptableIntervalTest {
 
@@ -31,7 +32,7 @@ class AdaptableIntervalTest {
         final AdaptableInterval adaptableInterval = AdaptableInterval.of(expectedValue);
         // THEN
         final double actualValue = adaptableInterval.currentInterval(Mockito.mock(SpacecraftState.class));
-        Assertions.assertEquals(expectedValue, actualValue);
+        assertEquals(expectedValue, actualValue);
     }
 
 }

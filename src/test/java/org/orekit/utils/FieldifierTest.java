@@ -23,7 +23,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -31,6 +30,8 @@ import org.orekit.frames.LOFType;
 import org.orekit.propagation.FieldStateCovariance;
 import org.orekit.propagation.StateCovariance;
 import org.orekit.time.AbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldifierTest {
 
@@ -56,13 +57,13 @@ class FieldifierTest {
         // THEN
 
         // Assert matrix dimension
-        Assertions.assertEquals(m.getRowDimension(),    fieldMatrix.getRowDimension());
-        Assertions.assertEquals(m.getColumnDimension(), fieldMatrix.getColumnDimension());
+        assertEquals(m.getRowDimension(),    fieldMatrix.getRowDimension());
+        assertEquals(m.getColumnDimension(), fieldMatrix.getColumnDimension());
 
         // Assert matrix elements
         for (int i = 0; i < m.getRowDimension(); ++i) {
             for (int j = 0; j < m.getColumnDimension(); ++j) {
-                Assertions.assertEquals(m.getEntry(i, j), fieldMatrix.getEntry(i, j).getReal());
+                assertEquals(m.getEntry(i, j), fieldMatrix.getEntry(i, j).getReal());
             }
         }
 
@@ -87,25 +88,25 @@ class FieldifierTest {
         // THEN
 
         // Assert date
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 fieldStateCovariance.getDate().durationFrom(stateCovariance.getDate()).getReal(),
                           1.0e-15);
 
         // Assert matrix dimension
         final RealMatrix m = stateCovariance.getMatrix();
         final FieldMatrix<Binary64> fieldMatrix = fieldStateCovariance.getMatrix();
-        Assertions.assertEquals(m.getRowDimension(),    fieldMatrix.getRowDimension());
-        Assertions.assertEquals(m.getColumnDimension(), fieldMatrix.getColumnDimension());
+        assertEquals(m.getRowDimension(),    fieldMatrix.getRowDimension());
+        assertEquals(m.getColumnDimension(), fieldMatrix.getColumnDimension());
 
         // Assert matrix elements
         for (int i = 0; i < m.getRowDimension(); ++i) {
             for (int j = 0; j < m.getColumnDimension(); ++j) {
-                Assertions.assertEquals(m.getEntry(i, j), fieldMatrix.getEntry(i, j).getReal());
+                assertEquals(m.getEntry(i, j), fieldMatrix.getEntry(i, j).getReal());
             }
         }
 
         // Assert types
-        Assertions.assertEquals(stateCovariance.getLOF(), fieldStateCovariance.getLOF());
+        assertEquals(stateCovariance.getLOF(), fieldStateCovariance.getLOF());
 
     }
 

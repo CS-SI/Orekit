@@ -37,11 +37,11 @@ import org.orekit.utils.ParameterDriversList;
  *
  * @author Evan Ward
  */
-public class FiniteDifferencePropagatorConverterTest {
+class FiniteDifferencePropagatorConverterTest {
 
     /** Set Orekit data . */
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -49,7 +49,7 @@ public class FiniteDifferencePropagatorConverterTest {
      * Test case for bug #362. Check that scaling is only applied once.
      */
     @Test
-    public void testGetObjectiveFunctionParametersOnlyScaledOnce() {
+    void testGetObjectiveFunctionParametersOnlyScaledOnce() {
         // setup
         // create some arbitrary sample data to run with
         Frame eci = FramesFactory.getGCRF();

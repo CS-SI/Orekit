@@ -16,20 +16,23 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /** Tests for CdmRelativeMetaData class.
  * These tests are used to increase condition coverage, other global tests are in CdmParser/WriterTest classes.
  */
-public class CdmRelativeMetaDataTest {
+class CdmRelativeMetaDataTest {
 
     /** Condition coverage on the checkScreenVolumeConditions method. */
     @Test
-    public void testCheckScreenVolumeConditions() {
+    void testCheckScreenVolumeConditions() {
 
         final CdmRelativeMetadata meta = new CdmRelativeMetadata();
         meta.setScreenType(ScreenType.SHAPE);
@@ -37,47 +40,47 @@ public class CdmRelativeMetaDataTest {
         // getScreenEntryTime() == null
         try {
             meta.checkScreenVolumeConditions();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_ENTRY_TIME, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            assertEquals(CdmRelativeMetadataKey.SCREEN_ENTRY_TIME, oe.getParts()[0]);
         }
         meta.setScreenEntryTime(AbsoluteDate.ARBITRARY_EPOCH);
 
         // getScreenExitTime() == null
         try {
             meta.checkScreenVolumeConditions();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_EXIT_TIME, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            assertEquals(CdmRelativeMetadataKey.SCREEN_EXIT_TIME, oe.getParts()[0]);
         }
         meta.setScreenExitTime(AbsoluteDate.ARBITRARY_EPOCH);
 
         // getScreenVolumeShape() == null
         try {
             meta.checkScreenVolumeConditions();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_SHAPE, oe.getParts()[0]);
         }
 
         // ScreenVolumeShape.SPHERE && getScreenVolumeRadius() is NaN
         meta.setScreenVolumeShape(ScreenVolumeShape.SPHERE);
         try {
             meta.checkScreenVolumeConditions();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_RADIUS, oe.getParts()[0]);
         }
         
         // ScreenVolumeShape.SPHERE && getScreenVolumeRadius() not NaN
         meta.setScreenVolumeShape(ScreenVolumeShape.SPHERE);
         meta.setScreenVolumeRadius(1.);
         meta.checkScreenVolumeConditions();
-        Assertions.assertEquals(1.,  meta.getScreenVolumeRadius(), 0.);
+        assertEquals(1.,  meta.getScreenVolumeRadius(), 0.);
         
         // ScreenVolumeShape.BOX or ScreenVolumeShape.ELLIPSOID
         final ScreenVolumeShape[] shapes = new ScreenVolumeShape[] { ScreenVolumeShape.BOX, ScreenVolumeShape.ELLIPSOID };
@@ -95,40 +98,40 @@ public class CdmRelativeMetaDataTest {
             // getScreenVolumeFrame() == null
             try {
                 meta.checkScreenVolumeConditions();
-                Assertions.fail("an exception should have been thrown");
+                fail("an exception should have been thrown");
             } catch (OrekitException oe) {
-                Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-                Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME, oe.getParts()[0]);
+                assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+                assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_FRAME, oe.getParts()[0]);
             }
             meta.setScreenVolumeFrame(ScreenVolumeFrame.RTN);
 
             // getScreenVolumeX() is NaN
             try {
                 meta.checkScreenVolumeConditions();
-                Assertions.fail("an exception should have been thrown");
+                fail("an exception should have been thrown");
             } catch (OrekitException oe) {
-                Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-                Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_X, oe.getParts()[0]);
+                assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+                assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_X, oe.getParts()[0]);
             }
             meta.setScreenVolumeX(1.);
 
             // getScreenVolumeY() is NaN
             try {
                 meta.checkScreenVolumeConditions();
-                Assertions.fail("an exception should have been thrown");
+                fail("an exception should have been thrown");
             } catch (OrekitException oe) {
-                Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-                Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_Y, oe.getParts()[0]);
+                assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+                assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_Y, oe.getParts()[0]);
             }
             meta.setScreenVolumeY(1.);
 
             // getScreenVolumeZ() is NaN
             try {
                 meta.checkScreenVolumeConditions();
-                Assertions.fail("an exception should have been thrown");
+                fail("an exception should have been thrown");
             } catch (OrekitException oe) {
-                Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-                Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_Z, oe.getParts()[0]);
+                assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+                assertEquals(CdmRelativeMetadataKey.SCREEN_VOLUME_Z, oe.getParts()[0]);
             }
             meta.setScreenVolumeZ(1.);
         }
@@ -137,18 +140,18 @@ public class CdmRelativeMetaDataTest {
         meta.setScreenType(ScreenType.PC);
         try {
             meta.checkScreenVolumeConditions();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            assertEquals(CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD, oe.getParts()[0]);
         }
         meta.setScreenType(ScreenType.PC_MAX);
         try {
             meta.checkScreenVolumeConditions();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            assertEquals(CdmRelativeMetadataKey.SCREEN_PC_THRESHOLD, oe.getParts()[0]);
         }
         
         // Case where it works
@@ -159,6 +162,6 @@ public class CdmRelativeMetaDataTest {
         
         // Addendum: Test setCollisionPercentile when null
         meta.setCollisionPercentile(null);
-        Assertions.assertEquals(null,  meta.getCollisionPercentile());
+        assertNull(meta.getCollisionPercentile());
     }
 }

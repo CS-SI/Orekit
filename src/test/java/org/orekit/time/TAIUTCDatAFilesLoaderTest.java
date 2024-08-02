@@ -16,16 +16,18 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-public class TAIUTCDatAFilesLoaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class TAIUTCDatAFilesLoaderTest {
 
     @Test
-    public void testRegularFile() {
+    void testRegularFile() {
 
         Utils.setDataRoot("USNO");
 
@@ -60,7 +62,7 @@ public class TAIUTCDatAFilesLoaderTest {
     }
 
     @Test
-    public void testOnlyPre1972Data() {
+    void testOnlyPre1972Data() {
 
         Utils.setDataRoot("USNO");
         TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader("tai-utc-only-pre-1972-data.dat"));
@@ -93,7 +95,7 @@ public class TAIUTCDatAFilesLoaderTest {
     }
 
     @Test
-    public void testModifiedLinearData() {
+    void testModifiedLinearData() {
 
         Utils.setDataRoot("USNO");
         TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader("tai-utc-modified-linear.dat"));
@@ -126,19 +128,19 @@ public class TAIUTCDatAFilesLoaderTest {
     }
 
     @Test
-    public void testInconsistentDate() {
+    void testInconsistentDate() {
         checkException("tai-utc-inconsistent-date.dat",
                        OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
     }
 
     @Test
-    public void testNonChronological() {
+    void testNonChronological() {
         checkException("tai-utc-non-chronological.dat",
                        OrekitMessages.NON_CHRONOLOGICAL_DATES_IN_FILE);
     }
 
     @Test
-    public void testFormatError() {
+    void testFormatError() {
         checkException("tai-utc-format-error.dat",
                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE);
     }
@@ -146,7 +148,7 @@ public class TAIUTCDatAFilesLoaderTest {
     private void checkOffset(int year, int month, int day, double offset) {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(year, month, day, utc);
-        Assertions.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
+        assertEquals(offset, utc.offsetFromTAI(date), 1.0e-10);
     }
 
     private void checkException(String name, OrekitMessages message) {
@@ -154,9 +156,9 @@ public class TAIUTCDatAFilesLoaderTest {
         TimeScalesFactory.addUTCTAIOffsetsLoader(new TAIUTCDatFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(message, oe.getSpecifier());
+            assertEquals(message, oe.getSpecifier());
         }
     }
 

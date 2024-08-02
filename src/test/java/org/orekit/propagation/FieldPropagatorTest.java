@@ -20,7 +20,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.attitudes.AttitudeProvider;
@@ -36,6 +35,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.Collection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 class FieldPropagatorTest {
@@ -51,7 +52,7 @@ class FieldPropagatorTest {
         final FieldVector3D<Complex> actualPosition = testPropagator.getPosition(fieldDate, frame);
         // THEN
         final FieldPVCoordinates<Complex> expectedState = testPropagator.propagate(fieldDate).getPVCoordinates(frame);
-        Assertions.assertEquals(expectedState.getPosition().toVector3D(), actualPosition.toVector3D());
+        assertEquals(expectedState.getPosition().toVector3D(), actualPosition.toVector3D());
     }
 
     @Test
@@ -65,8 +66,8 @@ class FieldPropagatorTest {
         final FieldPVCoordinates<Complex> actualState = testPropagator.getPVCoordinates(fieldDate, frame);
         // THEN
         final FieldPVCoordinates<Complex> expectedState = testPropagator.propagate(fieldDate).getPVCoordinates(frame);
-        Assertions.assertEquals(expectedState.getPosition().toVector3D(), actualState.getPosition().toVector3D());
-        Assertions.assertEquals(expectedState.getVelocity().toVector3D(), actualState.getVelocity().toVector3D());
+        assertEquals(expectedState.getPosition().toVector3D(), actualState.getPosition().toVector3D());
+        assertEquals(expectedState.getVelocity().toVector3D(), actualState.getVelocity().toVector3D());
     }
 
     @SuppressWarnings("unchecked")

@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -25,10 +24,13 @@ import org.orekit.errors.OrekitMessages;
 
 import java.util.Arrays;
 
-public class OrphanFrameTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class OrphanFrameTest {
 
     @Test
-    public void testNotAttached() {
+    void testNotAttached() {
 
         OrphanFrame level0  = new OrphanFrame("l0");
         OrphanFrame level1A = new OrphanFrame("l1A");
@@ -39,49 +41,49 @@ public class OrphanFrameTest {
         level0.addChild(level1B, Transform.IDENTITY, false);
         level1B.addChild(level2, Transform.IDENTITY, false);
 
-        Assertions.assertEquals(2, level0.getChildren().size());
-        Assertions.assertEquals(0, level1A.getChildren().size());
-        Assertions.assertEquals(1, level1B.getChildren().size());
-        Assertions.assertEquals(0, level2.getChildren().size());
+        assertEquals(2, level0.getChildren().size());
+        assertEquals(0, level1A.getChildren().size());
+        assertEquals(1, level1B.getChildren().size());
+        assertEquals(0, level2.getChildren().size());
 
         for (OrphanFrame of : Arrays.asList(level0, level1A, level1B, level2)) {
             try {
                 of.getFrame();
-                Assertions.fail("an exception should have been thrown");
+                fail("an exception should have been thrown");
             } catch (OrekitException oe) {
-                Assertions.assertEquals(OrekitMessages.FRAME_NOT_ATTACHED, oe.getSpecifier());
+                assertEquals(OrekitMessages.FRAME_NOT_ATTACHED, oe.getSpecifier());
             }
         }
 
     }
 
     @Test
-    public void testAlreadyAttachedSubTree() {
+    void testAlreadyAttachedSubTree() {
         OrphanFrame level0 = new OrphanFrame("l0");
         OrphanFrame level1 = new OrphanFrame("l1");
         level0.addChild(level1, Transform.IDENTITY, false);
         try {
             level0.addChild(level1, Transform.IDENTITY, false);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.FRAME_ALREADY_ATTACHED, oe.getSpecifier());
+            assertEquals(OrekitMessages.FRAME_ALREADY_ATTACHED, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testAlreadyAttachedMainTree() {
+    void testAlreadyAttachedMainTree() {
         OrphanFrame level0 = new OrphanFrame("l0");
         level0.attachTo(FramesFactory.getGCRF(), Transform.IDENTITY, false);
         try {
             level0.attachTo(FramesFactory.getEME2000(), Transform.IDENTITY, false);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.FRAME_ALREADY_ATTACHED, oe.getSpecifier());
+            assertEquals(OrekitMessages.FRAME_ALREADY_ATTACHED, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testSimpleUse() {
+    void testSimpleUse() {
         OrphanFrame level0  = new OrphanFrame("l0");
         OrphanFrame level1A = new OrphanFrame("l1A");
         OrphanFrame level1B = new OrphanFrame("l1B");
@@ -90,18 +92,18 @@ public class OrphanFrameTest {
         level0.addChild(level1B, Transform.IDENTITY, false);
         level1B.addChild(level2, Transform.IDENTITY, false);
         level0.attachTo(FramesFactory.getGCRF(), Transform.IDENTITY, false);
-        Assertions.assertEquals(1, level0.getFrame().getDepth());
-        Assertions.assertEquals(level0.toString(), level0.getFrame().getName());
-        Assertions.assertEquals(2, level1A.getFrame().getDepth());
-        Assertions.assertEquals(level1A.toString(), level1A.getFrame().getName());
-        Assertions.assertEquals(2, level1B.getFrame().getDepth());
-        Assertions.assertEquals(level1B.toString(), level1B.getFrame().getName());
-        Assertions.assertEquals(3, level2.getFrame().getDepth());
-        Assertions.assertEquals(level2.toString(), level2.getFrame().getName());
+        assertEquals(1, level0.getFrame().getDepth());
+        assertEquals(level0.toString(), level0.getFrame().getName());
+        assertEquals(2, level1A.getFrame().getDepth());
+        assertEquals(level1A.toString(), level1A.getFrame().getName());
+        assertEquals(2, level1B.getFrame().getDepth());
+        assertEquals(level1B.toString(), level1B.getFrame().getName());
+        assertEquals(3, level2.getFrame().getDepth());
+        assertEquals(level2.toString(), level2.getFrame().getName());
     }
 
     @Test
-    public void testLateAddition() {
+    void testLateAddition() {
         OrphanFrame level0  = new OrphanFrame("l0");
         OrphanFrame level1A = new OrphanFrame("l1A");
         OrphanFrame level1B = new OrphanFrame("l1B");
@@ -110,32 +112,32 @@ public class OrphanFrameTest {
         level0.addChild(level1B, Transform.IDENTITY, false);
 
         level0.attachTo(FramesFactory.getGCRF(), Transform.IDENTITY, false);
-        Assertions.assertEquals(1, level0.getFrame().getDepth());
-        Assertions.assertEquals(level0.toString(), level0.getFrame().getName());
-        Assertions.assertEquals(2, level1A.getFrame().getDepth());
-        Assertions.assertEquals(level1A.toString(), level1A.getFrame().getName());
-        Assertions.assertEquals(2, level1B.getFrame().getDepth());
-        Assertions.assertEquals(level1B.toString(), level1B.getFrame().getName());
+        assertEquals(1, level0.getFrame().getDepth());
+        assertEquals(level0.toString(), level0.getFrame().getName());
+        assertEquals(2, level1A.getFrame().getDepth());
+        assertEquals(level1A.toString(), level1A.getFrame().getName());
+        assertEquals(2, level1B.getFrame().getDepth());
+        assertEquals(level1B.toString(), level1B.getFrame().getName());
 
         // level2 is not attached to anything yet
         try {
             level2.getFrame();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.FRAME_NOT_ATTACHED, oe.getSpecifier());
+            assertEquals(OrekitMessages.FRAME_NOT_ATTACHED, oe.getSpecifier());
         }
 
         // adding a new child after the top level has been attached
         level1B.addChild(level2, Transform.IDENTITY, false);
 
         // now level2 is attached to the main tree
-        Assertions.assertEquals(3, level2.getFrame().getDepth());
-        Assertions.assertEquals(level2.toString(), level2.getFrame().getName());
+        assertEquals(3, level2.getFrame().getDepth());
+        assertEquals(level2.toString(), level2.getFrame().getName());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 

@@ -16,7 +16,6 @@
  */
 package org.orekit.gnss.metric.messages.ssr;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -29,12 +28,16 @@ import org.orekit.gnss.metric.parser.IgsSsrMessagesParser;
 
 import java.util.ArrayList;
 
-public class SsrIgm07Test {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class SsrIgm07Test {
 
     private double eps = 1.0e-13;
 
     @Test
-    public void testPerfectValueGPS() {
+    void testPerfectValueGPS() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060
                          "001" +                              // IGS SSR version
@@ -60,33 +63,33 @@ public class SsrIgm07Test {
         final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assertions.assertEquals(2,                            igm07.getData().size());
-        Assertions.assertEquals(SatelliteSystem.GPS,          igm07.getSatelliteSystem());
+        assertEquals(2,                            igm07.getData().size());
+        assertEquals(SatelliteSystem.GPS,          igm07.getSatelliteSystem());
 
         // Verify header
-        Assertions.assertEquals(27,                           igm07.getTypeCode());
-        Assertions.assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
-        Assertions.assertEquals(60.0,                         igm07.getHeader().getSsrUpdateInterval(), eps);
-        Assertions.assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
-        Assertions.assertEquals(7,                            igm07.getHeader().getIodSsr());
-        Assertions.assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
-        Assertions.assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
-        Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
+        assertEquals(27,                           igm07.getTypeCode());
+        assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
+        assertEquals(60.0,                         igm07.getHeader().getSsrUpdateInterval(), eps);
+        assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
+        assertEquals(7,                            igm07.getHeader().getIodSsr());
+        assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
+        assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
+        assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
         final SsrIgm07Data g1 = igm07.getSsrIgm07Data().get("G01").get(0);
-        Assertions.assertEquals(1,                         g1.getSatelliteID());
-        Assertions.assertEquals(23.0,                      g1.getSsrUra(), eps);
+        assertEquals(1,                         g1.getSatelliteID());
+        assertEquals(23.0,                      g1.getSsrUra(), eps);
 
         // Verify data for satellite G12
         final SsrIgm07Data g12 = igm07.getSsrIgm07Data().get("G12").get(0);
-        Assertions.assertEquals(12,                         g12.getSatelliteID());
-        Assertions.assertEquals(60.0,                       g12.getSsrUra(), eps);
+        assertEquals(12,                         g12.getSatelliteID());
+        assertEquals(60.0,                       g12.getSsrUra(), eps);
 
     }
 
     @Test
-    public void testPerfectValueGalileo() {
+    void testPerfectValueGalileo() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060
                          "001" +                              // IGS SSR version
@@ -112,33 +115,33 @@ public class SsrIgm07Test {
         final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assertions.assertEquals(2,                            igm07.getData().size());
-        Assertions.assertEquals(SatelliteSystem.GALILEO,      igm07.getSatelliteSystem());
+        assertEquals(2,                            igm07.getData().size());
+        assertEquals(SatelliteSystem.GALILEO,      igm07.getSatelliteSystem());
 
         // Verify header
-        Assertions.assertEquals(67,                           igm07.getTypeCode());
-        Assertions.assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
-        Assertions.assertEquals(3600.0,                       igm07.getHeader().getSsrUpdateInterval(), eps);
-        Assertions.assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
-        Assertions.assertEquals(7,                            igm07.getHeader().getIodSsr());
-        Assertions.assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
-        Assertions.assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
-        Assertions.assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
+        assertEquals(67,                           igm07.getTypeCode());
+        assertEquals(517695.0,                     igm07.getHeader().getSsrEpoch1s(), eps);
+        assertEquals(3600.0,                       igm07.getHeader().getSsrUpdateInterval(), eps);
+        assertEquals(0,                            igm07.getHeader().getSsrMultipleMessageIndicator());
+        assertEquals(7,                            igm07.getHeader().getIodSsr());
+        assertEquals(3951,                         igm07.getHeader().getSsrProviderId());
+        assertEquals(1,                            igm07.getHeader().getSsrSolutionId());
+        assertEquals(2,                            igm07.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite E01
         final SsrIgm07Data e01 = igm07.getSsrIgm07Data().get("E01").get(0);
-        Assertions.assertEquals(1,                         e01.getSatelliteID());
-        Assertions.assertEquals(23.0,                      e01.getSsrUra(), eps);
+        assertEquals(1,                         e01.getSatelliteID());
+        assertEquals(23.0,                      e01.getSsrUra(), eps);
 
         // Verify data for satellite E12
         final SsrIgm07Data e12 = igm07.getSsrIgm07Data().get("E12").get(0);
-        Assertions.assertEquals(12,                         e12.getSatelliteID());
-        Assertions.assertEquals(60.0,                       e12.getSsrUra(), eps);
+        assertEquals(12,                         e12.getSatelliteID());
+        assertEquals(60.0,                       e12.getSsrUra(), eps);
 
     }
 
     @Test
-    public void testNullMessage() {
+    void testNullMessage() {
 
         final String m = "010000100100" +                     // RTCM Message number: 1060
                         "001" +                              // IGS SSR version
@@ -163,18 +166,18 @@ public class SsrIgm07Test {
 
        final SsrIgm07 igm07 = (SsrIgm07) new IgsSsrMessagesParser(messages).parse(message, false);
 
-       Assertions.assertNull(igm07);
+       assertNull(igm07);
     }
 
     @Test
-    public void testEmptyMessage() {
+    void testEmptyMessage() {
         try {
             final byte[] array = new byte[0];
             final EncodedMessage emptyMessage = new ByteArrayEncodedMessage(array);
             new IgsSsrMessagesParser(new ArrayList<Integer>()).parse(emptyMessage, false);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
+            assertEquals(OrekitMessages.END_OF_ENCODED_MESSAGE, oe.getSpecifier());
         }
 
     }

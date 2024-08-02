@@ -30,7 +30,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -66,8 +65,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class SolidTidesTest extends AbstractLegacyForceModelTest {
+
+class SolidTidesTest extends AbstractLegacyForceModelTest {
 
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
@@ -104,7 +107,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testDefaultInterpolation() {
+    void testDefaultInterpolation() {
 
         IERSConventions conventions = IERSConventions.IERS_2010;
         Frame eme2000 = FramesFactory.getEME2000();
@@ -135,7 +138,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                 conventions, ut1,
                                                                 CelestialBodyFactory.getSun(),
                                                                 CelestialBodyFactory.getMoon()));
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(raw.getPosition(),
                                               interpolated.getPosition()),
                             2.1e-5); // threshold would be 1.2e-3 for 30 days propagation
@@ -143,7 +146,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect1996() {
+    void testTideEffect1996() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -155,7 +158,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2003WithinAnnualPoleRange() {
+    void testTideEffect2003WithinAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(1969, 07, 01, 13, 59, 27.816, utc);
@@ -167,7 +170,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2003AfterAnnualPoleRange() {
+    void testTideEffect2003AfterAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -179,7 +182,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2010BeforePoleModelChange() {
+    void testTideEffect2010BeforePoleModelChange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -191,7 +194,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2010AfterModelChange() {
+    void testTideEffect2010AfterModelChange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
@@ -203,7 +206,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationNoPoleTide()
+    void testStateJacobianVs80ImplementationNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -223,7 +226,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                IERSConventions.IERS_2010, ut1,
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
-        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
+        assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80Implementation(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
@@ -232,7 +235,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationGradientNoPoleTide()
+    void testStateJacobianVs80ImplementationGradientNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -252,7 +255,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                IERSConventions.IERS_2010, ut1,
                                                CelestialBodyFactory.getSun(),
                                                CelestialBodyFactory.getMoon());
-        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
+        assertTrue(forceModel.dependsOnPositionOnly());
 
         checkStateJacobianVs80ImplementationGradient(new SpacecraftState(orbit), forceModel,
                                              new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS),
@@ -261,7 +264,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationPoleTide()
+    void testStateJacobianVs80ImplementationPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -289,7 +292,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationGradientPoleTide()
+    void testStateJacobianVs80ImplementationGradientPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -317,7 +320,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesNoPoleTide()
+    void testStateJacobianVsFiniteDifferencesNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -344,7 +347,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesGradientNoPoleTide()
+    void testStateJacobianVsFiniteDifferencesGradientNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -371,7 +374,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesPoleTide()
+    void testStateJacobianVsFiniteDifferencesPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -398,7 +401,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesGradientPoleTide()
+    void testStateJacobianVsFiniteDifferencesGradientPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -423,12 +426,12 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                               10.0, 2.0e-10, false);
 
     }
-    
+
     /** Test added for <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1167">issue 1167</a>.
      * <p>Mostly for code coverage, with the introduction of interface {@link EventDetectorsProvider}
      */
     @Test
-    public void testGetEventDetectors() {
+    void testGetEventDetectors() {
         
         // Given
         // -----
@@ -454,8 +457,8 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         List<FieldEventDetector<Binary64>> fieldDetectors = solidTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
         
         // Then
-        Assertions.assertTrue(detectors.isEmpty());
-        Assertions.assertTrue(fieldDetectors.isEmpty());
+        assertTrue(detectors.isEmpty());
+        assertTrue(fieldDetectors.isEmpty());
         
         // When: 1 span added to driver
         final List<ParameterDriver> drivers = solidTidesModel.getParametersDrivers();
@@ -473,17 +476,17 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
         FieldAbsoluteDate<Binary64> fieldDate = fieldDateDetector.getDate();
         
         // Then
-        Assertions.assertFalse(detectors.isEmpty());
-        Assertions.assertEquals(1, detectors.size());
-        Assertions.assertTrue(detectors.get(0) instanceof DateDetector);
+        assertFalse(detectors.isEmpty());
+        assertEquals(1, detectors.size());
+        assertTrue(detectors.get(0) instanceof DateDetector);
         
-        Assertions.assertEquals(1, dates.size());
-        Assertions.assertEquals(0., dates.get(0).durationFrom(t0), 0.);
+        assertEquals(1, dates.size());
+        assertEquals(0., dates.get(0).durationFrom(t0), 0.);
         
-        Assertions.assertFalse(fieldDetectors.isEmpty());
-        Assertions.assertEquals(1, fieldDetectors.size());
-        Assertions.assertTrue(fieldDetectors.get(0) instanceof FieldDateDetector);
-        Assertions.assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
+        assertFalse(fieldDetectors.isEmpty());
+        assertEquals(1, fieldDetectors.size());
+        assertTrue(fieldDetectors.get(0) instanceof FieldDateDetector);
+        assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
     }
 
     private void doTestTideEffect(Orbit orbit, IERSConventions conventions, double delta1, double delta2) {
@@ -512,11 +515,11 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
                                                                       conventions, ut1,
                                                                       CelestialBodyFactory.getSun(),
                                                                       CelestialBodyFactory.getMoon()));
-        Assertions.assertEquals(delta1,
+        assertEquals(delta1,
                             Vector3D.distance(noTides.getPosition(),
                                               solidTidesNoPoleTide.getPosition()),
                             0.01);
-        Assertions.assertEquals(delta2,
+        assertEquals(delta2,
                             Vector3D.distance(solidTidesNoPoleTide.getPosition(),
                                               solidTidesPoleTide.getPosition()),
                             0.01);
@@ -536,7 +539,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
     }
 

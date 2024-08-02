@@ -30,14 +30,14 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.BrouwerLyddanePropagatorBuilder;
 
-public class BrouwerLyddaneKalmanEstimatorTest {
+class BrouwerLyddaneKalmanEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
      * Keplerian formalism
      */
     @Test
-    public void testKeplerianPV() {
+    void testKeplerianPV() {
 
         // Create context
         BrouwerLyddaneContext context = BrouwerLyddaneEstimationTestUtils.eccentricContext("regular-data:potential:tides");

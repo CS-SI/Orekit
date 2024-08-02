@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -42,6 +41,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class FieldApsideDetectorTest {
 
     @Test
@@ -57,20 +58,20 @@ class FieldApsideDetectorTest {
                                          withThreshold(field.getZero().newInstance(1.0e-12)).
                                          withHandler(new FieldContinueOnEvent<T>());
 
-        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
+        assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-12, detector.getThreshold().getReal(), 1.0e-15);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(detector));
 
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assertions.assertEquals(30, logger.getLoggedEvents().size());
+        assertEquals(30, logger.getLoggedEvents().size());
         for (FieldLoggedEvent<T> e : logger.getLoggedEvents()) {
             FieldKeplerianOrbit<T> o = (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(e.getState().getOrbit());
             double expected = e.isIncreasing() ? 0.0 : FastMath.PI;
-            Assertions.assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly().getReal(), expected), 4.0e-14);
+            assertEquals(expected, MathUtils.normalizeAngle(o.getMeanAnomaly().getReal(), expected), 4.0e-14);
         }
 
     }
@@ -93,7 +94,7 @@ class FieldApsideDetectorTest {
         final Orbit mockedOrbit = Mockito.mock(Orbit.class);
         Mockito.when(mockedOrbit.getKeplerianPeriod()).thenReturn(period);
         final ApsideDetector apsideDetector = new ApsideDetector(threshold.getReal(), mockedOrbit);
-        Assertions.assertEquals(apsideDetector.getThreshold(), fieldApsideDetector.getThreshold().getReal());
+        assertEquals(apsideDetector.getThreshold(), fieldApsideDetector.getThreshold().getReal());
     }
 
     @Test
@@ -112,12 +113,12 @@ class FieldApsideDetectorTest {
         FieldEventsLogger<T> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(detector));
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
-        Assertions.assertEquals(30, logger.getLoggedEvents().size());
-        Assertions.assertEquals(expectedCalls, detector.count);
+        assertEquals(30, logger.getLoggedEvents().size());
+        assertEquals(expectedCalls, detector.count);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

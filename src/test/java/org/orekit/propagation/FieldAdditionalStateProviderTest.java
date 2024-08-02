@@ -25,7 +25,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -43,12 +42,16 @@ import org.orekit.propagation.semianalytical.dsst.FieldDSSTPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 
-public class FieldAdditionalStateProviderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FieldAdditionalStateProviderTest {
 
     private double mu;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
         mu = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
@@ -73,7 +76,7 @@ public class FieldAdditionalStateProviderTest {
     }
 
     @Test
-    public void testModifyMainState() {
+    void testModifyMainState() {
         doTestModifyMainState(Binary64Field.getInstance());
     }
 
@@ -96,15 +99,15 @@ public class FieldAdditionalStateProviderTest {
         final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
 
         // Verify
-        Assertions.assertEquals(2 * SpacecraftState.DEFAULT_MASS, propagated.getMass().getReal(), 1.0e-12);
-        Assertions.assertEquals(FastMath.PI,
+        assertEquals(2 * SpacecraftState.DEFAULT_MASS, propagated.getMass().getReal(), 1.0e-12);
+        assertEquals(FastMath.PI,
                                 propagated.getAttitude().getRotation().getAngle().getReal(),
                                 1.0e-15);
 
     }
 
     @Test
-    public void testIssue900Numerical() {
+    void testIssue900Numerical() {
         doTestIssue900Numerical(Binary64Field.getInstance());
     }
 
@@ -119,7 +122,7 @@ public class FieldAdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider<T> provider = new TimeDifferenceProvider<>(name, field);
-        Assertions.assertFalse(provider.wasCalled());
+        assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -129,13 +132,13 @@ public class FieldAdditionalStateProviderTest {
         final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
 
         // Verify
-        Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        assertTrue(provider.wasCalled());
+        assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 
     @Test
-    public void testIssue900Dsst() {
+    void testIssue900Dsst() {
         doTestIssue900Dsst(Binary64Field.getInstance());
     }
 
@@ -150,7 +153,7 @@ public class FieldAdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider<T> provider = new TimeDifferenceProvider<>(name, field);
-        Assertions.assertFalse(provider.wasCalled());
+        assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -160,13 +163,13 @@ public class FieldAdditionalStateProviderTest {
         final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
 
         // Verify
-        Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        assertTrue(provider.wasCalled());
+        assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 
     @Test
-    public void testIssue900BrouwerLyddane() {
+    void testIssue900BrouwerLyddane() {
         doTestIssue900BrouwerLyddane(Binary64Field.getInstance());
     }
 
@@ -199,7 +202,7 @@ public class FieldAdditionalStateProviderTest {
         // Create additional state provider
         final String name          = "init";
         final TimeDifferenceProvider<T> provider = new TimeDifferenceProvider<>(name, field);
-        Assertions.assertFalse(provider.wasCalled());
+        assertFalse(provider.wasCalled());
 
         // Add the provider to the propagator
         propagator.addAdditionalStateProvider(provider);
@@ -209,8 +212,8 @@ public class FieldAdditionalStateProviderTest {
         final FieldSpacecraftState<T> propagated = propagator.propagate(state.getDate().shiftedBy(dt));
 
         // Verify
-        Assertions.assertTrue(provider.wasCalled());
-        Assertions.assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
+        assertTrue(provider.wasCalled());
+        assertEquals(dt, propagated.getAdditionalState(name)[0].getReal(), 0.01);
 
     }
 

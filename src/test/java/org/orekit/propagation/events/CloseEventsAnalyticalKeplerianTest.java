@@ -17,11 +17,12 @@
 
 package org.orekit.propagation.events;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 /**
@@ -40,7 +41,7 @@ public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest 
 
     /** Test Analytic propagators take big steps. #830 */
     @Test
-    public void testBigStep() {
+    void testBigStep() {
         // setup
         Propagator propagator = getPropagator(1e100);
         propagator.setStepHandler(interpolator -> {});
@@ -57,12 +58,12 @@ public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest 
         propagator.propagate(epoch.shiftedBy(period));
 
         // verify no events
-        Assertions.assertEquals(0, handler.getEvents().size());
+        assertEquals(0, handler.getEvents().size());
     }
 
     /** Test Analytic propagators take big steps. #830 */
     @Test
-    public void testBigStepReverse() {
+    void testBigStepReverse() {
         // setup
         Propagator propagator = getPropagator(1e100);
         propagator.setStepHandler(interpolator -> {});
@@ -79,7 +80,7 @@ public class CloseEventsAnalyticalKeplerianTest extends CloseEventsAbstractTest 
         propagator.propagate(epoch.shiftedBy(period));
 
         // verify no events
-        Assertions.assertEquals(0, handler.getEvents().size());
+        assertEquals(0, handler.getEvents().size());
     }
 
 }

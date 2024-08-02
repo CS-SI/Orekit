@@ -18,7 +18,6 @@ package org.orekit.gnss;
 
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -39,17 +38,24 @@ import org.orekit.utils.ElevationMask;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.List;
 
 
-public class DOPComputerTest {
+class DOPComputerTest {
 
     private OneAxisEllipsoid earth;
     private GeodeticPoint location;
     private TimeScale     utc;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss");
         // Defines the Earth shape
@@ -62,19 +68,19 @@ public class DOPComputerTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         earth    = null;
         location = null;
         utc      = null;
     }
 
     @Test
-    public void testBasicCompute() {
+    void testBasicCompute() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location);
-        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assertions.assertNull(computer.getElevationMask());
+        assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        assertNull(computer.getElevationMask());
 
         // Defines the computation date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 2, 0, 0., utc);
@@ -83,24 +89,24 @@ public class DOPComputerTest {
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
-        Assertions.assertEquals(11, dop.getGnssNb());
-        Assertions.assertEquals(location, dop.getLocation());
-        Assertions.assertEquals(date, dop.getDate());
-        Assertions.assertEquals(1.53, dop.getGdop(), 0.01);
-        Assertions.assertEquals(0.71, dop.getTdop(), 0.01);
-        Assertions.assertEquals(1.35, dop.getPdop(), 0.01);
-        Assertions.assertEquals(0.84, dop.getHdop(), 0.01);
-        Assertions.assertEquals(1.06, dop.getVdop(), 0.01);
+        assertEquals(11, dop.getGnssNb());
+        assertEquals(location, dop.getLocation());
+        assertEquals(date, dop.getDate());
+        assertEquals(1.53, dop.getGdop(), 0.01);
+        assertEquals(0.71, dop.getTdop(), 0.01);
+        assertEquals(1.35, dop.getPdop(), 0.01);
+        assertEquals(0.84, dop.getHdop(), 0.01);
+        assertEquals(1.06, dop.getVdop(), 0.01);
     }
 
     @Test
-    public void testComputeWithMinElevation() {
+    void testComputeWithMinElevation() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location)
                                      .withMinElevation(FastMath.toRadians(10.));
-        Assertions.assertEquals(FastMath.toRadians(10.), computer.getMinElevation(), 0.);
-        Assertions.assertNull(computer.getElevationMask());
+        assertEquals(FastMath.toRadians(10.), computer.getMinElevation(), 0.);
+        assertNull(computer.getElevationMask());
 
         // Defines the computation date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 13, 0, 0., utc);
@@ -109,23 +115,23 @@ public class DOPComputerTest {
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
-        Assertions.assertEquals(10, dop.getGnssNb());
-        Assertions.assertEquals(location, dop.getLocation());
-        Assertions.assertEquals(date, dop.getDate());
-        Assertions.assertEquals(1.94, dop.getGdop(), 0.01);
-        Assertions.assertEquals(0.89, dop.getTdop(), 0.01);
-        Assertions.assertEquals(1.72, dop.getPdop(), 0.01);
-        Assertions.assertEquals(0.82, dop.getHdop(), 0.01);
-        Assertions.assertEquals(1.51, dop.getVdop(), 0.01);
+        assertEquals(10, dop.getGnssNb());
+        assertEquals(location, dop.getLocation());
+        assertEquals(date, dop.getDate());
+        assertEquals(1.94, dop.getGdop(), 0.01);
+        assertEquals(0.89, dop.getTdop(), 0.01);
+        assertEquals(1.72, dop.getPdop(), 0.01);
+        assertEquals(0.82, dop.getHdop(), 0.01);
+        assertEquals(1.51, dop.getVdop(), 0.01);
     }
 
     @Test
-    public void testComputeWithElevationMask() {
+    void testComputeWithElevationMask() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location).withElevationMask(getMask());
-        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assertions.assertNotNull(computer.getElevationMask());
+        assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        assertNotNull(computer.getElevationMask());
 
         // Defines the computation date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 7, 0, 0., utc);
@@ -134,23 +140,23 @@ public class DOPComputerTest {
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: expected values come from Trimble Planning software
-        Assertions.assertEquals(6, dop.getGnssNb());
-        Assertions.assertEquals(location, dop.getLocation());
-        Assertions.assertEquals(date, dop.getDate());
-        Assertions.assertEquals(3.26, dop.getGdop(), 0.01);
-        Assertions.assertEquals(1.79, dop.getTdop(), 0.01);
-        Assertions.assertEquals(2.72, dop.getPdop(), 0.01);
-        Assertions.assertEquals(1.29, dop.getHdop(), 0.01);
-        Assertions.assertEquals(2.40, dop.getVdop(), 0.01);
+        assertEquals(6, dop.getGnssNb());
+        assertEquals(location, dop.getLocation());
+        assertEquals(date, dop.getDate());
+        assertEquals(3.26, dop.getGdop(), 0.01);
+        assertEquals(1.79, dop.getTdop(), 0.01);
+        assertEquals(2.72, dop.getPdop(), 0.01);
+        assertEquals(1.29, dop.getHdop(), 0.01);
+        assertEquals(2.40, dop.getVdop(), 0.01);
     }
 
     @Test
-    public void testNoDOPComputed() {
+    void testNoDOPComputed() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location).withElevationMask(getMask());
-        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assertions.assertNotNull(computer.getElevationMask());
+        assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        assertNotNull(computer.getElevationMask());
 
         // Defines the computation date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 31, 10, 0, 0., utc);
@@ -159,23 +165,23 @@ public class DOPComputerTest {
         final DOP dop = computer.compute(date, getGpsPropagators());
 
         // Checks: comparison is made with results from Trimble Planning software
-        Assertions.assertEquals(3, dop.getGnssNb());
-        Assertions.assertEquals(location, dop.getLocation());
-        Assertions.assertEquals(date, dop.getDate());
-        Assertions.assertTrue(Double.isNaN(dop.getGdop()));
-        Assertions.assertTrue(Double.isNaN(dop.getHdop()));
-        Assertions.assertTrue(Double.isNaN(dop.getPdop()));
-        Assertions.assertTrue(Double.isNaN(dop.getTdop()));
-        Assertions.assertTrue(Double.isNaN(dop.getVdop()));
+        assertEquals(3, dop.getGnssNb());
+        assertEquals(location, dop.getLocation());
+        assertEquals(date, dop.getDate());
+        assertTrue(Double.isNaN(dop.getGdop()));
+        assertTrue(Double.isNaN(dop.getHdop()));
+        assertTrue(Double.isNaN(dop.getPdop()));
+        assertTrue(Double.isNaN(dop.getTdop()));
+        assertTrue(Double.isNaN(dop.getVdop()));
     }
 
     @Test
-    public void testComputeFromTLE() {
+    void testComputeFromTLE() {
 
         // Creates the computer
         final DOPComputer computer = DOPComputer.create(earth, location);
-        Assertions.assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
-        Assertions.assertNull(computer.getElevationMask());
+        assertEquals(DOPComputer.DOP_MIN_ELEVATION, computer.getMinElevation(), 0.);
+        assertNull(computer.getElevationMask());
 
         // Defines the computation date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 27, 12, 0, 0., utc);
@@ -184,19 +190,19 @@ public class DOPComputerTest {
         final DOP dop = computer.compute(date, getTlePropagators());
 
         // Checks
-        Assertions.assertEquals(11, dop.getGnssNb());
-        Assertions.assertEquals(location, dop.getLocation());
-        Assertions.assertEquals(date, dop.getDate());
-        Assertions.assertEquals(1.40, dop.getGdop(), 0.01);
-        Assertions.assertEquals(0.81, dop.getHdop(), 0.01);
-        Assertions.assertEquals(1.28, dop.getPdop(), 0.01);
-        Assertions.assertEquals(0.56, dop.getTdop(), 0.01);
-        Assertions.assertEquals(1.00, dop.getVdop(), 0.01);
+        assertEquals(11, dop.getGnssNb());
+        assertEquals(location, dop.getLocation());
+        assertEquals(date, dop.getDate());
+        assertEquals(1.40, dop.getGdop(), 0.01);
+        assertEquals(0.81, dop.getHdop(), 0.01);
+        assertEquals(1.28, dop.getPdop(), 0.01);
+        assertEquals(0.56, dop.getTdop(), 0.01);
+        assertEquals(1.00, dop.getVdop(), 0.01);
     }
 
     @Test
-    public void testNotEnoughSV() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNotEnoughSV() {
+        assertThrows(OrekitException.class, () -> {
 
             // Get the TLEs for 3 SV from the GPS constellation ...
             List<Propagator> gps = new ArrayList<Propagator>();

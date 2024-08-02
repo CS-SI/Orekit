@@ -18,26 +18,27 @@ package org.orekit.utils;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 
-public class DifferentiationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class DifferentiationTest {
 
     @Test
-    public void testScaleOne() {
+    void testScaleOne() {
         // with this step, computation is exact in IEEE754
         doTestScale(1.0, FastMath.pow(1.0, -3), Precision.SAFE_MIN);
     }
 
     @Test
-    public void testScalePowerOfTwoStepRepresentableNumber() {
+    void testScalePowerOfTwoStepRepresentableNumber() {
         // with this step, computation is exact in IEEE754
         doTestScale(FastMath.scalb(1.0, -10), FastMath.pow(1.0, -7), Precision.SAFE_MIN);
     }
 
     @Test
-    public void testScalePowerOfTwoStepNonRepresentableNumber() {
+    void testScalePowerOfTwoStepNonRepresentableNumber() {
         // with this step, computation has numerical noise
         doTestScale(FastMath.scalb(1.0, -10), 0.007, 1.7e-12);
     }
@@ -51,7 +52,7 @@ public class DifferentiationTest {
 
         for (double x = -3.0; x < 3.0; x += 0.125) {
             driver.setValue(x);
-            Assertions.assertEquals(f1Ref.value(driver, new AbsoluteDate()), f1Diff.value(driver, new AbsoluteDate()), tolerance);
+            assertEquals(f1Ref.value(driver, new AbsoluteDate()), f1Diff.value(driver, new AbsoluteDate()), tolerance);
         }
 
     }

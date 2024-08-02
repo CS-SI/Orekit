@@ -25,7 +25,6 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableVectorFun
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -39,37 +38,44 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 
-public class PoissonSeriesParserTest {
+class PoissonSeriesParserTest {
 
     @Test
-    public void testEmptyData() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testEmptyData() {
+        assertThrows(OrekitException.class, () -> {
             buildData("");
         });
     }
 
     @Test
-    public void testNoCoeffData() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNoCoeffData() {
+        assertThrows(OrekitException.class, () -> {
             buildData("this is NOT an IERS nutation model file\n");
         });
     }
 
     @Test
-    public void testEmptyArrayData() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testEmptyArrayData() {
+        assertThrows(OrekitException.class, () -> {
             buildData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n");
         });
     }
 
     @Test
-    public void testMissingTermData() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testMissingTermData() {
+        assertThrows(OrekitException.class, () -> {
             buildData("  0.0 + 0.0 t - 0.0 t^2 - 0.0 t^3 - 0.0 t^4 + 0.0 t^5\n"
                     + "j = 0  Nb of terms = 1\n");
         });
@@ -83,8 +89,8 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testNoFile() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNoFile() {
+        assertThrows(OrekitException.class, () -> {
             InputStream stream =
                     PoissonSeriesParserTest.class.getResourceAsStream("/org/orekit/resources/missing");
             new PoissonSeriesParser(17).
@@ -97,7 +103,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testMissingSeries() {
+    void testMissingSeries() {
         try {
             String data =
                     "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
@@ -113,16 +119,16 @@ public class PoissonSeriesParserTest {
                 withFirstPlanetary(9).
                 withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.MISSING_SERIE_J_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(2, oe.getParts()[0]);
-            Assertions.assertEquals(6, oe.getParts()[2]);
+            assertEquals(OrekitMessages.MISSING_SERIE_J_IN_FILE, oe.getSpecifier());
+            assertEquals(2, oe.getParts()[0]);
+            assertEquals(6, oe.getParts()[2]);
         }
     }
 
     @Test
-    public void testMissingTerms() {
+    void testMissingTerms() {
         try {
             String data =
                     "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
@@ -139,14 +145,14 @@ public class PoissonSeriesParserTest {
                 withFirstPlanetary(9).
                 withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testSmall() {
+    void testSmall() {
         String data =
             "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
             + "j = 0  Nb of terms = 1\n"
@@ -157,11 +163,11 @@ public class PoissonSeriesParserTest {
                                withFirstPlanetary(9).
                                withSinCos(0, 2, 1.0, 3, 1.0).
                                parse(new ByteArrayInputStream(data.getBytes()), "");
-        Assertions.assertEquals(1, nd.getNonPolynomialSize());
+        assertEquals(1, nd.getNonPolynomialSize());
     }
 
     @Test
-    public void testSecondsMarkers() {
+    void testSecondsMarkers() {
         String data =
             "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
             + "j = 0  Nb of terms = 1\n"
@@ -172,11 +178,11 @@ public class PoissonSeriesParserTest {
                                withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                                withFirstDelaunay(4).
                                parse(new ByteArrayInputStream(data.getBytes()), "");
-        Assertions.assertEquals(1, nd.getNonPolynomialSize());
+        assertEquals(1, nd.getNonPolynomialSize());
     }
 
     @Test
-    public void testExtract() {
+    void testExtract() {
         String data =
             "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
             + "precession-nutation model\n"
@@ -239,7 +245,7 @@ public class PoissonSeriesParserTest {
         // as some terms share the same Delaunay and planetary coefficients and are
         // therefore grouped together. The Delaunay arguments for the 5 terms are:
         // Ω, 4(F-D+Ω), l-l'-2(F+D)-Ω, l-2(F+D)-Ω and 2Ω
-        Assertions.assertEquals(5,
+        assertEquals(5,
                             new PoissonSeriesParser(17).
                              withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                              withFirstDelaunay(4).
@@ -249,7 +255,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testWrongIndex() {
+    void testWrongIndex() {
         String data =
             "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
             + "precession-nutation model\n"
@@ -315,16 +321,16 @@ public class PoissonSeriesParserTest {
                 withFirstPlanetary(9).
                 withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "dummy");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(53, oe.getParts()[0]);
-            Assertions.assertTrue(((String) oe.getParts()[2]).startsWith(" 999           0.00"));
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(53, oe.getParts()[0]);
+            assertTrue(((String) oe.getParts()[2]).startsWith(" 999           0.00"));
         }
     }
 
     @Test
-    public void testTruncated() {
+    void testTruncated() {
         String data =
             "Expression for the X coordinate of the CIP in the GCRS based on the IAU2000A\n"
             + "precession-nutation model\n"
@@ -375,14 +381,14 @@ public class PoissonSeriesParserTest {
                 withFirstPlanetary(9).
                 withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "dummy");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testTrue1996Files() {
+    void testTrue1996Files() {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(10).
@@ -391,92 +397,92 @@ public class PoissonSeriesParserTest {
                     withSinCos(1, 8, 1.0, -1, 1.0);
         InputStream psiStream =
             getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
-        Assertions.assertEquals(106,
+        assertEquals(106,
                             parser.parse(psiStream, "1996/tab5.1.txt").getNonPolynomialSize());
         parser = parser.withSinCos(0, -1, 1.0, 9, 1.0).withSinCos(1, -1, 1.0, 10, 1.0);
         InputStream epsilonStream =
             getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
-        Assertions.assertNotNull(parser.parse(epsilonStream, "1996/tab5.1.txt"));
+        assertNotNull(parser.parse(epsilonStream, "1996/tab5.1.txt"));
     }
 
     @Test
-    public void testTrue2003Files() {
+    void testTrue2003Files() {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                     withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2a.txt");
-        Assertions.assertNotNull(parser.parse(xStream, "2003/tab5.2a.txt"));
+        assertNotNull(parser.parse(xStream, "2003/tab5.2a.txt"));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2b.txt");
-        Assertions.assertNotNull(parser.parse(yStream, "2003/tab5.2b.txt"));
+        assertNotNull(parser.parse(yStream, "2003/tab5.2b.txt"));
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2c.txt");
-        Assertions.assertNotNull(parser.parse(zStream, "2003/tab5.2c.txt"));
+        assertNotNull(parser.parse(zStream, "2003/tab5.2c.txt"));
     }
 
     @Test
-    public void testTrue2010Files() {
+    void testTrue2010Files() {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                     withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
-        Assertions.assertNotNull(parser.parse(xStream, "2010/tab5.2a.txt"));
+        assertNotNull(parser.parse(xStream, "2010/tab5.2a.txt"));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
-        Assertions.assertNotNull(parser.parse(yStream, "2010/tab5.2b.txt"));
+        assertNotNull(parser.parse(yStream, "2010/tab5.2b.txt"));
         InputStream zStream =
                 getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
-        Assertions.assertNotNull(parser.parse(zStream, "2010/tab5.2d.txt"));
+        assertNotNull(parser.parse(zStream, "2010/tab5.2d.txt"));
 
         PoissonSeriesParser correctionParser =
                 new PoissonSeriesParser(14).withFirstDelaunay(4).withSinCos(0, 11, 1.0, 12, 1.0);
         InputStream xCorrectionStream =
                 getClass().getResourceAsStream(directory + "2010/tab5.1a.txt");
-        Assertions.assertNotNull(correctionParser.parse(xCorrectionStream, "2010/tab5.1a.txt"));
+        assertNotNull(correctionParser.parse(xCorrectionStream, "2010/tab5.1a.txt"));
         correctionParser = correctionParser.withSinCos(0, 13, 1.0, 14, 1.0);
         InputStream yCorrectionStream =
                 getClass().getResourceAsStream(directory + "2010/tab5.1a.txt");
-        Assertions.assertNotNull(correctionParser.parse(yCorrectionStream, "2010/tab5.1a.txt"));
+        assertNotNull(correctionParser.parse(yCorrectionStream, "2010/tab5.1a.txt"));
 
 
     }
 
     @Test
-    public void testCorruptedLDelaunayMultiplier() {
+    void testCorruptedLDelaunayMultiplier() {
         checkCorrupted("/tides/tab6.5a-corrupted-l-Delaunay-multiplier.txt", "σ₁");
     }
 
     @Test
-    public void testCorruptedLPrimeDelaunayMultiplier() {
+    void testCorruptedLPrimeDelaunayMultiplier() {
         checkCorrupted("/tides/tab6.5a-corrupted-lPrime-Delaunay-multiplier.txt", "Q₁");
     }
 
     @Test
-    public void testCorruptedFDelaunayMultiplier() {
+    void testCorruptedFDelaunayMultiplier() {
         checkCorrupted("/tides/tab6.5a-corrupted-F-Delaunay-multiplier.txt", "Nτ₁");
     }
 
     @Test
-    public void testCorruptedDDelaunayMultiplier() {
+    void testCorruptedDDelaunayMultiplier() {
         checkCorrupted("/tides/tab6.5a-corrupted-D-Delaunay-multiplier.txt", "2Q₁");
     }
 
     @Test
-    public void testCorruptedOmegaDelaunayMultiplier() {
+    void testCorruptedOmegaDelaunayMultiplier() {
         checkCorrupted("/tides/tab6.5a-corrupted-Omega-Delaunay-multiplier.txt", "τ₁");
     }
 
     @Test
-    public void testCorruptedDoodsonMultiplier() {
+    void testCorruptedDoodsonMultiplier() {
         checkCorrupted("/tides/tab6.5a-corrupted-Doodson-multiplier.txt", "Lk₁");
     }
 
     @Test
-    public void testCorruptedDoodsonNumber() {
+    void testCorruptedDoodsonNumber() {
         checkCorrupted("/tides/tab6.5a-corrupted-Doodson-number.txt", "No₁");
     }
 
@@ -489,41 +495,41 @@ public class PoissonSeriesParserTest {
                     withFirstDelaunay(10).
                     withSinCos(0, 18, 1.0e-12, 17, 1.0e-12);
             parser.parse(getClass().getResourceAsStream(resourceName), resourceName);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             if (lineStart == null) {
-                Assertions.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+                assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
             } else {
-                Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-                Assertions.assertTrue(((String) oe.getParts()[2]).trim().startsWith(lineStart));
+                assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+                assertTrue(((String) oe.getParts()[2]).trim().startsWith(lineStart));
             }
         } catch (Exception e) {
-            Assertions.fail("wrong exception caught: " + e);
+            fail("wrong exception caught: " + e);
         }
     }
 
     @Test
-    public void testGammaTauForbidden() {
+    void testGammaTauForbidden() {
         try {
             new PoissonSeriesParser(18).withGamma(4).withDoodson(4, 3);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
+            assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testTauGammaForbidden() {
+    void testTauGammaForbidden() {
         try {
             new PoissonSeriesParser(18).withDoodson(4, 3).withGamma(4);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
+            assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testCompile() throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+    void testCompile() throws SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
                 new PoissonSeriesParser(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
@@ -552,15 +558,15 @@ public class PoissonSeriesParserTest {
             double y     = ySeries.value(elements);
             double s     = sSeries.value(elements);
             double[] xys = xysSeries.value(elements);
-            Assertions.assertEquals(x, xys[0], 1.0e-15 * FastMath.abs(x));
-            Assertions.assertEquals(y, xys[1], 1.0e-15 * FastMath.abs(y));
-            Assertions.assertEquals(s, xys[2], 1.0e-15 * FastMath.abs(s));
+            assertEquals(x, xys[0], 1.0e-15 * FastMath.abs(x));
+            assertEquals(y, xys[1], 1.0e-15 * FastMath.abs(y));
+            assertEquals(s, xys[2], 1.0e-15 * FastMath.abs(s));
         }
 
     }
 
     @Test
-    public void testDerivativesAsField() {
+    void testDerivativesAsField() {
 
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
@@ -592,7 +598,7 @@ public class PoissonSeriesParserTest {
 
             // direct computation of derivatives
             FieldBodiesElements<DerivativeStructure> elements = arguments.evaluateAll(date);
-            Assertions.assertEquals(0.0, elements.getDate().durationFrom(date).getValue(), 1.0e-15);
+            assertEquals(0.0, elements.getDate().durationFrom(date).getValue(), 1.0e-15);
             DerivativeStructure xDirect = xSeries.value(elements);
             DerivativeStructure yDirect = ySeries.value(elements);
             DerivativeStructure zDirect = zSeries.value(elements);
@@ -606,19 +612,19 @@ public class PoissonSeriesParserTest {
             zCoordinate.setDate(date.toAbsoluteDate());
             DerivativeStructure zFinite = dz.value(zero);
 
-            Assertions.assertEquals(xFinite.getValue(),              xDirect.getValue(),              FastMath.abs(7.0e-15 * xFinite.getValue()));
-            Assertions.assertEquals(xFinite.getPartialDerivative(1), xDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * xFinite.getPartialDerivative(1)));
-            Assertions.assertEquals(yFinite.getValue(),              yDirect.getValue(),              FastMath.abs(7.0e-15 * yFinite.getValue()));
-            Assertions.assertEquals(yFinite.getPartialDerivative(1), yDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * yFinite.getPartialDerivative(1)));
-            Assertions.assertEquals(zFinite.getValue(),              zDirect.getValue(),              FastMath.abs(7.0e-15 * zFinite.getValue()));
-            Assertions.assertEquals(zFinite.getPartialDerivative(1), zDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * zFinite.getPartialDerivative(1)));
+            assertEquals(xFinite.getValue(),              xDirect.getValue(),              FastMath.abs(7.0e-15 * xFinite.getValue()));
+            assertEquals(xFinite.getPartialDerivative(1), xDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * xFinite.getPartialDerivative(1)));
+            assertEquals(yFinite.getValue(),              yDirect.getValue(),              FastMath.abs(7.0e-15 * yFinite.getValue()));
+            assertEquals(yFinite.getPartialDerivative(1), yDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * yFinite.getPartialDerivative(1)));
+            assertEquals(zFinite.getValue(),              zDirect.getValue(),              FastMath.abs(7.0e-15 * zFinite.getValue()));
+            assertEquals(zFinite.getPartialDerivative(1), zDirect.getPartialDerivative(1), FastMath.abs(2.0e-07 * zFinite.getPartialDerivative(1)));
 
         }
 
     }
 
     @Test
-    public void testDerivativesFromDoubleAPI() {
+    void testDerivativesFromDoubleAPI() {
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
@@ -652,9 +658,9 @@ public class PoissonSeriesParserTest {
             // finite differences computation of derivatives
             DerivativeStructure[] d = finite.value(factory.variable(0, t));
 
-            Assertions.assertEquals(d.length, dAPI.length);
+            assertEquals(d.length, dAPI.length);
             for (int i = 0; i < d.length; ++i) {
-                Assertions.assertEquals(d[i].getPartialDerivative(1), dAPI[i], FastMath.abs(2.0e-7 * d[i].getPartialDerivative(1)));
+                assertEquals(d[i].getPartialDerivative(1), dAPI[i], FastMath.abs(2.0e-7 * d[i].getPartialDerivative(1)));
             }
 
         }
@@ -662,7 +668,7 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
-    public void testDerivativesFromFieldAPI() {
+    void testDerivativesFromFieldAPI() {
         Utils.setDataRoot("regular-data");
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser parser =
@@ -696,9 +702,9 @@ public class PoissonSeriesParserTest {
             // finite differences computation of derivatives
             DerivativeStructure[] d = finite.value(factory.variable(0, t));
 
-            Assertions.assertEquals(d.length, dAPI.length);
+            assertEquals(d.length, dAPI.length);
             for (int i = 0; i < d.length; ++i) {
-                Assertions.assertEquals(d[i].getPartialDerivative(1), dAPI[i].getReal(), FastMath.abs(2.0e-7 * d[i].getPartialDerivative(1)));
+                assertEquals(d[i].getPartialDerivative(1), dAPI[i].getReal(), FastMath.abs(2.0e-7 * d[i].getPartialDerivative(1)));
             }
 
         }

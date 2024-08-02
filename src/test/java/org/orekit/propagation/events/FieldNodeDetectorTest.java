@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -37,15 +36,17 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class FieldNodeDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class FieldNodeDetectorTest {
 
     @Test
-    public void testIssue138() {
+    void testIssue138() {
         doTestIssue138(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIssue158() {
+    void testIssue158() {
         doTestIssue158(Binary64Field.getInstance());
     }
 
@@ -80,8 +81,8 @@ public class FieldNodeDetectorTest {
         // First propagation
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(finalDate);
-        Assertions.assertEquals(2, logger1.getLoggedEvents().size());
-        Assertions.assertEquals(2, logger2.getLoggedEvents().size());
+        assertEquals(2, logger1.getLoggedEvents().size());
+        assertEquals(2, logger2.getLoggedEvents().size());
         logger1.clearLoggedEvents();
         logger2.clearLoggedEvents();
         FieldBoundedPropagator<T> postpro = generator.getGeneratedEphemeris();
@@ -90,8 +91,8 @@ public class FieldNodeDetectorTest {
         postpro.addEventDetector(node1);
         postpro.addEventDetector(node2);
         postpro.propagate(finalDate);
-        Assertions.assertEquals(2, logger1.getLoggedEvents().size());
-        Assertions.assertEquals(2, logger2.getLoggedEvents().size());
+        assertEquals(2, logger1.getLoggedEvents().size());
+        assertEquals(2, logger2.getLoggedEvents().size());
 
     }
 
@@ -114,20 +115,20 @@ public class FieldNodeDetectorTest {
                 new FieldKeplerianOrbit<>(a, e1, i, pa, raan, m, PositionAngleType.MEAN, frame, date, zero.add(mu));
         FieldEventDetector<T> detector1 = new FieldNodeDetector<>(orbit1, orbit1.getFrame());
         T t1 = orbit1.getKeplerianPeriod();
-        Assertions.assertEquals(t1.getReal() / 28.82, detector1.getMaxCheckInterval().currentInterval(null), t1.getReal() / 10000);
+        assertEquals(t1.getReal() / 28.82, detector1.getMaxCheckInterval().currentInterval(null), t1.getReal() / 10000);
 
         // nearly circular, inclined orbit
         final FieldKeplerianOrbit<T> orbit2 =
                 new FieldKeplerianOrbit<>(a, e2, i, pa, raan, m, PositionAngleType.MEAN, frame, date, zero.add(mu));
         FieldEventDetector<T> detector2 = new FieldNodeDetector<>(orbit2, orbit2.getFrame());
         T t2 = orbit2.getKeplerianPeriod();
-        Assertions.assertEquals(t1.getReal(), t2.getReal(), t1.getReal() / 10000);
-        Assertions.assertEquals(t2.getReal() / 3, detector2.getMaxCheckInterval().currentInterval(null), t2.getReal() / 10000);
+        assertEquals(t1.getReal(), t2.getReal(), t1.getReal() / 10000);
+        assertEquals(t2.getReal() / 3, detector2.getMaxCheckInterval().currentInterval(null), t2.getReal() / 10000);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

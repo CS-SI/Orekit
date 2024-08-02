@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
@@ -54,14 +53,20 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdapterPropagatorTest {
+class AdapterPropagatorTest {
 
     @Test
-    public void testLowEarthOrbit() throws ParseException, IOException {
+    void testLowEarthOrbit() throws ParseException, IOException {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -104,9 +109,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -114,16 +119,16 @@ public class AdapterPropagatorTest {
             PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, leo.getFrame());
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, leo.getFrame());
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
-            Assertions.assertEquals(0, revertError, 0.45);
-            Assertions.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
-            Assertions.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
-            Assertions.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
+            assertEquals(0, revertError, 0.45);
+            assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
 
     }
 
     @Test
-    public void testEccentricOrbit() throws ParseException, IOException {
+    void testEccentricOrbit() throws ParseException, IOException {
 
         Orbit heo = new KeplerianOrbit(90000000.0, 0.92, FastMath.toRadians(98.0),
                                        FastMath.toRadians(12.3456),
@@ -166,9 +171,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -176,16 +181,16 @@ public class AdapterPropagatorTest {
             PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, heo.getFrame());
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, heo.getFrame());
             double revertError       = Vector3D.distance(pvWithout.getPosition(), pvReverted.getPosition());
-            Assertions.assertEquals(0, revertError, 2.5e-5 * heo.getA());
-            Assertions.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
-            Assertions.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
-            Assertions.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
+            assertEquals(0, revertError, 2.5e-5 * heo.getA());
+            assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
 
     }
 
     @Test
-    public void testNonKeplerian() throws ParseException, IOException {
+    void testNonKeplerian() throws ParseException, IOException {
 
         Orbit leo = new CircularOrbit(7204319.233600575, 4.434564637450575E-4, 0.0011736728299091088,
                                       1.7211611441767323, 5.5552084166959474,
@@ -238,9 +243,9 @@ public class AdapterPropagatorTest {
 
         // the adapted propagators do not manage the additional states from the reference,
         // they simply forward them
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
+        assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         double maxDelta = 0;
         double maxNominal = 0;
@@ -254,18 +259,18 @@ public class AdapterPropagatorTest {
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             maxDelta = FastMath.max(maxDelta, revertError);
             maxNominal = FastMath.max(maxNominal, nominal);
-            Assertions.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
-            Assertions.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
-            Assertions.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
+            assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
-        Assertions.assertTrue(maxDelta   < 120);
-        Assertions.assertTrue(maxNominal > 2800);
+        assertTrue(maxDelta   < 120);
+        assertTrue(maxNominal > 2800);
 
     }
 
     /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
     @Test
-    public void testIssue949() {
+    void testIssue949() {
         // GIVEN
         final AbsoluteDate initialDate  = new AbsoluteDate();
         final Orbit        initialOrbit = TestUtils.getDefaultOrbit(initialDate);
@@ -284,7 +289,7 @@ public class AdapterPropagatorTest {
         adapterPropagator.addAdditionalStateProvider(additionalStateProvider);
 
         // WHEN & THEN
-        Assertions.assertDoesNotThrow(() -> adapterPropagator.propagate(finalOrbit.getDate()), "No error should have been thrown");
+        assertDoesNotThrow(() -> adapterPropagator.propagate(finalOrbit.getDate()), "No error should have been thrown");
 
     }
 
@@ -350,19 +355,19 @@ public class AdapterPropagatorTest {
 
         // both the initial propagator and generated ephemeris manage one of the two
         // additional states, but they also contain unmanaged copies of the other one
-        Assertions.assertFalse(propagator.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertTrue(propagator.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertFalse(ephemeris.isAdditionalStateManaged("dummy 1"));
-        Assertions.assertTrue(ephemeris.isAdditionalStateManaged("dummy 2"));
-        Assertions.assertEquals(2, ephemeris.getInitialState().getAdditionalState("dummy 1").length);
-        Assertions.assertEquals(1, ephemeris.getInitialState().getAdditionalState("dummy 2").length);
+        assertFalse(propagator.isAdditionalStateManaged("dummy 1"));
+        assertTrue(propagator.isAdditionalStateManaged("dummy 2"));
+        assertFalse(ephemeris.isAdditionalStateManaged("dummy 1"));
+        assertTrue(ephemeris.isAdditionalStateManaged("dummy 2"));
+        assertEquals(2, ephemeris.getInitialState().getAdditionalState("dummy 1").length);
+        assertEquals(1, ephemeris.getInitialState().getAdditionalState("dummy 2").length);
 
         return ephemeris;
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format");
     }
 

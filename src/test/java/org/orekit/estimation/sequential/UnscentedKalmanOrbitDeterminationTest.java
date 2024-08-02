@@ -32,7 +32,6 @@ import org.hipparchus.linear.RealVector;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MerweUnscentedTransform;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -87,7 +86,11 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class UnscentedKalmanOrbitDeterminationTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class UnscentedKalmanOrbitDeterminationTest {
 
     /** Header. */
     private static final String HEADER = "%-25s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s\t%16s";
@@ -106,7 +109,7 @@ public class UnscentedKalmanOrbitDeterminationTest {
      * </p>
      */
     @Test
-    public void testLageos() throws URISyntaxException, IOException {
+    void testLageos() throws URISyntaxException, IOException {
 
         // Print
         print = false;
@@ -167,15 +170,15 @@ public class UnscentedKalmanOrbitDeterminationTest {
         final StreamingStatistics statX      = observer.getXStatistics();
         final StreamingStatistics statY      = observer.getYStatistics();
         final StreamingStatistics statZ      = observer.getZStatistics();
-        Assertions.assertEquals(0.0, statX.getMean(), 1.39e-3);
-        Assertions.assertEquals(0.0, statY.getMean(), 1.86e-4);
-        Assertions.assertEquals(0.0, statZ.getMean(), 2.85e-4);
-        Assertions.assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
-        Assertions.assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
-        Assertions.assertEquals(0.0, statZ.getMin(),  0.029); // Value is negative
-        Assertions.assertEquals(0.0, statX.getMax(),  0.026);
-        Assertions.assertEquals(0.0, statY.getMax(),  0.032);
-        Assertions.assertEquals(0.0, statZ.getMax(),  0.027);
+        assertEquals(0.0, statX.getMean(), 1.39e-3);
+        assertEquals(0.0, statY.getMean(), 1.86e-4);
+        assertEquals(0.0, statZ.getMean(), 2.85e-4);
+        assertEquals(0.0, statX.getMin(),  0.031); // Value is negative
+        assertEquals(0.0, statY.getMin(),  0.028); // Value is negative
+        assertEquals(0.0, statZ.getMin(),  0.029); // Value is negative
+        assertEquals(0.0, statX.getMax(),  0.026);
+        assertEquals(0.0, statY.getMax(),  0.032);
+        assertEquals(0.0, statZ.getMax(),  0.027);
 
         // Verify the last estimated position
         final RealVector estimatedState = estimation.getPhysicalEstimatedState();
@@ -184,15 +187,15 @@ public class UnscentedKalmanOrbitDeterminationTest {
                                                 estimatedState.getEntry(1),
                                                 estimatedState.getEntry(2));
         final double dP = 0.029;
-        Assertions.assertEquals(0.0, Vector3D.distance(ref, estimated), dP);
+        assertEquals(0.0, Vector3D.distance(ref, estimated), dP);
 
         // Check that "physical" matrices are not null
-        Assertions.assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
-        Assertions.assertNotNull(estimation.getPhysicalKalmanGain());
+        assertNotNull(estimation.getPhysicalInnovationCovarianceMatrix());
+        assertNotNull(estimation.getPhysicalKalmanGain());
 
         // Verify that station transition and measurement matrices are null
-        Assertions.assertNull(estimation.getPhysicalMeasurementJacobian());
-        Assertions.assertNull(estimation.getPhysicalStateTransitionMatrix());
+        assertNull(estimation.getPhysicalMeasurementJacobian());
+        assertNull(estimation.getPhysicalStateTransitionMatrix());
 
     }
 

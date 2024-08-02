@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -32,10 +31,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class ExtendedPVCoordinatesAdapterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class ExtendedPVCoordinatesAdapterTest {
 
     @Test
-    public void testDouble() {
+    void testDouble() {
 
         final Frame         eme2000   = FramesFactory.getEME2000();
         final CelestialBody moon      = CelestialBodyFactory.getMoon();
@@ -54,15 +55,15 @@ public class ExtendedPVCoordinatesAdapterTest {
             maxA = FastMath.max(maxA, pv.getAcceleration().getNorm());
             maxR = FastMath.max(maxR, moonFrame.getTransformTo(eme2000, t).getRotation().getAngle());
         }
-        Assertions.assertEquals(0.0, maxP, 5.0e-7);
-        Assertions.assertEquals(0.0, maxV, 1.1e-12);
-        Assertions.assertEquals(0.0, maxA, 2.8e-18);
-        Assertions.assertEquals(0.0, maxR, 1.0e-30);
+        assertEquals(0.0, maxP, 5.0e-7);
+        assertEquals(0.0, maxV, 1.1e-12);
+        assertEquals(0.0, maxA, 2.8e-18);
+        assertEquals(0.0, maxR, 1.0e-30);
 
     }
 
     @Test
-    public void testField() {
+    void testField() {
         doTestField(Binary64Field.getInstance());
     }
 
@@ -87,15 +88,15 @@ public class ExtendedPVCoordinatesAdapterTest {
             maxA = FastMath.max(maxA, pv.getAcceleration().getNorm());
             maxR = FastMath.max(maxR, moonFrame.getTransformTo(eme2000, t).getRotation().getAngle());
         }
-        Assertions.assertEquals(0.0, maxP.getReal(), 5.0e-7);
-        Assertions.assertEquals(0.0, maxV.getReal(), 1.1e-12);
-        Assertions.assertEquals(0.0, maxA.getReal(), 2.8e-18);
-        Assertions.assertEquals(0.0, maxR.getReal(), 1.0e-30);
+        assertEquals(0.0, maxP.getReal(), 5.0e-7);
+        assertEquals(0.0, maxV.getReal(), 1.1e-12);
+        assertEquals(0.0, maxA.getReal(), 2.8e-18);
+        assertEquals(0.0, maxR.getReal(), 1.0e-30);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

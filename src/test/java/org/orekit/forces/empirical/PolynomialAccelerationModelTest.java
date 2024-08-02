@@ -27,7 +27,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -60,12 +59,17 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.Arrays;
 
-public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class PolynomialAccelerationModelTest extends AbstractForceModelTest {
 
     private Orbit initialOrbit;
 
     @Test
-    public void testEquivalentInertialManeuver() {
+    void testEquivalentInertialManeuver() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -80,13 +84,13 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         final AttitudeProvider accelerationLaw = new FrameAlignedProvider(new Rotation(direction, Vector3D.PLUS_K));
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", AbsoluteDate.J2000_EPOCH, 0);
         final ParametricAcceleration inertialAcceleration = new ParametricAcceleration(direction, true, accelerationModel);
-        Assertions.assertTrue(inertialAcceleration.dependsOnPositionOnly());
+        assertTrue(inertialAcceleration.dependsOnPositionOnly());
         inertialAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(mass, maneuverLaw, maneuver, accelerationLaw, inertialAcceleration, 1.0e-15);
     }
 
     @Test
-    public void testEquivalentTangentialManeuver() {
+    void testEquivalentTangentialManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -97,13 +101,13 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                                      duration, f, isp, Vector3D.PLUS_I);
         final AccelerationModel accelerationModel = new PolynomialAccelerationModel("", null, 0);
         final ParametricAcceleration lofAcceleration = new ParametricAcceleration(Vector3D.PLUS_I, false, accelerationModel);
-        Assertions.assertFalse(lofAcceleration.dependsOnPositionOnly());
+        assertFalse(lofAcceleration.dependsOnPositionOnly());
         lofAcceleration.getParametersDrivers().get(0).setValue(f / mass);
         doTestEquivalentManeuver(mass, commonLaw, maneuver, commonLaw, lofAcceleration, 1.0e-15);
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuver() {
+    void testEquivalentTangentialOverriddenManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -163,7 +167,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
         MultiSatStepHandler handler = interpolators -> {
             Vector3D p0 = interpolators.get(0).getCurrentState().getPosition();
             Vector3D p1 = interpolators.get(1).getCurrentState().getPosition();
-            Assertions.assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
+            assertEquals(0.0, Vector3D.distance(p0, p1), positionTolerance);
         };
         PropagatorsParallelizer parallelizer = new PropagatorsParallelizer(Arrays.asList(propagator0, propagator1),
                                                                            handler);
@@ -173,7 +177,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentInertialManeuverField() {
+    void testEquivalentInertialManeuverField() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -194,7 +198,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialManeuverField() {
+    void testEquivalentTangentialManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -211,7 +215,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuverField() {
+    void testEquivalentTangentialOverriddenManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -283,13 +287,13 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
             FieldAbsoluteDate<T> t = initialState.getDate().shiftedBy(dt);
             FieldVector3D<T> p0 = ephemeris0.propagate(t).getPosition();
             FieldVector3D<T> p1 = ephemeris1.propagate(t).getPosition();
-            Assertions.assertEquals(0, FieldVector3D.distance(p0, p1).getReal(), positionTolerance);
+            assertEquals(0, FieldVector3D.distance(p0, p1).getReal(), positionTolerance);
         }
 
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -319,7 +323,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
@@ -337,7 +341,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                             new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngleType.TRUE,
                                                FramesFactory.getEME2000(), initDate, Constants.EIGEN5C_EARTH_MU);
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
 
     }

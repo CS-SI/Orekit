@@ -17,7 +17,6 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -39,20 +38,22 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
-public class EcksteinHechlerConverterTest {
+class EcksteinHechlerConverterTest {
 
     private Orbit orbit;
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @Test
-    public void testConversionPositionVelocity() {
+    void testConversionPositionVelocity() {
         checkFit(orbit, 86400, 300, 1.0e-3, false, 2.610e-8);
     }
 
     @Test
-    public void testConversionPositionOnly() {
+    void testConversionPositionOnly() {
         checkFit(orbit, 86400, 300, 1.0e-3, true, 3.673e-8);
     }
 
@@ -97,36 +98,36 @@ public class EcksteinHechlerConverterTest {
 
         fitter.convert(sample, positionOnly);
 
-        Assertions.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
+        assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
         EcksteinHechlerPropagator prop = (EcksteinHechlerPropagator)fitter.getAdaptedPropagator();
         Orbit fitted = prop.getInitialState().getOrbit();
 
         final double eps = 1.0e-12;
-        Assertions.assertEquals(modified.getPosition().getX(),
+        assertEquals(modified.getPosition().getX(),
                             fitted.getPosition().getX(),
                             eps * modified.getPosition().getX());
-        Assertions.assertEquals(modified.getPosition().getY(),
+        assertEquals(modified.getPosition().getY(),
                             fitted.getPosition().getY(),
                             eps * modified.getPosition().getY());
-        Assertions.assertEquals(modified.getPosition().getZ(),
+        assertEquals(modified.getPosition().getZ(),
                             fitted.getPosition().getZ(),
                             eps * modified.getPosition().getZ());
 
-        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getX(),
+        assertEquals(modified.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
                             eps * modified.getPVCoordinates().getVelocity().getX());
-        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getY(),
+        assertEquals(modified.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
                             -eps * modified.getPVCoordinates().getVelocity().getY());
-        Assertions.assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
+        assertEquals(modified.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
                             -eps * modified.getPVCoordinates().getVelocity().getZ());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);

@@ -18,13 +18,15 @@ package org.orekit.propagation.numerical;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator.PartialsObserver {
 
@@ -49,10 +51,10 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
         this.s0           = null;
         this.accPartial   = null;
         if (columnName == null) {
-            Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
+            assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
         } else {
-            Assertions.assertEquals(1, harvester.getJacobiansColumnsNames().size());
-            Assertions.assertEquals(columnName, harvester.getJacobiansColumnsNames().get(0));
+            assertEquals(1, harvester.getJacobiansColumnsNames().size());
+            assertEquals(columnName, harvester.getJacobiansColumnsNames().get(0));
         }
     }
 
@@ -112,7 +114,7 @@ class PickUpHandler implements OrekitStepHandler, StateTransitionMatrixGenerator
 
     private void checkState(final SpacecraftState state) {
         stmGenerator.combinedDerivatives(state); // just for the side effect of calling partialsComputed
-        Assertions.assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
+        assertEquals(columnName == null ? 1 : 2, state.getAdditionalStatesValues().size());
         dYdY0 = harvester.getStateTransitionMatrix(state);
         dYdP  = harvester.getParametersJacobian(state); // may be null
         s0    = state;

@@ -16,10 +16,13 @@
  */
 package org.orekit.compiler.plugin;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.tools.JavaCompiler;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 import javax.tools.ToolProvider;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,7 +41,7 @@ import java.util.List;
  *
  * @author Evan Ward
  */
-public class DefaultDataContextPluginTest {
+class DefaultDataContextPluginTest {
 
     /**
      * Check compiling an example program generates the expected number of warnings.
@@ -46,7 +49,7 @@ public class DefaultDataContextPluginTest {
      * @throws IOException on error.
      */
     @Test
-    public void testWarnings() throws IOException {
+    void testWarnings() throws IOException {
         // setup
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         ByteArrayOutputStream err = new ByteArrayOutputStream();
@@ -71,9 +74,9 @@ public class DefaultDataContextPluginTest {
         long count = Arrays.stream(actual.split("\n"))
                 .filter(s -> s.contains(DefaultDataContextPlugin.MESSAGE))
                 .count();
-        Assertions.assertEquals(count, 30, actual);
-        Assertions.assertFalse(actual.contains(" error:"),actual);
-        Assertions.assertEquals(0, retVal, actual);
+        assertEquals(30, count, actual);
+        assertFalse(actual.contains(" error:"),actual);
+        assertEquals(0, retVal, actual);
     }
 
     /**

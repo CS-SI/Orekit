@@ -19,11 +19,12 @@ package org.orekit.frames;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class VersionedITRFProviderTest {
 
@@ -43,7 +44,7 @@ class VersionedITRFProviderTest {
         // WHEN
         final KinematicTransform actualTransform = versionedITRFProvider.getKinematicTransform(date);
         // THEN
-        Assertions.assertEquals(expectedTransform, actualTransform);
+        assertEquals(expectedTransform, actualTransform);
     }
 
     @Test
@@ -64,7 +65,7 @@ class VersionedITRFProviderTest {
         // WHEN
         final FieldKinematicTransform<Complex> actualTransform = versionedITRFProvider.getKinematicTransform(date);
         // THEN
-        Assertions.assertEquals(expectedTransform, actualTransform);
+        assertEquals(expectedTransform, actualTransform);
     }
 
     @Test
@@ -83,7 +84,7 @@ class VersionedITRFProviderTest {
         // WHEN
         final StaticTransform actualTransform = versionedITRFProvider.getStaticTransform(date);
         // THEN
-        Assertions.assertEquals(expectedTransform, actualTransform);
+        assertEquals(expectedTransform, actualTransform);
     }
 
     @Test
@@ -104,7 +105,7 @@ class VersionedITRFProviderTest {
         // WHEN
         final FieldStaticTransform<Complex> actualTransform = versionedITRFProvider.getStaticTransform(date);
         // THEN
-        Assertions.assertEquals(expectedTransform, actualTransform);
+        assertEquals(expectedTransform, actualTransform);
     }
 
 }

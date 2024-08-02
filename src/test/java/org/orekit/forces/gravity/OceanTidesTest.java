@@ -26,7 +26,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -66,13 +65,18 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-public class OceanTidesTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class OceanTidesTest {
 
     /**
      * Test based on example provide by Aspern in the <a href="https://forum.orekit.org/t/oceantides-weird-behavior/2370/3">following forum thread</a>
      */
     @Test
-    public void testIssue1055() {
+    void testIssue1055() {
 
         // Initialization
         AstronomicalAmplitudeReader aaReader =
@@ -93,38 +97,38 @@ public class OceanTidesTest {
 
         // Test
         Vector3D acc3 = oceanTidesAcceleration(3, ut1, earthFrame, state, gravityProvider); // First
-        Assertions.assertEquals(3, otReader.getMaxAvailableDegree());
-        Assertions.assertEquals(3, otReader.getMaxParseDegree());
-        Assertions.assertEquals(3, otReader.getMaxAvailableOrder());
-        Assertions.assertEquals(3, otReader.getMaxParseOrder());
+        assertEquals(3, otReader.getMaxAvailableDegree());
+        assertEquals(3, otReader.getMaxParseDegree());
+        assertEquals(3, otReader.getMaxAvailableOrder());
+        assertEquals(3, otReader.getMaxParseOrder());
         Vector3D acc6 = oceanTidesAcceleration(6, ut1, earthFrame, state, gravityProvider); // Increase degree
-        Assertions.assertEquals(6, otReader.getMaxAvailableDegree());
-        Assertions.assertEquals(6, otReader.getMaxParseDegree());
-        Assertions.assertEquals(6, otReader.getMaxAvailableOrder());
-        Assertions.assertEquals(6, otReader.getMaxParseOrder());
+        assertEquals(6, otReader.getMaxAvailableDegree());
+        assertEquals(6, otReader.getMaxParseDegree());
+        assertEquals(6, otReader.getMaxAvailableOrder());
+        assertEquals(6, otReader.getMaxParseOrder());
         Vector3D acc2 = oceanTidesAcceleration(2, ut1, earthFrame, state, gravityProvider); // Decrease degree
-        Assertions.assertEquals(2, otReader.getMaxAvailableDegree());
-        Assertions.assertEquals(2, otReader.getMaxParseDegree());
-        Assertions.assertEquals(2, otReader.getMaxAvailableOrder());
-        Assertions.assertEquals(2, otReader.getMaxParseOrder());
+        assertEquals(2, otReader.getMaxAvailableDegree());
+        assertEquals(2, otReader.getMaxParseDegree());
+        assertEquals(2, otReader.getMaxAvailableOrder());
+        assertEquals(2, otReader.getMaxParseOrder());
 
         // Verify: the acceleration vectors must be different
-        Assertions.assertEquals(6.004665607951679E-9,  acc3.getX());
-        Assertions.assertEquals(2.379362826744579E-8,  acc3.getY());
-        Assertions.assertEquals(1.2474166439853716E-9, acc3.getZ());
+        assertEquals(6.004665607951679E-9,  acc3.getX());
+        assertEquals(2.379362826744579E-8,  acc3.getY());
+        assertEquals(1.2474166439853716E-9, acc3.getZ());
 
-        Assertions.assertEquals(-4.443030668255491E-9, acc6.getX());
-        Assertions.assertEquals(1.7782200620821885E-9, acc6.getY());
-        Assertions.assertEquals(1.3663400321897177E-9, acc6.getZ());
+        assertEquals(-4.443030668255491E-9, acc6.getX());
+        assertEquals(1.7782200620821885E-9, acc6.getY());
+        assertEquals(1.3663400321897177E-9, acc6.getZ());
 
-        Assertions.assertEquals(-1.6754788749741251E-9, acc2.getX());
-        Assertions.assertEquals(1.1119622068766252E-8, acc2.getY());
-        Assertions.assertEquals(8.891976691804308E-9, acc2.getZ());
+        assertEquals(-1.6754788749741251E-9, acc2.getX());
+        assertEquals(1.1119622068766252E-8, acc2.getY());
+        assertEquals(8.891976691804308E-9, acc2.getZ());
 
     }
 
     @Test
-    public void testDefaultInterpolation() {
+    void testDefaultInterpolation() {
 
         IERSConventions conventions = IERSConventions.IERS_2010;
         Frame eme2000 = FramesFactory.getEME2000();
@@ -156,7 +160,7 @@ public class OceanTidesTest {
                        6, 6, conventions, ut1));
         SpacecraftState interpolated = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                         6, 6, IERSConventions.IERS_2010, ut1));
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(raw.getPosition(),
                                               interpolated.getPosition()),
                             9.9e-6); // threshold would be 3.4e-5 for 30 days propagation
@@ -164,17 +168,17 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testTideEffect1996() {
+    void testTideEffect1996() {
         doTestTideEffect(IERSConventions.IERS_1996, 3.66948, 0.00000);
     }
 
     @Test
-    public void testTideEffect2003() {
+    void testTideEffect2003() {
         doTestTideEffect(IERSConventions.IERS_2003, 3.66941, 0.00000);
     }
 
     @Test
-    public void testTideEffect2010() {
+    void testTideEffect2010() {
         doTestTideEffect(IERSConventions.IERS_2010, 3.66939, 0.08981);
     }
 
@@ -211,11 +215,11 @@ public class OceanTidesTest {
         SpacecraftState oceanTidesPoleTide = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                           true, SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
                           6, 6, conventions, ut1));
-        Assertions.assertEquals(delta1,
+        assertEquals(delta1,
                             Vector3D.distance(noTides.getPosition(),
                                               oceanTidesNoPoleTide.getPosition()),
                             0.01);
-        Assertions.assertEquals(delta2,
+        assertEquals(delta2,
                             Vector3D.distance(oceanTidesNoPoleTide.getPosition(),
                                               oceanTidesPoleTide.getPosition()),
                             0.01);
@@ -223,7 +227,7 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testNoGetParameter() {
+    void testNoGetParameter() {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
@@ -237,18 +241,18 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assertions.assertTrue(fm.dependsOnPositionOnly());
-        Assertions.assertEquals(1, fm.getParametersDrivers().size());
+        assertTrue(fm.dependsOnPositionOnly());
+        assertEquals(1, fm.getParametersDrivers().size());
         try {
             fm.getParameterDriver("unknown");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException miae) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+            assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
         }
     }
 
     @Test
-    public void testNoSetParameter() {
+    void testNoSetParameter() {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
@@ -262,20 +266,20 @@ public class OceanTidesTest {
                                        Constants.WGS84_EARTH_MU,
                                        5, 5, IERSConventions.IERS_1996,
                                        TimeScalesFactory.getUT1(IERSConventions.IERS_1996, false));
-        Assertions.assertEquals(1, fm.getParametersDrivers().size());
+        assertEquals(1, fm.getParametersDrivers().size());
         try {
             fm.getParameterDriver("unknown").setValue(0.0);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException miae) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
+            assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, miae.getSpecifier());
         }
     }
-    
+
     /** Test added for <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1167">issue 1167</a>.
      * <p>Mostly for code coverage, with the introduction of interface {@link EventDetectorsProvider}
      */
     @Test
-    public void testGetEventDetectors() {
+    void testGetEventDetectors() {
         
         // Given
         // -----
@@ -310,8 +314,8 @@ public class OceanTidesTest {
         List<FieldEventDetector<Binary64>> fieldDetectors = oceanTidesModel.getFieldEventDetectors(Binary64Field.getInstance()).collect(Collectors.toList());
         
         // Then
-        Assertions.assertTrue(detectors.isEmpty());
-        Assertions.assertTrue(fieldDetectors.isEmpty());
+        assertTrue(detectors.isEmpty());
+        assertTrue(fieldDetectors.isEmpty());
         
         // When: 1 span added to driver
         final List<ParameterDriver> drivers = oceanTidesModel.getParametersDrivers();
@@ -329,17 +333,17 @@ public class OceanTidesTest {
         FieldAbsoluteDate<Binary64> fieldDate = fieldDateDetector.getDate();
         
         // Then
-        Assertions.assertFalse(detectors.isEmpty());
-        Assertions.assertEquals(1, detectors.size());
-        Assertions.assertTrue(detectors.get(0) instanceof DateDetector);
+        assertFalse(detectors.isEmpty());
+        assertEquals(1, detectors.size());
+        assertTrue(detectors.get(0) instanceof DateDetector);
         
-        Assertions.assertEquals(1, dates.size());
-        Assertions.assertEquals(0., dates.get(0).durationFrom(t0), 0.);
+        assertEquals(1, dates.size());
+        assertEquals(0., dates.get(0).durationFrom(t0), 0.);
         
-        Assertions.assertFalse(fieldDetectors.isEmpty());
-        Assertions.assertEquals(1, fieldDetectors.size());
-        Assertions.assertTrue(fieldDetectors.get(0) instanceof FieldDateDetector);
-        Assertions.assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
+        assertFalse(fieldDetectors.isEmpty());
+        assertEquals(1, fieldDetectors.size());
+        assertTrue(fieldDetectors.get(0) instanceof FieldDateDetector);
+        assertEquals(0., fieldDate.durationFrom(t0).getReal(), 0.);
     }
 
     private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel... forceModels)
@@ -362,7 +366,7 @@ public class OceanTidesTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/icgem-format:tides");
     }
 

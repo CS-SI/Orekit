@@ -21,7 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -35,11 +34,14 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AskneNordiusModelTest {
+
+class AskneNordiusModelTest {
 
     @Test
-    public void testFixedElevation() {
+    void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
         // first line of GPT 2w grid
         PressureTemperatureHumidity pth = new PressureTemperatureHumidity(0.0,
@@ -57,13 +59,13 @@ public class AskneNordiusModelTest {
                                                  new GeodeticPoint(0.0, 0.0, height),
                                                  converter.convert(pth, height),
                                                  null, AbsoluteDate.J2000_EPOCH).getZw();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testFieldFixedElevation() {
+    void testFieldFixedElevation() {
         doTestFieldFixedElevation(Binary64Field.getInstance());
     }
 
@@ -88,13 +90,13 @@ public class AskneNordiusModelTest {
                                             converter.convert(new FieldPressureTemperatureHumidity<>(field, pth),
                                                               zero.newInstance(height)),
                                             null, FieldAbsoluteDate.getJ2000Epoch(field)).getZw();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), 1.0e-6) < 0);
             lastDelay = delay;
         }
     }
 
-   @Test
-    public void testFieldVsNative() {
+    @Test
+    void testFieldVsNative() {
         doTestFieldVsNative(Binary64Field.getInstance());
     }
 
@@ -122,7 +124,7 @@ public class AskneNordiusModelTest {
                                                  converter.convert(new FieldPressureTemperatureHumidity<>(field, pth),
                                                                    zero.newInstance(h)),
                                                  null, FieldAbsoluteDate.getJ2000Epoch(field)).getZw();
-                Assertions.assertEquals(delayN, delayT.getReal(), 1.0e-6);
+                assertEquals(delayN, delayT.getReal(), 1.0e-6);
             }
         }
     }

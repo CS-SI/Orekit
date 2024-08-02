@@ -16,17 +16,19 @@
  */
 package org.orekit.data;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-public class NetworkCrawlerTest extends AbstractListCrawlerTest<URL> {
+class NetworkCrawlerTest extends AbstractListCrawlerTest<URL> {
 
     protected URL input(String resource) {
         return NetworkCrawlerTest.class.getClassLoader().getResource(resource);
@@ -43,16 +45,16 @@ public class NetworkCrawlerTest extends AbstractListCrawlerTest<URL> {
     }
 
     @Test
-    public void noElement() throws MalformedURLException {
+    void noElement() throws MalformedURLException {
         try {
             File existing   = new File(input("regular-data").getPath());
             File inexistent = new File(existing.getParent(), "inexistant-directory");
             new NetworkCrawler(inexistent.toURI().toURL()).feed(Pattern.compile(".*"), new CountingLoader(),
                                                                 DataContext.getDefault().getDataProvidersManager());
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertTrue(oe.getCause() instanceof FileNotFoundException);
-            Assertions.assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
+            assertTrue(oe.getCause() instanceof FileNotFoundException);
+            assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
         }
     }
 

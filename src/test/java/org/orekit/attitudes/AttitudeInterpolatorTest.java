@@ -19,7 +19,6 @@ package org.orekit.attitudes;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -42,13 +41,17 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 class AttitudeInterpolatorTest {
 
     @Test
     @DefaultDataContext
-    public void testInterpolation() {
+    void testInterpolation() {
 
         // Given
         Utils.setDataRoot("regular-data");
@@ -110,10 +113,10 @@ class AttitudeInterpolatorTest {
             maxShiftRateError          = FastMath.max(maxShiftRateError, shiftRateError);
             maxInterpolationRateError  = FastMath.max(maxInterpolationRateError, interpolationRateError);
         }
-        Assertions.assertTrue(maxShiftAngleError > 4.0e-6);
-        Assertions.assertTrue(maxInterpolationAngleError < 1.5e-13);
-        Assertions.assertTrue(maxShiftRateError > 6.0e-8);
-        Assertions.assertTrue(maxInterpolationRateError < 2.5e-14);
+        assertTrue(maxShiftAngleError > 4.0e-6);
+        assertTrue(maxInterpolationAngleError < 1.5e-13);
+        assertTrue(maxShiftRateError > 6.0e-8);
+        assertTrue(maxInterpolationRateError < 2.5e-14);
 
         // past sample end, interpolation error should increase, but still be far better than quadratic shift
         maxShiftAngleError         = 0;
@@ -136,13 +139,13 @@ class AttitudeInterpolatorTest {
             maxShiftRateError          = FastMath.max(maxShiftRateError, shiftRateError);
             maxInterpolationRateError  = FastMath.max(maxInterpolationRateError, interpolationRateError);
         }
-        Assertions.assertTrue(maxShiftAngleError > 9.0e-6);
-        Assertions.assertTrue(maxInterpolationAngleError < 6.0e-11);
-        Assertions.assertTrue(maxShiftRateError > 9.0e-8);
-        Assertions.assertTrue(maxInterpolationRateError < 4.0e-12);
+        assertTrue(maxShiftAngleError > 9.0e-6);
+        assertTrue(maxInterpolationAngleError < 6.0e-11);
+        assertTrue(maxShiftRateError > 9.0e-8);
+        assertTrue(maxInterpolationRateError < 4.0e-12);
 
-        Assertions.assertEquals(initialOrbit.getFrame(), attitudeInterpolator.getReferenceFrame());
-        Assertions.assertEquals(angularInterpolator, attitudeInterpolator.getAngularInterpolator());
+        assertEquals(initialOrbit.getFrame(), attitudeInterpolator.getReferenceFrame());
+        assertEquals(angularInterpolator, attitudeInterpolator.getAngularInterpolator());
 
     }
 
@@ -159,8 +162,8 @@ class AttitudeInterpolatorTest {
         final AttitudeInterpolator attitudeInterpolator = new AttitudeInterpolator(frameMock, angularInterpolatorMock);
 
         // Then
-        Assertions.assertEquals(frameMock, attitudeInterpolator.getReferenceFrame());
-        Assertions.assertEquals(angularInterpolatorMock, attitudeInterpolator.getAngularInterpolator());
+        assertEquals(frameMock, attitudeInterpolator.getReferenceFrame());
+        assertEquals(angularInterpolatorMock, attitudeInterpolator.getAngularInterpolator());
     }
 
     @Test
@@ -180,12 +183,12 @@ class AttitudeInterpolatorTest {
                 new AttitudeInterpolator(FramesFactory.getGCRF(), angularInterpolator);
 
         // When & Then
-        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        OrekitIllegalArgumentException thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                                         () -> attitudeInterpolator.interpolate(interpolationDate, attitudes));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, thrown.getSpecifier());
-        Assertions.assertEquals(1, ((Integer) thrown.getParts()[0]).intValue());
-        Assertions.assertEquals(2, ((Integer) thrown.getParts()[1]).intValue());
+        assertEquals(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS, thrown.getSpecifier());
+        assertEquals(1, ((Integer) thrown.getParts()[0]).intValue());
+        assertEquals(2, ((Integer) thrown.getParts()[1]).intValue());
 
     }
 

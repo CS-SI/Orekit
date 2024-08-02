@@ -19,7 +19,6 @@ package org.orekit.orbits;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -37,11 +36,15 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.LagrangianPoints;
 import org.orekit.utils.PVCoordinates;
 
-public class LyapunovOrbitTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class LyapunovOrbitTest {
 
 
     @Test
-    public void testLyapunovOrbit() {
+    void testLyapunovOrbit() {
         CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 
         final PVCoordinates firstGuess = new PVCoordinates(new Vector3D(0.0, 1.0, 2.0), new Vector3D(3.0, 4.0, 5.0));
@@ -57,33 +60,33 @@ public class LyapunovOrbitTest {
         final PVCoordinates firstGuess2 = h2.getInitialPV();
         final PVCoordinates firstGuess3 = h3.getInitialPV();
 
-        Assertions.assertNotEquals(0.0, orbitalPeriod1, 0.5);
-        Assertions.assertNotEquals(0.0, orbitalPeriod3, 0.5);
-        Assertions.assertEquals(2.0, orbitalPeriod2, 1E-15);
+        assertNotEquals(0.0, orbitalPeriod1, 0.5);
+        assertNotEquals(0.0, orbitalPeriod3, 0.5);
+        assertEquals(2.0, orbitalPeriod2, 1E-15);
 
-        Assertions.assertNotEquals(0.0, firstGuess1.getPosition().getX(), 0.6);
-        Assertions.assertEquals(0.0, firstGuess1.getPosition().getY(), 1E-15);
-        Assertions.assertEquals(0.0, firstGuess1.getVelocity().getX(), 1E-15);
-        Assertions.assertNotEquals(0.0, firstGuess1.getVelocity().getY(), 0.01);
-        Assertions.assertEquals(0.0, firstGuess1.getVelocity().getZ(), 1E-15);
+        assertNotEquals(0.0, firstGuess1.getPosition().getX(), 0.6);
+        assertEquals(0.0, firstGuess1.getPosition().getY(), 1E-15);
+        assertEquals(0.0, firstGuess1.getVelocity().getX(), 1E-15);
+        assertNotEquals(0.0, firstGuess1.getVelocity().getY(), 0.01);
+        assertEquals(0.0, firstGuess1.getVelocity().getZ(), 1E-15);
 
-        Assertions.assertNotEquals(0.0, firstGuess3.getPosition().getX(), 1);
-        Assertions.assertEquals(0.0, firstGuess3.getPosition().getY(), 1E-15);
-        Assertions.assertEquals(0.0, firstGuess3.getVelocity().getX(), 1E-15);
-        Assertions.assertNotEquals(0.0, firstGuess3.getVelocity().getY(), 0.01);
-        Assertions.assertEquals(0.0, firstGuess3.getVelocity().getZ(), 1E-15);
+        assertNotEquals(0.0, firstGuess3.getPosition().getX(), 1);
+        assertEquals(0.0, firstGuess3.getPosition().getY(), 1E-15);
+        assertEquals(0.0, firstGuess3.getVelocity().getX(), 1E-15);
+        assertNotEquals(0.0, firstGuess3.getVelocity().getY(), 0.01);
+        assertEquals(0.0, firstGuess3.getVelocity().getZ(), 1E-15);
 
-        Assertions.assertEquals(firstGuess.getPosition().getX(), firstGuess2.getPosition().getX(), 1E-15);
-        Assertions.assertEquals(firstGuess.getPosition().getY(), firstGuess2.getPosition().getY(), 1E-15);
-        Assertions.assertEquals(firstGuess.getPosition().getZ(), firstGuess2.getPosition().getZ(), 1E-15);
-        Assertions.assertEquals(firstGuess.getVelocity().getX(), firstGuess2.getVelocity().getX(), 1E-15);
-        Assertions.assertEquals(firstGuess.getVelocity().getY(), firstGuess2.getVelocity().getY(), 1E-15);
-        Assertions.assertEquals(firstGuess.getVelocity().getZ(), firstGuess2.getVelocity().getZ(), 1E-15);
+        assertEquals(firstGuess.getPosition().getX(), firstGuess2.getPosition().getX(), 1E-15);
+        assertEquals(firstGuess.getPosition().getY(), firstGuess2.getPosition().getY(), 1E-15);
+        assertEquals(firstGuess.getPosition().getZ(), firstGuess2.getPosition().getZ(), 1E-15);
+        assertEquals(firstGuess.getVelocity().getX(), firstGuess2.getVelocity().getX(), 1E-15);
+        assertEquals(firstGuess.getVelocity().getY(), firstGuess2.getVelocity().getY(), 1E-15);
+        assertEquals(firstGuess.getVelocity().getZ(), firstGuess2.getVelocity().getZ(), 1E-15);
     }
 
     @Test
-        public void testLagrangianError() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testLagrangianError() {
+        assertThrows(OrekitException.class, () -> {
             CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
             final HaloOrbit h = new HaloOrbit(new RichardsonExpansion(syst, LagrangianPoints.L3), 8E6, LibrationOrbitFamily.NORTHERN);
             h.getClass();
@@ -91,7 +94,7 @@ public class LyapunovOrbitTest {
     }
 
     @Test
-    public void testManifolds() {
+    void testManifolds() {
 
         // Time settings
         final AbsoluteDate initialDate =
@@ -150,16 +153,16 @@ public class LyapunovOrbitTest {
         final PVCoordinates initialUnstableManifold = h.getManifolds(finalState, false);
         final PVCoordinates initialStableManifold = h.getManifolds(finalState, true);
 
-        Assertions.assertNotEquals(finalState.getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
+        assertNotEquals(finalState.getPosition().getX(), initialUnstableManifold.getPosition().getX(), 1E-7);
+        assertNotEquals(finalState.getPosition().getY(), initialUnstableManifold.getPosition().getY(), 1E-7);
 
-        Assertions.assertNotEquals(finalState.getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
-        Assertions.assertNotEquals(finalState.getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
+        assertNotEquals(finalState.getPosition().getX(), initialStableManifold.getPosition().getX(), 1E-7);
+        assertNotEquals(finalState.getPosition().getY(), initialStableManifold.getPosition().getY(), 1E-7);
     }
 
     @Test
-    public void testDifferentialCorrectionError() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testDifferentialCorrectionError() {
+        assertThrows(OrekitException.class, () -> {
             CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 
             final double orbitalPeriod = 1;
@@ -173,8 +176,8 @@ public class LyapunovOrbitTest {
     }
 
     @Test
-    public void testSTMError() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testSTMError() {
+        assertThrows(OrekitException.class, () -> {
             // Time settings
             final AbsoluteDate initialDate =
                     new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
@@ -202,7 +205,7 @@ public class LyapunovOrbitTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("cr3bp:regular-data");
     }
 }

@@ -18,7 +18,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.FramesFactory;
@@ -31,6 +30,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class RelativeDistanceDetectorTest {
 
@@ -45,7 +46,7 @@ class RelativeDistanceDetectorTest {
         final RelativeDistanceDetector detector = distanceDetector.create(distanceDetector.getMaxCheckInterval(),
                 distanceDetector.getThreshold(), distanceDetector.getMaxIterationCount(), expectedHandler);
         // THEN
-        Assertions.assertEquals(expectedHandler, detector.getHandler());
+        assertEquals(expectedHandler, detector.getHandler());
     }
 
     @Test
@@ -57,7 +58,7 @@ class RelativeDistanceDetectorTest {
         // WHEN
         final double actualDistanceThreshold = distanceDetector.getDistanceThreshold();
         // THEN
-        Assertions.assertEquals(expectedDistanceThreshold, actualDistanceThreshold);
+        assertEquals(expectedDistanceThreshold, actualDistanceThreshold);
     }
 
     @Test
@@ -71,7 +72,7 @@ class RelativeDistanceDetectorTest {
         // WHEN
         final double g = distanceDetector.g(new SpacecraftState(initialOrbit));
         // THEN
-        Assertions.assertEquals(0., g, 1e-8);
+        assertEquals(0., g, 1e-8);
     }
 
     private CartesianOrbit createOrbit() {

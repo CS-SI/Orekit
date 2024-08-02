@@ -16,7 +16,6 @@
  */
 package org.orekit.gnss.antenna;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,17 +33,19 @@ import org.orekit.gnss.attitude.GenericGNSS;
 import org.orekit.gnss.attitude.Glonass;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SatelliteTypeTest {
+
+class SatelliteTypeTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testAttitudeTypes() {
+    void testAttitudeTypes() {
         for (final SatelliteType type : SatelliteType.values()) {
             AttitudeProvider provider = type.buildAttitudeProvider(AbsoluteDate.J2000_EPOCH,
                                                                    AbsoluteDate.J2000_EPOCH.shiftedBy(3600),
@@ -63,31 +64,31 @@ public class SatelliteTypeTest {
                 type == SatelliteType.GALILEO_0B       ||
                 type == SatelliteType.GALILEO_1        ||
                 type == SatelliteType.GALILEO_2) {
-                Assertions.assertEquals(Galileo.class, provider.getClass());
+                assertEquals(Galileo.class, provider.getClass());
             } else if (type == SatelliteType.BEIDOU_2G) {
-                Assertions.assertEquals(BeidouGeo.class, provider.getClass());
+                assertEquals(BeidouGeo.class, provider.getClass());
             } else if (type == SatelliteType.BEIDOU_2I) {
-                Assertions.assertEquals(BeidouIGSO.class, provider.getClass());
+                assertEquals(BeidouIGSO.class, provider.getClass());
             } else if (type == SatelliteType.BEIDOU_2M) {
-                Assertions.assertEquals(BeidouMeo.class, provider.getClass());
+                assertEquals(BeidouMeo.class, provider.getClass());
             } else if (type == SatelliteType.BLOCK_I   ||
                        type == SatelliteType.BLOCK_II ||
                        type == SatelliteType.BLOCK_IIA) {
-                Assertions.assertEquals(GPSBlockIIA.class, provider.getClass());
+                assertEquals(GPSBlockIIA.class, provider.getClass());
             } else if (type == SatelliteType.BLOCK_IIR_A ||
                        type == SatelliteType.BLOCK_IIR_B ||
                        type == SatelliteType.BLOCK_IIR_M) {
-                Assertions.assertEquals(GPSBlockIIR.class, provider.getClass());
+                assertEquals(GPSBlockIIR.class, provider.getClass());
             } else if (type == SatelliteType.BLOCK_IIF ||
                        type == SatelliteType.BLOCK_IIIA) {
-                Assertions.assertEquals(GPSBlockIIF.class, provider.getClass());
+                assertEquals(GPSBlockIIF.class, provider.getClass());
             } else if (type == SatelliteType.GLONASS ||
                        type == SatelliteType.GLONASS_M ||
                        type == SatelliteType.GLONASS_K1 ||
                        type == SatelliteType.GLONASS_K2) {
-                Assertions.assertEquals(Glonass.class, provider.getClass());
+                assertEquals(Glonass.class, provider.getClass());
             } else {
-                Assertions.assertEquals(GenericGNSS.class, provider.getClass());
+                assertEquals(GenericGNSS.class, provider.getClass());
             }
         }
     }

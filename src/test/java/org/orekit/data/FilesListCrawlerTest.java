@@ -16,22 +16,24 @@
  */
 package org.orekit.data;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.util.regex.Pattern;
 
-public class FilesListCrawlerTest extends AbstractListCrawlerTest<File> {
+class FilesListCrawlerTest extends AbstractListCrawlerTest<File> {
 
     protected File input(String resource) {
         try {
             return new File(FilesListCrawlerTest.class.getClassLoader().getResource(resource).toURI().getPath());
         } catch (URISyntaxException ue) {
-            Assertions.fail(ue.getLocalizedMessage());
+            fail(ue.getLocalizedMessage());
             return null;
         }
     }
@@ -45,16 +47,16 @@ public class FilesListCrawlerTest extends AbstractListCrawlerTest<File> {
     }
 
     @Test
-    public void noElement() {
+    void noElement() {
         try {
             File existing   = new File(input("regular-data").getPath());
             File inexistent = new File(existing.getParent(), "inexistant-directory");
             new FilesListCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader(),
                                                   DataContext.getDefault().getDataProvidersManager());
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertTrue(oe.getCause() instanceof FileNotFoundException);
-            Assertions.assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
+            assertTrue(oe.getCause() instanceof FileNotFoundException);
+            assertTrue(oe.getLocalizedMessage().contains("inexistant-directory"));
         }
    }
 

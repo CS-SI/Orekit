@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
@@ -30,14 +29,16 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /** This test class is only used to test the <i>compareTo</i> default method of interface <i>ComparableMeasurement</i>.<br>
  * This is done to test the resolution of  <a href="https://gitlab.orekit.org/orekit/orekit/issues/538"> issue #538</a> on Orekit forge.
  */
-public class ComparableMeasurementTest {
+class ComparableMeasurementTest {
 
     /** Test default method compareTo, see <a href="https://gitlab.orekit.org/orekit/orekit/issues/538"> issue #538</a> on Orekit forge. */
     @Test
-    public void testDefaultCompareToIssue538() {
+    void testDefaultCompareToIssue538() {
 
         // Print on console ?
         boolean print = false;
@@ -75,23 +76,23 @@ public class ComparableMeasurementTest {
         }
 
         // Same object, only case when compareTo returns 0
-        Assertions.assertEquals(azel.compareTo(azel), 0);
+        assertEquals(0, azel.compareTo(azel));
 
         // Sorted by date by default
-        Assertions.assertEquals(pv.compareTo(azel), -1);
-        Assertions.assertEquals(range.compareTo(pv2), +1);
+        assertEquals(-1, pv.compareTo(azel));
+        assertEquals(range.compareTo(pv2), +1);
 
         // Same date but different measurement - "bigger" measurement after "smaller" one
-        Assertions.assertEquals(range.compareTo(azel), -1);
-        Assertions.assertEquals(azel.compareTo(range), +1);
+        assertEquals(-1, range.compareTo(azel));
+        assertEquals(azel.compareTo(range), +1);
 
         // Same date, same size, but different values, "bigger" measurement after "smaller" one
-        Assertions.assertEquals(pv.compareTo(pv3), -1);
-        Assertions.assertEquals(pv3.compareTo(pv), +1);
+        assertEquals(-1, pv.compareTo(pv3));
+        assertEquals(pv3.compareTo(pv), +1);
 
         // Same date, same size, same values - Arbitrary order, always return -1
-        Assertions.assertEquals(pv.compareTo(pv2), -1);
-        Assertions.assertEquals(pv2.compareTo(pv), -1);
+        assertEquals(-1, pv.compareTo(pv2));
+        assertEquals(-1, pv2.compareTo(pv));
 
     }
 }

@@ -19,55 +19,55 @@ package org.orekit.gnss.attitude;
 import org.junit.jupiter.api.Test;
 
 
-public class GalileoTest extends AbstractGNSSAttitudeProviderTest {
+class GalileoTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
+    void testPatchedLargeNegativeBeta() {
         doTestAxes("patched-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 5.8e-16, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
+    void testPatchedSmallNegativeBeta() {
         doTestAxes("patched-eclips/beta-small-negative-GALILEO.txt", 2.9e-12, 1.3e-15, false);
     }
 
     @Test
-    public void testPatchedCrossingBeta() {
+    void testPatchedCrossingBeta() {
         doTestAxes("patched-eclips/beta-crossing-GALILEO.txt", 1.3e-11, 1.2e-15, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
+    void testPatchedSmallPositiveBeta() {
         doTestAxes("patched-eclips/beta-small-positive-GALILEO.txt", 8.7e-12, 9.8e-16, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
+    void testPatchedLargePositiveBeta() {
         doTestAxes("patched-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 7.9e-16, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
+    void testOriginalLargeNegativeBeta() {
         doTestAxes("original-eclips/beta-large-negative-GALILEO.txt", 7.3e-15, 5.8e-16, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
+    void testOriginalSmallNegativeBeta() {
         doTestAxes("original-eclips/beta-small-negative-GALILEO.txt", 5.9e-3, 1.3e-15, false);
     }
 
     @Test
-    public void testOriginalCrossingBeta() {
+    void testOriginalCrossingBeta() {
         doTestAxes("original-eclips/beta-crossing-GALILEO.txt", 1.1e-2, 1.2e-15, false);
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
+    void testOriginalSmallPositiveBeta() {
         doTestAxes("original-eclips/beta-small-positive-GALILEO.txt", 9.5e-3, 9.8e-16, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
+    void testOriginalLargePositiveBeta() {
         doTestAxes("original-eclips/beta-large-positive-GALILEO.txt", 7.3e-15, 7.9e-16, false);
     }
 

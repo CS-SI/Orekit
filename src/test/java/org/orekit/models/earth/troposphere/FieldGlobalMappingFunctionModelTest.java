@@ -26,7 +26,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,20 +56,23 @@ import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
 
-public class FieldGlobalMappingFunctionModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FieldGlobalMappingFunctionModelTest {
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testMappingFactors() {
+    void testMappingFactors() {
         doTestMappingFactors(Binary64Field.getInstance());
     }
 
@@ -109,12 +111,12 @@ public class FieldGlobalMappingFunctionModelTest {
 
         final T[] computedMapping = model.mappingFactors(trackingCoordinates, point, weather, date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-6);
-        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
+        assertEquals(expectedHydro, computedMapping[0].getReal(), 1.0e-6);
+        assertEquals(expectedWet,   computedMapping[1].getReal(), 1.0e-6);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         doTestFixedHeight(Binary64Field.getInstance());
     }
 
@@ -136,15 +138,15 @@ public class FieldGlobalMappingFunctionModelTest {
                                                                                     zero.newInstance(FastMath.toRadians(elev)),
                                                                                     zero),
                                                      point, weather, date);
-            Assertions.assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
-            Assertions.assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[0].getReal(), lastFactors[0].getReal(), 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[1].getReal(), lastFactors[1].getReal(), 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }
     }
 
     @Test
-    public void testMFStateDerivatives() {
+    void testMFStateDerivatives() {
 
         // Geodetic point
         final double latitude     = FastMath.toRadians(45.0);
@@ -283,8 +285,8 @@ public class FieldGlobalMappingFunctionModelTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compMFH[i + 1], refMF[0][i], 2.1e-11);
-            Assertions.assertEquals(compMFW[i + 1], refMF[1][i], 1.7e-11);
+            assertEquals(compMFH[i + 1], refMF[0][i], 2.1e-11);
+            assertEquals(compMFW[i + 1], refMF[1][i], 1.7e-11);
         }
     }
 

@@ -16,27 +16,28 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Only reliably tests initialization if only a single test method is run.
  *
  * @author Evan Ward
  */
-public class AbsoluteDateInitializationTest {
+class AbsoluteDateInitializationTest {
 
 
     @Test
-    public void testAbsoluteDateInitializationWithoutLeapSeconds() {
+    void testAbsoluteDateInitializationWithoutLeapSeconds() {
         // setup
         Utils.setDataRoot("no-data");
 
         // just some code that makes an assertion using AbsoluteDate,
         // the real code under test is AbsoluteDate initialization.
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Assertions.assertEquals(new AbsoluteDate(date, 10).durationFrom(date), 10.0, 0.0);
+        assertEquals(10.0, new AbsoluteDate(date, 10).durationFrom(date), 0.0);
     }
 
 }

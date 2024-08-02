@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,14 +35,18 @@ import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
-public class TLEStateTransitionMatrixTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class TLEStateTransitionMatrixTest {
 
     // build two TLEs in order to test SGP4 and SDP4 algorithms
     private TLE tleGPS;
     private TLE tleSPOT;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
 
         // GPS TLE propagation will use SDP4
@@ -58,18 +61,18 @@ public class TLEStateTransitionMatrixTest {
     }
 
     @Test
-    public void testPropagationSGP4() {
+    void testPropagationSGP4() {
         doTestStateJacobian(7.65e-10, tleSPOT);
     }
 
     @Test
-    public void testPropagationSDP4() {
+    void testPropagationSDP4() {
         doTestStateJacobian(2.53e-9, tleGPS);
     }
 
     @Test
-    public void testNullStmName() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNullStmName() {
+        assertThrows(OrekitException.class, () -> {
             TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleSPOT);
             propagator.setupMatricesComputation(null, null, null);
         });
@@ -85,7 +88,7 @@ public class TLEStateTransitionMatrixTest {
         final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(initialState);
-        Assertions.assertNull(dYdY0);
+        assertNull(dYdY0);
         final SpacecraftState finalState = propagator.propagate(target);
         dYdY0 = harvester.getStateTransitionMatrix(finalState);
 
@@ -121,7 +124,7 @@ public class TLEStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, tolerance);
+                    assertEquals(0, error, tolerance);
                 }
             }
         }

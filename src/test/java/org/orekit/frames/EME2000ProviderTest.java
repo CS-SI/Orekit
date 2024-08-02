@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -28,11 +27,13 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class EME2000ProviderTest {
+
+class EME2000ProviderTest {
 
     @Test
-    public void testAASReferenceLEO() {
+    void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -63,7 +64,7 @@ public class EME2000ProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() {
+    void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -94,7 +95,7 @@ public class EME2000ProviderTest {
     }
 
     @Test
-    public void testSofaBp00() {
+    void testSofaBp00() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -149,7 +150,7 @@ public class EME2000ProviderTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 
@@ -159,15 +160,15 @@ public class EME2000ProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assertions.assertEquals(0, dV.getNorm(), velocityThreshold);
+        assertEquals(0, dP.getNorm(), positionThreshold);
+        assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
     private void checkRotation(double[][] reference, Transform t, double epsilon) {
         double[][] mat = t.getRotation().getMatrix();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                Assertions.assertEquals(reference[i][j], mat[i][j], epsilon * FastMath.abs(reference[i][j]));
+                assertEquals(reference[i][j], mat[i][j], epsilon * FastMath.abs(reference[i][j]));
 
             }
         }

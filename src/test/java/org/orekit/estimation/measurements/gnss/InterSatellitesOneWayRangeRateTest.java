@@ -22,7 +22,6 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -47,18 +46,20 @@ import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public class InterSatellitesOneWayRangeRateTest {
+class InterSatellitesOneWayRangeRateTest {
 
     /**
      * Test the values of the range rate comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest inter-satellites Range Rate Values\n");
@@ -72,7 +73,7 @@ public class InterSatellitesOneWayRangeRateTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesEmitter() {
+    void testStateDerivativesEmitter() {
 
         boolean printResults = false;
         if (printResults) {
@@ -95,7 +96,7 @@ public class InterSatellitesOneWayRangeRateTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesTransit() {
+    void testStateDerivativesTransit() {
 
         boolean printResults = false;
         if (printResults) {
@@ -118,7 +119,7 @@ public class InterSatellitesOneWayRangeRateTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -205,7 +206,7 @@ public class InterSatellitesOneWayRangeRateTest {
                                                                                                          });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-                    Assertions.assertEquals(2, participants.length);
+                    assertEquals(2, participants.length);
                     final PVCoordinates delta = new PVCoordinates(participants[0], participants[1]);
                     final double radialVelocity = Vector3D.dotProduct(delta.getVelocity(), delta.getPosition().normalize());
                     final AbsoluteDate t0 = measurement.getSatellites().get(0).getClockOffsetDriver().getReferenceDate();
@@ -213,7 +214,7 @@ public class InterSatellitesOneWayRangeRateTest {
                     final double localRate  = 2 * localClockAcceleration * dtLocal + localClockRate;
                     final double dtRemote   = participants[0].getDate().durationFrom(t0);
                     final double remoteRate = 2 * remoteClockAcceleration * dtRemote + remoteClockRate;
-                    Assertions.assertEquals(radialVelocity + Constants.SPEED_OF_LIGHT * (localRate - remoteRate),
+                    assertEquals(radialVelocity + Constants.SPEED_OF_LIGHT * (localRate - remoteRate),
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
 
@@ -276,14 +277,14 @@ public class InterSatellitesOneWayRangeRateTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 3.7e-09);
-        Assertions.assertEquals(0.0, absErrorsMin,    2.6e-11);
-        Assertions.assertEquals(0.0, absErrorsMax,    1.5e-08);
-        Assertions.assertEquals(0.0, relErrorsMedian, 9.9e-10);
-        Assertions.assertEquals(0.0, relErrorsMax,    5.7e-8);
+        assertEquals(0.0, absErrorsMedian, 3.7e-09);
+        assertEquals(0.0, absErrorsMin,    2.6e-11);
+        assertEquals(0.0, absErrorsMax,    1.5e-08);
+        assertEquals(0.0, relErrorsMedian, 9.9e-10);
+        assertEquals(0.0, relErrorsMax,    5.7e-8);
 
         // Test measurement type
-        Assertions.assertEquals(InterSatellitesOneWayRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(InterSatellitesOneWayRangeRate.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -362,8 +363,8 @@ public class InterSatellitesOneWayRangeRateTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                     OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -440,12 +441,12 @@ public class InterSatellitesOneWayRangeRateTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean printResults,
@@ -529,8 +530,8 @@ public class InterSatellitesOneWayRangeRateTest {
                     for (final ParameterDriver driver : drivers) {
                         for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                             final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver, span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                            assertEquals(1, measurement.getDimension());
+                            assertEquals(1, gradient.length);
 
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
@@ -604,9 +605,9 @@ public class InterSatellitesOneWayRangeRateTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 

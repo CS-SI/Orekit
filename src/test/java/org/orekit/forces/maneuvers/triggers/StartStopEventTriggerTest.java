@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger;
 import org.orekit.propagation.events.DateDetector;
@@ -34,7 +33,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 
-public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
 
     public static class StartStopDates extends StartStopEventsTrigger<DateDetector, DateDetector> {
 
@@ -79,19 +80,19 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
     }
 
     @Test
-    public void testComponents() {
+    void testComponents() {
         StartStopEventsTrigger<DateDetector, DateDetector> trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
                                                                                    AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    startDates = trigger.getStartDetector().getDates();
         final List<TimeStamped>    stopDates  = trigger.getStopDetector().getDates();
-        Assertions.assertEquals(2,     trigger.getEventDetectors().count());
-        Assertions.assertEquals(2,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
-        Assertions.assertEquals(2,     startDates.size());
-        Assertions.assertEquals(  0.0, startDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
-        Assertions.assertEquals(110.0, startDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
-        Assertions.assertEquals(2,     stopDates.size());
-        Assertions.assertEquals(100.0, stopDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
-        Assertions.assertEquals(120.0, stopDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        assertEquals(2,     trigger.getEventDetectors().count());
+        assertEquals(2,     trigger.getFieldEventDetectors(Binary64Field.getInstance()).count());
+        assertEquals(2,     startDates.size());
+        assertEquals(  0.0, startDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        assertEquals(110.0, startDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        assertEquals(2,     stopDates.size());
+        assertEquals(100.0, stopDates.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
+        assertEquals(120.0, stopDates.get(1).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-10);
     }
 
 }

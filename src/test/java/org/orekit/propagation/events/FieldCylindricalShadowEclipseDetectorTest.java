@@ -5,7 +5,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,10 +17,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.*;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class FieldCylindricalShadowEclipseDetectorTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -38,9 +40,9 @@ class FieldCylindricalShadowEclipseDetectorTest {
         final FieldCylindricalShadowEclipseDetector<Complex> detector = eclipseDetector.create(adaptableInterval, expectedThreshold,
                 expectedMaxIter, eclipseDetector.getHandler());
         // THEN
-        Assertions.assertEquals(expectedMaxIter, detector.getMaxIterationCount());
-        Assertions.assertEquals(expectedThreshold, detector.getThreshold());
-        Assertions.assertEquals(adaptableInterval, detector.getMaxCheckInterval());
+        assertEquals(expectedMaxIter, detector.getMaxIterationCount());
+        assertEquals(expectedThreshold, detector.getThreshold());
+        assertEquals(adaptableInterval, detector.getMaxCheckInterval());
     }
 
     @Test
@@ -55,7 +57,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
         // WHEN
         final double g = eclipseDetector.g(mockedState).getReal();
         // THEN
-        Assertions.assertEquals(0., g);
+        assertEquals(0., g);
     }
 
     @Test
@@ -69,7 +71,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
         // WHEN
         final double g = eclipseDetector.g(mockedState).getReal();
         // THEN
-        Assertions.assertTrue(g < 0.);
+        assertTrue(g < 0.);
     }
 
     @Test
@@ -83,7 +85,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
         // WHEN
         final double g = eclipseDetector.g(mockedState).getReal();
         // THEN
-        Assertions.assertTrue(g > 0.);
+        assertTrue(g > 0.);
     }
 
     @Test
@@ -98,7 +100,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
         // WHEN
         final double g = eclipseDetector.g(mockedState).getReal();
         // THEN
-        Assertions.assertTrue(g > 0.);
+        assertTrue(g > 0.);
     }
 
     @SuppressWarnings("unchecked")

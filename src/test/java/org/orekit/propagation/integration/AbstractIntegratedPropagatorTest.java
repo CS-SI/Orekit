@@ -18,7 +18,6 @@ package org.orekit.propagation.integration;
 
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.attitudes.AttitudeProvider;
@@ -36,15 +35,17 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class AbstractIntegratedPropagatorTest {
 
     @Test
-    public void testGetResetAtEndTrue() {
+    void testGetResetAtEndTrue() {
         testGetResetAtEnd(true);
     }
 
     @Test
-    public void testGetResetAtEndFalse() {
+    void testGetResetAtEndFalse() {
         testGetResetAtEnd(false);
     }
 
@@ -55,16 +56,16 @@ class AbstractIntegratedPropagatorTest {
         testAbstractIntegratedPropagator.setResetAtEnd(expectedResetAtEnd);
         // THEN
         final boolean actualResetAtEnd = testAbstractIntegratedPropagator.getResetAtEnd();
-        Assertions.assertEquals(expectedResetAtEnd, actualResetAtEnd);
+        assertEquals(expectedResetAtEnd, actualResetAtEnd);
     }
-    
+
     /**
      * Test issue 1254: Wrong behavior of method "propagate(tStart, tEnd)" when used with "setResetAtEnd(false)".
      * <p>
      * Bug discovery and test are a courtesy of Christophe Le Bris.
      */
     @Test
-    public void testIssue1254() {
+    void testIssue1254() {
         // GIVEN
         // GEO orbit
         final Orbit startOrbit = new EquinoctialOrbit(42165765.0, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE,
@@ -86,15 +87,15 @@ class AbstractIntegratedPropagatorTest {
         final BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
 
         // THEN
-        Assertions.assertEquals(0., ephemeris.getMinDate().durationFrom(minDate), 0.);
-        Assertions.assertEquals(0., ephemeris.getMaxDate().durationFrom(maxDate), 0.);
+        assertEquals(0., ephemeris.getMinDate().durationFrom(minDate), 0.);
+        assertEquals(0., ephemeris.getMaxDate().durationFrom(maxDate), 0.);
     }
-    
+
     /** Test issue 1461.
      * <p>Test for the new generic method AbstractIntegratedPropagator.reset(SpacecraftState, PropagationType)
      */
     @Test
-    public void testIssue1461() {
+    void testIssue1461() {
         // GIVEN
         // GEO orbit
         final Orbit startOrbit = new EquinoctialOrbit(42165765.0, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE,
@@ -122,10 +123,10 @@ class AbstractIntegratedPropagatorTest {
         final double dpMean = meanState.getPosition().distance(state.getPosition());
         final double dvMean = meanState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity());
         
-        Assertions.assertEquals(0., dpOsc, 0.);
-        Assertions.assertEquals(0., dvOsc, 0.);
-        Assertions.assertEquals(0., dpMean, 0.);
-        Assertions.assertEquals(0., dvMean, 0.);
+        assertEquals(0., dpOsc, 0.);
+        assertEquals(0., dvOsc, 0.);
+        assertEquals(0., dpMean, 0.);
+        assertEquals(0., dvMean, 0.);
     }
 
     private static class TestAbstractIntegratedPropagator extends AbstractIntegratedPropagator {

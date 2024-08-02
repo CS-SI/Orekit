@@ -19,7 +19,6 @@ package org.orekit.control.indirect.adjoint;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
@@ -39,6 +38,10 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class CartesianAdjointDerivativesProviderTest {
 
     @Test
@@ -54,9 +57,9 @@ class CartesianAdjointDerivativesProviderTest {
         Mockito.when(mockedOrbit.getType()).thenReturn(OrbitType.EQUINOCTIAL);
         Mockito.when(mockedState.getOrbit()).thenReturn(mockedOrbit);
         // WHEN
-        final Exception exception = Assertions.assertThrows(OrekitException.class,
+        final Exception exception = assertThrows(OrekitException.class,
                 () -> derivativesProvider.init(mockedState, null));
-        Assertions.assertEquals(OrekitMessages.WRONG_COORDINATES_FOR_ADJOINT_EQUATION.getSourceString(),
+        assertEquals(OrekitMessages.WRONG_COORDINATES_FOR_ADJOINT_EQUATION.getSourceString(),
                 exception.getMessage());
     }
 
@@ -76,14 +79,14 @@ class CartesianAdjointDerivativesProviderTest {
         // WHEN
         final SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(1000.));
         // THEN
-        Assertions.assertTrue(propagator.isAdditionalStateManaged(name));
+        assertTrue(propagator.isAdditionalStateManaged(name));
         final double[] finalAdjoint = state.getAdditionalState(name);
-        Assertions.assertEquals(0, finalAdjoint[0]);
-        Assertions.assertEquals(0, finalAdjoint[1]);
-        Assertions.assertEquals(0, finalAdjoint[2]);
-        Assertions.assertEquals(0, finalAdjoint[3]);
-        Assertions.assertEquals(0, finalAdjoint[4]);
-        Assertions.assertEquals(0, finalAdjoint[5]);
+        assertEquals(0, finalAdjoint[0]);
+        assertEquals(0, finalAdjoint[1]);
+        assertEquals(0, finalAdjoint[2]);
+        assertEquals(0, finalAdjoint[3]);
+        assertEquals(0, finalAdjoint[4]);
+        assertEquals(0, finalAdjoint[5]);
     }
 
     @Test
@@ -94,7 +97,7 @@ class CartesianAdjointDerivativesProviderTest {
         // WHEN
         final CartesianCost actualCost = derivativesProvider.getCost();
         // THEN
-        Assertions.assertEquals(expectedCost, actualCost);
+        assertEquals(expectedCost, actualCost);
     }
 
     @Test
@@ -108,13 +111,13 @@ class CartesianAdjointDerivativesProviderTest {
         // THEN
         final double[] increment = combinedDerivatives.getMainStateDerivativesIncrements();
         for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(0., increment[i]);
+            assertEquals(0., increment[i]);
         }
         final double mass = state.getMass();
-        Assertions.assertEquals(1., increment[3] * mass);
-        Assertions.assertEquals(2., increment[4] * mass);
-        Assertions.assertEquals(3., increment[5] * mass);
-        Assertions.assertEquals(-10., increment[6]);
+        assertEquals(1., increment[3] * mass);
+        assertEquals(2., increment[4] * mass);
+        assertEquals(3., increment[5] * mass);
+        assertEquals(-10., increment[6]);
     }
 
     @Test
@@ -128,12 +131,12 @@ class CartesianAdjointDerivativesProviderTest {
         final CombinedDerivatives combinedDerivatives = derivativesProvider.combinedDerivatives(state);
         // THEN
         final double[] adjointDerivatives = combinedDerivatives.getAdditionalDerivatives();
-        Assertions.assertEquals(1., adjointDerivatives[0]);
-        Assertions.assertEquals(10., adjointDerivatives[1]);
-        Assertions.assertEquals(100., adjointDerivatives[2]);
-        Assertions.assertEquals(-1, adjointDerivatives[3]);
-        Assertions.assertEquals(-1, adjointDerivatives[4]);
-        Assertions.assertEquals(-1, adjointDerivatives[5]);
+        assertEquals(1., adjointDerivatives[0]);
+        assertEquals(10., adjointDerivatives[1]);
+        assertEquals(100., adjointDerivatives[2]);
+        assertEquals(-1, adjointDerivatives[3]);
+        assertEquals(-1, adjointDerivatives[4]);
+        assertEquals(-1, adjointDerivatives[5]);
     }
 
     private static SpacecraftState getState(final String name) {

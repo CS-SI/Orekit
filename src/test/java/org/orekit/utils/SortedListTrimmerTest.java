@@ -16,7 +16,6 @@
  */
 package org.orekit.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +26,11 @@ import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +39,7 @@ import java.util.List;
  *
  * @author Evan Ward
  */
-public class SortedListTrimmerTest {
+class SortedListTrimmerTest {
 
     /**
      * arbitrary date
@@ -46,7 +50,7 @@ public class SortedListTrimmerTest {
      * set Orekit data for useful debugging messages from dates.
      */
     @BeforeAll
-    public static void setUpBefore() {
+    static void setUpBefore() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -64,7 +68,7 @@ public class SortedListTrimmerTest {
      * create {@link #trimmer} and {@link #data} with neighborsSize = 3
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         data = Arrays.asList(date, date.shiftedBy(1), date.shiftedBy(2),
                              date.shiftedBy(3), date.shiftedBy(4),
                              date.shiftedBy(5));
@@ -76,19 +80,19 @@ public class SortedListTrimmerTest {
      * {@link SortedListTrimmer#getNeighborsSubList(AbsoluteDate, List)}
      */
     @Test
-    public void testGetNeighborsSubList() {
+    void testGetNeighborsSubList() {
         // exception for neighborsSize > data.size()
         try {
             new SortedListTrimmer(data.size() + 1).getNeighborsSubList(date, data);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, e.getSpecifier());
+            assertEquals(OrekitMessages.NOT_ENOUGH_DATA, e.getSpecifier());
         }
 
         // exception for non-positive neighborsSize
         try {
             new SortedListTrimmer(0);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (IllegalArgumentException e) {
             // expected
         }
@@ -96,7 +100,7 @@ public class SortedListTrimmerTest {
         // exception for null data
         try {
             new SortedListTrimmer(1).getNeighborsSubList(date, null);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (NullPointerException e) {
             // expected
         }
@@ -104,9 +108,9 @@ public class SortedListTrimmerTest {
         // exception for zero data
         try {
             new SortedListTrimmer(1).getNeighborsSubList(date, Collections.emptyList());
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
-            Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, e.getSpecifier());
+            assertEquals(OrekitMessages.NOT_ENOUGH_DATA, e.getSpecifier());
         }
     }
 
@@ -115,7 +119,7 @@ public class SortedListTrimmerTest {
      * series of different dates designed to test all logic paths.
      */
     @Test
-    public void testGetNeighbors() {
+    void testGetNeighbors() {
         // setup
         int size = data.size();
 
@@ -124,72 +128,72 @@ public class SortedListTrimmerTest {
         // before fist data
         try {
             trimmer.getNeighborsSubList(data.get(0).shiftedBy(-1), data);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
+            assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
         }
 
         // on fist date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(0), data).toArray(),
+        assertArrayEquals(trimmer.getNeighborsSubList(data.get(0), data).toArray(),
                                      data.subList(0, 3).toArray());
         // between fist and second date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(0).shiftedBy(0.5), data).toArray(),
+        assertArrayEquals(trimmer.getNeighborsSubList(data.get(0).shiftedBy(0.5), data).toArray(),
                                      data.subList(0, 3).toArray());
         // in the middle on a date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(2), data).toArray(),
+        assertArrayEquals(trimmer.getNeighborsSubList(data.get(2), data).toArray(),
                                      data.subList(1, 4).toArray());
         // in the middle between dates
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(2).shiftedBy(0.5), data).toArray(),
+        assertArrayEquals(trimmer.getNeighborsSubList(data.get(2).shiftedBy(0.5), data).toArray(),
                                      data.subList(1, 4).toArray());
         // just before last date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(size - 1).shiftedBy(-0.5), data).toArray(),
+        assertArrayEquals(trimmer.getNeighborsSubList(data.get(size - 1).shiftedBy(-0.5), data).toArray(),
                                      data.subList(size - 3, size).toArray());
         // on last date
-        Assertions.assertArrayEquals(trimmer.getNeighborsSubList(data.get(size - 1), data).toArray(),
+        assertArrayEquals(trimmer.getNeighborsSubList(data.get(size - 1), data).toArray(),
                                      data.subList(size - 3, size).toArray());
 
         // after last date
         AbsoluteDate central = data.get(size - 1).shiftedBy(1);
         try {
             trimmer.getNeighborsSubList(central, data);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (TimeStampedCacheException e) {
             // expected
-           Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, e.getSpecifier());
+           assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, e.getSpecifier());
         }
     }
 
     /** Check findIndex(...) returns results on a half closed interval. */
     @Test
-    public void testGetNeighborsSingle() {
+    void testGetNeighborsSingle() {
         // setup
         trimmer = new SortedListTrimmer(1);
         int size = data.size();
 
         // actions + verify
         // on fist date
-        Assertions.assertArrayEquals(
+        assertArrayEquals(
                 trimmer.getNeighborsSubList(data.get(0), data).toArray(),
                 data.subList(0, 1).toArray());
         // between fist and second date
-        Assertions.assertArrayEquals(
+        assertArrayEquals(
                 trimmer.getNeighborsSubList(data.get(0).shiftedBy(0.5), data).toArray(),
                 data.subList(0, 1).toArray());
         // in the middle on a date
-        Assertions.assertArrayEquals(
+        assertArrayEquals(
                 trimmer.getNeighborsSubList(data.get(2), data).toArray(),
                 data.subList(2, 3).toArray());
         // in the middle between dates
-        Assertions.assertArrayEquals(
+        assertArrayEquals(
                 trimmer.getNeighborsSubList(data.get(2).shiftedBy(0.1), data).toArray(),
                 data.subList(2, 3).toArray());
         // just before last date
-        Assertions.assertArrayEquals(
+        assertArrayEquals(
                 trimmer.getNeighborsSubList(data.get(size - 1).shiftedBy(-0.1), data).toArray(),
                 data.subList(size - 2, size - 1).toArray());
         // on last date
-        Assertions.assertArrayEquals(
+        assertArrayEquals(
                 trimmer.getNeighborsSubList(data.get(size - 1), data).toArray(),
                 data.subList(size - 1, size).toArray());
     }
@@ -198,12 +202,12 @@ public class SortedListTrimmerTest {
      * check {@link ImmutableTimeStampedCache#getMaxNeighborsSize()}
      */
     @Test
-    public void testGetNeighborsSize() {
-        Assertions.assertEquals(trimmer.getNeighborsSize(), 3);
+    void testGetNeighborsSize() {
+        assertEquals(3, trimmer.getNeighborsSize());
     }
 
     @Test
-    public void testNonLinear() {
+    void testNonLinear() {
         final List<AbsoluteDate> nonLinearCache = Arrays.asList(date.shiftedBy(10),
                                                                 date.shiftedBy(14),
                                                                 date.shiftedBy(18),
@@ -224,9 +228,9 @@ public class SortedListTrimmerTest {
                                 final List<AbsoluteDate> nonLinearCache,
                                 final double offset) {
         List<AbsoluteDate> s = nonLinearTrimmer.getNeighborsSubList(date.shiftedBy(offset), nonLinearCache);
-        Assertions.assertEquals(2, s.size());
-        Assertions.assertTrue(s.get(0).durationFrom(date) <= offset);
-        Assertions.assertTrue(s.get(1).durationFrom(date) >  offset);
+        assertEquals(2, s.size());
+        assertTrue(s.get(0).durationFrom(date) <= offset);
+        assertTrue(s.get(1).durationFrom(date) >  offset);
     }
 
 }

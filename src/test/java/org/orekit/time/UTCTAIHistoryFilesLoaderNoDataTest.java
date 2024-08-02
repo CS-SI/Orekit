@@ -16,16 +16,17 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 
-public class UTCTAIHistoryFilesLoaderNoDataTest {
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class UTCTAIHistoryFilesLoaderNoDataTest {
 
     @Test
-    public void testNoData() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNoData() {
+        assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("no-data");
             TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH);
         });

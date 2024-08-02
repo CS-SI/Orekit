@@ -22,7 +22,6 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -39,10 +38,13 @@ import org.orekit.time.TimeScalarFunction;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class J2OnlyPerturbationTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential");
     }
 
@@ -61,9 +63,9 @@ class J2OnlyPerturbationTest {
         final Vector3D expectedAcceleration = holmesFeatherstoneAttractionModel.acceleration(spacecraftState,
                 new double[] { unnormalizedProvider.getMu() });
         final double tolerance = 1e-12;
-        Assertions.assertEquals(expectedAcceleration.getX(), actualAcceleration.getX(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getY(), actualAcceleration.getY(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getZ(), actualAcceleration.getZ(), tolerance);
+        assertEquals(expectedAcceleration.getX(), actualAcceleration.getX(), tolerance);
+        assertEquals(expectedAcceleration.getY(), actualAcceleration.getY(), tolerance);
+        assertEquals(expectedAcceleration.getZ(), actualAcceleration.getZ(), tolerance);
     }
 
     @Test
@@ -81,9 +83,9 @@ class J2OnlyPerturbationTest {
         // THEN
         final Vector3D expectedAcceleration = j2OnlyPerturbation.acceleration(spacecraftState, new double[0]);
         final double tolerance = 1e-12;
-        Assertions.assertEquals(expectedAcceleration.getX(), actualAcceleration.getX(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getY(), actualAcceleration.getY(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getZ(), actualAcceleration.getZ(), tolerance);
+        assertEquals(expectedAcceleration.getX(), actualAcceleration.getX(), tolerance);
+        assertEquals(expectedAcceleration.getY(), actualAcceleration.getY(), tolerance);
+        assertEquals(expectedAcceleration.getZ(), actualAcceleration.getZ(), tolerance);
     }
 
     @Test
@@ -106,12 +108,12 @@ class J2OnlyPerturbationTest {
         final FieldVector3D<Complex> expectedAcceleration = holmesFeatherstoneAttractionModel.acceleration(fieldState,
                 mu);
         final double tolerance = 1e-12;
-        Assertions.assertEquals(expectedAcceleration.getX().getReal(), actualAcceleration.getX().getReal(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getY().getReal(), actualAcceleration.getY().getReal(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getZ().getReal(), actualAcceleration.getZ().getReal(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getX().getImaginary(), actualAcceleration.getX().getImaginary(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getY().getImaginary(), actualAcceleration.getY().getImaginary(), tolerance);
-        Assertions.assertEquals(expectedAcceleration.getZ().getImaginary(), actualAcceleration.getZ().getImaginary(), tolerance);
+        assertEquals(expectedAcceleration.getX().getReal(), actualAcceleration.getX().getReal(), tolerance);
+        assertEquals(expectedAcceleration.getY().getReal(), actualAcceleration.getY().getReal(), tolerance);
+        assertEquals(expectedAcceleration.getZ().getReal(), actualAcceleration.getZ().getReal(), tolerance);
+        assertEquals(expectedAcceleration.getX().getImaginary(), actualAcceleration.getX().getImaginary(), tolerance);
+        assertEquals(expectedAcceleration.getY().getImaginary(), actualAcceleration.getY().getImaginary(), tolerance);
+        assertEquals(expectedAcceleration.getZ().getImaginary(), actualAcceleration.getZ().getImaginary(), tolerance);
     }
 
     @Test
@@ -125,11 +127,11 @@ class J2OnlyPerturbationTest {
         final J2OnlyPerturbation j2OnlyPerturbation = new J2OnlyPerturbation(expectedMu, expectedrEq,
                 getJ2OverTime(expectedJ2), expectedFrame);
         // THEN
-        Assertions.assertEquals(expectedFrame, j2OnlyPerturbation.getFrame());
-        Assertions.assertEquals(expectedMu, j2OnlyPerturbation.getMu());
-        Assertions.assertEquals(expectedrEq, j2OnlyPerturbation.getrEq());
-        Assertions.assertTrue(j2OnlyPerturbation.getParametersDrivers().isEmpty());
-        Assertions.assertTrue(j2OnlyPerturbation.dependsOnPositionOnly());
+        assertEquals(expectedFrame, j2OnlyPerturbation.getFrame());
+        assertEquals(expectedMu, j2OnlyPerturbation.getMu());
+        assertEquals(expectedrEq, j2OnlyPerturbation.getrEq());
+        assertTrue(j2OnlyPerturbation.getParametersDrivers().isEmpty());
+        assertTrue(j2OnlyPerturbation.dependsOnPositionOnly());
     }
 
     @Test
@@ -146,7 +148,7 @@ class J2OnlyPerturbationTest {
         // THEN
         final FieldAbsoluteDate<Complex> fieldAbsoluteDate = new FieldAbsoluteDate<>(ComplexField.getInstance(),
                 absoluteDate);
-        Assertions.assertEquals(j2OnlyPerturbation.getJ2(absoluteDate),
+        assertEquals(j2OnlyPerturbation.getJ2(absoluteDate),
                 j2OnlyPerturbation.getJ2(fieldAbsoluteDate).getReal());
     }
 

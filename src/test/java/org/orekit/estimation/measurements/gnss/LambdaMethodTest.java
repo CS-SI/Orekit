@@ -22,12 +22,14 @@ import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Comparator;
 
-public class LambdaMethodTest extends AbstractLambdaMethodTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class LambdaMethodTest extends AbstractLambdaMethodTest {
 
     protected AbstractLambdaMethod buildReducer() {
         return new LambdaMethod();
@@ -40,7 +42,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
     }
 
     @Test
-    public void testPermutation() {
+    void testPermutation() {
 
         RandomGenerator random = new Well19937a(0xf824c33093974ee5l);
         for (int k = 0; k < 1000; ++k) {
@@ -57,7 +59,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
     }
 
     @Test
-    public void testCustomComparator() {
+    void testCustomComparator() {
 
         // Initialize
         final double[] floatAmbiguities = new double[] {
@@ -87,11 +89,11 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         IntegerLeastSquareSolution[] solutions = reducer.solveILS(1, floatAmbiguities, indirection, covariance);
 
         // Verify
-        Assertions.assertEquals(1, solutions.length);
-        Assertions.assertEquals(0.2183310953369383, solutions[0].getSquaredDistance(), 1.0e-15);
-        Assertions.assertEquals(5l, solutions[0].getSolution()[0]);
-        Assertions.assertEquals(3l, solutions[0].getSolution()[1]);
-        Assertions.assertEquals(4l, solutions[0].getSolution()[2]);
+        assertEquals(1, solutions.length);
+        assertEquals(0.2183310953369383, solutions[0].getSquaredDistance(), 1.0e-15);
+        assertEquals(5l, solutions[0].getSolution()[0]);
+        assertEquals(3l, solutions[0].getSolution()[1]);
+        assertEquals(4l, solutions[0].getSolution()[2]);
     }
 
     private void doTestPermutation(final RandomGenerator random,
@@ -107,7 +109,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         RealMatrix zRef               = MatrixUtils.createRealIdentityMatrix(indirection.length);
         double[]   aBase              = getDecorrelated(reducer).clone();
         double[]   aRef               = aBase.clone();
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             zRef.subtract(getZTransformation(reducer)).getNorm1(),
                             1.0e-15);
         for (int k = 0; k < 10; ++k) {
@@ -118,14 +120,14 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
 
             // check accumulated Z transform, with reference based on naive matrix multiplication
             zRef = zRef.multiply(permutation.z);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 zRef.subtract(getZTransformation(reducer)).getNorm1(),
                                 Precision.SAFE_MIN);
 
             // check rebuilt permuted covariance
             RealMatrix rebuilt  = getLow(reducer).transposeMultiply(getDiag(reducer)).multiply(getLow(reducer));
             RealMatrix permuted = zRef.transposeMultiply(filteredCovariance).multiply(zRef);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 permuted.subtract(rebuilt).getNorm1(),
                                 2.7e-12 * filteredCovariance.getNorm1());
 
@@ -134,20 +136,20 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
             aRef[permutation.i]     = aRef[permutation.i + 1];
             aRef[permutation.i + 1] = tmp;
             for (int i = 0; i < aRef.length; ++i) {
-                Assertions.assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
+                assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
             }
 
             // check ambiguities, with reference based on accumulated naive matrix multiplication
             final double[] aRef2 = zRef.transpose().operate(aBase);
             for (int i = 0; i < aRef2.length; ++i) {
-                Assertions.assertEquals(aRef2[i], getDecorrelated(reducer)[i], 4.0e-14);
+                assertEquals(aRef2[i], getDecorrelated(reducer)[i], 4.0e-14);
             }
 
         }
     }
 
     @Test
-    public void testIntegerGaussTransformation() {
+    void testIntegerGaussTransformation() {
 
         RandomGenerator random = new Well19937a(0x08e9e32dcd0f9dbdl);
         for (int k = 0; k < 1000; ++k) {
@@ -179,7 +181,7 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
         RealMatrix diagRef  = getDiag(reducer);
         double[]   aBase    = getDecorrelated(reducer).clone();
         double[]   aRef     = aBase;
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             zRef.subtract(getZTransformation(reducer)).getNorm1(),
                             1.0e-15);
         for (int k = 0; k < 10; ++k) {
@@ -188,32 +190,32 @@ public class LambdaMethodTest extends AbstractLambdaMethodTest {
 
             // check accumulated Z transform, with reference based on naive matrix multiplication
             zRef = zRef.multiply(gauss.z);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 zRef.subtract(getZTransformation(reducer)).getNorm1(),
                                 1.5e-15 * zRef.getNorm1());
 
             // check diagonal part, which should not change
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 diagRef.subtract(getDiag(reducer)).getNorm1(),
                                 Precision.SAFE_MIN);
 
             // check accumulated low triangular part, with reference based on naive matrix multiplication
             lowRef = lowRef.multiply(gauss.z);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 lowRef.subtract(getLow(reducer)).getNorm1(),
                                 Precision.SAFE_MIN);
-            Assertions.assertTrue(getLow(reducer).getEntry(gauss.i, gauss.j) <= 0.5);
+            assertTrue(getLow(reducer).getEntry(gauss.i, gauss.j) <= 0.5);
 
             // check ambiguities, with reference based on single step naive matrix multiplication
             aRef = gauss.z.transpose().operate(aRef);
             for (int i = 0; i < aRef.length; ++i) {
-                Assertions.assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
+                assertEquals(aRef[i], getDecorrelated(reducer)[i], 4.0e-14);
             }
 
             // check ambiguities, with reference based on accumulated naive matrix multiplication
             final double[] aRef2 = zRef.transpose().operate(aBase);
             for (int i = 0; i < aRef2.length; ++i) {
-                Assertions.assertEquals(aRef2[i], getDecorrelated(reducer)[i], 2.3e-13);
+                assertEquals(aRef2[i], getDecorrelated(reducer)[i], 2.3e-13);
             }
 
         }

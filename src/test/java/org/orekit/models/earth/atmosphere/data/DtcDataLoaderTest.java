@@ -20,7 +20,6 @@ package org.orekit.models.earth.atmosphere.data;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -50,23 +49,25 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
 
 
 /*
- * Test code based on the CssiSpaceWeatherDataTest class
- * by Clément Jonglez.
- * @author Louis Aucouturier
- * @since 11.2
- */
+* Test code based on the CssiSpaceWeatherDataTest class
+* by Clément Jonglez.
+* @author Louis Aucouturier
+* @since 11.2
+*/
 
-public class DtcDataLoaderTest {
+class DtcDataLoaderTest {
 
     private TimeScale utc;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
     }
@@ -83,29 +84,28 @@ public class DtcDataLoaderTest {
     }
 
 
-
     @Test
-    public void testNoDataException() {
+    void testNoDataException() {
         try {
             loadJB("DTCFILE_empty.TXT");
-            Assertions.fail("No Data In File exception should have been raised");
+            fail("No Data In File exception should have been raised");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NO_DATA_IN_FILE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testUnableParse() {
+    void testUnableParse() {
         try {
             loadJB("DTCFILE_badparse.TXT");
-            Assertions.fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
+            fail("UNABLE_TO_PARSE_LINE_IN_FILE exception should have been raised");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testParseDouble() {
+    void testParseDouble() {
         JB2008SpaceEnvironmentData JBData = loadJB("DTCFILE_double.txt");
         final AbsoluteDate date = new AbsoluteDate(2004, 1, 1, 0, 0, 0.0, utc);
         assertThat(135.0, closeTo(JBData.getDSTDTC(date), 1e-10));
@@ -113,30 +113,29 @@ public class DtcDataLoaderTest {
 
 
     @Test
-    public void testMinDate() {
+    void testMinDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate startDate = new AbsoluteDate(2003, 12, 26, 12, 0, 0.0, utc);
-        Assertions.assertEquals(startDate, JBData.getMinDate());
+        assertEquals(startDate, JBData.getMinDate());
     }
 
 
-
     @Test
-    public void testMaxDate() {
+    void testMaxDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate lastDate = new AbsoluteDate(2007, 1, 1, 12, 0, 0.0, utc);
-        Assertions.assertEquals(lastDate, JBData.getMaxDate());
+        assertEquals(lastDate, JBData.getMaxDate());
     }
 
     @Test
-    public void testDTC() {
+    void testDTC() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate date = new AbsoluteDate(2004, 1, 1, 0, 0, 0.0, utc);
         assertThat(135.0, closeTo(JBData.getDSTDTC(date), 1e-10));
     }
 
     @Test
-    public void testDTCInterp() {
+    void testDTCInterp() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         final AbsoluteDate date = new AbsoluteDate(2004, 1, 3, 0, 30, 0.0, utc);
         assertThat((85.0 + 94.0)/2, closeTo(JBData.getDSTDTC(date), 1e-10));
@@ -144,26 +143,26 @@ public class DtcDataLoaderTest {
 
 
     @Test
-    public void testBracketDateDTC_lastDate() {
+    void testBracketDateDTC_lastDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(2050, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getDSTDTC(date);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_AFTER, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testBracketDateDTC_firstDate() {
+    void testBracketDateDTC_firstDate() {
         JB2008SpaceEnvironmentData JBData = loadJB();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             JBData.getDSTDTC(date);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -172,7 +171,7 @@ public class DtcDataLoaderTest {
      * interval.
      */
     @Test
-    public void testWithPropagator() {
+    void testWithPropagator() {
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Frame eci = FramesFactory.getGCRF();
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

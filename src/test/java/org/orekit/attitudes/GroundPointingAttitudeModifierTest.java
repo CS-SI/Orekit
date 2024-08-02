@@ -20,7 +20,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
@@ -28,6 +27,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.*;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GroundPointingAttitudeModifierTest {
 
@@ -44,7 +45,7 @@ class GroundPointingAttitudeModifierTest {
         // WHEN
         final Vector3D actualPosition = law.getTargetPosition(mockedPVProvider, date, frame);
         // THEN
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     @SuppressWarnings("unchecked")
@@ -62,7 +63,7 @@ class GroundPointingAttitudeModifierTest {
         // WHEN
         final FieldVector3D<Complex> actualPosition = law.getTargetPosition(mockedPVProvider, date, frame);
         // THEN
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     @Test
@@ -79,8 +80,8 @@ class GroundPointingAttitudeModifierTest {
         // WHEN
         final TimeStampedPVCoordinates actualPVCoordinates = law.getTargetPV(mockedPVProvider, date, frame);
         // THEN
-        Assertions.assertEquals(expectedPvCoordinates.getPosition(), actualPVCoordinates.getPosition());
-        Assertions.assertEquals(expectedPvCoordinates.getVelocity(), actualPVCoordinates.getVelocity());
+        assertEquals(expectedPvCoordinates.getPosition(), actualPVCoordinates.getPosition());
+        assertEquals(expectedPvCoordinates.getVelocity(), actualPVCoordinates.getVelocity());
     }
 
     @SuppressWarnings("unchecked")
@@ -99,8 +100,8 @@ class GroundPointingAttitudeModifierTest {
         // WHEN
         final TimeStampedFieldPVCoordinates<Complex> actualPV = law.getTargetPV(mockedPVProvider, date, frame);
         // THEN
-        Assertions.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
-        Assertions.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+        assertEquals(expectedPV.getPosition(), actualPV.getPosition());
+        assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
     }
 
     @Test
@@ -116,7 +117,7 @@ class GroundPointingAttitudeModifierTest {
         // WHEN
         final Attitude attitude = law.getBaseState(mockedPVProvider, date, frame);
         // THEN
-        Assertions.assertEquals(mockedAttitude, attitude);
+        assertEquals(mockedAttitude, attitude);
     }
 
     @SuppressWarnings("unchecked")
@@ -134,7 +135,7 @@ class GroundPointingAttitudeModifierTest {
         // WHEN
         final FieldAttitude<Complex> attitude = law.getBaseState(mockedPVProvider, date, frame);
         // THEN
-        Assertions.assertEquals(mockedAttitude, attitude);
+        assertEquals(mockedAttitude, attitude);
     }
 
     private static class TestYawLaw extends GroundPointingAttitudeModifier {

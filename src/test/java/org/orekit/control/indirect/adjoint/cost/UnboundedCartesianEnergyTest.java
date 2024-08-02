@@ -23,7 +23,6 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
@@ -38,6 +37,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class UnboundedCartesianEnergyTest {
 
     @Test
@@ -48,7 +49,7 @@ class UnboundedCartesianEnergyTest {
         // WHEN
         final double actualRateFactor = unboundedCartesianEnergy.getMassFlowRateFactor();
         // THEN
-        Assertions.assertEquals(expectedRateFactor, actualRateFactor);
+        assertEquals(expectedRateFactor, actualRateFactor);
     }
 
     @Test
@@ -69,7 +70,7 @@ class UnboundedCartesianEnergyTest {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
         final Vector3D thrustVector = unboundedCartesianEnergy.getThrustVector(adjoint, mass.getReal());
-        Assertions.assertEquals(thrustVector, fieldThrustVector.toVector3D());
+        assertEquals(thrustVector, fieldThrustVector.toVector3D());
     }
 
     @Test
@@ -88,11 +89,11 @@ class UnboundedCartesianEnergyTest {
         final CartesianAdjointDerivativesProvider adjointDerivativesProvider = new CartesianAdjointDerivativesProvider(energy);
         final CombinedDerivatives combinedDerivatives = adjointDerivativesProvider.combinedDerivatives(state);
         for (int i = 0; i < 7; i++) {
-            Assertions.assertEquals(combinedDerivatives.getMainStateDerivativesIncrements()[i],
+            assertEquals(combinedDerivatives.getMainStateDerivativesIncrements()[i],
                     fieldCombinedDerivatives.getMainStateDerivativesIncrements()[i].getReal());
         }
         for (int i = 0; i < 7; i++) {
-            Assertions.assertEquals(combinedDerivatives.getAdditionalDerivatives()[i],
+            assertEquals(combinedDerivatives.getAdditionalDerivatives()[i],
                     fieldCombinedDerivatives.getAdditionalDerivatives()[i].getReal(), 1e-12);
         }
     }

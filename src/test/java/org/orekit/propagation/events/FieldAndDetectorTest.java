@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,12 +29,16 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Unit tests for {@link BooleanDetector}.
  *
  * @author Evan Ward
  */
-public class FieldAndDetectorTest {
+class FieldAndDetectorTest {
 
     /** first operand. */
     private MockDetector a;
@@ -49,7 +52,7 @@ public class FieldAndDetectorTest {
     /** create subject under test and dependencies. */
     @SuppressWarnings("unchecked")
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         a = new MockDetector();
         b = new MockDetector();
         s = Mockito.mock(FieldSpacecraftState.class);
@@ -61,40 +64,40 @@ public class FieldAndDetectorTest {
      * check {@link BooleanDetector#g(SpacecraftState)}.
      */
     @Test
-    public void testG() {
+    void testG() {
         // test both zero
         a.g = b.g = new Binary64(0.0);
-        Assertions.assertEquals(0.0, and.g(s).getReal(), 0);
+        assertEquals(0.0, and.g(s).getReal(), 0);
 
         // test either zero
         a.g = new Binary64(1);
         b.g = new Binary64(0);
-        Assertions.assertEquals(0.0, and.g(s).getReal(), 0);
+        assertEquals(0.0, and.g(s).getReal(), 0);
         a.g = new Binary64(0);
         b.g = new Binary64(1);
-        Assertions.assertEquals(0.0, and.g(s).getReal(), 0);
+        assertEquals(0.0, and.g(s).getReal(), 0);
 
         // test either negative
         a.g = new Binary64(0);
         b.g = new Binary64(-1);
-        Assertions.assertTrue(and.g(s).getReal() < 0, "negative");
+        assertTrue(and.g(s).getReal() < 0, "negative");
         a.g = new Binary64(1);
         b.g = new Binary64(-1);
-        Assertions.assertTrue(and.g(s).getReal() < 0, "negative");
+        assertTrue(and.g(s).getReal() < 0, "negative");
         a.g = new Binary64(-1);
         b.g = new Binary64(0);
-        Assertions.assertTrue(and.g(s).getReal() < 0, "negative");
+        assertTrue(and.g(s).getReal() < 0, "negative");
         a.g = new Binary64(-1);
         b.g = new Binary64(1);
-        Assertions.assertTrue(and.g(s).getReal() < 0, "negative");
+        assertTrue(and.g(s).getReal() < 0, "negative");
         a.g = new Binary64(-1);
         b.g = new Binary64(-1);
-        Assertions.assertTrue(and.g(s).getReal() < 0, "negative");
+        assertTrue(and.g(s).getReal() < 0, "negative");
 
         // test both positive
         a.g = new Binary64(1);
         b.g = new Binary64(1);
-        Assertions.assertTrue(and.g(s).getReal() > 0, "positive");
+        assertTrue(and.g(s).getReal() > 0, "positive");
 
     }
 
@@ -102,19 +105,19 @@ public class FieldAndDetectorTest {
      * check {@link BooleanDetector} for cancellation.
      */
     @Test
-    public void testCancellation() {
+    void testCancellation() {
         a.g = new Binary64(-1e-10);
         b.g = new Binary64(1e10);
-        Assertions.assertTrue(and.g(s).getReal() < 0, "negative");
+        assertTrue(and.g(s).getReal() < 0, "negative");
         a.g = new Binary64(1e10);
         b.g = new Binary64(-1e-10);
-        Assertions.assertTrue(and.g(s).getReal() < 0, "negative");
+        assertTrue(and.g(s).getReal() < 0, "negative");
         a.g = new Binary64(1e10);
         b.g = new Binary64(1e-10);
-        Assertions.assertTrue(and.g(s).getReal() > 0, "positive");
+        assertTrue(and.g(s).getReal() > 0, "positive");
         a.g = new Binary64(1e-10);
         b.g = new Binary64(1e10);
-        Assertions.assertTrue(and.g(s).getReal() > 0, "positive");
+        assertTrue(and.g(s).getReal() > 0, "positive");
     }
 
     /**
@@ -122,7 +125,7 @@ public class FieldAndDetectorTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void testInit() {
+    void testInit() {
         // setup
         FieldEventDetector<Binary64> a = Mockito.mock(FieldEventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
@@ -140,7 +143,7 @@ public class FieldAndDetectorTest {
         and.init(s, t);
 
         // verify
-        Assertions.assertEquals(2, and.getDetectors().size());
+        assertEquals(2, and.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
         Mockito.verify(c).init(s, t, and);
@@ -148,11 +151,11 @@ public class FieldAndDetectorTest {
 
     /** check when no operands are passed to the constructor. */
     @Test
-    public void testZeroDetectors() {
+    void testZeroDetectors() {
         // action
         try {
             BooleanDetector.andCombine(Collections.emptyList());
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (NoSuchElementException e) {
             // expected
         }

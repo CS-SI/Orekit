@@ -25,7 +25,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -59,6 +58,8 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DSSTAtmosphericDragTest {
 
@@ -125,12 +126,12 @@ class DSSTAtmosphericDragTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(-3.415320567871035E-5, elements[0], 1.e-20);
-        Assertions.assertEquals(6.276312897745139E-13, elements[1], 1.9e-27);
-        Assertions.assertEquals(-9.303357008691404E-13, elements[2], 0.7e-27);
-        Assertions.assertEquals(-7.052316604063199E-14, elements[3], 1.e-28);
-        Assertions.assertEquals(-6.793277250493389E-14, elements[4], 3.e-29);
-        Assertions.assertEquals(-1.3565284454826392E-15, elements[5], 1.e-27);
+        assertEquals(-3.415320567871035E-5, elements[0], 1.e-20);
+        assertEquals(6.276312897745139E-13, elements[1], 1.9e-27);
+        assertEquals(-9.303357008691404E-13, elements[2], 0.7e-27);
+        assertEquals(-7.052316604063199E-14, elements[3], 1.e-28);
+        assertEquals(-6.793277250493389E-14, elements[4], 3.e-29);
+        assertEquals(-1.3565284454826392E-15, elements[5], 1.e-27);
 
     }
 
@@ -189,16 +190,16 @@ class DSSTAtmosphericDragTest {
             }
         }
 
-        Assertions.assertEquals( 0.0396665723326745000,   y[0], 1.e-15);
-        Assertions.assertEquals(-1.52943814431706260e-8,  y[1], 1.e-23);
-        Assertions.assertEquals(-2.36149298285121920e-8,  y[2], 1.e-23);
-        Assertions.assertEquals(-5.90158033654418600e-11, y[3], 1.e-25);
-        Assertions.assertEquals( 1.02876397430632310e-11, y[4], 1.e-24);
-        Assertions.assertEquals( 2.53842752377756570e-8,  y[5], 1.e-23);
+        assertEquals( 0.0396665723326745000,   y[0], 1.e-15);
+        assertEquals(-1.52943814431706260e-8,  y[1], 1.e-23);
+        assertEquals(-2.36149298285121920e-8,  y[2], 1.e-23);
+        assertEquals(-5.90158033654418600e-11, y[3], 1.e-25);
+        assertEquals( 1.02876397430632310e-11, y[4], 1.e-24);
+        assertEquals( 2.53842752377756570e-8,  y[5], 1.e-23);
     }
 
     @Test
-    public void testSetAtmosphereUpperLimit() {
+    void testSetAtmosphereUpperLimit() {
 
         // Orbit above 1000 km altitude.
         final Frame eme2000Frame = FramesFactory.getEME2000();
@@ -245,34 +246,34 @@ class DSSTAtmosphericDragTest {
 
         // Check max atmosphere altitude
         final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
-        Assertions.assertEquals(atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, drag.getRbar(), 1e-9);
+        assertEquals(atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, drag.getRbar(), 1e-9);
 
         // Compute and check that the mean element rates are zero
         final double[] daidt = drag.getMeanElementRate(state, auxiliaryElements, parameters);
-        Assertions.assertEquals(0.0, daidt[0]);
-        Assertions.assertEquals(0.0, daidt[1]);
-        Assertions.assertEquals(0.0, daidt[2]);
-        Assertions.assertEquals(0.0, daidt[3]);
-        Assertions.assertEquals(0.0, daidt[4]);
-        Assertions.assertEquals(0.0, daidt[5]);
+        assertEquals(0.0, daidt[0]);
+        assertEquals(0.0, daidt[1]);
+        assertEquals(0.0, daidt[2]);
+        assertEquals(0.0, daidt[3]);
+        assertEquals(0.0, daidt[4]);
+        assertEquals(0.0, daidt[5]);
 
         // Increase atmosphere limit
         final double expectedAtmosphereLimit = 2000000.0 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         drag.setRbar(expectedAtmosphereLimit);
-        Assertions.assertEquals(expectedAtmosphereLimit, drag.getRbar());
+        assertEquals(expectedAtmosphereLimit, drag.getRbar());
 
         // Compute and check the mean element rate
         final double[] daidtNew = drag.getMeanElementRate(state, auxiliaryElements, parameters);
-        Assertions.assertEquals(-3.7465296003917817E-28, daidtNew[0], 1.0e-33);
-        Assertions.assertEquals(7.316039091705292E-36, daidtNew[1], 1.0e-41);
-        Assertions.assertEquals(-2.195983299144844E-36, daidtNew[2], 1.0e-41);
-        Assertions.assertEquals(-9.80724158695418E-37, daidtNew[3], 1.0e-42);
-        Assertions.assertEquals(-9.059767879911556E-37, daidtNew[4], 1.0e-42);
-        Assertions.assertEquals(1.4486591760431082E-38, daidtNew[5], 1.0e-43);
+        assertEquals(-3.7465296003917817E-28, daidtNew[0], 1.0e-33);
+        assertEquals(7.316039091705292E-36, daidtNew[1], 1.0e-41);
+        assertEquals(-2.195983299144844E-36, daidtNew[2], 1.0e-41);
+        assertEquals(-9.80724158695418E-37, daidtNew[3], 1.0e-42);
+        assertEquals(-9.059767879911556E-37, daidtNew[4], 1.0e-42);
+        assertEquals(1.4486591760431082E-38, daidtNew[5], 1.0e-43);
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 }

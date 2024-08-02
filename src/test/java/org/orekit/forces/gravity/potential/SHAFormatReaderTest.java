@@ -17,7 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -25,29 +24,32 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
-public class SHAFormatReaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class SHAFormatReaderTest {
 
     @Test
-    public void testReadNormalized() {
+    void testReadNormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("sha.grgm1200b_sigma_truncated_5x5", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         NormalizedSphericalHarmonics harmonics = provider.onDate(AbsoluteDate.FUTURE_INFINITY);
-        Assertions.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
-        Assertions.assertEquals(-3.1973502105869101E-06, harmonics.getNormalizedCnm(3, 0), 1.0e-15);
-        Assertions.assertEquals( 3.1105527966439498E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
-        Assertions.assertEquals( 0.0, harmonics.getNormalizedSnm(4, 0), 1.0e-15);
-        Assertions.assertEquals( 3.9263792903879803E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
-        Assertions.assertEquals(2.7542657233402899E-06, harmonics.getNormalizedCnm(5, 4), 1.0e-15);
+        assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
+        assertEquals(-3.1973502105869101E-06, harmonics.getNormalizedCnm(3, 0), 1.0e-15);
+        assertEquals( 3.1105527966439498E-06, harmonics.getNormalizedCnm(5, 5), 1.0e-15);
+        assertEquals( 0.0, harmonics.getNormalizedSnm(4, 0), 1.0e-15);
+        assertEquals( 3.9263792903879803E-06, harmonics.getNormalizedSnm(4, 4), 1.0e-15);
+        assertEquals(2.7542657233402899E-06, harmonics.getNormalizedCnm(5, 4), 1.0e-15);
     }
 
     @Test
-    public void testReadUnnormalized() {
+    void testReadUnnormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("sha.grgm1200b_sigma_truncated_5x5", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(AbsoluteDate.FUTURE_INFINITY);
-        Assertions.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
+        assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
         int maxUlps = 1;
         checkValue(harmonics.getUnnormalizedCnm(3, 0), 3, 0, -3.1973502105869101E-06, maxUlps);
         checkValue(harmonics.getUnnormalizedCnm(5, 5), 5, 5, 3.1105527966439498E-06, maxUlps);
@@ -59,20 +61,20 @@ public class SHAFormatReaderTest {
         double c = 2*11/b;
         double result = a*FastMath.sqrt(c);
 
-        Assertions.assertEquals(result, harmonics.getUnnormalizedCnm(5, 4), 1.0e-20);
+        assertEquals(result, harmonics.getUnnormalizedCnm(5, 4), 1.0e-20);
 
         a = -6.0069538669876603E-06;
         b = 8*7*6*5*4*3*2;
         c=2*9/b;
         result = a*FastMath.sqrt(c);
-        Assertions.assertEquals(result, harmonics.getUnnormalizedCnm(4, 4), 1.0e-20);
+        assertEquals(result, harmonics.getUnnormalizedCnm(4, 4), 1.0e-20);
 
-        Assertions.assertEquals(2.0321922328195912e-4, -harmonics.getUnnormalizedCnm(2, 0), 1.0e-20);
+        assertEquals(2.0321922328195912e-4, -harmonics.getUnnormalizedCnm(2, 0), 1.0e-20);
     }
 
     @Test
-    public void testCorruptedFile1() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testCorruptedFile1() {
+        assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-1_sha.grgm1200b_sigma_truncated_5x5", false));
             GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -80,8 +82,8 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile2() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testCorruptedFile2() {
+        assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-2_sha.grgm1200b_sigma_truncated_5x5", false));
             GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -89,8 +91,8 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile3() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testCorruptedFile3() {
+        assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-3_sha.grgm1200b_sigma_truncated_5x5", false));
             GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -98,8 +100,8 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testCannotParseHeader() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testCannotParseHeader() {
+        assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-4_sha.grgm1200b_sigma_truncated_5x5", false));
             GravityFieldFactory.getUnnormalizedProvider(2, 2);
@@ -112,6 +114,6 @@ public class SHAFormatReaderTest {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         double normalized = factor * constant;
         double epsilon = maxUlps * FastMath.ulp(normalized);
-        Assertions.assertEquals(normalized, value, epsilon);
+        assertEquals(normalized, value, epsilon);
     }
 }

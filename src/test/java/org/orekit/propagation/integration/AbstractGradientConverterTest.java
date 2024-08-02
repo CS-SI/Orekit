@@ -18,7 +18,6 @@ package org.orekit.propagation.integration;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.attitudes.AttitudeProvider;
@@ -35,6 +34,10 @@ import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.List;
 
 class AbstractGradientConverterTest {
@@ -59,14 +62,14 @@ class AbstractGradientConverterTest {
         // WHEN
         final FieldSpacecraftState<Gradient> actualGradientState = testGradientConverter.getState(mockedDriversProvider);
         // THEN
-        Assertions.assertEquals(isOrbitDefined, actualGradientState.isOrbitDefined());
-        Assertions.assertEquals(initGradientState.getFrame(), actualGradientState.getFrame());
-        Assertions.assertEquals(initGradientState.getMass().getReal(), actualGradientState.getMass().getReal());
-        Assertions.assertEquals(initGradientState.getDate().toAbsoluteDate(),
+        assertEquals(isOrbitDefined, actualGradientState.isOrbitDefined());
+        assertEquals(initGradientState.getFrame(), actualGradientState.getFrame());
+        assertEquals(initGradientState.getMass().getReal(), actualGradientState.getMass().getReal());
+        assertEquals(initGradientState.getDate().toAbsoluteDate(),
                 actualGradientState.getDate().toAbsoluteDate());
-        Assertions.assertEquals(initGradientState.getPosition().toVector3D(),
+        assertEquals(initGradientState.getPosition().toVector3D(),
                 actualGradientState.getPosition().toVector3D());
-        Assertions.assertTrue(freeParameters < actualGradientState.getMass().getGradient().length);
+        assertTrue(freeParameters < actualGradientState.getMass().getGradient().length);
     }
 
     @Test
@@ -89,17 +92,17 @@ class AbstractGradientConverterTest {
         final FieldSpacecraftState<Gradient> fieldState = AbstractGradientConverter
                 .buildBasicGradientSpacecraftState(mockedState, freeParameters, provider);
         // THEN
-        Assertions.assertEquals(mockedState.getFrame(), fieldState.getFrame());
-        Assertions.assertEquals(mockedState.getDate(), fieldState.getDate().toAbsoluteDate());
-        Assertions.assertEquals(mockedState.getPosition(), fieldState.getPosition().toVector3D());
-        Assertions.assertEquals(mockedState.isOrbitDefined(), fieldState.isOrbitDefined());
+        assertEquals(mockedState.getFrame(), fieldState.getFrame());
+        assertEquals(mockedState.getDate(), fieldState.getDate().toAbsoluteDate());
+        assertEquals(mockedState.getPosition(), fieldState.getPosition().toVector3D());
+        assertEquals(mockedState.isOrbitDefined(), fieldState.isOrbitDefined());
         if (isOrbitDefined) {
-            Assertions.assertEquals(mockedState.getMu(), fieldState.getMu().getReal());
+            assertEquals(mockedState.getMu(), fieldState.getMu().getReal());
         }
         final Gradient expectedFieldZero = Gradient.constant(freeParameters, 0.);
-        Assertions.assertEquals(expectedFieldZero, fieldState.getDate().getField().getZero());
+        assertEquals(expectedFieldZero, fieldState.getDate().getField().getZero());
         final Gradient expectedFieldMass = Gradient.constant(freeParameters, mockedState.getMass());
-        Assertions.assertEquals(expectedFieldMass, fieldState.getMass());
+        assertEquals(expectedFieldMass, fieldState.getMass());
     }
 
     private SpacecraftState mockState(final boolean isOrbitDefined, final Frame frame) {

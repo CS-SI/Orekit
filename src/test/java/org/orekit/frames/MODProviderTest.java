@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,16 +35,20 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 
-public class MODProviderTest {
+class MODProviderTest {
 
     @Test
-    public void testEuler1976() {
+    void testEuler1976() {
 
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
@@ -89,13 +92,13 @@ public class MODProviderTest {
             Transform t = new Transform(date,
                                         modProvider.getTransform(date).getInverse(),
                                         eulerBasedProvider.getTransform(date));
-            Assertions.assertEquals(0, t.getRotation().getAngle(), 1.01e-11);
+            assertEquals(0, t.getRotation().getAngle(), 1.01e-11);
         }
 
     }
 
     @Test
-    public void testEuler2000() {
+    void testEuler2000() {
 
         // this alternate representation of the transform
         // is from equation 33 in IERS conventions 2003
@@ -147,13 +150,13 @@ public class MODProviderTest {
             Transform t = new Transform(date,
                                         modProvider.getTransform(date).getInverse(),
                                         eulerBasedProvider.getTransform(date));
-            Assertions.assertEquals(0, t.getRotation().getAngle(), 6.6e-13);
+            assertEquals(0, t.getRotation().getAngle(), 6.6e-13);
         }
 
     }
 
     @Test
-    public void testAASReferenceLEO() {
+    void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -191,7 +194,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() {
+    void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -228,7 +231,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testSofaPmat76() {
+    void testSofaPmat76() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -280,7 +283,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testSofaBp00() {
+    void testSofaBp00() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -335,7 +338,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testSofaBp06() {
+    void testSofaBp06() {
 
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
@@ -390,7 +393,7 @@ public class MODProviderTest {
     }
 
     @Test
-    public void testMOD1976vs2006() {
+    void testMOD1976vs2006() {
 
         final Frame mod1976 = FramesFactory.getMOD(IERSConventions.IERS_1996);
         final Frame mod2006 = FramesFactory.getMOD(IERSConventions.IERS_2010);
@@ -398,12 +401,12 @@ public class MODProviderTest {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
             double delta = mod1976.getTransformTo(mod2006, date).getRotation().getAngle();
             // MOD2006 and MOD2000 are similar to about 33 milli-arcseconds between 2000 and 2010
-            Assertions.assertEquals(0.0, delta, 2.0e-7);
+            assertEquals(0.0, delta, 2.0e-7);
         }
     }
 
     @Test
-    public void testMOD2000vs2006() {
+    void testMOD2000vs2006() {
 
         final Frame mod2000 = FramesFactory.getMOD(IERSConventions.IERS_2003);
         final Frame mod2006 = FramesFactory.getMOD(IERSConventions.IERS_2010);
@@ -411,12 +414,12 @@ public class MODProviderTest {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
             double delta = mod2000.getTransformTo(mod2006, date).getRotation().getAngle();
             // MOD2006 and MOD2000 are similar to about 0.15 milli-arcseconds between 2000 and 2010
-            Assertions.assertEquals(0.0, delta, 7.2e-10);
+            assertEquals(0.0, delta, 7.2e-10);
         }
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         MODProvider provider = new MODProvider(IERSConventions.IERS_2010,
                 DataContext.getDefault().getTimeScales());
 
@@ -424,8 +427,8 @@ public class MODProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 150);
-        Assertions.assertTrue(bos.size() < 250);
+        assertTrue(bos.size() > 150);
+        assertTrue(bos.size() < 250);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -435,14 +438,14 @@ public class MODProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        provider.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("compressed-data");
     }
 
@@ -453,15 +456,15 @@ public class MODProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assertions.assertEquals(0, dV.getNorm(), velocityThreshold);
+        assertEquals(0, dP.getNorm(), positionThreshold);
+        assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
     private void checkRotation(double[][] reference, Transform t, double epsilon) {
         double[][] mat = t.getRotation().getMatrix();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                Assertions.assertEquals(reference[i][j], mat[i][j], epsilon);
+                assertEquals(reference[i][j], mat[i][j], epsilon);
             }
         }
     }

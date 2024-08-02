@@ -25,7 +25,6 @@ import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -54,20 +53,24 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class SemiAnalyticalKalmanEstimatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class SemiAnalyticalKalmanEstimatorTest {
 
     @Test
-    public void testMissingPropagatorBuilder() {
+    void testMissingPropagatorBuilder() {
         try {
             new SemiAnalyticalKalmanEstimatorBuilder().build();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+            assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testMathRuntimeException() {
+    void testMathRuntimeException() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -118,9 +121,9 @@ public class SemiAnalyticalKalmanEstimatorTest {
 
         try {
             kalman.processMeasurements(measurements);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(LocalizedCoreFormats.INTERNAL_ERROR, oe.getSpecifier());
+            assertEquals(LocalizedCoreFormats.INTERNAL_ERROR, oe.getSpecifier());
         }
     }
 
@@ -132,7 +135,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
      *              Specialist Conference, Big Sky, August 2021."
      */
     @Test
-    public void testKeplerianRange() {
+    void testKeplerianRange() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -200,15 +203,15 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 4.99e-8);
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(0.0, observer.getMeanResidual(), 4.99e-8);
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     /**
@@ -219,7 +222,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
      *              Specialist Conference, Big Sky, August 2021."
      */
     @Test
-    public void testRangeWithZonal() {
+    void testRangeWithZonal() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -293,15 +296,15 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 8.51e-3);
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(0.0, observer.getMeanResidual(), 8.51e-3);
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     /**
@@ -313,7 +316,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
      *              Specialist Conference, Big Sky, August 2021."
      */
     @Test
-    public void testRangeWithTesseral() {
+    void testRangeWithTesseral() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -397,15 +400,15 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 8.81e-3);
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(0.0, observer.getMeanResidual(), 8.81e-3);
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     /** Observer for Kalman estimation. */
@@ -447,7 +450,7 @@ public class SemiAnalyticalKalmanEstimatorTest {
     }
 
     @Test
-    public void testWithEstimatedPropagationParameters() {
+    void testWithEstimatedPropagationParameters() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -528,19 +531,19 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 1.79e-3);
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(0.0, observer.getMeanResidual(), 1.79e-3);
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     @Test
-    public void testWithEstimatedMeasurementParameters() {
+    void testWithEstimatedMeasurementParameters() {
 
         // Create context
         DSSTContext context = DSSTEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -637,15 +640,15 @@ public class SemiAnalyticalKalmanEstimatorTest {
                                            expectedDeltaPos, posEps,
                                            expectedDeltaVel, velEps);
 
-        Assertions.assertEquals(0.0, observer.getMeanResidual(), 1.79e-3);
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(2, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(0.0, observer.getMeanResidual(), 1.79e-3);
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(2, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertEquals(0.0, kalman.getCurrentDate().durationFrom(lastMeasurementEpoch), 1.0e-15);
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
 }

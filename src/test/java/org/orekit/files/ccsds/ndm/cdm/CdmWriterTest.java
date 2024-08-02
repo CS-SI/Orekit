@@ -22,7 +22,7 @@ import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 
-public class CdmWriterTest extends AbstractWriterTest<CdmHeader, CdmSegment, Cdm> {
+class CdmWriterTest extends AbstractWriterTest<CdmHeader, CdmSegment, Cdm> {
 
     protected CdmParser getParser() {
         return new ParserBuilder().
@@ -35,68 +35,68 @@ public class CdmWriterTest extends AbstractWriterTest<CdmHeader, CdmSegment, Cdm
     }
 
     @Test
-    public void testWriteExample1() {
+    void testWriteExample1() {
         doTest("/ccsds/cdm/CDMExample1.txt");
     }
 
     @Test
-    public void testWriteExample1XML() {
+    void testWriteExample1XML() {
         doTest("/ccsds/cdm/CDMExample1.xml");
     }
 
     @Test
-    public void testWriteExample2() {
+    void testWriteExample2() {
         doTest("/ccsds/cdm/CDMExample2.txt");
     }
 
     @Test
-    public void testWriteExample3() {
+    void testWriteExample3() {
         doTest("/ccsds/cdm/CDMExample3.txt");
     }
 
     @Test
-    public void testWriteExample4() {
+    void testWriteExample4() {
         doTest("/ccsds/cdm/CDMExample4.txt");
     }
-    
+
     @Test
-    public void testWrite_issue_942_KVN() {
+    void testWrite_issue_942_KVN() {
         doTest("/ccsds/cdm/CDMExample_issue942.txt");
     }
-    
+
     @Test
-    public void testWrite_issue_942_XML() {
+    void testWrite_issue_942_XML() {
         doTest("/ccsds/cdm/CDMExample_issue942.xml");
     }
 
     @Test
-    public void testWrite_issue_988_KVN_YES() {
+    void testWrite_issue_988_KVN_YES() {
         doTest("/ccsds/cdm/CDMExample_issue988.txt");
     }
 
     @Test
-    public void testWrite_issue_988_KVN_NO() {
+    void testWrite_issue_988_KVN_NO() {
         doTest("/ccsds/cdm/CDMExample_issue988_2.txt");
     }
 
     @Test
-    public void testWrite_issue_988_KVN_NONE() {
+    void testWrite_issue_988_KVN_NONE() {
         doTest("/ccsds/cdm/CDMExample_issue988_3.txt");
     }
 
     @Test
-    public void testWrite_issue_988_XML_YES() {
+    void testWrite_issue_988_XML_YES() {
         doTest("/ccsds/cdm/CDMExample_issue988.xml");
     }
 
 
     @Test
-    public void testWrite_issue_988_XML_NO() {
+    void testWrite_issue_988_XML_NO() {
         doTest("/ccsds/cdm/CDMExample_issue988_2.xml");
     }
 
     @Test
-    public void testWrite_issue_988_XML_NONE() {
+    void testWrite_issue_988_XML_NONE() {
         doTest("/ccsds/cdm/CDMExample_issue988_3.txt");
     }
 

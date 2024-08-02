@@ -16,16 +16,17 @@
  */
 package org.orekit.gnss;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class SatelliteSystemParserTest {
+
+class SatelliteSystemParserTest {
 
     @Test
-    public void testAllLetters() {
+    void testAllLetters() {
         for (char c = 'A'; c <= 'Z'; ++c) {
-            Assertions.assertNotNull(SatelliteSystem.parseSatelliteSystem(Character.toString(c)));
+            assertNotNull(SatelliteSystem.parseSatelliteSystem(Character.toString(c)));
         }
     }
 

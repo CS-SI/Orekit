@@ -17,20 +17,23 @@
 
 package org.orekit.models.earth.ionosphere;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 
-public class KlobucharIonoCoefficientsLoaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-    @Test
+class KlobucharIonoCoefficientsLoaderTest {
+
     /**
      * Regular test for 1st of January 2017
      */
-    public void testRegularFile() {
+    @Test
+    void testRegularFile() {
 
         Utils.setDataRoot("klobuchar-ionospheric-coefficients");
 
@@ -41,22 +44,22 @@ public class KlobucharIonoCoefficientsLoaderTest {
         final double alpha[] = ionoLoader.getAlpha();
         final double beta[]  = ionoLoader.getBeta();
 
-        Assertions.assertEquals(1.2821e-08 , alpha[0], 1e-16);
-        Assertions.assertEquals(-9.6222e-09, alpha[1], 1e-16);
-        Assertions.assertEquals(-3.5982e-07, alpha[2], 1e-16);
-        Assertions.assertEquals(-6.0901e-07, alpha[3], 1e-16);
+        assertEquals(1.2821e-08 , alpha[0], 1e-16);
+        assertEquals(-9.6222e-09, alpha[1], 1e-16);
+        assertEquals(-3.5982e-07, alpha[2], 1e-16);
+        assertEquals(-6.0901e-07, alpha[3], 1e-16);
 
-        Assertions.assertEquals(1.0840e+05 , beta[0], 1e-16);
-        Assertions.assertEquals(-1.3197e+05, beta[1], 1e-16);
-        Assertions.assertEquals(-2.6331e+05, beta[2], 1e-16);
-        Assertions.assertEquals(4.0570e+05 , beta[3], 1e-16);
+        assertEquals(1.0840e+05 , beta[0], 1e-16);
+        assertEquals(-1.3197e+05, beta[1], 1e-16);
+        assertEquals(-2.6331e+05, beta[2], 1e-16);
+        assertEquals(4.0570e+05 , beta[3], 1e-16);
     }
 
-    @Test
     /**
      * Test of a corrupted file without keyword ALPHA
      */
-    public void testCorruptedFileBadKeyword() {
+    @Test
+    void testCorruptedFileBadKeyword() {
 
         Utils.setDataRoot("klobuchar-ionospheric-coefficients");
         final String fileName = "corrupted-bad-keyword-CGIM0020.17N";
@@ -65,19 +68,19 @@ public class KlobucharIonoCoefficientsLoaderTest {
 
         try {
             ionoLoader.loadKlobucharIonosphericCoefficients();
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_KLOBUCHAR_ALPHA_BETA_IN_FILE, oe.getSpecifier());
-            Assertions.assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
+            assertEquals(OrekitMessages.NO_KLOBUCHAR_ALPHA_BETA_IN_FILE, oe.getSpecifier());
+            assertTrue(((String) oe.getParts()[0]).endsWith(fileName));
         }
     }
 
-    @Test
     /**
      * Test of a corrupted file with improper data
      */
-    public void testCorruptedFileBadData() {
+    @Test
+    void testCorruptedFileBadData() {
 
         Utils.setDataRoot("klobuchar-ionospheric-coefficients");
         final String fileName = "corrupted-bad-data-CGIM0020.17N";
@@ -86,18 +89,18 @@ public class KlobucharIonoCoefficientsLoaderTest {
 
         try {
             ionoLoader.loadKlobucharIonosphericCoefficients();
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
         }
     }
 
-    @Test
     /**
      * Test for a file that cannot be found
      */
-    public void testAbsentFile() {
+    @Test
+    void testAbsentFile() {
 
         Utils.setDataRoot("klobuchar-ionospheric-coefficients");
         KlobucharIonoCoefficientsLoader ionoLoader = new KlobucharIonoCoefficientsLoader();
@@ -105,12 +108,12 @@ public class KlobucharIonoCoefficientsLoaderTest {
 
         try {
             ionoLoader.loadKlobucharIonosphericCoefficients(dateComponents);
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE,
+            assertEquals(OrekitMessages.KLOBUCHAR_ALPHA_BETA_NOT_AVAILABLE_FOR_DATE,
                                 oe.getSpecifier());
-            Assertions.assertEquals(dateComponents.toString(),
+            assertEquals(dateComponents.toString(),
                                 (String) oe.getParts()[0]);
         }
     }

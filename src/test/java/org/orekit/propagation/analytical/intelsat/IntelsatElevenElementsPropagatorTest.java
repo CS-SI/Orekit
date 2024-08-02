@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.intelsat;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -32,34 +31,37 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 class IntelsatElevenElementsPropagatorTest {
 
     private static IntelsatElevenElements ELEMENTS;
 
     @Test
-    public void testCannotResetIntermediateState() {
+    void testCannotResetIntermediateState() {
         IntelsatElevenElementsPropagator propagator = new IntelsatElevenElementsPropagator(ELEMENTS);
         try {
             propagator.resetIntermediateState(null, false);
         }
         catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.NON_RESETABLE_STATE);
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testCannotResetInitialState() {
+    void testCannotResetInitialState() {
         IntelsatElevenElementsPropagator propagator = new IntelsatElevenElementsPropagator(ELEMENTS);
         try {
             propagator.resetInitialState(null);
         }
         catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.NON_RESETABLE_STATE);
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testPropagation() {
+    void testPropagation() {
         // Reference: Intelsat calculator for spacecraft 4521 (used 2023/12/04)
         // https://www.intelsat.com/resources/tools/
         IntelsatElevenElementsPropagator propagator = new IntelsatElevenElementsPropagator(ELEMENTS);
@@ -67,34 +69,34 @@ class IntelsatElevenElementsPropagatorTest {
         double referenceLatitude170Hours = 0.0257;
         double tolerance = 0.0001;
         propagator.propagateInEcef(ELEMENTS.getEpoch().shiftedBy(170 * 3600.0));
-        Assertions.assertEquals(referenceLongitude170Hours, propagator.getEastLongitudeDegrees().getValue(), tolerance);
-        Assertions.assertEquals(referenceLatitude170Hours, propagator.getGeocentricLatitudeDegrees().getValue(), tolerance);
-        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
+        assertEquals(referenceLongitude170Hours, propagator.getEastLongitudeDegrees().getValue(), tolerance);
+        assertEquals(referenceLatitude170Hours, propagator.getGeocentricLatitudeDegrees().getValue(), tolerance);
+        assertNotNull(propagator.getIntelsatElevenElements());
     }
 
     @Test
-    public void testOrbitElementsAtT0() {
+    void testOrbitElementsAtT0() {
         // Reference use of the Intelsat's 11 elements propagator developed in STK
         IntelsatElevenElementsPropagator propagator = new IntelsatElevenElementsPropagator(ELEMENTS, FramesFactory.getTOD(IERSConventions.IERS_2010, false),
                                                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, false));
-        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
+        assertNotNull(propagator.getIntelsatElevenElements());
         KeplerianOrbit orbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(propagator.propagateOrbit(ELEMENTS.getEpoch()));
-        Assertions.assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue(), 0.0001);
-        Assertions.assertEquals(0.0378, propagator.getGeocentricLatitudeDegrees().getValue(), 0.0001);
-        Assertions.assertEquals(-1.529465e-6, propagator.getEastLongitudeDegrees().getFirstDerivative(), 1.0e-12);
-        Assertions.assertEquals(-1.01044e-7, propagator.getGeocentricLatitudeDegrees().getFirstDerivative(), 1.0e-12);
-        Assertions.assertEquals(42172456.005, propagator.getOrbitRadius().getValue(), 1.0e-3);
-        Assertions.assertEquals(0.797, propagator.getOrbitRadius().getFirstDerivative(), 1.0e-3);
-        Assertions.assertEquals(42166413.453, orbit.getA(), 4.0e-2);
-        Assertions.assertEquals(0.000296, orbit.getE(), 1.0e-6);
-        Assertions.assertEquals(0.037825, FastMath.toDegrees(orbit.getI()), 1.0e-6);
-        Assertions.assertEquals(282.488, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getRightAscensionOfAscendingNode(), FastMath.PI)), 4.0e-3);
-        Assertions.assertEquals(333.151, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPerigeeArgument(), FastMath.PI)), 4.0e-3);
-        Assertions.assertEquals(118.919, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getAnomaly(PositionAngleType.MEAN), FastMath.PI)), 1.0e-3);
+        assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue(), 0.0001);
+        assertEquals(0.0378, propagator.getGeocentricLatitudeDegrees().getValue(), 0.0001);
+        assertEquals(-1.529465e-6, propagator.getEastLongitudeDegrees().getFirstDerivative(), 1.0e-12);
+        assertEquals(-1.01044e-7, propagator.getGeocentricLatitudeDegrees().getFirstDerivative(), 1.0e-12);
+        assertEquals(42172456.005, propagator.getOrbitRadius().getValue(), 1.0e-3);
+        assertEquals(0.797, propagator.getOrbitRadius().getFirstDerivative(), 1.0e-3);
+        assertEquals(42166413.453, orbit.getA(), 4.0e-2);
+        assertEquals(0.000296, orbit.getE(), 1.0e-6);
+        assertEquals(0.037825, FastMath.toDegrees(orbit.getI()), 1.0e-6);
+        assertEquals(282.488, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getRightAscensionOfAscendingNode(), FastMath.PI)), 4.0e-3);
+        assertEquals(333.151, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getPerigeeArgument(), FastMath.PI)), 4.0e-3);
+        assertEquals(118.919, FastMath.toDegrees(MathUtils.normalizeAngle(orbit.getAnomaly(PositionAngleType.MEAN), FastMath.PI)), 1.0e-3);
     }
 
     @BeforeAll
-    public static void initialize() {
+    static void initialize() {
         Utils.setDataRoot("regular-data");
         // Reference elements from Intelsat website (spacecraft 4521)
         ELEMENTS = new IntelsatElevenElements(new AbsoluteDate("2023-12-04T00:00:00.000", TimeScalesFactory.getUTC()), 302.0058, -0.0096, -0.000629, 0.0297, -0.0004, -0.0194,

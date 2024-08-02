@@ -19,12 +19,14 @@ package org.orekit.forces.gravity;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AbstractBodyAttractionTest {
 
@@ -36,7 +38,7 @@ class AbstractBodyAttractionTest {
         // WHEN
         final boolean actualDependsOnPositionOnly = mockedAttraction.dependsOnPositionOnly();
         // THEN
-        Assertions.assertTrue(actualDependsOnPositionOnly);
+        assertTrue(actualDependsOnPositionOnly);
     }
 
     @Test
@@ -49,7 +51,7 @@ class AbstractBodyAttractionTest {
         // WHEN
         final String actualName = testBodyAttraction.getBodyName();
         // THEN
-        Assertions.assertEquals(expectedName, actualName);
+        assertEquals(expectedName, actualName);
     }
 
     private static class TestBodyAttraction extends AbstractBodyAttraction {

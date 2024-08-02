@@ -16,22 +16,25 @@
  */
 package org.orekit.frames;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 import java.io.ByteArrayInputStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 
-public class FixedTransformProviderTest {
+class FixedTransformProviderTest {
 
     @Test
-    public void testEME2000() {
+    void testEME2000() {
         Frame gcrf    = FramesFactory.getGCRF();
         Frame eme2000 = FramesFactory.getEME2000();
         TransformProvider fixed = new FixedTransformProvider(gcrf.getTransformTo(eme2000,
@@ -40,13 +43,13 @@ public class FixedTransformProviderTest {
             final AbsoluteDate t = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
             final Transform expectedIdentity =
                             new Transform(t, fixed.getTransform(t), eme2000.getTransformTo(gcrf, t));
-            Assertions.assertEquals(0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0, expectedIdentity.getRotation().getAngle(), 1.0e-15);
+            assertEquals(0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0, expectedIdentity.getRotation().getAngle(), 1.0e-15);
         }
     }
 
     @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
+    void testSerialization() throws IOException, ClassNotFoundException {
         Frame gcrf    = FramesFactory.getGCRF();
         Frame eme2000 = FramesFactory.getEME2000();
         TransformProvider fixed = new FixedTransformProvider(gcrf.getTransformTo(eme2000,
@@ -56,8 +59,8 @@ public class FixedTransformProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(fixed);
 
-        Assertions.assertTrue(bos.size() >  990);
-        Assertions.assertTrue(bos.size() < 1010);
+        assertTrue(bos.size() >  990);
+        assertTrue(bos.size() < 1010);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -67,8 +70,8 @@ public class FixedTransformProviderTest {
             Transform expectedIdentity = new Transform(date,
                                                        fixed.getTransform(date).getInverse(),
                                                        deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+            assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }

@@ -25,7 +25,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -64,16 +63,18 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.SortedSet;
 
-public class ElevationFilteringTest {
+class ElevationFilteringTest {
 
 
     //Elevation threshold
     final double threshold = FastMath.toRadians(5);
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
     }
@@ -113,7 +114,7 @@ public class ElevationFilteringTest {
 
 
     @Test
-    public void testElevationFilter() {
+    void testElevationFilter() {
 
         //We generate measurements where elevation < threshold
         //Create the initial orbit
@@ -160,11 +161,11 @@ public class ElevationFilteringTest {
                 processMeasurements.add(meas.getObservedMeasurement());
             }
         }
-        Assertions.assertEquals(processMeasurements.size(), measurementsPlusThreshold.size());
+        assertEquals(processMeasurements.size(), measurementsPlusThreshold.size());
         int i = 0;
         for(EstimatedMeasurementBase<?> meas: measurementsPlusThreshold) {
-            Assertions.assertEquals(0.0,  meas.getDate().durationFrom(processMeasurements.get(i).getDate()), 1.0e-9);
-            Assertions.assertEquals(0.0, meas.getObservedValue()[0] - processMeasurements.get(i).getObservedValue()[0], 1);
+            assertEquals(0.0,  meas.getDate().durationFrom(processMeasurements.get(i).getDate()), 1.0e-9);
+            assertEquals(0.0, meas.getObservedValue()[0] - processMeasurements.get(i).getObservedValue()[0], 1);
             i++;
         }
     }

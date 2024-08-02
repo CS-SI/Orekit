@@ -16,21 +16,23 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-public class RtcmMessageTypeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class RtcmMessageTypeTest {
 
     @Test
-    public void testUnknownMessageNumber() {
+    void testUnknownMessageNumber() {
         try {
             RtcmMessageType.getMessageType("-1");
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException re) {
-            Assertions.assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, re.getSpecifier());
-            Assertions.assertEquals("-1", re.getParts()[0]);
+            assertEquals(OrekitMessages.UNKNOWN_ENCODED_MESSAGE_NUMBER, re.getSpecifier());
+            assertEquals("-1", re.getParts()[0]);
         }
     }
 

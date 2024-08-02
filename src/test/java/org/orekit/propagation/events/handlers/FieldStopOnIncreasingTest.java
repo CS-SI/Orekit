@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -29,20 +28,22 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
-public class FieldStopOnIncreasingTest {
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class FieldStopOnIncreasingTest {
 
     @Test
-    public void testNoReset() {
+    void testNoReset() {
         doTestNoReset(Binary64Field.getInstance());
     }
 
     @Test
-    public void testIbcreasing() {
+    void testIbcreasing() {
         doTestIncreasing(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDecreasing() {
+    void testDecreasing() {
         doTestDecreasing(Binary64Field.getInstance());
     }
 
@@ -56,7 +57,7 @@ public class FieldStopOnIncreasingTest {
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
-        Assertions.assertSame(s, new FieldStopOnIncreasing<T>().resetState(null, s));
+        assertSame(s, new FieldStopOnIncreasing<T>().resetState(null, s));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIncreasing(Field<T> field) {
@@ -69,7 +70,7 @@ public class FieldStopOnIncreasingTest {
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
-        Assertions.assertSame(Action.STOP, new FieldStopOnIncreasing<T>().eventOccurred(s, null, true));
+        assertSame(Action.STOP, new FieldStopOnIncreasing<T>().eventOccurred(s, null, true));
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDecreasing(Field<T> field) {
@@ -82,7 +83,7 @@ public class FieldStopOnIncreasingTest {
                                                                                          FramesFactory.getEME2000(),
                                                                                          date,
                                                                                          zero.add(Constants.EIGEN5C_EARTH_MU)));
-        Assertions.assertSame(Action.CONTINUE, new FieldStopOnIncreasing<T>().eventOccurred(s, null, false));
+        assertSame(Action.CONTINUE, new FieldStopOnIncreasing<T>().eventOccurred(s, null, false));
 
     }
 

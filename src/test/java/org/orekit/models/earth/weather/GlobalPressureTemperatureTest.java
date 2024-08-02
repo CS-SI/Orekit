@@ -17,7 +17,6 @@
 package org.orekit.models.earth.weather;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,16 +33,18 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
-public class GlobalPressureTemperatureTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class GlobalPressureTemperatureTest {
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
     }
 
     @Test
-    public void testParameterComputation() {
+    void testParameterComputation() {
 
         // Site Toulouse, Cité de l'Espace (France): latitude:  43.59°N
         //                                           longitude: 1.49°E
@@ -81,20 +82,20 @@ public class GlobalPressureTemperatureTest {
         final double computedTemperature = pt.getTemperature() - 273.15;
         final double computedPressure    = TroposphericModelUtils.HECTO_PASCAL.fromSI(pt.getPressure());
 
-        Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
-        Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);
+        assertEquals(expectedPressure,    computedPressure,    0.1);
+        assertEquals(expectedTemperature, computedTemperature, 0.1);
 
         // Real weather conditions
         final double realTemperature = 7.3;
         final double realPressure    = 1027.5;
 
         // We test the model accuracy (10°C and 20 hPa)
-        Assertions.assertEquals(realTemperature, computedTemperature,    10);
-        Assertions.assertEquals(realPressure,    computedPressure,       20);
+        assertEquals(realTemperature, computedTemperature,    10);
+        assertEquals(realPressure,    computedPressure,       20);
     }
 
     @Test
-    public void testHighAltitude() {
+    void testHighAltitude() {
 
         // Site Pic du Midi de Bigorre (France): latitude:  42.94°N
         //                                       longitude: 0.14°E
@@ -133,16 +134,16 @@ public class GlobalPressureTemperatureTest {
         final double computedTemperature = pt.getTemperature() - 273.15;
         final double computedPressure    = TroposphericModelUtils.HECTO_PASCAL.fromSI(pt.getPressure());
 
-        Assertions.assertEquals(expectedPressure,    computedPressure,    0.1);
-        Assertions.assertEquals(expectedTemperature, computedTemperature, 0.1);
+        assertEquals(expectedPressure,    computedPressure,    0.1);
+        assertEquals(expectedTemperature, computedTemperature, 0.1);
 
         // Real weather conditions
         final double realTemperature = -8.3;
         final double realPressure    = 717.9;
 
         // We test the model accuracy (10°C and 20 hPa)
-        Assertions.assertEquals(realTemperature, computedTemperature,    10);
-        Assertions.assertEquals(realPressure,    computedPressure,       20);
+        assertEquals(realTemperature, computedTemperature,    10);
+        assertEquals(realPressure,    computedPressure,       20);
     }
 
 }

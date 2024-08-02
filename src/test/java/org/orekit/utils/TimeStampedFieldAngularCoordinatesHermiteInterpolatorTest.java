@@ -17,7 +17,6 @@
 
 package org.orekit.utils;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -26,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -36,11 +34,15 @@ import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 
 import java.util.ArrayList;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.List;
 
 class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
     @Test
-    public void testInterpolationNeedOffsetWrongRate() {
+    void testInterpolationNeedOffsetWrongRate() {
         AbsoluteDate date  = AbsoluteDate.GALILEO_EPOCH;
         double       omega = 2.0 * FastMath.PI;
         TimeStampedFieldAngularCoordinates<DerivativeStructure> reference =
@@ -71,14 +73,14 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
                     interpolator.interpolate(s.getDate(), sample);
             FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
-            Assertions.assertEquals(0.0, FieldRotation.distance(s.getRotation(), r).getReal(), 2.0e-14);
-            Assertions.assertEquals(0.0, FieldVector3D.distance(s.getRotationRate(), rate).getReal(), 2.0e-13);
+            assertEquals(0.0, FieldRotation.distance(s.getRotation(), r).getReal(), 2.0e-14);
+            assertEquals(0.0, FieldVector3D.distance(s.getRotationRate(), rate).getReal(), 2.0e-13);
         }
 
     }
 
     @Test
-    public void testInterpolationRotationOnly() {
+    void testInterpolationRotationOnly() {
         AbsoluteDate date   = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0 = 0.5 * FastMath.PI;
         double       omega  = 0.5 * FastMath.PI;
@@ -114,10 +116,10 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
             FieldRotation<DerivativeStructure> r            = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate         = interpolated.getRotationRate();
             FieldVector3D<DerivativeStructure> acceleration = interpolated.getRotationAcceleration();
-            Assertions.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 3.0e-4);
-            Assertions.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate).getReal(),
+            assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 3.0e-4);
+            assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate).getReal(),
                                     1.0e-2);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                     FieldVector3D.distance(reference.shiftedBy(dt).getRotationAcceleration(), acceleration)
                                                  .getReal(), 1.0e-2);
         }
@@ -125,7 +127,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
     }
 
     @Test
-    public void testInterpolationAroundPI() {
+    void testInterpolationAroundPI() {
 
         DSFactory                                                     factory = new DSFactory(4, 1);
         List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample  = new ArrayList<>();
@@ -168,7 +170,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
         TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
                 interpolator.interpolate(t, sample);
 
-        Assertions.assertEquals(FastMath.toRadians(180), interpolated.getRotation().getAngle().getReal(), 1.0e-12);
+        assertEquals(FastMath.toRadians(180), interpolated.getRotation().getAngle().getReal(), 1.0e-12);
 
     }
 
@@ -177,7 +179,7 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
      * thrown. Now after changing USE_R to USE_RR it produces a valid result.
      */
     @Test
-    public void testInterpolationSmallSample() {
+    void testInterpolationSmallSample() {
         DSFactory    factory = new DSFactory(4, 1);
         AbsoluteDate date    = AbsoluteDate.GALILEO_EPOCH;
         double       alpha0  = 0.5 * FastMath.PI;
@@ -210,18 +212,18 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
                 interpolator.interpolate(date.shiftedBy(0.3), sample);
 
         // verify
-        MatcherAssert.assertThat(actual.getRotation().toRotation(),
+        assertThat(actual.getRotation().toRotation(),
                 OrekitMatchers.distanceIs(
                         r.toRotation(),
                         OrekitMatchers.closeTo(0, FastMath.ulp(1.0))));
-        MatcherAssert.assertThat(actual.getRotationRate().toVector3D(),
+        assertThat(actual.getRotationRate().toVector3D(),
                 OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
-        MatcherAssert.assertThat(actual.getRotationAcceleration().toVector3D(),
+        assertThat(actual.getRotationAcceleration().toVector3D(),
                 OrekitMatchers.vectorCloseTo(Vector3D.ZERO, 0));
     }
 
     @Test
-    public void testInterpolationGTODIssue() {
+    void testInterpolationGTODIssue() {
         AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
         double[][] params = new double[][] {
                 { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },
@@ -250,9 +252,9 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = sample.get(0).shiftedBy(dt);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
                     interpolator.interpolate(t0.shiftedBy(dt), sample);
-            Assertions.assertEquals(0.0, FieldRotation.distance(shifted.getRotation(), interpolated.getRotation()).getReal(),
+            assertEquals(0.0, FieldRotation.distance(shifted.getRotation(), interpolated.getRotation()).getReal(),
                                     1.3e-7);
-            Assertions.assertEquals(0.0, FieldVector3D.distance(shifted.getRotationRate(), interpolated.getRotationRate())
+            assertEquals(0.0, FieldVector3D.distance(shifted.getRotationRate(), interpolated.getRotationRate())
                                                       .getReal(), 1.0e-11);
         }
 
@@ -269,9 +271,9 @@ class TimeStampedFieldAngularCoordinatesHermiteInterpolatorTest {
                 new TimeStampedFieldAngularCoordinatesHermiteInterpolator<>(2, filter);
 
         // Then
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                 interpolator.getExtrapolationThreshold());
-        Assertions.assertEquals(filter, interpolator.getFilter());
+        assertEquals(filter, interpolator.getFilter());
     }
 
 }

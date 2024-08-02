@@ -17,20 +17,23 @@
 package org.orekit.utils.units;
 
 import org.hipparchus.fraction.Fraction;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Unit tests for {@link Lexer}.
  *
  * @author Luc Maisonobe
  */
-public class LexerTest {
+class LexerTest {
 
     @Test
-    public void testAllTypes() {
+    void testAllTypes() {
         final Lexer lexer = new Lexer("√kg*km**  (3/2) /(µs^2*Ω⁻⁷)");
         expect(lexer, "√",    TokenType.SQUARE_ROOT, 0, 1);
         expect(lexer, "kg",   TokenType.IDENTIFIER, 0, 1);
@@ -52,11 +55,11 @@ public class LexerTest {
         expect(lexer, "",     TokenType.POWER, 0, 1);
         expect(lexer, "⁻⁷",   TokenType.INTEGER, -7, 1);
         expect(lexer, ")",    TokenType.CLOSE, 0, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testRegularExponent() {
+    void testRegularExponent() {
         final Lexer lexer = new Lexer("N^123450 × MHz^-98765");
         expect(lexer, "N",      TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "^",      TokenType.POWER, 0, 1);
@@ -65,11 +68,11 @@ public class LexerTest {
         expect(lexer, "MHz",    TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "^",      TokenType.POWER, 0, 1);
         expect(lexer, "-98765", TokenType.INTEGER, -98765, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testSuperscriptExponent() {
+    void testSuperscriptExponent() {
         final Lexer lexer = new Lexer("SFU⁺¹²³⁴⁵⁰ ⁄ mas⁻⁹⁸⁷⁶⁵");
         expect(lexer, "SFU",     TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",        TokenType.POWER, 0, 1);
@@ -78,11 +81,11 @@ public class LexerTest {
         expect(lexer, "mas",     TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",        TokenType.POWER, 0, 1);
         expect(lexer, "⁻⁹⁸⁷⁶⁵",  TokenType.INTEGER, -98765, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testSignWithoutDigits() {
+    void testSignWithoutDigits() {
         final Lexer lexer = new Lexer("Pa⁻");
         expect(lexer, "Pa", TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",  TokenType.POWER, 0, 1);
@@ -90,7 +93,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testMultipleSigns() {
+    void testMultipleSigns() {
         final Lexer lexer = new Lexer("MJ⁻⁺²");
         expect(lexer, "MJ", TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",  TokenType.POWER, 0, 1);
@@ -98,7 +101,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testUnknownCharacter() {
+    void testUnknownCharacter() {
         final Lexer lexer = new Lexer("pW^2∇");
         expect(lexer, "pW", TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "^",  TokenType.POWER, 0, 1);
@@ -107,21 +110,21 @@ public class LexerTest {
     }
 
     @Test
-    public void testPercentageCharacter() {
+    void testPercentageCharacter() {
         final Lexer lexer = new Lexer("%");
         expect(lexer, "%", TokenType.IDENTIFIER, 0, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testStartWithSuperscript() {
+    void testStartWithSuperscript() {
         final Lexer lexer = new Lexer("³");
         expect(lexer, "³", TokenType.INTEGER, 3, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testCharacters() {
+    void testCharacters() {
         final Lexer lexer = new Lexer("d*°*min*◦*deg*′*hh*'*ad*″*a*\"*µ''");
         expect(lexer, "d",   TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "*",   TokenType.MULTIPLICATION, 0, 1);
@@ -148,33 +151,33 @@ public class LexerTest {
         expect(lexer, "\"",  TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "*",   TokenType.MULTIPLICATION, 0, 1);
         expect(lexer, "µ''", TokenType.IDENTIFIER, 0, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testIdentifierUnicodeLetter() {
+    void testIdentifierUnicodeLetter() {
         final String s = "αβγDEFghi";
         final Lexer lexer = new Lexer(s);
         expect(lexer, s, TokenType.IDENTIFIER, 0, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testOneHalfAsDecimal() {
+    void testOneHalfAsDecimal() {
         final Lexer lexer = new Lexer("0.5");
         expect(lexer, "0.5", TokenType.FRACTION, 1, 2);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testThreeHalfAsDecimal() {
+    void testThreeHalfAsDecimal() {
         final Lexer lexer = new Lexer("1.5");
         expect(lexer, "1.5", TokenType.FRACTION, 3, 2);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testUnicodeFractions() {
+    void testUnicodeFractions() {
         final Lexer lexer = new Lexer("¼½¾⅐⅑⅒⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞");
         expect(lexer, "¼", TokenType.FRACTION, 1, 4);
         expect(lexer, "½", TokenType.FRACTION, 1, 2);
@@ -194,11 +197,11 @@ public class LexerTest {
         expect(lexer, "⅜", TokenType.FRACTION, 3, 8);
         expect(lexer, "⅝", TokenType.FRACTION, 5, 8);
         expect(lexer, "⅞", TokenType.FRACTION, 7, 8);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     @Test
-    public void testPushBack() {
+    void testPushBack() {
         final Lexer lexer = new Lexer("m/s");
         expect(lexer, "m",   TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "/",   TokenType.DIVISION, 0, 1);
@@ -208,7 +211,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testPushBackBeforeVirtualExponent() {
+    void testPushBackBeforeVirtualExponent() {
         final Lexer lexer = new Lexer("m²/s");
         expect(lexer, "m",   TokenType.IDENTIFIER, 0, 1);
         lexer.pushBack();
@@ -220,7 +223,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testPushBackAtVirtualExponent() {
+    void testPushBackAtVirtualExponent() {
         final Lexer lexer = new Lexer("m²/s");
        expect(lexer, "m",   TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",    TokenType.POWER, 0, 1);
@@ -232,7 +235,7 @@ public class LexerTest {
     }
 
     @Test
-    public void testPushBackAfterVirtualExponent() {
+    void testPushBackAfterVirtualExponent() {
         final Lexer lexer = new Lexer("m²/s");
         expect(lexer, "m",   TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",    TokenType.POWER, 0, 1);
@@ -244,35 +247,35 @@ public class LexerTest {
     }
 
     @Test
-    public void testPushBackAtEnd() {
+    void testPushBackAtEnd() {
         final Lexer lexer = new Lexer("m²/s");
         expect(lexer, "m",   TokenType.IDENTIFIER, 0, 1);
         expect(lexer, "",    TokenType.POWER, 0, 1);
         expect(lexer, "²",   TokenType.INTEGER, 2, 1);
         expect(lexer, "/",   TokenType.DIVISION, 0, 1);
         expect(lexer, "s",   TokenType.IDENTIFIER, 0, 1);
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
         lexer.pushBack();
-        Assertions.assertNull(lexer.next());
+        assertNull(lexer.next());
     }
 
     private void expect(Lexer lexer, String subString, TokenType type,
                         int numerator, int denominator) {
         Token t = lexer.next();
-        Assertions.assertEquals(subString, t.getSubString());
-        Assertions.assertEquals(type,      t.getType());
-        Assertions.assertEquals(numerator, t.getInt());
-        Assertions.assertEquals(type == TokenType.FRACTION ? new Fraction(numerator, denominator) : null,
+        assertEquals(subString, t.getSubString());
+        assertEquals(type,      t.getType());
+        assertEquals(numerator, t.getInt());
+        assertEquals(type == TokenType.FRACTION ? new Fraction(numerator, denominator) : null,
                             t.getFraction());
     }
 
     private void expectFailure(Lexer lexer) {
         try {
             lexer.next();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());
-            Assertions.assertEquals(lexer.getUnitSpecification(), oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNKNOWN_UNIT, oe.getSpecifier());
+            assertEquals(lexer.getUnitSpecification(), oe.getParts()[0]);
         }
     }
 

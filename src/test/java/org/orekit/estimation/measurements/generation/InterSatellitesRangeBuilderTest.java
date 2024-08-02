@@ -23,7 +23,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -48,9 +47,13 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.SortedSet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.function.Predicate;
 
-public class InterSatellitesRangeBuilderTest {
+class InterSatellitesRangeBuilderTest {
 
     private static final double SIGMA =  0.5;
     private static final double BIAS  = -0.01;
@@ -73,37 +76,37 @@ public class InterSatellitesRangeBuilderTest {
     }
 
     @Test
-    public void testForwardAll() {
+    void testForwardAll() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> true,
                264, 73485.963, 28386637.208, 2.8 * SIGMA);
     }
 
     @Test
-    public void testForwardIgnoreSmall() {
+    void testForwardIgnoreSmall() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] > 10000000.0,
                182, 10111578.965, 28386637.208, 2.8 * SIGMA);
     }
 
     @Test
-    public void testForwardIgnoreLarge() {
+    void testForwardIgnoreLarge() {
         doTest(0xc82a56322345dc25L, 0.0, 1.2, e -> e.getEstimatedValue()[0] <= 10000000.0,
                82, 73485.963, 9969288.418, 2.8 * SIGMA);
     }
 
     @Test
-    public void testBackwardAll() {
+    void testBackwardAll() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> true,
                219, 243749.068, 28279283.197, 2.6 * SIGMA);
     }
 
     @Test
-    public void testBackwardIgnoreSmall() {
+    void testBackwardIgnoreSmall() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] > 10000000.0,
                153, 10131712.178, 28279283.197, 2.6 * SIGMA);
     }
 
     @Test
-    public void testBackwardIgnoreLarge() {
+    void testBackwardIgnoreLarge() {
         doTest(0x95c10149c4891232L, 0.0, -1.0, e -> e.getEstimatedValue()[0] <= 10000000.0,
                66, 243749.068, 9950029.194, 2.6 * SIGMA);
     }
@@ -148,7 +151,7 @@ public class InterSatellitesRangeBuilderTest {
         AbsoluteDate t1     = o1.getDate().shiftedBy(endPeriod   * period);
         generator.generate(t0, t1);
         SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
-        Assertions.assertEquals(expectedCount, measurements.size());
+        assertEquals(expectedCount, measurements.size());
 
         // and yet another set of propagators for reference
         Propagator propagator1 = buildPropagator();
@@ -163,15 +166,15 @@ public class InterSatellitesRangeBuilderTest {
         for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assertions.assertTrue(date.compareTo(tInf) >= 0);
-            Assertions.assertTrue(date.compareTo(tSup) <= 0);
+            assertTrue(date.compareTo(tInf) >= 0);
+            assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 if (t0.isBefore(t1)) {
                     // measurements are expected to be chronological
-                    Assertions.assertTrue(date.durationFrom(previous) >= 0.999999 * step);
+                    assertTrue(date.durationFrom(previous) >= 0.999999 * step);
                 } else {
                     // measurements are expected to be reverse chronological
-                    Assertions.assertTrue(previous.durationFrom(date) >= 0.999999 * step);
+                    assertTrue(previous.durationFrom(date) >= 0.999999 * step);
                 }
             }
             previous = date;
@@ -188,13 +191,13 @@ public class InterSatellitesRangeBuilderTest {
                 max      = FastMath.max(max, e[i]);
             }
         }
-        Assertions.assertEquals(0.0, maxError, tolerance);
-        Assertions.assertEquals(expectedMin, min, tolerance);
-        Assertions.assertEquals(expectedMax, max, tolerance);
+        assertEquals(0.0, maxError, tolerance);
+        assertEquals(expectedMin, min, tolerance);
+        assertEquals(expectedMax, max, tolerance);
      }
 
-     @BeforeEach
-     public void setUp() {
+    @BeforeEach
+    void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

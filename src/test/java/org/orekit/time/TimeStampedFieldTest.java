@@ -19,9 +19,10 @@ package org.orekit.time;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TimeStampedFieldTest {
 
@@ -38,7 +39,7 @@ class TimeStampedFieldTest {
         final TimeStampedField<Binary64> timeStampedField = new TimeStampedField<>(value, date);
 
         // Then
-        Assertions.assertEquals(new FieldAbsoluteDate<>(field, date), timeStampedField.getDate());
-        Assertions.assertEquals(value, timeStampedField.getValue());
+        assertEquals(new FieldAbsoluteDate<>(field, date), timeStampedField.getDate());
+        assertEquals(value, timeStampedField.getValue());
     }
 }

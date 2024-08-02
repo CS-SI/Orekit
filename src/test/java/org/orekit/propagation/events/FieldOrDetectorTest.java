@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -30,12 +29,16 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * Unit tests for {@link FieldBooleanDetector#orCombine(FieldEventDetector...)}.
  *
  * @author Evan Ward
  */
-public class FieldOrDetectorTest {
+class FieldOrDetectorTest {
 
     /** first operand. */
     private MockDetector a;
@@ -49,7 +52,7 @@ public class FieldOrDetectorTest {
     /** create subject under test and dependencies. */
     @SuppressWarnings("unchecked")
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         a = new MockDetector();
         b = new MockDetector();
         s = Mockito.mock(FieldSpacecraftState.class);
@@ -61,38 +64,38 @@ public class FieldOrDetectorTest {
      * check {@link BooleanDetector#g(SpacecraftState)}.
      */
     @Test
-    public void testG() {
+    void testG() {
         // test zero cases
         a.g = b.g = new Binary64(0.0);
-        Assertions.assertEquals(0.0, or.g(s).getReal(), 0);
+        assertEquals(0.0, or.g(s).getReal(), 0);
         a.g = new Binary64(-1);
         b.g = new Binary64(0);
-        Assertions.assertEquals(0.0, or.g(s).getReal(), 0);
+        assertEquals(0.0, or.g(s).getReal(), 0);
         a.g = new Binary64(0);
         b.g = new Binary64(-1);
-        Assertions.assertEquals(0.0, or.g(s).getReal(), 0);
+        assertEquals(0.0, or.g(s).getReal(), 0);
 
         // test negative cases
         a.g = new Binary64(-1);
         b.g = new Binary64(-1);
-        Assertions.assertTrue(or.g(s).getReal() < 0, "negative");
+        assertTrue(or.g(s).getReal() < 0, "negative");
 
         // test positive cases
         a.g = new Binary64(0);
         b.g = new Binary64(1);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
         a.g = new Binary64(1);
         b.g = new Binary64(-1);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
         a.g = new Binary64(1);
         b.g = new Binary64(0);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
         a.g = new Binary64(-1);
         b.g = new Binary64(1);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
         a.g = new Binary64(1);
         b.g = new Binary64(1);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
 
     }
 
@@ -100,25 +103,25 @@ public class FieldOrDetectorTest {
      * check when there is numeric cancellation between the two g values.
      */
     @Test
-    public void testCancellation() {
+    void testCancellation() {
         a.g = new Binary64(-1e-10);
         b.g = new Binary64(-1e10);
-        Assertions.assertTrue(or.g(s).getReal() < 0, "negative");
+        assertTrue(or.g(s).getReal() < 0, "negative");
         a.g = new Binary64(-1e10);
         b.g = new Binary64(-1e-10);
-        Assertions.assertTrue(or.g(s).getReal() < 0, "negative");
+        assertTrue(or.g(s).getReal() < 0, "negative");
         a.g = new Binary64(-1e10);
         b.g = new Binary64(1e-10);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
         a.g = new Binary64(1e-10);
         b.g = new Binary64(-1e10);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
         a.g = new Binary64(1e10);
         b.g = new Binary64(-1e-10);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
         a.g = new Binary64(-1e-10);
         b.g = new Binary64(1e10);
-        Assertions.assertTrue(or.g(s).getReal() > 0, "positive");
+        assertTrue(or.g(s).getReal() > 0, "positive");
     }
 
     /**
@@ -126,7 +129,7 @@ public class FieldOrDetectorTest {
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void testInit() {
+    void testInit() {
         // setup
         FieldEventDetector<Binary64> a = Mockito.mock(FieldEventDetector.class);
         Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
@@ -144,7 +147,7 @@ public class FieldOrDetectorTest {
         or.init(s, t);
 
         // verify
-        Assertions.assertEquals(2, or.getDetectors().size());
+        assertEquals(2, or.getDetectors().size());
         Mockito.verify(a).init(s, t);
         Mockito.verify(b).init(s, t);
         Mockito.verify(c).init(s, t, or);
@@ -152,11 +155,11 @@ public class FieldOrDetectorTest {
 
     /** check when no operands are passed to the constructor. */
     @Test
-    public void testZeroDetectors() {
+    void testZeroDetectors() {
         // action
         try {
             BooleanDetector.orCombine(Collections.emptyList());
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (NoSuchElementException e) {
             // expected
         }

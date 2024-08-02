@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements.generation;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -40,10 +39,13 @@ import org.orekit.utils.Constants;
 
 import java.util.SortedSet;
 
-public class GeneratorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class GeneratorTest {
 
     @Test
-    public void testIssue557() {
+    void testIssue557() {
 
         final EventDetector detector = EstimationTestUtils.getElevationDetector(context.stations.get(0).getBaseFrame(),
                                                                                 FastMath.toRadians(0.0));
@@ -89,16 +91,16 @@ public class GeneratorTest {
             } else if (m.getObservedMeasurement().getMeasurementType().equals(Range.MEASUREMENT_TYPE)) {
                 ++nbRange;
             } else {
-                Assertions.fail("unexpected measurement type: " + m.getClass().getSimpleName());
+                fail("unexpected measurement type: " + m.getClass().getSimpleName());
             }
         }
-        Assertions.assertEquals(740, nbAzEl);
-        Assertions.assertEquals(740, nbRange);
+        assertEquals(740, nbAzEl);
+        assertEquals(740, nbRange);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

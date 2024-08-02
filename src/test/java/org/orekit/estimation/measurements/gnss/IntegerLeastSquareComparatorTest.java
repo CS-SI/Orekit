@@ -16,25 +16,26 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class IntegerLeastSquareComparatorTest {
+
+class IntegerLeastSquareComparatorTest {
 
     @Test
-    public void testCompare() {
+    void testCompare() {
 
         // Initialize comparator
         final IntegerLeastSquareComparator comparator = new IntegerLeastSquareComparator();
 
         // Verify
-        Assertions.assertEquals(-1, comparator.compare(new IntegerLeastSquareSolution(new long[0], 1.0), new IntegerLeastSquareSolution(new long[0], 2.0)));
-        Assertions.assertEquals(1,  comparator.compare(new IntegerLeastSquareSolution(new long[0], 2.0), new IntegerLeastSquareSolution(new long[0], 1.0)));
-        Assertions.assertEquals(0,  comparator.compare(new IntegerLeastSquareSolution(new long[0], 1.0), new IntegerLeastSquareSolution(new long[0], 1.0)));
-        Assertions.assertEquals(-1, comparator.compare(null, new IntegerLeastSquareSolution(new long[0], 1.0)));
-        Assertions.assertEquals(0,  comparator.compare(null, null));
-        Assertions.assertEquals(1,  comparator.compare(new IntegerLeastSquareSolution(new long[0], 1.0), null));
+        assertEquals(-1, comparator.compare(new IntegerLeastSquareSolution(new long[0], 1.0), new IntegerLeastSquareSolution(new long[0], 2.0)));
+        assertEquals(1,  comparator.compare(new IntegerLeastSquareSolution(new long[0], 2.0), new IntegerLeastSquareSolution(new long[0], 1.0)));
+        assertEquals(0,  comparator.compare(new IntegerLeastSquareSolution(new long[0], 1.0), new IntegerLeastSquareSolution(new long[0], 1.0)));
+        assertEquals(-1, comparator.compare(null, new IntegerLeastSquareSolution(new long[0], 1.0)));
+        assertEquals(0,  comparator.compare(null, null));
+        assertEquals(1,  comparator.compare(new IntegerLeastSquareSolution(new long[0], 1.0), null));
 
     }
 

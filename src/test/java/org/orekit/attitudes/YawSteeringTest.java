@@ -24,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -54,6 +53,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
 
@@ -93,10 +98,10 @@ class YawSteeringTest {
         // Check difference
         PVCoordinates observedDiff = new PVCoordinates(yawObserved, noYawObserved);
 
-        Assertions.assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
-        Assertions.assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
-        Assertions.assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
-        Assertions.assertSame(nadirLaw, yawCompensLaw.getUnderlyingAttitudeProvider());
+        assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
+        assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
+        assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
+        assertSame(nadirLaw, yawCompensLaw.getUnderlyingAttitudeProvider());
 
     }
 
@@ -118,7 +123,7 @@ class YawSteeringTest {
         Vector3D sunSat = rotYaw.applyTo(sunEME2000);
 
         // Check sun is in (X, Z) plane
-        Assertions.assertEquals(0.0, FastMath.sin(sunSat.getAlpha()), 1.0e-7);
+        assertEquals(0.0, FastMath.sin(sunSat.getAlpha()), 1.0e-7);
 
     }
 
@@ -145,9 +150,9 @@ class YawSteeringTest {
         Vector3D yawAxis = compoRot.getAxis(RotationConvention.VECTOR_OPERATOR);
 
         // Check axis
-        Assertions.assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
-        Assertions.assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
-        Assertions.assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
+        assertEquals(0., yawAxis.getX(), Utils.epsilonTest);
+        assertEquals(0., yawAxis.getY(), Utils.epsilonTest);
+        assertEquals(1., yawAxis.getZ(), Utils.epsilonTest);
 
     }
 
@@ -176,13 +181,13 @@ class YawSteeringTest {
         TimeStampedPVCoordinates target =
                 law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
 
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getPosition(),     target.getPosition()),
                             1.0e-15 * reference.getPosition().getNorm());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
                             4.0e-11 * reference.getVelocity().getNorm());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
                             8.0e-6 * reference.getAcceleration().getNorm());
 
@@ -216,19 +221,19 @@ class YawSteeringTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-9 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 1.0e-9 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-9 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 1.0e-9 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assertions.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 5.0e-13);
+        assertTrue(spin0.getNorm() > 1.0e-3);
+        assertEquals(0.0, spin0.subtract(reference).getNorm(), 5.0e-13);
 
     }
 
@@ -241,20 +246,20 @@ class YawSteeringTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 4.0e-14);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 3.0e-12);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 4.0e-14);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 3.0e-12);
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     2.0e-9);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     7.0e-8);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 4.0e-5);
+        assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     2.0e-9);
+        assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     7.0e-8);
+        assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 4.0e-5);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
@@ -280,13 +285,13 @@ class YawSteeringTest {
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
         circOrbit = null;

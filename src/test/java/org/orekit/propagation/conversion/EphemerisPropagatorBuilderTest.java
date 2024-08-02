@@ -18,7 +18,6 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
@@ -40,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -50,7 +50,7 @@ import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.as
  *
  * @author Vincent Cucchietti
  */
-public class EphemerisPropagatorBuilderTest {
+class EphemerisPropagatorBuilderTest {
 
     @Test
     @DisplayName("Test issue 1316 : Regression in EphemerisPropagatorBuilder API")
@@ -120,7 +120,7 @@ public class EphemerisPropagatorBuilderTest {
         assertEquals(expectedPropagator.getMinDate(), builtPropagator.getMinDate());
         assertEquals(expectedPropagator.getMaxDate(), builtPropagator.getMaxDate());
 
-        Assertions.assertArrayEquals(expectedPropagator.getManagedAdditionalStates(),
+        assertArrayEquals(expectedPropagator.getManagedAdditionalStates(),
                                      builtPropagator.getManagedAdditionalStates());
         // Initial state has also been verified to be equal between both ephemeris (except for the Attitude which is expected
         // to have different memory address)

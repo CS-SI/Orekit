@@ -19,8 +19,6 @@ package org.orekit.files.ccsds.utils.lexical;
 import java.net.MalformedURLException;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
@@ -28,29 +26,33 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.ocm.OcmParser;
 
-public class XmlLexicalAnalyzerTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class XmlLexicalAnalyzerTest {
 
     @Test
-    public void testNullBinary() {
+    void testNullBinary() {
         XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource("empty", (DataSource.StreamOpener) () -> null));
         try {
             la.accept(new ParserBuilder().buildOcmParser());
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assertions.assertEquals("empty", oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            assertEquals("empty", oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testNullCharacter() {
+    void testNullCharacter() {
         XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource("empty", (DataSource.ReaderOpener) () -> null));
         try {
             la.accept(new ParserBuilder().buildOcmParser());
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assertions.assertEquals("empty", oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            assertEquals("empty", oe.getParts()[0]);
         }
     }
 
@@ -59,7 +61,7 @@ public class XmlLexicalAnalyzerTest {
      * security risks.
      */
     @Test
-    public void testExternalResourcesAreIgnored() {
+    void testExternalResourcesAreIgnored() {
         // setup
         XmlLexicalAnalyzer la = new XmlLexicalAnalyzer(new DataSource(
                 "entity",
@@ -70,11 +72,11 @@ public class XmlLexicalAnalyzerTest {
         try {
             la.accept(parser);
             // verify
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
             // Malformed URL exception indicates external resource was disabled
             // file not found exception indicates parser tried to load the resource
-            MatcherAssert.assertThat(e.getCause(),
+            assertThat(e.getCause(),
                     CoreMatchers.instanceOf(MalformedURLException.class));
         }
     }

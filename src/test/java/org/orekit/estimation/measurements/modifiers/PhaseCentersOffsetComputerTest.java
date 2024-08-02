@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.Transform;
@@ -31,10 +30,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class PhaseCentersOffsetComputerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class PhaseCentersOffsetComputerTest {
 
     @Test
-    public void testAllZero() {
+    void testAllZero() {
         PhaseCentersOffsetComputer computer =
                         new PhaseCentersOffsetComputer(FrequencyPattern.ZERO_CORRECTION,
                                                        FrequencyPattern.ZERO_CORRECTION);
@@ -44,12 +45,12 @@ public class PhaseCentersOffsetComputerTest {
                                                        randomTransform(random, emitterToInert.getDate()));
             final Transform rTransform = new Transform(reveiverToInert.getDate(), reveiverToInert,
                                                        randomTransform(random, reveiverToInert.getDate()));
-            Assertions.assertEquals(0.0, computer.offset(eTransform, rTransform), 1.0e-15);
+            assertEquals(0.0, computer.offset(eTransform, rTransform), 1.0e-15);
         }
     }
 
     @Test
-    public void testPCVWithoutEffect() {
+    void testPCVWithoutEffect() {
         PhaseCentersOffsetComputer computer =
                         new PhaseCentersOffsetComputer(new FrequencyPattern(Vector3D.ZERO,
                                                                             new OneDVariation(0.0, FastMath.PI,
@@ -63,22 +64,22 @@ public class PhaseCentersOffsetComputerTest {
                                                        randomTransform(random, emitterToInert.getDate()));
             final Transform rTransform = new Transform(reveiverToInert.getDate(), reveiverToInert,
                                                        randomTransform(random, reveiverToInert.getDate()));
-            Assertions.assertEquals(0.0, computer.offset(eTransform, rTransform), 1.0e-15);
+            assertEquals(0.0, computer.offset(eTransform, rTransform), 1.0e-15);
         }
     }
 
     @Test
-    public void testOnlyMeanOffset() {
+    void testOnlyMeanOffset() {
         PhaseCentersOffsetComputer computer =
                         new PhaseCentersOffsetComputer(new FrequencyPattern(new Vector3D(0, -1, 1), null),
                                                        new FrequencyPattern(new Vector3D(-1, 0, 0), null));
-        Assertions.assertEquals(4.0 - FastMath.sqrt(5.0),
+        assertEquals(4.0 - FastMath.sqrt(5.0),
                                 computer.offset(emitterToInert, reveiverToInert),
                                 1.0e-15);
     }
 
     @Test
-    public void testComplete() {
+    void testComplete() {
         for (double pcvE = -1.0; pcvE < 1.0; pcvE += 0.015625) {
             for (double pcvR = -1.0; pcvR < 1.0; pcvR += 0.015625) {
                 PhaseCentersOffsetComputer computer =
@@ -88,7 +89,7 @@ public class PhaseCentersOffsetComputerTest {
                                                                new FrequencyPattern(new Vector3D(-1, 0, 0),
                                                                                     new OneDVariation(0.0, 0.5 * FastMath.PI,
                                                                                                       new double[] { 0.0, pcvR, 12.0 })));
-                Assertions.assertEquals(4.0 - FastMath.sqrt(5.0) + pcvE + pcvR,
+                assertEquals(4.0 - FastMath.sqrt(5.0) + pcvE + pcvR,
                                         computer.offset(emitterToInert, reveiverToInert),
                                         1.0e-15);
             }
@@ -96,25 +97,25 @@ public class PhaseCentersOffsetComputerTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         emitterToInert  = new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                                         new PVCoordinates(new Vector3D(0, -2, -2)),
                                         new AngularCoordinates(new Rotation(Vector3D.PLUS_I, Vector3D.PLUS_J,
                                                                             Vector3D.PLUS_K, Vector3D.MINUS_I)));
 
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(2, 2, 0), emitterToInert.transformPosition(Vector3D.ZERO)),   1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(2, 2, 1), emitterToInert.transformPosition(Vector3D.PLUS_I)), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(1, 2, 0), emitterToInert.transformPosition(Vector3D.PLUS_J)), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(2, 1, 0), emitterToInert.transformPosition(Vector3D.PLUS_K)), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(2, 2, 0), emitterToInert.transformPosition(Vector3D.ZERO)),   1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(2, 2, 1), emitterToInert.transformPosition(Vector3D.PLUS_I)), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(1, 2, 0), emitterToInert.transformPosition(Vector3D.PLUS_J)), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(2, 1, 0), emitterToInert.transformPosition(Vector3D.PLUS_K)), 1.0e-15);
 
         reveiverToInert = new Transform(AbsoluteDate.ARBITRARY_EPOCH,
                                        new PVCoordinates(new Vector3D(0, 1, 0)),
                                        new AngularCoordinates(Rotation.IDENTITY));
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(0, 1, 0), reveiverToInert.transformPosition(Vector3D.ZERO)),   1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(1, 1, 0), reveiverToInert.transformPosition(Vector3D.PLUS_I)), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(0, 2, 0), reveiverToInert.transformPosition(Vector3D.PLUS_J)), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(new Vector3D(0, 1, 1), reveiverToInert.transformPosition(Vector3D.PLUS_K)), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(0, 1, 0), reveiverToInert.transformPosition(Vector3D.ZERO)),   1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(1, 1, 0), reveiverToInert.transformPosition(Vector3D.PLUS_I)), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(0, 2, 0), reveiverToInert.transformPosition(Vector3D.PLUS_J)), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(new Vector3D(0, 1, 1), reveiverToInert.transformPosition(Vector3D.PLUS_K)), 1.0e-15);
 
     }
 

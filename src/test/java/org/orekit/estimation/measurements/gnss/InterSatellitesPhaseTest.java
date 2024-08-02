@@ -27,7 +27,6 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.estimation.Context;
@@ -54,7 +53,11 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class InterSatellitesPhaseTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class InterSatellitesPhaseTest {
 
     private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
@@ -63,7 +66,7 @@ public class InterSatellitesPhaseTest {
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest inter-satellites Phase Values\n");
@@ -77,7 +80,7 @@ public class InterSatellitesPhaseTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesEmitter() {
+    void testStateDerivativesEmitter() {
 
         boolean printResults = false;
         if (printResults) {
@@ -100,7 +103,7 @@ public class InterSatellitesPhaseTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesTransit() {
+    void testStateDerivativesTransit() {
 
         boolean printResults = false;
         if (printResults) {
@@ -123,7 +126,7 @@ public class InterSatellitesPhaseTest {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -207,10 +210,10 @@ public class InterSatellitesPhaseTest {
                                                                                                          });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-                    Assertions.assertEquals(2, participants.length);
-                    Assertions.assertEquals(RADIO_WAVE.getWavelength(), ((InterSatellitesPhase) measurement).getWavelength(), 1.0e-15);
+                    assertEquals(2, participants.length);
+                    assertEquals(RADIO_WAVE.getWavelength(), ((InterSatellitesPhase) measurement).getWavelength(), 1.0e-15);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assertions.assertEquals(RADIO_WAVE.getFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
+                    assertEquals(RADIO_WAVE.getFrequency() * (dt + localClockOffset - remoteClockOffset) + ambiguity,
                                             estimated.getEstimatedValue()[0],
                                             1.0e-7);
 
@@ -272,14 +275,14 @@ public class InterSatellitesPhaseTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 6.1e-7);
-        Assertions.assertEquals(0.0, absErrorsMin,    3.3e-6);
-        Assertions.assertEquals(0.0, absErrorsMax,    7.0e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 5.2e-12);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-10);
+        assertEquals(0.0, absErrorsMedian, 6.1e-7);
+        assertEquals(0.0, absErrorsMin,    3.3e-6);
+        assertEquals(0.0, absErrorsMax,    7.0e-7);
+        assertEquals(0.0, relErrorsMedian, 5.2e-12);
+        assertEquals(0.0, relErrorsMax,    2.9e-10);
 
         // Test measurement type
-        Assertions.assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(InterSatellitesPhase.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean printResults, final int index,
@@ -354,8 +357,8 @@ public class InterSatellitesPhaseTest {
                     }, measurement.getDimension(), propagator.getAttitudeProvider(),
                     OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(states[index]);
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -431,12 +434,12 @@ public class InterSatellitesPhaseTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean printResults,
@@ -507,8 +510,8 @@ public class InterSatellitesPhaseTest {
                     for (final ParameterDriver driver : drivers) {
                         for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                             final double[] gradient  = measurement.estimate(0, 0, states).getParameterDerivatives(driver, span.getStart());
-                            Assertions.assertEquals(1, measurement.getDimension());
-                            Assertions.assertEquals(1, gradient.length);
+                            assertEquals(1, measurement.getDimension());
+                            assertEquals(1, gradient.length);
 
                             // Compute a reference value using finite differences
                             final ParameterFunction dMkdP =
@@ -576,14 +579,14 @@ public class InterSatellitesPhaseTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 
     @Test
-    public void testIssue734() {
+    void testIssue734() {
 
         Utils.setDataRoot("regular-data");
 
@@ -594,21 +597,21 @@ public class InterSatellitesPhaseTest {
                                                                     new AmbiguityCache());
 
         // First check
-        Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-        Assertions.assertFalse(phase.getAmbiguityDriver().isSelected());
+        assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        assertFalse(phase.getAmbiguityDriver().isSelected());
 
         // Perform some changes in ambiguity driver
         phase.getAmbiguityDriver().setValue(1234.0);
         phase.getAmbiguityDriver().setSelected(true);
 
         // Second check
-        Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-        Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
+        assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+        assertTrue(phase.getAmbiguityDriver().isSelected());
         for (ParameterDriver driver : phase.getParametersDrivers()) {
             // Verify if the current driver corresponds to the phase ambiguity
             if (driver instanceof AmbiguityDriver) {
-                Assertions.assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
-                Assertions.assertTrue(phase.getAmbiguityDriver().isSelected());
+                assertEquals(1234.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);
+                assertTrue(phase.getAmbiguityDriver().isSelected());
             }
         }
 

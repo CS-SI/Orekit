@@ -16,7 +16,6 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -24,23 +23,25 @@ import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TAIScaleTest {
+
+class TAIScaleTest {
 
     @Test
-    public void testZero() {
+    void testZero() {
         TimeScale scale = TimeScalesFactory.getTAI();
-        Assertions.assertEquals("TAI", scale.toString());
+        assertEquals("TAI", scale.toString());
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assertions.assertEquals(0, scale.offsetFromTAI(date), 0);
+            assertEquals(0, scale.offsetFromTAI(date), 0);
             DateTimeComponents components = date.getComponents(scale);
-            Assertions.assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
+            assertEquals(0, scale.offsetToTAI(components.getDate(), components.getTime()), 0);
         }
     }
 
     @Test
-    public void testAAS06134() {
+    void testAAS06134() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -61,30 +62,30 @@ public class TAIScaleTest {
         AbsoluteDate date =
                 new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
         DateTimeComponents components = date.getComponents(TimeScalesFactory.getTAI());
-        Assertions.assertEquals(2004,        components.getDate().getYear());
-        Assertions.assertEquals(   4,        components.getDate().getMonth());
-        Assertions.assertEquals(   6,        components.getDate().getDay());
-        Assertions.assertEquals(   7,        components.getTime().getHour());
-        Assertions.assertEquals(  52,        components.getTime().getMinute());
-        Assertions.assertEquals(   0.386009, components.getTime().getSecond(), 1.0e-10);
+        assertEquals(2004,        components.getDate().getYear());
+        assertEquals(   4,        components.getDate().getMonth());
+        assertEquals(   6,        components.getDate().getDay());
+        assertEquals(   7,        components.getTime().getHour());
+        assertEquals(  52,        components.getTime().getMinute());
+        assertEquals(   0.386009, components.getTime().getSecond(), 1.0e-10);
     }
 
     @Test
-    public void testDuringLeap() {
+    void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTAI();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assertions.assertEquals(61, utc.minuteDuration(during));
-        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assertions.assertEquals(60, scale.minuteDuration(during));
-        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        assertEquals(61, utc.minuteDuration(during));
+        assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        assertEquals(60, scale.minuteDuration(during));
+        assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

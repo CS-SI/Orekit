@@ -21,7 +21,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -38,7 +37,11 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AdapterDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class AdapterDetectorTest {
 
     private double maxCheck;
     private double threshold;
@@ -48,21 +51,21 @@ public class AdapterDetectorTest {
     private NumericalPropagator propagator;
 
     @Test
-    public void testSimpleTimer() {
+    void testSimpleTimer() {
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
                                     withMaxCheck(maxCheck).
                                     withThreshold(threshold);
         AdapterDetector adapter = new AdapterDetector(dateDetector);
-        Assertions.assertSame(dateDetector, adapter.getDetector());
-        Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
+        assertSame(dateDetector, adapter.getDetector());
+        assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
         propagator.addEventDetector(adapter);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
-        Assertions.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate), threshold);
+        assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate), threshold);
     }
 
     @Test
-    public void testOverrideHandler() {
+    void testOverrideHandler() {
         AtomicInteger count = new AtomicInteger(0);
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
                                     withMaxCheck(maxCheck).
@@ -81,18 +84,18 @@ public class AdapterDetectorTest {
                 };
             }
         };
-        Assertions.assertSame(dateDetector, adapter.getDetector());
-        Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
+        assertSame(dateDetector, adapter.getDetector());
+        assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
         propagator.addEventDetector(adapter);
-        Assertions.assertEquals(0, count.get());
+        assertEquals(0, count.get());
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
-        Assertions.assertEquals(1, count.get());
+        assertEquals(1, count.get());
 
-        Assertions.assertEquals(100.0*dt, finalState.getDate().durationFrom(iniDate), threshold);
+        assertEquals(100.0*dt, finalState.getDate().durationFrom(iniDate), threshold);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
             final double mu = 3.9860047e14;
@@ -117,12 +120,12 @@ public class AdapterDetectorTest {
             maxCheck  = 10.;
             threshold = 10.e-10;
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         iniDate = null;
         propagator = null;
     }

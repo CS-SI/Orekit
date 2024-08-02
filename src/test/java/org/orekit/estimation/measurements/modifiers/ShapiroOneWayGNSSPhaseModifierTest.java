@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -44,13 +43,16 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ShapiroOneWayGNSSPhaseModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ShapiroOneWayGNSSPhaseModifierTest {
 
     /** Radio wave of the measurements. */
     private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     @Test
-    public void testShapiro() {
+    void testShapiro() {
         doTestShapiro(0.000047764, 0.000086953, 0.000164659);
     }
 
@@ -110,7 +112,7 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
             for (final EstimationModifier<OneWayGNSSPhase> existing : sr.getModifiers()) {
                 found = found || existing == modifier;
             }
-            Assertions.assertTrue(found);
+            assertTrue(found);
             EstimatedMeasurementBase<OneWayGNSSPhase>
                 eval =
                 sr.estimateWithoutDerivatives(states);
@@ -121,9 +123,9 @@ public class ShapiroOneWayGNSSPhaseModifierTest {
         }
         final double wavelength = ((OneWayGNSSPhase) measurements.get(0)).getWavelength();
 
-        Assertions.assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
-        Assertions.assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
-        Assertions.assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
+        assertEquals(expectedMin,  stat.getMin() * wavelength,  1.0e-9);
+        assertEquals(expectedMean, stat.getMean() * wavelength, 1.0e-9);
+        assertEquals(expectedMax,  stat.getMax() * wavelength,  1.0e-9);
 
     }
 

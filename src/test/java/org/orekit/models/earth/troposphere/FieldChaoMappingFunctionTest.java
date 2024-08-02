@@ -19,7 +19,7 @@ package org.orekit.models.earth.troposphere;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
 
-public class FieldChaoMappingFunctionTest extends AbstractFieldMappingFunctionTest {
+class FieldChaoMappingFunctionTest extends AbstractFieldMappingFunctionTest {
 
     protected TroposphereMappingFunction buildMappingFunction() {
         return new ChaoMappingFunction();

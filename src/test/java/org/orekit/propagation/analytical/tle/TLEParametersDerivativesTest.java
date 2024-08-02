@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical.tle;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -30,13 +29,16 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class TLEParametersDerivativesTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class TLEParametersDerivativesTest {
 
     /** Spot 5 TLE. */
     private TLE tleSPOT;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         // SPOT TLE propagation will use SGP4
         String line1SPOT = "1 22823U 93061A   03339.49496229  .00000173  00000-0  10336-3 0   133";
@@ -45,12 +47,12 @@ public class TLEParametersDerivativesTest {
     }
 
     @Test
-    public void testBStarEstimation() {
+    void testBStarEstimation() {
         doTestParametersDerivatives(TLE.B_STAR, 5.16e-3, tleSPOT);
     }
 
     @Test
-    public void testNoEstimatedParameters() {
+    void testNoEstimatedParameters() {
         // compute state Jacobian using PartialDerivatives
         TLEPropagator propagator = TLEPropagator.selectExtrapolator(tleSPOT);
         final SpacecraftState initialState = propagator.getInitialState();
@@ -59,7 +61,7 @@ public class TLEParametersDerivativesTest {
         TLEHarvester harvester = (TLEHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         RealMatrix dYdP = harvester.getParametersJacobian(initialState);
-        Assertions.assertNull(dYdP);
+        assertNull(dYdP);
     }
 
     private void doTestParametersDerivatives(String parameterName, double tolerance, TLE tle) {
@@ -86,7 +88,7 @@ public class TLEParametersDerivativesTest {
         RealMatrix dYdP = harvester.getParametersJacobian(initialState);
         for (int i = 0; i < 6; ++i) {
             for (int j = 0; j < 1; ++j) {
-                Assertions.assertEquals(0.0, dYdP.getEntry(i, j), tolerance);
+                assertEquals(0.0, dYdP.getEntry(i, j), tolerance);
             }
         }
         final SpacecraftState finalState = propagator.propagate(target);
@@ -128,7 +130,7 @@ public class TLEParametersDerivativesTest {
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(tolerance));
+            assertEquals(dYdPRef[i][0], dYdP.getEntry(i, 0), FastMath.abs(tolerance));
         }
 
     }

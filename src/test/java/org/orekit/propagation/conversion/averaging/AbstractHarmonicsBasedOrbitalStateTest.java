@@ -1,6 +1,5 @@
 package org.orekit.propagation.conversion.averaging;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -10,6 +9,8 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.conversion.averaging.elements.AveragedOrbitalElements;
 import org.orekit.time.AbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AbstractHarmonicsBasedOrbitalStateTest {
 
@@ -24,7 +25,7 @@ class AbstractHarmonicsBasedOrbitalStateTest {
         // WHEN
         final double actualMu = elements.getMu();
         // THEN
-        Assertions.assertEquals(expectedMu, actualMu);
+        assertEquals(expectedMu, actualMu);
     }
 
     private static class TestHarmonicsBasedOrbitalSTate

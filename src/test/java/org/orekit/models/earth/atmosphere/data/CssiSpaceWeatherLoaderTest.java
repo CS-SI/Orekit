@@ -20,6 +20,8 @@ package org.orekit.models.earth.atmosphere.data;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Timeout.ThreadMode.SEPARATE_THREAD;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.pvCloseTo;
@@ -40,12 +42,7 @@ import java.util.stream.Collectors;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -84,11 +81,11 @@ import org.orekit.utils.IERSConventions;
  *
  * @author Clément Jonglez
  */
-public class CssiSpaceWeatherLoaderTest {
+class CssiSpaceWeatherLoaderTest {
     private TimeScale utc;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
         utc = TimeScalesFactory.getUTC();
     }
@@ -98,27 +95,27 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testIssue1117() throws URISyntaxException {
+    void testIssue1117() throws URISyntaxException {
         final URL url = CssiSpaceWeatherLoaderTest.class.getClassLoader().getResource("atmosphere/SpaceWeather-All-v1.2_reduced.txt");
         CssiSpaceWeatherData cswl = new CssiSpaceWeatherData(new DataSource(url.toURI()));
-        Assertions.assertEquals(new AbsoluteDate("2020-02-19", utc), cswl.getMinDate());
-        Assertions.assertEquals(new AbsoluteDate("2020-02-22", utc), cswl.getMaxDate());
+        assertEquals(new AbsoluteDate("2020-02-19", utc), cswl.getMinDate());
+        assertEquals(new AbsoluteDate("2020-02-22", utc), cswl.getMaxDate());
     }
 
     @Test
-    public void testMinDate() {
+    void testMinDate() {
         CssiSpaceWeatherData cswl = loadCswl();
-        Assertions.assertEquals(new AbsoluteDate("1957-10-01", utc), cswl.getMinDate());
+        assertEquals(new AbsoluteDate("1957-10-01", utc), cswl.getMinDate());
     }
 
     @Test
-    public void testMaxDate() {
+    void testMaxDate() {
         CssiSpaceWeatherData cswl = loadCswl();
-        Assertions.assertEquals(new AbsoluteDate("2044-06-01", utc), cswl.getMaxDate());
+        assertEquals(new AbsoluteDate("2044-06-01", utc), cswl.getMaxDate());
     }
 
     @Test
-    public void testThreeHourlyKpObserved() {
+    void testThreeHourlyKpObserved() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 10, 0, 0, 0.0, utc);
         final double kp = cswl.getThreeHourlyKP(date);
@@ -127,7 +124,7 @@ public class CssiSpaceWeatherLoaderTest {
 
     /** Requests a date between two months, requiring interpolation */
     @Test
-    public void testThreeHourlyKpMonthlyPredicted() {
+    void testThreeHourlyKpMonthlyPredicted() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2038, 6, 16, 0, 0, 0.0, utc);
         final double kp = cswl.getThreeHourlyKP(date);
@@ -140,14 +137,14 @@ public class CssiSpaceWeatherLoaderTest {
      * this should return an exception
      */
     @Test
-    public void testThreeHourlyApObservedFirstDay() {
+    void testThreeHourlyApObservedFirstDay() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 1, 5, 17, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -157,14 +154,14 @@ public class CssiSpaceWeatherLoaderTest {
      * this should return an exception
      */
     @Test
-    public void testThreeHourlyApObservedSecondDay() {
+    void testThreeHourlyApObservedSecondDay() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 2, 3, 14, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
@@ -174,20 +171,20 @@ public class CssiSpaceWeatherLoaderTest {
      * this should return an exception
      */
     @Test
-    public void testThreeHourlyApObservedThirdDay() {
+    void testThreeHourlyApObservedThirdDay() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 3, 3, 14, 0.0, utc);
         try {
             cswl.getAp(date);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
+            assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE_BEFORE, oe.getSpecifier());
         }
     }
 
     /** Here, no more side effects are expected */
     @Test
-    public void testThreeHourlyApObserved() {
+    void testThreeHourlyApObserved() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(1957, 10, 10, 3, 14, 0.0, utc);
         final double[] apExpected = new double[] { 18, 27, 15, 9, 7, 5.625, 3.625 };
@@ -202,7 +199,7 @@ public class CssiSpaceWeatherLoaderTest {
      * But the manual interpolation of all 7 coefficients would have been a pain
      */
     @Test
-    public void testThreeHourlyApMonthlyPredicted() {
+    void testThreeHourlyApMonthlyPredicted() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2038, 6, 16, 0, 0, 0.0, utc);
         final double[] ap = cswl.getAp(date);
@@ -212,7 +209,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testDailyFlux() {
+    void testDailyFlux() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double dailyFlux = cswl.getDailyFlux(date);
@@ -221,7 +218,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testDailyFluxMonthlyPredicted() {
+    void testDailyFluxMonthlyPredicted() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 17, 0, 0, 0.0, utc);
         final double dailyFlux = cswl.getDailyFlux(date);
@@ -229,7 +226,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testMeanFlux() {
+    void testMeanFlux() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double meanFlux = cswl.getMeanFlux(date);
@@ -237,7 +234,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testMeanFluxMonthlyPredicted() {
+    void testMeanFluxMonthlyPredicted() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 16, 0, 0, 0.0, utc);
         final double meanFlux = cswl.getMeanFlux(date);
@@ -245,7 +242,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testAverageFlux() {
+    void testAverageFlux() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 0, 0, 0.0, utc);
         final double averageFlux = cswl.getAverageFlux(date);
@@ -253,7 +250,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testAverageFluxMonthlyPredicted() {
+    void testAverageFluxMonthlyPredicted() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2034, 6, 16, 0, 0, 0.0, utc);
         final double averageFlux = cswl.getAverageFlux(date);
@@ -261,7 +258,7 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testInstantFlux() {
+    void testInstantFlux() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, utc);
         final double instantFlux = cswl.getInstantFlux(date);
@@ -272,7 +269,7 @@ public class CssiSpaceWeatherLoaderTest {
      * This is to test that daily Kp values with three figures are correctly parsed
      */
     @Test
-    public void testDailyKp2003SolarStorm() {
+    void testDailyKp2003SolarStorm() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2003, 10, 29, 23, 0, 0.0, utc);
         final double kp = cswl.get24HoursKp(date);
@@ -283,7 +280,7 @@ public class CssiSpaceWeatherLoaderTest {
      * This is to test that Ap values with three figures are correctly parsed
      */
     @Test
-    public void testAp2003SolarStorm() {
+    void testAp2003SolarStorm() {
         CssiSpaceWeatherData cswl = loadCswl();
         AbsoluteDate date = new AbsoluteDate(2003, 10, 29, 23, 0, 0.0, utc);
         final double[] ap = cswl.getAp(date);
@@ -299,7 +296,7 @@ public class CssiSpaceWeatherLoaderTest {
      * interval.
      */
     @Test
-    public void testWithPropagator() {
+    void testWithPropagator() {
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Frame eci = FramesFactory.getGCRF();
         final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -355,15 +352,15 @@ public class CssiSpaceWeatherLoaderTest {
     }
 
     @Test
-    public void testIssue841() throws OrekitException {
+    void testIssue841() throws OrekitException {
         final CssiSpaceWeatherDataLoader loader = new CssiSpaceWeatherDataLoader(utc);
         DataProvidersManager manager = DataContext.getDefault().getDataProvidersManager();
         manager.feed("SpaceWeather-All-v1.2_reduced.txt", loader);
         final SortedSet<LineParameters> set = loader.getDataSet();
-        Assertions.assertEquals(4, set.size());
+        assertEquals(4, set.size());
 
         CssiSpaceWeatherData cswl = new CssiSpaceWeatherData("SpaceWeather-All-v1.2_reduced.txt");
-        Assertions.assertEquals(71.6, cswl.getInstantFlux(new AbsoluteDate("2020-02-20T00:00:00.000", utc)), 0.01);
+        assertEquals(71.6, cswl.getInstantFlux(new AbsoluteDate("2020-02-20T00:00:00.000", utc)), 0.01);
     }
 
     /**
@@ -403,7 +400,7 @@ public class CssiSpaceWeatherLoaderTest {
         ExecutorService service = Executors.newFixedThreadPool(sampleSize);
 
         // WHEN & THEN
-        try {
+        Assertions.assertDoesNotThrow(() -> {
             service.invokeAll(tasks);
             results.get().sort(Comparator.comparing(TimeStampedDouble::getDate));
             final List<Double> sortedComputedResults = results.get().stream().map(TimeStampedDouble::getValue).collect(
@@ -412,7 +409,7 @@ public class CssiSpaceWeatherLoaderTest {
             // Compare to expected result
             for (int i = 0; i < sampleSize + 1; i++) {
                 final AbsoluteDate currentDate = dates.get(i);
-                Assertions.assertEquals(weatherData.get24HoursKp(currentDate), sortedComputedResults.get(i));
+                assertEquals(weatherData.get24HoursKp(currentDate), sortedComputedResults.get(i));
             }
 
             try {
@@ -423,16 +420,12 @@ public class CssiSpaceWeatherLoaderTest {
                 // Restore interrupted state...
                 Thread.currentThread().interrupt();
             }
-        }
-        catch (Exception e) {
-            // Should not fail
-            Assertions.fail();
-        }
+        });
     }
 
     @Test
     @Timeout(value = 5, threadMode = SEPARATE_THREAD)
-    public void testIssue1269() {
+    void testIssue1269() {
         // GIVEN
         final NRLMSISE00InputParameters solarActivity =
                 new CssiSpaceWeatherData(CssiSpaceWeatherData.DEFAULT_SUPPORTED_NAMES);
@@ -465,10 +458,10 @@ public class CssiSpaceWeatherLoaderTest {
 
         // THEN
         final GenericTimeStampedCache<LineParameters> cache = atm.getCache();
-        Assertions.assertEquals(5, cache.getGenerateCalls());
-        Assertions.assertEquals(5, cache.getSlots());
-        Assertions.assertEquals(10, cache.getEntries());
-        Assertions.assertEquals(7, cache.getGetNeighborsCalls());
+        assertEquals(5, cache.getGenerateCalls());
+        assertEquals(5, cache.getSlots());
+        assertEquals(10, cache.getEntries());
+        assertEquals(7, cache.getGetNeighborsCalls());
     }
 
     /**

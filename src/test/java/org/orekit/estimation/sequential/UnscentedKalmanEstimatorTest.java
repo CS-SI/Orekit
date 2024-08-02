@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.MerweUnscentedTransform;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -62,21 +61,25 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class UnscentedKalmanEstimatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class UnscentedKalmanEstimatorTest {
 
     @Test
-    public void testMissingPropagatorBuilder() {
+    void testMissingPropagatorBuilder() {
         try {
             new UnscentedKalmanEstimatorBuilder().
             build();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-        	Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+        	assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testMissingUnscentedTransform() {
+    void testMissingUnscentedTransform() {
         try {
             Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
             final OrbitType     orbitType     = OrbitType.CARTESIAN;
@@ -91,9 +94,9 @@ public class UnscentedKalmanEstimatorTest {
             new UnscentedKalmanEstimatorBuilder().
             addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(MatrixUtils.createRealMatrix(6, 6))).
             build();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-        	Assertions.assertEquals(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED, oe.getSpecifier());
+        	assertEquals(OrekitMessages.NO_UNSCENTED_TRANSFORM_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -101,7 +104,7 @@ public class UnscentedKalmanEstimatorTest {
      * Perfect PV measurements with a perfect start.
      */
     @Test
-    public void testPV() {
+    void testPV() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -159,12 +162,12 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
     }
-    
+
     /**
      * Shifted PV measurements.
      */
     @Test
-    public void testShiftedPV() {
+    void testShiftedPV() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -235,13 +238,13 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
 
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertNotNull(kalman.getPhysicalEstimatedState());
 
     }
 
@@ -249,7 +252,7 @@ public class UnscentedKalmanEstimatorTest {
      * Perfect Range measurements with a perfect start.
      */
     @Test
-    public void testCartesianRange() {
+    void testCartesianRange() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -308,20 +311,20 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
 
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     /**
      * Perfect Range measurements with a perfect start.
      */
     @Test
-    public void testKeplerianRange() {
+    void testKeplerianRange() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -380,21 +383,21 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedsigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
 
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
-    
+
     /**
      * Perfect range rate measurements with a perfect start
      * Cartesian formalism
      */
     @Test
-    public void testCartesianRangeRate() {
+    void testCartesianRangeRate() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -470,20 +473,20 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
 
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
-    
+
     /**
      * Perfect azimuth/elevation measurements with a perfect start
      */
     @Test
-    public void testCartesianAzimuthElevation() {
+    void testCartesianAzimuthElevation() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -558,20 +561,20 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
 
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
-    
+
     /**
      * Perfect azimuth/elevation measurements with a perfect start
      */
     @Test
-    public void testCircularAzimuthElevation() {
+    void testCircularAzimuthElevation() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -646,17 +649,17 @@ public class UnscentedKalmanEstimatorTest {
                                            expectedSigmasPos, sigmaPosEps,
                                            expectedSigmasVel, sigmaVelEps);
 
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(6, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertNotNull(kalman.getPhysicalEstimatedState());
     }
 
     @Test
-    public void testMultiSat() {
+    void testMultiSat() {
 
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -709,12 +712,12 @@ public class UnscentedKalmanEstimatorTest {
 
         List<DelegatingDriver> parameters = kalman.getOrbitalParametersDrivers(true).getDrivers();
         ParameterDriver a0Driver = parameters.get(0);
-        Assertions.assertEquals("a[0]", a0Driver.getName());
+        assertEquals("a[0]", a0Driver.getName());
         a0Driver.setValue(a0Driver.getValue() + 1.2);
         a0Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
         ParameterDriver a1Driver = parameters.get(6);
-        Assertions.assertEquals("a[1]", a1Driver.getName());
+        assertEquals("a[1]", a1Driver.getName());
         a1Driver.setValue(a1Driver.getValue() - 5.4);
         a1Driver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
 
@@ -728,11 +731,11 @@ public class UnscentedKalmanEstimatorTest {
                                                 closeOrbit.getFrame(),
                                                 closeOrbit.getDate(),
                                                 closeOrbit.getMu());
-        Assertions.assertEquals(4.7246,
+        assertEquals(4.7246,
                             Vector3D.distance(closeOrbit.getPosition(),
                                               before.getPosition()),
                             1.0e-3);
-        Assertions.assertEquals(0.0010514,
+        assertEquals(0.0010514,
                             Vector3D.distance(closeOrbit.getPVCoordinates().getVelocity(),
                                               before.getPVCoordinates().getVelocity()),
                             1.0e-6);
@@ -759,20 +762,20 @@ public class UnscentedKalmanEstimatorTest {
         for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
             if (driver.getName().startsWith("a[")) {
                 // user-specified reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(AbsoluteDate.GALILEO_EPOCH), 1.0e-15);
             } else {
                 // default reference date
-                Assertions.assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
+                assertEquals(0, driver.getReferenceDate().durationFrom(referenceDate), 1.0e-15);
             }
         }
 
-        Assertions.assertEquals(12, kalman.getOrbitalParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(12, kalman.getOrbitalParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
-        Assertions.assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
-        Assertions.assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
-        Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
-        Assertions.assertNotNull(kalman.getPhysicalEstimatedState());
+        assertEquals(12, kalman.getOrbitalParametersDrivers(false).getNbParams());
+        assertEquals(12, kalman.getOrbitalParametersDrivers(true).getNbParams());
+        assertEquals(1, kalman.getPropagationParametersDrivers(false).getNbParams());
+        assertEquals(0, kalman.getPropagationParametersDrivers(true).getNbParams());
+        assertEquals(0, kalman.getEstimatedMeasurementsParameters().getNbParams());
+        assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
+        assertNotNull(kalman.getPhysicalEstimatedState());
 
     }
 
@@ -780,7 +783,7 @@ public class UnscentedKalmanEstimatorTest {
      * Test of a wrapped exception in a Kalman observer
      */
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         // Create context
         Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -851,7 +854,7 @@ public class UnscentedKalmanEstimatorTest {
      * of the decorated measurement.
      */
     @Test
-    public void testIssue1034() {
+    void testIssue1034() {
 
         UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -877,20 +880,20 @@ public class UnscentedKalmanEstimatorTest {
 
         // Verify Position
         for (int row = 0; row < decoratedPos.getCovariance().getRowDimension(); row++) {
-            Assertions.assertEquals(sigmaPos * sigmaPos, decoratedPos.getCovariance().getEntry(row, row));
+            assertEquals(sigmaPos * sigmaPos, decoratedPos.getCovariance().getEntry(row, row));
         }
 
         // Verify PV
         for (int row = 0; row < decoratedPv.getCovariance().getRowDimension(); row++) {
             if (row < 3) {
-                Assertions.assertEquals(sigmaPos * sigmaPos, decoratedPv.getCovariance().getEntry(row, row));
+                assertEquals(sigmaPos * sigmaPos, decoratedPv.getCovariance().getEntry(row, row));
             } else {
-                Assertions.assertEquals(sigmaVel * sigmaVel, decoratedPv.getCovariance().getEntry(row, row));
+                assertEquals(sigmaVel * sigmaVel, decoratedPv.getCovariance().getEntry(row, row));
             }
         }
 
         // Verify Range
-        Assertions.assertEquals(sigmaRange * sigmaRange, decoratedRange.getCovariance().getEntry(0, 0));
+        assertEquals(sigmaRange * sigmaRange, decoratedRange.getCovariance().getEntry(0, 0));
 
     }
 

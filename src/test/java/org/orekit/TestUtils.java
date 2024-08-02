@@ -27,7 +27,6 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -41,6 +40,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.Collection;
 
 /** Utility class for tests to reduce code duplication. */
@@ -132,9 +133,9 @@ public class TestUtils {
      * @param threshold absolute threshold
      */
     public static void validateVector3D(final Vector3D expected, final Vector3D computed, final double threshold) {
-        Assertions.assertEquals(expected.getX(), computed.getX(), threshold);
-        Assertions.assertEquals(expected.getY(), computed.getY(), threshold);
-        Assertions.assertEquals(expected.getZ(), computed.getZ(), threshold);
+        assertEquals(expected.getX(), computed.getX(), threshold);
+        assertEquals(expected.getY(), computed.getY(), threshold);
+        assertEquals(expected.getZ(), computed.getZ(), threshold);
 
     }
 
@@ -149,9 +150,9 @@ public class TestUtils {
     public static <T extends CalculusFieldElement<T>> void validateFieldVector3D(final Vector3D expected,
                                                                                  final FieldVector3D<T> computed,
                                                                                  final double threshold) {
-        Assertions.assertEquals(expected.getX(), computed.getX().getReal(), threshold);
-        Assertions.assertEquals(expected.getY(), computed.getY().getReal(), threshold);
-        Assertions.assertEquals(expected.getZ(), computed.getZ().getReal(), threshold);
+        assertEquals(expected.getX(), computed.getX().getReal(), threshold);
+        assertEquals(expected.getY(), computed.getY().getReal(), threshold);
+        assertEquals(expected.getZ(), computed.getZ().getReal(), threshold);
     }
 
     /**
@@ -162,8 +163,8 @@ public class TestUtils {
      * @param threshold absolute threshold
      */
     public static void validateVector2D(final Vector2D expected, final Vector2D computed, final double threshold) {
-        Assertions.assertEquals(expected.getX(), computed.getX(), threshold);
-        Assertions.assertEquals(expected.getY(), computed.getY(), threshold);
+        assertEquals(expected.getX(), computed.getX(), threshold);
+        assertEquals(expected.getY(), computed.getY(), threshold);
 
     }
 
@@ -178,8 +179,8 @@ public class TestUtils {
     public static <T extends CalculusFieldElement<T>> void validateFieldVector2D(final Vector2D expected,
                                                                                  final FieldVector2D<T> computed,
                                                                                  final double threshold) {
-        Assertions.assertEquals(expected.getX(), computed.getX().getReal(), threshold);
-        Assertions.assertEquals(expected.getY(), computed.getY().getReal(), threshold);
+        assertEquals(expected.getX(), computed.getX().getReal(), threshold);
+        assertEquals(expected.getY(), computed.getY().getReal(), threshold);
 
     }
 
@@ -200,10 +201,10 @@ public class TestUtils {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
                 if (reference.getEntry(row, column) == 0) {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column).getReal(),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column).getReal(),
                                             threshold);
                 } else {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column).getReal(),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column).getReal(),
                                             FastMath.abs(threshold * reference.getEntry(row, column)));
                 }
             }
@@ -228,11 +229,11 @@ public class TestUtils {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
                 if (reference.getEntry(row, column) == 0) {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
                                             threshold);
                 }
                 else {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
                                             FastMath.abs(threshold * reference.getEntry(row, column)));
                 }
             }

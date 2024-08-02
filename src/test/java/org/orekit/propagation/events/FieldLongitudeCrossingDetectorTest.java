@@ -17,13 +17,14 @@
 
 package org.orekit.propagation.events;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.orekit.orbits.PositionAngleType.MEAN;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -47,7 +48,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 /** Unit tests for {@link FieldLongitudeCrossingDetector}. */
-public class FieldLongitudeCrossingDetectorTest {
+class FieldLongitudeCrossingDetectorTest {
 
     /**
      * Arbitrary Field.
@@ -56,7 +57,7 @@ public class FieldLongitudeCrossingDetectorTest {
 
 
     @Test
-    public void testRegularCrossing() {
+    void testRegularCrossing() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
             Constants.WGS84_EARTH_FLATTENING,
@@ -67,11 +68,11 @@ public class FieldLongitudeCrossingDetectorTest {
                 FastMath.toRadians(10.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
-        Assertions.assertEquals(10.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
-        Assertions.assertSame(earth, d.getBody());
+        assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
+        assertEquals(10.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        assertSame(earth, d.getBody());
 
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
@@ -101,20 +102,20 @@ public class FieldLongitudeCrossingDetectorTest {
             FieldSpacecraftState<Binary64> state = e.getState();
             double longitude = earth.transform(state.getPosition(earth.getBodyFrame()),
                 earth.getBodyFrame(), date).getLongitude().getReal();
-            Assertions.assertEquals(10.0, FastMath.toDegrees(longitude), 3.5e-7);
+            assertEquals(10.0, FastMath.toDegrees(longitude), 3.5e-7);
             if (previous != null) {
                 // same time interval regardless of increasing/decreasing,
                 // as increasing/decreasing flag is irrelevant for this detector
-                Assertions.assertEquals(4954.70, state.getDate().durationFrom(previous).getReal(), 1e10);
+                assertEquals(4954.70, state.getDate().durationFrom(previous).getReal(), 1e10);
             }
             previous = state.getDate();
         }
-        Assertions.assertEquals(16, logger.getLoggedEvents().size());
+        assertEquals(16, logger.getLoggedEvents().size());
 
     }
 
     @Test
-    public void testZigZag() {
+    void testZigZag() {
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
             Constants.WGS84_EARTH_FLATTENING,
@@ -125,10 +126,10 @@ public class FieldLongitudeCrossingDetectorTest {
                 FastMath.toRadians(-100.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(600.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
-        Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
-        Assertions.assertEquals(-100.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
-        Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
+        assertEquals(600.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
+        assertEquals(-100.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
+        assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
 
         FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getJ2000Epoch(field);
         final FieldOrbit<Binary64> orbit =
@@ -146,13 +147,13 @@ public class FieldLongitudeCrossingDetectorTest {
 
         propagator.propagate(orbit.getDate().shiftedBy(Constants.JULIAN_DAY));
         double[] expectedLatitudes = new double[] { -6.5394381901, -0.4918760372, +6.5916016832 };
-        Assertions.assertEquals(3, logger.getLoggedEvents().size());
+        assertEquals(3, logger.getLoggedEvents().size());
         for (int i = 0; i < 3; ++i) {
             FieldSpacecraftState<Binary64> state = logger.getLoggedEvents().get(i).getState();
             FieldGeodeticPoint<Binary64> gp = earth.transform(state.getPosition(earth.getBodyFrame()),
                 earth.getBodyFrame(), date);
-            Assertions.assertEquals(expectedLatitudes[i], FastMath.toDegrees(gp.getLatitude()).getReal(),  1.0e-10);
-            Assertions.assertEquals(-100.0, FastMath.toDegrees(gp.getLongitude().getReal()), 1.2e-9);
+            assertEquals(expectedLatitudes[i], FastMath.toDegrees(gp.getLatitude()).getReal(),  1.0e-10);
+            assertEquals(-100.0, FastMath.toDegrees(gp.getLongitude().getReal()), 1.2e-9);
         }
 
     }
@@ -168,7 +169,7 @@ public class FieldLongitudeCrossingDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

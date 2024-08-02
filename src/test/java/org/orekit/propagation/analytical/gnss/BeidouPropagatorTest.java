@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -42,14 +41,18 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
-public class BeidouPropagatorTest {
+class BeidouPropagatorTest {
 
     private static BeidouAlmanac almanac;
 
     @BeforeAll
-    public static void setUpBeforeClass() {
+    static void setUpBeforeClass() {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 18 for May 28th 2019
@@ -71,14 +74,14 @@ public class BeidouPropagatorTest {
     }
 
     @Test
-    public void testBeidouCycle() {
+    void testBeidouCycle() {
         // Builds the BeiDou propagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator();
         // Intermediate verification
-        Assertions.assertEquals(18,           almanac.getPRN());
-        Assertions.assertEquals(0,            almanac.getHealth());
-        Assertions.assertEquals(0.0001096725, almanac.getAf0(), 1.0e-15);
-        Assertions.assertEquals(7.27596e-12,  almanac.getAf1(), 1.0e-15);
+        assertEquals(18,           almanac.getPRN());
+        assertEquals(0,            almanac.getHealth());
+        assertEquals(0.0001096725, almanac.getAf0(), 1.0e-15);
+        assertEquals(7.27596e-12,  almanac.getAf1(), 1.0e-15);
         // Propagate at the BeiDou date and one BeiDou cycle later
         final AbsoluteDate date0 = almanac.getDate();
         final Vector3D p0 = propagator.propagateInEcef(date0).getPosition();
@@ -87,15 +90,15 @@ public class BeidouPropagatorTest {
         final Vector3D p1 = propagator.propagateInEcef(date1).getPosition();
 
         // Checks
-        Assertions.assertEquals(0., p0.distance(p1), 0.);
+        assertEquals(0., p0.distance(p1), 0.);
     }
 
     @Test
-    public void testFrames() {
+    void testFrames() {
         // Builds the BeiDou propagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator();
-        Assertions.assertEquals("EME2000", propagator.getFrame().getName());
-        Assertions.assertEquals(3.986004418e+14, almanac.getMu(), 1.0e6);
+        assertEquals("EME2000", propagator.getFrame().getName());
+        assertEquals(3.986004418e+14, almanac.getMu(), 1.0e6);
         // Defines some date
         final AbsoluteDate date = new AbsoluteDate(2016, 3, 3, 12, 0, 0., TimeScalesFactory.getUTC());
         // Get PVCoordinates at the date in the ECEF
@@ -104,30 +107,30 @@ public class BeidouPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
-        Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
+        assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 3.3e-8);
+        assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 3.9e-12);
     }
 
     @Test
-    public void testNoReset() {
+    void testNoReset() {
         try {
             final GNSSPropagator propagator = almanac.getPropagator();
             propagator.resetInitialState(propagator.getInitialState());
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
         try {
             GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
             propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testDerivativesConsistency() {
+    void testDerivativesConsistency() {
 
         final Frame eme2000 = FramesFactory.getEME2000();
         double errorP = 0;
@@ -155,14 +158,14 @@ public class BeidouPropagatorTest {
             errorA = FastMath.max(errorA, Vector3D.distance(pv.getAcceleration(), interpolated.getAcceleration()));
         }
 
-        Assertions.assertEquals(0.0, errorP, 3.8e-9);
-        Assertions.assertEquals(0.0, errorV, 8.0e-8);
-        Assertions.assertEquals(0.0, errorA, 2.0e-8);
+        assertEquals(0.0, errorP, 3.8e-9);
+        assertEquals(0.0, errorV, 8.0e-8);
+        assertEquals(0.0, errorA, 2.0e-8);
 
     }
 
     @Test
-    public void testPosition() {
+    void testPosition() {
         // Initial BeiDou orbital elements (Ref: IGS)
         final BeidouLegacyNavigationMessage boe = new BeidouLegacyNavigationMessage();
         boe.setPRN(7);
@@ -194,19 +197,19 @@ public class BeidouPropagatorTest {
         final Vector3D computedPos = pv.getPosition();
         // Expected position (reference from sp3 file WUM0MGXULA_20192470700_01D_05M_ORB.SP33)
         final Vector3D expectedPos = new Vector3D(-10260690.520, 24061180.795, -32837341.074);
-        Assertions.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 3.1);
+        assertEquals(0., Vector3D.distance(expectedPos, computedPos), 3.1);
     }
 
     @Test
-    public void testIssue544() {
+    void testIssue544() {
         // Builds the BeidouPropagator from the almanac
         final GNSSPropagator propagator = almanac.getPropagator();
         // In order to test the issue, we voluntary set a Double.NaN value in the date.
         final AbsoluteDate date0 = new AbsoluteDate(2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
         final PVCoordinates pv0 = propagator.propagateInEcef(date0);
         // Verify that an infinite loop did not occur
-        Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
-        Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
+        assertEquals(Vector3D.NaN, pv0.getPosition());
+        assertEquals(Vector3D.NaN, pv0.getVelocity());
 
     }
 

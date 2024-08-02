@@ -18,7 +18,6 @@
 package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -43,6 +42,8 @@ import org.orekit.utils.Constants;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  *
  * Source: http://ccar.colorado.edu/asen5050/projects/projects_2012/kemble/gibbs_derivation.htm
@@ -51,10 +52,10 @@ import java.util.List;
  * @since 7.1
  *
  */
-public class IodGibbsTest {
+class IodGibbsTest {
 
     @Test
-    public void testGibbs1() {
+    void testGibbs1() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
         final double mu = context.initialOrbit.getMu();
         final Frame frame = context.initialOrbit.getFrame();
@@ -92,13 +93,13 @@ public class IodGibbsTest {
         final IodGibbs gibbs = new IodGibbs(mu);
         final Orbit    orbit = gibbs.estimate(frame, pv1, pv2, pv3);
 
-        Assertions.assertEquals(context.initialOrbit.getA(), orbit.getA(), 1.0e-9 * context.initialOrbit.getA());
-        Assertions.assertEquals(context.initialOrbit.getE(), orbit.getE(),  1.0e-9 * context.initialOrbit.getE());
-        Assertions.assertEquals(context.initialOrbit.getI(),  orbit.getI(), 1.0e-9 * context.initialOrbit.getI());
+        assertEquals(context.initialOrbit.getA(), orbit.getA(), 1.0e-9 * context.initialOrbit.getA());
+        assertEquals(context.initialOrbit.getE(), orbit.getE(),  1.0e-9 * context.initialOrbit.getE());
+        assertEquals(context.initialOrbit.getI(),  orbit.getI(), 1.0e-9 * context.initialOrbit.getI());
     }
 
     @Test
-    public void testGibbs2() {
+    void testGibbs2() {
 
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-3, p457
 
@@ -127,11 +128,11 @@ public class IodGibbsTest {
                                            posR1, dateRef, posR2, date2, posR3, date3);
 
         //test
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(), 1e-3);
+        assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(), 1e-3);
     }
 
     @Test
-    public void testGibbs3() {
+    void testGibbs3() {
 
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-4, p463
         // Remark: the test value in Vallado is performed with an Herrick-Gibbs methods but results are very close with Gibbs method.
@@ -161,12 +162,12 @@ public class IodGibbsTest {
                                            posR1, dateRef, posR2, date2, posR3, date3);
 
         //test for the norm of the velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
     }
 
     @Test
-    public void testIssue751() {
+    void testIssue751() {
 
         // test extracted from "Fundamentals of astrodynamics & applications", D. Vallado, 3rd ed, chap Initial Orbit Determination, Exple 7-4, p463
         // Remark: the test value in Vallado is performed with an Herrick-Gibbs methods but results are very close with Gibbs method.
@@ -199,12 +200,12 @@ public class IodGibbsTest {
                                            new Position(date3, posR3, 1.0, 1.0, satellite));
 
         // Test for the norm of the velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
     }
 
     @Test
-    public void testNonDifferentDatesForObservations() {
+    void testNonDifferentDatesForObservations() {
         Utils.setDataRoot("regular-data:potential:tides");
 
         // Initialization
@@ -222,12 +223,12 @@ public class IodGibbsTest {
         try {
             gibbs.estimate(frame, pv1, pv2, pv3);
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_DIFFERENT_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testNonCoplanarPoints() {
+    void testNonCoplanarPoints() {
         Utils.setDataRoot("regular-data:potential:tides");
 
         // Initialization
@@ -245,7 +246,7 @@ public class IodGibbsTest {
         try {
             gibbs.estimate(frame, pv1, pv2, pv3);
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_COPLANAR_POINTS, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_COPLANAR_POINTS, oe.getSpecifier());
         }
     }
 

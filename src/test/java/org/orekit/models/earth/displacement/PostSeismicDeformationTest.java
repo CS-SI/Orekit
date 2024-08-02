@@ -18,7 +18,6 @@ package org.orekit.models.earth.displacement;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -37,12 +36,14 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.net.URISyntaxException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.URL;
 
-public class PostSeismicDeformationTest {
+class PostSeismicDeformationTest {
 
     @Test
-    public void testShintotsukawa() throws URISyntaxException {
+    void testShintotsukawa() throws URISyntaxException {
         final URL url = PostSeismicDeformationTest.class.getClassLoader().
                         getResource("sinex/ITRF2020-psd-gnss.snx");
         final Station stk2 = new SinexLoader(new DataSource(url.toURI())).getStation("STK2");
@@ -72,16 +73,16 @@ public class PostSeismicDeformationTest {
                                     -1.44921478188329e-02 * (1 - FastMath.exp(-years / 6.08619870701242e-02));
             final double refUp    = 0.0;
 
-            Assertions.assertEquals(refEast,  Vector3D.dotProduct(dp, base.getEast()),   1.0e-15);
-            Assertions.assertEquals(refNorth, Vector3D.dotProduct(dp, base.getNorth()),  1.0e-15);
-            Assertions.assertEquals(refUp,    Vector3D.dotProduct(dp, base.getZenith()), 1.0e-15);
+            assertEquals(refEast,  Vector3D.dotProduct(dp, base.getEast()),   1.0e-15);
+            assertEquals(refNorth, Vector3D.dotProduct(dp, base.getNorth()),  1.0e-15);
+            assertEquals(refUp,    Vector3D.dotProduct(dp, base.getZenith()), 1.0e-15);
 
         }
 
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 

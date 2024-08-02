@@ -18,18 +18,20 @@ package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
-public class AmbiguitySolverTest {
+class AmbiguitySolverTest {
 
     @Test
-    public void testJoostenTiberiusFAQ() {
+    void testJoostenTiberiusFAQ() {
         // this test corresponds to the "LAMBDA: FAQs" paper by Peter Joosten and Christian Tiberius
 
         final List<ParameterDriver> ambiguitiesDrivers = createAmbiguities(5.450, 3.100, 2.970);
@@ -40,7 +42,7 @@ public class AmbiguitySolverTest {
         });
 
         // acceptance ratio not met
-        Assertions.assertTrue(new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
+        assertTrue(new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
                                               new SimpleRatioAmbiguityAcceptance(0.5)).
                           fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance).
                           isEmpty());
@@ -48,10 +50,10 @@ public class AmbiguitySolverTest {
         List<ParameterDriver> fixed = new AmbiguitySolver(ambiguitiesDrivers, new LambdaMethod(),
                                                           new SimpleRatioAmbiguityAcceptance(0.8)).
                                       fixIntegerAmbiguities(0, ambiguitiesDrivers, covariance);
-        Assertions.assertEquals(3, fixed.size());
-        Assertions.assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
-        Assertions.assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
-        Assertions.assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
+        assertEquals(3, fixed.size());
+        assertEquals(5, fixed.get(0).getValue(), 1.0e-15);
+        assertEquals(3, fixed.get(1).getValue(), 1.0e-15);
+        assertEquals(4, fixed.get(2).getValue(), 1.0e-15);
     }
 
     private List<ParameterDriver> createAmbiguities(double...floatValues) {

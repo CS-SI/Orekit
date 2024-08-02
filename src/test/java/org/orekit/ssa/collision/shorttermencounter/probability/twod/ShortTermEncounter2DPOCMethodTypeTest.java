@@ -16,12 +16,15 @@
  */
 package org.orekit.ssa.collision.shorttermencounter.probability.twod;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.files.ccsds.definitions.PocMethodType;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ShortTermEncounter2DPOCMethodTypeTest {
 
@@ -41,8 +44,8 @@ class ShortTermEncounter2DPOCMethodTypeTest {
         final PocMethodType                 ccsdsEquivalent = methodEnum.getCCSDSType();
 
         // THEN
-        Assertions.assertInstanceOf(Alfano2005.class, method);
-        Assertions.assertEquals(PocMethodType.ALFANO_2005, ccsdsEquivalent);
+        assertInstanceOf(Alfano2005.class, method);
+        assertEquals(PocMethodType.ALFANO_2005, ccsdsEquivalent);
     }
 
     @Test
@@ -56,8 +59,8 @@ class ShortTermEncounter2DPOCMethodTypeTest {
         final PocMethodType                 ccsdsEquivalent = methodEnum.getCCSDSType();
 
         // THEN
-        Assertions.assertInstanceOf(Laas2015.class, method);
-        Assertions.assertNull(ccsdsEquivalent);
+        assertInstanceOf(Laas2015.class, method);
+        assertNull(ccsdsEquivalent);
     }
 
     @Test
@@ -72,8 +75,8 @@ class ShortTermEncounter2DPOCMethodTypeTest {
         final PocMethodType                 ccsdsEquivalent = methodEnum.getCCSDSType();
 
         // THEN
-        Assertions.assertInstanceOf(Alfriend1999.class, method);
-        Assertions.assertEquals(PocMethodType.ALFRIEND_1999, ccsdsEquivalent);
+        assertInstanceOf(Alfriend1999.class, method);
+        assertEquals(PocMethodType.ALFRIEND_1999, ccsdsEquivalent);
     }
 
     @Test
@@ -88,8 +91,8 @@ class ShortTermEncounter2DPOCMethodTypeTest {
         final PocMethodType                 ccsdsEquivalent = methodEnum.getCCSDSType();
 
         // THEN
-        Assertions.assertInstanceOf(Alfriend1999Max.class, method);
-        Assertions.assertNull(ccsdsEquivalent);
+        assertInstanceOf(Alfriend1999Max.class, method);
+        assertNull(ccsdsEquivalent);
     }
 
     @Test
@@ -103,8 +106,8 @@ class ShortTermEncounter2DPOCMethodTypeTest {
         final PocMethodType                 ccsdsEquivalent = methodEnum.getCCSDSType();
 
         // THEN
-        Assertions.assertInstanceOf(Chan1997.class, method);
-        Assertions.assertEquals(PocMethodType.CHAN_1997, ccsdsEquivalent);
+        assertInstanceOf(Chan1997.class, method);
+        assertEquals(PocMethodType.CHAN_1997, ccsdsEquivalent);
     }
 
     @Test
@@ -118,8 +121,8 @@ class ShortTermEncounter2DPOCMethodTypeTest {
         final PocMethodType                 ccsdsEquivalent = methodEnum.getCCSDSType();
 
         // THEN
-        Assertions.assertInstanceOf(Patera2005.class, method);
-        Assertions.assertEquals(PocMethodType.PATERA_2005, ccsdsEquivalent);
+        assertInstanceOf(Patera2005.class, method);
+        assertEquals(PocMethodType.PATERA_2005, ccsdsEquivalent);
     }
 
     @Test
@@ -133,7 +136,7 @@ class ShortTermEncounter2DPOCMethodTypeTest {
             final ShortTermEncounter2DPOCMethodType backToMethodType = method.getType();
 
             // THEN
-            Assertions.assertEquals(methodType, backToMethodType);
+            assertEquals(methodType, backToMethodType);
         }
     }
 

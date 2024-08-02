@@ -16,11 +16,14 @@
  */
 package org.orekit.files.ccsds.definitions;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.LOFType;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class OrbitRelativeFrameTest {
     @Test
@@ -75,28 +78,28 @@ class OrbitRelativeFrameTest {
         final LOFType vncInertialLOF  = vncInertial.getLofType();
 
         // Then
-        Assertions.assertEquals(eqwInertialLOF.isQuasiInertial(), eqwInertialLOF.isQuasiInertial());
-        Assertions.assertEquals(lvlhRotating.isQuasiInertial(), lvlhRotatingLOF.isQuasiInertial());
-        Assertions.assertEquals(lvlhInertial.isQuasiInertial(), lvlhInertialLOF.isQuasiInertial());
-        Assertions.assertEquals(lvlh.isQuasiInertial(), lvlhLOF.isQuasiInertial());
-        Assertions.assertNull(nswRotatingLOF);
-        Assertions.assertNull(nswInertialLOF);
-        Assertions.assertEquals(ntwRotating.isQuasiInertial(), ntwRotatingLOF.isQuasiInertial());
-        Assertions.assertEquals(ntwInertialLOF.isQuasiInertial(), ntwInertialLOF.isQuasiInertial());
-        Assertions.assertNull(pqwInertialLOF);
-        Assertions.assertEquals(rswRotating.isQuasiInertial(), rswRotatingLOF.isQuasiInertial());
-        Assertions.assertEquals(rswInertial.isQuasiInertial(), rswInertialLOF.isQuasiInertial());
-        Assertions.assertEquals(rsw.isQuasiInertial(), rswLOF.isQuasiInertial());
-        Assertions.assertEquals(ric.isQuasiInertial(), ricLOF.isQuasiInertial());
-        Assertions.assertEquals(rtn.isQuasiInertial(), rtnLOF.isQuasiInertial());
-        Assertions.assertEquals(qsw.isQuasiInertial(), qswLOF.isQuasiInertial());
-        Assertions.assertEquals(tnwRotating.isQuasiInertial(), tnwRotatingLOF.isQuasiInertial());
-        Assertions.assertEquals(tnwInertial.isQuasiInertial(), tnwInertialLOF.isQuasiInertial());
-        Assertions.assertEquals(tnw.isQuasiInertial(), tnwLOF.isQuasiInertial());
-        Assertions.assertNull(sezRotatingLOF);
-        Assertions.assertNull(sezInertialLOF);
-        Assertions.assertEquals(vncRotating.isQuasiInertial(), vncRotatingLOF.isQuasiInertial());
-        Assertions.assertEquals(vncInertial.isQuasiInertial(), vncInertialLOF.isQuasiInertial());
+        assertEquals(eqwInertialLOF.isQuasiInertial(), eqwInertialLOF.isQuasiInertial());
+        assertEquals(lvlhRotating.isQuasiInertial(), lvlhRotatingLOF.isQuasiInertial());
+        assertEquals(lvlhInertial.isQuasiInertial(), lvlhInertialLOF.isQuasiInertial());
+        assertEquals(lvlh.isQuasiInertial(), lvlhLOF.isQuasiInertial());
+        assertNull(nswRotatingLOF);
+        assertNull(nswInertialLOF);
+        assertEquals(ntwRotating.isQuasiInertial(), ntwRotatingLOF.isQuasiInertial());
+        assertEquals(ntwInertialLOF.isQuasiInertial(), ntwInertialLOF.isQuasiInertial());
+        assertNull(pqwInertialLOF);
+        assertEquals(rswRotating.isQuasiInertial(), rswRotatingLOF.isQuasiInertial());
+        assertEquals(rswInertial.isQuasiInertial(), rswInertialLOF.isQuasiInertial());
+        assertEquals(rsw.isQuasiInertial(), rswLOF.isQuasiInertial());
+        assertEquals(ric.isQuasiInertial(), ricLOF.isQuasiInertial());
+        assertEquals(rtn.isQuasiInertial(), rtnLOF.isQuasiInertial());
+        assertEquals(qsw.isQuasiInertial(), qswLOF.isQuasiInertial());
+        assertEquals(tnwRotating.isQuasiInertial(), tnwRotatingLOF.isQuasiInertial());
+        assertEquals(tnwInertial.isQuasiInertial(), tnwInertialLOF.isQuasiInertial());
+        assertEquals(tnw.isQuasiInertial(), tnwLOF.isQuasiInertial());
+        assertNull(sezRotatingLOF);
+        assertNull(sezInertialLOF);
+        assertEquals(vncRotating.isQuasiInertial(), vncRotatingLOF.isQuasiInertial());
+        assertEquals(vncInertial.isQuasiInertial(), vncInertialLOF.isQuasiInertial());
     }
 
     @Test
@@ -115,7 +118,7 @@ class OrbitRelativeFrameTest {
                     // Cases where we start from a "_ROTATING" enum and go back to the equivalent version without "_ROTATION" are
                     // necessary equivalent
                     if (!(ccsdsFrameFromOrekitLOF.name() + "_ROTATING").equals(ccsdsFrame.name())) {
-                        Assertions.assertEquals(ccsdsFrame, ccsdsFrameFromOrekitLOF);
+                        assertEquals(ccsdsFrame, ccsdsFrameFromOrekitLOF);
                     }
                 }
 
@@ -136,15 +139,15 @@ class OrbitRelativeFrameTest {
         final LOFType lvlhInertial = LOFType.LVLH_INERTIAL;
 
         // When
-        final Exception firstException  = Assertions.assertThrows(OrekitException.class, lvlh::toOrbitRelativeFrame);
-        final Exception secondException = Assertions.assertThrows(OrekitException.class, lvlhInertial::toOrbitRelativeFrame);
+        final Exception firstException  = assertThrows(OrekitException.class, lvlh::toOrbitRelativeFrame);
+        final Exception secondException = assertThrows(OrekitException.class, lvlhInertial::toOrbitRelativeFrame);
 
         // Then
         final String expectedErrorMessage =
                 "this LVLH local orbital frame uses a different definition, please use LVLH_CCSDS instead";
 
-        Assertions.assertEquals(expectedErrorMessage, firstException.getMessage());
-        Assertions.assertEquals(expectedErrorMessage, secondException.getMessage());
+        assertEquals(expectedErrorMessage, firstException.getMessage());
+        assertEquals(expectedErrorMessage, secondException.getMessage());
 
     }
 }

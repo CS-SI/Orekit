@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -42,12 +41,15 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-public class EcksteinHechlerStateTransitionMatrixTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class EcksteinHechlerStateTransitionMatrixTest {
 
 
     @Test
-    public void testNullStmName() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNullStmName() {
+        assertThrows(OrekitException.class, () -> {
             // Definition of initial conditions with position and velocity
             // ------------------------------------------------------------
             // e = 0.04152500499523033   and   i = 1.705015527659039
@@ -65,7 +67,7 @@ public class EcksteinHechlerStateTransitionMatrixTest {
     }
 
     @Test
-    public void testStateJacobian() {
+    void testStateJacobian() {
 
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
@@ -86,8 +88,8 @@ public class EcksteinHechlerStateTransitionMatrixTest {
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         final SpacecraftState finalState = propagator.propagate(target);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(finalState);
-        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
-        Assertions.assertEquals(PositionAngleType.MEAN, harvester.getPositionAngleType());
+        assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        assertEquals(PositionAngleType.MEAN, harvester.getPositionAngleType());
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -119,7 +121,7 @@ public class EcksteinHechlerStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, 6.9e-14);
+                    assertEquals(0, error, 6.9e-14);
                 }
             }
         }
@@ -174,7 +176,7 @@ public class EcksteinHechlerStateTransitionMatrixTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         double mu  = 3.9860047e14;
         double ae  = 6.378137e6;
@@ -188,7 +190,7 @@ public class EcksteinHechlerStateTransitionMatrixTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         provider = null;
     }
 

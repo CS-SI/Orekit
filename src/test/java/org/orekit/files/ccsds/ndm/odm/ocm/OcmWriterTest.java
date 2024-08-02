@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.utils.Constants;
 
-public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMetadata, OcmData>, Ocm> {
+class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMetadata, OcmData>, Ocm> {
 
     protected OcmParser getParser() {
         return new ParserBuilder().
@@ -44,37 +44,37 @@ public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMeta
     }
 
     @Test
-    public void testWriteExample1() {
+    void testWriteExample1() {
         doTest("/ccsds/odm/ocm/OCMExample1.txt");
     }
 
     @Test
-    public void testWriteKvnExample2() {
+    void testWriteKvnExample2() {
         doTest("/ccsds/odm/ocm/OCMExample2.txt");
     }
 
     @Test
-    public void testWriteXmlExample2() {
+    void testWriteXmlExample2() {
         doTest("/ccsds/odm/ocm/OCMExample2.xml");
     }
 
     @Test
-    public void testWriteExample3() {
+    void testWriteExample3() {
         doTest("/ccsds/odm/ocm/OCMExample3.txt");
     }
 
     @Test
-    public void testWriteExample4() {
+    void testWriteExample4() {
         doTest("/ccsds/odm/ocm/OCMExample4.txt");
     }
 
     @Test
-    public void testWriteExample5ITRF() {
+    void testWriteExample5ITRF() {
         doTest("/ccsds/odm/ocm/OCMExample5ITRF.txt");
     }
 
     @Test
-    public void testWriteExample5Geodetic() {
+    void testWriteExample5Geodetic() {
         doTest("/ccsds/odm/ocm/OCMExample5Geodetic.txt");
     }
 

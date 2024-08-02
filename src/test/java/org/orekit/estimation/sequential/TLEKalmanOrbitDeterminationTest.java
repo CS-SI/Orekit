@@ -22,7 +22,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.KeyValueFileParser;
 import org.orekit.Utils;
@@ -72,6 +71,8 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -197,9 +198,9 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         propagatorBuilder.setAttitudeProvider(attitudeProvider);
     }
 
-    @Test
     // Orbit determination for Lageos2 based on SLR (range) measurements
-    public void testLageos2() throws URISyntaxException, IOException {
+    @Test
+    void testLageos2() throws URISyntaxException, IOException {
 
         // Print results on console
         final boolean print = false;
@@ -254,7 +255,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Number of measurements processed
         final int numberOfMeas  = 95;
-        Assertions.assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
+        assertEquals(numberOfMeas, kalmanLageos2.getNumberOfMeasurements());
 
         //test on the estimated position and velocity
         final TimeStampedPVCoordinates odPV = kalmanLageos2.getEstimatedPV();
@@ -273,8 +274,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        Assertions.assertEquals(0.0, dP, distanceAccuracy);
-        Assertions.assertEquals(0.0, dV, velocityAccuracy);
+        assertEquals(0.0, dP, distanceAccuracy);
+        assertEquals(0.0, dV, velocityAccuracy);
 
         // Print orbit deltas
         if (print) {
@@ -293,27 +294,27 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         sortParametersChanges(list);
         final double[] stationOffSet = { 0.214786,  1.057400,  -0.54545 };
         final double rangeBias = 0.12005;
-        Assertions.assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
-        Assertions.assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
-        Assertions.assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
-        Assertions.assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
+        assertEquals(stationOffSet[0], list.get(0).getValue(), distanceAccuracy);
+        assertEquals(stationOffSet[1], list.get(1).getValue(), distanceAccuracy);
+        assertEquals(stationOffSet[2], list.get(2).getValue(), distanceAccuracy);
+        assertEquals(rangeBias,        list.get(3).getValue(), distanceAccuracy);
 
         //test on statistic for the range residuals
         final long nbRange = 95;
         // Batch LS values
         //final double[] RefStatRange = { -67.7496, 87.1117, 6.4482E-5, 33.6349 };
         final double[] RefStatRange = { -70.790, 55.667, 5.873, 36.540 };
-        Assertions.assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
-        Assertions.assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[2], kalmanLageos2.getRangeStat().getMean(),              distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        assertEquals(nbRange, kalmanLageos2.getRangeStat().getN());
+        assertEquals(RefStatRange[0], kalmanLageos2.getRangeStat().getMin(),               distanceAccuracy);
+        assertEquals(RefStatRange[1], kalmanLageos2.getRangeStat().getMax(),               distanceAccuracy);
+        assertEquals(RefStatRange[2], kalmanLageos2.getRangeStat().getMean(),              distanceAccuracy);
+        assertEquals(RefStatRange[3], kalmanLageos2.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
     }
 
-    @Test
     // Orbit determination for GNSS satellite G07 based on SLR (range) measurements
-    public void testGNSS() throws URISyntaxException, IOException {
+    @Test
+    void testGNSS() throws URISyntaxException, IOException {
 
         // Print results on console
         final boolean print = false;
@@ -367,7 +368,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Number of multiplexed measurements processed
         final int numberOfMeas  = 661;
-        Assertions.assertEquals(numberOfMeas, kalmanGNSS.getNumberOfMeasurements());
+        assertEquals(numberOfMeas, kalmanGNSS.getNumberOfMeasurements());
 
         //test on the estimated position
         TimeStampedPVCoordinates odPV = kalmanGNSS.getEstimatedPV();
@@ -379,7 +380,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
-        Assertions.assertEquals(0.0, dP, distanceAccuracy);
+        assertEquals(0.0, dP, distanceAccuracy);
 
         // Print orbit deltas
         if (print) {
@@ -394,11 +395,11 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final long nbRange = 8211;
 
         final double[] RefStatRange = { -44.073, 51.349, 0.242, 8.602 };
-        Assertions.assertEquals(nbRange, kalmanGNSS.getRangeStat().getN());
-        Assertions.assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[2], kalmanGNSS.getRangeStat().getMean(),              distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[3], kalmanGNSS.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        assertEquals(nbRange, kalmanGNSS.getRangeStat().getN());
+        assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               distanceAccuracy);
+        assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               distanceAccuracy);
+        assertEquals(RefStatRange[2], kalmanGNSS.getRangeStat().getMean(),              distanceAccuracy);
+        assertEquals(RefStatRange[3], kalmanGNSS.getRangeStat().getStandardDeviation(), distanceAccuracy);
 
     }
 

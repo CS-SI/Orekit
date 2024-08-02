@@ -17,34 +17,36 @@
 package org.orekit.data;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-public class ZipJarCrawlerTest {
+class ZipJarCrawlerTest {
 
     @Test
-    public void testMultiZipClasspath() {
+    void testMultiZipClasspath() {
         CountingLoader crawler = new CountingLoader();
         new ZipJarCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler,
                                                            DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(6, crawler.getCount());
+        assertEquals(6, crawler.getCount());
     }
 
     @Test
-    public void testMultiZip() throws URISyntaxException {
+    void testMultiZip() throws URISyntaxException {
         URL url =
             ZipJarCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         CountingLoader crawler = new CountingLoader();
         new ZipJarCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*\\.txt$"), crawler,
                                                                 DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(6, crawler.getCount());
+        assertEquals(6, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {
@@ -54,7 +56,7 @@ public class ZipJarCrawlerTest {
         }
         public void loadData(InputStream input, String name) {
             ++count;
-            MatcherAssert.assertThat(name, CoreMatchers.containsString("!/"));
+            assertThat(name, CoreMatchers.containsString("!/"));
         }
         public int getCount() {
             return count;

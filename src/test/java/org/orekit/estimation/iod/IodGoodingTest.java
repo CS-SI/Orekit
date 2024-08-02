@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -40,6 +39,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  *
  * Source: <a href="http://ccar.colorado.edu/asen5050/projects/projects_2012/kemble/gibbs_derivation.html">...</a>
@@ -48,10 +49,10 @@ import org.orekit.time.AbsoluteDate;
  * @since 7.1
  *
  */
-public class IodGoodingTest extends AbstractIodTest {
+class IodGoodingTest extends AbstractIodTest {
 
     @Test
-    public void testGooding() {
+    void testGooding() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
@@ -121,19 +122,19 @@ public class IodGoodingTest extends AbstractIodTest {
                                          lineOfSight2, date2,
                                          lineOfSight3, date3,
                                          r1 * 1.0, r3 * 1.0);
-        Assertions.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
-        Assertions.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
-        Assertions.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());
+        assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-6 * context.initialOrbit.getA());
+        assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-6 * context.initialOrbit.getE());
+        assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-6 * context.initialOrbit.getI());
 
-        Assertions.assertEquals(13127847.99808, iod.getRange1(), 1.0e-3);
-        Assertions.assertEquals(13375711.51931, iod.getRange2(), 1.0e-3);
-        Assertions.assertEquals(13950296.64852, iod.getRange3(), 1.0e-3);
+        assertEquals(13127847.99808, iod.getRange1(), 1.0e-3);
+        assertEquals(13375711.51931, iod.getRange2(), 1.0e-3);
+        assertEquals(13950296.64852, iod.getRange3(), 1.0e-3);
 
 
     }
 
     @Test
-    public void testIssue756() {
+    void testIssue756() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
@@ -174,17 +175,17 @@ public class IodGoodingTest extends AbstractIodTest {
                                                          raDec3.getObservedLineOfSight(frame), raDec3.getDate(),
                                                          rhoInit1, rhoInit3));
 
-        Assertions.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
-        Assertions.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
-        Assertions.assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
-        Assertions.assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
-        Assertions.assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
+        assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
+        assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
+        assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
+        assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
+        assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
     }
 
     @Test
-    public void testIssue1216() {
+    void testIssue1216() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
@@ -225,13 +226,13 @@ public class IodGoodingTest extends AbstractIodTest {
             azEl3.getObservedLineOfSight(frame), azEl3.getDate(),
             rhoInit1, rhoInit3));
 
-        Assertions.assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
-        Assertions.assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
-        Assertions.assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
-        Assertions.assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
-        Assertions.assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
-        Assertions.assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        assertEquals(orbit1.getA(), orbit2.getA(), 1.0e-6 * orbit2.getA());
+        assertEquals(orbit1.getE(), orbit2.getE(), 1.0e-6 * orbit2.getE());
+        assertEquals(orbit1.getI(), orbit2.getI(), 1.0e-6 * orbit2.getI());
+        assertEquals(orbit1.getRightAscensionOfAscendingNode(), orbit2.getRightAscensionOfAscendingNode(), 1.0e-6 * orbit2.getRightAscensionOfAscendingNode());
+        assertEquals(orbit1.getPerigeeArgument(), orbit2.getPerigeeArgument(), FastMath.abs(1.0e-6 * orbit2.getPerigeeArgument()));
+        assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
+        assertEquals(orbit1.getMeanAnomaly(), orbit2.getMeanAnomaly(), 1.0e-6 * orbit2.getMeanAnomaly());
     }
 
 }

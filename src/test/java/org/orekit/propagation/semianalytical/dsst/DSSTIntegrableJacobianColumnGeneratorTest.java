@@ -18,7 +18,6 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -53,19 +52,21 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.text.ParseException;
 
 /** Unit tests for {@link DSSTIntegrableJacobianColumnGenerator}. */
-public class DSSTIntegrableJacobianColumnGeneratorTest {
+class DSSTIntegrableJacobianColumnGeneratorTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }
 
     @Test
-    public void testDragParametersDerivatives() throws ParseException, IOException {
+    void testDragParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DragSensitive.DRAG_COEFFICIENT,
                                     2.4e-3,
                                     PropagationType.MEAN,
@@ -73,7 +74,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
     }
 
     @Test
-    public void testMuParametersDerivatives() throws ParseException, IOException {
+    void testMuParametersDerivatives() throws ParseException, IOException {
         doTestParametersDerivatives(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                     5.e-3,
                                     PropagationType.MEAN,
@@ -205,7 +206,7 @@ public class DSSTIntegrableJacobianColumnGeneratorTest {
                                sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
             for (int i = 0; i < 6; ++i) {
-                Assertions.assertEquals(dYdPRef[i][0], pickUp.getdYdP().getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
+                assertEquals(dYdPRef[i][0], pickUp.getdYdP().getEntry(i, 0), FastMath.abs(dYdPRef[i][0] * tolerance));
             }
 
         }

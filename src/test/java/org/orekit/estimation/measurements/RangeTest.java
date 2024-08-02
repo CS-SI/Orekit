@@ -31,7 +31,6 @@ import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -54,6 +53,9 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RangeTest {
 
@@ -189,7 +191,7 @@ class RangeTest {
     }
 
     @Test
-    public void testSignalTimeOfFlight() {
+    void testSignalTimeOfFlight() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -221,7 +223,7 @@ class RangeTest {
                                                                                                  staPV.getPosition(),
                                                                                                  datemeas, state.getFrame());
             final Vector3D satPosE = propagator2.propagate(datemeas.shiftedBy(-downDelayE)).getPosition();
-            Assertions.assertEquals(Vector3D.distance(satPosE, staPV.getPosition()), downDelayE * Constants.SPEED_OF_LIGHT, 2.0e-7);
+            assertEquals(Vector3D.distance(satPosE, staPV.getPosition()), downDelayE * Constants.SPEED_OF_LIGHT, 2.0e-7);
 
             // adjust emitter, field version
             final Field<Binary64> field = Binary64Field.getInstance();
@@ -233,7 +235,7 @@ class RangeTest {
                                                                                                     datemeasF, state.getFrame());
             final FieldVector3D<Binary64> satPosEF =
                 new FieldVector3D<>(field, propagator2.propagate(datemeas.shiftedBy(-downDelayEF.getReal())).getPosition());
-            Assertions.assertEquals(FieldVector3D.distance(satPosEF, staPVF.getPosition()).getReal(),
+            assertEquals(FieldVector3D.distance(satPosEF, staPVF.getPosition()).getReal(),
                                     downDelayEF.multiply(Constants.SPEED_OF_LIGHT).getReal(),
                                     2.0e-7);
 
@@ -245,7 +247,7 @@ class RangeTest {
             final Vector3D staPosR = stationParameter.
                                      getOffsetToInertial(state.getFrame(), state.getDate().shiftedBy(downDelayR), false).
                                      transformPosition(Vector3D.ZERO);
-            Assertions.assertEquals(Vector3D.distance(state.getPVCoordinates().getPosition(), staPosR),
+            assertEquals(Vector3D.distance(state.getPVCoordinates().getPosition(), staPosR),
                                     downDelayR * Constants.SPEED_OF_LIGHT, 2.0e-7);
 
             // adjust receiver, field version
@@ -259,7 +261,7 @@ class RangeTest {
                                                                                                  state.getDate().shiftedBy(downDelayRF.getReal()),
                                                                                                  false).
                                                                              transformPosition(Vector3D.ZERO));
-            Assertions.assertEquals(FieldVector3D.distance(stateF.getPVCoordinates().getPosition(), staPosRF).getReal(),
+            assertEquals(FieldVector3D.distance(stateF.getPVCoordinates().getPosition(), staPosRF).getReal(),
                                     downDelayRF.multiply(Constants.SPEED_OF_LIGHT).getReal(),
                                     2.0e-7);
 
@@ -322,15 +324,15 @@ class RangeTest {
                     final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-                    Assertions.assertEquals(3, participants.length);
-                    Assertions.assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[2].getDate().durationFrom(participants[0].getDate()),
+                    assertEquals(3, participants.length);
+                    assertEquals(0.5 * Constants.SPEED_OF_LIGHT * participants[2].getDate().durationFrom(participants[0].getDate()),
                                         estimated.getEstimatedValue()[0],
                                         2.0e-8);
 
                     // the real state used for estimation is adjusted according to downlink delay
                     double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());
-                    Assertions.assertTrue(adjustment > 0.006);
-                    Assertions.assertTrue(adjustment < 0.011);
+                    assertTrue(adjustment > 0.006);
+                    assertTrue(adjustment < 0.011);
 
                     final double RangeEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = RangeEstimated-RangeObserved;
@@ -391,14 +393,14 @@ class RangeTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 6.3e-8);
-        Assertions.assertEquals(0.0, absErrorsMin,    2.0e-7);
-        Assertions.assertEquals(0.0, absErrorsMax,    2.6e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 8.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.9e-14);
+        assertEquals(0.0, absErrorsMedian, 6.3e-8);
+        assertEquals(0.0, absErrorsMin,    2.0e-7);
+        assertEquals(0.0, absErrorsMax,    2.6e-7);
+        assertEquals(0.0, relErrorsMedian, 8.5e-15);
+        assertEquals(0.0, relErrorsMax,    2.9e-14);
 
         // Test measurement type
-        Assertions.assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(Range.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     void genericTestStateDerivatives(final boolean isModifier, final boolean printResults,
@@ -465,8 +467,8 @@ class RangeTest {
                                                                 measurement.getDimension(), propagator.getAttitudeProvider(),
                        OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -540,12 +542,12 @@ class RangeTest {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
@@ -620,8 +622,8 @@ class RangeTest {
 
                     for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
-                        Assertions.assertEquals(1, measurement.getDimension());
-                        Assertions.assertEquals(1, gradient.length);
+                        assertEquals(1, measurement.getDimension());
+                        assertEquals(1, gradient.length);
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
@@ -642,7 +644,7 @@ class RangeTest {
 
                         final double relError = FastMath.abs((ref-gradient[0])/ref);
                         relErrorList.add(relError);
-                        Assertions.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
+                        assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");
@@ -687,9 +689,9 @@ class RangeTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 
@@ -762,8 +764,8 @@ class RangeTest {
 
                     for (int i = 0; i < 1; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
-                        Assertions.assertEquals(1, measurement.getDimension());
-                        Assertions.assertEquals(1, gradient.length);
+                        assertEquals(1, measurement.getDimension());
+                        assertEquals(1, gradient.length);
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
@@ -829,9 +831,9 @@ class RangeTest {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 

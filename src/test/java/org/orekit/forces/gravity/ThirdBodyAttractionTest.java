@@ -30,7 +30,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -66,7 +65,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     private double mu;
 
@@ -136,8 +141,8 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
 
     @Test
-    public void testSunContrib() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testSunContrib() {
+        assertThrows(OrekitException.class, () -> {
             // initialization
             AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                     new TimeComponents(13, 59, 27.816),
@@ -176,7 +181,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() {
+    void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -237,7 +242,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldGradientTest() {
+    void RealFieldGradientTest() {
         int freeParameters = 6;
         Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
         Gradient e_0 = Gradient.variable(freeParameters, 1, 0.4);
@@ -297,7 +302,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     (to test if the ForceModel it's actually
     doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() {
+    void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -352,12 +357,13 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
-        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
-        Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+        assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
+        assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
+        assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
+
     @Test
-    public void testMoonContrib() {
+    void testMoonContrib() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -404,8 +410,8 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         public void handleStep(SpacecraftState currentState) {
             double t = currentState.getDate().durationFrom(reference);
-            Assertions.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
-            Assertions.assertEquals(hYRef(t), currentState.getHy(), 1e-4);
+            assertEquals(hXRef(t), currentState.getHx(), 1e-4);
+            assertEquals(hYRef(t), currentState.getHy(), 1e-4);
         }
 
         protected abstract double hXRef(double t);
@@ -415,7 +421,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -427,14 +433,14 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
-        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
+        assertTrue(forceModel.dependsOnPositionOnly());
         final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivative(state, forceModel, name, 1.0, 7.0e-15);
 
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -446,14 +452,14 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
-        Assertions.assertTrue(forceModel.dependsOnPositionOnly());
+        assertTrue(forceModel.dependsOnPositionOnly());
         final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, forceModel, name, 1.0, 7.0e-15);
 
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -472,7 +478,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -491,7 +497,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization
@@ -523,7 +529,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     @Test
     @DisplayName("Test that acceleration derivatives with respect to absolute date are not equal to zero.")
-    public void testIssue1070() {
+    void testIssue1070() {
         // GIVEN
         // Define possibly shifted absolute date
         final int freeParameters = 1;
@@ -550,11 +556,11 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         // THEN
         final double[] derivatives = accelerationVector.getNormSq().getGradient();
-        Assertions.assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
+        assertNotEquals(0., MatrixUtils.createRealVector(derivatives).getNorm());
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         mu = 3.986e14;
         Utils.setDataRoot("regular-data");
     }

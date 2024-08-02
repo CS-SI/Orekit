@@ -16,7 +16,6 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -24,48 +23,50 @@ import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class TCGScaleTest {
+
+class TCGScaleTest {
 
     @Test
-    public void testRatio() {
+    void testRatio() {
         TimeScale scale = TimeScalesFactory.getTCG();
-        Assertions.assertEquals("TCG", scale.toString());
+        assertEquals("TCG", scale.toString());
         final double dtTT = 1e6;
         final AbsoluteDate t1 = AbsoluteDate.J2000_EPOCH;
         final AbsoluteDate t2 = t1.shiftedBy(dtTT);
         final double dtTCG = dtTT + scale.offsetFromTAI(t2) - scale.offsetFromTAI(t1);
-        Assertions.assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
+        assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
     }
 
     @Test
-    public void testSymmetry() {
+    void testSymmetry() {
         TimeScale scale = TimeScalesFactory.getTCG();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
             double dt1 = scale.offsetFromTAI(date);
             DateTimeComponents components = date.getComponents(scale);
             double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
-            Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+            assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
 
     @Test
-    public void testDuringLeap() {
+    void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getTCG();
         final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
-        Assertions.assertEquals(61, utc.minuteDuration(during));
-        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
-        Assertions.assertEquals(60, scale.minuteDuration(during));
-        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        assertEquals(61, utc.minuteDuration(during));
+        assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        assertEquals(60, scale.minuteDuration(during));
+        assertEquals(0.0, scale.getLeap(during), 1.0e-10);
     }
 
     @Test
-    public void testReference() {
+    void testReference() {
         DateComponents  referenceDate = new DateComponents(1977, 01, 01);
         TimeComponents  thirtyTwo     = new TimeComponents(0, 0, 32.184);
         AbsoluteDate ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTT());
@@ -74,21 +75,21 @@ public class TCGScaleTest {
         AbsoluteDate utcRef        = new AbsoluteDate(new DateComponents(1976, 12, 31),
                                                       new TimeComponents(23, 59, 45),
                                                       TimeScalesFactory.getUTC());
-        Assertions.assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
-        Assertions.assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
-        Assertions.assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
+        assertEquals(0, ttRef.durationFrom(tcgRef), 1.0e-15);
+        assertEquals(0, ttRef.durationFrom(taiRef), 1.0e-15);
+        assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
     }
 
     @Test
-    public void testSofa() {
+    void testSofa() {
         TimeScale tt  = TimeScalesFactory.getTT();
         AbsoluteDate date = new AbsoluteDate(2006, 1, 15, 21, 25, 10.5000096, tt);
         double delta = TimeScalesFactory.getTCG().offsetFromTAI(date) - tt.offsetFromTAI(date);
-        Assertions.assertEquals(Constants.JULIAN_DAY * (0.8924900312508587113 -  0.892482639), delta, 5.0e-10);
+        assertEquals(Constants.JULIAN_DAY * (0.8924900312508587113 -  0.892482639), delta, 5.0e-10);
     }
 
     @Test
-    public void testAAS06134() {
+    void testAAS06134() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -109,17 +110,17 @@ public class TCGScaleTest {
         AbsoluteDate date =
                 new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
         DateTimeComponents components = date.getComponents(TimeScalesFactory.getTCG());
-        Assertions.assertEquals(2004,            components.getDate().getYear());
-        Assertions.assertEquals(   4,            components.getDate().getMonth());
-        Assertions.assertEquals(   6,            components.getDate().getDay());
-        Assertions.assertEquals(   7,            components.getTime().getHour());
-        Assertions.assertEquals(  52,            components.getTime().getMinute());
-        Assertions.assertEquals(  33.1695861742, components.getTime().getSecond(), 1.0e-10);
+        assertEquals(2004,            components.getDate().getYear());
+        assertEquals(   4,            components.getDate().getMonth());
+        assertEquals(   6,            components.getDate().getDay());
+        assertEquals(   7,            components.getTime().getHour());
+        assertEquals(  52,            components.getTime().getMinute());
+        assertEquals(  33.1695861742, components.getTime().getSecond(), 1.0e-10);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

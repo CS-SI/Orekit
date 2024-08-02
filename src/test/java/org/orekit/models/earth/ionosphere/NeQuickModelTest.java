@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -46,17 +45,19 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Reference values for the tests are from : "European Union (2016). European GNSS (Galileo)
  * Open Service-Ionospheric Correction Algorithm for Galileo Single Frequency Users. 1.2."
  */
-public class NeQuickModelTest {
+class NeQuickModelTest {
 
     private double[] medium;
     private double[] high;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         high = new double[] {
             236.831641, -0.39362878, 0.00402826613
@@ -68,7 +69,7 @@ public class NeQuickModelTest {
     }
 
     @Test
-    public void testHighSolarActivity() {
+    void testHighSolarActivity() {
 
         // Model
         final NeQuickModel model = new NeQuickModel(high);
@@ -82,11 +83,11 @@ public class NeQuickModelTest {
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(20.40, stec, 0.09);
+        assertEquals(20.40, stec, 0.09);
     }
 
     @Test
-    public void testFieldHighSolarActivity() {
+    void testFieldHighSolarActivity() {
         doTestFieldHighSolarActivity(Binary64Field.getInstance());
     }
 
@@ -109,11 +110,11 @@ public class NeQuickModelTest {
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(20.40, stec.getReal(), 0.09);
+        assertEquals(20.40, stec.getReal(), 0.09);
     }
 
     @Test
-    public void testMediumSolarActivity() {
+    void testMediumSolarActivity() {
 
         // Model
         final NeQuickModel model = new NeQuickModel(medium);
@@ -127,11 +128,11 @@ public class NeQuickModelTest {
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.96, stec, 0.05);
+        assertEquals(6.96, stec, 0.05);
     }
 
     @Test
-    public void testFieldMediumSolarActivity() {
+    void testFieldMediumSolarActivity() {
         doTestFieldMediumSolarActivity(Binary64Field.getInstance());
     }
 
@@ -154,11 +155,11 @@ public class NeQuickModelTest {
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.96, stec.getReal(), 0.05);
+        assertEquals(6.96, stec.getReal(), 0.05);
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
 
         // Model
         final NeQuickModel model = new NeQuickModel(medium);
@@ -187,11 +188,11 @@ public class NeQuickModelTest {
                                              PredefinedGnssSignal.G01.getFrequency(), model.getParameters());
        
         // Verify
-        Assertions.assertEquals(1.13, delay, 0.01);
+        assertEquals(1.13, delay, 0.01);
     }
 
     @Test
-    public void testFieldDelay() {
+    void testFieldDelay() {
         doTestFieldDelay(Binary64Field.getInstance());
     }
 
@@ -232,11 +233,11 @@ public class NeQuickModelTest {
                                         PredefinedGnssSignal.G01.getFrequency(), model.getParameters(field));
        
         // Verify
-        Assertions.assertEquals(1.13, delay.getReal(), 0.01);
+        assertEquals(1.13, delay.getReal(), 0.01);
     }
 
     @Test
-    public void testAntiMeridian() {
+    void testAntiMeridian() {
 
         // Model
         final NeQuickModel model = new NeQuickModel(medium);
@@ -248,12 +249,12 @@ public class NeQuickModelTest {
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(-179.99), 12.78);
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(-177.43), 20100697.90);
         double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.839, stec, 0.001);
+        assertEquals(6.839, stec, 0.001);
 
     }
 
     @Test
-    public void testFieldAntiMeridian() {
+    void testFieldAntiMeridian() {
         doTestFieldAntiMeridian(Binary64Field.getInstance());
     }
 
@@ -277,7 +278,7 @@ public class NeQuickModelTest {
                                                                     FastMath.toRadians(zero.newInstance(-177.43)),
                                                                     zero.newInstance(20100697.90));
         T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.839, stec.getReal(), 0.001);
+        assertEquals(6.839, stec.getReal(), 0.001);
 
     }
 

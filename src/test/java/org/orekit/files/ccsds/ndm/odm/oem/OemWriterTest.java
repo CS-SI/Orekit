@@ -26,7 +26,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class OemWriterTest extends AbstractWriterTest<OdmHeader, OemSegment, Oem> {
+class OemWriterTest extends AbstractWriterTest<OdmHeader, OemSegment, Oem> {
 
     protected OemParser getParser() {
         return new ParserBuilder().
@@ -43,52 +43,52 @@ public class OemWriterTest extends AbstractWriterTest<OdmHeader, OemSegment, Oem
     }
 
     @Test
-    public void testWriteExample1() {
+    void testWriteExample1() {
         doTest("/ccsds/odm/oem/OEMExample1.txt");
     }
 
     @Test
-    public void testWriteExample2() {
+    void testWriteExample2() {
         doTest("/ccsds/odm/oem/OEMExample2.txt");
     }
 
     @Test
-    public void testWriteKvnExample3() {
+    void testWriteKvnExample3() {
         doTest("/ccsds/odm/oem/OEMExample3.txt");
     }
 
     @Test
-    public void testWriteXmlExample3() {
+    void testWriteXmlExample3() {
         doTest("/ccsds/odm/oem/OEMExample3.txt");
     }
 
     @Test
-    public void testWriteExample4() {
+    void testWriteExample4() {
         doTest("/ccsds/odm/oem/OEMExample4.txt");
     }
 
     @Test
-    public void testWriteExample5() {
+    void testWriteExample5() {
         doTest("/ccsds/odm/oem/OEMExample5.txt");
     }
 
     @Test
-    public void testWriteExample6() {
+    void testWriteExample6() {
         doTest("/ccsds/odm/oem/OEMExample6.txt");
     }
 
     @Test
-    public void testWriteExample8() {
+    void testWriteExample8() {
         doTest("/ccsds/odm/oem/OEMExample8.txt");
     }
 
     @Test
-    public void testWriteExample9() {
+    void testWriteExample9() {
         doTest("/ccsds/odm/oem/OEMExample9.txt");
     }
 
     @Test
-    public void testIssue839() {
+    void testIssue839() {
         doTest("/ccsds/odm/oem/OEM-Issue839.txt");
     }
 

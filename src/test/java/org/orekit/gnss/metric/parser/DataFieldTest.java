@@ -16,46 +16,48 @@
  */
 package org.orekit.gnss.metric.parser;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitInternalError;
 
-public class DataFieldTest {
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class DataFieldTest {
 
     @Test
-    public void testDefaultMethods() {
+    void testDefaultMethods() {
         MockDataField mdf = new MockDataField();
 
         // Boolean
         try {
             mdf.booleanValue(null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitInternalError oie) {
-            Assertions.assertNull(oie.getCause());
+            assertNull(oie.getCause());
         }
 
         // Integer
         try {
             mdf.intValue(null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitInternalError oie) {
-            Assertions.assertNull(oie.getCause());
+            assertNull(oie.getCause());
         }
 
         // Double
         try {
             mdf.doubleValue(null);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitInternalError oie) {
-            Assertions.assertNull(oie.getCause());
+            assertNull(oie.getCause());
         }
 
         // String
         try {
             mdf.stringValue(null, 0);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitInternalError oie) {
-            Assertions.assertNull(oie.getCause());
+            assertNull(oie.getCause());
         }
 
     }

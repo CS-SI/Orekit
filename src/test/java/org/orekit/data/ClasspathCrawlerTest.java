@@ -16,20 +16,23 @@
  */
 package org.orekit.data;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 
-public class ClasspathCrawlerTest {
+class ClasspathCrawlerTest {
 
     @Test
-    public void testNoElement() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNoElement() {
+        assertThrows(OrekitException.class, () -> {
             new ClasspathCrawler("inexistant-element").feed(Pattern.compile(".*"),
                     new CountingLoader(),
                     DataContext.getDefault().getDataProvidersManager());
@@ -37,7 +40,7 @@ public class ClasspathCrawlerTest {
     }
 
     @Test
-    public void testNominal() {
+    void testNominal() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("regular-data/UTC-TAI.history",
                              "regular-data/de405-ephemerides/unxp0000.405",
@@ -46,56 +49,56 @@ public class ClasspathCrawlerTest {
                              "regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt",
                              "no-data/dummy.txt").feed(Pattern.compile(".*"), crawler,
                                                        DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(6, crawler.getCount());
+        assertEquals(6, crawler.getCount());
     }
 
     @Test
-    public void testCompressed() {
+    void testCompressed() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
                              "compressed-data/eopc04_08_IAU2000.00.gz",
                              "compressed-data/eopc04_08_IAU2000.02.gz").feed(Pattern.compile(".*eopc04.*"),
                                                                              crawler,
                                                                              DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(2, crawler.getCount());
+        assertEquals(2, crawler.getCount());
     }
 
     @Test
-    public void testMultiZip() {
+    void testMultiZip() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"),
                                                               crawler,
                                                               DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(6, crawler.getCount());
+        assertEquals(6, crawler.getCount());
     }
 
     @Test
-    public void testIOException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testIOException() {
+        assertThrows(OrekitException.class, () -> {
             try {
                 new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader(),
                         DataContext.getDefault().getDataProvidersManager());
             } catch (OrekitException oe) {
                 // expected behavior
-                Assertions.assertNotNull(oe.getCause());
-                Assertions.assertEquals(IOException.class, oe.getCause().getClass());
-                Assertions.assertEquals("dummy error", oe.getMessage());
+                assertNotNull(oe.getCause());
+                assertEquals(IOException.class, oe.getCause().getClass());
+                assertEquals("dummy error", oe.getMessage());
                 throw oe;
             }
         });
     }
 
     @Test
-    public void testParseException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testParseException() {
+        assertThrows(OrekitException.class, () -> {
             try {
                 new ClasspathCrawler("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader(),
                         DataContext.getDefault().getDataProvidersManager());
             } catch (OrekitException oe) {
                 // expected behavior
-                Assertions.assertNotNull(oe.getCause());
-                Assertions.assertEquals(ParseException.class, oe.getCause().getClass());
-                Assertions.assertEquals("dummy error", oe.getMessage());
+                assertNotNull(oe.getCause());
+                assertEquals(ParseException.class, oe.getCause().getClass());
+                assertEquals("dummy error", oe.getMessage());
                 throw oe;
             }
         });
@@ -106,7 +109,7 @@ public class ClasspathCrawlerTest {
      * other crawlers. See #618.
      */
     @Test
-    public void testMatchesFileName618() {
+    void testMatchesFileName618() {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler(
                 "regular-data/UTC-TAI.history",
@@ -116,7 +119,7 @@ public class ClasspathCrawlerTest {
                 Pattern.compile("^UTC-TAI.history$"),
                 crawler,
                 DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(2, crawler.getCount());
+        assertEquals(2, crawler.getCount());
     }
 
     private static class CountingLoader implements DataLoader {

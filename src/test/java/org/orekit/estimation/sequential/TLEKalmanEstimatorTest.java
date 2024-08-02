@@ -22,7 +22,6 @@ import java.util.List;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -47,16 +46,19 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class TLEKalmanEstimatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class TLEKalmanEstimatorTest {
 
     @Test
-    public void testMissingPropagatorBuilder() {
+    void testMissingPropagatorBuilder() {
         try {
             new KalmanEstimatorBuilder().
             build();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
+            assertEquals(OrekitMessages.NO_PROPAGATOR_CONFIGURED, oe.getSpecifier());
         }
     }
 
@@ -65,7 +67,7 @@ public class TLEKalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testPV() {
+    void testPV() {
 
         // Create context
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -125,7 +127,7 @@ public class TLEKalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testRange() {
+    void testRange() {
 
         // Create context
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -190,7 +192,7 @@ public class TLEKalmanEstimatorTest {
      * Keplerian formalism
      */
     @Test
-    public void testRangeWithOnBoardAntennaOffset() {
+    void testRangeWithOnBoardAntennaOffset() {
 
         // Create context
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -269,7 +271,7 @@ public class TLEKalmanEstimatorTest {
      * Perfect range and range rate measurements with a perfect start
      */
     @Test
-    public void testRangeAndRangeRate() {
+    void testRangeAndRangeRate() {
 
         // Create context
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -342,7 +344,7 @@ public class TLEKalmanEstimatorTest {
      * Test of a wrapped exception in a Kalman observer
      */
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         // Create context
         TLEContext context = TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");

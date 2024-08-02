@@ -18,7 +18,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -40,6 +39,10 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -94,12 +97,12 @@ class DSSTZonalTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(0.0,                     elements[0], 1.e-25);
-        Assertions.assertEquals(1.3909396722346468E-11,  elements[1], 3.e-26);
-        Assertions.assertEquals(-2.0275977261372793E-13, elements[2], 3.e-27);
-        Assertions.assertEquals(3.087141512018238E-9,    elements[3], 1.e-24);
-        Assertions.assertEquals(2.6606317310148797E-9,   elements[4], 4.e-24);
-        Assertions.assertEquals(-3.659904725206694E-9,   elements[5], 1.e-24);
+        assertEquals(0.0,                     elements[0], 1.e-25);
+        assertEquals(1.3909396722346468E-11,  elements[1], 3.e-26);
+        assertEquals(-2.0275977261372793E-13, elements[2], 3.e-27);
+        assertEquals(3.087141512018238E-9,    elements[3], 1.e-24);
+        assertEquals(2.6606317310148797E-9,   elements[4], 4.e-24);
+        assertEquals(-3.659904725206694E-9,   elements[5], 1.e-24);
 
     }
 
@@ -128,12 +131,12 @@ class DSSTZonalTest {
             }
         }
 
-        Assertions.assertEquals(35.005618980090276,     y[0], 1.e-15);
-        Assertions.assertEquals(3.75891551882889E-5,    y[1], 1.e-20);
-        Assertions.assertEquals(3.929119925563796E-6,   y[2], 1.e-21);
-        Assertions.assertEquals(-1.1781951949124315E-8, y[3], 1.e-24);
-        Assertions.assertEquals(-3.2134924513679615E-8, y[4], 1.e-24);
-        Assertions.assertEquals(-1.1607392915997098E-6, y[5], 1.e-21);
+        assertEquals(35.005618980090276,     y[0], 1.e-15);
+        assertEquals(3.75891551882889E-5,    y[1], 1.e-20);
+        assertEquals(3.929119925563796E-6,   y[2], 1.e-21);
+        assertEquals(-1.1781951949124315E-8, y[3], 1.e-24);
+        assertEquals(-3.2134924513679615E-8, y[4], 1.e-24);
+        assertEquals(-1.1607392915997098E-6, y[5], 1.e-21);
     }
 
     @Test
@@ -186,7 +189,7 @@ class DSSTZonalTest {
 
         // Verify
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(elements[i], elementsDefault[i], Double.MIN_VALUE);
+            assertEquals(elements[i], elementsDefault[i], Double.MIN_VALUE);
         }
 
     }
@@ -196,9 +199,9 @@ class DSSTZonalTest {
         try {
             @SuppressWarnings("unused")
             final DSSTZonal zonal = new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(1, 0));
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
+            assertEquals(LocalizedCoreFormats.OUT_OF_RANGE_SIMPLE, oe.getSpecifier());
         }
     }
 
@@ -219,7 +222,7 @@ class DSSTZonalTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 

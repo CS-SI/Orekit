@@ -20,11 +20,12 @@ package org.orekit.errors;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link UnsupportedParameterException}.
@@ -32,11 +33,11 @@ import org.orekit.utils.ParameterDriver;
  * @since 12.0
  * @author Maxime Journot
  */
-public class UnsupportedParameterExceptionTest {
+class UnsupportedParameterExceptionTest {
 
     /** Check building message for empty parameter list. */
     @Test
-    public void testNoParameter() {
+    void testNoParameter() {
 
         // Given empty parameter list
         final List<ParameterDriver> drivers = new ArrayList<>();
@@ -46,13 +47,13 @@ public class UnsupportedParameterExceptionTest {
         final OrekitException exception = new UnsupportedParameterException(paramName, drivers);
 
         // Then
-        Assertions.assertEquals(paramName, exception.getParts()[0]);
-        Assertions.assertEquals(UnsupportedParameterException.NO_PARAMETER, exception.getParts()[1]);
+        assertEquals(paramName, exception.getParts()[0]);
+        assertEquals(UnsupportedParameterException.NO_PARAMETER, exception.getParts()[1]);
     }
 
     /** Check building message for one parameter list. */
     @Test
-    public void testOneParameter() {
+    void testOneParameter() {
 
         // Given one parameter list
         final List<ParameterDriver> drivers = new ArrayList<>();
@@ -64,13 +65,13 @@ public class UnsupportedParameterExceptionTest {
         final OrekitException exception = new UnsupportedParameterException(paramName, drivers);
 
         // Then
-        Assertions.assertEquals(paramName, exception.getParts()[0]);
-        Assertions.assertEquals(param1.getName(), exception.getParts()[1]);
+        assertEquals(paramName, exception.getParts()[0]);
+        assertEquals(param1.getName(), exception.getParts()[1]);
     }
 
     /** Check building message for multiple parameters list. */
     @Test
-    public void testMultipleParameters() {
+    void testMultipleParameters() {
 
         // Given multiple parameter list
         final List<ParameterDriver> drivers = new ArrayList<>();
@@ -91,7 +92,7 @@ public class UnsupportedParameterExceptionTest {
         // Then
         final String supportedParameters = param1.getName() + UnsupportedParameterException.COMMA_SEP + 
                         param2.getName() + UnsupportedParameterException.COMMA_SEP + param3.getName();
-        Assertions.assertEquals(paramName, exception.getParts()[0]);
-        Assertions.assertEquals(supportedParameters, exception.getParts()[1]);
+        assertEquals(paramName, exception.getParts()[0]);
+        assertEquals(supportedParameters, exception.getParts()[1]);
     }
 }

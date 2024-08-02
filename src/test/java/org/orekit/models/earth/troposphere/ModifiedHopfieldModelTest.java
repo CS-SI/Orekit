@@ -21,7 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -35,8 +34,11 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ModifiedHopfieldModelTest {
+
+class ModifiedHopfieldModelTest {
 
     private static double epsilon = 1e-6;
 
@@ -47,7 +49,7 @@ public class ModifiedHopfieldModelTest {
     private double[] heights;
 
     @Test
-    public void testFixedElevation() {
+    void testFixedElevation() {
         Utils.setDataRoot("atmosphere");
         ModifiedHopfieldModel model = new ModifiedHopfieldModel();
         HeightDependentPressureTemperatureHumidityConverter converter =
@@ -59,13 +61,13 @@ public class ModifiedHopfieldModelTest {
                                                  new GeodeticPoint(0.0, 0.0, height),
                                                  converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, height),
                                                  null, AbsoluteDate.J2000_EPOCH).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testFieldFixedElevation() {
+    void testFieldFixedElevation() {
         doTestFieldFixedElevation(Binary64Field.getInstance());
     }
 
@@ -86,13 +88,13 @@ public class ModifiedHopfieldModelTest {
                                                                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                               zero.newInstance(height)),
                                             null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         Utils.setDataRoot("atmosphere");
         ModifiedHopfieldModel model = new ModifiedHopfieldModel();
         double lastDelay = Double.MAX_VALUE;
@@ -102,13 +104,13 @@ public class ModifiedHopfieldModelTest {
                                                  new GeodeticPoint(0.0, 0.0, 350.0),
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  null, AbsoluteDate.J2000_EPOCH).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testFieldFixedHeight() {
+    void testFieldFixedHeight() {
         doTestFieldFixedHeight(Binary64Field.getInstance());
     }
 
@@ -125,13 +127,13 @@ public class ModifiedHopfieldModelTest {
                                             new FieldGeodeticPoint<>(zero, zero, zero.newInstance(350.0)),
                                             new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testFieldVsNative() {
+    void testFieldVsNative() {
         doTestFieldVsNative(Binary64Field.getInstance());
     }
 
@@ -155,18 +157,18 @@ public class ModifiedHopfieldModelTest {
                                                                                                           TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                    zero.newInstance(h)),
                                                  null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay();
-                Assertions.assertEquals(delayN, delayT.getReal(), epsilon);
+                assertEquals(delayN, delayT.getReal(), epsilon);
             }
         }
     }
 
     @Test
-    public void testNegativeHeight() {
+    void testNegativeHeight() {
         Utils.setDataRoot("atmosphere");
         ModifiedHopfieldModel model = new ModifiedHopfieldModel();
         final double height = -500.0;
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
-            Assertions.assertEquals(model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
+            assertEquals(model.pathDelay(new TrackingCoordinates(0.0, elevation, 0.0),
                                                     new GeodeticPoint(0.0, 0.0, 0.0),
                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                     null, AbsoluteDate.J2000_EPOCH).getDelay(),
@@ -179,7 +181,7 @@ public class ModifiedHopfieldModelTest {
     }
 
     @Test
-    public void testFieldNegativeHeight() {
+    void testFieldNegativeHeight() {
         doTestFieldNegativeHeight(Binary64Field.getInstance());
     }
 
@@ -189,7 +191,7 @@ public class ModifiedHopfieldModelTest {
         ModifiedHopfieldModel model = new ModifiedHopfieldModel();
         final T height = zero.subtract(500.0);
         for (double elevation = 0; elevation < FastMath.PI; elevation += 0.1) {
-            Assertions.assertEquals(model.pathDelay(new FieldTrackingCoordinates<>(zero,
+            assertEquals(model.pathDelay(new FieldTrackingCoordinates<>(zero,
                                                                                    zero.newInstance(elevation),
                                                                                    zero),
                                                     new FieldGeodeticPoint<>(zero, zero, zero),
@@ -206,7 +208,7 @@ public class ModifiedHopfieldModelTest {
     }
 
     @Test
-    public void compareExpectedValues() {
+    void compareExpectedValues() {
         Utils.setDataRoot("atmosphere");
         // the reference values have been computed by our own implementation,
         // but checked against the plot in Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007
@@ -228,14 +230,14 @@ public class ModifiedHopfieldModelTest {
                                                      location,
                                                      converter.convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, height),
                                                      null, date).getDelay();
-                Assertions.assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
+                assertEquals(expectedValue, actualValue, epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation) + " precision not met");
             }
         }
     }
 
     @Test
-    public void compareFieldExpectedValues() {
+    void compareFieldExpectedValues() {
         doCompareFieldExpectedValues(Binary64Field.getInstance());
     }
 
@@ -264,14 +266,14 @@ public class ModifiedHopfieldModelTest {
                                                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                   height),
                                                 null, date).getDelay();
-                Assertions.assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
+                assertEquals(expectedValue, actualValue.getReal(), epsilon, "For height=" + height + " elevation = " +
                         FastMath.toDegrees(elevation.getReal()) + " precision not met");
             }
         }
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         heights = new double[] {
             0.0, 250.0, 500.0, 750.0, 1000.0, 1250.0, 1500.0, 1750.0, 2000.0, 2250.0, 2500.0, 2750.0, 3000.0, 3250.0,
             3500.0, 3750.0, 4000.0, 4250.0, 4500.0, 4750.0, 5000.0

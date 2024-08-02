@@ -21,10 +21,11 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTest {
@@ -160,9 +161,9 @@ public abstract class AbstractLegacyForceModelTest extends AbstractForceModelTes
         if (reference.getNorm() == 0) {
             // if dF/dP is exactly zero (i.e. no dependency between F and P),
             // then the result should also be exactly zero
-            Assertions.assertEquals(0, result.getNorm(), Precision.SAFE_MIN);
+            assertEquals(0, result.getNorm(), Precision.SAFE_MIN);
         } else {
-            Assertions.assertEquals(0, Vector3D.distance(reference, result), checkTolerance * reference.getNorm());
+            assertEquals(0, Vector3D.distance(reference, result), checkTolerance * reference.getNorm());
         }
     }
 

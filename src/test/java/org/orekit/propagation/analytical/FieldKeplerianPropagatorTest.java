@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.DummyLocalizable;
@@ -30,7 +29,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Tuple;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -82,14 +80,21 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FieldKeplerianPropagatorTest {
+
+class FieldKeplerianPropagatorTest {
 
     // Body mu
     private double mu;
 
     @Test
-    public void testTuple() {
+    void testTuple() {
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         KeplerianOrbit k0 = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -140,133 +145,133 @@ public class FieldKeplerianPropagatorTest {
                                      maxRadial.increment(dR);
                                  });
         propagator.propagate(twoOrbits.getDate().shiftedBy(Constants.JULIAN_DAY / 8));
-        Assertions.assertEquals(-72525.685, minTangential.getResult(), 1.0e-3);
-        Assertions.assertEquals(   926.046, maxTangential.getResult(), 1.0e-3);
-        Assertions.assertEquals(   -92.800, minRadial.getResult(),     1.0e-3);
-        Assertions.assertEquals(  7739.532, maxRadial.getResult(),     1.0e-3);
+        assertEquals(-72525.685, minTangential.getResult(), 1.0e-3);
+        assertEquals(   926.046, maxTangential.getResult(), 1.0e-3);
+        assertEquals(   -92.800, minRadial.getResult(),     1.0e-3);
+        assertEquals(  7739.532, maxRadial.getResult(),     1.0e-3);
 
     }
 
     @Test
-    public void testSameDateCartesian() {
+    void testSameDateCartesian() {
         doTestSameDateCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testSameDateKeplerian() {
+    void testSameDateKeplerian() {
         doTestSameDateKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedCartesian() {
+    void testPropagatedCartesian() {
         doTestPropagatedCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedKeplerian() {
+    void testPropagatedKeplerian() {
         doTestPropagatedKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testAscendingNode() {
+    void testAscendingNode() {
         doTestAscendingNode(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testStopAtTargetDate() {
+    void testStopAtTargetDate() {
         doTestStopAtTargetDate(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testFixedStep() {
+    void testFixedStep() {
         doTestFixedStep(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testVariableStep() {
+    void testVariableStep() {
         doTestVariableStep(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testEphemeris() {
+    void testEphemeris() {
         doTestEphemeris(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testAdditionalState() {
+    void testAdditionalState() {
         doTestAdditionalState(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue14() {
+    void testIssue14() {
         doTestIssue14(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue107() {
+    void testIssue107() {
         doTestIssue107(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testMu() {
+    void testMu() {
         doTestMu(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNoDerivatives() {
+    void testNoDerivatives() {
         doTestNoDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testWrongAttitude() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testWrongAttitude() {
+        assertThrows(OrekitException.class, () -> {
             doTestWrongAttitude(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testStepException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testStepException() {
+        assertThrows(OrekitException.class, () -> {
             doTestStepException(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testWrappedAttitudeException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testWrappedAttitudeException() {
+        assertThrows(OrekitException.class, () -> {
             doTestWrappedAttitudeException(Binary64Field.getInstance());
         });
     }
 
     @Test
-    public void testPerigee() {
+    void testPerigee() {
         doTestPerigee(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAltitude() {
+    void testAltitude() {
         doTestAltitude(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDate() {
+    void testDate() {
         doTestDate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSetting() {
+    void testSetting() {
         doTestSetting(Binary64Field.getInstance());
     }
 
@@ -296,17 +301,17 @@ public class FieldKeplerianPropagatorTest {
         // another way to compute n
         T n = a.pow(3).reciprocal().multiply(finalOrbit.getMu()).sqrt();
 
-        Assertions.assertEquals(n.getReal()*delta_t.getReal(),
+        assertEquals(n.getReal()*delta_t.getReal(),
                             finalOrbit.getLM().getReal() - initialOrbit.getLM().getReal(),
                             Utils.epsilonTest * FastMath.abs(n.getReal()*delta_t.getReal()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM().getReal(), initialOrbit.getLM().getReal()), initialOrbit.getLM().getReal(),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM().getReal(), initialOrbit.getLM().getReal()), initialOrbit.getLM().getReal(),
                             Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM().getReal()));
 
-        Assertions.assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(),
+        assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(),
                             Utils.epsilonTest * initialOrbit.getA().getReal());
-        Assertions.assertEquals(finalOrbit.getE().getReal(), initialOrbit.getE().getReal(),
+        assertEquals(finalOrbit.getE().getReal(), initialOrbit.getE().getReal(),
                             Utils.epsilonE * initialOrbit.getE().getReal());
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI().getReal(), initialOrbit.getI().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getI().getReal(), initialOrbit.getI().getReal()),
                             initialOrbit.getI().getReal(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getI().getReal()));
 
     }
@@ -335,17 +340,17 @@ public class FieldKeplerianPropagatorTest {
         // another way to compute n
         T n = a.pow(3).reciprocal().multiply(finalOrbit.getMu()).sqrt();
 
-        Assertions.assertEquals(n.getReal()*delta_t.getReal(),
+        assertEquals(n.getReal()*delta_t.getReal(),
                      finalOrbit.getLM().getReal() - initialOrbit.getLM().getReal(),
                      Utils.epsilonTest * FastMath.max(100., FastMath.abs(n.getReal()*delta_t.getReal())));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM().getReal(), initialOrbit.getLM().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getLM().getReal(), initialOrbit.getLM().getReal()),
                             initialOrbit.getLM().getReal(), Utils.epsilonAngle * FastMath.abs(initialOrbit.getLM().getReal()));
 
-        Assertions.assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(),
+        assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(),
                             Utils.epsilonTest * initialOrbit.getA().getReal());
-        Assertions.assertEquals(finalOrbit.getE().getReal(), initialOrbit.getE().getReal(),
+        assertEquals(finalOrbit.getE().getReal(), initialOrbit.getE().getReal(),
                             Utils.epsilonE * initialOrbit.getE().getReal());
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbit.getI().getReal(), initialOrbit.getI().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbit.getI().getReal(), initialOrbit.getI().getReal()),
                             initialOrbit.getI().getReal(),
                             Utils.epsilonAngle * FastMath.abs(initialOrbit.getI().getReal()));
 
@@ -380,7 +385,7 @@ public class FieldKeplerianPropagatorTest {
         // another way to compute n
         T n = a.pow(3).reciprocal().multiply(finalOrbit.getMu()).sqrt();
 
-        Assertions.assertEquals(n.getReal() * delta_t.getReal(),
+        assertEquals(n.getReal() * delta_t.getReal(),
                             finalOrbit.getLM().getReal() - initialOrbit.getLM().getReal(),
                             Utils.epsilonAngle);
 
@@ -389,10 +394,10 @@ public class FieldKeplerianPropagatorTest {
         finalOrbit.getEquinoctialEx().multiply(finalOrbit.getLE().sin())).add(
         finalOrbit.getEquinoctialEy().multiply(finalOrbit.getLE().cos()));
 
-        Assertions.assertEquals(LM.getReal() , finalOrbit.getLM().getReal() , Utils.epsilonAngle);
+        assertEquals(LM.getReal() , finalOrbit.getLM().getReal() , Utils.epsilonAngle);
 
         // test of tan ((LE - Lv)/2) :
-        Assertions.assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal())/2.),
+        assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal())/2.),
                             tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEy()).getReal(),
                             Utils.epsilonAngle);
 
@@ -403,14 +408,14 @@ public class FieldKeplerianPropagatorTest {
         T delta  = finalOrbit.getEquinoctialEx().multiply(finalOrbit.getLE().sin().subtract(initialOrbit.getLE().sin())).subtract(
                    finalOrbit.getEquinoctialEy().multiply(finalOrbit.getLE().cos().subtract(initialOrbit.getLE().cos())));
 
-        Assertions.assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle);
+        assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle);
 
         // the orbital elements except for Mean/True/Eccentric latitude arguments are the same
-        Assertions.assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(), Utils.epsilonTest * initialOrbit.getA().getReal());
-        Assertions.assertEquals(finalOrbit.getEquinoctialEx().getReal(), initialOrbit.getEquinoctialEx().getReal(), Utils.epsilonE);
-        Assertions.assertEquals(finalOrbit.getEquinoctialEy().getReal(), initialOrbit.getEquinoctialEy().getReal(), Utils.epsilonE);
-        Assertions.assertEquals(finalOrbit.getHx().getReal(), initialOrbit.getHx().getReal(), Utils.epsilonAngle);
-        Assertions.assertEquals(finalOrbit.getHy().getReal(), initialOrbit.getHy().getReal(), Utils.epsilonAngle);
+        assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(), Utils.epsilonTest * initialOrbit.getA().getReal());
+        assertEquals(finalOrbit.getEquinoctialEx().getReal(), initialOrbit.getEquinoctialEx().getReal(), Utils.epsilonE);
+        assertEquals(finalOrbit.getEquinoctialEy().getReal(), initialOrbit.getEquinoctialEy().getReal(), Utils.epsilonE);
+        assertEquals(finalOrbit.getHx().getReal(), initialOrbit.getHx().getReal(), Utils.epsilonAngle);
+        assertEquals(finalOrbit.getHy().getReal(), initialOrbit.getHy().getReal(), Utils.epsilonAngle);
 
         // for final orbit
         T ex = finalOrbit.getEquinoctialEx();
@@ -440,7 +445,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -463,15 +468,15 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
-        Assertions.assertEquals(6092.3362422560844633, finalOrbit.getKeplerianPeriod().getReal(), 1.0e-12);
-        Assertions.assertEquals(0.001031326088602888358, finalOrbit.getKeplerianMeanMotion().getReal(), 1.0e-16);
+        assertEquals(6092.3362422560844633, finalOrbit.getKeplerianPeriod().getReal(), 1.0e-12);
+        assertEquals(0.001031326088602888358, finalOrbit.getKeplerianMeanMotion().getReal(), 1.0e-16);
 
         // computation of (M final - M initial) with another method
         T a = finalOrbit.getA();
         // another way to compute n
         T n = a.pow(3).reciprocal().multiply(finalOrbit.getMu()).sqrt();
 
-        Assertions.assertEquals(n.getReal() * delta_t.getReal(),
+        assertEquals(n.getReal() * delta_t.getReal(),
                      finalOrbit.getLM().getReal() - initialOrbit.getLM().getReal(),
                      Utils.epsilonAngle);
 
@@ -480,10 +485,10 @@ public class FieldKeplerianPropagatorTest {
                finalOrbit.getEquinoctialEx().multiply(finalOrbit.getLE().sin())).add(
                finalOrbit.getEquinoctialEy().multiply(finalOrbit.getLE().cos()));
 
-        Assertions.assertEquals(LM.getReal() , finalOrbit.getLM().getReal() , Utils.epsilonAngle);
+        assertEquals(LM.getReal() , finalOrbit.getLM().getReal() , Utils.epsilonAngle);
 
         // test of tan ((LE - Lv)/2) :
-        Assertions.assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal())/2.),
+        assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal())/2.),
                      tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEy()).getReal(),
                      Utils.epsilonAngle);
 
@@ -494,14 +499,14 @@ public class FieldKeplerianPropagatorTest {
         T delta  = finalOrbit.getEquinoctialEx().multiply(finalOrbit.getLE().sin().subtract(initialOrbit.getLE().sin())).subtract(
                    finalOrbit.getEquinoctialEy().multiply(finalOrbit.getLE().cos().subtract(initialOrbit.getLE().cos())));
 
-        Assertions.assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle);
+        assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle);
 
         // the orbital elements except for Mean/True/Eccentric latitude arguments are the same
-        Assertions.assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(), Utils.epsilonTest * initialOrbit.getA().getReal());
-        Assertions.assertEquals(finalOrbit.getEquinoctialEx().getReal(), initialOrbit.getEquinoctialEx().getReal(), Utils.epsilonE);
-        Assertions.assertEquals(finalOrbit.getEquinoctialEy().getReal(), initialOrbit.getEquinoctialEy().getReal(), Utils.epsilonE);
-        Assertions.assertEquals(finalOrbit.getHx().getReal(), initialOrbit.getHx().getReal(), Utils.epsilonAngle);
-        Assertions.assertEquals(finalOrbit.getHy().getReal(), initialOrbit.getHy().getReal(), Utils.epsilonAngle);
+        assertEquals(finalOrbit.getA().getReal(), initialOrbit.getA().getReal(), Utils.epsilonTest * initialOrbit.getA().getReal());
+        assertEquals(finalOrbit.getEquinoctialEx().getReal(), initialOrbit.getEquinoctialEx().getReal(), Utils.epsilonE);
+        assertEquals(finalOrbit.getEquinoctialEy().getReal(), initialOrbit.getEquinoctialEy().getReal(), Utils.epsilonE);
+        assertEquals(finalOrbit.getHx().getReal(), initialOrbit.getHx().getReal(), Utils.epsilonAngle);
+        assertEquals(finalOrbit.getHy().getReal(), initialOrbit.getHy().getReal(), Utils.epsilonAngle);
 
         // for final orbit
         T ex = finalOrbit.getEquinoctialEx();
@@ -530,7 +535,7 @@ public class FieldKeplerianPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
+        assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(), Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
@@ -611,10 +616,10 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         FieldPVCoordinates<T> pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3500.0);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 4000.0);
-        Assertions.assertEquals(0, pv.getPosition().getZ().getReal(), 2.0e-6);
-        Assertions.assertTrue(pv.getVelocity().getZ().getReal() > 0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3500.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 4000.0);
+        assertEquals(0, pv.getPosition().getZ().getReal(), 2.0e-6);
+        assertTrue(pv.getVelocity().getZ().getReal() > 0);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestStopAtTargetDate(Field<T> field) {
@@ -627,7 +632,7 @@ public class FieldKeplerianPropagatorTest {
         propagator.addEventDetector(new FieldNodeDetector<>(orbit, itrf).withHandler(new FieldContinueOnEvent<>()));
         FieldAbsoluteDate<T> farTarget = orbit.getDate().shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
+        assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestPerigee(Field<T> field) {
@@ -640,9 +645,9 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         FieldVector3D<T> position = propagated.getPosition(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3000.0);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 3500.0);
-        Assertions.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), position.getNorm().getReal(), 1.0e-6);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3000.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 3500.0);
+        assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), position.getNorm().getReal(), 1.0e-6);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAltitude(Field<T> field) {
@@ -656,15 +661,15 @@ public class FieldKeplerianPropagatorTest {
         FieldAltitudeDetector<T> detector =
             new FieldAltitudeDetector<>(orbit.getKeplerianPeriod().multiply(0.05),
                                         zero.add(1500000), bodyShape);
-        Assertions.assertEquals(1500000, detector.getAltitude().getReal(), 1.0e-12);
+        assertEquals(1500000, detector.getAltitude().getReal(), 1.0e-12);
         propagator.addEventDetector(detector);
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 5400.0);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 5500.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 5400.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 5500.0);
         FieldGeodeticPoint<T> gp = bodyShape.transform(propagated.getPosition(),
                                                        propagated.getFrame(), propagated.getDate());
-        Assertions.assertEquals(1500000, gp.getAltitude().getReal(), 0.1);
+        assertEquals(1500000, gp.getAltitude().getReal(), 0.1);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestDate(Field<T> field) {
@@ -678,7 +683,7 @@ public class FieldKeplerianPropagatorTest {
         propagator.addEventDetector(detector);
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        Assertions.assertEquals(0, stopDate.durationFrom(propagated.getDate()).getReal(), 1.0e-10);
+        assertEquals(0, stopDate.durationFrom(propagated.getDate()).getReal(), 1.0e-10);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestSetting(Field<T> field) {
@@ -702,10 +707,10 @@ public class FieldKeplerianPropagatorTest {
                                                         propagated.getDate().toAbsoluteDate()).
                                  getElevation();
         final T zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 7800.0);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 7900.0);
-        Assertions.assertEquals(0.09, elevation, 1.0e-9);
-        Assertions.assertTrue(zVelocity.getReal() < 0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 7800.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 7900.0);
+        assertEquals(0.09, elevation, 1.0e-9);
+        assertTrue(zVelocity.getReal() < 0);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestFixedStep(Field<T> field) {
@@ -721,12 +726,12 @@ public class FieldKeplerianPropagatorTest {
             @Override
             public void handleStep(FieldSpacecraftState<T> currentState) {
                 if (previous != null) {
-                    Assertions.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
+                    assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
                 // check state is accurate
                 FieldPVCoordinates<T> expected = new FieldKeplerianPropagator<>(orbit)
                         .propagate(currentState.getDate()).getPVCoordinates();
-                MatcherAssert.assertThat(
+                assertThat(
                         currentState.getPVCoordinates().toTimeStampedPVCoordinates(),
                         OrekitMatchers.pvIs(expected.toPVCoordinates()));
                 previous = currentState.getDate();
@@ -736,7 +741,7 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         propagator.propagate(farTarget);
         // check the step handler was executed
-        Assertions.assertEquals(
+        assertEquals(
                 counter[0],
                 (int) (farTarget.durationFrom(orbit.getDate()).getReal() / step.getReal()) + 1);
     }
@@ -757,7 +762,7 @@ public class FieldKeplerianPropagatorTest {
                 do {
                     PVCoordinates expected = new FieldKeplerianPropagator<>(orbit)
                             .propagate(t).getPVCoordinates().toTimeStampedPVCoordinates();
-                    MatcherAssert.assertThat(
+                    assertThat(
                             interpolator.getInterpolatedState(t).getPVCoordinates()
                                     .toTimeStampedPVCoordinates(),
                             OrekitMatchers.pvIs(expected));
@@ -769,7 +774,7 @@ public class FieldKeplerianPropagatorTest {
         FieldAbsoluteDate<T> farTarget = new FieldAbsoluteDate<>(field).shiftedBy(10000.0);
         propagator.propagate(farTarget);
         // check the step handler was executed
-        Assertions.assertEquals(
+        assertEquals(
                 counter[0],
                 (int) (farTarget.durationFrom(orbit.getDate()).getReal() / step.getReal()) + 1);
     }
@@ -784,8 +789,8 @@ public class FieldKeplerianPropagatorTest {
         final FieldEphemerisGenerator<T> generator = propagator.getEphemerisGenerator();
         propagator.propagate(farTarget);
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
-        Assertions.assertEquals(0.0, ephemeris.getMinDate().durationFrom(orbit.getDate()).getReal(), 1.0e-10);
-        Assertions.assertEquals(0.0, ephemeris.getMaxDate().durationFrom(farTarget).getReal(), 1.0e-10);
+        assertEquals(0.0, ephemeris.getMinDate().durationFrom(orbit.getDate()).getReal(), 1.0e-10);
+        assertEquals(0.0, ephemeris.getMaxDate().durationFrom(farTarget).getReal(), 1.0e-10);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestAdditionalState(Field<T> field) {
@@ -803,9 +808,9 @@ public class FieldKeplerianPropagatorTest {
         FieldBoundedPropagator<T> ephemeris = generator.getGeneratedEphemeris();
         FieldSpacecraftState<T> ephemerisInitialState = ephemeris.getInitialState();
         FieldSpacecraftState<T> finalStateBoundedPropagator = ephemeris.propagate(end);
-        Assertions.assertEquals(4.2, finalStateKeplerianPropagator.getAdditionalState("myState")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(4.2, ephemerisInitialState.getAdditionalState("myState")[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(4.2, finalStateBoundedPropagator.getAdditionalState("myState")[0].getReal(), 1.0e-15);
+        assertEquals(4.2, finalStateKeplerianPropagator.getAdditionalState("myState")[0].getReal(), 1.0e-15);
+        assertEquals(4.2, ephemerisInitialState.getAdditionalState("myState")[0].getReal(), 1.0e-15);
+        assertEquals(4.2, finalStateBoundedPropagator.getAdditionalState("myState")[0].getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIssue14(Field<T> field) {
@@ -823,8 +828,8 @@ public class FieldKeplerianPropagatorTest {
         propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod()));
         FieldPVCoordinates<T> pv2 = generator.getGeneratedEphemeris().getPVCoordinates(initialDate, FramesFactory.getEME2000());
 
-        Assertions.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-15);
-        Assertions.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-15);
+        assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm().getReal(), 1.0e-15);
+        assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm().getReal(), 1.0e-15);
 
     }
 
@@ -852,7 +857,7 @@ public class FieldKeplerianPropagatorTest {
         };
 
         FieldSpacecraftState<T> finalState = propagator.propagate(date.shiftedBy(3600.0));
-        Assertions.assertEquals(3600.0, finalState.getDate().durationFrom(date).getReal(), 1.0e-15);
+        assertEquals(3600.0, finalState.getDate().durationFrom(date).getReal(), 1.0e-15);
 
     }
 
@@ -870,8 +875,8 @@ public class FieldKeplerianPropagatorTest {
         FieldPVCoordinates<T> pv1       = new FieldKeplerianPropagator<>(orbit1).propagate(target).getPVCoordinates();
         FieldPVCoordinates<T> pv2       = new FieldKeplerianPropagator<>(orbit2).propagate(target).getPVCoordinates();
         FieldPVCoordinates<T> pvWithMu1 = new FieldKeplerianPropagator<>(orbit2, orbit1.getMu()).propagate(target).getPVCoordinates();
-        Assertions.assertEquals(0.026054, FieldVector3D.distance(pv1.getPosition(), pv2.getPosition()).getReal(),       1.0e-6);
-        Assertions.assertEquals(0.0,      FieldVector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()).getReal(), 1.0e-15);
+        assertEquals(0.026054, FieldVector3D.distance(pv1.getPosition(), pv2.getPosition()).getReal(),       1.0e-6);
+        assertEquals(0.0,      FieldVector3D.distance(pv1.getPosition(), pvWithMu1.getPosition()).getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestNoDerivatives(Field<T> field) {
@@ -894,28 +899,28 @@ public class FieldKeplerianPropagatorTest {
             final FieldVector3D<T>     acceleration = keplerAcceleration.add(nonKeplerAcceleration);
             final TimeStampedFieldPVCoordinates<T> pva = new TimeStampedFieldPVCoordinates<>(date, position, velocity, acceleration);
             final FieldOrbit<T> initial = type.convertType(new FieldCartesianOrbit<>(pva, FramesFactory.getEME2000(), zero.add(mu)));
-            Assertions.assertEquals(type, initial.getType());
+            assertEquals(type, initial.getType());
 
             // the derivatives are available at this stage
             checkDerivatives(initial, true);
 
             FieldKeplerianPropagator<T> propagator = new FieldKeplerianPropagator<>(initial);
-            Assertions.assertEquals(type, propagator.getInitialState().getOrbit().getType());
+            assertEquals(type, propagator.getInitialState().getOrbit().getType());
 
             // non-Keplerian derivatives are explicitly removed when building the Keplerian-only propagator
             checkDerivatives(propagator.getInitialState().getOrbit(), false);
 
             FieldPVCoordinates<T> initPV = propagator.getInitialState().getOrbit().getPVCoordinates();
-            Assertions.assertEquals(nonKeplerAcceleration.getNorm().getReal(),
+            assertEquals(nonKeplerAcceleration.getNorm().getReal(),
                                 FieldVector3D.distance(acceleration, initPV.getAcceleration()).getReal(),
                                 2.0e-15);
-            Assertions.assertEquals(0.0,
+            assertEquals(0.0,
                                 FieldVector3D.distance(keplerAcceleration, initPV.getAcceleration()).getReal(),
                                 5.0e-15);
 
             T dt = initial.getKeplerianPeriod().multiply(0.2);
             FieldOrbit<T> orbit = propagator.propagateOrbit(initial.getDate().shiftedBy(dt), null);
-            Assertions.assertEquals(type, orbit.getType());
+            assertEquals(type, orbit.getType());
 
             // at the end, we don't have non-Keplerian derivatives
             checkDerivatives(orbit, false);
@@ -928,29 +933,29 @@ public class FieldKeplerianPropagatorTest {
 
     private <T extends CalculusFieldElement<T>> void checkDerivatives(final FieldOrbit<T> orbit,
                                                                   final boolean expectedDerivatives) {
-        Assertions.assertEquals(expectedDerivatives, orbit.hasDerivatives());
+        assertEquals(expectedDerivatives, orbit.hasDerivatives());
         if (expectedDerivatives) {
-            Assertions.assertNotNull(orbit.getADot());
-            Assertions.assertNotNull(orbit.getEquinoctialExDot());
-            Assertions.assertNotNull(orbit.getEquinoctialEyDot());
-            Assertions.assertNotNull(orbit.getHxDot());
-            Assertions.assertNotNull(orbit.getHyDot());
-            Assertions.assertNotNull(orbit.getLEDot());
-            Assertions.assertNotNull(orbit.getLvDot());
-            Assertions.assertNotNull(orbit.getLMDot());
-            Assertions.assertNotNull(orbit.getEDot());
-            Assertions.assertNotNull(orbit.getIDot());
+            assertNotNull(orbit.getADot());
+            assertNotNull(orbit.getEquinoctialExDot());
+            assertNotNull(orbit.getEquinoctialEyDot());
+            assertNotNull(orbit.getHxDot());
+            assertNotNull(orbit.getHyDot());
+            assertNotNull(orbit.getLEDot());
+            assertNotNull(orbit.getLvDot());
+            assertNotNull(orbit.getLMDot());
+            assertNotNull(orbit.getEDot());
+            assertNotNull(orbit.getIDot());
         } else {
-            Assertions.assertNull(orbit.getADot());
-            Assertions.assertNull(orbit.getEquinoctialExDot());
-            Assertions.assertNull(orbit.getEquinoctialEyDot());
-            Assertions.assertNull(orbit.getHxDot());
-            Assertions.assertNull(orbit.getHyDot());
-            Assertions.assertNull(orbit.getLEDot());
-            Assertions.assertNull(orbit.getLvDot());
-            Assertions.assertNull(orbit.getLMDot());
-            Assertions.assertNull(orbit.getEDot());
-            Assertions.assertNull(orbit.getIDot());
+            assertNull(orbit.getADot());
+            assertNull(orbit.getEquinoctialExDot());
+            assertNull(orbit.getEquinoctialEyDot());
+            assertNull(orbit.getHxDot());
+            assertNull(orbit.getHyDot());
+            assertNull(orbit.getLEDot());
+            assertNull(orbit.getLvDot());
+            assertNull(orbit.getLMDot());
+            assertNull(orbit.getEDot());
+            assertNull(orbit.getIDot());
         }
     }
 
@@ -961,13 +966,13 @@ public class FieldKeplerianPropagatorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mu   = Double.NaN;
     }
 

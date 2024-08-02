@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -44,11 +43,13 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.Arrays;
 
-public class RelativisticClockPhaseModifierTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class RelativisticClockPhaseModifierTest {
 
     @Deprecated
     @Test
-    public void testRelativisticClockCorrectionDeprecated() {
+    void testRelativisticClockCorrectionDeprecated() {
 
         // Station
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -93,20 +94,20 @@ public class RelativisticClockPhaseModifierTest {
                                                                                  new SpacecraftState[] {state},
                                                                                  new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(phase.getObservedValue()[0]);
-        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+        assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
         final RelativisticClockPhaseModifier modifier = new RelativisticClockPhaseModifier();
         modifier.modify(estimated);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assertions.assertEquals(-6.87 / PredefinedGnssSignal.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        assertEquals(-6.87 / PredefinedGnssSignal.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 
     @Test
-    public void testRelativisticClockCorrection() {
+    void testRelativisticClockCorrection() {
 
         // Station
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -151,20 +152,20 @@ public class RelativisticClockPhaseModifierTest {
                                                                                  new SpacecraftState[] {state},
                                                                                  new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(phase.getObservedValue()[0]);
-        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+        assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
         final RelativisticClockPhaseModifier modifier = new RelativisticClockPhaseModifier();
         modifier.modify(estimated);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify
-        Assertions.assertEquals(-6.87 / PredefinedGnssSignal.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        assertEquals(-6.87 / PredefinedGnssSignal.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

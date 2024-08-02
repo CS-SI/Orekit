@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -34,10 +33,13 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class AltitudeDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class AltitudeDetectorTest {
 
     @Test
-    public void testBackAndForth() {
+    void testBackAndForth() {
 
         final Frame EME2000 = FramesFactory.getEME2000();
         final AbsoluteDate initialDate = new AbsoluteDate(2009, 1, 1, TimeScalesFactory.getUTC());
@@ -58,27 +60,27 @@ public class AltitudeDetectorTest {
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(earthRadius, earthF, EME2000);
         final AltitudeDetector altDetector = new AltitudeDetector(alt, earth).
                                              withHandler(new StopOnEvent());
-        Assertions.assertEquals(alt, altDetector.getAltitude(), 1.0e-15);
-        Assertions.assertSame(earth, altDetector.getBodyShape());
+        assertEquals(alt, altDetector.getAltitude(), 1.0e-15);
+        assertSame(earth, altDetector.getBodyShape());
 
         // altitudeDetector should stop propagation upon reaching required altitude
         kepPropagator.addEventDetector(altDetector);
 
         // propagation to the future
         SpacecraftState finalState = kepPropagator.propagate(initialDate.shiftedBy(1000));
-        Assertions.assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
-        Assertions.assertEquals(44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
+        assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
+        assertEquals(44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
         // propagation to the past
         kepPropagator.resetInitialState(initialState);
         finalState = kepPropagator.propagate(initialDate.shiftedBy(-1000));
-        Assertions.assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
-        Assertions.assertEquals(-44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
+        assertEquals(finalState.getPosition().getNorm()-earthRadius, alt, 1e-5);
+        assertEquals(-44.079, finalState.getDate().durationFrom(initialDate), 1.0e-3);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

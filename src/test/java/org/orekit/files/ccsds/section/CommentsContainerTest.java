@@ -3,7 +3,6 @@ package org.orekit.files.ccsds.section;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -12,10 +11,12 @@ import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.odm.opm.Opm;
 
-public class CommentsContainerTest {
-    
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class CommentsContainerTest {
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -34,8 +35,8 @@ public class CommentsContainerTest {
                                     buildOpmParser().
                                     parseMessage(source1);
 
-        Assertions.assertEquals(1, original.getMetadata().getComments().size());
-        Assertions.assertEquals(expectedOldComment, original.getMetadata().getComments().get(0));
+        assertEquals(1, original.getMetadata().getComments().size());
+        assertEquals(expectedOldComment, original.getMetadata().getComments().get(0));
 
         // Set new comments and check
         List<String> newComments = new ArrayList<>();
@@ -43,8 +44,8 @@ public class CommentsContainerTest {
         newComments.add(expectedNewComment2);
         original.getMetadata().setComments(newComments);
 
-        Assertions.assertEquals(2, original.getMetadata().getComments().size());
-        Assertions.assertEquals(expectedNewComment1, original.getMetadata().getComments().get(0));
-        Assertions.assertEquals(expectedNewComment2, original.getMetadata().getComments().get(1));
+        assertEquals(2, original.getMetadata().getComments().size());
+        assertEquals(expectedNewComment1, original.getMetadata().getComments().get(0));
+        assertEquals(expectedNewComment2, original.getMetadata().getComments().get(1));
     }
 }

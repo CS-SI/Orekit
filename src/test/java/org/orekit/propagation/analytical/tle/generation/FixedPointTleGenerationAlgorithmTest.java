@@ -23,7 +23,6 @@ import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
@@ -47,14 +46,17 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class FixedPointTleGenerationAlgorithmTest {
+
+class FixedPointTleGenerationAlgorithmTest {
 
     private TLE geoTLE;
     private TLE leoTLE;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                          "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
@@ -63,7 +65,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testOneMoreRevolution() {
+    void testOneMoreRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
         final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
         final double dt =  2 * FastMath.PI / leoTLE.getMeanMotion();
@@ -71,11 +73,11 @@ public class FixedPointTleGenerationAlgorithmTest {
         final SpacecraftState endState = propagator.propagate(target);
         final TLE endLEOTLE = new FixedPointTleGenerationAlgorithm().generate(endState, leoTLE);
         final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
-        Assertions.assertEquals(initRevolutionNumber + 1 , endRevolutionNumber);
+        assertEquals(initRevolutionNumber + 1 , endRevolutionNumber);
     }
 
     @Test
-    public void testOneLessRevolution() {
+    void testOneLessRevolution() {
         final TLEPropagator propagator = TLEPropagator.selectExtrapolator(leoTLE);
         final int initRevolutionNumber = leoTLE.getRevolutionNumberAtEpoch();
         final double dt =  - 2 * FastMath.PI / leoTLE.getMeanMotion();
@@ -83,26 +85,26 @@ public class FixedPointTleGenerationAlgorithmTest {
         final SpacecraftState endState = propagator.propagate(target);
         final TLE endLEOTLE = new FixedPointTleGenerationAlgorithm().generate(endState, leoTLE);
         final int endRevolutionNumber = endLEOTLE.getRevolutionNumberAtEpoch();
-        Assertions.assertEquals(initRevolutionNumber - 1 , endRevolutionNumber);
+        assertEquals(initRevolutionNumber - 1 , endRevolutionNumber);
     }
 
     @Test
-    public void testIssue781() {
+    void testIssue781() {
 
         final DSFactory factory = new DSFactory(6, 3);
         final String line1 = "1 05709U 71116A   21105.62692147  .00000088  00000-0  00000-0 0  9999";
         final String line2 = "2 05709  10.8207 310.3659 0014139  71.9531 277.0561  0.99618926100056";
-        Assertions.assertTrue(TLE.isFormatOK(line1, line2));
+        assertTrue(TLE.isFormatOK(line1, line2));
 
         final FieldTLE<DerivativeStructure> fieldTLE = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
         final FieldTLEPropagator<DerivativeStructure> tlePropagator = FieldTLEPropagator.selectExtrapolator(fieldTLE, fieldTLE.getParameters(factory.getDerivativeField()));
         final FieldTLE<DerivativeStructure> fieldTLE1 = new FixedPointTleGenerationAlgorithm().generate(tlePropagator.getInitialState(), fieldTLE);
-        Assertions.assertEquals(line2, fieldTLE1.getLine2());
+        assertEquals(line2, fieldTLE1.getLine2());
 
     }
 
     @Test
-    public void testIssue802() {
+    void testIssue802() {
 
         // Initialize TLE
         final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
@@ -123,12 +125,12 @@ public class FixedPointTleGenerationAlgorithmTest {
         final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(new SpacecraftState(orbit), tleISS);
 
         // Verify
-        Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
-        Assertions.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
+        assertEquals(tleISS.getLine1(), rebuilt.getLine1());
+        assertEquals(tleISS.getLine2(), rebuilt.getLine2());
     }
 
     @Test
-    public void testIssue802Field() {
+    void testIssue802Field() {
         doTestIssue802Field(Binary64Field.getInstance());
     }
 
@@ -153,12 +155,12 @@ public class FixedPointTleGenerationAlgorithmTest {
         final FieldTLE<T> rebuilt = new FixedPointTleGenerationAlgorithm().generate(new FieldSpacecraftState<T>(orbit), tleISS);
 
         // Verify
-        Assertions.assertEquals(tleISS.getLine1(), rebuilt.getLine1());
-        Assertions.assertEquals(tleISS.getLine2(), rebuilt.getLine2());
+        assertEquals(tleISS.getLine1(), rebuilt.getLine1());
+        assertEquals(tleISS.getLine2(), rebuilt.getLine2());
     }
 
     @Test
-    public void testIssue864() {
+    void testIssue864() {
 
         // Initialize TLE
         final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
@@ -177,12 +179,12 @@ public class FixedPointTleGenerationAlgorithmTest {
         final TLE rebuilt = new FixedPointTleGenerationAlgorithm().generate(state, tleISS);
 
         // Verify if driver is still selected
-        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
+        rebuilt.getParametersDrivers().forEach(driver -> assertTrue(driver.isSelected()));
 
     }
 
     @Test
-    public void testIssue859() {
+    void testIssue859() {
 
         // INTELSAT 25 TLE taken from Celestrak the 2021-11-24T07:45:00.000
         // Because the satellite eccentricity and inclination are closed to zero, this satellite
@@ -201,21 +203,21 @@ public class FixedPointTleGenerationAlgorithmTest {
         final TLE converted = algorithm.generate(p.getInitialState(), tle);
 
         // Verify
-        Assertions.assertEquals(tle.getLine2(),                   converted.getLine2());
-        Assertions.assertEquals(tle.getBStar(),                   converted.getBStar());
-        Assertions.assertEquals(0.,                               converted.getDate().durationFrom(tle.getDate()));
-        Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
-        Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
-        Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
-        Assertions.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
-        Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
-        Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
+        assertEquals(tle.getLine2(),                   converted.getLine2());
+        assertEquals(tle.getBStar(),                   converted.getBStar());
+        assertEquals(0.,                               converted.getDate().durationFrom(tle.getDate()));
+        assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        assertEquals(tle.getClassification(),          converted.getClassification());
+        assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
 
     }
 
     @Test
-    public void testIssue859Field() {
+    void testIssue859Field() {
         dotestIssue859Field(Binary64Field.getInstance());
     }
 
@@ -238,26 +240,26 @@ public class FixedPointTleGenerationAlgorithmTest {
         final FieldTLE<T> converted = algorithm.generate(p.getInitialState(), tle);
 
         // Verify
-        Assertions.assertEquals(tle.getLine2(),                   converted.getLine2());
-        Assertions.assertEquals(tle.getBStar(),                   converted.getBStar());
-        Assertions.assertEquals(0.,                               converted.getDate().durationFrom(tle.getDate()).getReal());
-        Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
-        Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
-        Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
-        Assertions.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
-        Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
-        Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
+        assertEquals(tle.getLine2(),                   converted.getLine2());
+        assertEquals(tle.getBStar(),                   converted.getBStar());
+        assertEquals(0.,                               converted.getDate().durationFrom(tle.getDate()).getReal());
+        assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        assertEquals(tle.getClassification(),          converted.getClassification());
+        assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
 
     }
 
     @Test
-    public void testConversionLeo() {
+    void testConversionLeo() {
         checkConversion(leoTLE, 5.2e-9);
     }
 
     @Test
-    public void testConversionGeo() {
+    void testConversionGeo() {
         checkConversion(geoTLE, 9.2e-8);
     }
 
@@ -267,26 +269,26 @@ public class FixedPointTleGenerationAlgorithmTest {
         Propagator p = TLEPropagator.selectExtrapolator(tle);
         final TLE converted = new FixedPointTleGenerationAlgorithm().generate(p.getInitialState(), tle);
 
-        Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
-        Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
-        Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
-        Assertions.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
-        Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
-        Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
+        assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        assertEquals(tle.getClassification(),          converted.getClassification());
+        assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
 
-        Assertions.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), threshold * tle.getMeanMotion());
-        Assertions.assertEquals(tle.getE(), converted.getE(), threshold * tle.getE());
-        Assertions.assertEquals(tle.getI(), converted.getI(), threshold * tle.getI());
-        Assertions.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), threshold * tle.getPerigeeArgument());
-        Assertions.assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
-        Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
-        Assertions.assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
+        assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), threshold * tle.getMeanMotion());
+        assertEquals(tle.getE(), converted.getE(), threshold * tle.getE());
+        assertEquals(tle.getI(), converted.getI(), threshold * tle.getI());
+        assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), threshold * tle.getPerigeeArgument());
+        assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
+        assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
+        assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
 
     }
 
     @Test
-    public void testConversionLeoField() {
+    void testConversionLeoField() {
         doTestConversionLeoField(Binary64Field.getInstance());
     }
 
@@ -297,7 +299,7 @@ public class FixedPointTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testConversionGeoField() {
+    void testConversionGeoField() {
         doConversionGeoField(Binary64Field.getInstance());
     }
 
@@ -313,25 +315,25 @@ public class FixedPointTleGenerationAlgorithmTest {
         FieldPropagator<T> p = FieldTLEPropagator.selectExtrapolator(tle, tle.getParameters(field, tle.getDate()));
         final FieldTLE<T> converted = new FixedPointTleGenerationAlgorithm().generate(p.getInitialState(), tle);
         
-        Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
-        Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
-        Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
-        Assertions.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
-        Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
-        Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
+        assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        assertEquals(tle.getClassification(),          converted.getClassification());
+        assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
         
-        Assertions.assertEquals(tle.getMeanMotion().getReal(), converted.getMeanMotion().getReal(),threshold * tle.getMeanMotion().getReal());
-        Assertions.assertEquals(tle.getE().getReal(), converted.getE().getReal(), threshold * tle.getE().getReal());
-        Assertions.assertEquals(tle.getI().getReal(), converted.getI().getReal(), threshold * tle.getI().getReal());
-        Assertions.assertEquals(tle.getPerigeeArgument().getReal(), converted.getPerigeeArgument().getReal(), threshold * tle.getPerigeeArgument().getReal());
-        Assertions.assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), threshold * tle.getRaan().getReal());
-        Assertions.assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), threshold * tle.getMeanAnomaly().getReal());
-        Assertions.assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
+        assertEquals(tle.getMeanMotion().getReal(), converted.getMeanMotion().getReal(),threshold * tle.getMeanMotion().getReal());
+        assertEquals(tle.getE().getReal(), converted.getE().getReal(), threshold * tle.getE().getReal());
+        assertEquals(tle.getI().getReal(), converted.getI().getReal(), threshold * tle.getI().getReal());
+        assertEquals(tle.getPerigeeArgument().getReal(), converted.getPerigeeArgument().getReal(), threshold * tle.getPerigeeArgument().getReal());
+        assertEquals(tle.getRaan().getReal(), converted.getRaan().getReal(), threshold * tle.getRaan().getReal());
+        assertEquals(tle.getMeanAnomaly().getReal(), converted.getMeanAnomaly().getReal(), threshold * tle.getMeanAnomaly().getReal());
+        assertEquals(tle.getBStar(), converted.getBStar(), threshold * tle.getBStar());
     }
 
     @Test
-    public void testIssue1408() {
+    void testIssue1408() {
         // The result of the TLE generation shall not be affected by the value of the gravitational
         // parameter of the input orbit.
 
@@ -350,8 +352,8 @@ public class FixedPointTleGenerationAlgorithmTest {
         // Generate a TLE based on the orbit and check that the generated TLE is the same as the
         // original one.
         final TLE generatedTle = TLE.stateToTLE(new SpacecraftState(orbit), initialTle, algorithm);
-        Assertions.assertEquals(initialTle.getLine1(), generatedTle.getLine1());
-        Assertions.assertEquals(initialTle.getLine2(), generatedTle.getLine2());
+        assertEquals(initialTle.getLine1(), generatedTle.getLine1());
+        assertEquals(initialTle.getLine2(), generatedTle.getLine2());
         final TimeStampedPVCoordinates actualPvCoordinates = TLEPropagator.selectExtrapolator(generatedTle).getInitialState().getPVCoordinates();
         TestUtils.validateVector3D(expectedPV.getPosition(), actualPvCoordinates.getPosition(), 1.0e-4);
         TestUtils.validateVector3D(expectedPV.getVelocity(), actualPvCoordinates.getVelocity(), 1.0e-4);

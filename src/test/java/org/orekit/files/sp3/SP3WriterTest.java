@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -37,120 +36,123 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class SP3WriterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class SP3WriterTest {
 
     @Test
-    public void testRoundtripExampleA1() {
+    void testRoundtripExampleA1() {
         doTestRoundtrip("/sp3/example-a-1.sp3");
     }
 
     @Test
-    public void testRoundtripExampleA2() {
+    void testRoundtripExampleA2() {
         doTestRoundtrip("/sp3/example-a-2.sp3");
     }
 
     @Test
-    public void testRoundtripExampleC1() {
+    void testRoundtripExampleC1() {
         doTestRoundtrip("/sp3/example-c-1.sp3");
     }
 
     @Test
-    public void testRoundtripExampleC2() {
+    void testRoundtripExampleC2() {
         doTestRoundtrip("/sp3/example-c-2.sp3");
     }
 
     @Test
-    public void testRoundtripExampleD1() {
+    void testRoundtripExampleD1() {
         doTestRoundtrip("/sp3/example-d-1.sp3");
     }
 
     @Test
-    public void testRoundtripExampleD2() {
+    void testRoundtripExampleD2() {
         doTestRoundtrip("/sp3/example-d-2.sp3");
     }
 
     @Test
-    public void testRoundtripExampleD3() {
+    void testRoundtripExampleD3() {
         doTestRoundtrip("/sp3/example-d-3.sp3");
     }
 
     @Test
-    public void testRoundtripExampleD4() {
+    void testRoundtripExampleD4() {
         doTestRoundtrip("/sp3/example-d-4.sp3");
     }
 
     @Test
-    public void testRoundtripEsaBHN() {
+    void testRoundtripEsaBHN() {
         doTestRoundtrip("/sp3/esaBHN.sp3.Z");
     }
 
     @Test
-    public void testRoundtripEsaPRO() {
+    void testRoundtripEsaPRO() {
         doTestRoundtrip("/sp3/esaPRO.sp3.Z");
     }
 
     @Test
-    public void testRoundtripGbm18432() {
+    void testRoundtripGbm18432() {
         doTestRoundtrip("/sp3/gbm18432.sp3.Z");
     }
 
     @Test
-    public void testRoundtripGbm19500AfterDrop() {
+    void testRoundtripGbm19500AfterDrop() {
         doTestRoundtrip("/sp3/gbm19500_after_drop.sp3");
     }
 
     @Test
-    public void testRoundtripGbm19500AfterNoDrop() {
+    void testRoundtripGbm19500AfterNoDrop() {
         doTestRoundtrip("/sp3/gbm19500_after_no_drop.sp3");
     }
 
     @Test
-    public void testRoundtripGbm19500LargeGap() {
+    void testRoundtripGbm19500LargeGap() {
         doTestRoundtrip("/sp3/gbm19500_large_gap.sp3");
     }
 
     @Test
-    public void testRoundtripIssue895Clock() {
+    void testRoundtripIssue895Clock() {
         doTestRoundtrip("/sp3/issue895-clock-record.sp3");
     }
 
     @Test
-    public void testRoundtripIssue895HEaderComment() {
+    void testRoundtripIssue895HEaderComment() {
         doTestRoundtrip("/sp3/issue895-header-comment.sp3");
     }
 
     @Test
-    public void testRoundtripIssue895HoursIncrement() {
+    void testRoundtripIssue895HoursIncrement() {
         doTestRoundtrip("/sp3/issue895-hours-increment.sp3");
     }
 
     @Test
-    public void testRoundtripIssue895MinutesIncrement() {
+    void testRoundtripIssue895MinutesIncrement() {
         doTestRoundtrip("/sp3/issue895-minutes-increment.sp3");
     }
 
     @Test
-    public void testRoundtripIssue895NoEOF() {
+    void testRoundtripIssue895NoEOF() {
         doTestRoundtrip("/sp3/issue895-no-eof.sp3");
     }
 
     @Test
-    public void testRoundtripIssue895SecondDigits() {
+    void testRoundtripIssue895SecondDigits() {
         doTestRoundtrip("/sp3/issue895-second-digits.sp3");
     }
 
     @Test
-    public void testRoundtripLageos() {
+    void testRoundtripLageos() {
         doTestRoundtrip("/sp3/truncated-nsgf.orb.lageos2.160305.v35.sp3");
     }
 
     @Test
-    public void testRoundtripIssue1327FullLine() {
+    void testRoundtripIssue1327FullLine() {
         doTestRoundtrip("/sp3/issue1327-136-sats.sp3");
     }
 
     @Test
-    public void testChangeFrameItrf96PositionOnly() {
+    void testChangeFrameItrf96PositionOnly() {
         doTestChangeFrame("/sp3/gbm18432.sp3.Z",
                           FramesFactory.getITRF(ITRFVersion.ITRF_1996,
                                                 IERSConventions.IERS_1996,
@@ -158,7 +160,7 @@ public class SP3WriterTest {
     }
 
     @Test
-    public void testChangeFrameItrf05PositionOnly() {
+    void testChangeFrameItrf05PositionOnly() {
         doTestChangeFrame("/sp3/gbm18432.sp3.Z",
                           FramesFactory.getITRF(ITRFVersion.ITRF_2005,
                                                 IERSConventions.IERS_2003,
@@ -166,7 +168,7 @@ public class SP3WriterTest {
     }
 
     @Test
-    public void testChangeFrameItrf20PositionOnly() {
+    void testChangeFrameItrf20PositionOnly() {
         doTestChangeFrame("/sp3/gbm18432.sp3.Z",
                           FramesFactory.getITRF(ITRFVersion.ITRF_2020,
                                                 IERSConventions.IERS_2010,
@@ -174,17 +176,17 @@ public class SP3WriterTest {
     }
 
     @Test
-    public void testChangeFrameGcrfPositionOnly() {
+    void testChangeFrameGcrfPositionOnly() {
         doTestChangeFrame("/sp3/gbm18432.sp3.Z", FramesFactory.getGCRF());
     }
 
     @Test
-    public void testChangeFrameEme2000PositionOnly() {
+    void testChangeFrameEme2000PositionOnly() {
         doTestChangeFrame("/sp3/gbm18432.sp3.Z", FramesFactory.getEME2000());
     }
 
     @Test
-    public void testChangeFrameItrf96PositionVelocity() {
+    void testChangeFrameItrf96PositionVelocity() {
         doTestChangeFrame("/sp3/example-a-2.sp3",
                           FramesFactory.getITRF(ITRFVersion.ITRF_1996,
                                                 IERSConventions.IERS_1996,
@@ -192,7 +194,7 @@ public class SP3WriterTest {
     }
 
     @Test
-    public void testChangeFrameItrf05PositionVelocity() {
+    void testChangeFrameItrf05PositionVelocity() {
         doTestChangeFrame("/sp3/example-a-2.sp3",
                           FramesFactory.getITRF(ITRFVersion.ITRF_2005,
                                                 IERSConventions.IERS_2003,
@@ -200,7 +202,7 @@ public class SP3WriterTest {
     }
 
     @Test
-    public void testChangeFrameItrf20PositionVelocity() {
+    void testChangeFrameItrf20PositionVelocity() {
         doTestChangeFrame("/sp3/example-a-2.sp3",
                           FramesFactory.getITRF(ITRFVersion.ITRF_2020,
                                                 IERSConventions.IERS_2010,
@@ -208,12 +210,12 @@ public class SP3WriterTest {
     }
 
     @Test
-    public void testChangeFrameGcrfPositionVelocity() {
+    void testChangeFrameGcrfPositionVelocity() {
         doTestChangeFrame("/sp3/example-a-2.sp3", FramesFactory.getGCRF());
     }
 
     @Test
-    public void testChangeFrameEme2000PositionVelocity() {
+    void testChangeFrameEme2000PositionVelocity() {
         doTestChangeFrame("/sp3/example-a-2.sp3", FramesFactory.getEME2000());
     }
 
@@ -238,7 +240,7 @@ public class SP3WriterTest {
             SP3TestUtils.checkEquals(original, rebuilt);
 
         } catch (IOException ioe) {
-            Assertions.fail(ioe.getLocalizedMessage());
+            fail(ioe.getLocalizedMessage());
         }
     }
 
@@ -264,18 +266,18 @@ public class SP3WriterTest {
             final DataSource source2 = new DataSource(name, () -> new ByteArrayInputStream(bytes));
             final SP3        rebuilt = new SP3Parser().parse(source2);
 
-            Assertions.assertEquals(newFrame.getName(), rebuilt.getEphemeris(0).getFrame().getName());
-            Assertions.assertEquals(original.getSatelliteCount(), rebuilt.getSatelliteCount());
+            assertEquals(newFrame.getName(), rebuilt.getEphemeris(0).getFrame().getName());
+            assertEquals(original.getSatelliteCount(), rebuilt.getSatelliteCount());
             double maxErrorP = 0;
             double maxErrorV = 0;
             for (int i = 0; i < original.getSatelliteCount(); ++i) {
                 final List<SP3Segment> originalSegments = original.getEphemeris(i).getSegments();
                 final List<SP3Segment> rebuiltSegments  = rebuilt.getEphemeris(i).getSegments();
-                Assertions.assertEquals(originalSegments.size(), rebuiltSegments.size());
+                assertEquals(originalSegments.size(), rebuiltSegments.size());
                 for (int j = 0; j < originalSegments.size(); ++j) {
                     final List<SP3Coordinate> originalCoordinates = originalSegments.get(j).getCoordinates();
                     final List<SP3Coordinate> rebuiltCoordinates  = rebuiltSegments.get(j).getCoordinates();
-                    Assertions.assertEquals(originalCoordinates.size(), rebuiltCoordinates.size());
+                    assertEquals(originalCoordinates.size(), rebuiltCoordinates.size());
                     for (int k = 0; k < originalCoordinates.size(); ++k) {
                         final SP3Coordinate ok = originalCoordinates.get(k);
                         final SP3Coordinate rk = rebuiltCoordinates.get(k);
@@ -294,16 +296,16 @@ public class SP3WriterTest {
 
             // tolerances are limited to SP3 file format accuracy
             // as we have written and parsed again a file
-            Assertions.assertEquals(0, maxErrorP, 1.0e-3);
-            Assertions.assertEquals(0, maxErrorV, 1.0e-6);
+            assertEquals(0, maxErrorP, 1.0e-3);
+            assertEquals(0, maxErrorV, 1.0e-6);
 
         } catch (IOException ioe) {
-            Assertions.fail(ioe.getLocalizedMessage());
+            fail(ioe.getLocalizedMessage());
         }
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,22 +55,25 @@ import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TrackingCoordinates;
 
-public class FieldViennaThreeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class FieldViennaThreeTest {
 
     private static double epsilon = 1e-6;
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testMappingFactors() {
+    void testMappingFactors() {
         doTestMappingFactors(Binary64Field.getInstance());
     }
 
@@ -122,12 +124,12 @@ public class FieldViennaThreeTest {
                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
-        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
+        assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
+        assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
     }
 
     @Test
-    public void testLowElevation() {
+    void testLowElevation() {
         doTestLowElevation(Binary64Field.getInstance());
     }
 
@@ -178,12 +180,12 @@ public class FieldViennaThreeTest {
                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
-        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
+        assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
+        assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
     }
 
     @Test
-    public void testHightElevation() {
+    void testHightElevation() {
         doTestHightElevation(Binary64Field.getInstance());
     }
 
@@ -234,12 +236,12 @@ public class FieldViennaThreeTest {
                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                          date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
-        Assertions.assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
+        assertEquals(expectedHydro, computedMapping[0].getReal(), epsilon);
+        assertEquals(expectedWet,   computedMapping[1].getReal(), epsilon);
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         doTestDelay(Binary64Field.getInstance());
     }
 
@@ -257,15 +259,15 @@ public class FieldViennaThreeTest {
                                                                 point,
                                                                 new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                 model.getParameters(field), date);
-        Assertions.assertEquals( 2.1993, delay.getZh().getReal(),    1.0e-4);
-        Assertions.assertEquals( 0.069,  delay.getZw().getReal(),    1.0e-4);
-        Assertions.assertEquals(12.2124, delay.getSh().getReal(),    1.0e-4);
-        Assertions.assertEquals( 0.3916, delay.getSw().getReal(),    1.0e-4);
-        Assertions.assertEquals(12.6041, delay.getDelay().getReal(), 1.0e-4);
+        assertEquals( 2.1993, delay.getZh().getReal(),    1.0e-4);
+        assertEquals( 0.069,  delay.getZw().getReal(),    1.0e-4);
+        assertEquals(12.2124, delay.getSh().getReal(),    1.0e-4);
+        assertEquals( 0.3916, delay.getSw().getReal(),    1.0e-4);
+        assertEquals(12.6041, delay.getDelay().getReal(), 1.0e-4);
     }
 
     @Test
-    public void testDelayWithAzimuthalAsymmetry() {
+    void testDelayWithAzimuthalAsymmetry() {
         doTestDelayWithAzimuthalAsymmetry(Binary64Field.getInstance());
     }
 
@@ -287,15 +289,15 @@ public class FieldViennaThreeTest {
                                                                 point,
                                                                 new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                                                 model.getParameters(field), date);
-        Assertions.assertEquals( 2.1993,                      delay.getZh().getReal(),    1.0e-4);
-        Assertions.assertEquals( 0.069,                       delay.getZw().getReal(),    1.0e-4);
-        Assertions.assertEquals(12.2124 + 373.8241,           delay.getSh().getReal(),    1.0e-4); // second term is due to azimuthal gradient
-        Assertions.assertEquals( 0.3916 +  38.9670,           delay.getSw().getReal(),    1.0e-4); // second term is due to azimuthal gradient
-        Assertions.assertEquals(12.6041 + 373.8241 + 38.9670, delay.getDelay().getReal(), 1.0e-4);
+        assertEquals( 2.1993,                      delay.getZh().getReal(),    1.0e-4);
+        assertEquals( 0.069,                       delay.getZw().getReal(),    1.0e-4);
+        assertEquals(12.2124 + 373.8241,           delay.getSh().getReal(),    1.0e-4); // second term is due to azimuthal gradient
+        assertEquals( 0.3916 +  38.9670,           delay.getSw().getReal(),    1.0e-4); // second term is due to azimuthal gradient
+        assertEquals(12.6041 + 373.8241 + 38.9670, delay.getDelay().getReal(), 1.0e-4);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         doTestFixedHeight(Binary64Field.getInstance());
     }
 
@@ -314,13 +316,13 @@ public class FieldViennaThreeTest {
                                             point,
                                             new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             model.getParameters(field), date).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
+            assertTrue(Precision.compareTo(delay.getReal(), lastDelay.getReal(), epsilon) < 0);
             lastDelay = delay;
         }
     }
 
     @Test
-    public void testDelayStateDerivatives() {
+    void testDelayStateDerivatives() {
 
         // Geodetic point
         final double latitude     = FastMath.toRadians(45.0);
@@ -452,7 +454,7 @@ public class FieldViennaThreeTest {
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compDelay[i + 1], refDeriv[0][i], 6.2e-12);
+            assertEquals(compDelay[i + 1], refDeriv[0][i], 6.2e-12);
         }
     }
 

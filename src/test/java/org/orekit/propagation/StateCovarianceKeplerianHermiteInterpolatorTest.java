@@ -24,7 +24,6 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -77,6 +76,8 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -568,12 +569,12 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             
         }
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
+        assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
+        assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
+        assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), tolerance);
+        assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
     }
 
     /**
@@ -635,7 +636,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         Assertions.assertEquals(0.25871013837895007, relativeRMSSigmaError[1].getMax(), 1e-17);
 */
 
-        Assertions.assertEquals(CartesianDerivativesFilter.USE_PVA, covarianceInterpolator.getFilter());
+        assertEquals(CartesianDerivativesFilter.USE_PVA, covarianceInterpolator.getFilter());
 
     }
 
@@ -694,7 +695,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         Assertions.assertEquals(0.16289839792811542, relativeRMSSigmaError[0].getMax(), 1e-17);
         Assertions.assertEquals(0.23616924578204512, relativeRMSSigmaError[1].getMax(), 1e-17);*/
 
-        Assertions.assertEquals(CartesianDerivativesFilter.USE_PV, covarianceInterpolator.getFilter());
+        assertEquals(CartesianDerivativesFilter.USE_PV, covarianceInterpolator.getFilter());
 
     }
 
@@ -753,7 +754,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
         Assertions.assertEquals(0.16611131341788263, relativeRMSSigmaError[0].getMax(), 1e-17);
         Assertions.assertEquals(0.1922012892962485, relativeRMSSigmaError[1].getMax(), 1e-17);*/
 
-        Assertions.assertEquals(CartesianDerivativesFilter.USE_P, covarianceInterpolator.getFilter());
+        assertEquals(CartesianDerivativesFilter.USE_P, covarianceInterpolator.getFilter());
 
     }
 
@@ -812,11 +813,11 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
             System.out.format(Locale.US, "%35s = %20.12f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
             
         }
-        Assertions.assertEquals( 0.067889396, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.361016578, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.064925239, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.705418959, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.140595553, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.005112864, relativeRMSSigmaError[1].getMax(), tolerance);
+        assertEquals( 0.067889396, relativeRMSSigmaError[0].getMean(), tolerance);
+        assertEquals( 7.361016578, relativeRMSSigmaError[1].getMean(), tolerance);
+        assertEquals( 0.064925239, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        assertEquals( 7.705418959, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        assertEquals( 0.140595553, relativeRMSSigmaError[0].getMax(), tolerance);
+        assertEquals(16.005112864, relativeRMSSigmaError[1].getMax(), tolerance);
     }
 }

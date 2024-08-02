@@ -24,7 +24,7 @@ import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.adm.AdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 
-public class AcmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AcmMetadata, AcmData>, Acm> {
+class AcmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AcmMetadata, AcmData>, Acm> {
 
     protected AcmParser getParser() {
         return new ParserBuilder().
@@ -37,47 +37,47 @@ public class AcmWriterTest extends AbstractWriterTest<AdmHeader, Segment<AcmMeta
     }
 
     @Test
-    public void testWriteExample01() {
+    void testWriteExample01() {
         doTest("/ccsds/adm/acm/ACMExample01.txt");
     }
 
     @Test
-    public void testWriteExample02() {
+    void testWriteExample02() {
         doTest("/ccsds/adm/acm/ACMExample02.txt");
     }
 
     @Test
-    public void testWriteExample03() {
+    void testWriteExample03() {
         doTest("/ccsds/adm/acm/ACMExample03.txt");
     }
 
     @Test
-    public void testWriteExample04() {
+    void testWriteExample04() {
         doTest("/ccsds/adm/acm/ACMExample04.txt");
     }
 
     @Test
-    public void testWriteExample05() {
+    void testWriteExample05() {
         doTest("/ccsds/adm/acm/ACMExample05.txt");
     }
 
     @Test
-    public void testWriteExample06() {
+    void testWriteExample06() {
         doTest("/ccsds/adm/acm/ACMExample06.txt");
     }
 
     @Test
-    public void testWriteExample07() {
+    void testWriteExample07() {
         doTest("/ccsds/adm/acm/ACMExample07.txt");
     }
 
     @Test
-    public void testWriteExample08() {
+    void testWriteExample08() {
         doTest("/ccsds/adm/acm/ACMExample08.txt");
     }
 
     @Test
-    public void testWriteExample09() {
+    void testWriteExample09() {
         doTest("/ccsds/adm/acm/ACMExample09.txt");
     }
 

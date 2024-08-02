@@ -16,12 +16,14 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TimeStampedPairTest {
     @Test
@@ -37,10 +39,10 @@ class TimeStampedPairTest {
         Mockito.when(value2.getDate()).thenReturn(new AbsoluteDate().shiftedBy(1));
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> new TimeStampedPair<>(value1, value2));
 
-        Assertions.assertEquals(
+        assertEquals(
                 "first date 2000-01-01T11:58:55.816Z does not match second date 2000-01-01T11:58:56.816Z",
                 thrown.getMessage());
     }
@@ -61,8 +63,8 @@ class TimeStampedPairTest {
         final TimeStampedPair<TimeStamped, TimeStamped> pair = new TimeStampedPair<>(value1, value2);
 
         // Then
-        Assertions.assertEquals(defaultDate, pair.getDate());
-        Assertions.assertEquals(value1, pair.getFirst());
-        Assertions.assertEquals(value2, pair.getSecond());
+        assertEquals(defaultDate, pair.getDate());
+        assertEquals(value1, pair.getFirst());
+        assertEquals(value2, pair.getSecond());
     }
 }

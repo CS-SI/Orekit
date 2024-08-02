@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -40,10 +39,12 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class BackAndForthDetectorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class BackAndForthDetectorTest {
 
     @Test
-    public void testBackAndForth() {
+    void testBackAndForth() {
 
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -85,7 +86,7 @@ public class BackAndForthDetectorTest {
         propagator.propagate(date1);
         propagator.propagate(date0);
 
-        Assertions.assertEquals(4, visi.getVisiNb());
+        assertEquals(4, visi.getVisiNb());
 
     }
 
@@ -108,12 +109,12 @@ public class BackAndForthDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
     }
 
 }

@@ -17,7 +17,6 @@
 package org.orekit.propagation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.attitudes.AttitudeProvider;
@@ -30,6 +29,8 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.Collection;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 class PropagatorTest {
@@ -44,7 +45,7 @@ class PropagatorTest {
         final Vector3D actualPosition = testPropagator.getPosition(date, frame);
         // THEN
         final PVCoordinates expectedState = testPropagator.propagate(date).getPVCoordinates(frame);
-        Assertions.assertEquals(expectedState.getPosition(), actualPosition);
+        assertEquals(expectedState.getPosition(), actualPosition);
     }
 
     @Test
@@ -57,8 +58,8 @@ class PropagatorTest {
         final PVCoordinates actualState = testPropagator.getPVCoordinates(date, frame);
         // THEN
         final PVCoordinates expectedState = testPropagator.propagate(date).getPVCoordinates(frame);
-        Assertions.assertEquals(expectedState.getPosition(), actualState.getPosition());
-        Assertions.assertEquals(expectedState.getVelocity(), actualState.getVelocity());
+        assertEquals(expectedState.getPosition(), actualState.getPosition());
+        assertEquals(expectedState.getVelocity(), actualState.getVelocity());
     }
 
     private static SpacecraftState mockSpacecraftState(final AbsoluteDate date) {

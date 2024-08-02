@@ -18,7 +18,6 @@ package org.orekit.gnss.metric.messages.rtcm;
 
 import java.util.ArrayList;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.gnss.metric.messages.rtcm.correction.Rtcm1058;
@@ -27,7 +26,9 @@ import org.orekit.gnss.metric.parser.ByteArrayEncodedMessage;
 import org.orekit.gnss.metric.parser.EncodedMessage;
 import org.orekit.gnss.metric.parser.RtcmMessagesParser;
 
-public class Rtcm1058Test {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class Rtcm1058Test {
 
     private double eps = 1.0e-13;
 
@@ -36,7 +37,7 @@ public class Rtcm1058Test {
     private ArrayList<Integer> messages;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
 
         final String m = "010000100010" +                      // Message number: 1058
                          "01111110011000111111" +              // GPS Epoch Time 1s
@@ -60,28 +61,28 @@ public class Rtcm1058Test {
     }
 
     @Test
-    public void testPerfectValue() {
+    void testPerfectValue() {
         final Rtcm1058 rtcm1058 = (Rtcm1058) new RtcmMessagesParser(messages).parse(message, false);
 
         // Verify size
-        Assertions.assertEquals(1,                            rtcm1058.getData().size());
+        assertEquals(1,                            rtcm1058.getData().size());
 
         // Verify header
-        Assertions.assertEquals(1058,                         rtcm1058.getTypeCode());
-        Assertions.assertEquals(517695.0,                     rtcm1058.getHeader().getEpochTime1s(), eps);
-        Assertions.assertEquals(30.0,                         rtcm1058.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
-        Assertions.assertEquals(0,                            rtcm1058.getHeader().getMultipleMessageIndicator());
-        Assertions.assertEquals(7,                            rtcm1058.getHeader().getIodSsr());
-        Assertions.assertEquals(3951,                         rtcm1058.getHeader().getSsrProviderId());
-        Assertions.assertEquals(1,                            rtcm1058.getHeader().getSsrSolutionId());
-        Assertions.assertEquals(1,                            rtcm1058.getHeader().getNumberOfSatellites());
+        assertEquals(1058,                         rtcm1058.getTypeCode());
+        assertEquals(517695.0,                     rtcm1058.getHeader().getEpochTime1s(), eps);
+        assertEquals(30.0,                         rtcm1058.getHeader().getSsrUpdateInterval().getUpdateInterval(), eps);
+        assertEquals(0,                            rtcm1058.getHeader().getMultipleMessageIndicator());
+        assertEquals(7,                            rtcm1058.getHeader().getIodSsr());
+        assertEquals(3951,                         rtcm1058.getHeader().getSsrProviderId());
+        assertEquals(1,                            rtcm1058.getHeader().getSsrSolutionId());
+        assertEquals(1,                            rtcm1058.getHeader().getNumberOfSatellites());
 
         // Verify data for satellite G01
         final RtcmClockCorrectionData g01 = rtcm1058.getDataMap().get("G01").get(0);
-        Assertions.assertEquals(1,                            g01.getSatelliteID());
-        Assertions.assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
-        Assertions.assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
-        Assertions.assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
+        assertEquals(1,                            g01.getSatelliteID());
+        assertEquals(96.6527,                      g01.getClockCorrection().getDeltaClockC0(),            eps);
+        assertEquals(0.483263,                     g01.getClockCorrection().getDeltaClockC1(),            eps);
+        assertEquals(0.61857734,                   g01.getClockCorrection().getDeltaClockC2(),            eps);
     }
 
     private byte[] byteArrayFromBinary(String radix2Value) {

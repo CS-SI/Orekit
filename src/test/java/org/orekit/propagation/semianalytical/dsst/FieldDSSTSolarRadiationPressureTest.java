@@ -27,7 +27,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -76,6 +75,8 @@ import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -157,12 +158,12 @@ class FieldDSSTSolarRadiationPressureTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals( 6.839644084174288E-8,    elements[0].getReal(), 1.0e-23);
-        Assertions.assertEquals(-2.990943651374133E-11,   elements[1].getReal(), 1.0e-27);
-        Assertions.assertEquals(-2.5384000825777143E-10,  elements[2].getReal(), 1.0e-26);
-        Assertions.assertEquals( 2.0378397296268635E-13,  elements[3].getReal(), 1.0e-29);
-        Assertions.assertEquals(-2.3338910700820843E-14,  elements[4].getReal(), 1.0e-30);
-        Assertions.assertEquals( 1.6082477070964212E-11,  elements[5].getReal(), 1.0e-27);
+        assertEquals( 6.839644084174288E-8,    elements[0].getReal(), 1.0e-23);
+        assertEquals(-2.990943651374133E-11,   elements[1].getReal(), 1.0e-27);
+        assertEquals(-2.5384000825777143E-10,  elements[2].getReal(), 1.0e-26);
+        assertEquals( 2.0378397296268635E-13,  elements[3].getReal(), 1.0e-29);
+        assertEquals(-2.3338910700820843E-14,  elements[4].getReal(), 1.0e-30);
+        assertEquals( 1.6082477070964212E-11,  elements[5].getReal(), 1.0e-27);
 
     }
 
@@ -229,12 +230,12 @@ class FieldDSSTSolarRadiationPressureTest {
             }
         }
 
-        Assertions.assertEquals(0.3668654523023674,    y[0].getReal(), 1.0e-15);
-        Assertions.assertEquals(-2.5673332283029E-10,  y[1].getReal(), 1.0e-23);
-        Assertions.assertEquals(-3.84959877691874E-9,  y[2].getReal(), 1.0e-23);
-        Assertions.assertEquals(-3.069285299519465E-9, y[3].getReal(), 1.0e-23);
-        Assertions.assertEquals(-4.90887054227722E-9,  y[4].getReal(), 1.0e-23);
-        Assertions.assertEquals(-2.38549338428378E-9,  y[5].getReal(), 1.0e-20);
+        assertEquals(0.3668654523023674,    y[0].getReal(), 1.0e-15);
+        assertEquals(-2.5673332283029E-10,  y[1].getReal(), 1.0e-23);
+        assertEquals(-3.84959877691874E-9,  y[2].getReal(), 1.0e-23);
+        assertEquals(-3.069285299519465E-9, y[3].getReal(), 1.0e-23);
+        assertEquals(-4.90887054227722E-9,  y[4].getReal(), 1.0e-23);
+        assertEquals(-2.38549338428378E-9,  y[5].getReal(), 1.0e-20);
     }
 
     @Test
@@ -354,7 +355,7 @@ class FieldDSSTSolarRadiationPressureTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assertions.assertEquals(0, error, 8.3e-10);
+                assertEquals(0, error, 8.3e-10);
             }
         }
 
@@ -501,7 +502,7 @@ class FieldDSSTSolarRadiationPressureTest {
                            shortPeriodP1, shortPeriodP2, shortPeriodP3, shortPeriodP4);
 
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(shortPeriodJacobianRef[i][0],
+            assertEquals(shortPeriodJacobianRef[i][0],
                                 shortPeriodJacobian[i][0],
                                 FastMath.abs(shortPeriodJacobianRef[i][0] * tolerance));
         }
@@ -583,7 +584,7 @@ class FieldDSSTSolarRadiationPressureTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }

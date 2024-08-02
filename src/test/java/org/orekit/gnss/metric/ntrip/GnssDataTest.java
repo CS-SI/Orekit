@@ -16,19 +16,20 @@
  */
 package org.orekit.gnss.metric.ntrip;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class GnssDataTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class GnssDataTest {
 
     @Test
-    public void testToString() {
+    void testToString() {
         // Data
         final byte[] data = new byte[] {
             1, 2, 3, 4, 5, 6, 7, 8, 9
         };
         final GnssData gnssData = new GnssData(data, data.length);
         // Verify
-        Assertions.assertEquals("123456789", gnssData.toString());
+        assertEquals("123456789", gnssData.toString());
     }
 }

@@ -24,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -51,6 +50,9 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 class TargetPointingTest {
@@ -104,7 +106,7 @@ class TargetPointingTest {
         // Rotations composition
         Rotation rotCompo = rotGeo.composeInverse(rotPv, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
-        Assertions.assertEquals(angle, 0.0, Utils.epsilonAngle);
+        assertEquals(0.0, angle, Utils.epsilonAngle);
 
     }
 
@@ -136,9 +138,9 @@ class TargetPointingTest {
         Vector3D pObservedEME2000 = geoTargetAttitudeLaw.getTargetPV(circ, date, FramesFactory.getEME2000()).getPosition();
         GeodeticPoint geoObserved = earthShape.transform(pObservedEME2000, FramesFactory.getEME2000(), date);
 
-        Assertions.assertEquals(geoObserved.getLongitude(), geoTargetITRF.getLongitude(), Utils.epsilonAngle);
-        Assertions.assertEquals(geoObserved.getLatitude(), geoTargetITRF.getLatitude(), Utils.epsilonAngle);
-        Assertions.assertEquals(geoObserved.getAltitude(), geoTargetITRF.getAltitude(), 1.1e-8);
+        assertEquals(geoObserved.getLongitude(), geoTargetITRF.getLongitude(), Utils.epsilonAngle);
+        assertEquals(geoObserved.getLatitude(), geoTargetITRF.getLatitude(), Utils.epsilonAngle);
+        assertEquals(geoObserved.getAltitude(), geoTargetITRF.getAltitude(), 1.1e-8);
 
     }
 
@@ -169,7 +171,7 @@ class TargetPointingTest {
         Attitude att1 = geoTargetAttitudeLaw.getAttitude(circ, date, cirf);
         Attitude att2 = geoTargetAttitudeLaw.getAttitude(circ, date, itrf);
         Attitude att3 = att2.withReferenceFrame(cirf);
-        Assertions.assertEquals(0.0, Rotation.distance(att3.getRotation(), att1.getRotation()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(att3.getRotation(), att1.getRotation()), 1.0e-15);
 
     }
 
@@ -179,10 +181,10 @@ class TargetPointingTest {
             // in the following line, the frames have been intentionnally reversed
             new TargetPointing(itrf, FramesFactory.getEME2000(),
                                new Vector3D(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oe.getSpecifier());
-            Assertions.assertEquals(itrf.getName(), oe.getParts()[0]);
+            assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oe.getSpecifier());
+            assertEquals(itrf.getName(), oe.getParts()[0]);
         }
     }
 
@@ -228,7 +230,7 @@ class TargetPointingTest {
         // Compose attitude rotations
         Rotation rotCompo = rotTarget.composeInverse(rotNadir, RotationConvention.VECTOR_OPERATOR);
         double angle = rotCompo.getAngle();
-        Assertions.assertEquals(angle, 0.0, Utils.epsilonAngle);
+        assertEquals(0.0, angle, Utils.epsilonAngle);
 
 
         //  2/ Test that attitudes are different at a different date
@@ -250,7 +252,7 @@ class TargetPointingTest {
         // Compose attitude rotations
         Rotation extrapRotCompo = extrapRotTarget.composeInverse(extrapRotNadir, RotationConvention.VECTOR_OPERATOR);
         double extrapAngle = extrapRotCompo.getAngle();
-        Assertions.assertEquals(extrapAngle, FastMath.toRadians(24.684793905118823), Utils.epsilonAngle);
+        assertEquals(extrapAngle, FastMath.toRadians(24.684793905118823), Utils.epsilonAngle);
 
     }
 
@@ -303,7 +305,7 @@ class TargetPointingTest {
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
 
-        Assertions.assertEquals(0, distance, 1.e-7);
+        assertEquals(0, distance, 1.e-7);
     }
 
     /** Test the difference between pointing over two longitudes separated by 5°
@@ -361,7 +363,7 @@ class TargetPointingTest {
         //  real
         double deltaReal = Rotation.distance(rotSatEME2000, rotSatRefEME2000);
 
-        Assertions.assertEquals(deltaReal, deltaExpected, 1.e-4);
+        assertEquals(deltaReal, deltaExpected, 1.e-4);
 
     }
 
@@ -395,18 +397,18 @@ class TargetPointingTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAngleMinus, 1.0e-5 * evolutionAngleMinus);
+        assertEquals(0.0, errorAngleMinus, 1.0e-5 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertEquals(0.0, errorAnglePlus, 1.0e-5 * evolutionAnglePlus);
+        assertEquals(0.0, errorAnglePlus, 1.0e-5 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
-        Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.1e-10);
+        assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.1e-10);
 
     }
 
@@ -419,15 +421,15 @@ class TargetPointingTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
 
         final TimeStampedPVCoordinates         pvD = provider.getTargetPV(orbit, date, frame);
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     1.0e-15);
+        assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     1.0e-15);
+        assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 1.0e-15);
 
     }
 
@@ -444,7 +446,7 @@ class TargetPointingTest {
         final Vector3D actualPosition = law.getTargetPosition(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
         // THEN
         final Vector3D expectedPosition = law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     @Test
@@ -460,11 +462,11 @@ class TargetPointingTest {
         final FieldVector3D<Complex> actualPosition = law.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
         // THEN
         final FieldVector3D<Complex> expectedPosition = law.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(0., actualPosition.subtract(expectedPosition).getNorm().getReal(), 1e-10);
+        assertEquals(0., actualPosition.subtract(expectedPosition).getNorm().getReal(), 1e-10);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
 
             Utils.setDataRoot("regular-data");
@@ -484,13 +486,13 @@ class TargetPointingTest {
             eme2000ToItrf = FramesFactory.getEME2000().getStaticTransformTo(itrf, date);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
         eme2000ToItrf = null;

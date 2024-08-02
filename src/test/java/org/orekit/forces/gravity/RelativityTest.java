@@ -28,7 +28,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -55,8 +54,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 /** Unit tests for {@link Relativity}. */
-public class RelativityTest extends AbstractLegacyForceModelTest {
+class RelativityTest extends AbstractLegacyForceModelTest {
 
     /** speed of light */
     private static final double c = Constants.SPEED_OF_LIGHT;
@@ -121,7 +123,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
     /** set orekit data */
     @BeforeAll
-    public static void setUpBefore() {
+    static void setUpBefore() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -129,10 +131,10 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * check the acceleration from relativity
      */
     @Test
-    public void testAcceleration() {
+    void testAcceleration() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
-        Assertions.assertFalse(relativity.dependsOnPositionOnly());
+        assertFalse(relativity.dependsOnPositionOnly());
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
         final Vector3D v = new Vector3D(489.0060271721, -2849.9328929417, -6866.4671013153);
         SpacecraftState s = new SpacecraftState(new CartesianOrbit(
@@ -150,7 +152,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         double tol = 2e-11;
         Vector3D circularApproximation = p.normalize().scalarMultiply(
                 gm / p.getNormSq() * 3 * v.getNormSq() / (c * c));
-        Assertions.assertEquals(
+        assertEquals(
                 0,
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
@@ -159,14 +161,14 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         final Vector3D actualDerivatives = relativity
                 .acceleration(sDS, relativity.getParameters(sDS.getDate().getField(), sDS.getDate()))
                 .toVector3D();
-        Assertions.assertEquals(
+        assertEquals(
                 0,
                 actualDerivatives.subtract(circularApproximation).getNorm(),
                 tol);
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -184,7 +186,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         Relativity relativity = new Relativity(gm);
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -205,7 +207,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * Check a nearly circular orbit.
      */
     @Test
-    public void testAccelerationCircular() {
+    void testAccelerationCircular() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         double re = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         Relativity relativity = new Relativity(gm);
@@ -228,7 +230,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         Vector3D v = pv.getVelocity();
         Vector3D circularApproximation = p.normalize().scalarMultiply(
                 gm / p.getNormSq() * 3 * v.getNormSq() / (c * c));
-        Assertions.assertEquals(
+        assertEquals(
                 0,
                 acceleration.subtract(circularApproximation).getNorm(),
                 tol);
@@ -236,7 +238,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         FieldSpacecraftState<DerivativeStructure> sDS = toDS(state, new LofOffset(state.getFrame(), LOFType.LVLH_CCSDS));
         FieldVector3D<DerivativeStructure> gradient =
                 relativity.acceleration(sDS, relativity.getParameters(sDS.getDate().getField(), sDS.getDate()));
-        Assertions.assertEquals(
+        assertEquals(
                 0,
                 gradient.toVector3D().subtract(circularApproximation).getNorm(),
                 tol);
@@ -247,7 +249,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         final double vx = v.getX();
         double expectedDxDx = gm / (c * c * r * r * r * r * r) *
                 (-13 * x * x * s * s + 3 * r * r * s * s + 4 * r * r * vx * vx);
-        Assertions.assertEquals(expectedDxDx, actualdx[1], 2);
+        assertEquals(expectedDxDx, actualdx[1], 2);
     }
 
     /**Testing if the propagation between the FieldPropagation and the propagation
@@ -256,7 +258,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldTest() {
+    void RealFieldTest() {
         DSFactory factory = new DSFactory(6, 5);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -317,7 +319,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * propagation X with the FieldPropagation and then applying the taylor
      * expansion of dX to the result.*/
     @Test
-    public void RealFieldGradientTest() {
+    void RealFieldGradientTest() {
 
         final int freeParameters = 6;
         Gradient a_0 = Gradient.variable(freeParameters, 0, 7e7);
@@ -378,7 +380,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         (to test if the ForceModel it's actually
         doing something in the Propagator and the FieldPropagator)*/
     @Test
-    public void RealFieldExpectErrorTest() {
+    void RealFieldExpectErrorTest() {
         DSFactory factory = new DSFactory(6, 0);
         DerivativeStructure a_0 = factory.variable(0, 7e7);
         DerivativeStructure e_0 = factory.variable(1, 0.4);
@@ -434,17 +436,18 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         FieldPVCoordinates<DerivativeStructure> finPVC_DS = finalState_DS.getPVCoordinates();
         PVCoordinates finPVC_R = finalState_R.getPVCoordinates();
 
-        Assertions.assertEquals(0,
+        assertEquals(0,
                             Vector3D.distance(finPVC_DS.toPVCoordinates().getPosition(), finPVC_R.getPosition()),
                             8.0e-13 * finPVC_R.getPosition().getNorm());
     }
+
     /**
      * check against example in Tapley, Schutz, and Born, p 65-66. They predict a
      * progression of perigee of 11 arcsec/year. To get the same results we must set the
      * propagation tolerances to 1e-5.
      */
     @Test
-    public void testSmallEffectOnOrbit() {
+    void testSmallEffectOnOrbit() {
         //setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
         Orbit orbit =
@@ -473,7 +476,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         double dpDeg = FastMath.toDegrees(dp);
         //change in argument of perigee in arcseconds per year
         double arcsecPerYear = dpDeg * 3600 / dtYears;
-        Assertions.assertEquals(11, arcsecPerYear, 0.5);
+        assertEquals(11, arcsecPerYear, 0.5);
     }
 
     /**
@@ -481,17 +484,17 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
      * Relativity#getParameter(String)}
      */
     @Test
-    public void testGetSetGM() {
+    void testGetSetGM() {
         //setup
         Relativity relativity = new Relativity(Constants.EIGEN5C_EARTH_MU);
 
         //actions + verify
-        Assertions.assertEquals(
+        assertEquals(
                 Constants.EIGEN5C_EARTH_MU,
                 relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);
         relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).setValue(1);
-        Assertions.assertEquals(
+        assertEquals(
                 1,
                 relativity.getParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT).getValue(),
                 0);

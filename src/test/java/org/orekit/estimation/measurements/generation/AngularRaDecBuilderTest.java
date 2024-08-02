@@ -29,7 +29,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.frames.FramesFactory;
 
-public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularRaDec> {
+class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTest<AngularRaDec> {
 
     private static final double SIGMA = 1.0e-3;
     private static final double BIAS  = 1.0e-4;
@@ -54,12 +54,12 @@ public class AngularRaDecBuilderTest extends AbstractGroundMeasurementBuilderTes
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0x5c845a8e6a11f7b3l, 0.4, 0.9, 128, 3.1 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0x24f750901da8cd2cl, -0.2, -0.6, 100, 2.7 * SIGMA);
     }
 

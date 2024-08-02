@@ -21,8 +21,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UnboundedCartesianEnergyNeglectingMassTest {
 
@@ -33,7 +34,7 @@ class UnboundedCartesianEnergyNeglectingMassTest {
         // WHEN
         final double actualFlowRate = energyNeglectingMass.getMassFlowRateFactor();
         // THEN
-        Assertions.assertEquals(0., actualFlowRate);
+        assertEquals(0., actualFlowRate);
     }
 
     @Test
@@ -43,7 +44,7 @@ class UnboundedCartesianEnergyNeglectingMassTest {
         // WHEN
         final int actualDimension = energyNeglectingMass.getAdjointDimension();
         // THEN
-        Assertions.assertEquals(6, actualDimension);
+        assertEquals(6, actualDimension);
     }
 
     @Test
@@ -56,7 +57,7 @@ class UnboundedCartesianEnergyNeglectingMassTest {
         final FieldVector3D<Binary64> fieldThrustVector = energyNeglectingMass.getThrustVector(adjoint, Binary64.ONE);
         // THEN
         final Vector3D thrustVector = energyNeglectingMass.getThrustVector(new double[] { 0., 0., 0., 1., 0., 0.}, 1.);
-        Assertions.assertEquals(thrustVector, fieldThrustVector.toVector3D());
+        assertEquals(thrustVector, fieldThrustVector.toVector3D());
     }
 
 }

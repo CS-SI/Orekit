@@ -17,29 +17,30 @@
 package org.orekit.propagation.events;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 /**
  * Unit tests for {@link FieldNegateDetector}.
  *
  * @author Evan Ward
  */
-public class FieldNegateDetectorTest {
+class FieldNegateDetectorTest {
 
     /**
      * check {@link FieldNegateDetector#init(FieldSpacecraftState, FieldAbsoluteDate)}.
      */
     @Test
-    public void testInit() {
+    void testInit() {
         doTestInit(Binary64Field.getInstance());
     }
 
@@ -69,7 +70,7 @@ public class FieldNegateDetectorTest {
      * check g function is negated.
      */
     @Test
-    public void testG() {
+    void testG() {
         doTestG(Binary64Field.getInstance());
     }
 
@@ -85,15 +86,15 @@ public class FieldNegateDetectorTest {
 
         // verify + to -
         Mockito.when(a.g(s)).thenReturn(field.getZero().newInstance(1.0));
-        MatcherAssert.assertThat(detector.g(s).getReal(), CoreMatchers.is(-1.0));
+        assertThat(detector.g(s).getReal(), CoreMatchers.is(-1.0));
         // verify - to +
         Mockito.when(a.g(s)).thenReturn(field.getZero().newInstance(-1.0));
-        MatcherAssert.assertThat(detector.g(s).getReal(), CoreMatchers.is(1.0));
+        assertThat(detector.g(s).getReal(), CoreMatchers.is(1.0));
     }
 
     /** Check a with___ method. */
     @Test
-    public void testCreate() {
+    void testCreate() {
         doTestCreate(Binary64Field.getInstance());
     }
 
@@ -109,7 +110,7 @@ public class FieldNegateDetectorTest {
         FieldNegateDetector<T> actual = detector.withMaxCheck(100);
 
         //verify
-        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
-        Assertions.assertTrue(actual.getOriginal() == a);
+        assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
+        assertTrue(actual.getOriginal() == a);
     }
 }

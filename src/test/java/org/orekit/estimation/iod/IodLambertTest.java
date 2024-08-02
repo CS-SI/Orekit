@@ -19,7 +19,6 @@ package org.orekit.estimation.iod;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -52,6 +51,9 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  *
  * Source: <a href="http://ccar.colorado.edu/asen5050/projects/projects_2012/kemble/gibbs_derivation.htm">gibbs_derivation</a>
@@ -60,10 +62,10 @@ import java.util.List;
  * @since 7.1
  *
  */
-public class IodLambertTest {
+class IodLambertTest {
 
     @Test
-    public void testLambert() {
+    void testLambert() {
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
         final double mu = context.initialOrbit.getMu();
@@ -117,16 +119,16 @@ public class IodLambertTest {
                                             /*stapos1.add*/(position1), date1,
                                             /*stapos2.add*/(position2), date2);
 
-        Assertions.assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-9 * context.initialOrbit.getA());
-        Assertions.assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-9 * context.initialOrbit.getE());
-        Assertions.assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-9 * context.initialOrbit.getI());
+        assertEquals(orbit.getA(), context.initialOrbit.getA(), 1.0e-9 * context.initialOrbit.getA());
+        assertEquals(orbit.getE(), context.initialOrbit.getE(), 1.0e-9 * context.initialOrbit.getE());
+        assertEquals(orbit.getI(), context.initialOrbit.getI(), 1.0e-9 * context.initialOrbit.getI());
     }
 
     /** Testing IOD Lambert estimation for several orbital periods.
      *  @author Maxime Journot
      */
     @Test
-    public void testLambert2() {
+    void testLambert2() {
 
         // Initialize context - "eccentric orbit" built-in test bench context
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -180,18 +182,18 @@ public class IodLambertTest {
 
             // Test relative values
             final double relTol = 1e-12;
-            Assertions.assertEquals(refOrbit.getA(),                             orbit.getA(),                             relTol * refOrbit.getA());
-            Assertions.assertEquals(refOrbit.getE(),                             orbit.getE(),                             relTol * refOrbit.getE());
-            Assertions.assertEquals(refOrbit.getI(),                             orbit.getI(),                             relTol * refOrbit.getI());
-            Assertions.assertEquals(refOrbit.getPerigeeArgument(),               orbit.getPerigeeArgument(),               relTol * refOrbit.getPerigeeArgument());
-            Assertions.assertEquals(refOrbit.getRightAscensionOfAscendingNode(), orbit.getRightAscensionOfAscendingNode(), relTol * refOrbit.getRightAscensionOfAscendingNode());
-            Assertions.assertEquals(refOrbit.getTrueAnomaly(),                   orbit.getTrueAnomaly(),                   relTol * refOrbit.getTrueAnomaly());
+            assertEquals(refOrbit.getA(),                             orbit.getA(),                             relTol * refOrbit.getA());
+            assertEquals(refOrbit.getE(),                             orbit.getE(),                             relTol * refOrbit.getE());
+            assertEquals(refOrbit.getI(),                             orbit.getI(),                             relTol * refOrbit.getI());
+            assertEquals(refOrbit.getPerigeeArgument(),               orbit.getPerigeeArgument(),               relTol * refOrbit.getPerigeeArgument());
+            assertEquals(refOrbit.getRightAscensionOfAscendingNode(), orbit.getRightAscensionOfAscendingNode(), relTol * refOrbit.getRightAscensionOfAscendingNode());
+            assertEquals(refOrbit.getTrueAnomaly(),                   orbit.getTrueAnomaly(),                   relTol * refOrbit.getTrueAnomaly());
         }
     }
 
 
     @Test
-    public void testMultiRevolutions() {
+    void testMultiRevolutions() {
 
         Utils.setDataRoot("regular-data");
         TLE aussatB1 = new TLE("1 22087U 92054A   17084.21270512 -.00000243 +00000-0 +00000-0 0  9999",
@@ -208,21 +210,21 @@ public class IodLambertTest {
 
         IodLambert lambert = new IodLambert(Constants.WGS84_EARTH_MU);
         Orbit k0 = lambert.estimate(teme, true, 0, p1, t1, p2, t2);
-        Assertions.assertEquals(6.08e-4, k0.getE(), 1.0e-6);
-        Assertions.assertEquals(8.55, FastMath.toDegrees(k0.getI()), 0.01);
-        Assertions.assertEquals(0.0, Vector3D.distance(p1, k0.getPosition(t1, teme)), 2.0e-8);
-        Assertions.assertEquals(0.0, Vector3D.distance(p2, k0.getPosition(t2, teme)), 2.0e-7);
+        assertEquals(6.08e-4, k0.getE(), 1.0e-6);
+        assertEquals(8.55, FastMath.toDegrees(k0.getI()), 0.01);
+        assertEquals(0.0, Vector3D.distance(p1, k0.getPosition(t1, teme)), 2.0e-8);
+        assertEquals(0.0, Vector3D.distance(p2, k0.getPosition(t2, teme)), 2.0e-7);
 
         Orbit k1 = lambert.estimate(teme, true, 1, p1, t1, p3, t3);
-        Assertions.assertEquals(5.97e-4, k1.getE(), 1.0e-6);
-        Assertions.assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
-        Assertions.assertEquals(0.0, Vector3D.distance(p1, k1.getPosition(t1, teme)), 1.4e-8);
-        Assertions.assertEquals(0.0, Vector3D.distance(p3, k1.getPosition(t3, teme)), 3.0e-7);
+        assertEquals(5.97e-4, k1.getE(), 1.0e-6);
+        assertEquals(8.55, FastMath.toDegrees(k1.getI()), 0.01);
+        assertEquals(0.0, Vector3D.distance(p1, k1.getPosition(t1, teme)), 1.4e-8);
+        assertEquals(0.0, Vector3D.distance(p3, k1.getPosition(t3, teme)), 3.0e-7);
 
     }
 
     @Test
-    public void testNonChronologicalObservations() {
+    void testNonChronologicalObservations() {
 
         // Initialize context - "eccentric orbit" built-in test bench context
         final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
@@ -266,10 +268,10 @@ public class IodLambertTest {
         // Estimate the orbit
         try {
             iod.estimate(frame, posigrades, nRevs, position1, date1, position2, date2);
-            Assertions.fail("An exception should have been thrown");
+            fail("An exception should have been thrown");
 
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
+            assertEquals(OrekitMessages.NON_CHRONOLOGICAL_DATES_FOR_OBSERVATIONS, oe.getSpecifier());
         }
     }
 
@@ -281,7 +283,7 @@ public class IodLambertTest {
      *  @author Nicola Sullo
      */
     @Test
-    public void testIssue533() {
+    void testIssue533() {
 
         double mu = Constants.EGM96_EARTH_MU;
         Frame j2000 = FramesFactory.getEME2000();
@@ -370,15 +372,15 @@ public class IodLambertTest {
             }
 
             // Check results
-            Assertions.assertEquals(0., dP1, dP1Tol);
-            Assertions.assertEquals(0., dV1, dV1Tol);
-            Assertions.assertEquals(0., dP2, dP2Tol);
-            Assertions.assertEquals(0., dV2, dV2Tol);
+            assertEquals(0., dP1, dP1Tol);
+            assertEquals(0., dV1, dV1Tol);
+            assertEquals(0., dP2, dP2Tol);
+            assertEquals(0., dV2, dV2Tol);
         }
     }
 
     @Test
-    public void testIssue752() {
+    void testIssue752() {
 
         // Test taken from “Superior Lambert Algorithm” by Gim Der
 
@@ -410,17 +412,17 @@ public class IodLambertTest {
                                                       new Position(date2,   posR2, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
+        assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
 
         // Test the norm of the second velocity
         final KeplerianPropagator kepler = new KeplerianPropagator(orbit);
-        Assertions.assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
 
     }
 
     @Test
-    public void testWithPVMeasurements() {
+    void testWithPVMeasurements() {
 
         // Test taken from “Superior Lambert Algorithm” by Gim Der
 
@@ -452,17 +454,17 @@ public class IodLambertTest {
                                                       new PV(date2,   posR2, velR2, 1.0, 1.0, 1.0, satellite));
 
         // Test for the norm of the first velocity
-        Assertions.assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
+        assertEquals(0.0, orbit.getPVCoordinates().getVelocity().getNorm() - velR1.getNorm(),  1e-3);
 
         // Test the norm of the second velocity
         final KeplerianPropagator kepler = new KeplerianPropagator(orbit);
-        Assertions.assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
+        assertEquals(0.0, kepler.propagate(date2).getPVCoordinates().getVelocity().getNorm() - velR2.getNorm(),  1e-3);
 
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

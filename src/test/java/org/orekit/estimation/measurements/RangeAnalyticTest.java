@@ -26,7 +26,6 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -42,14 +41,16 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 
-public class RangeAnalyticTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class RangeAnalyticTest {
 
     /**
      * Test the values of the range comparing the observed values and the estimated values
      * Both are calculated with a different algorithm
       */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Analytical Values\n");
@@ -63,7 +64,7 @@ public class RangeAnalyticTest {
      * using Range function as a comparison
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -81,7 +82,7 @@ public class RangeAnalyticTest {
      * using a numerical finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesFiniteDifferences() {
+    void testStateDerivativesFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -99,7 +100,7 @@ public class RangeAnalyticTest {
      * using Range function as a comparison
      */
     @Test
-    public void testStateDerivativesWithModifier() {
+    void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -117,7 +118,7 @@ public class RangeAnalyticTest {
      * using a numerical finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesWithModifierFiniteDifferences() {
+    void testStateDerivativesWithModifierFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -135,7 +136,7 @@ public class RangeAnalyticTest {
      * using Range function as a comparison
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -152,7 +153,7 @@ public class RangeAnalyticTest {
      * using a numerical finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivativesFiniteDifferences() {
+    void testParameterDerivativesFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -169,7 +170,7 @@ public class RangeAnalyticTest {
      * using Range function as a comparison
      */
     @Test
-    public void testParameterDerivativesWithModifier() {
+    void testParameterDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -186,7 +187,7 @@ public class RangeAnalyticTest {
      * using a numerical finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivativesWithModifierFiniteDifferences() {
+    void testParameterDerivativesWithModifierFiniteDifferences() {
 
         boolean printResults = false;
         if (printResults) {
@@ -307,15 +308,15 @@ public class RangeAnalyticTest {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 4.0e-08);
-        Assertions.assertEquals(0.0, absErrorsMin,    2.0e-07);
-        Assertions.assertEquals(0.0, absErrorsMax,    2.3e-07);
-        Assertions.assertEquals(0.0, relErrorsMedian, 6.5e-15);
-        Assertions.assertEquals(0.0, relErrorsMax,    2.5e-14);
+        assertEquals(0.0, absErrorsMedian, 4.0e-08);
+        assertEquals(0.0, absErrorsMin,    2.0e-07);
+        assertEquals(0.0, absErrorsMax,    2.3e-07);
+        assertEquals(0.0, relErrorsMedian, 6.5e-15);
+        assertEquals(0.0, relErrorsMax,    2.5e-14);
 
         // Test measurement type
         final RangeAnalytic rangeAnalytic = new RangeAnalytic((Range) measurements.get(0));
-        Assertions.assertEquals(RangeAnalytic.MEASUREMENT_TYPE, rangeAnalytic.getMeasurementType());
+        assertEquals(RangeAnalytic.MEASUREMENT_TYPE, rangeAnalytic.getMeasurementType());
     }
 
     /**
@@ -406,8 +407,8 @@ public class RangeAnalyticTest {
 //                    }
 //                    //Test
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -482,12 +483,12 @@ public class RangeAnalyticTest {
         }
 
         // Reference comparison with Range class
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     /**
@@ -566,8 +567,8 @@ public class RangeAnalyticTest {
 
                     for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                        Assertions.assertEquals(1, measurement.getDimension());
-                        Assertions.assertEquals(1, gradient.length);
+                        assertEquals(1, measurement.getDimension());
+                        assertEquals(1, gradient.length);
 
                         // Compute a reference value using analytical formulas
                         final EstimatedMeasurement<Range> rangeAnalytic =
@@ -635,8 +636,8 @@ public class RangeAnalyticTest {
         refErrorsMean   = 3.64e-06;
         refErrorsMax    = 6.1e-05;
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
     }
 }

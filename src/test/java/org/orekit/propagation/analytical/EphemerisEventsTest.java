@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical;
 
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -46,27 +45,29 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
-public class EphemerisEventsTest {
+class EphemerisEventsTest {
 
     @Test
-    public void testEphemKeplerian() throws IllegalArgumentException, OrekitException {
+    void testEphemKeplerian() throws IllegalArgumentException, OrekitException {
         checkEphem(OrbitType.KEPLERIAN);
     }
 
     @Test
-    public void testEphemCircular() throws IllegalArgumentException, OrekitException {
+    void testEphemCircular() throws IllegalArgumentException, OrekitException {
         checkEphem(OrbitType.CIRCULAR);
     }
 
     @Test
-    public void testEphemEquinoctial() throws IllegalArgumentException, OrekitException {
+    void testEphemEquinoctial() throws IllegalArgumentException, OrekitException {
         checkEphem(OrbitType.EQUINOCTIAL);
     }
 
     @Test
-    public void testEphemCartesian() throws IllegalArgumentException, OrekitException {
+    void testEphemCartesian() throws IllegalArgumentException, OrekitException {
         checkEphem(OrbitType.CARTESIAN);
     }
 
@@ -124,7 +125,7 @@ public class EphemerisEventsTest {
                               withHandler(new EventHandler() {
                                 public Action eventOccurred(SpacecraftState s, EventDetector detector,
                                                             boolean increasing) {
-                                    Assertions.assertEquals(type, s.getOrbit().getType());
+                                    assertEquals(type, s.getOrbit().getType());
                                     if (increasing) {
                                         ++inEclipsecounter;
                                     } else {
@@ -158,13 +159,13 @@ public class EphemerisEventsTest {
 
         ephem.clearStepHandlers();
         SpacecraftState state = ephem.propagate(computeEnd);
-        Assertions.assertEquals(computeEnd, state.getDate());
-        Assertions.assertEquals(14, inEclipsecounter);
-        Assertions.assertEquals(14, outEclipsecounter);
+        assertEquals(computeEnd, state.getDate());
+        assertEquals(14, inEclipsecounter);
+        assertEquals(14, outEclipsecounter);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         inEclipsecounter = 0;
         outEclipsecounter = 0;

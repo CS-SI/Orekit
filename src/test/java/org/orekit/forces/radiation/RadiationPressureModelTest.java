@@ -5,7 +5,6 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.AbstractIntegrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
@@ -27,6 +26,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -49,7 +53,7 @@ class RadiationPressureModelTest {
         final FieldVector3D<Complex> fieldAcceleration = forceModel.acceleration(fieldState, forceModel.getParameters(field));
         // THEN
         final Vector3D expectedAcceleration = forceModel.acceleration(state, forceModel.getParameters());
-        Assertions.assertEquals(expectedAcceleration, fieldAcceleration.toVector3D());
+        assertEquals(expectedAcceleration, fieldAcceleration.toVector3D());
     }
 
     @Test
@@ -62,7 +66,7 @@ class RadiationPressureModelTest {
         // WHEN
         final boolean dependsOnPositionOnly = forceModel.dependsOnPositionOnly();
         // THEN
-        Assertions.assertTrue(dependsOnPositionOnly);
+        assertTrue(dependsOnPositionOnly);
     }
 
     @Test
@@ -75,7 +79,7 @@ class RadiationPressureModelTest {
         // WHEN
         final boolean dependsOnPositionOnly = forceModel.dependsOnPositionOnly();
         // THEN
-        Assertions.assertFalse(dependsOnPositionOnly);
+        assertFalse(dependsOnPositionOnly);
     }
 
     @Test
@@ -91,7 +95,7 @@ class RadiationPressureModelTest {
         // WHEN
         final Stream<?> detectors = forceModel.getEventDetectors();
         // THEN
-        Assertions.assertEquals(eclipseDetectors.size(), detectors.toArray().length);
+        assertEquals(eclipseDetectors.size(), detectors.toArray().length);
     }
 
     @SuppressWarnings("unchecked")
@@ -109,7 +113,7 @@ class RadiationPressureModelTest {
         // WHEN
         final Stream<?> detectors = forceModel.getFieldEventDetectors(field);
         // THEN
-        Assertions.assertEquals(eclipseDetectors.size(), detectors.toArray().length);
+        assertEquals(eclipseDetectors.size(), detectors.toArray().length);
     }
 
     @Test
@@ -130,7 +134,7 @@ class RadiationPressureModelTest {
         // THEN
         final SpacecraftState comparableState = computeComparableState(forceModel, terminalDate);
         final Vector3D relativePosition = comparableState.getPosition().subtract(propagateState.getPosition(comparableState.getFrame()));
-        Assertions.assertEquals(0., relativePosition.getNorm(), 1e-6);
+        assertEquals(0., relativePosition.getNorm(), 1e-6);
     }
 
     private SpacecraftState computeComparableState(final RadiationPressureModel radiationPressureModel,

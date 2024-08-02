@@ -20,7 +20,6 @@ package org.orekit.propagation.analytical;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -40,16 +39,19 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class KeplerianStateTransitionMatrixTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class KeplerianStateTransitionMatrixTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testNullStmName() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNullStmName() {
+        assertThrows(OrekitException.class, () -> {
             // Definition of initial conditions with position and velocity
             //------------------------------------------------------------
             Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
@@ -67,7 +69,7 @@ public class KeplerianStateTransitionMatrixTest {
     }
 
     @Test
-    public void testStateJacobian() {
+    void testStateJacobian() {
 
         // Definition of initial conditions with position and velocity
         //------------------------------------------------------------
@@ -87,8 +89,8 @@ public class KeplerianStateTransitionMatrixTest {
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         final SpacecraftState finalState = propagator.propagate(target);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(finalState);
-        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
-        Assertions.assertEquals(PositionAngleType.MEAN, harvester.getPositionAngleType());
+        assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
+        assertEquals(PositionAngleType.MEAN, harvester.getPositionAngleType());
 
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
@@ -120,7 +122,7 @@ public class KeplerianStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, 7.16e-14);
+                    assertEquals(0, error, 7.16e-14);
                 }
             }
         }

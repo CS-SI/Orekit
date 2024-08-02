@@ -21,7 +21,6 @@ import java.net.URL;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -39,10 +38,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.units.Unit;
 
-public class TectonicsDisplacementTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class TectonicsDisplacementTest {
 
     @Test
-    public void testLviv() throws URISyntaxException {
+    void testLviv() throws URISyntaxException {
         final URL url = TectonicsDisplacementTest.class.getClassLoader().
                         getResource("sinex/SLRF2008_150928_2015.09.28.snx");
         final Map<String, Station>         stations    = new SinexLoader(new DataSource(url.toURI())).getStations();
@@ -61,20 +62,20 @@ public class TectonicsDisplacementTest {
         // 17 VELY   1831  A    1 05:001:00000 m/y  2 0.175681714423597E-01 0.34733E-02
         // 18 VELZ   1831  A    1 05:001:00000 m/y  2 0.408218739007309E-01 0.24574E-02
         final Station lviv = stations.get("1831");
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 Vector3D.distance(new Vector3D(0.376067473563698E+07,
                                                                0.167077643037227E+07,
                                                                0.485716543779447E+07),
                                                   lviv.getPosition()),
                                 1.0e-8);
         final Unit mPy = Unit.parse("m/yr");
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 Vector3D.distance(new Vector3D(mPy.toSI(-.228163272262724E-02),
                                                                mPy.toSI(0.175681714423597E-01),
                                                                mPy.toSI(0.408218739007309E-01)),
                                                   lviv.getVelocity()),
                                 1.0e-20);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                                 lviv.getEpoch().durationFrom(new AbsoluteDate(2005, 1, 1, utc)),
                                 1.0e-15);
 
@@ -83,15 +84,15 @@ public class TectonicsDisplacementTest {
         final AbsoluteDate          sixMonthsLater = lviv.getEpoch().shiftedBy(0.5 * Constants.JULIAN_YEAR);
         final BodiesElements        elements       = fna.evaluateAll(sixMonthsLater);
         final Vector3D              dP             = displacement.displacement(elements, earthFrame, lviv.getPosition());
-        Assertions.assertEquals(0.5 * -.228163272262724E-02, dP.getX(), 1.0e-16);
-        Assertions.assertEquals(0.5 * 0.175681714423597E-01, dP.getY(), 1.0e-16);
-        Assertions.assertEquals(0.5 * 0.408218739007309E-01, dP.getZ(), 1.0e-16);
+        assertEquals(0.5 * -.228163272262724E-02, dP.getX(), 1.0e-16);
+        assertEquals(0.5 * 0.175681714423597E-01, dP.getY(), 1.0e-16);
+        assertEquals(0.5 * 0.408218739007309E-01, dP.getZ(), 1.0e-16);
         
 
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 

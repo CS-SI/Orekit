@@ -16,11 +16,16 @@
  */
 package org.orekit.data;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -31,8 +36,8 @@ import java.util.regex.Pattern;
 public class DirectoryCrawlerTest {
 
     @Test
-    public void testNoDirectory() throws URISyntaxException {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNoDirectory() throws URISyntaxException {
+        assertThrows(OrekitException.class, () -> {
             File existing = new File(getClass().getClassLoader().getResource("regular-data").toURI().getPath());
             File inexistent = new File(existing.getParent(), "inexistant-directory");
             new DirectoryCrawler(inexistent).feed(Pattern.compile(".*"), new CountingLoader(),
@@ -41,8 +46,8 @@ public class DirectoryCrawlerTest {
    }
 
     @Test
-    public void testNotADirectory() throws URISyntaxException {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testNotADirectory() throws URISyntaxException {
+        assertThrows(OrekitException.class, () -> {
             URL url =
                     DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data/UTC-TAI.history");
             new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), new CountingLoader(),
@@ -51,39 +56,39 @@ public class DirectoryCrawlerTest {
     }
 
     @Test
-    public void testNominal() throws URISyntaxException {
+    void testNominal() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
         CountingLoader crawler = new CountingLoader();
         new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler,
                                                                    DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertTrue(crawler.getCount() > 0);
+        assertTrue(crawler.getCount() > 0);
     }
 
     @Test
-    public void testCompressed() throws URISyntaxException {
+    void testCompressed() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("compressed-data");
         CountingLoader crawler = new CountingLoader();
         new DirectoryCrawler(new File(url.toURI().getPath())).feed(Pattern.compile(".*"), crawler,
                                                                    DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertTrue(crawler.getCount() > 0);
+        assertTrue(crawler.getCount() > 0);
     }
 
     @Test
-    public void testMultiZipClasspath() throws URISyntaxException {
+    void testMultiZipClasspath() throws URISyntaxException {
         URL url =
             DirectoryCrawlerTest.class.getClassLoader().getResource("zipped-data/multizip.zip");
         File parent = new File(url.toURI().getPath()).getParentFile();
         CountingLoader crawler = new CountingLoader();
         new DirectoryCrawler(parent).feed(Pattern.compile(".*\\.txt$"), crawler,
                                           DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(7, crawler.getCount());
+        assertEquals(7, crawler.getCount());
     }
 
     @Test
-    public void testIOException() throws URISyntaxException {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testIOException() throws URISyntaxException {
+        assertThrows(OrekitException.class, () -> {
             URL url =
                     DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
             try {
@@ -91,17 +96,17 @@ public class DirectoryCrawlerTest {
                         DataContext.getDefault().getDataProvidersManager());
             } catch (OrekitException oe) {
                 // expected behavior
-                Assertions.assertNotNull(oe.getCause());
-                Assertions.assertEquals(IOException.class, oe.getCause().getClass());
-                Assertions.assertEquals("dummy error", oe.getMessage());
+                assertNotNull(oe.getCause());
+                assertEquals(IOException.class, oe.getCause().getClass());
+                assertEquals("dummy error", oe.getMessage());
                 throw oe;
             }
         });
     }
 
     @Test
-    public void testParseException() throws URISyntaxException {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testParseException() throws URISyntaxException {
+        assertThrows(OrekitException.class, () -> {
             URL url =
                     DirectoryCrawlerTest.class.getClassLoader().getResource("regular-data");
             try {
@@ -109,9 +114,9 @@ public class DirectoryCrawlerTest {
                         DataContext.getDefault().getDataProvidersManager());
             } catch (OrekitException oe) {
                 // expected behavior
-                Assertions.assertNotNull(oe.getCause());
-                Assertions.assertEquals(ParseException.class, oe.getCause().getClass());
-                Assertions.assertEquals("dummy error", oe.getMessage());
+                assertNotNull(oe.getCause());
+                assertEquals(ParseException.class, oe.getCause().getClass());
+                assertEquals("dummy error", oe.getMessage());
                 throw oe;
             }
         });

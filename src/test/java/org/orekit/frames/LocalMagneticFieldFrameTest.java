@@ -34,7 +34,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Pair;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -58,10 +57,10 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class LocalMagneticFieldFrameTest {
+class LocalMagneticFieldFrameTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:earth");
     }
 
@@ -80,11 +79,11 @@ public class LocalMagneticFieldFrameTest {
 
         // THEN
         // Assert name
-        Assertions.assertEquals("LOCAL_MAGNETIC_FIELD_FRAME", computedName);
+        assertEquals("LOCAL_MAGNETIC_FIELD_FRAME", computedName);
 
         // Assert getters
-        Assertions.assertEquals(inertialFrameMock, localMagneticFieldFrame.getInertialFrame());
-        Assertions.assertEquals(geoMagneticFieldMock, localMagneticFieldFrame.getMagneticField());
+        assertEquals(inertialFrameMock, localMagneticFieldFrame.getInertialFrame());
+        assertEquals(geoMagneticFieldMock, localMagneticFieldFrame.getMagneticField());
     }
 
 
@@ -130,10 +129,10 @@ public class LocalMagneticFieldFrameTest {
         final FieldRotation<Binary64> computedRotation = spy.rotationFromInertial(binary64Field, fieldDate, fieldPV);
 
         // THEN
-        Assertions.assertEquals(rotation.getQ0(), computedRotation.getQ0().getReal());
-        Assertions.assertEquals(rotation.getQ1(), computedRotation.getQ1().getReal());
-        Assertions.assertEquals(rotation.getQ2(), computedRotation.getQ2().getReal());
-        Assertions.assertEquals(rotation.getQ3(), computedRotation.getQ3().getReal());
+        assertEquals(rotation.getQ0(), computedRotation.getQ0().getReal());
+        assertEquals(rotation.getQ1(), computedRotation.getQ1().getReal());
+        assertEquals(rotation.getQ2(), computedRotation.getQ2().getReal());
+        assertEquals(rotation.getQ3(), computedRotation.getQ3().getReal());
     }
 
     @Test
@@ -175,16 +174,16 @@ public class LocalMagneticFieldFrameTest {
         final Vector3D computedMinusMom = minusMom.getVector(pv);
 
         // THEN
-        Assertions.assertEquals(positionMock, computedPlusPos);
-        Assertions.assertEquals(velocityMock, computedPlusVel);
-        Assertions.assertEquals(momentumMock, computedPlusMom);
-        Assertions.assertEquals(minusPositionMock, computedMinusPos);
-        Assertions.assertEquals(minusVelocityMock, computedMinusVel);
-        Assertions.assertEquals(minusMomentumMock, computedMinusMom);
+        assertEquals(positionMock, computedPlusPos);
+        assertEquals(velocityMock, computedPlusVel);
+        assertEquals(momentumMock, computedPlusMom);
+        assertEquals(minusPositionMock, computedMinusPos);
+        assertEquals(minusVelocityMock, computedMinusVel);
+        assertEquals(minusMomentumMock, computedMinusMom);
     }
 
     @Test
-    public void testBotPointing() {
+    void testBotPointing() {
 
         final Map<String, Pair<Rotation, Double[]>> rotationAnglesMap = new HashMap<>();
         rotationAnglesMap.put("+x", new Pair<>(new Rotation(1.0, 0.0, 0.0, 0.0, false),

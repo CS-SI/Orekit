@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -35,6 +34,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AngularAzElTest {
 
@@ -79,13 +80,13 @@ class AngularAzElTest {
         }
 
         // Mean and std errors check
-        Assertions.assertEquals(0.0, azDiffStat.getMean(), 6.9e-9);
-        Assertions.assertEquals(0.0, azDiffStat.getStandardDeviation(), 7.2e-9);
-        Assertions.assertEquals(0.0, elDiffStat.getMean(), 5.4e-9);
-        Assertions.assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
+        assertEquals(0.0, azDiffStat.getMean(), 6.9e-9);
+        assertEquals(0.0, azDiffStat.getStandardDeviation(), 7.2e-9);
+        assertEquals(0.0, elDiffStat.getMean(), 5.4e-9);
+        assertEquals(0.0, elDiffStat.getStandardDeviation(), 3.3e-9);
 
         // Test measurement type
-        Assertions.assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(AngularAzEl.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /** Test the values of the state derivatives using a numerical.
@@ -141,7 +142,7 @@ class AngularAzElTest {
             final AbsoluteDate date      = measurement.getDate().shiftedBy(-0.75 * meanDelay);
                                state     = propagator.propagate(date);
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assertions.assertEquals(2, estimated.getParticipants().length);
+            assertEquals(2, estimated.getParticipants().length);
             final double[][]   jacobian  = estimated.getStateDerivatives(0);
 
             // compute a reference value using finite differences
@@ -156,8 +157,8 @@ class AngularAzElTest {
                                               PositionAngleType.TRUE, 250.0, 4).
                     value(state);
 
-            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             final double smallest = FastMath.ulp((double) 1.0);
 
@@ -188,12 +189,12 @@ class AngularAzElTest {
         }
 
         // median errors on Azimuth
-        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsP), 1.2e-10);
-        Assertions.assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.1e-5);
+        assertEquals(0.0, new Median().evaluate(AzerrorsP), 1.2e-10);
+        assertEquals(0.0, new Median().evaluate(AzerrorsV), 6.1e-5);
 
         // median errors on Elevation
-        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsP), 7.5e-11);
-        Assertions.assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.3e-5);
+        assertEquals(0.0, new Median().evaluate(ElerrorsP), 7.5e-11);
+        assertEquals(0.0, new Median().evaluate(ElerrorsV), 2.3e-5);
     }
 
     /** Test the values of the parameters' derivatives using a numerical
@@ -250,8 +251,8 @@ class AngularAzElTest {
             };
             for (int i = 0; i < 3; ++i) {
                 final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                Assertions.assertEquals(2, measurement.getDimension());
-                Assertions.assertEquals(2, gradient.length);
+                assertEquals(2, measurement.getDimension());
+                assertEquals(2, gradient.length);
 
                 for (final int k : new int[] {0, 1}) {
                     final ParameterFunction dMkdP =
@@ -267,7 +268,7 @@ class AngularAzElTest {
                     final double ref = dMkdP.value(drivers[i], date);
 
                     if (ref > 1.e-12) {
-                        Assertions.assertEquals(ref, gradient[k], 3e-10 * FastMath.abs(ref));
+                        assertEquals(ref, gradient[k], 3e-10 * FastMath.abs(ref));
                     }
                 }
             }

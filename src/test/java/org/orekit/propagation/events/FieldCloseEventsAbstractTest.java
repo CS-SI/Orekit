@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -45,6 +44,13 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -115,9 +121,9 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(60));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(detector1, events.get(0).getDetector());
     }
 
     @Test
@@ -143,11 +149,11 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         List<Event<T>> events = handler.getEvents();
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
-        Assertions.assertEquals(5.5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(detector2, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(detector1, events.get(0).getDetector());
+        assertEquals(5.5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(detector2, events.get(1).getDetector());
     }
 
     @Test
@@ -173,11 +179,11 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         List<Event<T>> events1 = handler1.getEvents();
-        Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(1, events1.size());
+        assertEquals(5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
         List<Event<T>> events2 = handler2.getEvents();
-        Assertions.assertEquals(1, events2.size());
-        Assertions.assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(1, events2.size());
+        assertEquals(5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
     }
 
     /**
@@ -228,13 +234,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         // order is important to make sure the test checks what it is supposed to
-        Assertions.assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
-        Assertions.assertEquals(5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertTrue(events.get(1).isIncreasing());
-        Assertions.assertEquals(detector2, events.get(1).getDetector());
-        Assertions.assertEquals(2, events.size());
+        assertEquals(5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(detector1, events.get(0).getDetector());
+        assertEquals(5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(detector2, events.get(1).getDetector());
+        assertEquals(2, events.size());
     }
 
     /**
@@ -273,17 +279,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(10));
 
         // verify
-        Assertions.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tol);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(resetDetector, events.get(0).getDetector());
+        assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tol);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(resetDetector, events.get(0).getDetector());
         // next two events can occur in either order
-        Assertions.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tol);
-        Assertions.assertTrue(events.get(1).isIncreasing());
-        Assertions.assertEquals(detectors.get(0), events.get(1).getDetector());
-        Assertions.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tol);
-        Assertions.assertTrue(events.get(2).isIncreasing());
-        Assertions.assertEquals(detectors.get(1), events.get(2).getDetector());
-        Assertions.assertEquals(events.size(), 3);
+        assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tol);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(detectors.get(0), events.get(1).getDetector());
+        assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tol);
+        assertTrue(events.get(2).isIncreasing());
+        assertEquals(detectors.get(1), events.get(2).getDetector());
+        assertEquals(3, events.size());
     }
 
     /**
@@ -310,9 +316,9 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         //verify
         // finds one or three events. Not 2.
         List<Event<T>> events1 = handler.getEvents();
-        Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(9.9, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.1);
-        Assertions.assertEquals(true, events1.get(0).isIncreasing());
+        assertEquals(1, events1.size());
+        assertEquals(9.9, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.1);
+        assertTrue(events1.get(0).isIncreasing());
     }
 
     /** "A Tricky Problem" from bug #239. */
@@ -348,17 +354,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         //verify
         // really we only care that the Rules of Event Handling are not violated,
         // but I only know one way to do that in this case.
-        Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(0).isIncreasing());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(2).isIncreasing());
-        Assertions.assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(3).isIncreasing());
-        Assertions.assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(4).isIncreasing());
+        assertEquals(5, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(0).isIncreasing());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(2).isIncreasing());
+        assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(3).isIncreasing());
+        assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(4).isIncreasing());
     }
 
     /**
@@ -390,17 +396,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         // verify
         // if these fail the event finding did its job,
         // but this test isn't testing what it is supposed to be
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
-        Assertions.assertSame(detectorA, events.get(1).getDetector());
-        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
+        assertSame(detectorB, events.get(0).getDetector());
+        assertSame(detectorA, events.get(1).getDetector());
+        assertTrue(events.get(0).getState().getDate().compareTo(
                 events.get(1).getState().getDate()) < 0);
 
         // check event detection worked
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.5);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 1e-6);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        assertEquals(2, events.size());
+        assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.5);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 1e-6);
+        assertTrue(events.get(1).isIncreasing());
     }
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
@@ -430,29 +436,29 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         // we only care that the rules are satisfied, there are other solutions
-        Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        assertEquals(3, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorB, events.get(0).getDetector());
         // events at t2 and t3 may occur in either order since toleranceB > (t3 - t2)
         try {
-            Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-            Assertions.assertEquals(true, events.get(1).isIncreasing());
-            Assertions.assertSame(detectorA, events.get(1).getDetector());
-            Assertions.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
-            Assertions.assertEquals(false, events.get(2).isIncreasing());
-            Assertions.assertSame(detectorB, events.get(2).getDetector());
+            assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+            assertTrue(events.get(1).isIncreasing());
+            assertSame(detectorA, events.get(1).getDetector());
+            assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
+            assertFalse(events.get(2).isIncreasing());
+            assertSame(detectorB, events.get(2).getDetector());
         } catch (AssertionError e) {
-            Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
-            Assertions.assertEquals(false, events.get(1).isIncreasing());
-            Assertions.assertSame(detectorB, events.get(1).getDetector());
-            Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-            Assertions.assertEquals(true, events.get(2).isIncreasing());
-            Assertions.assertSame(detectorA, events.get(2).getDetector());
+            assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
+            assertFalse(events.get(1).isIncreasing());
+            assertSame(detectorB, events.get(1).getDetector());
+            assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+            assertTrue(events.get(2).isIncreasing());
+            assertSame(detectorA, events.get(2).getDetector());
         }
         // chronological
         for (int i = 1; i < events.size(); i++) {
-            Assertions.assertTrue(events.get(i).getState().getDate().compareTo(
+            assertTrue(events.get(i).getState().getDate().compareTo(
                     events.get(i - 1).getState().getDate()) >= 0);
         }
     }
@@ -479,10 +485,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         // allowed to find t1 or t3.
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorB, events.get(0).getDetector());
     }
 
     /**
@@ -513,14 +519,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assertions.assertTrue(detectorB.g(state(t1)).getReal() == 0.0);
-        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() < 0);
-        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() < 0);
+        assertEquals(0.0, detectorB.g(state(t1)).getReal());
+        assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() < 0);
+        assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() < 0);
     }
 
     /**
@@ -551,14 +557,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assertions.assertEquals(0.0, detectorB.g(state(t1)).getReal(), 0.0);
-        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() > 0);
-        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() > 0);
+        assertEquals(0.0, detectorB.g(state(t1)).getReal(), 0.0);
+        assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() > 0);
+        assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() > 0);
     }
 
     /** check root finding when zero at both ends. */
@@ -580,13 +586,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(1).isIncreasing());
+        assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** check root finding when zero at both ends. */
@@ -609,13 +615,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** Test where an event detector has to back up multiple times. */
@@ -650,13 +656,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         //verify
         // need at least 5 events to check that multiple backups occurred
-        Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertEquals(detectorC, events.get(1).getDetector());
+        assertEquals(5, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(detectorB, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(detectorC, events.get(1).getDetector());
         // reporting t3 and t4 is optional, seeing them is not.
         // we know a root was found at t3 because events are reported at t2 and t5.
         /*
@@ -667,15 +673,15 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assertions.assertEquals(true, events.get(3).isIncreasing());
         Assertions.assertEquals(detectorB, events.get(3).getHandler());
         */
-        Assertions.assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(2).isIncreasing());
-        Assertions.assertEquals(detectorC, events.get(2).getDetector());
-        Assertions.assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(3).isIncreasing());
-        Assertions.assertEquals(detectorA, events.get(3).getDetector());
-        Assertions.assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(4).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(4).getDetector());
+        assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(2).isIncreasing());
+        assertEquals(detectorC, events.get(2).getDetector());
+        assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(3).isIncreasing());
+        assertEquals(detectorA, events.get(3).getDetector());
+        assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(4).isIncreasing());
+        assertEquals(detectorB, events.get(4).getDetector());
     }
 
     /** Test a reset event triggering another event at the same time. */
@@ -715,13 +721,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         //verify
         // really we only care that the Rules of Event Handling are not violated,
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(detectorA, events.get(0).getDetector());
+        assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(detectorB, events.get(1).getDetector());
     }
 
     /** check when t + tolerance == t. */
@@ -744,10 +750,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -788,13 +794,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorC, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -835,10 +841,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -880,13 +886,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorC, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -928,13 +934,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorC, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorC, events.get(1).getDetector());
     }
 
     /** check when root finding tolerance > event finding tolerance. */
@@ -957,18 +963,18 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
+        assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t1, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t1, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
 
         // try to resume propagation
         finalState = propagator.propagate(epoch.shiftedBy(30));
 
         // verify it got to the end
-        Assertions.assertEquals(30.0, finalState.getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(30.0, finalState.getDate().durationFrom(epoch).getReal(), 0.0);
     }
 
     /**
@@ -998,16 +1004,16 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30.0));
 
         // verify
-        Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(1).getDetector());
-        Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(2).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(2).getDetector());
+        assertEquals(3, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorB, events.get(1).getDetector());
+        assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(2).isIncreasing());
+        assertSame(detectorA, events.get(2).getDetector());
     }
 
     /** check when root finding tolerance > event finding tolerance. */
@@ -1030,12 +1036,12 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
+        assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assertions.assertEquals(t1.durationFrom(epoch).getReal(),
+        assertEquals(t1.durationFrom(epoch).getReal(),
                 events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
     }
 
     /** Check that steps are restricted correctly with a continue event. */
@@ -1054,23 +1060,23 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(10));
 
         // verify
-        Assertions.assertEquals(10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(0.0,
+        assertEquals(10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(0.0,
                 stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(10.0,
+        assertEquals(10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
+        assertEquals(10.0,
                 stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);
         FieldOrekitStepInterpolator<T> interpolator = stepHandler.interpolators.get(0);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                 interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(5.0,
+        assertEquals(5.0,
                 interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
         interpolator = stepHandler.interpolators.get(1);
-        Assertions.assertEquals(5.0,
+        assertEquals(5.0,
                 interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(10.0,
+        assertEquals(10.0,
                 interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(2, stepHandler.interpolators.size());
+        assertEquals(2, stepHandler.interpolators.size());
     }
 
     /**
@@ -1096,7 +1102,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         try {
             // action
             propagator.propagate(epoch.shiftedBy(20.0));
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (NullPointerException e) {
             // expected
         }
@@ -1142,10 +1148,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         List<Event<T>> events1 = handler1.getEvents();
-        Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(t1, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(1, events1.size());
+        assertEquals(t1, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
         List<Event<T>> events2 = handler2.getEvents();
-        Assertions.assertEquals(0, events2.size());
+        assertEquals(0, events2.size());
     }
 
     @Test
@@ -1172,11 +1178,11 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         List<Event<T>> events1 = handler1.getEvents();
-        Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(1, events1.size());
+        assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
         List<Event<T>> events2 = handler2.getEvents();
-        Assertions.assertEquals(1, events2.size());
-        Assertions.assertEquals(-5.5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(1, events2.size());
+        assertEquals(-5.5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
     }
 
     @Test
@@ -1202,11 +1208,11 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         List<Event<T>> events1 = handler1.getEvents();
-        Assertions.assertEquals(1, events1.size());
-        Assertions.assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(1, events1.size());
+        assertEquals(-5, events1.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
         List<Event<T>> events2 = handler2.getEvents();
-        Assertions.assertEquals(1, events2.size());
-        Assertions.assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(1, events2.size());
+        assertEquals(-5, events2.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
     }
 
     /**
@@ -1257,13 +1263,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         // order is important to make sure the test checks what it is supposed to
-        Assertions.assertEquals(-5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(detector1, events.get(0).getDetector());
-        Assertions.assertEquals(-5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertTrue(events.get(1).isIncreasing());
-        Assertions.assertEquals(detector2, events.get(1).getDetector());
-        Assertions.assertEquals(2, events.size());
+        assertEquals(-5, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(detector1, events.get(0).getDetector());
+        assertEquals(-5, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(detector2, events.get(1).getDetector());
+        assertEquals(2, events.size());
     }
 
     /**
@@ -1302,17 +1308,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-10));
 
         // verify
-        Assertions.assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tol);
-        Assertions.assertTrue(events.get(0).isIncreasing());
-        Assertions.assertEquals(resetDetector, events.get(0).getDetector());
+        assertEquals(t, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tol);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(resetDetector, events.get(0).getDetector());
         // next two events can occur in either order
-        Assertions.assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tol);
-        Assertions.assertFalse(events.get(1).isIncreasing());
-        Assertions.assertEquals(detectors.get(0), events.get(1).getDetector());
-        Assertions.assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tol);
-        Assertions.assertFalse(events.get(2).isIncreasing());
-        Assertions.assertEquals(detectors.get(1), events.get(2).getDetector());
-        Assertions.assertEquals(events.size(), 3);
+        assertEquals(t, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tol);
+        assertFalse(events.get(1).isIncreasing());
+        assertEquals(detectors.get(0), events.get(1).getDetector());
+        assertEquals(t, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tol);
+        assertFalse(events.get(2).isIncreasing());
+        assertEquals(detectors.get(1), events.get(2).getDetector());
+        assertEquals(3, events.size());
     }
 
     /**
@@ -1338,9 +1344,9 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         //verify
         // finds one or three events. Not 2.
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(-9.9, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.2);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
+        assertEquals(1, events.size());
+        assertEquals(-9.9, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.2);
+        assertTrue(events.get(0).isIncreasing());
     }
 
     /** "A Tricky Problem" from bug #239. */
@@ -1376,17 +1382,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         //verify
         // really we only care that the Rules of Event Handling are not violated,
         // but I only know one way to do that in this case.
-        Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(0).isIncreasing());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(2).isIncreasing());
-        Assertions.assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(3).isIncreasing());
-        Assertions.assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(4).isIncreasing());
+        assertEquals(5, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(0).isIncreasing());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(t3, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(2).isIncreasing());
+        assertEquals(t4, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(3).isIncreasing());
+        assertEquals(t5, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(4).isIncreasing());
     }
 
     /**
@@ -1418,17 +1424,17 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         // verify
         // if these fail the event finding did its job,
         // but this test isn't testing what it is supposed to be
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
-        Assertions.assertSame(detectorA, events.get(1).getDetector());
-        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
+        assertSame(detectorB, events.get(0).getDetector());
+        assertSame(detectorA, events.get(1).getDetector());
+        assertTrue(events.get(0).getState().getDate().compareTo(
                 events.get(1).getState().getDate()) > 0);
 
         // check event detection worked
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.5);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 1e-6);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
+        assertEquals(2, events.size());
+        assertEquals(t3, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.5);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 1e-6);
+        assertTrue(events.get(1).isIncreasing());
     }
 
     /** check when g(t < root) < 0,  g(root + convergence) < 0. */
@@ -1458,20 +1464,20 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         // we only care that the rules are satisfied. There are multiple solutions.
-        Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
-        Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
-        Assertions.assertEquals(false, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(1).getDetector());
-        Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(2).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(2).getDetector());
+        assertEquals(3, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorB, events.get(0).getDetector());
+        assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), toleranceB);
+        assertFalse(events.get(1).isIncreasing());
+        assertSame(detectorB, events.get(1).getDetector());
+        assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(2).isIncreasing());
+        assertSame(detectorA, events.get(2).getDetector());
         // ascending order
-        Assertions.assertTrue(events.get(0).getState().getDate().compareTo(
+        assertTrue(events.get(0).getState().getDate().compareTo(
                 events.get(1).getState().getDate()) >= 0);
-        Assertions.assertTrue(events.get(1).getState().getDate().compareTo(
+        assertTrue(events.get(1).getState().getDate().compareTo(
                 events.get(2).getState().getDate()) >= 0);
     }
 
@@ -1497,10 +1503,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         // verify
         // allowed to report t1 or t3.
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorB, events.get(0).getDetector());
     }
 
     /**
@@ -1531,14 +1537,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assertions.assertTrue(detectorB.g(state(t1)).getReal() == 0.0);
-        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() < 0);
-        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() < 0);
+        assertEquals(0.0, detectorB.g(state(t1)).getReal());
+        assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() < 0);
+        assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() < 0);
     }
 
     /**
@@ -1570,14 +1576,14 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
         // detector worked correctly
-        Assertions.assertEquals(0.0, detectorB.g(state(t1)).getReal(), 0.0);
-        Assertions.assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() > 0);
-        Assertions.assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() > 0);
+        assertEquals(0.0, detectorB.g(state(t1)).getReal(), 0.0);
+        assertTrue(detectorB.g(state(t1 + 1e-6)).getReal() > 0);
+        assertTrue(detectorB.g(state(t1 - 1e-6)).getReal() > 0);
     }
 
     /** check root finding when zero at both ends. */
@@ -1600,13 +1606,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(1).isIncreasing());
+        assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** check root finding when zero at both ends. */
@@ -1629,13 +1635,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(false, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertFalse(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorA, events.get(1).getDetector());
     }
 
     /** Test where an event detector has to back up multiple times. */
@@ -1670,13 +1676,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         //verify
         // really we only care that the Rules of Event Handling are not violated,
-        Assertions.assertEquals(5, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertEquals(detectorC, events.get(1).getDetector());
+        assertEquals(5, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(detectorB, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertEquals(detectorC, events.get(1).getDetector());
         // reporting t3 and t4 is optional, seeing them is not.
         // we know a root was found at t3 because events are reported at t2 and t5.
         /*
@@ -1687,15 +1693,15 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         Assertions.assertEquals(true, events.get(3).isIncreasing());
         Assertions.assertEquals(detectorB, events.get(3).getHandler());
         */
-        Assertions.assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(2).isIncreasing());
-        Assertions.assertEquals(detectorC, events.get(2).getDetector());
-        Assertions.assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(3).isIncreasing());
-        Assertions.assertEquals(detectorA, events.get(3).getDetector());
-        Assertions.assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(4).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(4).getDetector());
+        assertEquals(t5, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(2).isIncreasing());
+        assertEquals(detectorC, events.get(2).getDetector());
+        assertEquals(t6, events.get(3).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(3).isIncreasing());
+        assertEquals(detectorA, events.get(3).getDetector());
+        assertEquals(t7, events.get(4).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(4).isIncreasing());
+        assertEquals(detectorB, events.get(4).getDetector());
     }
 
     /** Test a reset event triggering another event at the same time. */
@@ -1735,13 +1741,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         //verify
         // really we only care that the Rules of Event Handling are not violated,
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertEquals(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(1).isIncreasing());
-        Assertions.assertEquals(detectorB, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertEquals(detectorA, events.get(0).getDetector());
+        assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(1).isIncreasing());
+        assertEquals(detectorB, events.get(1).getDetector());
     }
 
     /** check when t + tolerance == t. */
@@ -1764,10 +1770,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), 0.0);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -1808,13 +1814,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorC, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -1855,10 +1861,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(1, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
     }
 
     /**
@@ -1900,13 +1906,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorC, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t3, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorC, events.get(1).getDetector());
     }
 
     /**
@@ -1948,13 +1954,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assertions.assertEquals(2, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorC, events.get(1).getDetector());
+        assertEquals(2, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t2, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorC, events.get(1).getDetector());
     }
 
     private abstract class AbstractTestDetector<D extends AbstractTestDetector<D>> extends FieldAbstractDetector<D, T> {
@@ -2135,18 +2141,18 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assertions.assertEquals(1, events.size());
+        assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t1, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t1, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
 
         // try to resume propagation
         finalState = propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify it got to the end
-        Assertions.assertEquals(-30.0, finalState.getDate().durationFrom(epoch).getReal(), 0.0);
+        assertEquals(-30.0, finalState.getDate().durationFrom(epoch).getReal(), 0.0);
     }
 
     /**
@@ -2176,16 +2182,16 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30.0));
 
         // verify
-        Assertions.assertEquals(3, events.size());
-        Assertions.assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(false, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
-        Assertions.assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(1).isIncreasing());
-        Assertions.assertSame(detectorB, events.get(1).getDetector());
-        Assertions.assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(true, events.get(2).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(2).getDetector());
+        assertEquals(3, events.size());
+        assertEquals(t1, events.get(0).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertFalse(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
+        assertEquals(t1, events.get(1).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(1).isIncreasing());
+        assertSame(detectorB, events.get(1).getDetector());
+        assertEquals(t2, events.get(2).getState().getDate().durationFrom(epoch).getReal(), tolerance);
+        assertTrue(events.get(2).isIncreasing());
+        assertSame(detectorA, events.get(2).getDetector());
     }
 
     private class ShortInfDetector extends AbstractTestDetector<ShortInfDetector> {
@@ -2258,13 +2264,13 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         propagator.propagate(epoch.shiftedBy(-30));
 
         // verify
-        Assertions.assertEquals(1, events.size());
+        assertEquals(1, events.size());
         // use root finder tolerance instead of event finder tolerance.
-        Assertions.assertEquals(t1.durationFrom(epoch).getReal(),
+        assertEquals(t1.durationFrom(epoch).getReal(),
                 events.get(0).getState().getDate().durationFrom(epoch).getReal(),
                 FastMath.ulp(-15.0));
-        Assertions.assertEquals(true, events.get(0).isIncreasing());
-        Assertions.assertSame(detectorA, events.get(0).getDetector());
+        assertTrue(events.get(0).isIncreasing());
+        assertSame(detectorA, events.get(0).getDetector());
     }
 
     /** Check that steps are restricted correctly with a continue event. */
@@ -2283,23 +2289,23 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         FieldSpacecraftState<T> finalState = propagator.propagate(epoch.shiftedBy(-10));
 
         // verify
-        Assertions.assertEquals(-10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(0.0,
+        assertEquals(-10.0, finalState.getDate().durationFrom(epoch).getReal(), tolerance);
+        assertEquals(0.0,
                 stepHandler.initialState.getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(-10.0,
+        assertEquals(-10.0, stepHandler.targetDate.durationFrom(epoch).getReal(), tolerance);
+        assertEquals(-10.0,
                 stepHandler.finalState.getDate().durationFrom(epoch).getReal(), tolerance);
         FieldOrekitStepInterpolator<T> interpolator = stepHandler.interpolators.get(0);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                 interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(-5.0,
+        assertEquals(-5.0,
                 interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
         interpolator = stepHandler.interpolators.get(1);
-        Assertions.assertEquals(-5.0,
+        assertEquals(-5.0,
                 interpolator.getPreviousState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(-10.0,
+        assertEquals(-10.0,
                 interpolator.getCurrentState().getDate().durationFrom(epoch).getReal(), tolerance);
-        Assertions.assertEquals(2, stepHandler.interpolators.size());
+        assertEquals(2, stepHandler.interpolators.size());
     }
 
     /**
@@ -2324,7 +2330,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         try {
             // action
             propagator.propagate(epoch.shiftedBy(-20.0));
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (NullPointerException e) {
             // expected
         }
@@ -2341,8 +2347,8 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                                                     withMaxIter(1000);
         propagator.addEventDetector(eventsGenerator);
         final FieldSpacecraftState<T> end = propagator.propagate(propagator.getInitialState().getDate().shiftedBy(12.5));
-        Assertions.assertEquals(2,                   eventsGenerator.getCount());
-        Assertions.assertEquals(1.125 + 0.5 * small, end.getDate().durationFrom(t0).getReal(), 1.0e-12);
+        assertEquals(2,                   eventsGenerator.getCount());
+        assertEquals(1.125 + 0.5 * small, end.getDate().durationFrom(t0).getReal(), 1.0e-12);
     }
 
     /* utility classes and methods */
@@ -2584,7 +2590,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         @Override
         public FieldSpacecraftState<T> resetState(FieldEventDetector<T> detector, FieldSpacecraftState<T> oldState) {
-            Assertions.assertEquals(0, newState.getDate().durationFrom(oldState.getDate()).getReal(), 0);
+            assertEquals(0, newState.getDate().durationFrom(oldState.getDate()).getReal(), 0);
             return newState;
         }
     }

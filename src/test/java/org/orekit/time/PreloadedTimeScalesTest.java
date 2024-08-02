@@ -17,7 +17,6 @@
 package org.orekit.time;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DirectoryCrawler;
@@ -30,6 +29,10 @@ import org.orekit.time.TAIUTCDatFilesLoader.Parser;
 import org.orekit.utils.IERSConventions;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -38,7 +41,7 @@ import java.util.List;
  *
  * @author Evan Ward
  */
-public class PreloadedTimeScalesTest {
+class PreloadedTimeScalesTest {
 
     /** Subject under test. */
     private TimeScales timeScales;
@@ -49,7 +52,7 @@ public class PreloadedTimeScalesTest {
      * @throws IOException on error.
      */
     @BeforeEach
-    public void setUp() throws IOException {
+    void setUp() throws IOException {
         final String leapPath = "/USNO/tai-utc.dat";
         final String eopPath =
                 "/regular-data/Earth-orientation-parameters/yearly/finals2000A.2002.xml";
@@ -74,7 +77,7 @@ public class PreloadedTimeScalesTest {
 
     /** Rough check that the time scales work as expected. */
     @Test
-    public void testTime() {
+    void testTime() {
         // actions
         AbsoluteDate javaEpoch = timeScales.getJavaEpoch();
         AbsoluteDate j2000Epoch = timeScales.getJ2000Epoch();
@@ -86,26 +89,26 @@ public class PreloadedTimeScalesTest {
         AbsoluteDate date3 = new AbsoluteDate(2000, 1, 1, 12, 0, 0.0, ut1);
 
         // verify
-        Assertions.assertEquals("1970-01-01T00:00:00.000", javaEpoch.toString(utc));
-        Assertions.assertEquals(-32, utc.offsetFromTAI(date), 0);
-        Assertions.assertEquals(-32.2889120, ut1.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(0, tai.offsetFromTAI(date), 0);
-        Assertions.assertEquals(-32, timeScales.getUTC().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-32 + 24110.54841, timeScales.getGMST(IERSConventions.IERS_2010, true).offsetFromTAI(date3), 0);
-        Assertions.assertEquals(-32 + 3 * 3600, timeScales.getGLONASS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getGPS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getQZSS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getGST().offsetFromTAI(date), 0);
-        Assertions.assertEquals(-19, timeScales.getIRNSS().offsetFromTAI(date), 0);
-        Assertions.assertEquals(32.184, timeScales.getTT().offsetFromTAI(date), 0);
-        Assertions.assertEquals(32.184, timeScales.getTDB().offsetFromTAI(j2000Epoch.shiftedBy(216525.908119)), 0);
-        Assertions.assertEquals(32.184, timeScales.getTCB().offsetFromTAI(date2), 1e-4);
-        Assertions.assertEquals(32.184, timeScales.getTCG().offsetFromTAI(date2), 0);
+        assertEquals("1970-01-01T00:00:00.000", javaEpoch.toString(utc));
+        assertEquals(-32, utc.offsetFromTAI(date), 0);
+        assertEquals(-32.2889120, ut1.offsetFromTAI(date), 1e-14);
+        assertEquals(0, tai.offsetFromTAI(date), 0);
+        assertEquals(-32, timeScales.getUTC().offsetFromTAI(date), 0);
+        assertEquals(-32 + 24110.54841, timeScales.getGMST(IERSConventions.IERS_2010, true).offsetFromTAI(date3), 0);
+        assertEquals(-32 + 3 * 3600, timeScales.getGLONASS().offsetFromTAI(date), 0);
+        assertEquals(-19, timeScales.getGPS().offsetFromTAI(date), 0);
+        assertEquals(-19, timeScales.getQZSS().offsetFromTAI(date), 0);
+        assertEquals(-19, timeScales.getGST().offsetFromTAI(date), 0);
+        assertEquals(-19, timeScales.getIRNSS().offsetFromTAI(date), 0);
+        assertEquals(32.184, timeScales.getTT().offsetFromTAI(date), 0);
+        assertEquals(32.184, timeScales.getTDB().offsetFromTAI(j2000Epoch.shiftedBy(216525.908119)), 0);
+        assertEquals(32.184, timeScales.getTCB().offsetFromTAI(date2), 1e-4);
+        assertEquals(32.184, timeScales.getTCG().offsetFromTAI(date2), 0);
     }
 
     /** Check the UT1 creation logic. */
     @Test
-    public void testUt1() {
+    void testUt1() {
         // setup
         UT1Scale ut12010Simple = timeScales.getUT1(IERSConventions.IERS_2010, true);
         UT1Scale ut12010Full = timeScales.getUT1(IERSConventions.IERS_2010, false);
@@ -118,26 +121,26 @@ public class PreloadedTimeScalesTest {
 
 
         // verify
-        Assertions.assertSame(ut12010Simple, timeScales.getUT1(IERSConventions.IERS_2010, true));
-        Assertions.assertSame(ut12010Full, timeScales.getUT1(IERSConventions.IERS_2010, false));
-        Assertions.assertSame(ut12003Simple, timeScales.getUT1(IERSConventions.IERS_2003, true));
-        Assertions.assertSame(ut12003Full, timeScales.getUT1(IERSConventions.IERS_2003, false));
-        Assertions.assertSame(ut11996Simple, timeScales.getUT1(IERSConventions.IERS_1996, true));
-        Assertions.assertSame(ut11996Full, timeScales.getUT1(IERSConventions.IERS_1996, false));
+        assertSame(ut12010Simple, timeScales.getUT1(IERSConventions.IERS_2010, true));
+        assertSame(ut12010Full, timeScales.getUT1(IERSConventions.IERS_2010, false));
+        assertSame(ut12003Simple, timeScales.getUT1(IERSConventions.IERS_2003, true));
+        assertSame(ut12003Full, timeScales.getUT1(IERSConventions.IERS_2003, false));
+        assertSame(ut11996Simple, timeScales.getUT1(IERSConventions.IERS_1996, true));
+        assertSame(ut11996Full, timeScales.getUT1(IERSConventions.IERS_1996, false));
 
 
-        Assertions.assertEquals(-32.2889120, ut12010Simple.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(-32.2889120, ut12003Simple.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(-32.2889120, ut11996Simple.offsetFromTAI(date), 1e-14);
-        Assertions.assertEquals(-2e-5, -32.2889120 - ut12010Full.offsetFromTAI(date), 1e-5);
-        Assertions.assertEquals(-2e-5, -32.2889120 - ut12003Full.offsetFromTAI(date), 1e-5);
-        Assertions.assertEquals(-2e-5, -32.2889120 - ut11996Full.offsetFromTAI(date), 1e-5);
+        assertEquals(-32.2889120, ut12010Simple.offsetFromTAI(date), 1e-14);
+        assertEquals(-32.2889120, ut12003Simple.offsetFromTAI(date), 1e-14);
+        assertEquals(-32.2889120, ut11996Simple.offsetFromTAI(date), 1e-14);
+        assertEquals(-2e-5, -32.2889120 - ut12010Full.offsetFromTAI(date), 1e-5);
+        assertEquals(-2e-5, -32.2889120 - ut12003Full.offsetFromTAI(date), 1e-5);
+        assertEquals(-2e-5, -32.2889120 - ut11996Full.offsetFromTAI(date), 1e-5);
 
     }
 
     /** Compare with another data context. */
     @Test
-    public void testComparison() {
+    void testComparison() {
         // setup
         LazyLoadedDataContext dataContext = new LazyLoadedDataContext();
         dataContext.getDataProvidersManager().addProvider(
@@ -152,7 +155,7 @@ public class PreloadedTimeScalesTest {
                 .durationFrom(new AbsoluteDate(date, otherUt1));
 
         // verify
-        Assertions.assertEquals(0.2881680, actual, FastMath.ulp(32));
+        assertEquals(0.2881680, actual, FastMath.ulp(32));
     }
 
 }

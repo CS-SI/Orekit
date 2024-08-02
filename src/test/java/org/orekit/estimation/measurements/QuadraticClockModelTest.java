@@ -21,7 +21,6 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -31,98 +30,102 @@ import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
 import java.util.HashMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Map;
 
-public class QuadraticClockModelTest {
+class QuadraticClockModelTest {
 
     @Test
-    public void testValue() {
+    void testValue() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
         final QuadraticClockModel clock = new QuadraticClockModel(t0,
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
-        Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t0).getOffset(),                1.0e-15);
-        Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getOffset(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getOffset(), 1.0e-15);
+        assertEquals(1.00 / 256.0, clock.getOffset(t0).getOffset(),                1.0e-15);
+        assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getOffset(), 1.0e-15);
+        assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getOffset(), 1.0e-15);
     }
 
     @Test
-    public void testValueField() {
-        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final QuadraticClockModel clock = new QuadraticClockModel(t0,
-                                                                  FastMath.scalb(1.0, -8),
-                                                                  FastMath.scalb(1.0, -9),
-                                                                  FastMath.scalb(1.0, -10));
-        final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t064).getOffset().getReal(),                1.0e-15);
-        Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t064.shiftedBy(1.0)).getOffset().getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t064.shiftedBy(2.0)).getOffset().getReal(), 1.0e-15);
-    }
-
-    @Test
-    public void testRate() {
-        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
-        final QuadraticClockModel clock = new QuadraticClockModel(t0,
-                                                                  FastMath.scalb(1.0, -8),
-                                                                  FastMath.scalb(1.0, -9),
-                                                                  FastMath.scalb(1.0, -10));
-        Assertions.assertEquals(1.00 / 512, clock.getOffset(t0).getRate(),                1.0e-15);
-        Assertions.assertEquals(2.00 / 512, clock.getOffset(t0.shiftedBy(1.0)).getRate(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 512, clock.getOffset(t0.shiftedBy(2.0)).getRate(), 1.0e-15);
-    }
-
-    @Test
-    public void testRateField() {
+    void testValueField() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
         final QuadraticClockModel clock = new QuadraticClockModel(t0,
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(1.00 / 512, clock.getOffset(t064).getRate().getReal(),                1.0e-15);
-        Assertions.assertEquals(2.00 / 512, clock.getOffset(t064.shiftedBy(1.0)).getRate().getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 512, clock.getOffset(t064.shiftedBy(2.0)).getRate().getReal(), 1.0e-15);
+        assertEquals(1.00 / 256.0, clock.getOffset(t064).getOffset().getReal(),                1.0e-15);
+        assertEquals(1.75 / 256.0, clock.getOffset(t064.shiftedBy(1.0)).getOffset().getReal(), 1.0e-15);
+        assertEquals(3.00 / 256.0, clock.getOffset(t064.shiftedBy(2.0)).getOffset().getReal(), 1.0e-15);
     }
 
     @Test
-    public void testAcceleration() {
+    void testRate() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
         final QuadraticClockModel clock = new QuadraticClockModel(t0,
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
-        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t0).getAcceleration(),                1.0e-15);
-        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t0.shiftedBy(1.0)).getAcceleration(), 1.0e-15);
-        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t0.shiftedBy(2.0)).getAcceleration(), 1.0e-15);
+        assertEquals(1.00 / 512, clock.getOffset(t0).getRate(),                1.0e-15);
+        assertEquals(2.00 / 512, clock.getOffset(t0.shiftedBy(1.0)).getRate(), 1.0e-15);
+        assertEquals(3.00 / 512, clock.getOffset(t0.shiftedBy(2.0)).getRate(), 1.0e-15);
     }
 
     @Test
-    public void testAccelerationField() {
+    void testRateField() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
         final QuadraticClockModel clock = new QuadraticClockModel(t0,
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
         final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
-        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t064).getAcceleration().getReal(),                1.0e-15);
-        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t064.shiftedBy(1.0)).getAcceleration().getReal(), 1.0e-15);
-        Assertions.assertEquals(2.00 / 1024, clock.getOffset(t064.shiftedBy(2.0)).getAcceleration().getReal(), 1.0e-15);
+        assertEquals(1.00 / 512, clock.getOffset(t064).getRate().getReal(),                1.0e-15);
+        assertEquals(2.00 / 512, clock.getOffset(t064.shiftedBy(1.0)).getRate().getReal(), 1.0e-15);
+        assertEquals(3.00 / 512, clock.getOffset(t064.shiftedBy(2.0)).getRate().getReal(), 1.0e-15);
     }
 
     @Test
-    public void testValidity() {
+    void testAcceleration() {
         final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
         final QuadraticClockModel clock = new QuadraticClockModel(t0,
                                                                   FastMath.scalb(1.0, -8),
                                                                   FastMath.scalb(1.0, -9),
                                                                   FastMath.scalb(1.0, -10));
-        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY, clock.getValidityStart());
-        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY, clock.getValidityEnd());
+        assertEquals(2.00 / 1024, clock.getOffset(t0).getAcceleration(),                1.0e-15);
+        assertEquals(2.00 / 1024, clock.getOffset(t0.shiftedBy(1.0)).getAcceleration(), 1.0e-15);
+        assertEquals(2.00 / 1024, clock.getOffset(t0.shiftedBy(2.0)).getAcceleration(), 1.0e-15);
     }
 
     @Test
-    public void testSafeReferenceDate() {
+    void testAccelerationField() {
+        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
+        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+                                                                  FastMath.scalb(1.0, -8),
+                                                                  FastMath.scalb(1.0, -9),
+                                                                  FastMath.scalb(1.0, -10));
+        final FieldAbsoluteDate<Binary64> t064 = new FieldAbsoluteDate<>(Binary64Field.getInstance(), t0);
+        assertEquals(2.00 / 1024, clock.getOffset(t064).getAcceleration().getReal(),                1.0e-15);
+        assertEquals(2.00 / 1024, clock.getOffset(t064.shiftedBy(1.0)).getAcceleration().getReal(), 1.0e-15);
+        assertEquals(2.00 / 1024, clock.getOffset(t064.shiftedBy(2.0)).getAcceleration().getReal(), 1.0e-15);
+    }
+
+    @Test
+    void testValidity() {
+        final AbsoluteDate        t0    = AbsoluteDate.GALILEO_EPOCH;
+        final QuadraticClockModel clock = new QuadraticClockModel(t0,
+                                                                  FastMath.scalb(1.0, -8),
+                                                                  FastMath.scalb(1.0, -9),
+                                                                  FastMath.scalb(1.0, -10));
+        assertEquals(AbsoluteDate.PAST_INFINITY, clock.getValidityStart());
+        assertEquals(AbsoluteDate.FUTURE_INFINITY, clock.getValidityEnd());
+    }
+
+    @Test
+    void testSafeReferenceDate() {
         final ParameterDriver a0 = new ParameterDriver("a0", 0.0, 1.0,
                                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         final ParameterDriver a1 = new ParameterDriver("a1", 0.0, 1.0,
@@ -133,16 +136,16 @@ public class QuadraticClockModelTest {
 
         // OK to have no reference date if a1 and a2 are both zero
         a0.setValue(0.125);
-        Assertions.assertEquals(0.125, clock.getOffset(AbsoluteDate.GALILEO_EPOCH).getOffset());
+        assertEquals(0.125, clock.getOffset(AbsoluteDate.GALILEO_EPOCH).getOffset());
 
         // not OK to have no reference date if a1 is non zero
         a1.setValue(1.0);
         try {
             clock.getOffset(AbsoluteDate.GALILEO_EPOCH);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals(a0.getName(), oe.getParts()[0]);
+            assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            assertEquals(a0.getName(), oe.getParts()[0]);
         }
 
         // not OK to have no reference date if a2 is non zero
@@ -150,20 +153,20 @@ public class QuadraticClockModelTest {
         a2.setValue(1.0);
         try {
             clock.getOffset(AbsoluteDate.GALILEO_EPOCH);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals(a0.getName(), oe.getParts()[0]);
+            assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
+            assertEquals(a0.getName(), oe.getParts()[0]);
         }
 
         // back to OK if we reset drift and acceleration
         a2.setValue(0);
-        Assertions.assertEquals(0.125, clock.getOffset(AbsoluteDate.GALILEO_EPOCH).getOffset());
+        assertEquals(0.125, clock.getOffset(AbsoluteDate.GALILEO_EPOCH).getOffset());
 
     }
 
     @Test
-    public void testGradient() {
+    void testGradient() {
         final AbsoluteDate    t0 = AbsoluteDate.GALILEO_EPOCH;
         final ParameterDriver a0 = new ParameterDriver("a0", 0.0, 1.0,
                                                        Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
@@ -198,22 +201,22 @@ public class QuadraticClockModelTest {
         final FieldAbsoluteDate<Gradient> t0g = new FieldAbsoluteDate<>(GradientField.getField(nbParams), t0);
 
         final Gradient g0 = gradientModel.getOffset(t0g).getOffset();
-        Assertions.assertEquals(1.00 / 256, g0.getValue(), 1.0e-15);
-        Assertions.assertEquals(1.00,       g0.getPartialDerivative(0), 1.0e-15);
-        Assertions.assertEquals(0.00,       g0.getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(0.00,       g0.getPartialDerivative(2), 1.0e-15);
+        assertEquals(1.00 / 256, g0.getValue(), 1.0e-15);
+        assertEquals(1.00,       g0.getPartialDerivative(0), 1.0e-15);
+        assertEquals(0.00,       g0.getPartialDerivative(1), 1.0e-15);
+        assertEquals(0.00,       g0.getPartialDerivative(2), 1.0e-15);
 
         final Gradient g1 = gradientModel.getOffset(t0g.shiftedBy(1.0)).getOffset();
-        Assertions.assertEquals(1.75 / 256, g1.getValue(), 1.0e-15);
-        Assertions.assertEquals(1.00,       g1.getPartialDerivative(0), 1.0e-15);
-        Assertions.assertEquals(1.00,       g1.getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(1.00,       g1.getPartialDerivative(2), 1.0e-15);
+        assertEquals(1.75 / 256, g1.getValue(), 1.0e-15);
+        assertEquals(1.00,       g1.getPartialDerivative(0), 1.0e-15);
+        assertEquals(1.00,       g1.getPartialDerivative(1), 1.0e-15);
+        assertEquals(1.00,       g1.getPartialDerivative(2), 1.0e-15);
 
         final Gradient g2 = gradientModel.getOffset(t0g.shiftedBy(2.0)).getOffset();
-        Assertions.assertEquals(3.00 / 256, g2.getValue(), 1.0e-15);
-        Assertions.assertEquals(1.00,       g2.getPartialDerivative(0), 1.0e-15);
-        Assertions.assertEquals(2.00,       g2.getPartialDerivative(1), 1.0e-15);
-        Assertions.assertEquals(4.00,       g2.getPartialDerivative(2), 1.0e-15);
+        assertEquals(3.00 / 256, g2.getValue(), 1.0e-15);
+        assertEquals(1.00,       g2.getPartialDerivative(0), 1.0e-15);
+        assertEquals(2.00,       g2.getPartialDerivative(1), 1.0e-15);
+        assertEquals(4.00,       g2.getPartialDerivative(2), 1.0e-15);
 
     }
 

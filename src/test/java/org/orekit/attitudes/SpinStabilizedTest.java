@@ -25,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -49,6 +48,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class SpinStabilizedTest {
 
     @Test
@@ -69,11 +72,11 @@ class SpinStabilizedTest {
         Attitude attitude = bbq.getAttitude(kep, date, kep.getFrame());
         checkField(Binary64Field.getInstance(), bbq, kep, kep.getDate(), kep.getFrame());
         Vector3D xDirection = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Assertions.assertEquals(FastMath.atan(1.0 / 5000.0),
+        assertEquals(FastMath.atan(1.0 / 5000.0),
                      Vector3D.angle(xDirection, sun.getPosition(date, FramesFactory.getEME2000())),
                      2.0e-15);
-        Assertions.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
-        Assertions.assertSame(cbp, bbq.getUnderlyingAttitudeProvider());
+        assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-6);
+        assertSame(cbp, bbq.getUnderlyingAttitudeProvider());
 
     }
 
@@ -89,7 +92,7 @@ class SpinStabilizedTest {
         final Rotation rotation = spinStabilized.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
         // THEN
         final Attitude attitude = spinStabilized.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        Assertions.assertEquals(0., Rotation.distance(rotation, attitude.getRotation()));
+        assertEquals(0., Rotation.distance(rotation, attitude.getRotation()));
     }
 
     @Test
@@ -106,7 +109,7 @@ class SpinStabilizedTest {
         final FieldRotation<Complex> rotation = spinStabilized.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
         // THEN
         final FieldAttitude<Complex> attitude = spinStabilized.getAttitude(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
-        Assertions.assertEquals(0., Rotation.distance(rotation.toRotation(), attitude.getRotation().toRotation()));
+        assertEquals(0., Rotation.distance(rotation.toRotation(), attitude.getRotation().toRotation()));
     }
 
     @DefaultDataContext
@@ -147,21 +150,21 @@ class SpinStabilizedTest {
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assertions.assertTrue(errorAngleMinus <= 1.0e-6 * evolutionAngleMinus);
+        assertTrue(errorAngleMinus <= 1.0e-6 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assertions.assertTrue(errorAnglePlus <= 1.0e-6 * evolutionAnglePlus);
+        assertTrue(errorAnglePlus <= 1.0e-6 * evolutionAnglePlus);
 
         // compute spin axis using finite differences
         Rotation rM = sMinus.getAttitude().getRotation();
         Rotation rP = sPlus.getAttitude().getRotation();
         Vector3D reference = AngularCoordinates.estimateRate(rM, rP, 2 * h);
 
-        Assertions.assertEquals(2 * FastMath.PI / reference.getNorm(), 2 * FastMath.PI / spin0.getNorm(), 0.05);
-        Assertions.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);
-        Assertions.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(Vector3D.PLUS_K, spin0)), 1.0e-10);
+        assertEquals(2 * FastMath.PI / reference.getNorm(), 2 * FastMath.PI / spin0.getNorm(), 0.05);
+        assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);
+        assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(Vector3D.PLUS_K, spin0)), 1.0e-10);
 
     }
 
@@ -173,13 +176,13 @@ class SpinStabilizedTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

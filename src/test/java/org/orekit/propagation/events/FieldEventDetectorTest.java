@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.function.Function;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -32,7 +31,6 @@ import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -61,12 +59,18 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
-public class FieldEventDetectorTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class FieldEventDetectorTest {
 
     private double mu;
 
     @Test
-    public void testEventHandlerInit() {
+    void testEventHandlerInit() {
         doTestEventHandlerInit(Binary64Field.getInstance());
     }
 
@@ -111,12 +115,12 @@ public class FieldEventDetectorTest {
         final FieldDateDetector<T> detector = new FieldDateDetector<>(field, date.shiftedBy(stepSize.multiply(5.25))).withHandler(handler);
         propagator.addEventDetector(detector);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
-        Assertions.assertTrue(eventOccurred[0]);
+        assertTrue(eventOccurred[0]);
 
     }
 
     @Test
-    public void testBasicScheduling() {
+    void testBasicScheduling() {
         doTestBasicScheduling(Binary64Field.getInstance());
     }
 
@@ -141,7 +145,7 @@ public class FieldEventDetectorTest {
         propagator.addEventDetector(detector);
         propagator.setStepHandler(stepSize, checker);
         propagator.propagate(date.shiftedBy(stepSize.multiply(10)));
-        Assertions.assertTrue(checker.outOfOrderCallDetected());
+        assertTrue(checker.outOfOrderCallDetected());
 
     }
 
@@ -171,7 +175,7 @@ public class FieldEventDetectorTest {
                 double dt = currentState.getDate().durationFrom(triggerDate).getReal();
                 if (dt < 0) {
                     outOfOrderCallDetected = true;
-                    Assertions.assertTrue(FastMath.abs(dt) < (2 * stepSize.getReal()));
+                    assertTrue(FastMath.abs(dt) < (2 * stepSize.getReal()));
                 }
             }
         }
@@ -183,7 +187,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testIssue108Numerical() {
+    void testIssue108Numerical() {
         doTestIssue108Numerical(Binary64Field.getInstance());
     }
 
@@ -208,11 +212,11 @@ public class FieldEventDetectorTest {
                                                        new FieldStopOnEvent<T>());
         propagator.addEventDetector(counter);
         propagator.propagate(date.shiftedBy(step.multiply(n)));
-        Assertions.assertEquals(n + 1, counter.getCount());
+        assertEquals(n + 1, counter.getCount());
     }
 
     @Test
-    public void testIssue108Analytical() {
+    void testIssue108Analytical() {
         doTestIssue108Analytical(Binary64Field.getInstance());
     }
 
@@ -237,7 +241,7 @@ public class FieldEventDetectorTest {
         propagator.setStepHandler(step, currentState -> {});
         propagator.propagate(date.shiftedBy(step.multiply(n)));
         // analytical propagator can take one big step, further reducing calls to g()
-        Assertions.assertEquals(2, counter.getCount());
+        assertEquals(2, counter.getCount());
     }
 
     private static class GCallsCounter<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<GCallsCounter<T>, T> {
@@ -268,7 +272,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testNoisyGFunction() {
+    void testNoisyGFunction() {
         doTestNoisyGFunction(Binary64Field.getInstance());
     }
 
@@ -309,7 +313,7 @@ public class FieldEventDetectorTest {
                             withMaxCheck(FieldAdaptableInterval.of(Constants.JULIAN_DAY)).
                             withThreshold(field.getZero().newInstance(1.0e-6)));
         FieldSpacecraftState<T> s = k2.propagate(startDate, targetDate);
-        Assertions.assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
+        assertEquals(0.0, interruptDates[0].durationFrom(s.getDate()).getReal(), 1.1e-6);
     }
 
     private static class FieldCloseApproachDetector<T extends CalculusFieldElement<T>>
@@ -343,7 +347,7 @@ public class FieldEventDetectorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
         doTestWrappedException(Binary64Field.getInstance());
     }
 
@@ -375,20 +379,20 @@ public class FieldEventDetectorTest {
                 }
             });
             k.propagate(initialDate.shiftedBy(Constants.JULIAN_YEAR));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertSame(OrekitException.class, oe.getClass());
-            Assertions.assertSame(dummyCause, oe.getCause().getCause());
+            assertSame(OrekitException.class, oe.getClass());
+            assertSame(dummyCause, oe.getCause().getCause());
             String expected = "failed to find root between 2011-05-11T00:00:00.000Z " +
                     "(g=-3.6E3) and 2012-05-10T06:00:00.000Z (g=3.1554E7)\n" +
                     "Last iteration at 2011-05-11T01:00:00.000Z (g=-3.6E3)";
-            MatcherAssert.assertThat(oe.getMessage(Locale.US),
+            assertThat(oe.getMessage(Locale.US),
                     CoreMatchers.containsString(expected));
         }
     }
 
     @Test
-    public void testDefaultMethods() {
+    void testDefaultMethods() {
         doTestDefaultMethods(Binary64Field.getInstance());
     }
 
@@ -434,27 +438,27 @@ public class FieldEventDetectorTest {
                                                                                         FramesFactory.getEME2000(),
                                                                                         FieldAbsoluteDate.getJ2000Epoch(field),
                                                                                         field.getZero().add(Constants.EIGEN5C_EARTH_MU)));
-       Assertions.assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
+       assertSame(s, dummyDetector.getHandler().resetState(dummyDetector, s));
 
     }
 
     @Test
-    public void testForwardAnalytical() {
+    void testForwardAnalytical() {
         doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testBackwardAnalytical() {
+    void testBackwardAnalytical() {
         doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 21, this::buildAnalytical);
     }
 
     @Test
-    public void testForwardNumerical() {
+    void testForwardNumerical() {
         doTestScheduling(Binary64Field.getInstance(), 0.0, 1.0, 23, this::buildNumerical);
     }
 
     @Test
-    public void testBackwardNumerical() {
+    void testBackwardNumerical() {
         doTestScheduling(Binary64Field.getInstance(), 1.0, 0.0, 23, this::buildNumerical);
     }
 
@@ -510,7 +514,7 @@ public class FieldEventDetectorTest {
 
         propagator.propagate(initialDate.shiftedBy(start), initialDate.shiftedBy(stop));
 
-        Assertions.assertEquals(expectedCalls, checker.calls);
+        assertEquals(expectedCalls, checker.calls);
 
     }
 
@@ -534,14 +538,14 @@ public class FieldEventDetectorTest {
                 // check scheduling is always consistent with integration direction
                 if (start.isBefore(stop)) {
                     // forward direction
-                    Assertions.assertTrue(date.isAfterOrEqualTo(start));
-                    Assertions.assertTrue(date.isBeforeOrEqualTo(stop));
-                    Assertions.assertTrue(date.isAfterOrEqualTo(last));
+                    assertTrue(date.isAfterOrEqualTo(start));
+                    assertTrue(date.isBeforeOrEqualTo(stop));
+                    assertTrue(date.isAfterOrEqualTo(last));
                } else {
                     // backward direction
-                   Assertions.assertTrue(date.isBeforeOrEqualTo(start));
-                   Assertions.assertTrue(date.isAfterOrEqualTo(stop));
-                   Assertions.assertTrue(date.isBeforeOrEqualTo(last));
+                   assertTrue(date.isBeforeOrEqualTo(start));
+                   assertTrue(date.isAfterOrEqualTo(stop));
+                   assertTrue(date.isBeforeOrEqualTo(last));
                 }
             }
             last = date;
@@ -551,7 +555,7 @@ public class FieldEventDetectorTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu = Constants.EIGEN5C_EARTH_MU;
     }

@@ -6,7 +6,6 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
@@ -20,6 +19,8 @@ import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 class AbstractLightFluxModelTest {
@@ -34,7 +35,7 @@ class AbstractLightFluxModelTest {
         // WHEN
         final Vector3D actualFluxVector = mockedFluxModel.getLightFluxVector(mockedState);
         // THEN
-        Assertions.assertEquals(Vector3D.ZERO, actualFluxVector);
+        assertEquals(Vector3D.ZERO, actualFluxVector);
     }
 
     @Test
@@ -52,7 +53,7 @@ class AbstractLightFluxModelTest {
         final Vector3D actualFluxVector = testLightFluxModel.getLightFluxVector(mockedState);
         // THEN
         final Vector3D expectedFluxVector = position.subtract(sunPosition).normalize();
-        Assertions.assertEquals(expectedFluxVector, actualFluxVector);
+        assertEquals(expectedFluxVector, actualFluxVector);
     }
 
     private SpacecraftState mockState(final Vector3D position, final AbsoluteDate date, final Frame frame) {
@@ -79,7 +80,7 @@ class AbstractLightFluxModelTest {
         final FieldVector3D<Complex> actualFluxVector = testLightFluxModel.getLightFluxVector(mockedState);
         // THEN
         final FieldVector3D<Complex> expectedFluxVector = position.subtract(sunPosition).normalize();
-        Assertions.assertEquals(expectedFluxVector, actualFluxVector);
+        assertEquals(expectedFluxVector, actualFluxVector);
     }
 
     @SuppressWarnings("unchecked")
@@ -100,7 +101,7 @@ class AbstractLightFluxModelTest {
         // WHEN
         final ExtendedPositionProvider actualProvider = testLightFluxModel.getOccultedBody();
         // THEN
-        Assertions.assertEquals(mockedProvider, actualProvider);
+        assertEquals(mockedProvider, actualProvider);
     }
 
     private static class TestLightFluxModel extends AbstractLightFluxModel {

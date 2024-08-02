@@ -26,7 +26,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -46,7 +45,11 @@ import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
-public class AttitudeTypeTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class AttitudeTypeTest {
 
     private static final double QUATERNION_PRECISION = 1.0e-5;
     private static final double ANGLE_PRECISION = 1.0e-3;
@@ -55,8 +58,8 @@ public class AttitudeTypeTest {
     ContextBinding context;
 
     @BeforeEach
-    public void setUp()
-        throws Exception {
+    void setUp()
+            throws Exception {
         Utils.setDataRoot("regular-data");
         metadata = new AemMetadata(4);
         context  =  new ContextBinding(() -> IERSConventions.IERS_2010,
@@ -73,13 +76,13 @@ public class AttitudeTypeTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         metadata = null;
         context  = null;
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
 
         // Initialize the attitude type
         final AttitudeType spin = AttitudeType.parseType("SPIN");
@@ -90,19 +93,19 @@ public class AttitudeTypeTest {
         };
         final TimeStampedAngularCoordinates tsac = spin.parse(true, true, RotationOrder.XYZ, true, context, attitudeData);
         final Vector3D spinInert = tsac.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assertions.assertEquals(-136.19348942398204, FastMath.toDegrees(spinInert.getAlpha()), ANGLE_PRECISION);
-        Assertions.assertEquals(-33.53517498449179, FastMath.toDegrees(spinInert.getDelta()), ANGLE_PRECISION);
+        assertEquals(-136.19348942398204, FastMath.toDegrees(spinInert.getAlpha()), ANGLE_PRECISION);
+        assertEquals(-33.53517498449179, FastMath.toDegrees(spinInert.getDelta()), ANGLE_PRECISION);
 
         final Rotation zeroPhase = new Rotation(RotationOrder.ZXZ, RotationConvention.FRAME_TRANSFORM,
                                                 MathUtils.SEMI_PI + spinInert.getAlpha(),
                                                 MathUtils.SEMI_PI - spinInert.getDelta(),
                                                 0.0);
-        Assertions.assertEquals(86.03122596451917,
+        assertEquals(86.03122596451917,
                                 FastMath.toDegrees(Rotation.distance(zeroPhase, tsac.getRotation())),
                                 ANGLE_PRECISION);
-        Assertions.assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
-        Assertions.assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
-        Assertions.assertEquals(-14.816053659122998,
+        assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getX()), ANGLE_PRECISION);
+        assertEquals(0.0, FastMath.toDegrees(tsac.getRotationRate().getY()), ANGLE_PRECISION);
+        assertEquals(-14.816053659122998,
                                 FastMath.toDegrees(tsac.getRotationRate().getZ()),
                                 ANGLE_PRECISION);
 
@@ -120,18 +123,18 @@ public class AttitudeTypeTest {
                                                                metadata.isSpacecraftBodyRate(),
                                                                tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]),
+            assertEquals(Double.parseDouble(attitudeData[i + 1]),
                                     Double.parseDouble(attitudeDataBis[i]),
                                     ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assertions.assertEquals(AngularDerivativesFilter.USE_R, spin.getAngularDerivativesFilter());
+        assertEquals(AngularDerivativesFilter.USE_R, spin.getAngularDerivativesFilter());
 
     }
 
     @Test
-    public void testSpinNutationMomentum() {
+    void testSpinNutationMomentum() {
 
         // Initialize the attitude type
         final AttitudeType spinNM = AttitudeType.parseType("SPIN/NUTATION_MOM");
@@ -149,28 +152,28 @@ public class AttitudeTypeTest {
             "0", "80", "45", "1", "17", "89.999999", "0.01"
         };
         final TimeStampedAngularCoordinates tsac = spinNM.parse(true, true, RotationOrder.XYZ, true, context, attitudeData);
-        Assertions.assertEquals(0.3812, tsac.getRotation().getQ0(), 1.0e-4);
-        Assertions.assertEquals(0.0805, tsac.getRotation().getQ1(), 1.0e-4);
-        Assertions.assertEquals(0.0334, tsac.getRotation().getQ2(), 1.0e-4);
-        Assertions.assertEquals(0.9204, tsac.getRotation().getQ3(), 1.0e-4);
+        assertEquals(0.3812, tsac.getRotation().getQ0(), 1.0e-4);
+        assertEquals(0.0805, tsac.getRotation().getQ1(), 1.0e-4);
+        assertEquals(0.0334, tsac.getRotation().getQ2(), 1.0e-4);
+        assertEquals(0.9204, tsac.getRotation().getQ3(), 1.0e-4);
         Vector3D spinInFrameA = tsac.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Assertions.assertEquals(0.1736, spinInFrameA.getX(), 1.0e-4);
-        Assertions.assertEquals(0.0,    spinInFrameA.getY(), 1.0e-4);
-        Assertions.assertEquals(0.9848, spinInFrameA.getZ(), 1.0e-4);
+        assertEquals(0.1736, spinInFrameA.getX(), 1.0e-4);
+        assertEquals(0.0,    spinInFrameA.getY(), 1.0e-4);
+        assertEquals(0.9848, spinInFrameA.getZ(), 1.0e-4);
 
         final String[] attitudeDataBis = spinNM.createDataFields(true, true, RotationOrder.XYZ, true, tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]),
+            assertEquals(Double.parseDouble(attitudeData[i + 1]),
                                     Double.parseDouble(attitudeDataBis[i]),
                                     ANGLE_PRECISION);
         }
 
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, spinNM.getAngularDerivativesFilter());
+        assertEquals(AngularDerivativesFilter.USE_RR, spinNM.getAngularDerivativesFilter());
 
     }
 
     @Test
-    public void testQuaternion() {
+    void testQuaternion() {
         // Initialize the attitude type
         final AttitudeType quaternion = AttitudeType.parseType("QUATERNION");
 
@@ -184,10 +187,10 @@ public class AttitudeTypeTest {
                                                                     metadata.getEulerRotSeq(),
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
-        Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
+        assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
+        assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
+        assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
+        assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -205,16 +208,16 @@ public class AttitudeTypeTest {
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+            assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
                     QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assertions.assertEquals(AngularDerivativesFilter.USE_R, quaternion.getAngularDerivativesFilter());
+        assertEquals(AngularDerivativesFilter.USE_R, quaternion.getAngularDerivativesFilter());
     }
 
     @Test
-    public void testQuaternionDerivates() {
+    void testQuaternionDerivates() {
         // Initialize the attitude type
         final AttitudeType quaternion = AttitudeType.parseType("QUATERNION/DERIVATIVE");
 
@@ -228,10 +231,10 @@ public class AttitudeTypeTest {
                                                                     metadata.getEulerRotSeq(),
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
-        Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
+        assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
+        assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
+        assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
+        assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -249,16 +252,16 @@ public class AttitudeTypeTest {
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+            assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
                     QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, quaternion.getAngularDerivativesFilter());
+        assertEquals(AngularDerivativesFilter.USE_RR, quaternion.getAngularDerivativesFilter());
     }
 
     @Test
-    public void testQuaternionRate() {
+    void testQuaternionRate() {
         // Initialize the attitude type
         final AttitudeType quaternionRate = AttitudeType.parseType("QUATERNION/RATE");
 
@@ -275,17 +278,17 @@ public class AttitudeTypeTest {
                                                                         metadata.getEulerRotSeq(),
                                                                         metadata.isSpacecraftBodyRate(),
                                                                         context, attitudeData);
-        Assertions.assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
-        Assertions.assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
+        assertEquals(0.68427, tsac.getRotation().getQ0(), QUATERNION_PRECISION);
+        assertEquals(0.56748, tsac.getRotation().getQ1(), QUATERNION_PRECISION);
+        assertEquals(0.03146, tsac.getRotation().getQ2(), QUATERNION_PRECISION);
+        assertEquals(0.45689, tsac.getRotation().getQ3(), QUATERNION_PRECISION);
         final UnivariateDerivative1[] rebuiltAngles = tsac.
                                                       toUnivariateDerivative1Rotation().
                                                       getAngles(metadata.getEulerRotSeq(),
                                                                 RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(FastMath.toRadians(4.31), rebuiltAngles[0].getFirstDerivative(), ANGLE_PRECISION);
-        Assertions.assertEquals(FastMath.toRadians(1.28), rebuiltAngles[1].getFirstDerivative(), ANGLE_PRECISION);
-        Assertions.assertEquals(FastMath.toRadians(3.79), rebuiltAngles[2].getFirstDerivative(), ANGLE_PRECISION);
+        assertEquals(FastMath.toRadians(4.31), rebuiltAngles[0].getFirstDerivative(), ANGLE_PRECISION);
+        assertEquals(FastMath.toRadians(1.28), rebuiltAngles[1].getFirstDerivative(), ANGLE_PRECISION);
+        assertEquals(FastMath.toRadians(3.79), rebuiltAngles[2].getFirstDerivative(), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -304,17 +307,17 @@ public class AttitudeTypeTest {
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]),
+            assertEquals(Double.parseDouble(attitudeData[i + 1]),
                                     Double.parseDouble(attitudeDataBis[i]),
                                     QUATERNION_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, quaternionRate.getAngularDerivativesFilter());
+        assertEquals(AngularDerivativesFilter.USE_RR, quaternionRate.getAngularDerivativesFilter());
     }
 
     @Test
-    public void testEulerAngle() {
+    void testEulerAngle() {
         // Initialize the attitude type
         final AttitudeType eulerAngle = AttitudeType.parseType("EULER_ANGLE");
 
@@ -329,9 +332,9 @@ public class AttitudeTypeTest {
                                                                     metadata.isSpacecraftBodyRate(),
                                                                     context, attitudeData);
         final double[] angles = tsac.getRotation().getAngles(RotationOrder.XYZ, RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(43.1, FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
-        Assertions.assertEquals(12.8, FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
-        Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
+        assertEquals(43.1, FastMath.toDegrees(angles[0]), ANGLE_PRECISION);
+        assertEquals(12.8, FastMath.toDegrees(angles[1]), ANGLE_PRECISION);
+        assertEquals(37.9, FastMath.toDegrees(angles[2]), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -349,16 +352,16 @@ public class AttitudeTypeTest {
                                                                      metadata.isSpacecraftBodyRate(),
                                                                      tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+            assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
                     ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assertions.assertEquals(AngularDerivativesFilter.USE_R, eulerAngle.getAngularDerivativesFilter());
+        assertEquals(AngularDerivativesFilter.USE_R, eulerAngle.getAngularDerivativesFilter());
     }
 
     @Test
-    public void testEulerAngleRateMissingRateRefFrame() {
+    void testEulerAngleRateMissingRateRefFrame() {
         // Initialize the attitude type
         final AttitudeType eulerAngleRate = AttitudeType.parseType("EULER_ANGLE/RATE");
 
@@ -376,15 +379,15 @@ public class AttitudeTypeTest {
         mdWithoutRateFrame.setEulerRotSeq(RotationOrder.ZXZ);
         try {
             mdWithoutRateFrame.checkMandatoryEntriesExceptDatesAndExternalFrame(1.0);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
-            Assertions.assertEquals(AemMetadataKey.RATE_FRAME.name(), oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNINITIALIZED_VALUE_FOR_KEY, oe.getSpecifier());
+            assertEquals(AemMetadataKey.RATE_FRAME.name(), oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testEulerAngleRate() {
+    void testEulerAngleRate() {
         // Initialize the attitude type
         final AttitudeType eulerAngleRate = AttitudeType.parseType("EULER_ANGLE/RATE");
         final RotationOrder sequence = RotationOrder.ZXY;
@@ -403,12 +406,12 @@ public class AttitudeTypeTest {
                                                                         context, attitudeData);
         final FieldRotation<UnivariateDerivative1> r = tsac.toUnivariateDerivative1Rotation();
         final UnivariateDerivative1[] angles = r.getAngles(sequence, RotationConvention.FRAME_TRANSFORM);
-        Assertions.assertEquals(43.1, FastMath.toDegrees(angles[0].getValue()),            ANGLE_PRECISION);
-        Assertions.assertEquals(12.8, FastMath.toDegrees(angles[1].getValue()),            ANGLE_PRECISION);
-        Assertions.assertEquals(37.9, FastMath.toDegrees(angles[2].getValue()),            ANGLE_PRECISION);
-        Assertions.assertEquals(1.452, FastMath.toDegrees(angles[0].getFirstDerivative()), ANGLE_PRECISION);
-        Assertions.assertEquals(0.475, FastMath.toDegrees(angles[1].getFirstDerivative()), ANGLE_PRECISION);
-        Assertions.assertEquals(1.112, FastMath.toDegrees(angles[2].getFirstDerivative()), ANGLE_PRECISION);
+        assertEquals(43.1, FastMath.toDegrees(angles[0].getValue()),            ANGLE_PRECISION);
+        assertEquals(12.8, FastMath.toDegrees(angles[1].getValue()),            ANGLE_PRECISION);
+        assertEquals(37.9, FastMath.toDegrees(angles[2].getValue()),            ANGLE_PRECISION);
+        assertEquals(1.452, FastMath.toDegrees(angles[0].getFirstDerivative()), ANGLE_PRECISION);
+        assertEquals(0.475, FastMath.toDegrees(angles[1].getFirstDerivative()), ANGLE_PRECISION);
+        assertEquals(1.112, FastMath.toDegrees(angles[2].getFirstDerivative()), ANGLE_PRECISION);
 
         // Test computation of attitude data from angular coordinates
         AemMetadata metadata = new AemMetadata(3);
@@ -426,16 +429,16 @@ public class AttitudeTypeTest {
                                                                          metadata.isSpacecraftBodyRate(),
                                                                          tsac);
         for (int i = 0; i < attitudeDataBis.length; i++) {
-            Assertions.assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
+            assertEquals(Double.parseDouble(attitudeData[i + 1]), Double.parseDouble(attitudeDataBis[i]),
                     ANGLE_PRECISION);
         }
 
         // Verify angular derivative filter
-        Assertions.assertEquals(AngularDerivativesFilter.USE_RR, eulerAngleRate.getAngularDerivativesFilter());
+        assertEquals(AngularDerivativesFilter.USE_RR, eulerAngleRate.getAngularDerivativesFilter());
     }
 
     @Test
-    public void testSymmetryQuaternion() {
+    void testSymmetryQuaternion() {
         doTestSymmetry(AttitudeType.QUATERNION,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -444,7 +447,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetryQuaternionDerivative() {
+    void testSymmetryQuaternionDerivative() {
         doTestSymmetry(AttitudeType.QUATERNION_DERIVATIVE,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1,
@@ -453,7 +456,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetryQuaternionEulerRates() {
+    void testSymmetryQuaternionEulerRates() {
         doTestSymmetry(AttitudeType.QUATERNION_EULER_RATES,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -462,7 +465,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetryQuaternionAngvel() {
+    void testSymmetryQuaternionAngvel() {
         doTestSymmetry(AttitudeType.QUATERNION_ANGVEL,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -471,7 +474,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetryEulerAngle() {
+    void testSymmetryEulerAngle() {
         doTestSymmetry(AttitudeType.EULER_ANGLE,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -480,7 +483,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetryEulerAngleRate() {
+    void testSymmetryEulerAngleRate() {
         doTestSymmetry(AttitudeType.EULER_ANGLE_DERIVATIVE,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -489,7 +492,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetryEulerAngleAngvel() {
+    void testSymmetryEulerAngleAngvel() {
         doTestSymmetry(AttitudeType.EULER_ANGLE_ANGVEL,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -498,7 +501,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetrySpin() {
+    void testSymmetrySpin() {
         doTestSymmetry(AttitudeType.SPIN,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -507,7 +510,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetrySpinNutation() {
+    void testSymmetrySpinNutation() {
         doTestSymmetry(AttitudeType.SPIN_NUTATION,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -516,7 +519,7 @@ public class AttitudeTypeTest {
     }
 
     @Test
-    public void testSymmetrySpinNutationMomentum() {
+    void testSymmetrySpinNutationMomentum() {
         doTestSymmetry(AttitudeType.SPIN_NUTATION_MOMENTUM,
                        0.1, 0.2, 0.3, -0.7,
                        0.02, -0.05, 0.1, -0.04,
@@ -589,15 +592,15 @@ public class AttitudeTypeTest {
                                                            metadata.isSpacecraftBodyRate(),
                                                            context, sData);
         TimeStampedAngularCoordinates diff = tac.addOffset(rebuilt.revert());
-        Assertions.assertEquals(0.0, diff.getRotation().getAngle(), tolAngle);
+        assertEquals(0.0, diff.getRotation().getAngle(), tolAngle);
         if (type.getAngularDerivativesFilter() != AngularDerivativesFilter.USE_R) {
-            Assertions.assertEquals(0.0, diff.getRotationRate().getNorm(), tolRate);
+            assertEquals(0.0, diff.getRotationRate().getNorm(), tolRate);
         }
     }
 
     @Test
-    public void testInvalidAttitudeType() {
-        Assertions.assertThrows(OrekitException.class, () -> AttitudeType.parseType("TAG"));
+    void testInvalidAttitudeType() {
+        assertThrows(OrekitException.class, () -> AttitudeType.parseType("TAG"));
     }
 
 }

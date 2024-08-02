@@ -18,25 +18,32 @@ package org.orekit.errors;
 
 
 import org.hipparchus.exception.UTF8Control;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class OrekitMessagesTest {
+class OrekitMessagesTest {
 
     private final String[] LANGUAGES_LIST = { "ca", "da", "de", "el", "en", "es", "fr", "gl", "it", "no", "ro" };
 
     @Test
-    public void testMessageNumber() {
-        Assertions.assertEquals(299, OrekitMessages.values().length);
+    void testMessageNumber() {
+        assertEquals(299, OrekitMessages.values().length);
     }
 
     @Test
-    public void testAllKeysPresentInPropertiesFiles() {
+    void testAllKeysPresentInPropertiesFiles() {
         for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                                              Locale.forLanguageTag(language),
@@ -47,15 +54,15 @@ public class OrekitMessagesTest {
                 for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                     keyPresent |= messageKey.equals(keys.nextElement());
                 }
-                Assertions.assertTrue(keyPresent,"missing key \"" + message.name() + "\" for language " + language);
+                assertTrue(keyPresent,"missing key \"" + message.name() + "\" for language " + language);
             }
-            Assertions.assertEquals(language, bundle.getLocale().getLanguage());
+            assertEquals(language, bundle.getLocale().getLanguage());
         }
 
     }
 
     @Test
-    public void testAllPropertiesCorrespondToKeys() {
+    void testAllPropertiesCorrespondToKeys() {
         for (final String language : LANGUAGES_LIST) {
             ResourceBundle bundle = ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages",
                                                              Locale.forLanguageTag(language),
@@ -63,48 +70,48 @@ public class OrekitMessagesTest {
             for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                 final String propertyKey = keys.nextElement();
                 try {
-                    Assertions.assertNotNull(OrekitMessages.valueOf(propertyKey));
+                    assertNotNull(OrekitMessages.valueOf(propertyKey));
                 } catch (IllegalArgumentException iae) {
-                    Assertions.fail("unknown key \"" + propertyKey + "\" in language " + language);
+                    fail("unknown key \"" + propertyKey + "\" in language " + language);
                 }
             }
-            Assertions.assertEquals(language, bundle.getLocale().getLanguage());
+            assertEquals(language, bundle.getLocale().getLanguage());
         }
 
     }
 
     @Test
-    public void testNoMissingFrenchTranslation() {
+    void testNoMissingFrenchTranslation() {
 
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.FRENCH);
             // To detect a missing translation, check if the returned string is the original text in English.
-            Assertions.assertNotEquals(message.name(), translated, message.getSourceString());
+            assertNotEquals(message.name(), translated, message.getSourceString());
          }
     }
 
     @Test
-    public void testNoOpEnglishTranslation() {
+    void testNoOpEnglishTranslation() {
         for (OrekitMessages message : OrekitMessages.values()) {
             String translated = message.getLocalizedString(Locale.ENGLISH);
 
             // Check that the original message is not empty.
-            Assertions.assertFalse(message.getSourceString().isEmpty(), message.name());
+            assertFalse(message.getSourceString().isEmpty(), message.name());
 
             // Check that both texts are the same
-            Assertions.assertEquals(message.getSourceString(), translated,message.name());
+            assertEquals(message.getSourceString(), translated,message.name());
 
         }
     }
 
     @Test
-    public void testVariablePartsConsistency() {
+    void testVariablePartsConsistency() {
         for (final String language : LANGUAGES_LIST) {
             Locale locale = Locale.forLanguageTag(language);
             for (OrekitMessages message : OrekitMessages.values()) {
                 MessageFormat source = new MessageFormat(message.getSourceString());
                 MessageFormat translated = new MessageFormat(message.getLocalizedString(locale));
-                Assertions.assertEquals(source.getFormatsByArgumentIndex().length,
+                assertEquals(source.getFormatsByArgumentIndex().length,
                         translated.getFormatsByArgumentIndex().length,message.name() + " (" + language + ")");
             }
         }

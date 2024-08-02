@@ -28,7 +28,6 @@ import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -66,8 +65,14 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class PropagatorsParallelizerTest {
+
+class PropagatorsParallelizerTest {
 
     /** Test for issue <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1105">717</a>.
      * 
@@ -75,7 +80,7 @@ public class PropagatorsParallelizerTest {
      * DSST propagation wasn't working backward in time.
      */
     @Test
-    public void testIssue717() {
+    void testIssue717() {
 
         // Gravity
         Utils.setDataRoot("regular-data:potential/icgem-format");
@@ -109,7 +114,7 @@ public class PropagatorsParallelizerTest {
         final SpacecraftState state = parallelizer.propagate(orbit.getDate().shiftedBy(deltaT).shiftedBy(+1.0), orbit.getDate().shiftedBy(-2.0 * deltaT).shiftedBy(-1.0)).get(0);
 
         // Verify that the backward propagation worked properly
-        Assertions.assertNotNull(state);
+        assertNotNull(state);
 
     }
 
@@ -121,7 +126,7 @@ public class PropagatorsParallelizerTest {
      */
     @Test
     @Timeout(value = 5, unit = TimeUnit.SECONDS)
-    public void testIssue1105() {
+    void testIssue1105() {
 
         // GIVEN
         // -----
@@ -155,12 +160,12 @@ public class PropagatorsParallelizerTest {
         // ----
 
         // Verify that the parallelizer isn't stuck in a deadlock
-        Assertions.assertNotNull(state);
+        assertNotNull(state);
 
     }
 
     @Test
-    public void testNumericalNotInitialized() {
+    void testNumericalNotInitialized() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -168,19 +173,19 @@ public class PropagatorsParallelizerTest {
                                                      buildNotInitializedNumerical());
 
         PropagatorsParallelizer parallelizer =
-                        new PropagatorsParallelizer(propagators, interpolators -> Assertions.fail("should not be called"));
+                        new PropagatorsParallelizer(propagators, interpolators -> fail("should not be called"));
         try {
             parallelizer.propagate(startDate, endDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION,
+            assertEquals(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION,
                                     oe.getSpecifier());
         }
 
     }
 
     @Test
-    public void testAnalyticalAndNumericalSameOrbit() {
+    void testAnalyticalAndNumericalSameOrbit() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -190,28 +195,28 @@ public class PropagatorsParallelizerTest {
         PropagatorsParallelizer parallelizer =
                         new PropagatorsParallelizer(propagators,
                                                     interpolators -> {
-                                                        Assertions.assertEquals(2, interpolators.size());
+                                                        assertEquals(2, interpolators.size());
                                                         AbsoluteDate aPrev = interpolators.get(0).getPreviousState().getDate();
                                                         AbsoluteDate aCurr = interpolators.get(0).getCurrentState().getDate();
                                                         AbsoluteDate nPrev = interpolators.get(1).getPreviousState().getDate();
                                                         AbsoluteDate nCurr = interpolators.get(1).getCurrentState().getDate();
-                                                        Assertions.assertEquals(0.0, aPrev.durationFrom(nPrev), 3.0e-13);
-                                                        Assertions.assertEquals(0.0, aCurr.durationFrom(nCurr), 3.0e-13);
+                                                        assertEquals(0.0, aPrev.durationFrom(nPrev), 3.0e-13);
+                                                        assertEquals(0.0, aCurr.durationFrom(nCurr), 3.0e-13);
                                                         Vector3D aPos = interpolators.get(0).getCurrentState().getPosition();
                                                         Vector3D nPos = interpolators.get(1).getCurrentState().getPosition();
-                                                        Assertions.assertTrue(Vector3D.distance(aPos, nPos) < 111.0);
+                                                        assertTrue(Vector3D.distance(aPos, nPos) < 111.0);
                                                     });
         List<SpacecraftState> results = parallelizer.propagate(startDate, endDate);
 
-        Assertions.assertEquals(2, results.size());
+        assertEquals(2, results.size());
         for (final SpacecraftState state : results) {
-            Assertions.assertEquals(0.0, state.getDate().durationFrom(endDate), 1.0e-15);
+            assertEquals(0.0, state.getDate().durationFrom(endDate), 1.0e-15);
         }
 
     }
 
     @Test
-    public void testVsAnalyticalMonoSat() {
+    void testVsAnalyticalMonoSat() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -229,20 +234,20 @@ public class PropagatorsParallelizerTest {
                                                         AbsoluteDate aCurr = interpolators.get(0).getCurrentState().getDate();
                                                         Vector3D aPos = interpolators.get(0).getCurrentState().getPosition();
                                                         Vector3D ePos = ephemeris.getPosition(aCurr, orbit.getFrame());
-                                                        Assertions.assertEquals(0, Vector3D.distance(ePos, aPos), 1.0e-15);
+                                                        assertEquals(0, Vector3D.distance(ePos, aPos), 1.0e-15);
                                                     });
         List<SpacecraftState> results = parallelizer.propagate(startDate, endDate);
 
-        Assertions.assertEquals(2, parallelizer.getPropagators().size());
-        Assertions.assertEquals(2, results.size());
+        assertEquals(2, parallelizer.getPropagators().size());
+        assertEquals(2, results.size());
         for (final SpacecraftState state : results) {
-            Assertions.assertEquals(0.0, state.getDate().durationFrom(endDate), 1.0e-15);
+            assertEquals(0.0, state.getDate().durationFrom(endDate), 1.0e-15);
         }
 
     }
 
     @Test
-    public void testVsNumericalMonoSat() {
+    void testVsNumericalMonoSat() {
 
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
@@ -260,19 +265,19 @@ public class PropagatorsParallelizerTest {
                                                         AbsoluteDate nCurr = interpolators.get(1).getCurrentState().getDate();
                                                         Vector3D nPos = interpolators.get(1).getCurrentState().getPosition();
                                                         Vector3D ePos = ephemeris.getPosition(nCurr, orbit.getFrame());
-                                                        Assertions.assertEquals(0, Vector3D.distance(ePos, nPos), 1.0e-15);
+                                                        assertEquals(0, Vector3D.distance(ePos, nPos), 1.0e-15);
                                                     });
         List<SpacecraftState> results = parallelizer.propagate(startDate, endDate);
 
-        Assertions.assertEquals(2, results.size());
+        assertEquals(2, results.size());
         for (final SpacecraftState state : results) {
-            Assertions.assertEquals(0.0, state.getDate().durationFrom(endDate), 1.0e-15);
+            assertEquals(0.0, state.getDate().durationFrom(endDate), 1.0e-15);
         }
 
     }
 
     @Test
-    public void testOrekitException() {
+    void testOrekitException() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
@@ -284,16 +289,16 @@ public class PropagatorsParallelizerTest {
                                             }));
         try {
             new PropagatorsParallelizer(propagators, interpolators -> {}).propagate(startDate, endDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertNull(oe.getCause());
-            Assertions.assertEquals(LocalizedCoreFormats.SIMPLE_MESSAGE, oe.getSpecifier());
-            Assertions.assertEquals("inTest", (String) oe.getParts()[0]);
+            assertNull(oe.getCause());
+            assertEquals(LocalizedCoreFormats.SIMPLE_MESSAGE, oe.getSpecifier());
+            assertEquals("inTest", (String) oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testEarlyStop() {
+    void testEarlyStop() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
@@ -304,17 +309,17 @@ public class PropagatorsParallelizerTest {
                                             }));
         try {
             new PropagatorsParallelizer(propagators, interpolators -> {}).propagate(startDate, endDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertNotNull(oe.getCause());
-            Assertions.assertTrue(oe.getCause() instanceof RuntimeException);
-            Assertions.assertEquals(LocalizedCoreFormats.SIMPLE_MESSAGE, oe.getSpecifier());
-            Assertions.assertTrue(((String) oe.getParts()[0]).endsWith("boo!"));
+            assertNotNull(oe.getCause());
+            assertTrue(oe.getCause() instanceof RuntimeException);
+            assertEquals(LocalizedCoreFormats.SIMPLE_MESSAGE, oe.getSpecifier());
+            assertTrue(((String) oe.getParts()[0]).endsWith("boo!"));
         }
     }
 
     @Test
-    public void testStopOnEarlyEvent() {
+    void testStopOnEarlyEvent() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         final AbsoluteDate stopDate  = startDate.shiftedBy(0.01);
@@ -323,13 +328,13 @@ public class PropagatorsParallelizerTest {
         propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                         propagate(startDate, endDate);
-        Assertions.assertEquals(2, results.size());
-        Assertions.assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
-        Assertions.assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
+        assertEquals(2, results.size());
+        assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
+        assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
     }
 
     @Test
-    public void testStopOnLateEvent() {
+    void testStopOnLateEvent() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         final AbsoluteDate stopDate  = startDate.shiftedBy(900.0);
@@ -338,13 +343,13 @@ public class PropagatorsParallelizerTest {
         propagators.get(0).addEventDetector(new DateDetector(stopDate).withHandler(new StopOnEvent()));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                         propagate(startDate, endDate);
-        Assertions.assertEquals(2, results.size());
-        Assertions.assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
-        Assertions.assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
+        assertEquals(2, results.size());
+        assertEquals(0.0, results.get(0).getDate().durationFrom(stopDate), 1.0e-15);
+        assertEquals(0.0, results.get(1).getDate().durationFrom(stopDate), 1.0e-15);
     }
 
     @Test
-    public void testInternalStepHandler() {
+    void testInternalStepHandler() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         List<Propagator> propagators = Arrays.asList(buildEcksteinHechler(),
@@ -355,15 +360,15 @@ public class PropagatorsParallelizerTest {
         propagators.get(1).getMultiplexer().add(interpolator -> called1.set(22));
         List<SpacecraftState> results = new PropagatorsParallelizer(propagators, interpolators -> {}).
                         propagate(startDate, endDate);
-        Assertions.assertEquals(2, results.size());
-        Assertions.assertEquals(0.0, results.get(0).getDate().durationFrom(endDate), 1.0e-15);
-        Assertions.assertEquals(0.0, results.get(1).getDate().durationFrom(endDate), 1.0e-15);
-        Assertions.assertEquals(11, called0.get());
-        Assertions.assertEquals(22, called1.get());
+        assertEquals(2, results.size());
+        assertEquals(0.0, results.get(0).getDate().durationFrom(endDate), 1.0e-15);
+        assertEquals(0.0, results.get(1).getDate().durationFrom(endDate), 1.0e-15);
+        assertEquals(11, called0.get());
+        assertEquals(22, called1.get());
     }
 
     @Test
-    public void testFixedStepHandler() {
+    void testFixedStepHandler() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         final double       h         = 60.0;
@@ -374,17 +379,17 @@ public class PropagatorsParallelizerTest {
                                     h,
                                     states -> {
                                         for (final SpacecraftState state : states) {
-                                            Assertions.assertEquals(h * counter.get(),
+                                            assertEquals(h * counter.get(),
                                                                     state.getDate().durationFrom(startDate),
                                                                     1.0e-10);
                                         }
                                         counter.addAndGet(1);
                                     }).propagate(startDate, endDate);
-        Assertions.assertEquals(1 + (int) FastMath.rint(endDate.durationFrom(startDate) / h), counter.get());
+        assertEquals(1 + (int) FastMath.rint(endDate.durationFrom(startDate) / h), counter.get());
     }
 
     @Test
-    public void testIntegrableGenerator() {
+    void testIntegrableGenerator() {
         final AbsoluteDate startDate =  orbit.getDate();
         final AbsoluteDate endDate   = startDate.shiftedBy(3600.0);
         final NumericalPropagator p0 = buildNumerical();
@@ -400,8 +405,8 @@ public class PropagatorsParallelizerTest {
                         propagate(startDate, endDate);
         double expected0 = FastMath.exp(base0 * endDate.durationFrom(startDate));
         double expected1 = FastMath.exp(base1 * endDate.durationFrom(startDate));
-        Assertions.assertEquals(expected0, results.get(0).getAdditionalState(name)[0], 6.0e-9 * expected0);
-        Assertions.assertEquals(expected1, results.get(1).getAdditionalState(name)[0], 5.0e-8 * expected1);
+        assertEquals(expected0, results.get(0).getAdditionalState(name)[0], 6.0e-9 * expected0);
+        assertEquals(expected1, results.get(1).getAdditionalState(name)[0], 5.0e-8 * expected1);
     }
 
     private static class Exponential implements AdditionalDerivativesProvider {
@@ -454,7 +459,7 @@ public class PropagatorsParallelizerTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data:potential/icgem-format");
             unnormalizedGravityField = GravityFieldFactory.getUnnormalizedProvider(6, 0);
@@ -479,12 +484,12 @@ public class PropagatorsParallelizerTest {
             attitudeLaw = new BodyCenterPointing(orbit.getFrame(), earth);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mass                     = Double.NaN;
         orbit                    = null;
         attitudeLaw              = null;

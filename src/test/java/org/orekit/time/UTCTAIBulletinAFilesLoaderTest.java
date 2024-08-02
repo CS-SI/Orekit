@@ -16,27 +16,30 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
-public class UTCTAIBulletinAFilesLoaderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class UTCTAIBulletinAFilesLoaderTest {
 
     @Test
-    public void test2006Leap() {
+    void test2006Leap() {
         Utils.setDataRoot("bulletinA");
         // this file contains a single leap second on 2006-01-01, from 32s to 33s
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xix-001\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.4228180,
+        assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
         afterLeap = new AbsoluteDate(2006, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.0,
+        assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
 
@@ -53,7 +56,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void test2009WrongLeap() {
+    void test2009WrongLeap() {
         Utils.setDataRoot("bulletinA");
         // this file contains a single leap second on 2009-01-01, from 33s to 34s,
         // but it has a known ERROR in it, as line 66 reads:
@@ -64,11 +67,11 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.4228180,
+        assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
         afterLeap = new AbsoluteDate(2009, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.0,
+        assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
 
@@ -79,18 +82,18 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void test2009FixedLeap() {
+    void test2009FixedLeap() {
         Utils.setDataRoot("bulletinA");
         // this file is a fixed version of IERS bulletin
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxi-053-fixed\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.4228180,
+        assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
         afterLeap = new AbsoluteDate(2009, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.0,
+        assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
 
@@ -101,20 +104,20 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testNoLeap() {
+    void testNoLeap() {
         Utils.setDataRoot("bulletinA");
         // these files contains no leap seconds
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader("bulletina-xxvi.*\\.txt$"));
 
         UTCScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.4228180,
+        assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
 
         // the artificial first leap is big ...
         afterLeap = new AbsoluteDate(1972, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertTrue(afterLeap.durationFrom(utc.getLastKnownLeapSecond()) > 25.1);
+        assertTrue(afterLeap.durationFrom(utc.getLastKnownLeapSecond()) > 25.1);
 
         // as there are no leap seconds identified, everything should be at 35s
         checkOffset("1973-01-01", -35.0);
@@ -131,13 +134,13 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testMissingTimeSteps() {
+    void testMissingTimeSteps() {
         checkException("bulletina-(?:xix|xxii)-001\\.txt",
                        OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES);
     }
 
     @Test
-    public void testMissingRapidSections() {
+    void testMissingRapidSections() {
         checkException("bulletina-missing-eop-rapid-service.txt",
                        OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE);
         checkException("bulletina-missing-eop-rapid-service.txt",
@@ -145,7 +148,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testMissingData() {
+    void testMissingData() {
         checkException("bulletina-truncated-in-prediction-header.txt",
                        OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE);
         checkException("bulletina-truncated-after-prediction-header.txt",
@@ -153,7 +156,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
     }
 
     @Test
-    public void testInconsistentDate() {
+    void testInconsistentDate() {
         checkException("bulletina-inconsistent-year.txt", OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
         checkException("bulletina-inconsistent-month.txt", OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
         checkException("bulletina-inconsistent-day.txt", OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE);
@@ -161,7 +164,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
     private void checkOffset(final String s, final double expected) {
         final AbsoluteDate date = new AbsoluteDate(s, TimeScalesFactory.getTAI());
-        Assertions.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date), 10e-8);
+        assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date), 10e-8);
     }
 
     private void checkException(String name, OrekitMessages message) {
@@ -169,9 +172,9 @@ public class UTCTAIBulletinAFilesLoaderTest {
         TimeScalesFactory.addUTCTAIOffsetsLoader(new UTCTAIBulletinAFilesLoader(name));
         try {
             TimeScalesFactory.getUTC();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(message, oe.getSpecifier());
+            assertEquals(message, oe.getSpecifier());
         }
     }
 

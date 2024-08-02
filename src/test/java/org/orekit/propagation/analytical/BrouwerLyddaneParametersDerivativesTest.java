@@ -19,7 +19,6 @@ package org.orekit.propagation.analytical;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -36,19 +35,22 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
-public class BrouwerLyddaneParametersDerivativesTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+class BrouwerLyddaneParametersDerivativesTest {
 
     /** Orbit propagator. */
     private UnnormalizedSphericalHarmonicsProvider provider;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:atmosphere:potential/icgem-format");
         provider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
     }
 
     @Test
-    public void testNoEstimatedParameters() {
+    void testNoEstimatedParameters() {
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
         // e = 0.04152500499523033   and   i = 1.705015527659039
@@ -66,11 +68,11 @@ public class BrouwerLyddaneParametersDerivativesTest {
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         RealMatrix dYdP = harvester.getParametersJacobian(initialState);
-        Assertions.assertNull(dYdP);
+        assertNull(dYdP);
     }
 
     @Test
-    public void testParametersDerivatives() {
+    void testParametersDerivatives() {
 
         // Definition of initial conditions with position and velocity
         // ------------------------------------------------------------
@@ -137,7 +139,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(0.0, (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0], 1.06e-12);
+            assertEquals(0.0, (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0], 1.06e-12);
         }
 
     }

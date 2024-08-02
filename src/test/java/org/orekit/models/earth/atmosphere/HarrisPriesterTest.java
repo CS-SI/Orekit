@@ -25,7 +25,6 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -44,6 +43,9 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class HarrisPriesterTest {
 
@@ -74,7 +76,7 @@ class HarrisPriesterTest {
         // COMPUTE DENSITY KG/M3 RHO
         final double rho = hp.getDensity(date, pos, earthFrame);
 
-        Assertions.assertEquals(3.9237E-13, rho, 1.0e-17);
+        assertEquals(3.9237E-13, rho, 1.0e-17);
 
     }
 
@@ -103,7 +105,7 @@ class HarrisPriesterTest {
 
         final double c2Psi2 = 0.02163787;
 
-        Assertions.assertEquals(c2Psi2, (rho6-rho2)/(rho4-rho2) - 1., 1.e-8);
+        assertEquals(c2Psi2, (rho6-rho2)/(rho4-rho2) - 1., 1.e-8);
 
     }
 
@@ -119,7 +121,7 @@ class HarrisPriesterTest {
         // COMPUTE DENSITY KG/M3 RHO
         final double rho = hp.getDensity(date, pos, earthFrame);
 
-        Assertions.assertEquals(0.0, rho, 0.0);
+        assertEquals(0.0, rho, 0.0);
     }
 
     @Test
@@ -197,7 +199,7 @@ class HarrisPriesterTest {
         // COMPUTE DENSITY KG/M3 RHO
         final double rho = hp.getDensity(date, pos, earthFrame);
 
-        Assertions.assertEquals(2.9049E-7, rho, 1.0e-11);
+        assertEquals(2.9049E-7, rho, 1.0e-11);
 
         final HarrisPriester hp6 = new HarrisPriester(sun, earth, userTab, 6);
         final double rho6 = hp6.getDensity(date, pos, earthFrame);
@@ -207,13 +209,13 @@ class HarrisPriesterTest {
 
         final double c2Psi2 = 0.02163787;
 
-        Assertions.assertEquals(c2Psi2, (rho6-rho2)/(rho-rho2) - 1., 1.0e-8);
+        assertEquals(c2Psi2, (rho6-rho2)/(rho-rho2) - 1., 1.0e-8);
 
     }
 
     @Test
     void testOutOfRange() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+        assertThrows(OrekitException.class, () -> {
             final HarrisPriester hp = new HarrisPriester(sun, earth);
 
             // Position at 50 km height
@@ -238,7 +240,7 @@ class HarrisPriesterTest {
             final FieldVector3D<Complex> fieldPosition = new FieldVector3D<>(field, position);
             final Complex fieldDensity = hp.getDensity(fieldDate, fieldPosition, frame);
             final double density = hp.getDensity(date, position, frame);
-            Assertions.assertEquals(density, fieldDensity.getReal());
+            assertEquals(density, fieldDensity.getReal());
         }
     }
 
@@ -266,15 +268,15 @@ class HarrisPriesterTest {
         FieldVector3D<DerivativeStructure> dsVel = hp.getVelocity(new FieldAbsoluteDate<>(factory.getDerivativeField(),
                                                                                           date),
                                                                   dsPos, eme2000);
-        Assertions.assertEquals(dVxdX, dsVel.getX().getPartialDerivative(1, 0, 0), 1.0e-16);
-        Assertions.assertEquals(dVxdY, dsVel.getX().getPartialDerivative(0, 1, 0), 1.0e-16);
-        Assertions.assertEquals(dVxdZ, dsVel.getX().getPartialDerivative(0, 0, 1), 1.0e-16);
-        Assertions.assertEquals(dVydX, dsVel.getY().getPartialDerivative(1, 0, 0), 1.0e-16);
-        Assertions.assertEquals(dVydY, dsVel.getY().getPartialDerivative(0, 1, 0), 1.0e-16);
-        Assertions.assertEquals(dVydZ, dsVel.getY().getPartialDerivative(0, 0, 1), 1.0e-16);
-        Assertions.assertEquals(dVzdX, dsVel.getZ().getPartialDerivative(1, 0, 0), 1.0e-16);
-        Assertions.assertEquals(dVzdY, dsVel.getZ().getPartialDerivative(0, 1, 0), 1.0e-16);
-        Assertions.assertEquals(dVzdZ, dsVel.getZ().getPartialDerivative(0, 0, 1), 1.0e-16);
+        assertEquals(dVxdX, dsVel.getX().getPartialDerivative(1, 0, 0), 1.0e-16);
+        assertEquals(dVxdY, dsVel.getX().getPartialDerivative(0, 1, 0), 1.0e-16);
+        assertEquals(dVxdZ, dsVel.getX().getPartialDerivative(0, 0, 1), 1.0e-16);
+        assertEquals(dVydX, dsVel.getY().getPartialDerivative(1, 0, 0), 1.0e-16);
+        assertEquals(dVydY, dsVel.getY().getPartialDerivative(0, 1, 0), 1.0e-16);
+        assertEquals(dVydZ, dsVel.getY().getPartialDerivative(0, 0, 1), 1.0e-16);
+        assertEquals(dVzdX, dsVel.getZ().getPartialDerivative(1, 0, 0), 1.0e-16);
+        assertEquals(dVzdY, dsVel.getZ().getPartialDerivative(0, 1, 0), 1.0e-16);
+        assertEquals(dVzdZ, dsVel.getZ().getPartialDerivative(0, 0, 1), 1.0e-16);
 
     }
 
@@ -296,7 +298,7 @@ class HarrisPriesterTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         sun = CelestialBodyFactory.getSun();
 
@@ -309,7 +311,7 @@ class HarrisPriesterTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         utc = null;
     }
 

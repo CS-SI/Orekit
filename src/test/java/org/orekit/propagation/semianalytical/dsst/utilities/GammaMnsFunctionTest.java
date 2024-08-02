@@ -18,23 +18,26 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.hipparchus.util.CombinatoricsUtils;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class GammaMnsFunctionTest {
+class GammaMnsFunctionTest {
 
     int      nMax;
     double[] fact;
 
     @Test
-    public void testIndex()
-        throws NoSuchMethodException, SecurityException,
-               IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    void testIndex()
+            throws NoSuchMethodException, SecurityException,
+            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Method indexM = GammaMnsFunction.class.getDeclaredMethod("index",
                                                                  Integer.TYPE, Integer.TYPE, Integer.TYPE);
         indexM.setAccessible(true);
@@ -42,15 +45,15 @@ public class GammaMnsFunctionTest {
         for (int n = 0; n <= nMax; ++n) {
             for (int m = 0; m <= n; ++m) {
                 for (int s = -n; s <= n; ++s) {
-                    Assertions.assertEquals(i++, indexM.invoke(null, m, n, s));
+                    assertEquals(i++, indexM.invoke(null, m, n, s));
                 }
             }
         }
     }
 
     @Test
-    public void testPrecomputedRatios()
-        throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void testPrecomputedRatios()
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         Field precomputedF = GammaMnsFunction.class.getDeclaredField("PRECOMPUTED_RATIOS");
         precomputedF.setAccessible(true);
         new GammaMnsFunction(nMax, 0.5, +1);
@@ -61,32 +64,32 @@ public class GammaMnsFunctionTest {
                 for (int s = -n; s <= n; ++s) {
                     // compare against naive implementation
                     double r = naiveRatio(m, n, s);
-                    Assertions.assertEquals(r, precomputed[i++], 2.0e-14 * r);
+                    assertEquals(r, precomputed[i++], 2.0e-14 * r);
                 }
             }
         }
     }
 
     @Test
-    public void testReallocate()
-        throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void testReallocate()
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
         Field precomputedF = GammaMnsFunction.class.getDeclaredField("PRECOMPUTED_RATIOS");
         precomputedF.setAccessible(true);
         precomputedF.set(null, new double[0]);
         new GammaMnsFunction(nMax, 0.5, +1);
         double[] orginalPrecomputed = (double[]) precomputedF.get(null);
-        Assertions.assertEquals((nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6, orginalPrecomputed.length);
+        assertEquals((nMax + 1) * (nMax + 2) * (4 * nMax + 3) / 6, orginalPrecomputed.length);
         new GammaMnsFunction(nMax + 3, 0.5, +1);
         double[] reallocatedPrecomputed = (double[]) precomputedF.get(null);
-        Assertions.assertEquals((nMax + 4) * (nMax + 5) * (4 * nMax + 15) / 6, reallocatedPrecomputed.length);
+        assertEquals((nMax + 4) * (nMax + 5) * (4 * nMax + 15) / 6, reallocatedPrecomputed.length);
         for (int i = 0; i < orginalPrecomputed.length; ++i) {
-            Assertions.assertEquals(orginalPrecomputed[i], reallocatedPrecomputed[i],
+            assertEquals(orginalPrecomputed[i], reallocatedPrecomputed[i],
                                 1.0e-15 * orginalPrecomputed[i]);
         }
     }
 
     @Test
-    public void testValue() {
+    void testValue() {
         for (int bigI : new int[] { -1, +1 }) {
             for (double gamma = 0; gamma <= 1; gamma += 1.0 / 64.0) {
                 GammaMnsFunction gammaMNS = new GammaMnsFunction(nMax, gamma, bigI);
@@ -97,10 +100,10 @@ public class GammaMnsFunctionTest {
                             final double v = naiveValue(bigI, gamma, m, n, s);
                             final double g = gammaMNS.getValue(m, n, s);
                             if (Double.isInfinite(v)) {
-                                Assertions.assertTrue(Double.isInfinite(g));
-                                Assertions.assertTrue(v * g > 0);
+                                assertTrue(Double.isInfinite(g));
+                                assertTrue(v * g > 0);
                             } else {
-                                Assertions.assertEquals(v, g, 2.0e-14 * FastMath.abs(v));
+                                assertEquals(v, g, 2.0e-14 * FastMath.abs(v));
                             }
                         }
                     }
@@ -127,7 +130,7 @@ public class GammaMnsFunctionTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         nMax = 12;
         fact = new double[2 * nMax + 1];
         fact[0] = 1;

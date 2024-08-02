@@ -27,24 +27,24 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
-public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
+class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
 
     @Test
-    public void testNadirNoMargin() {
+    void testNadirNoMargin() {
         doTestFootprint(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(3.0), 0.0),
                         new NadirPointing(orbit.getFrame(), earth),
                         3.0, 3.0, 85.3650, 85.3745, 181027.5, 181028.5);
     }
 
     @Test
-    public void testNadirMargin() {
+    void testNadirMargin() {
         doTestFootprint(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(3.0), 0.01),
                         new NadirPointing(orbit.getFrame(), earth),
                         3.0, 3.0, 85.3650, 85.3745, 181027.5, 181028.5);
     }
 
     @Test
-    public void testRollPitchYaw() {
+    void testRollPitchYaw() {
         doTestFootprint(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(3.0), 0.0),
                         new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                       FastMath.toRadians(10),
@@ -54,7 +54,7 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testFOVPartiallyTruncatedAtLimb() {
+    void testFOVPartiallyTruncatedAtLimb() {
         doTestFootprint(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(3.0), 0.0),
                         new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                       FastMath.toRadians(-10),
@@ -64,14 +64,14 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testFOVLargerThanEarth() {
+    void testFOVLargerThanEarth() {
         doTestFootprint(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(45.0), 0.0),
                         new NadirPointing(orbit.getFrame(), earth),
                         40.3505, 40.4655, 0.0, 0.0, 5323032.8, 5347029.8);
     }
 
     @Test
-    public void testFOVAwayFromEarth() {
+    void testFOVAwayFromEarth() {
         doTestFOVAwayFromEarth(new CircularFieldOfView(Vector3D.MINUS_K, FastMath.toRadians(3.0), 0.0),
                                new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                              FastMath.toRadians(-10),
@@ -81,14 +81,14 @@ public class CircularFieldOfViewTest extends AbstractSmoothFieldOfViewTest {
     }
 
     @Test
-    public void testBoundary() {
+    void testBoundary() {
         doTestBoundary(new CircularFieldOfView(Vector3D.MINUS_K, FastMath.toRadians(3.0), 0.01),
                        new Well19937a(0x2fdf54d1c6f679afl),
                        2.0e-15);
     }
 
     @Test
-    public void testNoFootprintInside() {
+    void testNoFootprintInside() {
         doTestNoFootprintInside(new CircularFieldOfView(Vector3D.PLUS_K, FastMath.toRadians(3.0), 0.0),
                                 new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(5e6, 3e6, 2e6)));
     }

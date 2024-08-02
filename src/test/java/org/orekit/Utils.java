@@ -43,6 +43,9 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriversList;
 
 import java.io.File;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
@@ -117,31 +120,27 @@ public class Utils {
     }
 
     private static void clearFactoryMaps(Class<?> factoryClass) {
-        try {
+        Assertions.assertDoesNotThrow(() -> {
             for (Field field : factoryClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers()) &&
-                    Map.class.isAssignableFrom(field.getType())) {
+                        Map.class.isAssignableFrom(field.getType())) {
                     field.setAccessible(true);
                     ((Map<?, ?>) field.get(null)).clear();
                 }
             }
-        } catch (IllegalAccessException iae) {
-            Assertions.fail(iae.getMessage());
-        }
+        });
     }
 
     private static void clearFactory(Class<?> factoryClass, Class<?> cachedFieldsClass) {
-        try {
+        Assertions.assertDoesNotThrow(() -> {
             for (Field field : factoryClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers()) &&
-                    cachedFieldsClass.isAssignableFrom(field.getType())) {
+                        cachedFieldsClass.isAssignableFrom(field.getType())) {
                     field.setAccessible(true);
                     field.set(null, null);
                 }
             }
-        } catch (IllegalAccessException iae) {
-            Assertions.fail(iae.getMessage());
-        }
+        });
     }
 
     public static List<EOPEntry> buildEOPList(IERSConventions conventions, ITRFVersion version,
@@ -212,14 +211,14 @@ public class Utils {
             final ParameterDriversList.DelegatingDriver currentExpectedDriver = expectedDriversList.get(i);
             final ParameterDriversList.DelegatingDriver currentActualDriver = actualDriversList.get(i);
 
-            Assertions.assertArrayEquals(currentExpectedDriver.getValues(), currentActualDriver.getValues());
-            Assertions.assertEquals(currentExpectedDriver.getValue(), currentActualDriver.getValue());
-            Assertions.assertEquals(currentExpectedDriver.getNormalizedValue(), currentActualDriver.getNormalizedValue());
-            Assertions.assertEquals(currentExpectedDriver.getMaxValue(), currentActualDriver.getMaxValue());
-            Assertions.assertEquals(currentExpectedDriver.getMinValue(), currentActualDriver.getMinValue());
-            Assertions.assertEquals(currentExpectedDriver.getName(), currentActualDriver.getName());
-            Assertions.assertEquals(currentExpectedDriver.getNbOfValues(), currentActualDriver.getNbOfValues());
-            Assertions.assertEquals(currentExpectedDriver.getReferenceValue(), currentActualDriver.getReferenceValue());
+            assertArrayEquals(currentExpectedDriver.getValues(), currentActualDriver.getValues());
+            assertEquals(currentExpectedDriver.getValue(), currentActualDriver.getValue());
+            assertEquals(currentExpectedDriver.getNormalizedValue(), currentActualDriver.getNormalizedValue());
+            assertEquals(currentExpectedDriver.getMaxValue(), currentActualDriver.getMaxValue());
+            assertEquals(currentExpectedDriver.getMinValue(), currentActualDriver.getMinValue());
+            assertEquals(currentExpectedDriver.getName(), currentActualDriver.getName());
+            assertEquals(currentExpectedDriver.getNbOfValues(), currentActualDriver.getNbOfValues());
+            assertEquals(currentExpectedDriver.getReferenceValue(), currentActualDriver.getReferenceValue());
 
         }
     }

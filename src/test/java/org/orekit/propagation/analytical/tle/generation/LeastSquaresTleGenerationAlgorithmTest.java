@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle.generation;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -25,14 +24,17 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class LeastSquaresTleGenerationAlgorithmTest {
+
+class LeastSquaresTleGenerationAlgorithmTest {
 
     private TLE geoTLE;
     private TLE leoTLE;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         geoTLE = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                          "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
@@ -41,12 +43,12 @@ public class LeastSquaresTleGenerationAlgorithmTest {
     }
 
     @Test
-    public void testConversionLeo() {
+    void testConversionLeo() {
         checkConversion(leoTLE, 1.0e-12, 3.755238453429068E-9);
     }
 
     @Test
-    public void testConversionGeo() {
+    void testConversionGeo() {
         checkConversion(geoTLE, 1.0e-12, 3.135996497102161E-9);
     }
 
@@ -57,27 +59,27 @@ public class LeastSquaresTleGenerationAlgorithmTest {
         LeastSquaresTleGenerationAlgorithm converter = new LeastSquaresTleGenerationAlgorithm();
         final TLE converted = converter.generate(p.getInitialState(), tle);
 
-        Assertions.assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
-        Assertions.assertEquals(tle.getClassification(),          converted.getClassification());
-        Assertions.assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
-        Assertions.assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
-        Assertions.assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
-        Assertions.assertEquals(tle.getElementNumber(),           converted.getElementNumber());
-        Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
+        assertEquals(tle.getSatelliteNumber(),         converted.getSatelliteNumber());
+        assertEquals(tle.getClassification(),          converted.getClassification());
+        assertEquals(tle.getLaunchYear(),              converted.getLaunchYear());
+        assertEquals(tle.getLaunchNumber(),            converted.getLaunchNumber());
+        assertEquals(tle.getLaunchPiece(),             converted.getLaunchPiece());
+        assertEquals(tle.getElementNumber(),           converted.getElementNumber());
+        assertEquals(tle.getRevolutionNumberAtEpoch(), converted.getRevolutionNumberAtEpoch());
 
-        Assertions.assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), threshold * tle.getMeanMotion());
-        Assertions.assertEquals(tle.getE(), converted.getE(), threshold * tle.getE());
-        Assertions.assertEquals(tle.getI(), converted.getI(), threshold * tle.getI());
-        Assertions.assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), threshold * tle.getPerigeeArgument());
-        Assertions.assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
-        Assertions.assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
+        assertEquals(tle.getMeanMotion(), converted.getMeanMotion(), threshold * tle.getMeanMotion());
+        assertEquals(tle.getE(), converted.getE(), threshold * tle.getE());
+        assertEquals(tle.getI(), converted.getI(), threshold * tle.getI());
+        assertEquals(tle.getPerigeeArgument(), converted.getPerigeeArgument(), threshold * tle.getPerigeeArgument());
+        assertEquals(tle.getRaan(), converted.getRaan(), threshold * tle.getRaan());
+        assertEquals(tle.getMeanAnomaly(), converted.getMeanAnomaly(), threshold * tle.getMeanAnomaly());
 
-        Assertions.assertEquals(converter.getRms(), rms, threshold);
+        assertEquals(converter.getRms(), rms, threshold);
 
     }
 
     @Test
-    public void testIssue864() {
+    void testIssue864() {
 
         // Initialize TLE
         final TLE tleISS = new TLE("1 25544U 98067A   21035.14486477  .00001026  00000-0  26816-4 0  9998",
@@ -96,7 +98,7 @@ public class LeastSquaresTleGenerationAlgorithmTest {
         final TLE rebuilt = new LeastSquaresTleGenerationAlgorithm().generate(state, tleISS);
 
         // Verify if driver is still selected
-        rebuilt.getParametersDrivers().forEach(driver -> Assertions.assertTrue(driver.isSelected()));
+        rebuilt.getParametersDrivers().forEach(driver -> assertTrue(driver.isSelected()));
 
     }
 

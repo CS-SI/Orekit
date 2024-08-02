@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresProblem.Evaluation;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LevenbergMarquardtOptimizer;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -44,15 +43,19 @@ import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
-public class EcksteinHechlerBatchLSEstimatorTest {
+class EcksteinHechlerBatchLSEstimatorTest {
 
     /**
      * Perfect PV measurements with a perfect start
      */
     @Test
-    public void testPV() {
+    void testPV() {
 
         EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
@@ -84,16 +87,16 @@ public class EcksteinHechlerBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
+        assertEquals(6,       normalizedCovariances.getRowDimension());
+        assertEquals(6,       normalizedCovariances.getColumnDimension());
+        assertEquals(6,       physicalCovariances.getRowDimension());
+        assertEquals(6,       physicalCovariances.getColumnDimension());
 
     }
 
     /** Test PV measurements generation and backward propagation in least-square orbit determination. */
     @Test
-    public void testKeplerPVBackward() {
+    void testKeplerPVBackward() {
 
         EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
@@ -126,10 +129,10 @@ public class EcksteinHechlerBatchLSEstimatorTest {
 
         RealMatrix normalizedCovariances = estimator.getOptimum().getCovariances(1.0e-10);
         RealMatrix physicalCovariances   = estimator.getPhysicalCovariances(1.0e-10);
-        Assertions.assertEquals(6,       normalizedCovariances.getRowDimension());
-        Assertions.assertEquals(6,       normalizedCovariances.getColumnDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getRowDimension());
-        Assertions.assertEquals(6,       physicalCovariances.getColumnDimension());
+        assertEquals(6,       normalizedCovariances.getRowDimension());
+        assertEquals(6,       normalizedCovariances.getColumnDimension());
+        assertEquals(6,       physicalCovariances.getRowDimension());
+        assertEquals(6,       physicalCovariances.getColumnDimension());
 
     }
 
@@ -137,7 +140,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
      * Perfect range measurements with a perfect start
      */
     @Test
-    public void testKeplerRange() {
+    void testKeplerRange() {
 
         EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
@@ -174,7 +177,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
      * Perfect range measurements with a perfect start and an on-board antenna range offset
      */
     @Test
-    public void testKeplerRangeWithOnBoardAntennaOffset() {
+    void testKeplerRangeWithOnBoardAntennaOffset() {
 
         EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
@@ -220,7 +223,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
      * Perfect range rate measurements with a perfect start
      */
     @Test
-    public void testKeplerRangeRate() {
+    void testKeplerRangeRate() {
 
         EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
@@ -261,7 +264,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
     }
 
     @Test
-    public void testWrappedException() {
+    void testWrappedException() {
 
         EcksteinHechlerContext context = EcksteinHechlerEstimationTestUtils.smallEccentricContext("regular-data:potential:tides");
 
@@ -304,7 +307,7 @@ public class EcksteinHechlerBatchLSEstimatorTest {
                                                        0.0, 3.2e-6,
                                                        0.0, 3.8e-7,
                                                        0.0, 1.5e-10);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (DummyException de) {
             // expected
         }

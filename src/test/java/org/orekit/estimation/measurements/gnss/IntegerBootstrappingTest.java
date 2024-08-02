@@ -23,19 +23,22 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathArrays.Position;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.FileNotFoundException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-public class IntegerBootstrappingTest {
+class IntegerBootstrappingTest {
 
 
     /** test the resolution for the tiberius example. */
     @Test
-    public void testJoostenTiberiusFAQ() {
+    void testJoostenTiberiusFAQ() {
         // this test corresponds to the "LAMBDA: FAQs" paper by Peter Joosten and Christian Tiberius
 
         final double[] floatAmbiguities = new double[] {
@@ -51,12 +54,12 @@ public class IntegerBootstrappingTest {
         final IntegerBootstrapping bootstrap = new IntegerBootstrapping(0.8);
         IntegerLeastSquareSolution[] solutions = bootstrap.solveILS(1, floatAmbiguities, indirection, covariance);
         if (solutions.length != 0) {
-            Assertions.assertTrue(solutions.length == 1);
+            assertEquals(1, solutions.length);
         }
     }
 
     @Test
-    public void testRandomProblems() throws FileNotFoundException, UnsupportedEncodingException {
+    void testRandomProblems() throws FileNotFoundException, UnsupportedEncodingException {
         RandomGenerator random = new Well19937a(0x1c68f36088a9133al);
         int[] count = new int[3];
         for (int k = 0; k < 10000; ++k) {
@@ -69,18 +72,18 @@ public class IntegerBootstrappingTest {
             ++ count[doTestILS(random, indirection, covariance)];
         }
 
-        Assertions.assertEquals(  50, count[0]);
-        Assertions.assertEquals(9950, count[1]);
+        assertEquals(  50, count[0]);
+        assertEquals(9950, count[1]);
 
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         // Initialize comparator
         final IntegerLeastSquareComparator comparator = new IntegerLeastSquareComparator();
         // Verify
-        Assertions.assertEquals(0,  comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 4.0)));
-        Assertions.assertEquals(-1, comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 9.0)));
+        assertEquals(0,  comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 4.0)));
+        assertEquals(-1, comparator.compare(new IntegerLeastSquareSolution(new long[] { 1l, 2l, 3l}, 4.0), new IntegerLeastSquareSolution(new long[] { 9l, 9l, 9l}, 9.0)));
     }
 
     private int doTestILS(final RandomGenerator random,
@@ -95,7 +98,7 @@ public class IntegerBootstrappingTest {
 
         // check solution exist if and only if its probability great enough
         if (solutions.length != 0) {
-            Assertions.assertTrue(1 / (solutions[0].getSquaredDistance()) > 0.3);
+            assertTrue(1 / (solutions[0].getSquaredDistance()) > 0.3);
         }
 
         return solutions.length;

@@ -16,12 +16,16 @@
  */
 package org.orekit.data;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.io.InputStream;
 import java.text.ParseException;
 import java.util.regex.Pattern;
@@ -45,11 +49,11 @@ public abstract class AbstractListCrawlerTest<T> {
                                           "regular-data/de405-ephemerides/unxp0000.405",
                                           "regular-data/de405-ephemerides/unxp0001.405",
                                           "regular-data/de406-ephemerides/unxp0000.406");
-        Assertions.assertEquals(4, nc.getInputs().size());
+        assertEquals(4, nc.getInputs().size());
         nc.addInput(input("regular-data/Earth-orientation-parameters/monthly/bulletinb_IAU2000-216.txt"));
-        Assertions.assertEquals(5, nc.getInputs().size());
+        assertEquals(5, nc.getInputs().size());
         nc.feed(Pattern.compile(".*"), crawler, DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(5, crawler.getCount());
+        assertEquals(5, crawler.getCount());
     }
 
     @Test
@@ -61,7 +65,7 @@ public abstract class AbstractListCrawlerTest<T> {
         nc.addInput(input("compressed-data/eopc04_08_IAU2000.02.gz"));
         nc.feed(Pattern.compile("^eopc04.*"), crawler,
                 DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(2, crawler.getCount());
+        assertEquals(2, crawler.getCount());
     }
 
     @Test
@@ -69,20 +73,20 @@ public abstract class AbstractListCrawlerTest<T> {
         CountingLoader crawler = new CountingLoader();
         build("zipped-data/multizip.zip").feed(Pattern.compile(".*\\.txt$"), crawler,
                                                DataContext.getDefault().getDataProvidersManager());
-        Assertions.assertEquals(6, crawler.getCount());
+        assertEquals(6, crawler.getCount());
     }
 
     @Test
     public void ioException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+        assertThrows(OrekitException.class, () -> {
             try {
                 build("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new IOExceptionLoader(),
                         DataContext.getDefault().getDataProvidersManager());
             } catch (OrekitException oe) {
                 // expected behavior
-                Assertions.assertNotNull(oe.getCause());
-                Assertions.assertEquals(IOException.class, oe.getCause().getClass());
-                Assertions.assertEquals("dummy error", oe.getMessage());
+                assertNotNull(oe.getCause());
+                assertEquals(IOException.class, oe.getCause().getClass());
+                assertEquals("dummy error", oe.getMessage());
                 throw oe;
             }
         });
@@ -90,15 +94,15 @@ public abstract class AbstractListCrawlerTest<T> {
 
     @Test
     public void parseException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+        assertThrows(OrekitException.class, () -> {
             try {
                 build("regular-data/UTC-TAI.history").feed(Pattern.compile(".*"), new ParseExceptionLoader(),
                         DataContext.getDefault().getDataProvidersManager());
             } catch (OrekitException oe) {
                 // expected behavior
-                Assertions.assertNotNull(oe.getCause());
-                Assertions.assertEquals(ParseException.class, oe.getCause().getClass());
-                Assertions.assertEquals("dummy error", oe.getMessage());
+                assertNotNull(oe.getCause());
+                assertEquals(ParseException.class, oe.getCause().getClass());
+                assertEquals("dummy error", oe.getMessage());
                 throw oe;
             }
         });

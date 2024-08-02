@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,22 +28,25 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-public class ViennaOneTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class ViennaOneTest {
 
     private static double epsilon = 1e-6;
 
     @BeforeAll
-    public static void setUpGlobal() {
+    static void setUpGlobal() {
         Utils.setDataRoot("atmosphere");
     }
 
     @BeforeEach
-    public void setUp() throws OrekitException {
+    void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
     }
 
     @Test
-    public void testMappingFactors() {
+    void testMappingFactors() {
 
         // Site (NRAO, Green Bank, WV): latitude:  38°
         //                              longitude: 280°
@@ -89,12 +91,12 @@ public class ViennaOneTest {
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
 
-        Assertions.assertEquals(expectedHydro, computedMapping[0], 4.1e-6);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
+        assertEquals(expectedHydro, computedMapping[0], 4.1e-6);
+        assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
     }
 
     @Test
-    public void testDelay() {
+    void testDelay() {
         final double elevation = 10d;
         final double height = 100d;
         final AbsoluteDate date = new AbsoluteDate();
@@ -107,12 +109,12 @@ public class ViennaOneTest {
                                             point,
                                             TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                             model.getParameters(date), date).getDelay();
-        Assertions.assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
+        assertTrue(Precision.compareTo(path, 20d, epsilon) < 0);
+        assertTrue(Precision.compareTo(path, 0d, epsilon) > 0);
     }
 
     @Test
-    public void testFixedHeight() {
+    void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
         ViennaOne model = new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
@@ -126,7 +128,7 @@ public class ViennaOneTest {
                                                  point,
                                                  TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                  model.getParameters(date), date).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
+            assertTrue(Precision.compareTo(delay, lastDelay, epsilon) < 0);
             lastDelay = delay;
         }
     }

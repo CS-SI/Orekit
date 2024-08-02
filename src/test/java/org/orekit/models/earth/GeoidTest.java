@@ -20,7 +20,6 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +40,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.orekit.OrekitMatchers.closeTo;
 import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
 import static org.orekit.OrekitMatchers.vectorCloseTo;
@@ -50,7 +51,7 @@ import static org.orekit.OrekitMatchers.vectorCloseTo;
  *
  * @author Evan Ward
  */
-public class GeoidTest {
+class GeoidTest {
 
     /** maximum degree used in testing {@link Geoid}. */
     private static final int maxOrder = 360;
@@ -74,7 +75,7 @@ public class GeoidTest {
      * @throws Exception on error.
      */
     @BeforeAll
-    public static void setUpBefore() throws Exception {
+    static void setUpBefore() throws Exception {
         Utils.setDataRoot("geoid:regular-data");
         GravityFieldFactory.clearPotentialCoefficientsReaders();
         GravityFieldFactory.addPotentialCoefficientsReader(
@@ -89,7 +90,7 @@ public class GeoidTest {
 
     /** create the array of reference points */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         reference = new double[][]{
                 {0, 75, -100.3168},
                 {-30, 60, 14.9214},
@@ -119,26 +120,26 @@ public class GeoidTest {
 
     /** Test constructor and simple getters. */
     @Test
-    public void testGeoid() {
+    void testGeoid() {
         Geoid geoid = getComponent();
         // reference ellipse is the same
-        Assertions.assertEquals(WGS84, geoid.getEllipsoid());
+        assertEquals(WGS84, geoid.getEllipsoid());
         // geoid and reference ellipse are in the same frame
-        Assertions.assertEquals(WGS84.getBodyFrame(), geoid.getBodyFrame());
+        assertEquals(WGS84.getBodyFrame(), geoid.getBodyFrame());
     }
 
     /** throws on null */
     @Test
-    public void testGeoidNullPotential() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
+    void testGeoidNullPotential() {
+        assertThrows(NullPointerException.class, () -> {
             new Geoid(null, WGS84);
         });
     }
 
     /** throws on null */
     @Test
-    public void testGeoidNullEllipsoid() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
+    void testGeoidNullEllipsoid() {
+        assertThrows(NullPointerException.class, () -> {
             new Geoid(potential, null);
         });
     }
@@ -153,7 +154,7 @@ public class GeoidTest {
      * height for WGS84 and EGM96</a>
      */
     @Test
-    public void testGetUndulation() {
+    void testGetUndulation() {
         /*
          * allow 3 meter of error, which is what the approximations would
          * suggest, see the comment for Geoid.
@@ -170,7 +171,7 @@ public class GeoidTest {
             double expected = row[2];
             // System.out.format("%10g %10g %10g %10g%n", lat, lon, expected,
             // undulation - expected);
-            Assertions.assertEquals(undulation, expected, maxError, String.format("lat: %5g, lon: %5g", lat, lon));
+            assertEquals(undulation, expected, maxError, String.format("lat: %5g, lon: %5g", lat, lon));
         }
     }
 
@@ -179,7 +180,7 @@ public class GeoidTest {
      * AbsoluteDate)} with several points.
      */
     @Test
-    public void testGetIntersectionPoint() {
+    void testGetIntersectionPoint() {
         // setup
         Geoid geoid = getComponent();
         Frame frame = geoid.getBodyFrame();
@@ -218,7 +219,7 @@ public class GeoidTest {
      * AbsoluteDate)} handles frame transformations correctly
      */
     @Test
-    public void testGetIntersectionPointFrame() {
+    void testGetIntersectionPointFrame() {
         // setup
         Geoid geoid = getComponent();
         Frame frame = new Frame(
@@ -260,7 +261,7 @@ public class GeoidTest {
      * AbsoluteDate)} returns null when there is no intersection
      */
     @Test
-    public void testGetIntersectionPointNoIntersection() {
+    void testGetIntersectionPointNoIntersection() {
         Geoid geoid = getComponent();
         Vector3D closeMiss = new Vector3D(geoid.getEllipsoid()
                 .getEquatorialRadius() + 18, 0, 0);
@@ -279,7 +280,7 @@ public class GeoidTest {
      * h<sub>geoid</sub> + N. Where N is the undulation of the geoid.
      */
     @Test
-    public void testTransformVector3DFrameAbsoluteDate()
+    void testTransformVector3DFrameAbsoluteDate()
             {
         // frame and date are the same
         Frame frame = FramesFactory.getGCRF();
@@ -312,7 +313,7 @@ public class GeoidTest {
      * undulation).
      */
     @Test
-    public void testTransformGeodeticPoint() {
+    void testTransformGeodeticPoint() {
         // geoid
         Geoid geoid = getComponent();
         // ellipsoid
@@ -341,7 +342,7 @@ public class GeoidTest {
 
     /** check {@link Geoid#getEllipsoid()} */
     @Test
-    public void testGetEllipsoid() {
+    void testGetEllipsoid() {
         //setup
         Geoid geoid = new Geoid(potential, WGS84);
 
@@ -353,7 +354,7 @@ public class GeoidTest {
      * check {@link Geoid#projectToGround(Vector3D, AbsoluteDate, Frame)}
      */
     @Test
-    public void testProjectToGround() {
+    void testProjectToGround() {
         //setup
         Vector3D p = new Vector3D(7e8, 1e3, 200);
         Geoid geoid = new Geoid(potential, WGS84);

@@ -18,7 +18,6 @@ package org.orekit.models.earth.displacement;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -35,37 +34,41 @@ import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.lang.reflect.Field;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class TidalDisplacementTest {
+class TidalDisplacementTest {
 
     @Test
-    public void testIERSDisplacementNumbers() {
+    void testIERSDisplacementNumbers() {
         for (final IERSConventions conventions : IERSConventions.values()) {
             // as of Orekit 9.0, supported conventions are
             // IERS conventions 1996, IERS conventions 2003 and IERS conventions 2010
             // and they all share the same values for anelastic Earth model
             double[] hl = conventions.getNominalTidalDisplacement();
-            Assertions.assertEquals(13, hl.length);
-            Assertions.assertEquals( 0.6078,  hl[ 0], 1.0e-15); // h⁽⁰⁾
-            Assertions.assertEquals(-0.0006,  hl[ 1], 1.0e-15); // h⁽²⁾
-            Assertions.assertEquals( 0.292,   hl[ 2], 1.0e-15); // h₃
-            Assertions.assertEquals(-0.0025,  hl[ 3], 1.0e-15); // hI diurnal
-            Assertions.assertEquals(-0.0022,  hl[ 4], 1.0e-15); // hI semi-diurnal
-            Assertions.assertEquals( 0.0847,  hl[ 5], 1.0e-15); // l⁽⁰⁾
-            Assertions.assertEquals( 0.0012,  hl[ 6], 1.0e-15); // l⁽¹⁾ diurnal
-            Assertions.assertEquals( 0.0024,  hl[ 7], 1.0e-15); // l⁽¹⁾ semi-diurnal
-            Assertions.assertEquals( 0.0002,  hl[ 8], 1.0e-15); // l⁽²⁾
-            Assertions.assertEquals( 0.015,   hl[ 9], 1.0e-15); // l₃
-            Assertions.assertEquals(-0.0007,  hl[10], 1.0e-15); // lI diurnal
-            Assertions.assertEquals(-0.0007,  hl[11], 1.0e-15); // lI semi-diurnal
-            Assertions.assertEquals(-0.31460, hl[12], 1.0e-15); // H₀ permanent deformation amplitude
+            assertEquals(13, hl.length);
+            assertEquals( 0.6078,  hl[ 0], 1.0e-15); // h⁽⁰⁾
+            assertEquals(-0.0006,  hl[ 1], 1.0e-15); // h⁽²⁾
+            assertEquals( 0.292,   hl[ 2], 1.0e-15); // h₃
+            assertEquals(-0.0025,  hl[ 3], 1.0e-15); // hI diurnal
+            assertEquals(-0.0022,  hl[ 4], 1.0e-15); // hI semi-diurnal
+            assertEquals( 0.0847,  hl[ 5], 1.0e-15); // l⁽⁰⁾
+            assertEquals( 0.0012,  hl[ 6], 1.0e-15); // l⁽¹⁾ diurnal
+            assertEquals( 0.0024,  hl[ 7], 1.0e-15); // l⁽¹⁾ semi-diurnal
+            assertEquals( 0.0002,  hl[ 8], 1.0e-15); // l⁽²⁾
+            assertEquals( 0.015,   hl[ 9], 1.0e-15); // l₃
+            assertEquals(-0.0007,  hl[10], 1.0e-15); // lI diurnal
+            assertEquals(-0.0007,  hl[11], 1.0e-15); // lI semi-diurnal
+            assertEquals(-0.31460, hl[12], 1.0e-15); // H₀ permanent deformation amplitude
         }
     }
 
     @Test
-    public void testDehantOriginalArgumentsNoRemove() {
+    void testDehantOriginalArgumentsNoRemove() {
         // this test intends to reproduce as much as possible the DEHANTTIDEINEL.F test case
         // it does so by replacing the fundamental nutation arguments and frequency correction
         // models used by Orekit (which come from IERS conventions) by the hard-coded models
@@ -77,7 +80,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantOriginalArgumentsRemovePermanentTide() {
+    void testDehantOriginalArgumentsRemovePermanentTide() {
         // this test intends to reproduce as much as possible the DEHANTTIDEINEL.F test case
         // with step 3 activated
         // it does so by replacing the fundamental nutation arguments and frequency correction
@@ -90,7 +93,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantIERS1996() {
+    void testDehantIERS1996() {
         // this test intends to replay the DEHANTTIDEINEL.F test case but using the
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
@@ -101,7 +104,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantIERS2003() {
+    void testDehantIERS2003() {
         // this test intends to replay the DEHANTTIDEINEL.F test case but using the
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
@@ -112,7 +115,7 @@ public class TidalDisplacementTest {
     }
 
     @Test
-    public void testDehantIERS2010() {
+    void testDehantIERS2010() {
         // this test intends to replay the DEHANTTIDEINEL.F test case but using the
         // fundamental nutation arguments and frequency correction models from IERS
         // conventions.
@@ -220,7 +223,7 @@ public class TidalDisplacementTest {
 
             } catch (SecurityException | NoSuchMethodException | NoSuchFieldException |
                      InvocationTargetException | IllegalArgumentException | IllegalAccessException e) {
-                Assertions.fail(e.getLocalizedMessage());
+                fail(e.getLocalizedMessage());
             }
         } else {
             arguments = conventions.getNutationArguments(ut1);
@@ -230,15 +233,15 @@ public class TidalDisplacementTest {
         Vector3D fundamentalStationWettzell = new Vector3D(4075578.385, 931852.890, 4801570.154);
         AbsoluteDate date = new AbsoluteDate(2009, 4, 13, 0, 0, 0.0, ut1);
         Vector3D displacement = td.displacement(arguments.evaluateAll(date), itrf, fundamentalStationWettzell);
-        Assertions.assertEquals(expectedDx, displacement.getX(), tolerance);
-        Assertions.assertEquals(expectedDy, displacement.getY(), tolerance);
-        Assertions.assertEquals(expectedDz, displacement.getZ(), tolerance);
+        assertEquals(expectedDx, displacement.getX(), tolerance);
+        assertEquals(expectedDy, displacement.getY(), tolerance);
+        assertEquals(expectedDz, displacement.getZ(), tolerance);
 
 
     }
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 

@@ -16,11 +16,9 @@
  */
 package org.orekit.files.ccsds.ndm.odm.opm;
 
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.Array2DRowRealMatrix;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
@@ -52,6 +50,15 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.ByteArrayInputStream;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -59,15 +66,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class OpmParserTest {
+class OpmParserTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testParseOPM1KVN() {
+    void testParseOPM1KVN() {
         // simple test for OPM file, contains p/v entries and other mandatory
         // data.
         final String ex = "/ccsds/odm/opm/OPMExample1.txt";
@@ -76,31 +83,31 @@ public class OpmParserTest {
         final OpmParser parser = new ParserBuilder().withMu(398600e9).withDefaultMass(1000.0).buildOpmParser();
 
         final Opm file = parser.parseMessage(source);
-        Assertions.assertEquals(IERSConventions.IERS_2010, file.getConventions());
+        assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
-        Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57,
+        assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57,
                                              TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
-        Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
+        assertEquals("JAXA", file.getHeader().getOriginator());
 
         // Check Metadata Block;
 
-        Assertions.assertEquals("GODZILLA 5", file.getMetadata().getObjectName());
-        Assertions.assertEquals("1998-999A", file.getMetadata().getObjectID());
-        Assertions.assertEquals(1998, file.getMetadata().getLaunchYear());
-        Assertions.assertEquals(999, file.getMetadata().getLaunchNumber());
-        Assertions.assertEquals("A", file.getMetadata().getLaunchPiece());
-        Assertions.assertEquals("EARTH", file.getMetadata().getCenter().getName());
-        Assertions.assertNotNull(file.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(CelestialBodyFrame.ITRF2000, CelestialBodyFrame.map(file.getMetadata().getFrame()));
-        Assertions.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
-        Assertions.assertNull(file.getData().getCovarianceBlock());
+        assertEquals("GODZILLA 5", file.getMetadata().getObjectName());
+        assertEquals("1998-999A", file.getMetadata().getObjectID());
+        assertEquals(1998, file.getMetadata().getLaunchYear());
+        assertEquals(999, file.getMetadata().getLaunchNumber());
+        assertEquals("A", file.getMetadata().getLaunchPiece());
+        assertEquals("EARTH", file.getMetadata().getCenter().getName());
+        assertNotNull(file.getMetadata().getCenter().getBody());
+        assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
+        assertEquals(CelestialBodyFrame.ITRF2000, CelestialBodyFrame.map(file.getMetadata().getFrame()));
+        assertEquals("UTC", file.getMetadata().getTimeSystem().name());
+        assertNull(file.getData().getCovarianceBlock());
 
         // Check State Vector data Block;
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+        assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             file.getDate());
         checkPVEntry(new PVCoordinates(new Vector3D(6503514.000, 1239647.000, -717490.000),
@@ -109,30 +116,30 @@ public class OpmParserTest {
 
         try {
             file.generateCartesianOrbit();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch(OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
-            Assertions.assertEquals("ITRF-2000/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
+            assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
+            assertEquals("ITRF-2000/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
         }
         try {
             file.generateKeplerianOrbit();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch(OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
-            Assertions.assertEquals("ITRF-2000/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
+            assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
+            assertEquals("ITRF-2000/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
         }
         try {
             file.generateSpacecraftState();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch(OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
-            Assertions.assertEquals("ITRF-2000/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
+            assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, oiae.getSpecifier());
+            assertEquals("ITRF-2000/CIO/2010-based ITRF simple EOP", oiae.getParts()[0]);
         }
 
     }
 
     @Test
-    public void testParseOPM2() {
+    void testParseOPM2() {
         // simple test for OPM file, contains all mandatory information plus
         // Keplerian elements, Spacecraft parameters and 2 maneuvers.
         final String ex = "/ccsds/odm/opm/OPMExample2.txt";
@@ -140,36 +147,36 @@ public class OpmParserTest {
 
         final OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
         final Opm file = parser.parseMessage(source);
-        Assertions.assertEquals(IERSConventions.IERS_2010, file.getConventions());
+        assertEquals(IERSConventions.IERS_2010, file.getConventions());
 
         // Check Header Block;
-        Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
         ArrayList<String> headerComment = new ArrayList<String>();
         headerComment.add("Generated by GSOC, R. Kiehling");
         headerComment.add("Current intermediate orbit IO2 and maneuver planning data");
-        Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        Assertions.assertEquals(new AbsoluteDate(2000, 06, 03, 05, 33, 00,
+        assertEquals(headerComment, file.getHeader().getComments());
+        assertEquals(new AbsoluteDate(2000, 06, 03, 05, 33, 00,
                                              TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
-        Assertions.assertEquals(file.getHeader().getOriginator(), "GSOC");
+        assertEquals("GSOC", file.getHeader().getOriginator());
 
         // Check Metadata Block;
 
-        Assertions.assertEquals("EUTELSAT W4", file.getMetadata().getObjectName());
-        Assertions.assertEquals("2000-028A", file.getMetadata().getObjectID());
-        Assertions.assertEquals("EARTH", file.getMetadata().getCenter().getName());
-        Assertions.assertNotNull(file.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(FramesFactory.getTOD(IERSConventions.IERS_2010, true),
+        assertEquals("EUTELSAT W4", file.getMetadata().getObjectName());
+        assertEquals("2000-028A", file.getMetadata().getObjectID());
+        assertEquals("EARTH", file.getMetadata().getCenter().getName());
+        assertNotNull(file.getMetadata().getCenter().getBody());
+        assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
+        assertEquals(FramesFactory.getTOD(IERSConventions.IERS_2010, true),
                             file.getMetadata().getFrame());
-        Assertions.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(0, file.getMetadata().getComments().size());
+        assertEquals("UTC", file.getMetadata().getTimeSystem().name());
+        assertEquals(0, file.getMetadata().getComments().size());
 
         // Check Data State Vector block
         ArrayList<String> epochComment = new ArrayList<String>();
         epochComment.add("State Vector");
-        Assertions.assertEquals(epochComment, file.getData().getStateVectorBlock().getComments());
-        Assertions.assertEquals(new AbsoluteDate(2006, 06, 03, 00, 00, 00,
+        assertEquals(epochComment, file.getData().getStateVectorBlock().getComments());
+        assertEquals(new AbsoluteDate(2006, 06, 03, 00, 00, 00,
                                              TimeScalesFactory.getUTC()),
                             file.getDate());
         checkPVEntry(new PVCoordinates(new Vector3D(6655994.2, -40218575.1, -82917.7),
@@ -178,78 +185,78 @@ public class OpmParserTest {
 
         // Check Data Keplerian Elements block
         KeplerianElements keplerianElements = file.getData().getKeplerianElementsBlock();
-        Assertions.assertNotNull(keplerianElements);
+        assertNotNull(keplerianElements);
         ArrayList<String> keplerianElementsComment = new ArrayList<String>();
         keplerianElementsComment.add("Keplerian elements");
-        Assertions.assertEquals(keplerianElementsComment, keplerianElements.getComments());
-        Assertions.assertEquals(41399512.3, keplerianElements.getA(), 1e-6);
-        Assertions.assertEquals(0.020842611, keplerianElements.getE(), 1e-10);
-        Assertions.assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
-        Assertions.assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
-        Assertions.assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
-        Assertions.assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
-        Assertions.assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
-        Assertions.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
+        assertEquals(keplerianElementsComment, keplerianElements.getComments());
+        assertEquals(41399512.3, keplerianElements.getA(), 1e-6);
+        assertEquals(0.020842611, keplerianElements.getE(), 1e-10);
+        assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
+        assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
+        assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
+        assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
+        assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
+        assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 
         // Check Data Spacecraft block
         SpacecraftParameters spacecraftParameters = file.getData().getSpacecraftParametersBlock();
-        Assertions.assertNotNull(spacecraftParameters);
+        assertNotNull(spacecraftParameters);
         ArrayList<String> spacecraftComment = new ArrayList<String>();
         spacecraftComment.add("Spacecraft parameters");
-        Assertions.assertEquals(spacecraftComment, spacecraftParameters.getComments());
-        Assertions.assertEquals(1913.000, spacecraftParameters.getMass(), 1e-10);
-        Assertions.assertEquals(10.000, spacecraftParameters.getSolarRadArea(), 1e-10);
-        Assertions.assertEquals(1.300, spacecraftParameters.getSolarRadCoeff(), 1e-10);
-        Assertions.assertEquals(10.000, spacecraftParameters.getDragArea(), 1e-10);
-        Assertions.assertEquals(2.300, spacecraftParameters.getDragCoeff(), 1e-10);
+        assertEquals(spacecraftComment, spacecraftParameters.getComments());
+        assertEquals(1913.000, spacecraftParameters.getMass(), 1e-10);
+        assertEquals(10.000, spacecraftParameters.getSolarRadArea(), 1e-10);
+        assertEquals(1.300, spacecraftParameters.getSolarRadCoeff(), 1e-10);
+        assertEquals(10.000, spacecraftParameters.getDragArea(), 1e-10);
+        assertEquals(2.300, spacecraftParameters.getDragCoeff(), 1e-10);
 
         // Check covariance block
-        Assertions.assertNull(file.getData().getCovarianceBlock());
+        assertNull(file.getData().getCovarianceBlock());
 
         // Check Data Maneuvers block
-        Assertions.assertTrue(file.getData().hasManeuvers());
-        Assertions.assertEquals(2, file.getNbManeuvers());
+        assertTrue(file.getData().hasManeuvers());
+        assertEquals(2, file.getNbManeuvers());
         ArrayList<String> stateManeuverComment0 = new ArrayList<String>();
         stateManeuverComment0.add("2 planned maneuvers");
         stateManeuverComment0.add("First maneuver: AMF-3");
         stateManeuverComment0.add("Non-impulsive, thrust direction fixed in inertial frame");
-        Assertions.assertEquals(stateManeuverComment0, file.getManeuver(0).getComments());
-        Assertions.assertEquals(new AbsoluteDate(2000, 06, 03, 9, 00, 34.1,
+        assertEquals(stateManeuverComment0, file.getManeuver(0).getComments());
+        assertEquals(new AbsoluteDate(2000, 06, 03, 9, 00, 34.1,
                                              TimeScalesFactory.getUTC()),
                             file.getManeuvers().get(0).getEpochIgnition());
-        Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
-        Assertions.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
-        Assertions.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
-        Assertions.assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getReferenceFrame().asFrame());
-        Assertions.assertEquals(0.0,
+        assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
+        assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
+        assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
+        assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getReferenceFrame().asFrame());
+        assertEquals(0.0,
                             new Vector3D(-23.25700, 16.83160, -8.93444).distance(file.getManeuver(0).getDV()),
                             1.0e-10);
 
         ArrayList<String> stateManeuverComment1 = new ArrayList<String>();
         stateManeuverComment1.add("Second maneuver: first station acquisition maneuver");
         stateManeuverComment1.add("impulsive, thrust direction fixed in RTN frame");
-        Assertions.assertEquals(stateManeuverComment1, file.getManeuver(1).getComments());
-        Assertions.assertEquals(new AbsoluteDate(2000, 06, 05, 18, 59, 21,
+        assertEquals(stateManeuverComment1, file.getManeuver(1).getComments());
+        assertEquals(new AbsoluteDate(2000, 06, 05, 18, 59, 21,
                                              TimeScalesFactory.getUTC()),
                             file.getManeuvers().get(1).getEpochIgnition());
-        Assertions.assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
-        Assertions.assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
-        Assertions.assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
-        Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
-        Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
+        assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
+        assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
+        assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(0.0,
                             new Vector3D(1.015, -1.873, 0.0).distance(file.getManeuver(1).getDV()),
                             1.0e-10);
 
-        Assertions.assertNull(file.getData().getUserDefinedBlock());
-        Assertions.assertNotNull(file.generateCartesianOrbit());
-        Assertions.assertNotNull(file.generateKeplerianOrbit());
-        Assertions.assertNotNull(file.generateSpacecraftState());
+        assertNull(file.getData().getUserDefinedBlock());
+        assertNotNull(file.generateCartesianOrbit());
+        assertNotNull(file.generateKeplerianOrbit());
+        assertNotNull(file.generateSpacecraftState());
 
     }
 
     @Test
-    public void testParseOPM5() {
+    void testParseOPM5() {
         // simple test for OPM file, contains all mandatory information plus
         // Keplerian elements, Spacecraft parameters and 3 maneuvers.
         final String ex = "/ccsds/odm/opm/OPMExample5.txt";
@@ -259,31 +266,31 @@ public class OpmParserTest {
         final Opm file = parser.parseMessage(source);
 
         // Check Header Block;
-        Assertions.assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
+        assertEquals(2.0, file.getHeader().getFormatVersion(), 1.0e-10);
         ArrayList<String> headerComment = new ArrayList<String>();
         headerComment.add("Generated by GSOC, R. Kiehling");
         headerComment.add("Current intermediate orbit IO2 and maneuver planning data");
-        Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        Assertions.assertEquals(new AbsoluteDate(2000, 06, 03, 05, 33, 00,
+        assertEquals(headerComment, file.getHeader().getComments());
+        assertEquals(new AbsoluteDate(2000, 06, 03, 05, 33, 00,
                                              TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
-        Assertions.assertEquals(file.getHeader().getOriginator(), "GSOC");
+        assertEquals("GSOC", file.getHeader().getOriginator());
 
         // Check Metadata Block;
-        Assertions.assertEquals("EUTELSAT W4", file.getMetadata().getObjectName());
-        Assertions.assertEquals("2000-028A", file.getMetadata().getObjectID());
-        Assertions.assertEquals("EARTH", file.getMetadata().getCenter().getName());
-        Assertions.assertNotNull(file.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(FramesFactory.getGCRF(), file.getMetadata().getFrame());
-        Assertions.assertEquals("GPS", file.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(0, file.getMetadata().getComments().size());
+        assertEquals("EUTELSAT W4", file.getMetadata().getObjectName());
+        assertEquals("2000-028A", file.getMetadata().getObjectID());
+        assertEquals("EARTH", file.getMetadata().getCenter().getName());
+        assertNotNull(file.getMetadata().getCenter().getBody());
+        assertEquals(CelestialBodyFactory.getEarth(), file.getMetadata().getCenter().getBody());
+        assertEquals(FramesFactory.getGCRF(), file.getMetadata().getFrame());
+        assertEquals("GPS", file.getMetadata().getTimeSystem().name());
+        assertEquals(0, file.getMetadata().getComments().size());
 
         // Check Data State Vector block
         ArrayList<String> stateVectorComment = new ArrayList<String>();
         stateVectorComment.add("State Vector");
-        Assertions.assertEquals(stateVectorComment, file.getData().getStateVectorBlock().getComments());
-        Assertions.assertEquals(new AbsoluteDate(2006, 06, 03, 00, 00, 00,
+        assertEquals(stateVectorComment, file.getData().getStateVectorBlock().getComments());
+        assertEquals(new AbsoluteDate(2006, 06, 03, 00, 00, 00,
                                              TimeScalesFactory.getGPS()),
                             file.getData().getStateVectorBlock().getEpoch());
         checkPVEntry(new PVCoordinates(new Vector3D(6655994.2, -40218575.1, -82917.7),
@@ -292,78 +299,78 @@ public class OpmParserTest {
 
         // Check Data Keplerian Elements block
         KeplerianElements keplerianElements = file.getData().getKeplerianElementsBlock();
-        Assertions.assertNotNull(keplerianElements);
+        assertNotNull(keplerianElements);
         ArrayList<String> keplerianElementsComment = new ArrayList<String>();
         keplerianElementsComment.add("Keplerian elements");
-        Assertions.assertEquals(keplerianElementsComment, keplerianElements.getComments());
-        Assertions.assertEquals(41399512.3, keplerianElements.getA(), 1e-6);
-        Assertions.assertEquals(0.020842611, keplerianElements.getE(), 1e-10);
-        Assertions.assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
-        Assertions.assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
-        Assertions.assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
-        Assertions.assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
-        Assertions.assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
-        Assertions.assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
+        assertEquals(keplerianElementsComment, keplerianElements.getComments());
+        assertEquals(41399512.3, keplerianElements.getA(), 1e-6);
+        assertEquals(0.020842611, keplerianElements.getE(), 1e-10);
+        assertEquals(FastMath.toRadians(0.117746), keplerianElements.getI(), 1e-10);
+        assertEquals(FastMath.toRadians(17.604721), keplerianElements.getRaan(), 1e-10);
+        assertEquals(FastMath.toRadians(218.242943), keplerianElements.getPa(), 1e-10);
+        assertEquals(PositionAngleType.TRUE, keplerianElements.getAnomalyType());
+        assertEquals(FastMath.toRadians(41.922339), keplerianElements.getAnomaly(), 1e-10);
+        assertEquals(398600.4415 * 1e9, keplerianElements.getMu(), 1e-10);
 
         // Check Data Spacecraft block
         SpacecraftParameters spacecraftParameters = file.getData().getSpacecraftParametersBlock();
         ArrayList<String> spacecraftComment = new ArrayList<String>();
         spacecraftComment.add("Spacecraft parameters");
-        Assertions.assertEquals(spacecraftComment, spacecraftParameters.getComments());
-        Assertions.assertEquals(1913.000, spacecraftParameters.getMass(), 1e-10);
-        Assertions.assertEquals(10.000, spacecraftParameters.getSolarRadArea(), 1e-10);
-        Assertions.assertEquals(1.300, spacecraftParameters.getSolarRadCoeff(), 1e-10);
-        Assertions.assertEquals(10.000, spacecraftParameters.getDragArea(), 1e-10);
-        Assertions.assertEquals(2.300, spacecraftParameters.getDragCoeff(), 1e-10);
+        assertEquals(spacecraftComment, spacecraftParameters.getComments());
+        assertEquals(1913.000, spacecraftParameters.getMass(), 1e-10);
+        assertEquals(10.000, spacecraftParameters.getSolarRadArea(), 1e-10);
+        assertEquals(1.300, spacecraftParameters.getSolarRadCoeff(), 1e-10);
+        assertEquals(10.000, spacecraftParameters.getDragArea(), 1e-10);
+        assertEquals(2.300, spacecraftParameters.getDragCoeff(), 1e-10);
 
         // Check covariance block
-        Assertions.assertNull(file.getData().getCovarianceBlock());
+        assertNull(file.getData().getCovarianceBlock());
 
         // Check Data Maneuvers block
-        Assertions.assertTrue(file.getData().hasManeuvers());
-        Assertions.assertEquals(3, file.getNbManeuvers());
+        assertTrue(file.getData().hasManeuvers());
+        assertEquals(3, file.getNbManeuvers());
         ArrayList<String> stateManeuverComment0 = new ArrayList<String>();
         stateManeuverComment0.add("2 planned maneuvers");
         stateManeuverComment0.add("First maneuver: AMF-3");
         stateManeuverComment0.add("Non-impulsive, thrust direction fixed in inertial frame");
-        Assertions.assertEquals(stateManeuverComment0, file.getManeuver(0).getComments());
-        Assertions.assertEquals(new AbsoluteDate(2000, 06, 03, 9, 00, 34.1,
+        assertEquals(stateManeuverComment0, file.getManeuver(0).getComments());
+        assertEquals(new AbsoluteDate(2000, 06, 03, 9, 00, 34.1,
                                              TimeScalesFactory.getGPS()),
                             file.getManeuvers().get(0).getEpochIgnition());
-        Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
-        Assertions.assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
-        Assertions.assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
-        Assertions.assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getReferenceFrame().asFrame());
-        Assertions.assertEquals(0.0,
+        assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
+        assertEquals(-18.418, file.getManeuver(0).getDeltaMass(), 1e-10);
+        assertNull(file.getManeuver(0).getReferenceFrame().asOrbitRelativeFrame());
+        assertEquals(FramesFactory.getEME2000(), file.getManeuver(0).getReferenceFrame().asFrame());
+        assertEquals(0.0,
                             new Vector3D(-23.25700, 16.83160, -8.93444).distance(file.getManeuver(0).getDV()),
                             1.0e-10);
 
         ArrayList<String> stateManeuverComment1 = new ArrayList<String>();
         stateManeuverComment1.add("Second maneuver: first station acquisition maneuver");
         stateManeuverComment1.add("impulsive, thrust direction fixed in RTN frame");
-        Assertions.assertEquals(stateManeuverComment1, file.getManeuver(1).getComments());
-        Assertions.assertEquals(new AbsoluteDate(2000, 06, 05, 18, 59, 21,
+        assertEquals(stateManeuverComment1, file.getManeuver(1).getComments());
+        assertEquals(new AbsoluteDate(2000, 06, 05, 18, 59, 21,
                                              TimeScalesFactory.getGPS()),
                             file.getManeuvers().get(1).getEpochIgnition());
-        Assertions.assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
-        Assertions.assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
-        Assertions.assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
-        Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
-        Assertions.assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0, file.getManeuver(1).getDuration(), 1e-10);
+        assertEquals(-1.469, file.getManeuver(1).getDeltaMass(), 1e-10);
+        assertEquals(LOFType.QSW, file.getManeuver(1).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        assertNull(file.getManeuver(1).getReferenceFrame().asFrame());
+        assertNull(file.getManeuver(1).getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(0.0,
                             new Vector3D(1.015, -1.873, 0.0).distance(file.getManeuver(1).getDV()),
                             1.0e-10);
 
-        Assertions.assertTrue(file.getManeuver(2).getComments().isEmpty());
-        Assertions.assertEquals(new AbsoluteDate(2000, 06, 05, 18, 59, 51,
+        assertTrue(file.getManeuver(2).getComments().isEmpty());
+        assertEquals(new AbsoluteDate(2000, 06, 05, 18, 59, 51,
                                              TimeScalesFactory.getGPS()),
                             file.getManeuvers().get(2).getEpochIgnition());
-        Assertions.assertEquals(0.0, file.getManeuver(2).getDuration(), 1e-10);
-        Assertions.assertEquals(-1.469, file.getManeuver(2).getDeltaMass(), 1e-10);
-        Assertions.assertEquals(LOFType.QSW, file.getManeuver(2).getReferenceFrame().asOrbitRelativeFrame().getLofType());
-        Assertions.assertNull(file.getManeuver(2).getReferenceFrame().asFrame());
-        Assertions.assertNull(file.getManeuver(2).getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0, file.getManeuver(2).getDuration(), 1e-10);
+        assertEquals(-1.469, file.getManeuver(2).getDeltaMass(), 1e-10);
+        assertEquals(LOFType.QSW, file.getManeuver(2).getReferenceFrame().asOrbitRelativeFrame().getLofType());
+        assertNull(file.getManeuver(2).getReferenceFrame().asFrame());
+        assertNull(file.getManeuver(2).getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(0.0,
                             new Vector3D(1.015, -1.873, 0.0).distance(file.getManeuver(2).getDV()),
                             1.0e-10);
 
@@ -374,26 +381,26 @@ public class OpmParserTest {
     }
 
     @Test
-    public void testParseOPM3KVN() throws URISyntaxException {
+    void testParseOPM3KVN() throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OpmParser parser = new ParserBuilder().withDefaultMass(1000.0).buildOpmParser();
         final Opm file = parser.parseMessage(source);
-        Assertions.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
-        Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+        assertEquals("OPM 201113719185", file.getHeader().getMessageId());
+        assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
-        Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
-        Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
-        Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
+        assertEquals(1, file.getMetadata().getComments().size());
+        assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
+        assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
         CartesianCovariance covariance = file.getData().getCovarianceBlock();
-        Assertions.assertNotNull(covariance);
-        Assertions.assertSame(file.getMetadata().getReferenceFrame(), covariance.getReferenceFrame());
+        assertNotNull(covariance);
+        assertSame(file.getMetadata().getReferenceFrame(), covariance.getReferenceFrame());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {
@@ -434,7 +441,7 @@ public class OpmParserTest {
         covMatrix.setColumn(5, column6);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
-                Assertions.assertEquals(covMatrix.getEntry(i, j),
+                assertEquals(covMatrix.getEntry(i, j),
                                     covariance.getCovarianceMatrix().getEntry(i, j),
                                     1e-15);
             }
@@ -443,7 +450,7 @@ public class OpmParserTest {
     }
 
     @Test
-    public void testParseOPM3XML() throws URISyntaxException {
+    void testParseOPM3XML() throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         // the content of the file is slightly different from the KVN file in the covariance section
@@ -454,7 +461,7 @@ public class OpmParserTest {
     }
 
     @Test
-    public void testWriteOPM3() throws URISyntaxException, IOException {
+    void testWriteOPM3() throws URISyntaxException, IOException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         // the content of the file is slightly different from the KVN file in the covariance section
@@ -478,19 +485,19 @@ public class OpmParserTest {
     }
 
     private void validateOPM3XML(final Opm file) {
-        Assertions.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
-        Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+        assertEquals("OPM 201113719185", file.getHeader().getMessageId());
+        assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
-        Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
-        Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
-        Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
+        assertEquals(1, file.getMetadata().getComments().size());
+        assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
+        assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
         CartesianCovariance covariance = file.getData().getCovarianceBlock();
-        Assertions.assertNotNull(covariance);
-        Assertions.assertEquals(CelestialBodyFrame.ITRF1997, covariance.getReferenceFrame().asCelestialBodyFrame());
+        assertNotNull(covariance);
+        assertEquals(CelestialBodyFrame.ITRF1997, covariance.getReferenceFrame().asCelestialBodyFrame());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {
@@ -519,7 +526,7 @@ public class OpmParserTest {
         covMatrix.setColumn(5, column6);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
-                Assertions.assertEquals(covMatrix.getEntry(i, j),
+                assertEquals(covMatrix.getEntry(i, j),
                                     covariance.getCovarianceMatrix().getEntry(i, j),
                                     1e-15);
             }
@@ -528,39 +535,39 @@ public class OpmParserTest {
     }
 
     @Test
-    public void testParseOPM3NoDesignator() throws URISyntaxException {
+    void testParseOPM3NoDesignator() throws URISyntaxException {
         final String ex = "/ccsds/odm/opm/OPM-no-designator.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
         final Opm file = parser.parseMessage(source);
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+        assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
         try {
             file.getMetadata().getLaunchYear();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
-            Assertions.assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
+            assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
+            assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
         }
         try {
             file.getMetadata().getLaunchNumber();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
-            Assertions.assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
+            assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
+            assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
         }
         try {
             file.getMetadata().getLaunchPiece();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
-            Assertions.assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
+            assertEquals(OrekitMessages.NOT_VALID_INTERNATIONAL_DESIGNATOR, oe.getSpecifier());
+            assertEquals("REDACTED FOR TEST PURPOSES", (String) oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testParseOPM4() {
+    void testParseOPM4() {
         //
         final String ex = "/ccsds/odm/opm/OPMExample4.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -570,20 +577,20 @@ public class OpmParserTest {
                              withDefaultMass(1000.0).
                              buildOpmParser().
                              parseMessage(source);
-        Assertions.assertEquals("TOD/2010 accurate EOP", file.getMetadata().getFrame().toString());
-        Assertions.assertEquals("2000-028A", file.getMetadata().getObjectID());
-        Assertions.assertEquals(new AbsoluteDate(2006, 6, 3, TimeScalesFactory.getUTC()), file.getDate());
+        assertEquals("TOD/2010 accurate EOP", file.getMetadata().getFrame().toString());
+        assertEquals("2000-028A", file.getMetadata().getObjectID());
+        assertEquals(new AbsoluteDate(2006, 6, 3, TimeScalesFactory.getUTC()), file.getDate());
         final TimeStampedPVCoordinates pva = file.getPVCoordinates();
-        Assertions.assertEquals(  6655994.2, pva.getPosition().getX(), 1.0e-10);
-        Assertions.assertEquals(-40218575.1, pva.getPosition().getY(), 1.0e-10);
-        Assertions.assertEquals(   -82917.7, pva.getPosition().getZ(), 1.0e-10);
-        Assertions.assertEquals( 3115.48208, pva.getVelocity().getX(), 1.0e-10);
-        Assertions.assertEquals( 0470.42605, pva.getVelocity().getY(), 1.0e-10);
-        Assertions.assertEquals(-0001.01495, pva.getVelocity().getZ(), 1.0e-10);
+        assertEquals(  6655994.2, pva.getPosition().getX(), 1.0e-10);
+        assertEquals(-40218575.1, pva.getPosition().getY(), 1.0e-10);
+        assertEquals(   -82917.7, pva.getPosition().getZ(), 1.0e-10);
+        assertEquals( 3115.48208, pva.getVelocity().getX(), 1.0e-10);
+        assertEquals( 0470.42605, pva.getVelocity().getY(), 1.0e-10);
+        assertEquals(-0001.01495, pva.getVelocity().getZ(), 1.0e-10);
     }
 
     @Test
-    public void testParseOPM6() throws URISyntaxException {
+    void testParseOPM6() throws URISyntaxException {
         // simple test for OPM file, contains all mandatory information plus
         // Spacecraft parameters and the position/velocity Covariance Matrix.
         final String name = "/ccsds/odm/opm/OPMExample6.txt";
@@ -593,25 +600,25 @@ public class OpmParserTest {
     }
 
     @Test
-    public void testParseOPM7() {
+    void testParseOPM7() {
         final String ex = "/ccsds/odm/opm/OPMExample7.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Opm file = new ParserBuilder().buildOpmParser().parseMessage(source);
         Frame frame = file.getMetadata().getFrame();
-        Assertions.assertSame(CelestialBodyFactory.getMars().getInertiallyOrientedFrame(), frame);
+        assertSame(CelestialBodyFactory.getMars().getInertiallyOrientedFrame(), frame);
     }
 
     @Test
-    public void testParseOPM8() {
+    void testParseOPM8() {
         final String ex = "/ccsds/odm/opm/OPMExample8.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Opm file = new ParserBuilder().buildOpmParser().parseMessage(source);
         Frame frame = file.getMetadata().getFrame();
-        Assertions.assertSame(CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(), frame);
+        assertSame(CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame(), frame);
     }
 
     @Test
-    public void testParseNonStandardUnits() throws URISyntaxException {
+    void testParseNonStandardUnits() throws URISyntaxException {
         // this file is similar to OPMExample6.txt but uses non-standard units
         // it is therefore NOT a regular CCSDS OPM, but is correctly parsed by Orekit
         final String name = "/ccsds/odm/opm/OPM-non-standard-units.txt";
@@ -623,7 +630,7 @@ public class OpmParserTest {
     }
 
     @Test
-    public void testRefuseNonStandardUnits() throws URISyntaxException {
+    void testRefuseNonStandardUnits() throws URISyntaxException {
         // this file is similar to OPMExample6.txt but uses non-standard units
         // it is therefore NOT a regular CCSDS OPM, but is correctly parsed by Orekit
         final String name = "/ccsds/odm/opm/OPM-non-standard-units.txt";
@@ -633,32 +640,32 @@ public class OpmParserTest {
             withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
             buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
-            Assertions.assertEquals("m",  oe.getParts()[0]);
-            Assertions.assertEquals("km", oe.getParts()[1]);
+            assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            assertEquals("m",  oe.getParts()[0]);
+            assertEquals("km", oe.getParts()[1]);
         }
     }
 
     private void validate6(final Opm file) {
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
+        assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172,
                                              TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
-        Assertions.assertEquals(1, file.getMetadata().getComments().size());
-        Assertions.assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
-        Assertions.assertEquals("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C", file.getHeader().getMessageId());
+        assertEquals(1, file.getMetadata().getComments().size());
+        assertEquals("GEOCENTRIC, CARTESIAN, EARTH FIXED", file.getMetadata().getComments().get(0));
+        assertEquals("OREKIT-4D00FC96-AC64-11E9-BF71-001FD054093C", file.getHeader().getMessageId());
 
-        Assertions.assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
-        Assertions.assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
+        assertEquals(15951238.3495, file.generateKeplerianOrbit().getA(), 0.001);
+        assertEquals(0.5914452565, file.generateKeplerianOrbit().getE(), 1.0e-10);
         // Check Data Covariance matrix Block
         CartesianCovariance covariance = file.getData().getCovarianceBlock();
-        Assertions.assertNotNull(covariance);
+        assertNotNull(covariance);
         ArrayList<String> dataCovMatrixComment = new ArrayList<String>();
         dataCovMatrixComment.add("covariance comment 1");
         dataCovMatrixComment.add("covariance comment 2");
-        Assertions.assertEquals(dataCovMatrixComment, covariance.getComments());
-        Assertions.assertEquals(FramesFactory.getTEME(), covariance.getReferenceFrame().asFrame());
+        assertEquals(dataCovMatrixComment, covariance.getComments());
+        assertEquals(FramesFactory.getTEME(), covariance.getReferenceFrame().asFrame());
 
         Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
         double[] column1 = {
@@ -699,7 +706,7 @@ public class OpmParserTest {
         covMatrix.setColumn(5, column6);
         for (int i = 0; i < 6; i++) {
             for (int j = 0; j < 6; j++) {
-                Assertions.assertEquals(covMatrix.getEntry(i, j),
+                assertEquals(covMatrix.getEntry(i, j),
                                     file.getData().getCovarianceBlock().getCovarianceMatrix().getEntry(i, j), 1e-15);
             }
         }
@@ -707,55 +714,55 @@ public class OpmParserTest {
         // Check User defined Parameters Block
         HashMap<String, String> userDefinedParameters = new HashMap<String, String>();
         userDefinedParameters.put("EARTH_MODEL", "WGS-84");
-        Assertions.assertEquals(userDefinedParameters, file.getData().getUserDefinedBlock().getParameters());
+        assertEquals(userDefinedParameters, file.getData().getUserDefinedBlock().getParameters());
 
     }
 
     @Test
-    public void testCentersAndTimeScales() {
+    void testCentersAndTimeScales() {
 
         final OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
 
         final String name1 = "/ccsds/odm/opm/OPM-dummy-solar-system-barycenter.txt";
         final DataSource source1 = new DataSource(name1, () -> getClass().getResourceAsStream(name1));
         Opm file1 = parser.parseMessage(source1);
-        Assertions.assertEquals("TDB", file1.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals("solar system barycenter", file1.getMetadata().getCenter().getBody().getName());
+        assertEquals("TDB", file1.getMetadata().getTimeSystem().name());
+        assertEquals("solar system barycenter", file1.getMetadata().getCenter().getBody().getName());
 
         final String name2 = "/ccsds/odm/opm/OPM-dummy-ssb.txt";
         final DataSource source2 = new DataSource(name2, () -> getClass().getResourceAsStream(name2));
         Opm file2 = parser.parseMessage(source2);
-        Assertions.assertEquals("TCB", file2.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals("solar system barycenter", file2.getMetadata().getCenter().getBody().getName());
+        assertEquals("TCB", file2.getMetadata().getTimeSystem().name());
+        assertEquals("solar system barycenter", file2.getMetadata().getCenter().getBody().getName());
 
         final String name3 = "/ccsds/odm/opm/OPM-dummy-earth-barycenter.txt";
         final DataSource source3 = new DataSource(name3, () -> getClass().getResourceAsStream(name3));
         Opm file3 = parser.parseMessage(source3);
-        Assertions.assertEquals("TDB", file3.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals("Earth-Moon barycenter", file3.getMetadata().getCenter().getBody().getName());
+        assertEquals("TDB", file3.getMetadata().getTimeSystem().name());
+        assertEquals("Earth-Moon barycenter", file3.getMetadata().getCenter().getBody().getName());
 
         final String name4 = "/ccsds/odm/opm/OPM-dummy-earth-dash-moon-barycenter.txt";
         final DataSource source4 = new DataSource(name4, () -> getClass().getResourceAsStream(name4));
         Opm file4 = parser.parseMessage(source4);
-        Assertions.assertEquals("TDB", file4.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals("Earth-Moon barycenter", file4.getMetadata().getCenter().getBody().getName());
+        assertEquals("TDB", file4.getMetadata().getTimeSystem().name());
+        assertEquals("Earth-Moon barycenter", file4.getMetadata().getCenter().getBody().getName());
 
         final String name5 = "/ccsds/odm/opm/OPM-dummy-earth-moon-barycenter.txt";
         final DataSource source5 = new DataSource(name5, () -> getClass().getResourceAsStream(name5));
         Opm file5 = parser.parseMessage(source5);
-        Assertions.assertEquals("UT1", file5.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals("Earth-Moon barycenter", file5.getMetadata().getCenter().getBody().getName());
+        assertEquals("UT1", file5.getMetadata().getTimeSystem().name());
+        assertEquals("Earth-Moon barycenter", file5.getMetadata().getCenter().getBody().getName());
 
         final String name6 = "/ccsds/odm/opm/OPM-dummy-emb.txt";
         final DataSource source6 = new DataSource(name6, () -> getClass().getResourceAsStream(name6));
         Opm file6 = parser.parseMessage(source6);
-        Assertions.assertEquals("TT", file6.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals("Earth-Moon barycenter", file6.getMetadata().getCenter().getBody().getName());
+        assertEquals("TT", file6.getMetadata().getTimeSystem().name());
+        assertEquals("Earth-Moon barycenter", file6.getMetadata().getCenter().getBody().getName());
 
     }
 
     @Test
-    public void testOrbitFileInterface() {
+    void testOrbitFileInterface() {
         final String ex = "/ccsds/odm/opm/OPMExample4.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
 
@@ -764,7 +771,7 @@ public class OpmParserTest {
         final Opm file = parser.parseMessage(source);
 
         final String satId = "2000-028A";
-        Assertions.assertEquals(satId, file.getMetadata().getObjectID());
+        assertEquals(satId, file.getMetadata().getObjectID());
 
         checkPVEntry(file.getPVCoordinates(), file.getPVCoordinates());
 
@@ -780,17 +787,17 @@ public class OpmParserTest {
 
         final double eps = 1e-12;
 
-        Assertions.assertEquals(expectedPos.getX(), actualPos.getX(), eps);
-        Assertions.assertEquals(expectedPos.getY(), actualPos.getY(), eps);
-        Assertions.assertEquals(expectedPos.getZ(), actualPos.getZ(), eps);
+        assertEquals(expectedPos.getX(), actualPos.getX(), eps);
+        assertEquals(expectedPos.getY(), actualPos.getY(), eps);
+        assertEquals(expectedPos.getZ(), actualPos.getZ(), eps);
 
-        Assertions.assertEquals(expectedVel.getX(), actualVel.getX(), eps);
-        Assertions.assertEquals(expectedVel.getY(), actualVel.getY(), eps);
-        Assertions.assertEquals(expectedVel.getZ(), actualVel.getZ(), eps);
+        assertEquals(expectedVel.getX(), actualVel.getX(), eps);
+        assertEquals(expectedVel.getY(), actualVel.getY(), eps);
+        assertEquals(expectedVel.getZ(), actualVel.getZ(), eps);
     }
 
     @Test
-    public void testWrongODMType() {
+    void testWrongODMType() {
         final String name = "/ccsds/odm/omm/OMMExample1.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -799,15 +806,15 @@ public class OpmParserTest {
             withDefaultMass(1000.0).
             buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
-            Assertions.assertEquals(name, oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNSUPPORTED_FILE_FORMAT, oe.getSpecifier());
+            assertEquals(name, oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testNumberFormatErrorType() {
+    void testNumberFormatErrorType() {
         final String name = "/ccsds/odm/opm/OPM-number-format-error.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -817,17 +824,17 @@ public class OpmParserTest {
             withDefaultMass(1000.0).
             buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals("SEMI_MAJOR_AXIS", oe.getParts()[0]);
-            Assertions.assertEquals(17, oe.getParts()[1]);
-            Assertions.assertEquals(name, oe.getParts()[2]);
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_ELEMENT_IN_FILE, oe.getSpecifier());
+            assertEquals("SEMI_MAJOR_AXIS", oe.getParts()[0]);
+            assertEquals(17, oe.getParts()[1]);
+            assertEquals(name, oe.getParts()[2]);
         }
     }
 
     @Test
-    public void testUnknownCenter() throws URISyntaxException {
+    void testUnknownCenter() throws URISyntaxException {
         final String name = "/ccsds/odm/opm/OPM-unknown-center.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Opm opm = new ParserBuilder().
@@ -835,19 +842,19 @@ public class OpmParserTest {
                             withDefaultMass(1000.0).
                             buildOpmParser().
                             parseMessage(source);
-        Assertions.assertEquals("UNKNOWN-CENTER", opm.getMetadata().getCenter().getName());
-        Assertions.assertNull(opm.getMetadata().getCenter().getBody());
+        assertEquals("UNKNOWN-CENTER", opm.getMetadata().getCenter().getName());
+        assertNull(opm.getMetadata().getCenter().getBody());
         try {
             opm.getMetadata().getFrame();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, oe.getSpecifier());
-            Assertions.assertEquals("UNKNOWN-CENTER", oe.getParts()[0]);
+            assertEquals(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, oe.getSpecifier());
+            assertEquals("UNKNOWN-CENTER", oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testUnknownFrame() throws URISyntaxException {
+    void testUnknownFrame() throws URISyntaxException {
         final String name = "/ccsds/odm/opm/OPM-unknown-frame.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Opm opm = new ParserBuilder().
@@ -855,33 +862,33 @@ public class OpmParserTest {
                             withDefaultMass(1000.0).
                             buildOpmParser().
                             parseMessage(source);
-        Assertions.assertEquals("ZZRF", opm.getMetadata().getReferenceFrame().getName());
+        assertEquals("ZZRF", opm.getMetadata().getReferenceFrame().getName());
         try {
             opm.getMetadata().getFrame();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assertions.assertEquals("ZZRF", oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            assertEquals("ZZRF", oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testNonExistentFile() throws URISyntaxException {
+    void testNonExistentFile() throws URISyntaxException {
         final String realName = getClass().getResource("/ccsds/odm/opm/OPMExample1.txt").toURI().getPath();
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
         try {
             new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
-            Assertions.assertEquals(wrongName, oe.getParts()[0]);
+            assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            assertEquals(wrongName, oe.getParts()[0]);
         }
     }
 
     @Test
-    public void testWrongKeyword() throws URISyntaxException {
+    void testWrongKeyword() throws URISyntaxException {
         // simple test for OMM file, contains p/v entries and other mandatory data.
         final String name = "/ccsds/odm/opm/OPM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -891,16 +898,16 @@ public class OpmParserTest {
             withDefaultMass(1000.0).
             buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
+            assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            assertEquals(11, ((Integer) oe.getParts()[0]).intValue());
+            assertTrue(((String) oe.getParts()[2]).startsWith("WRONG_KEYWORD"));
         }
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    void testSpuriousMetaDataSection() throws URISyntaxException {
         final String name = "/ccsds/odm/opm/spurious-metadata.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -908,16 +915,16 @@ public class OpmParserTest {
             withMu(CelestialBodyFactory.getMars().getGM()).
             buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(23, ((Integer) oe.getParts()[0]).intValue());
-            Assertions.assertEquals("metadata", oe.getParts()[2]);
+            assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            assertEquals(23, ((Integer) oe.getParts()[0]).intValue());
+            assertEquals("metadata", oe.getParts()[2]);
         }
     }
 
     @Test
-    public void testIncompatibleUnits1() throws URISyntaxException {
+    void testIncompatibleUnits1() throws URISyntaxException {
         final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -925,16 +932,16 @@ public class OpmParserTest {
             withParsedUnitsBehavior(ParsedUnitsBehavior.CONVERT_COMPATIBLE).
             buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
-            Assertions.assertEquals("s",  oe.getParts()[0]);
-            Assertions.assertEquals("m²", oe.getParts()[1]);
+            assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            assertEquals("s",  oe.getParts()[0]);
+            assertEquals("m²", oe.getParts()[1]);
         }
     }
 
     @Test
-    public void testIncompatibleUnits2() throws URISyntaxException {
+    void testIncompatibleUnits2() throws URISyntaxException {
         final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -942,27 +949,27 @@ public class OpmParserTest {
             withParsedUnitsBehavior(ParsedUnitsBehavior.STRICT_COMPLIANCE).
             buildOpmParser().
             parseMessage(source);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
-            Assertions.assertEquals("s",  oe.getParts()[0]);
-            Assertions.assertEquals("m²", oe.getParts()[1]);
+            assertEquals(OrekitMessages.INCOMPATIBLE_UNITS, oe.getSpecifier());
+            assertEquals("s",  oe.getParts()[0]);
+            assertEquals("m²", oe.getParts()[1]);
         }
     }
 
     @Test
-    public void testIgnoredIncompatibleUnits() throws URISyntaxException {
+    void testIgnoredIncompatibleUnits() throws URISyntaxException {
         final String name = "/ccsds/odm/opm/OPM-incompatible-units.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Opm file = new ParserBuilder().
                              withParsedUnitsBehavior(ParsedUnitsBehavior.IGNORE_PARSED).
                              buildOpmParser().
                              parseMessage(source);
-        Assertions.assertEquals(18.77, file.getData().getSpacecraftParametersBlock().getSolarRadArea(), 1.0e-10);
+        assertEquals(18.77, file.getData().getSpacecraftParametersBlock().getSolarRadArea(), 1.0e-10);
     }
 
     @Test
-    public void testIssue619() {
+    void testIssue619() {
         // test for issue 619 - moon centered transformation
         // Verify that moon is at the center of the new frame
         CelestialBody moon = CelestialBodyFactory.getMoon();
@@ -975,7 +982,7 @@ public class OpmParserTest {
                                  buildOpmParser();
         final Opm file = parser.parseMessage(source);
         final Frame actualFrame = file.getMetadata().getFrame();
-        MatcherAssert.assertThat(moon.getPVCoordinates(date, actualFrame),
+        assertThat(moon.getPVCoordinates(date, actualFrame),
                                  OrekitMatchers.pvCloseTo(PVCoordinates.ZERO, 1e-3));
     }
 

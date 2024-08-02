@@ -35,7 +35,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
@@ -63,6 +62,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public abstract class AbstractGNSSAttitudeProviderTest {
 
@@ -96,7 +98,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
     protected void doTestAxes(final String fileName, final double tolXY, double tolZ, boolean useGenericAttitude) {
 
         if (getClass().getResource("/gnss/attitude/" + fileName) == null) {
-            Assertions.fail("file not found: " + fileName);
+            fail("file not found: " + fileName);
         }
 
         // the transforms between EME2000 and ITRF will not really be correct here
@@ -121,8 +123,8 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                                                           new GenericGNSS(validityStart, validityEnd, fakedSun, eme2000) :
                                                           dataBlock.get(0).satType.buildAttitudeProvider(validityStart, validityEnd,
                                                                                                          fakedSun, eme2000, prnNumber);
-            Assertions.assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
-            Assertions.assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
+            assertEquals(attitudeProvider.validityStart(), dataBlock.get(0).gpsDate.getDate());
+            assertEquals(attitudeProvider.validityEnd(), dataBlock.get(dataBlock.size() - 1).gpsDate.getDate());
 
             for (final ParsedLine parsedLine : dataBlock) {
 
@@ -154,9 +156,9 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
         }
 
-        Assertions.assertEquals(0, maxErrorX, tolXY);
-        Assertions.assertEquals(0, maxErrorY, tolXY);
-        Assertions.assertEquals(0, maxErrorZ, tolZ);
+        assertEquals(0, maxErrorX, tolXY);
+        assertEquals(0, maxErrorY, tolXY);
+        assertEquals(0, maxErrorZ, tolZ);
 
     }
 
@@ -186,7 +188,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             }
 
         } catch (IOException ioe) {
-            Assertions.fail(ioe.getLocalizedMessage());
+            fail(ioe.getLocalizedMessage());
         }
 
         return dataBlocks;

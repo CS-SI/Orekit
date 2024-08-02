@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -28,10 +27,14 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.utils.ParameterDriver;
 
-public class TLEConverterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class TLEConverterTest {
 
     @Test
-    public void testDeselectOrbitals() {
+    void testDeselectOrbitals() {
 
         final TLE tle = new TLE("1 27508U 02040A   12021.25695307 -.00000113  00000-0  10000-3 0  7326",
                                 "2 27508   0.0571 356.7800 0005033 344.4621 218.7816  1.00271798 34501");
@@ -39,16 +42,16 @@ public class TLEConverterTest {
         TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0,
                                                                 new FixedPointTleGenerationAlgorithm());
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assertions.assertTrue(driver.isSelected());
+            assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assertions.assertFalse(driver.isSelected());
+            assertFalse(driver.isSelected());
         }
     }
 
     @Test
-    public void testIssue859() {
+    void testIssue859() {
 
         // INTELSAT 25 TLE taken from Celestrak the 2021-11-24T07:45:00.000
         // Because the satellite eccentricity and inclination are closed to zero, this satellite
@@ -62,7 +65,7 @@ public class TLEConverterTest {
         try {
             propagatorBuilderError.buildPropagator();
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
+            assertEquals(OrekitMessages.UNABLE_TO_COMPUTE_TLE, oe.getSpecifier());
         }
 
         // Now try using different convergence threshold
@@ -74,12 +77,12 @@ public class TLEConverterTest {
         final TLE newTLE = propagator.getTLE();
 
         // Verify
-        Assertions.assertEquals(0.0, newTLE.getDate().durationFrom(tle.getDate()), Utils.epsilonTest);
+        assertEquals(0.0, newTLE.getDate().durationFrom(tle.getDate()), Utils.epsilonTest);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

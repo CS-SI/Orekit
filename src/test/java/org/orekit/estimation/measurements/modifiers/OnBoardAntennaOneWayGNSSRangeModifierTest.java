@@ -19,7 +19,6 @@ package org.orekit.estimation.measurements.modifiers;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.estimation.Context;
@@ -40,11 +39,14 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class OnBoardAntennaOneWayGNSSRangeModifierTest {
+
+class OnBoardAntennaOneWayGNSSRangeModifierTest {
 
     @Test
-    public void testPreliminary() {
+    void testPreliminary() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -95,14 +97,14 @@ public class OnBoardAntennaOneWayGNSSRangeModifierTest {
         for (int i = 0; i < spacecraftCenteredMeasurements.size(); ++i) {
             OneWayGNSSRange sr = (OneWayGNSSRange) spacecraftCenteredMeasurements.get(i);
             OneWayGNSSRange ar = (OneWayGNSSRange) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= -1.0);
-            Assertions.assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= -0.36);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] >= -1.0);
+            assertTrue(ar.getObservedValue()[0] - sr.getObservedValue()[0] <= -0.36);
         }
     }
 
     @Test
-    public void testEffect() {
+    void testEffect() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -156,8 +158,8 @@ public class OnBoardAntennaOneWayGNSSRangeModifierTest {
             sr.addModifier(modifier);
             EstimatedMeasurementBase<OneWayGNSSRange> estimated = sr.estimateWithoutDerivatives(new SpacecraftState[] { p3.propagate(sr.getDate()) });
             OneWayGNSSRange ar = (OneWayGNSSRange) antennaCenteredMeasurements.get(i);
-            Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
-            Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);
+            assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
+            assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 2.0e-5);
         }
 
     }

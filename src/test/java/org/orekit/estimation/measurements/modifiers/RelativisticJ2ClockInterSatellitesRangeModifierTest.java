@@ -17,7 +17,6 @@
 package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -33,6 +32,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /**
  * Check against prediction in
  *
@@ -46,7 +47,7 @@ import org.orekit.utils.Constants;
  * the approximate value.
  */
 
-public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
+class RelativisticJ2ClockInterSatellitesRangeModifierTest {
 
     /** Date. */
     private static AbsoluteDate date;
@@ -55,7 +56,7 @@ public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
     private static SpacecraftState[] states;
 
     @Test
-    public void testRelativisticClockCorrection() {
+    void testRelativisticClockCorrection() {
 
         // Measurement
         final InterSatellitesRange range = new InterSatellitesRange(new ObservableSatellite(0), new ObservableSatellite(1),
@@ -75,13 +76,13 @@ public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 62 ps for Galileo.
         //          The computed value is equal to 67.375 ps, therefore lying in the supposed range.
-        Assertions.assertEquals(-0.0202125, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-2);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(-0.0202125, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-2);
+        assertEquals(0, modifier.getParametersDrivers().size());
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Data root
         Utils.setDataRoot("regular-data");
 

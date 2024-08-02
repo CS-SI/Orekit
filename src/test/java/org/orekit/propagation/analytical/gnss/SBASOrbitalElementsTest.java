@@ -17,15 +17,16 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.analytical.gnss.data.SBASOrbitalElements;
 import org.orekit.time.AbsoluteDate;
 
-public class SBASOrbitalElementsTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class SBASOrbitalElementsTest {
 
     @Test
-    public void testDefaultMethods() {
+    void testDefaultMethods() {
         SBASOrbitalElements soe = new SBASOrbitalElements() {
             public AbsoluteDate getDate() { return null; }
             public int    getWeek()       { return 0; }
@@ -41,10 +42,10 @@ public class SBASOrbitalElementsTest {
             public double getZDot()       { return 0; }
             public double getZDotDot()    { return 0; }
         };
-        Assertions.assertEquals(0,   soe.getIODN());
-        Assertions.assertEquals(0.0, soe.getAGf0(), Precision.SAFE_MIN);
-        Assertions.assertEquals(0.0, soe.getAGf1(), Precision.SAFE_MIN);
-        Assertions.assertEquals(0.0, soe.getToc(), Precision.SAFE_MIN);
+        assertEquals(0,   soe.getIODN());
+        assertEquals(0.0, soe.getAGf0(), Precision.SAFE_MIN);
+        assertEquals(0.0, soe.getAGf1(), Precision.SAFE_MIN);
+        assertEquals(0.0, soe.getToc(), Precision.SAFE_MIN);
 
     }
 

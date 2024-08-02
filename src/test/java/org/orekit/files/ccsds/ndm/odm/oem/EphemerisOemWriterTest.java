@@ -17,7 +17,6 @@
 package org.orekit.files.ccsds.ndm.odm.oem;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -45,6 +44,11 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.io.BufferedReader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
@@ -57,7 +61,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class EphemerisOemWriterTest {
+class EphemerisOemWriterTest {
 
     // As the default format for position is 3 digits after decimal point in km the max precision in m is 1
     private static final double POSITION_PRECISION = 1; // in m
@@ -65,24 +69,24 @@ public class EphemerisOemWriterTest {
     private static final double VELOCITY_PRECISION = 1e-2; //in m/s
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testOEMWriter() {
-        Assertions.assertNotNull(new WriterBuilder().buildOemWriter());
+    void testOEMWriter() {
+        assertNotNull(new WriterBuilder().buildOemWriter());
     }
 
     @Test
-    public void testWriteOEM1Kvn() throws IOException {
+    void testWriteOEM1Kvn() throws IOException {
         final CharArrayWriter caw = new CharArrayWriter();
         final Generator generator = new KvnGenerator(caw, 0, "", Constants.JULIAN_DAY, 60);
         doTestWriteOEM1(caw, generator);
     }
 
     @Test
-    public void testWriteOEM1Xml() throws IOException {
+    void testWriteOEM1Xml() throws IOException {
         final CharArrayWriter caw = new CharArrayWriter();
         final Generator generator = new XmlGenerator(caw, 2, "", Constants.JULIAN_DAY, true, XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION);
         doTestWriteOEM1(caw, generator);
@@ -113,7 +117,7 @@ public class EphemerisOemWriterTest {
     }
 
     @Test
-    public void testUnfoundSpaceId() throws IOException {
+    void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
@@ -124,16 +128,16 @@ public class EphemerisOemWriterTest {
                                                      Constants.JULIAN_DAY, 0);
         try {
             writer.write(new CharArrayWriter(), oem);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
-            Assertions.assertEquals(dummyMetadata().getObjectID(), oiae.getParts()[0]);
+            assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
+            assertEquals(dummyMetadata().getObjectID(), oiae.getParts()[0]);
         }
 
     }
 
     @Test
-    public void testNullFile() throws IOException {
+    void testNullFile() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
@@ -145,25 +149,25 @@ public class EphemerisOemWriterTest {
                                                      Constants.JULIAN_DAY, 0);
         try {
             writer.write((BufferedWriter) null, oem);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
-            Assertions.assertEquals("writer", oiae.getParts()[0]);
+            assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
+            assertEquals("writer", oiae.getParts()[0]);
         }
     }
 
     @Test
-    public void testNullEphemeris() throws IOException {
+    void testNullEphemeris() throws IOException {
         EphemerisOemWriter writer = new EphemerisOemWriter(new WriterBuilder().buildOemWriter(),
                                                      null, dummyMetadata(), FileFormat.KVN, "nullEphemeris",
                                                      Constants.JULIAN_DAY, 60);
         CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, null);
-        Assertions.assertEquals(0, caw.size());
+        assertEquals(0, caw.size());
     }
 
     @Test
-    public void testUnisatelliteFileWithDefault() throws IOException {
+    void testUnisatelliteFileWithDefault() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
@@ -178,12 +182,12 @@ public class EphemerisOemWriterTest {
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(oem.getSegments().get(0).getMetadata().getObjectID(),
+        assertEquals(oem.getSegments().get(0).getMetadata().getObjectID(),
                 generatedOem.getSegments().get(0).getMetadata().getObjectID());
     }
 
     @Test
-    public void testIssue723() throws IOException {
+    void testIssue723() throws IOException {
         final String ex = "/ccsds/odm/oem/OEMExampleWithHeaderComment.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OemParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOemParser();
@@ -202,7 +206,7 @@ public class EphemerisOemWriterTest {
                                          withMu(CelestialBodyFactory.getEarth().getGM()).
                                          buildOemParser().
                                          parseMessage(new DataSource("", () -> new ByteArrayInputStream(bytes)));
-        Assertions.assertEquals(oem.getHeader().getComments().get(0), generatedOem.getHeader().getComments().get(0));
+        assertEquals(oem.getHeader().getComments().get(0), generatedOem.getHeader().getComments().get(0));
     }
 
     /**
@@ -211,7 +215,7 @@ public class EphemerisOemWriterTest {
      * @throws IOException on error
      */
     @Test
-    public void testWriteOemFormat() throws IOException {
+    void testWriteOemFormat() throws IOException {
         // setup
         String exampleFile = "/ccsds/odm/oem/OEMExample4.txt";
         final DataSource source =  new DataSource(exampleFile, () -> getClass().getResourceAsStream(exampleFile));
@@ -223,14 +227,14 @@ public class EphemerisOemWriterTest {
         writer.writeMessage(new KvnGenerator(caw, 0, "", Constants.JULIAN_DAY, 60), oem);
 
         String[] lines2 = caw.toString().split("\n");
-        Assertions.assertEquals("2002-12-18T12:00:00.331 2789.619 -280.045 -1746.755 4.73372 -2.49586 -1.0419499999999997", lines2[21]);
-        Assertions.assertEquals("2002-12-18T12:01:00.331 2783.419 -308.143 -1877.071 5.18604 -2.42124 -1.99608", lines2[22]);
-        Assertions.assertEquals("2002-12-18T12:02:00.331 2776.033 -336.859 -2008.682 5.63678 -2.33951 -1.94687", lines2[23]);
+        assertEquals("2002-12-18T12:00:00.331 2789.619 -280.045 -1746.755 4.73372 -2.49586 -1.0419499999999997", lines2[21]);
+        assertEquals("2002-12-18T12:01:00.331 2783.419 -308.143 -1877.071 5.18604 -2.42124 -1.99608", lines2[22]);
+        assertEquals("2002-12-18T12:02:00.331 2776.033 -336.859 -2008.682 5.63678 -2.33951 -1.94687", lines2[23]);
 
     }
 
     @Test
-    public void testMultisatelliteFile() throws IOException {
+    void testMultisatelliteFile() throws IOException {
 
         final DataContext context = DataContext.getDefault();
         final String id1 = "1999-012A";
@@ -265,53 +269,53 @@ public class EphemerisOemWriterTest {
                 ++count;
             }
         }
-        Assertions.assertEquals(80, count);
+        assertEquals(80, count);
 
     }
 
     private static void compareOemEphemerisBlocks(OemSegment block1, OemSegment block2) {
         compareOemEphemerisBlocksMetadata(block1.getMetadata(), block2.getMetadata());
-        Assertions.assertEquals(block1.getStart(), block2.getStart());
-        Assertions.assertEquals(block1.getStop(), block2.getStop());
-        Assertions.assertEquals(block1.getMetadata().getInterpolationDegree(), block2.getMetadata().getInterpolationDegree());
-        Assertions.assertEquals(block1.getMetadata().getInterpolationMethod(), block2.getMetadata().getInterpolationMethod());
-        Assertions.assertEquals(block1.getData().getEphemeridesDataLines().size(), block2.getData().getEphemeridesDataLines().size());
+        assertEquals(block1.getStart(), block2.getStart());
+        assertEquals(block1.getStop(), block2.getStop());
+        assertEquals(block1.getMetadata().getInterpolationDegree(), block2.getMetadata().getInterpolationDegree());
+        assertEquals(block1.getMetadata().getInterpolationMethod(), block2.getMetadata().getInterpolationMethod());
+        assertEquals(block1.getData().getEphemeridesDataLines().size(), block2.getData().getEphemeridesDataLines().size());
         for (int i = 0; i < block1.getData().getEphemeridesDataLines().size(); i++) {
             TimeStampedPVCoordinates c1 = block1.getData().getEphemeridesDataLines().get(i);
             TimeStampedPVCoordinates c2 = block2.getData().getEphemeridesDataLines().get(i);
-            Assertions.assertEquals(c1.getDate(), c2.getDate());
-            Assertions.assertEquals( 0.0,
+            assertEquals(c1.getDate(), c2.getDate());
+            assertEquals( 0.0,
                     Vector3D.distance(c1.getPosition(), c2.getPosition()), POSITION_PRECISION,c1.getPosition() + " -> " + c2.getPosition());
-            Assertions.assertEquals( 0.0,
+            assertEquals( 0.0,
                     Vector3D.distance(c1.getVelocity(), c2.getVelocity()), VELOCITY_PRECISION,c1.getVelocity() + " -> " + c2.getVelocity());
         }
-        Assertions.assertEquals(block1.getCovarianceMatrices().size(), block2.getCovarianceMatrices().size());
+        assertEquals(block1.getCovarianceMatrices().size(), block2.getCovarianceMatrices().size());
         for (int j = 0; j < block1.getCovarianceMatrices().size(); j++) {
             CartesianCovariance covMat1 = block1.getCovarianceMatrices().get(j);
             CartesianCovariance covMat2 = block2.getCovarianceMatrices().get(j);
-            Assertions.assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
-            Assertions.assertEquals(covMat1.getReferenceFrame().asFrame(),               covMat2.getReferenceFrame().asFrame());
-            Assertions.assertEquals(covMat1.getReferenceFrame().asCelestialBodyFrame(),  covMat2.getReferenceFrame().asCelestialBodyFrame());
-            Assertions.assertEquals(covMat1.getReferenceFrame().asOrbitRelativeFrame(),  covMat2.getReferenceFrame().asOrbitRelativeFrame());
-            Assertions.assertEquals(covMat1.getReferenceFrame().asSpacecraftBodyFrame(), covMat2.getReferenceFrame().asSpacecraftBodyFrame());
-            Assertions.assertEquals(covMat1.getCovarianceMatrix(),covMat2.getCovarianceMatrix());
+            assertEquals(covMat1.getEpoch(), covMat2.getEpoch());
+            assertEquals(covMat1.getReferenceFrame().asFrame(),               covMat2.getReferenceFrame().asFrame());
+            assertEquals(covMat1.getReferenceFrame().asCelestialBodyFrame(),  covMat2.getReferenceFrame().asCelestialBodyFrame());
+            assertEquals(covMat1.getReferenceFrame().asOrbitRelativeFrame(),  covMat2.getReferenceFrame().asOrbitRelativeFrame());
+            assertEquals(covMat1.getReferenceFrame().asSpacecraftBodyFrame(), covMat2.getReferenceFrame().asSpacecraftBodyFrame());
+            assertEquals(covMat1.getCovarianceMatrix(),covMat2.getCovarianceMatrix());
         }
     }
 
     private static void compareOemEphemerisBlocksMetadata(OemMetadata meta1, OemMetadata meta2) {
-        Assertions.assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
-        Assertions.assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
-        Assertions.assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
-        Assertions.assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
-        Assertions.assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
-        Assertions.assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
-        Assertions.assertEquals(meta1.getTimeSystem().name(),    meta2.getTimeSystem().name());
+        assertEquals(meta1.getObjectID(),                               meta2.getObjectID());
+        assertEquals(meta1.getObjectName(),                             meta2.getObjectName());
+        assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
+        assertEquals(meta1.getReferenceFrame().asFrame(),               meta2.getReferenceFrame().asFrame());
+        assertEquals(meta1.getReferenceFrame().asCelestialBodyFrame(),  meta2.getReferenceFrame().asCelestialBodyFrame());
+        assertEquals(meta1.getReferenceFrame().asOrbitRelativeFrame(),  meta2.getReferenceFrame().asOrbitRelativeFrame());
+        assertEquals(meta1.getReferenceFrame().asSpacecraftBodyFrame(), meta2.getReferenceFrame().asSpacecraftBodyFrame());
+        assertEquals(meta1.getTimeSystem().name(),    meta2.getTimeSystem().name());
     }
 
     static void compareOems(Oem file1, Oem file2) {
-        Assertions.assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
-        Assertions.assertEquals(file1.getSegments().size(), file2.getSegments().size());
+        assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
+        assertEquals(file1.getSegments().size(), file2.getSegments().size());
         for (int i = 0; i < file1.getSegments().size(); i++) {
             compareOemEphemerisBlocks(file1.getSegments().get(i), file2.getSegments().get(i));
         }

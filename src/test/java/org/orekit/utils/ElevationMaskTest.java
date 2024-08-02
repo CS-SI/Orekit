@@ -18,37 +18,40 @@ package org.orekit.utils;
 
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class ElevationMaskTest {
+
+class ElevationMaskTest {
 
     @BeforeEach
-    public void setUp()
-        throws Exception {
+    void setUp()
+            throws Exception {
     }
 
     @AfterEach
-    public void tearDown()
-        throws Exception {
+    void tearDown()
+            throws Exception {
     }
 
     @Test
-    public void testElevationMask() {
+    void testElevationMask() {
         double [][] masqueData = {{FastMath.toRadians(  0), FastMath.toRadians(5)},
                                   {FastMath.toRadians(180), FastMath.toRadians(3)},
                                   {FastMath.toRadians(-90), FastMath.toRadians(4)}};
 
         ElevationMask mask = new ElevationMask(masqueData);
 
-        Assertions.assertNotNull(mask);
+        assertNotNull(mask);
     }
 
     @Test
-    public void testMaskException() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+    void testMaskException() {
+        assertThrows(IllegalArgumentException.class, () -> {
             double [][] masque = {{FastMath.toRadians(   0), FastMath.toRadians(5)},
                     {FastMath.toRadians( 360), FastMath.toRadians(4)}};
 
@@ -57,7 +60,7 @@ public class ElevationMaskTest {
     }
 
     @Test
-    public void testGetElevation() {
+    void testGetElevation() {
         double [][] masqueData = {{FastMath.toRadians(  0), FastMath.toRadians(5)},
                               {FastMath.toRadians(180), FastMath.toRadians(3)},
                               {FastMath.toRadians(-90), FastMath.toRadians(4)}};
@@ -65,7 +68,7 @@ public class ElevationMaskTest {
 
         double azimuth = FastMath.toRadians(90);
         double elevation = mask.getElevation(azimuth);
-        Assertions.assertEquals(FastMath.toRadians(4), elevation, 1.0e-15);
+        assertEquals(FastMath.toRadians(4), elevation, 1.0e-15);
     }
 
 }

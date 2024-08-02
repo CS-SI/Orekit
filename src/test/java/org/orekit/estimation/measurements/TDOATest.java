@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.hipparchus.stat.descriptive.StreamingStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -37,14 +36,16 @@ import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
 
-public class TDOATest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class TDOATest {
 
     /**
      * Compare observed values and estimated values.
      * Both are calculated with a different algorithm.
      */
     @Test
-    public void testValues() {
+    void testValues() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -77,11 +78,11 @@ public class TDOATest {
         }
 
         // Mean and std errors check
-        Assertions.assertEquals(0.0, diffStat.getMean(), 1.4e-16);
-        Assertions.assertEquals(0.0, diffStat.getStandardDeviation(), 2.0e-16);
+        assertEquals(0.0, diffStat.getMean(), 1.4e-16);
+        assertEquals(0.0, diffStat.getStandardDeviation(), 2.0e-16);
 
         // Test measurement type
-        Assertions.assertEquals(TDOA.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
+        assertEquals(TDOA.MEASUREMENT_TYPE, measurements.get(0).getMeasurementType());
     }
 
     /**
@@ -89,7 +90,7 @@ public class TDOATest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -112,7 +113,7 @@ public class TDOATest {
             final SpacecraftState state = propagator.propagate(date);
 
             final EstimatedMeasurement<?> estimated = measurement.estimate(0, 0, new SpacecraftState[] { state });
-            Assertions.assertEquals(3, estimated.getParticipants().length);
+            assertEquals(3, estimated.getParticipants().length);
             final double[][] jacobian = estimated.getStateDerivatives(0);
 
             final double[][] finiteDifferencesJacobian =
@@ -123,8 +124,8 @@ public class TDOATest {
                                                   1, propagator.getAttitudeProvider(),
                                                   OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
-            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -136,7 +137,7 @@ public class TDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 4.7e-4);
+        assertEquals(0, maxRelativeError, 4.7e-4);
 
     }
 
@@ -145,7 +146,7 @@ public class TDOATest {
      * finite differences calculation as a reference, with modifiers (tropospheric corrections).
      */
     @Test
-    public void testStateDerivativesWithModifier() {
+    void testStateDerivativesWithModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -188,8 +189,8 @@ public class TDOATest {
                                                   1, propagator.getAttitudeProvider(),
                OrbitType.CARTESIAN, PositionAngleType.TRUE, 15.0, 3).value(state);
 
-            Assertions.assertEquals(finiteDifferencesJacobian.length, jacobian.length);
-            Assertions.assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
+            assertEquals(finiteDifferencesJacobian.length, jacobian.length);
+            assertEquals(finiteDifferencesJacobian[0].length, jacobian[0].length);
 
             for (int i = 0; i < jacobian.length; ++i) {
                 for (int j = 0; j < jacobian[i].length; ++j) {
@@ -202,7 +203,7 @@ public class TDOATest {
 
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 3.2e-3);
+        assertEquals(0, maxRelativeError, 3.2e-3);
 
     }
 
@@ -211,7 +212,7 @@ public class TDOATest {
      * finite differences calculation as a reference.
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -267,8 +268,8 @@ public class TDOATest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
-                Assertions.assertEquals(1, measurement.getDimension());
-                Assertions.assertEquals(1, gradient.length);
+                assertEquals(1, measurement.getDimension());
+                assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -285,7 +286,7 @@ public class TDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 9.0e-7);
+        assertEquals(0, maxRelativeError, 9.0e-7);
 
     }
 
@@ -294,7 +295,7 @@ public class TDOATest {
      * finite differences calculation as a reference, with modifiers (tropospheric corrections).
      */
     @Test
-    public void testParameterDerivativesWithModifier() {
+    void testParameterDerivativesWithModifier() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -356,8 +357,8 @@ public class TDOATest {
             };
             for (int i = 0; i < drivers.length; ++i) {
                 final double[] gradient = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i], new AbsoluteDate());
-                Assertions.assertEquals(1, measurement.getDimension());
-                Assertions.assertEquals(1, gradient.length);
+                assertEquals(1, measurement.getDimension());
+                assertEquals(1, gradient.length);
 
                 final ParameterFunction dMkdP =
                                 Differentiation.differentiate(new ParameterFunction() {
@@ -374,7 +375,7 @@ public class TDOATest {
             }
         }
 
-        Assertions.assertEquals(0, maxRelativeError, 2.5e-6);
+        assertEquals(0, maxRelativeError, 2.5e-6);
 
     }
 

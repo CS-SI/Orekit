@@ -17,39 +17,43 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 
-public class EventHandlerTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class EventHandlerTest {
 
     @Test
-    public void testEnums() {
+    void testEnums() {
         // this test is here only for test coverage ...
 
-        Assertions.assertEquals(5, Action.values().length);
-        Assertions.assertSame(Action.STOP,              Action.valueOf("STOP"));
-        Assertions.assertSame(Action.RESET_STATE,       Action.valueOf("RESET_STATE"));
-        Assertions.assertSame(Action.RESET_DERIVATIVES, Action.valueOf("RESET_DERIVATIVES"));
-        Assertions.assertSame(Action.RESET_EVENTS,      Action.valueOf("RESET_EVENTS"));
-        Assertions.assertSame(Action.CONTINUE,          Action.valueOf("CONTINUE"));
+        assertEquals(5, Action.values().length);
+        assertSame(Action.STOP,              Action.valueOf("STOP"));
+        assertSame(Action.RESET_STATE,       Action.valueOf("RESET_STATE"));
+        assertSame(Action.RESET_DERIVATIVES, Action.valueOf("RESET_DERIVATIVES"));
+        assertSame(Action.RESET_EVENTS,      Action.valueOf("RESET_EVENTS"));
+        assertSame(Action.CONTINUE,          Action.valueOf("CONTINUE"));
 
     }
 
     @Test
-    public void testIssue721() {
+    void testIssue721() {
 
         // Create detector
         final Detector detector = new Detector();
-        Assertions.assertFalse(detector.isInitialized());
+        assertFalse(detector.isInitialized());
 
         // Create handler
         final Handler handler = new Handler();
         handler.init(null, null, detector);
-        Assertions.assertTrue(detector.isInitialized());
+        assertTrue(detector.isInitialized());
 
     }
 

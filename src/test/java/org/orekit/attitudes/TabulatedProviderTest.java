@@ -24,7 +24,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -56,9 +55,13 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 
-public class TabulatedProviderTest {
+class TabulatedProviderTest {
 
     // Computation date
     private AbsoluteDate date;
@@ -74,7 +77,7 @@ public class TabulatedProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testDifferentFrames() {
+    void testDifferentFrames() {
         double             samplingRate      = 10.0;
         int                n                 = 8;
         AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
@@ -84,16 +87,16 @@ public class TabulatedProviderTest {
         Attitude attE = provider.getAttitude((date, frame) -> new TimeStampedPVCoordinates(date, PVCoordinates.ZERO),
                                              date,
                                              circOrbit.getFrame());
-        Assertions.assertEquals(circOrbit.getFrame().getName(), attE.getReferenceFrame().getName());
+        assertEquals(circOrbit.getFrame().getName(), attE.getReferenceFrame().getName());
         Frame gcrf = FramesFactory.getGCRF();
         Attitude attG = provider.getAttitude((date, frame) -> new TimeStampedPVCoordinates(date, PVCoordinates.ZERO),
                                              date,
                                              gcrf);
-        Assertions.assertEquals(gcrf.getName(), attG.getReferenceFrame().getName());
+        assertEquals(gcrf.getName(), attG.getReferenceFrame().getName());
 
-        Assertions.assertEquals(1.12e-7,
+        assertEquals(1.12e-7,
                             Rotation.distance(attE.getRotation(), attG.getRotation()), 1.0e-9);
-        Assertions.assertEquals(circOrbit.getFrame().getTransformTo(gcrf, date).getRotation().getAngle(),
+        assertEquals(circOrbit.getFrame().getTransformTo(gcrf, date).getRotation().getAngle(),
                             Rotation.distance(attE.getRotation(), attG.getRotation()),
                             1.0e-14);
 
@@ -102,12 +105,12 @@ public class TabulatedProviderTest {
                                                                         FieldPVCoordinates.getZero(Binary64Field.getInstance())),
                                              new FieldAbsoluteDate<>(Binary64Field.getInstance(), date),
                                              gcrf);
-        Assertions.assertEquals(gcrf.getName(), attG64.getReferenceFrame().getName());
+        assertEquals(gcrf.getName(), attG64.getReferenceFrame().getName());
 
     }
 
     @Test
-    public void testWithoutRate() {
+    void testWithoutRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -118,11 +121,11 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_R);
-        Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.2e-14);
+        assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.2e-14);
     }
 
     @Test
-    public void testWithRate() {
+    void testWithRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -133,11 +136,11 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RR);
-        Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.3e-11);
+        assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.3e-11);
     }
 
     @Test
-    public void testWithAcceleration() {
+    void testWithAcceleration() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -148,7 +151,7 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RRA);
-        Assertions.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 4.3e-9);
+        assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 4.3e-9);
         checkField(Binary64Field.getInstance(), provider, circOrbit, circOrbit.getDate(), circOrbit.getFrame());
     }
 
@@ -207,14 +210,14 @@ public class TabulatedProviderTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), 1.0e-15);
+        assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), 1.0e-15);
     }
 
     @BeforeEach
     @DefaultDataContext
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data");
 
@@ -240,13 +243,13 @@ public class TabulatedProviderTest {
                 new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         } catch (OrekitException oe) {
-            Assertions.fail(oe.getMessage());
+            fail(oe.getMessage());
         }
 
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         date = null;
         itrf = null;
         circOrbit = null;

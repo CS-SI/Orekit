@@ -23,7 +23,6 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -33,10 +32,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 class AtmosphereTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -55,9 +57,9 @@ class AtmosphereTest {
         final Vector3D expectedVelocity = testAtmosphere.getVelocity(fieldDate.toAbsoluteDate(),
                 fieldPosition.toVector3D(), frame);
         final double tolerance = 1e-10;
-        Assertions.assertEquals(expectedVelocity.getX(), actualVelocity.getX(), tolerance);
-        Assertions.assertEquals(expectedVelocity.getY(), actualVelocity.getY(), tolerance);
-        Assertions.assertEquals(expectedVelocity.getZ(), actualVelocity.getZ(), tolerance);
+        assertEquals(expectedVelocity.getX(), actualVelocity.getX(), tolerance);
+        assertEquals(expectedVelocity.getY(), actualVelocity.getY(), tolerance);
+        assertEquals(expectedVelocity.getZ(), actualVelocity.getZ(), tolerance);
     }
 
     @Test
@@ -73,7 +75,7 @@ class AtmosphereTest {
         // WHEN
         final FieldVector3D<UnivariateDerivative1> fieldVelocity = testAtmosphere.getVelocity(fieldDate, fieldPosition, frame);
         // THEN
-        Assertions.assertNotEquals(0., fieldVelocity.getNorm().getFirstDerivative(), 0.0);
+        assertNotEquals(0., fieldVelocity.getNorm().getFirstDerivative(), 0.0);
     }
 
     private static class TestAtmosphere implements Atmosphere {

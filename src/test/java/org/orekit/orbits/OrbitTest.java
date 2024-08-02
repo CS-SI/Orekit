@@ -18,12 +18,13 @@ package org.orekit.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 class OrbitTest {
@@ -38,7 +39,7 @@ class OrbitTest {
         final Vector3D actualPosition = testOrbit.getPosition(date, testOrbit.getFrame());
         // THEN
         final Vector3D expectedPosition = testOrbit.getPVCoordinates(date, testOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     @Test
@@ -52,7 +53,7 @@ class OrbitTest {
         final double actualValue = period * meanMotion;
         // THEN
         final double expectedValue = MathUtils.TWO_PI;
-        Assertions.assertEquals(expectedValue, actualValue, 1e-10);
+        assertEquals(expectedValue, actualValue, 1e-10);
     }
 
     @Test
@@ -72,7 +73,7 @@ class OrbitTest {
         final boolean actualValue = testOrbit.isElliptical();
         // THEN
         final boolean expectedValue = aIn > 0.;
-        Assertions.assertEquals(expectedValue, actualValue);
+        assertEquals(expectedValue, actualValue);
     }
 
     private static class TestOrbit extends Orbit {

@@ -25,7 +25,6 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -54,11 +53,16 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AberrationModifierTest {
+class AberrationModifierTest {
 
     static GroundStation groundStation;
 
@@ -107,11 +111,11 @@ public class AberrationModifierTest {
 
         // Test (output from SOFA)
         double[] expected = new double[]{-0.0947807299849455, 0.157333364635137};
-        Assertions.assertArrayEquals(expected, proper, 1e-10);
+        assertArrayEquals(expected, proper, 1e-10);
 
         // Undo aberration
         double[] natural = AberrationModifier.properToNatural(proper, groundStation, epoch, measurementFrame);
-        Assertions.assertArrayEquals(raDec, natural, 1e-12);
+        assertArrayEquals(raDec, natural, 1e-12);
 
     }
 
@@ -157,7 +161,7 @@ public class AberrationModifierTest {
 
         double deriv = dsValue.getPartialDerivative(1);
         //System.out.println(deriv);
-        Assertions.assertEquals(gradient, deriv, 1e-3 * FastMath.abs(gradient));
+        assertEquals(gradient, deriv, 1e-3 * FastMath.abs(gradient));
     }
 
     private void checkNaturalToProperDerivative(int raDecIndex,
@@ -233,7 +237,7 @@ public class AberrationModifierTest {
 
         // Test value
         double[] expected = new double[]{-0.0947807299849455, 0.157333364635137};
-        Assertions.assertArrayEquals(expected, proper, 1e-10);
+        assertArrayEquals(expected, proper, 1e-10);
 
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
@@ -255,7 +259,7 @@ public class AberrationModifierTest {
         double[] natural = new double[]{naturalDS[0].getValue(), naturalDS[1].getValue()};
 
         // Test that we get what we started with
-        Assertions.assertArrayEquals(raDec, natural, 1e-10);
+        assertArrayEquals(raDec, natural, 1e-10);
 
         // Test derivatives against finite differences
         for (ParameterDriver driver : parameterDrivers) {
@@ -303,11 +307,11 @@ public class AberrationModifierTest {
 
         // Apply aberration to result should get us back to unmodified values
         double[] unmodRaDec = AberrationModifier.naturalToProper(estModRaDec, groundStation, epoch, FramesFactory.getGCRF());
-        Assertions.assertArrayEquals(estimatedRaDec, unmodRaDec, 1e-12);
+        assertArrayEquals(estimatedRaDec, unmodRaDec, 1e-12);
     }
 
     @Test
-    public void testIssue1230() {
+    void testIssue1230() {
 
         // Calculate spacecraft state
         final AbsoluteDate    epoch       = new AbsoluteDate(2022, 11, 9, 3, 15, 18.454, TimeScalesFactory.getUTC());
@@ -332,22 +336,22 @@ public class AberrationModifierTest {
         // Test after modification
         new AberrationModifier().modify(estimated1);
         new AberrationModifier(dataContext).modify(estimated2);
-        Assertions.assertEquals(estimated1.getEstimatedValue()[0], estimated2.getEstimatedValue()[0]);
-        Assertions.assertEquals(estimated1.getEstimatedValue()[1], estimated2.getEstimatedValue()[1]);
+        assertEquals(estimated1.getEstimatedValue()[0], estimated2.getEstimatedValue()[0]);
+        assertEquals(estimated1.getEstimatedValue()[1], estimated2.getEstimatedValue()[1]);
 
         // Apply a second modification to verify the "modifyWithoutDerivatives" signature
         new AberrationModifier().modifyWithoutDerivatives(estimated1);
         new AberrationModifier(dataContext).modifyWithoutDerivatives(estimated2);
-        Assertions.assertEquals(estimated1.getEstimatedValue()[0], estimated2.getEstimatedValue()[0]);
-        Assertions.assertEquals(estimated1.getEstimatedValue()[1], estimated2.getEstimatedValue()[1]);
+        assertEquals(estimated1.getEstimatedValue()[0], estimated2.getEstimatedValue()[0]);
+        assertEquals(estimated1.getEstimatedValue()[1], estimated2.getEstimatedValue()[1]);
 
         // Verify "naturalToProper" and "properToNatural" methods
         final double[] proper1  = AberrationModifier.naturalToProper(raDec1.getObservedValue(), groundStation, epoch, frame);
         final double[] natural1 = AberrationModifier.properToNatural(proper1, groundStation, epoch, frame);
         final double[] proper2  = AberrationModifier.naturalToProper(raDec2.getObservedValue(), groundStation, epoch, frame, dataContext);
         final double[] natural2 = AberrationModifier.properToNatural(proper2, groundStation, epoch, frame, dataContext);
-        Assertions.assertEquals(natural1[0], natural2[0]);
-        Assertions.assertEquals(natural1[1], natural2[1]);
+        assertEquals(natural1[0], natural2[0]);
+        assertEquals(natural1[1], natural2[1]);
 
         // Verify Field versions of "naturalToProper" and "properToNatural" methods
         final Field<Gradient> field = GradientField.getField(6);
@@ -361,13 +365,13 @@ public class AberrationModifierTest {
         final Gradient[] proper2G  = AberrationModifier.fieldNaturalToProper(raDecG, stationToInertial, frame, dataContext);
         final Gradient[] natural2G = AberrationModifier.fieldProperToNatural(proper2G, stationToInertial, frame, dataContext);
 
-        Assertions.assertEquals(natural1G[0].getValue(), natural2G[0].getValue());
-        Assertions.assertEquals(natural1G[1].getValue(), natural2G[1].getValue());
+        assertEquals(natural1G[0].getValue(), natural2G[0].getValue());
+        assertEquals(natural1G[1].getValue(), natural2G[1].getValue());
 
     }
 
     @Test
-    public void testExceptionIfNonInertialFrame() {
+    void testExceptionIfNonInertialFrame() {
         // GIVEN
         final AbsoluteDate epoch  = new AbsoluteDate(2022, 11, 9, 3, 15, 18.454, TimeScalesFactory.getUTC());
         final double[]     raDec1 = new double[] { 1.0, 1.0 };
@@ -375,17 +379,17 @@ public class AberrationModifierTest {
 
         // WHEN & THEN
         // Assert that an error is thrown
-        final OrekitException exceptionNToP = Assertions.assertThrows(OrekitException.class,
+        final OrekitException exceptionNToP = assertThrows(OrekitException.class,
                                                                       () -> AberrationModifier.naturalToProper(raDec1,
                                                                                                                groundStation,
                                                                                                                epoch, itrf));
-        final OrekitException exceptionPToN = Assertions.assertThrows(OrekitException.class,
+        final OrekitException exceptionPToN = assertThrows(OrekitException.class,
                                                                       () -> AberrationModifier.properToNatural(raDec1,
                                                                                                                groundStation,
                                                                                                                epoch, itrf));
         // Assert that the expected kind of error is thrown
-        Assertions.assertEquals(exceptionNToP.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
-        Assertions.assertEquals(exceptionPToN.getSpecifier(), OrekitMessages.NON_PSEUDO_INERTIAL_FRAME);
+        assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exceptionNToP.getSpecifier());
+        assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exceptionPToN.getSpecifier());
     }
 
     private static AngularRaDec defaultRaDec(Frame frame, AbsoluteDate date) {

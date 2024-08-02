@@ -25,7 +25,7 @@ import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
 import org.orekit.time.AbsoluteDate;
 
-public class OmmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OmmMetadata, OmmData>, Omm> {
+class OmmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OmmMetadata, OmmData>, Omm> {
 
     protected OmmParser getParser() {
         return new ParserBuilder().
@@ -39,32 +39,32 @@ public class OmmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OmmMeta
     }
 
     @Test
-    public void testWriteExample1() {
+    void testWriteExample1() {
         doTest("/ccsds/odm/omm/OMMExample1.txt");
     }
 
     @Test
-    public void testWriteKvnExample2() {
+    void testWriteKvnExample2() {
         doTest("/ccsds/odm/omm/OMMExample2.txt");
     }
 
     @Test
-    public void testWriteXmlExample2() {
+    void testWriteXmlExample2() {
         doTest("/ccsds/odm/omm/OMMExample2.xml");
     }
 
     @Test
-    public void testWriteExample3() {
+    void testWriteExample3() {
         doTest("/ccsds/odm/omm/OMMExample3.txt");
     }
 
     @Test
-    public void testWriteKvnExample4() {
+    void testWriteKvnExample4() {
         doTest("/ccsds/odm/omm/OMMExample4.txt");
     }
 
     @Test
-    public void testWriteXmlExample4() {
+    void testWriteXmlExample4() {
         doTest("/ccsds/odm/omm/OMMExample4.xml");
     }
 

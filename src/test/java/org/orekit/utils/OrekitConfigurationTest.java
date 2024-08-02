@@ -16,23 +16,25 @@
  */
 package org.orekit.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * @author Hank Grabowski
  *
  */
-public class OrekitConfigurationTest {
+class OrekitConfigurationTest {
 
     /**
      * Test method for {@link org.orekit.utils.OrekitConfiguration#setCacheSlotsNumber(int)}.
      */
     @Test
-    public void testGetSetCacheSlotsNumber() {
+    void testGetSetCacheSlotsNumber() {
         int defaultSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assertions.assertNotEquals(defaultSlots, 0);
+        assertNotEquals(0, defaultSlots);
 
         int setSlots = 105;
 
@@ -40,7 +42,7 @@ public class OrekitConfigurationTest {
 
         int getSlots = OrekitConfiguration.getCacheSlotsNumber();
 
-        Assertions.assertEquals(getSlots, setSlots);
+        assertEquals(getSlots, setSlots);
 
     }
 }

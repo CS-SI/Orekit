@@ -20,21 +20,22 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class QuadraticFieldClockModelTest {
+
+class QuadraticFieldClockModelTest {
 
     @Test
-    public void testValueField() {
+    void testValueField() {
         doTestValueField(Binary64Field.getInstance());
     }
 
     @Test
-    public void testRateField() {
+    void testRateField() {
         doTestRateField(Binary64Field.getInstance());
     }
 
@@ -45,9 +46,9 @@ public class QuadraticFieldClockModelTest {
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0, -10)));
-        Assertions.assertEquals(1.00 / 256.0, clock.getOffset(t0).getOffset().getReal(),                1.0e-15);
-        Assertions.assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getOffset().getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getOffset().getReal(), 1.0e-15);
+        assertEquals(1.00 / 256.0, clock.getOffset(t0).getOffset().getReal(),                1.0e-15);
+        assertEquals(1.75 / 256.0, clock.getOffset(t0.shiftedBy(1.0)).getOffset().getReal(), 1.0e-15);
+        assertEquals(3.00 / 256.0, clock.getOffset(t0.shiftedBy(2.0)).getOffset().getReal(), 1.0e-15);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestRateField(final Field<T> field) {
@@ -57,9 +58,9 @@ public class QuadraticFieldClockModelTest {
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -8)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0,  -9)),
                                                        field.getZero().newInstance(FastMath.scalb(1.0, -10)));
-        Assertions.assertEquals(1.00 / 512, clock.getOffset(t0).getRate().getReal(),                1.0e-15);
-        Assertions.assertEquals(2.00 / 512, clock.getOffset(t0.shiftedBy(1.0)).getRate().getReal(), 1.0e-15);
-        Assertions.assertEquals(3.00 / 512, clock.getOffset(t0.shiftedBy(2.0)).getRate().getReal(), 1.0e-15);
+        assertEquals(1.00 / 512, clock.getOffset(t0).getRate().getReal(),                1.0e-15);
+        assertEquals(2.00 / 512, clock.getOffset(t0.shiftedBy(1.0)).getRate().getReal(), 1.0e-15);
+        assertEquals(3.00 / 512, clock.getOffset(t0.shiftedBy(2.0)).getRate().getReal(), 1.0e-15);
     }
 
 }

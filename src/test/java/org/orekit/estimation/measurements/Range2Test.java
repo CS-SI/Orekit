@@ -21,7 +21,6 @@ import org.hipparchus.stat.descriptive.rank.Max;
 import org.hipparchus.stat.descriptive.rank.Median;
 import org.hipparchus.stat.descriptive.rank.Min;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -42,14 +41,18 @@ import org.orekit.utils.ParameterFunction;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public class Range2Test {
+class Range2Test {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         // Sets the root of data to read
         Utils.setDataRoot("gnss:rinex");
     }
@@ -59,7 +62,7 @@ public class Range2Test {
      * Both are calculated with a different algorithm
      */
     @Test
-    public void testValues() {
+    void testValues() {
         boolean printResults = false;
         if (printResults) {
             System.out.println("\nTest Range Values\n");
@@ -73,7 +76,7 @@ public class Range2Test {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivatives() {
+    void testStateDerivatives() {
 
         boolean printResults = false;
         if (printResults) {
@@ -97,7 +100,7 @@ public class Range2Test {
      * finite differences calculation as a reference
      */
     @Test
-    public void testStateDerivativesWithModifier() {
+    void testStateDerivativesWithModifier() {
 
         boolean printResults = false;
         if (printResults) {
@@ -121,7 +124,7 @@ public class Range2Test {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivatives() {
+    void testParameterDerivatives() {
 
         // Print the results ?
         boolean printResults = false;
@@ -144,7 +147,7 @@ public class Range2Test {
      * finite differences calculation as a reference
      */
     @Test
-    public void testParameterDerivativesWithModifier() {
+    void testParameterDerivativesWithModifier() {
 
         // Print the results ?
         boolean printResults = false;
@@ -214,15 +217,15 @@ public class Range2Test {
                     final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
 
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
-                    Assertions.assertEquals(2, participants.length);
-                    Assertions.assertEquals(Constants.SPEED_OF_LIGHT * participants[1].getDate().durationFrom(participants[0].getDate()),
+                    assertEquals(2, participants.length);
+                    assertEquals(Constants.SPEED_OF_LIGHT * participants[1].getDate().durationFrom(participants[0].getDate()),
                                         estimated.getEstimatedValue()[0],
                                         2.0e-8);
 
                     // the real state used for estimation is adjusted according to downlink delay
                     double adjustment = state.getDate().durationFrom(estimated.getStates()[0].getDate());
-                    Assertions.assertTrue(adjustment > 0.006);
-                    Assertions.assertTrue(adjustment < 0.010);
+                    assertTrue(adjustment > 0.006);
+                    assertTrue(adjustment < 0.010);
 
                     final double RangeEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError = RangeEstimated-RangeObserved;
@@ -284,11 +287,11 @@ public class Range2Test {
             System.out.println("Relative errors max   : " +  relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, absErrorsMedian, 4.9e-8);
-        Assertions.assertEquals(0.0, absErrorsMin,    2.7e-7);
-        Assertions.assertEquals(0.0, absErrorsMax,    3.0e-7);
-        Assertions.assertEquals(0.0, relErrorsMedian, 1.0e-14);
-        Assertions.assertEquals(0.0, relErrorsMax,    3.1e-14);
+        assertEquals(0.0, absErrorsMedian, 4.9e-8);
+        assertEquals(0.0, absErrorsMin,    2.7e-7);
+        assertEquals(0.0, absErrorsMax,    3.0e-7);
+        assertEquals(0.0, relErrorsMedian, 1.0e-14);
+        assertEquals(0.0, relErrorsMax,    3.1e-14);
 
     }
 
@@ -355,8 +358,8 @@ public class Range2Test {
                            getEstimatedValue(), measurement.getDimension(), propagator.getAttitudeProvider(),
                                                                 OrbitType.CARTESIAN, PositionAngleType.TRUE, 2.0, 3).value(state);
 
-                    Assertions.assertEquals(jacobianRef.length, jacobian.length);
-                    Assertions.assertEquals(jacobianRef[0].length, jacobian[0].length);
+                    assertEquals(jacobianRef.length, jacobian.length);
+                    assertEquals(jacobianRef[0].length, jacobian[0].length);
 
                     // Errors & relative errors on the Jacobian
                     double [][] dJacobian         = new double[jacobian.length][jacobian[0].length];
@@ -430,12 +433,12 @@ public class Range2Test {
                               errorsVMedian, errorsVMean, errorsVMax);
         }
 
-        Assertions.assertEquals(0.0, errorsPMedian, refErrorsPMedian);
-        Assertions.assertEquals(0.0, errorsPMean, refErrorsPMean);
-        Assertions.assertEquals(0.0, errorsPMax, refErrorsPMax);
-        Assertions.assertEquals(0.0, errorsVMedian, refErrorsVMedian);
-        Assertions.assertEquals(0.0, errorsVMean, refErrorsVMean);
-        Assertions.assertEquals(0.0, errorsVMax, refErrorsVMax);
+        assertEquals(0.0, errorsPMedian, refErrorsPMedian);
+        assertEquals(0.0, errorsPMean, refErrorsPMean);
+        assertEquals(0.0, errorsPMax, refErrorsPMax);
+        assertEquals(0.0, errorsVMedian, refErrorsVMedian);
+        assertEquals(0.0, errorsVMean, refErrorsVMean);
+        assertEquals(0.0, errorsVMax, refErrorsVMax);
     }
 
     void genericTestParameterDerivatives(final boolean isModifier, final boolean printResults,
@@ -510,8 +513,8 @@ public class Range2Test {
 
                     for (int i = 0; i < drivers.length; ++i) {
                         final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
-                        Assertions.assertEquals(1, measurement.getDimension());
-                        Assertions.assertEquals(1, gradient.length);
+                        assertEquals(1, measurement.getDimension());
+                        assertEquals(1, gradient.length);
 
                         // Compute a reference value using finite differences
                         final ParameterFunction dMkdP =
@@ -577,9 +580,9 @@ public class Range2Test {
                               relErrorsMedian, relErrorsMean, relErrorsMax);
         }
 
-        Assertions.assertEquals(0.0, relErrorsMedian, refErrorsMedian);
-        Assertions.assertEquals(0.0, relErrorsMean, refErrorsMean);
-        Assertions.assertEquals(0.0, relErrorsMax, refErrorsMax);
+        assertEquals(0.0, relErrorsMedian, refErrorsMedian);
+        assertEquals(0.0, relErrorsMean, refErrorsMean);
+        assertEquals(0.0, relErrorsMax, refErrorsMax);
 
     }
 

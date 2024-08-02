@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -44,17 +43,21 @@ import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class PseudoRangeFilteringTest {
 
     private String baseName;
+
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         baseName = "src/test/resources/gnss/filtering/";
         Utils.setDataRoot("regular-data:gnss/filtering");
     }
 
     @Test
-    public void testHatchDoppler() throws IOException {
+    void testHatchDoppler() throws IOException {
 
         // Definition of the ObservationTypes to study
         ObservationType dopplerType = PredefinedObservationType.D1C;
@@ -101,12 +104,12 @@ public class PseudoRangeFilteringTest {
         List<SmoothedObservationDataSet> listObsDataSetUpdate = prs.getFilteredDataMap().get(rangeType);
 
         double lastUpdatedValue = listObsDataSetUpdate.get(listObsDataSetUpdate.size() - 1).getSmoothedData().getValue();
-        Assertions.assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
+        assertEquals(2.0650729099E7, lastUpdatedValue, 1E-6);
 
     }
 
     @Test
-    public void testHatchCarrierPhaseValues() throws IOException {
+    void testHatchCarrierPhaseValues() throws IOException {
         /* The data used for the validation was generated following the gLAB tutorial available at :
          * https://gssc.esa.int/navipedia/GNSS_Book/ESA_GNSS-Book_TM-23_Vol_II.pdf
          * The truncated gLAB processed file is given for tests.
@@ -201,12 +204,12 @@ public class PseudoRangeFilteringTest {
         // Non-Regression test : The value is above one due to a constant bias between the 2.
         // The reason of the bias is to be explored, but might be related the pre alignement process
         // performed by gLAB.
-        Assertions.assertTrue(rmsSF < 1.0063);
-        Assertions.assertTrue(rmsDF < 1.0060);
+        assertTrue(rmsSF < 1.0063);
+        assertTrue(rmsDF < 1.0060);
     }
 
     @Test
-    public void testHatchCarrierPhase2() {
+    void testHatchCarrierPhase2() {
         ObservationType rangeType = PredefinedObservationType.C1;
         ObservationType phaseTypeF1 = PredefinedObservationType.L1;
         ObservationType phaseTypeF2 = PredefinedObservationType.L2;
@@ -232,8 +235,8 @@ public class PseudoRangeFilteringTest {
         double lastValueCode = codeDFArray.get(codeDFArray.size()-1);
 
         // Regression test
-        Assertions.assertEquals(2.4715822416833777E7, lastValueSmoothed, 1e-6);
-        Assertions.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
+        assertEquals(2.4715822416833777E7, lastValueSmoothed, 1e-6);
+        assertEquals(2.4715823158E7, lastValueCode, 1e-4);
 
         ///// Test CarrierHatchFilterSingleFrequency
 
@@ -249,21 +252,21 @@ public class PseudoRangeFilteringTest {
         lastValueCode = codeSFArray.get(codeSFArray.size()-1);
 
         // Regression test
-        Assertions.assertEquals(2.4715820677129257E7, lastValueSmoothed, 1e-6);
-        Assertions.assertEquals(2.4715823158E7, lastValueCode, 1e-4);
+        assertEquals(2.4715820677129257E7, lastValueSmoothed, 1e-6);
+        assertEquals(2.4715823158E7, lastValueCode, 1e-4);
 
         // Threshold test
-        Assertions.assertEquals(100.0, filterDF.getThreshold(), 1e-12);
+        assertEquals(100.0, filterDF.getThreshold(), 1e-12);
 
         // Test getFilteredDataMap
         List<SmoothedObservationDataSet> listObsDataSetUpdateDF = prs.getFilteredDataMap().get(rangeType);
         List<SmoothedObservationDataSet> listObsDataSetUpdateSF = prsSF.getFilteredDataMap().get(rangeType);
 
         double lastUpdatedValueDF = listObsDataSetUpdateDF.get(listObsDataSetUpdateDF.size() - 1).getSmoothedData().getValue();
-        Assertions.assertEquals(2.4715822416833777E7, lastUpdatedValueDF, 1E-6);
+        assertEquals(2.4715822416833777E7, lastUpdatedValueDF, 1E-6);
 
         double lastUpdatedValueSF = listObsDataSetUpdateSF.get(listObsDataSetUpdateSF.size() - 1).getSmoothedData().getValue();
-        Assertions.assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
+        assertEquals(2.4715820677129257E7, lastUpdatedValueSF, 1E-6);
 
     }
 

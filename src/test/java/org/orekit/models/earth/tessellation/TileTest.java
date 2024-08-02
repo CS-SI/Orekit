@@ -17,17 +17,17 @@
 package org.orekit.models.earth.tessellation;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.orekit.OrekitMatchers.geodeticPointCloseTo;
 
-public class TileTest {
+class TileTest {
 
     @Test
-    public void testCenteredSquare() {
+    void testCenteredSquare() {
         double angle = 0.25;
         GeodeticPoint v0 = new GeodeticPoint(-angle, -angle, 100.0);
         GeodeticPoint v1 = new GeodeticPoint(-angle, +angle, 100.0);
@@ -51,7 +51,7 @@ public class TileTest {
     }
 
     @Test
-    public void testPoleCentered() {
+    void testPoleCentered() {
         double latitude = 0.25;
         GeodeticPoint v0 = new GeodeticPoint(latitude, 0.0 * FastMath.PI, 100.0);
         GeodeticPoint v1 = new GeodeticPoint(latitude, 0.5 * FastMath.PI, 200.0);
@@ -69,7 +69,7 @@ public class TileTest {
         assertThat(tile.getInterpolatedPoint(1, 1), geodeticPointCloseTo(v2, 1.0e-9));
         assertThat(tile.getInterpolatedPoint(0, 1), geodeticPointCloseTo(v3, 1.0e-9));
 
-        Assertions.assertEquals(0.5 * FastMath.PI, tile.getCenter().getLatitude(), 1.0e-9);
+        assertEquals(0.5 * FastMath.PI, tile.getCenter().getLatitude(), 1.0e-9);
 
     }
 

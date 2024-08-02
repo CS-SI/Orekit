@@ -35,7 +35,6 @@ import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.MathArrays;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -83,6 +82,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldImpulseManeuverTest {
 
@@ -136,7 +137,7 @@ class FieldImpulseManeuverTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -157,11 +158,11 @@ class FieldImpulseManeuverTest {
                 (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp);
 
         // Then
-        Assertions.assertEquals(fieldImpulseManeuver1.getTrigger().getThreshold(), dateDetector.getThreshold());
-        Assertions.assertEquals(fieldImpulseManeuver2.getTrigger().getThreshold(), dateDetector.getThreshold());
-        Assertions.assertEquals(fieldImpulseManeuver1.getAttitudeOverride(), fieldImpulseManeuver2.getAttitudeOverride());
-        Assertions.assertEquals(fieldImpulseManeuver1.getIsp(), fieldImpulseManeuver2.getIsp());
-        Assertions.assertEquals(fieldImpulseManeuver1.getDeltaVSat(), fieldImpulseManeuver2.getDeltaVSat());
+        assertEquals(fieldImpulseManeuver1.getTrigger().getThreshold(), dateDetector.getThreshold());
+        assertEquals(fieldImpulseManeuver2.getTrigger().getThreshold(), dateDetector.getThreshold());
+        assertEquals(fieldImpulseManeuver1.getAttitudeOverride(), fieldImpulseManeuver2.getAttitudeOverride());
+        assertEquals(fieldImpulseManeuver1.getIsp(), fieldImpulseManeuver2.getIsp());
+        assertEquals(fieldImpulseManeuver1.getDeltaVSat(), fieldImpulseManeuver2.getDeltaVSat());
     }
 
     @Test
@@ -182,9 +183,9 @@ class FieldImpulseManeuverTest {
                 (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.INF_NORM);
 
         // Then
-        Assertions.assertEquals(Control3DVectorCostType.ONE_NORM, fieldImpulseManeuverNorm1.getControl3DVectorCostType());
-        Assertions.assertEquals(Control3DVectorCostType.TWO_NORM, fieldImpulseManeuverNorm2.getControl3DVectorCostType());
-        Assertions.assertEquals(Control3DVectorCostType.INF_NORM, fieldImpulseManeuverNormInf.getControl3DVectorCostType());
+        assertEquals(Control3DVectorCostType.ONE_NORM, fieldImpulseManeuverNorm1.getControl3DVectorCostType());
+        assertEquals(Control3DVectorCostType.TWO_NORM, fieldImpulseManeuverNorm2.getControl3DVectorCostType());
+        assertEquals(Control3DVectorCostType.INF_NORM, fieldImpulseManeuverNormInf.getControl3DVectorCostType());
     }
 
     @Test
@@ -351,10 +352,10 @@ class FieldImpulseManeuverTest {
         final double tolPos = 5e-2;
         final double tolVel = 3e-5;
         for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(orbitAsArray[i], fieldRealOrbitAsArray[i], tolPos);
-            Assertions.assertEquals(orbitAsArray[i + 3], fieldRealOrbitAsArray[i + 3], tolVel);
+            assertEquals(orbitAsArray[i], fieldRealOrbitAsArray[i], tolPos);
+            assertEquals(orbitAsArray[i + 3], fieldRealOrbitAsArray[i + 3], tolVel);
         }
-        Assertions.assertEquals(state.getMass(), fieldState.getMass().getReal(), 1e-3);
+        assertEquals(state.getMass(), fieldState.getMass().getReal(), 1e-3);
 
     }
 
@@ -389,7 +390,7 @@ class FieldImpulseManeuverTest {
         final FieldSpacecraftState<UnivariateDerivative1> terminalState = fieldPropagator.propagate(targetDate);
         // Then
         final UnivariateDerivative1 actualValue = terminalState.getAdditionalState(name)[0];
-        Assertions.assertEquals(zero, actualValue);
+        assertEquals(zero, actualValue);
     }
 
     @Test
@@ -410,7 +411,7 @@ class FieldImpulseManeuverTest {
         final FieldSpacecraftState<Gradient> terminalState = fieldPropagator.propagate(targetDate);
         // Then
         final Gradient actualValue = terminalState.getAdditionalStatesDerivatives().get(name)[0];
-        Assertions.assertEquals(dummyState[0], actualValue);
+        assertEquals(dummyState[0], actualValue);
     }
 
     private <T extends CalculusFieldElement<T>> FieldNumericalPropagator<T> createFieldPropagatorForAdditionalStatesAndDerivatives(
@@ -488,17 +489,17 @@ class FieldImpulseManeuverTest {
         final FieldVector3D<Gradient> fieldTerminalVelocity = fieldTerminalState.getPVCoordinates().getVelocity();
         final double tolerance = 1e0;
         for (int i = 0; i < 3; i++) {
-            Assertions.assertEquals(stm.getEntry(0, 3 + i),
+            assertEquals(stm.getEntry(0, 3 + i),
                     fieldTerminalPosition.getX().getPartialDerivative(i), tolerance);
-            Assertions.assertEquals(stm.getEntry(1, 3 + i),
+            assertEquals(stm.getEntry(1, 3 + i),
                     fieldTerminalPosition.getY().getPartialDerivative(i), tolerance);
-            Assertions.assertEquals(stm.getEntry(2, 3 + i),
+            assertEquals(stm.getEntry(2, 3 + i),
                     fieldTerminalPosition.getZ().getPartialDerivative(i), tolerance);
-            Assertions.assertEquals(stm.getEntry(3, 3 + i),
+            assertEquals(stm.getEntry(3, 3 + i),
                     fieldTerminalVelocity.getX().getPartialDerivative(i), tolerance);
-            Assertions.assertEquals(stm.getEntry(4, 3 + i),
+            assertEquals(stm.getEntry(4, 3 + i),
                     fieldTerminalVelocity.getY().getPartialDerivative(i), tolerance);
-            Assertions.assertEquals(stm.getEntry(5, 3 + i),
+            assertEquals(stm.getEntry(5, 3 + i),
                     fieldTerminalVelocity.getZ().getPartialDerivative(i), tolerance);
         }
     }

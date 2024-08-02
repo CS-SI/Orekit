@@ -18,7 +18,6 @@ package org.orekit.estimation.measurements.modifiers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -41,6 +40,8 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 /**
  * Check against prediction in
@@ -55,11 +56,11 @@ import java.util.Arrays;
  * the approximate value.
  */
 
-public class RelativisticJ2ClockRangeModifierTest {
+class RelativisticJ2ClockRangeModifierTest {
 
 
     @Test
-    public void testRelativisticJ2ClockCorrection() {
+    void testRelativisticJ2ClockCorrection() {
 
         // Station
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -101,27 +102,27 @@ public class RelativisticJ2ClockRangeModifierTest {
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(range.getObservedValue()[0]);
-        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+        assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
         final RelativisticJ2ClockRangeModifier modifier = new RelativisticJ2ClockRangeModifier(Constants.WGS84_EARTH_MU,
                 Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         modifier.modify(estimated);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 60ps for Galileo.
         //          The computed value is equal to 63.3 ps, therefore lying in the supposed range.
-        Assertions.assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
+        assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
 
     }
 
-    @Test
     /**
      * Testing if the 2 way case is taken into account in the computation of the delay.
      * This has the effect of shifting the index from 0 to 1 for the selected PV coordinates
      * to get the emitter's parameters and not the station's.
      */
-    public void testRelativisticJ2ClockCorrectionTwoWay() {
+    @Test
+    void testRelativisticJ2ClockCorrectionTwoWay() {
 
         // Station
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
@@ -164,22 +165,22 @@ public class RelativisticJ2ClockRangeModifierTest {
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {stationPV, state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(range.getObservedValue()[0]);
-        Assertions.assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
+        assertEquals(0.0, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-3);
 
         // Measurement modifier
         final RelativisticJ2ClockRangeModifier modifier = new RelativisticJ2ClockRangeModifier(Constants.WGS84_EARTH_MU,
                 Constants.WGS84_EARTH_C20, Constants.WGS84_EARTH_EQUATORIAL_RADIUS );
         modifier.modify(estimated);
-        Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        assertEquals(0, modifier.getParametersDrivers().size());
 
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 60ps for Galileo.
         //          The computed value is equal to 63.3 ps, therefore lying in the supposed range.
-        Assertions.assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
+        assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

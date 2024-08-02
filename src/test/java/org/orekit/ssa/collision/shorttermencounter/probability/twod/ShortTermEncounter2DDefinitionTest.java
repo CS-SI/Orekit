@@ -23,7 +23,6 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,6 +43,10 @@ import org.orekit.utils.PVCoordinates;
 
 import java.io.IOException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 class ShortTermEncounter2DDefinitionTest {
 
     /**
@@ -58,7 +61,7 @@ class ShortTermEncounter2DDefinitionTest {
 
     @Test
     @DisplayName("Test the combined radius (sum of each collision object sphere equivalent radius)")
-    public void testGiveTheSumOfEachCollisionObjectRadius() {
+    void testGiveTheSumOfEachCollisionObjectRadius() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -89,7 +92,7 @@ class ShortTermEncounter2DDefinitionTest {
         final double combinedRadius = collision.getCombinedRadius();
 
         // THEN
-        Assertions.assertEquals(8, combinedRadius);
+        assertEquals(8, combinedRadius);
     }
 
     /**
@@ -106,7 +109,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection matrix from primary inertial to the default collision plane")
-    public void testReturnProjectionMatrixFromPrimaryInertialToDefaultCollisionPlane() {
+    void testReturnProjectionMatrixFromPrimaryInertialToDefaultCollisionPlane() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -148,13 +151,13 @@ class ShortTermEncounter2DDefinitionTest {
                 collision.computeReferenceInertialToCollisionPlaneProjectionMatrix();
 
         // THEN
-        Assertions.assertEquals(1, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 0), 1e-10);
-        Assertions.assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 1), 1e-10);
-        Assertions.assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 2), 1e-10);
-        Assertions.assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 0), 1e-10);
-        Assertions.assertEquals(FastMath.sqrt(2) / 2,
+        assertEquals(1, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 0), 1e-10);
+        assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 1), 1e-10);
+        assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 2), 1e-10);
+        assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 0), 1e-10);
+        assertEquals(FastMath.sqrt(2) / 2,
                                 projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 1), 1e-7);
-        Assertions.assertEquals(FastMath.sqrt(2) / 2,
+        assertEquals(FastMath.sqrt(2) / 2,
                                 projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 2), 1e-7);
     }
 
@@ -172,7 +175,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection matrix from primary inertial to the Valsecchi collision plane")
-    public void testReturnProjectionMatrixFromPrimaryInertialToValsecchiCollisionPlane() {
+    void testReturnProjectionMatrixFromPrimaryInertialToValsecchiCollisionPlane() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -216,13 +219,13 @@ class ShortTermEncounter2DDefinitionTest {
                 collision.computeReferenceInertialToCollisionPlaneProjectionMatrix();
 
         // THEN
-        Assertions.assertEquals(1, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 0), 1e-10);
-        Assertions.assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 1), 1e-10);
-        Assertions.assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 2), 1e-10);
-        Assertions.assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 0), 1e-10);
-        Assertions.assertEquals(-FastMath.sqrt(2) / 2,
+        assertEquals(1, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 0), 1e-10);
+        assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 1), 1e-10);
+        assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(0, 2), 1e-10);
+        assertEquals(0, projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 0), 1e-10);
+        assertEquals(-FastMath.sqrt(2) / 2,
                                 projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 1), 1e-7);
-        Assertions.assertEquals(-FastMath.sqrt(2) / 2,
+        assertEquals(-FastMath.sqrt(2) / 2,
                                 projectionMatrixFromPrimaryInertialToCollisionPlane.getEntry(1, 2), 1e-7);
     }
 
@@ -240,7 +243,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the relative PVCoordinates of the secondary collision object to the primary collision object")
-    public void testReturnSecondaryRelativeToPrimaryInPrimaryInertial() {
+    void testReturnSecondaryRelativeToPrimaryInPrimaryInertial() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -282,8 +285,8 @@ class ShortTermEncounter2DDefinitionTest {
                 collision.computeOtherRelativeToReferencePVInReferenceInertial();
 
         // THEN
-        Assertions.assertEquals(new Vector3D(1, 0, 0), secondaryRelativeToPrimaryPVInPrimaryInertial.getPosition());
-        Assertions.assertEquals(new Vector3D(0, -7668.631425, 7668.631425),
+        assertEquals(new Vector3D(1, 0, 0), secondaryRelativeToPrimaryPVInPrimaryInertial.getPosition());
+        assertEquals(new Vector3D(0, -7668.631425, 7668.631425),
                                 secondaryRelativeToPrimaryPVInPrimaryInertial.getVelocity());
     }
 
@@ -301,7 +304,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection and diagonalizing method of the combined covariance matrix with diagonal input matrices")
-    public void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithDiagonalCovarianceAsInput() {
+    void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithDiagonalCovarianceAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -363,10 +366,10 @@ class ShortTermEncounter2DDefinitionTest {
                 0, 1);
 
         // THEN
-        Assertions.assertEquals(200, sigmaX, 1e-15);
-        Assertions.assertEquals(300, sigmaY, 1e-12);
-        Assertions.assertEquals(0, crossTerm, 1e-15);
-        Assertions.assertEquals(projectedDiagonalizedCombinedCovarianceMatrix.getEntry(1, 0),
+        assertEquals(200, sigmaX, 1e-15);
+        assertEquals(300, sigmaY, 1e-12);
+        assertEquals(0, crossTerm, 1e-15);
+        assertEquals(projectedDiagonalizedCombinedCovarianceMatrix.getEntry(1, 0),
                                 projectedDiagonalizedCombinedCovarianceMatrix.getEntry(0, 1));
     }
 
@@ -384,7 +387,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the projection and diagonalizing method of the combined covariance matrix on non diagonal input matrices")
-    public void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
+    void testComputeTheDiagonalizedCombinedCovarianceMatrixProjectedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -444,8 +447,8 @@ class ShortTermEncounter2DDefinitionTest {
         final double sigmaY = projectedDiagonalizedCombinedCovarianceMatrix.getEntry(1, 1);
 
         // THEN
-        Assertions.assertEquals(100, sigmaX, 1e-12);
-        Assertions.assertEquals(400, sigmaY, 1e-12);
+        assertEquals(100, sigmaX, 1e-12);
+        assertEquals(400, sigmaY, 1e-12);
     }
 
     /**
@@ -463,7 +466,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the secondary collision object position projected and rotated onto the collision plane with identity covariance matrix as input.")
-    public void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithIdentityCovarianceMatrixAsInput() {
+    void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithIdentityCovarianceMatrixAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -509,8 +512,8 @@ class ShortTermEncounter2DDefinitionTest {
                 collision.computeOtherPositionInRotatedCollisionPlane();
 
         // THEN
-        Assertions.assertEquals(1, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getX(), 1e-10);
-        Assertions.assertEquals(0, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getY(), 1e-10);
+        assertEquals(1, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getX(), 1e-10);
+        assertEquals(0, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getY(), 1e-10);
 
     }
 
@@ -529,7 +532,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the secondary collision object position projected and rotated onto the collision plane with specific covariance matrix as input")
-    public void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithSpecificCovarianceMatrixAsInput() {
+    void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithSpecificCovarianceMatrixAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -578,8 +581,8 @@ class ShortTermEncounter2DDefinitionTest {
                         CUSTOMZEROTHRESHOLD);
 
         // THEN
-        Assertions.assertEquals(0, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getX(), 1e-10);
-        Assertions.assertEquals(-1, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getY(), 1e-10);
+        assertEquals(0, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getX(), 1e-10);
+        assertEquals(-1, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getY(), 1e-10);
 
     }
 
@@ -597,7 +600,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the secondary collision object position projected and rotated onto the collision plane.")
-    public void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
+    void testComputeSecondaryPositionProjectedAndRotatedOntoCollisionPlaneWithNonDiagonalCovarianceAsInput() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -655,8 +658,8 @@ class ShortTermEncounter2DDefinitionTest {
                         DEFAULTZEROTHRESHOLD);
 
         // THEN
-        Assertions.assertEquals(0.8164965809277260, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getX(), 1e-16);
-        Assertions.assertEquals(0.5773502691896257, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getY(), 1e-16);
+        assertEquals(0.8164965809277260, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getX(), 1e-16);
+        assertEquals(0.5773502691896257, secondaryPositionProjectedAndRotatedOntoCollisionPlane.getY(), 1e-16);
 
     }
 
@@ -673,7 +676,7 @@ class ShortTermEncounter2DDefinitionTest {
      */
     @Test
     @DisplayName("Test the computation of the mahalanobis distance")
-    public void testComputeMahalanobisDistance() {
+    void testComputeMahalanobisDistance() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -723,13 +726,13 @@ class ShortTermEncounter2DDefinitionTest {
         final double mahalanobisDistance2 = collision.computeMahalanobisDistance();
 
         // THEN
-        Assertions.assertEquals(0.08660254037844389, mahalanobisDistance1, 1e-17);
-        Assertions.assertEquals(0.08660254037844389, mahalanobisDistance2, 1e-17);
+        assertEquals(0.08660254037844389, mahalanobisDistance1, 1e-17);
+        assertEquals(0.08660254037844389, mahalanobisDistance2, 1e-17);
     }
 
     @Test
     @DisplayName("Test the computation of the mahalanobis distance on Armellin's paper appendix case")
-    public void testComputeExpectedMahalanobisDistanceFromArmellinPaperAppendixCase() {
+    void testComputeExpectedMahalanobisDistanceFromArmellinPaperAppendixCase() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -785,12 +788,12 @@ class ShortTermEncounter2DDefinitionTest {
         final double result = collision.computeMahalanobisDistance(DEFAULTZEROTHRESHOLD);
 
         // THEN
-        Assertions.assertEquals(0.933624872, result, 1e-9);
+        assertEquals(0.933624872, result, 1e-9);
     }
 
     @Test
     @DisplayName("Test the computation of the miss distance on Armellin's paper appendix case")
-    public void testComputeExpectedMissDistanceFromArmellinPaperAppendixCase() {
+    void testComputeExpectedMissDistanceFromArmellinPaperAppendixCase() {
 
         // GIVEN
         // Define the time of closest approach and mu
@@ -833,20 +836,20 @@ class ShortTermEncounter2DDefinitionTest {
         final double result = collision.computeMissDistance();
 
         // THEN
-        Assertions.assertEquals(43.16871865, result, 1e-8);
+        assertEquals(43.16871865, result, 1e-8);
     }
 
     @Test
     @DisplayName("Test mahalanobis distance method on Armellin's data and make statistics")
-    public void testCompareStatisticsAboutMahalanobisDistanceWithArmellinData() throws IOException {
+    void testCompareStatisticsAboutMahalanobisDistanceWithArmellinData() throws IOException {
 
         // GIVEN & When
         final DescriptiveStatistics statistics =
                 ArmellinStatistics.getMahalanobisDistanceRelativeDifferenceStatistics();
 
         // THEN
-        Assertions.assertTrue(statistics.getMean() <= 1.655252960031764E-10);
-        Assertions.assertTrue(statistics.getStandardDeviation() <= 5.289370450380533E-10);
+        assertTrue(statistics.getMean() <= 1.655252960031764E-10);
+        assertTrue(statistics.getStandardDeviation() <= 5.289370450380533E-10);
     }
 
     @Test
@@ -875,7 +878,7 @@ class ShortTermEncounter2DDefinitionTest {
         final double secondaryRadius = 2;
 
         // THEN
-        Assertions.assertThrows(OrekitException.class,
+        assertThrows(OrekitException.class,
                                 () -> new ShortTermEncounter2DDefinition(primaryMock, primaryCovariance, primaryRadius,
                                                                          secondaryMock, secondaryCovariance,
                                                                          secondaryRadius));
@@ -949,7 +952,7 @@ class ShortTermEncounter2DDefinitionTest {
         final double encounterTimeDuration = collisionDefinition.computeCoppolaEncounterDuration();
 
         // THEN
-        Assertions.assertEquals(0.02741114742, encounterTimeDuration, 1e-11);
+        assertEquals(0.02741114742, encounterTimeDuration, 1e-11);
     }
 
     /**
@@ -1017,7 +1020,7 @@ class ShortTermEncounter2DDefinitionTest {
         final double encounterTimeDuration = collisionDefinition.computeCoppolaEncounterDuration();
 
         // THEN
-        Assertions.assertEquals(254.56056997152353, encounterTimeDuration, 1e-14);
+        assertEquals(254.56056997152353, encounterTimeDuration, 1e-14);
 
     }
 
@@ -1053,11 +1056,11 @@ class ShortTermEncounter2DDefinitionTest {
         final StateCovariance gottenOtherCovariance = encounter.getOtherCovariance();
 
         // THEN
-        Assertions.assertEquals(tca, gottenTCA);
-        Assertions.assertEquals(referenceOrbit, gottenReferenceOrbit);
-        Assertions.assertEquals(referenceCovariance, gottenReferenceCovariance);
-        Assertions.assertEquals(otherOrbit, gottenOtherOrbit);
-        Assertions.assertEquals(otherCovariance, gottenOtherCovariance);
+        assertEquals(tca, gottenTCA);
+        assertEquals(referenceOrbit, gottenReferenceOrbit);
+        assertEquals(referenceCovariance, gottenReferenceCovariance);
+        assertEquals(otherOrbit, gottenOtherOrbit);
+        assertEquals(otherCovariance, gottenOtherCovariance);
     }
 
 }

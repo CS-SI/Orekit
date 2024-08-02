@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.cdm;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -31,40 +30,44 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /** Tests for CdmMetaData class.
  * These tests are used to increase condition coverage, other global tests are in CdmParser/WriterTest classes.
  */
-public class CdmMetaDataTest {
+class CdmMetaDataTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
-    
+
     /** Condition coverage on the getFrame method. */
     @Test
     @DefaultDataContext
-    public void testGetFrame() {
+    void testGetFrame() {
         
         final CdmMetadata meta = new CdmMetadata();
         
         // refFrame == null
         try {
             meta.getFrame();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assertions.assertEquals("No reference frame", oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            assertEquals("No reference frame", oe.getParts()[0]);
         }
         
         // orbitCenter.getBody() == null
         try {
             meta.setOrbitCenter(new BodyFacade("dummy center", null));
             meta.getFrame();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, oe.getSpecifier());
-            Assertions.assertEquals("No Orbit center name", oe.getParts()[0]);
+            assertEquals(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, oe.getSpecifier());
+            assertEquals("No Orbit center name", oe.getParts()[0]);
         }
         
         // refFrame.asFrame() == null
@@ -72,17 +75,17 @@ public class CdmMetaDataTest {
         try {
             meta.setRefFrame(new FrameFacade(null, null, null, null, "dummy frame"));
             meta.getFrame();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assertions.assertEquals("dummy frame", oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            assertEquals("dummy frame", oe.getParts()[0]);
         }
         
         // refFrame.asCelestialBodyFrame() == CelestialBodyFrame.MCI
         // AND
         // CelestialBodyFactory.MARS.equals(orbitCenter.getBody().getName())
         meta.setRefFrame(FrameFacade.map(CelestialBodyFactory.getMars().getInertiallyOrientedFrame()));
-        Assertions.assertEquals(CelestialBodyFactory.getMars().getInertiallyOrientedFrame(), meta.getFrame());
+        assertEquals(CelestialBodyFactory.getMars().getInertiallyOrientedFrame(), meta.getFrame());
         
         // refFrame.asCelestialBodyFrame() == CelestialBodyFrame.ICRF
         // AND
@@ -90,13 +93,13 @@ public class CdmMetaDataTest {
         final Frame icrf = FramesFactory.getICRF();
         meta.setOrbitCenter(BodyFacade.create(CenterName.SOLAR_SYSTEM_BARYCENTER));
         meta.setRefFrame(FrameFacade.map(icrf));
-        Assertions.assertEquals(icrf, meta.getFrame());
+        assertEquals(icrf, meta.getFrame());
     }
-    
+
     /** Condition coverage on the setAltCovRefFrame method. */
     @Test
     @DefaultDataContext
-    public void testSetAltCovRefFrame() {
+    void testSetAltCovRefFrame() {
         
         final CdmMetadata meta = new CdmMetadata();
         final FrameFacade altCovRefFrame = new FrameFacade(null, null, null, null, null);
@@ -104,43 +107,43 @@ public class CdmMetaDataTest {
         // getAltCovType()
         try {
             meta.setAltCovRefFrame(altCovRefFrame);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
-            Assertions.assertEquals(CdmMetadataKey.ALT_COV_TYPE, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_MISSING_KEYWORD, oe.getSpecifier());
+            assertEquals(CdmMetadataKey.ALT_COV_TYPE, oe.getParts()[0]);
         }
         
         // altCovRefFrame.asFrame() == null
         meta.setAltCovType(AltCovarianceType.CSIG3EIGVEC3);
         try {
             meta.setAltCovRefFrame(altCovRefFrame);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assertions.assertEquals(null, oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            assertNull(oe.getParts()[0]);
         }
         
         // Frame not allowed (allowed frames are GCRF, EME2000, ITRF)
         FrameFacade frameFacade = FrameFacade.map(FramesFactory.getICRF());
         try {
             meta.setAltCovRefFrame(frameFacade);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
-            Assertions.assertEquals(frameFacade.getName(), oe.getParts()[0]);
+            assertEquals(OrekitMessages.CCSDS_INVALID_FRAME, oe.getSpecifier());
+            assertEquals(frameFacade.getName(), oe.getParts()[0]);
         }
         
         // Test the 3 allowed frames
         frameFacade = FrameFacade.map(FramesFactory.getGCRF());
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        assertEquals(frameFacade, meta.getAltCovRefFrame());
         
         frameFacade = FrameFacade.map(FramesFactory.getEME2000());
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        assertEquals(frameFacade, meta.getAltCovRefFrame());
         
         frameFacade = FrameFacade.map(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         meta.setAltCovRefFrame(frameFacade);
-        Assertions.assertEquals(frameFacade, meta.getAltCovRefFrame());
+        assertEquals(frameFacade, meta.getAltCovRefFrame());
     }
 }

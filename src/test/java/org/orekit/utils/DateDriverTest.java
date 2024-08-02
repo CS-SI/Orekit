@@ -16,25 +16,29 @@
  */
 package org.orekit.utils;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 
-public class DateDriverTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class DateDriverTest {
 
     @Test
-    public void testBase() {
+    void testBase() {
     	// Date driver has 1 value estimated on the all time range
         DateDriver driver = new DateDriver(AbsoluteDate.J2000_EPOCH, "start", true);
-        Assertions.assertEquals("start", driver.getName());
-        Assertions.assertTrue(driver.isStart());
-        Assertions.assertFalse(driver.isSelected());
-        Assertions.assertEquals(0.0,   driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
-        Assertions.assertNull(driver.getReferenceDate());
+        assertEquals("start", driver.getName());
+        assertTrue(driver.isStart());
+        assertFalse(driver.isSelected());
+        assertEquals(0.0,   driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+        assertNull(driver.getReferenceDate());
         driver.setNormalizedValue(0.001);
-        Assertions.assertEquals(0.001, driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
-        Assertions.assertEquals(Double.NEGATIVE_INFINITY, driver.getMinValue(), 1.0);
-        Assertions.assertEquals(Double.POSITIVE_INFINITY, driver.getMaxValue(), 1.0);
+        assertEquals(0.001, driver.getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1.0e-15);
+        assertEquals(Double.NEGATIVE_INFINITY, driver.getMinValue(), 1.0);
+        assertEquals(Double.POSITIVE_INFINITY, driver.getMaxValue(), 1.0);
     }
 
 }

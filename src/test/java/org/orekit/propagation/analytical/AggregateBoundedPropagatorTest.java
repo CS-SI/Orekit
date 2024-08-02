@@ -17,9 +17,7 @@
 package org.orekit.propagation.analytical;
 
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -42,6 +40,11 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
 
 import java.util.ArrayList;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -59,7 +62,7 @@ public class AggregateBoundedPropagatorTest {
 
     /** Set Orekit data. */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 
@@ -68,7 +71,7 @@ public class AggregateBoundedPropagatorTest {
      * constituent propagators are exactly adjacent.
      */
     @Test
-    public void testAdjacent() {
+    void testAdjacent() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
@@ -79,29 +82,29 @@ public class AggregateBoundedPropagatorTest {
 
         //verify
         int ulps = 0;
-        MatcherAssert.assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
-        MatcherAssert.assertThat(actual.getMinDate(), CoreMatchers.is(date));
-        MatcherAssert.assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
-        MatcherAssert.assertThat(
+        assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
+        assertThat(actual.getMinDate(), CoreMatchers.is(date));
+        assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
+        assertThat(
                 actual.propagate(date).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p1.propagate(date).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(5)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p1.propagate(date.shiftedBy(5)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(10)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(10)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(15)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(15)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(20)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(20)).getPVCoordinates(), ulps));
 
         for (TimeSpanMap.Span<BoundedPropagator> span = actual.getPropagatorsMap().getFirstNonNullSpan();
              span != null;
              span = span.next()) {
-            Assertions.assertEquals(span.getStart(), span.getData().getMinDate());
+            assertEquals(span.getStart(), span.getData().getMinDate());
         }
 
     }
@@ -111,7 +114,7 @@ public class AggregateBoundedPropagatorTest {
      * constituent propagators overlap.
      */
     @Test
-    public void testOverlap() {
+    void testOverlap() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(25), 0);
@@ -122,22 +125,22 @@ public class AggregateBoundedPropagatorTest {
 
         //verify
         int ulps = 0;
-        MatcherAssert.assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
-        MatcherAssert.assertThat(actual.getMinDate(), CoreMatchers.is(date));
-        MatcherAssert.assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
-        MatcherAssert.assertThat(
+        assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
+        assertThat(actual.getMinDate(), CoreMatchers.is(date));
+        assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
+        assertThat(
                 actual.propagate(date).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p1.propagate(date).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(5)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p1.propagate(date.shiftedBy(5)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(10)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(10)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(15)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(15)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(20)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(20)).getPVCoordinates(), ulps));
     }
@@ -147,7 +150,7 @@ public class AggregateBoundedPropagatorTest {
      * between the constituent propagators.
      */
     @Test
-    public void testGap() {
+    void testGap() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(1), 0);
@@ -158,24 +161,24 @@ public class AggregateBoundedPropagatorTest {
 
         //verify
         int ulps = 0;
-        MatcherAssert.assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
-        MatcherAssert.assertThat(actual.getMinDate(), CoreMatchers.is(date));
-        MatcherAssert.assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
-        MatcherAssert.assertThat(
+        assertThat(actual.getFrame(), CoreMatchers.is(p1.getFrame()));
+        assertThat(actual.getMinDate(), CoreMatchers.is(date));
+        assertThat(actual.getMaxDate(), CoreMatchers.is(date.shiftedBy(20)));
+        assertThat(
                 actual.propagate(date).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p1.propagate(date).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(10)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(10)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(15)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(15)).getPVCoordinates(), ulps));
-        MatcherAssert.assertThat(
+        assertThat(
                 actual.propagate(date.shiftedBy(20)).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(20)).getPVCoordinates(), ulps));
         try {
             // may or may not throw an exception depending on the type of propagator.
-            MatcherAssert.assertThat(
+            assertThat(
                     actual.propagate(date.shiftedBy(5)).getPVCoordinates(),
                     OrekitMatchers.pvCloseTo(p1.propagate(date.shiftedBy(5)).getPVCoordinates(), ulps));
         } catch (OrekitException e) {
@@ -184,7 +187,7 @@ public class AggregateBoundedPropagatorTest {
     }
 
     @Test
-    public void testOutsideBounds() {
+    void testOutsideBounds() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
@@ -198,7 +201,7 @@ public class AggregateBoundedPropagatorTest {
         // before bound of first propagator
         try {
             // may or may not throw an exception depending on the type of propagator.
-            MatcherAssert.assertThat(
+            assertThat(
                     actual.propagate(date.shiftedBy(-60)).getPVCoordinates(),
                     OrekitMatchers.pvCloseTo(p1.propagate(date.shiftedBy(-60)).getPVCoordinates(), ulps));
         } catch (OrekitException e) {
@@ -206,7 +209,7 @@ public class AggregateBoundedPropagatorTest {
         }
         try {
             // may or may not throw an exception depending on the type of propagator.
-            MatcherAssert.assertThat(
+            assertThat(
                     actual.getPVCoordinates(date.shiftedBy(-60), frame),
                     OrekitMatchers.pvCloseTo(p1.propagate(date.shiftedBy(-60)).getPVCoordinates(), ulps));
         } catch (OrekitException e) {
@@ -215,7 +218,7 @@ public class AggregateBoundedPropagatorTest {
         // after bound of last propagator
         try {
             // may or may not throw an exception depending on the type of propagator.
-            MatcherAssert.assertThat(
+            assertThat(
                     actual.propagate(date.shiftedBy(60)).getPVCoordinates(),
                     OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(60)).getPVCoordinates(), ulps));
         } catch (OrekitException e) {
@@ -223,7 +226,7 @@ public class AggregateBoundedPropagatorTest {
         }
         try {
             // may or may not throw an exception depending on the type of propagator.
-            MatcherAssert.assertThat(
+            assertThat(
                     actual.getPVCoordinates(date.shiftedBy(60), frame),
                     OrekitMatchers.pvCloseTo(p2.propagate(date.shiftedBy(60)).getPVCoordinates(), ulps));
         } catch (OrekitException e) {
@@ -236,7 +239,7 @@ public class AggregateBoundedPropagatorTest {
      * Check that resetting the state is prohibited.
      */
     @Test
-    public void testResetState() {
+    void testResetState() {
         // setup
         AbsoluteDate date = AbsoluteDate.CCSDS_EPOCH;
         BoundedPropagator p1 = createPropagator(date, date.shiftedBy(10), 0);
@@ -249,7 +252,7 @@ public class AggregateBoundedPropagatorTest {
         // verify
         try {
             actual.resetInitialState(ic);
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
             // expected
         }
@@ -260,11 +263,11 @@ public class AggregateBoundedPropagatorTest {
      * prohibited.
      */
     @Test
-    public void testEmptyList() {
+    void testEmptyList() {
         // action + verify
         try {
             new AggregateBoundedPropagator(Collections.emptyList());
-            Assertions.fail("Expected Exception");
+            fail("Expected Exception");
         } catch (OrekitException e) {
             // expected
         }
@@ -277,7 +280,7 @@ public class AggregateBoundedPropagatorTest {
      * AbsoluteDate, AbsoluteDate)}.
      */
     @Test
-    public void testAggregateBoundedPropagator() {
+    void testAggregateBoundedPropagator() {
         // setup
         NavigableMap<AbsoluteDate, BoundedPropagator> map = new TreeMap<>();
         AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
@@ -294,13 +297,13 @@ public class AggregateBoundedPropagatorTest {
                 new AggregateBoundedPropagator(map, min, max);
 
         // verify
-        MatcherAssert.assertThat(actual.getMinDate(), CoreMatchers.is(min));
-        MatcherAssert.assertThat(actual.getMaxDate(), CoreMatchers.is(max));
-        MatcherAssert.assertThat(actual.propagate(date).getPVCoordinates(),
+        assertThat(actual.getMinDate(), CoreMatchers.is(min));
+        assertThat(actual.getMaxDate(), CoreMatchers.is(max));
+        assertThat(actual.propagate(date).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p1.propagate(date).getPVCoordinates(), 0));
-        MatcherAssert.assertThat(actual.propagate(end).getPVCoordinates(),
+        assertThat(actual.propagate(end).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p2.propagate(end).getPVCoordinates(), 0));
-        MatcherAssert.assertThat(actual.propagate(min).getPVCoordinates(),
+        assertThat(actual.propagate(min).getPVCoordinates(),
                 OrekitMatchers.pvCloseTo(p1.propagate(min).getPVCoordinates(), 0));
     }
 
@@ -334,7 +337,7 @@ public class AggregateBoundedPropagatorTest {
 
         // using the attitude providers from the underlying propagator
         final SpacecraftState s0 = actual.propagate(date.shiftedBy(15));
-        Assertions.assertEquals(0,
+        assertEquals(0,
                                 Vector3D.angle(s0.getPosition(),
                                                s0.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
                                 3.0e-16);
@@ -342,11 +345,11 @@ public class AggregateBoundedPropagatorTest {
         // overriding explicitly the global attitude provider
         actual.setAttitudeProvider(new FrameAlignedProvider(p1.getInitialState().getFrame()));
         final SpacecraftState s1 = actual.propagate(date.shiftedBy(15));
-        Assertions.assertEquals(0,
+        assertEquals(0,
                                 Vector3D.angle(Vector3D.MINUS_K,
                                                s1.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
                                 3.0e-16);
-        Assertions.assertEquals(1.570796,
+        assertEquals(1.570796,
                                 Vector3D.angle(s1.getPosition(),
                                                s1.getAttitude().getRotation().applyInverseTo(Vector3D.MINUS_K)),
                                 1.0e-6);
@@ -369,7 +372,7 @@ public class AggregateBoundedPropagatorTest {
         final Orbit actualOrbit = propagator.propagateOrbit(date);
 
         // THEN
-        Assertions.assertEquals(expectedOrbit, actualOrbit);
+        assertEquals(expectedOrbit, actualOrbit);
     }
 
     @Test
@@ -389,7 +392,7 @@ public class AggregateBoundedPropagatorTest {
         final Vector3D actualPosition = propagator.getPosition(date, mockedFrame);
 
         // THEN
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
     }
 
     private BoundedPropagator mockBoundedPropagator(final AbsoluteDate date, final SpacecraftState state) {

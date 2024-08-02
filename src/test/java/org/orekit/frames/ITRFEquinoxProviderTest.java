@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -38,11 +37,13 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class ITRFEquinoxProviderTest {
+
+class ITRFEquinoxProviderTest {
 
     @Test
-    public void testEquinoxVersusCIO() {
+    void testEquinoxVersusCIO() {
         Frame itrfEquinox  = FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true);
         Frame itrfCIO      = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         AbsoluteDate start = new AbsoluteDate(2011, 4, 10, TimeScalesFactory.getUTC());
@@ -50,12 +51,12 @@ public class ITRFEquinoxProviderTest {
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(10000)) {
             double angularOffset =
                     itrfEquinox.getTransformTo(itrfCIO, date).getRotation().getAngle();
-            Assertions.assertEquals(0, angularOffset / Constants.ARC_SECONDS_TO_RADIANS, 0.07);
+            assertEquals(0, angularOffset / Constants.ARC_SECONDS_TO_RADIANS, 0.07);
         }
     }
 
     @Test
-    public void testAASReferenceLEO() {
+    void testAASReferenceLEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -93,7 +94,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testAASReferenceGEO() {
+    void testAASReferenceGEO() {
 
         // this reference test has been extracted from the following paper:
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
@@ -132,7 +133,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testSofaCookbook() {
+    void testSofaCookbook() {
 
         // SOFA cookbook test case:
         //     date       2007 April 05, 12h00m00s.0 UTC
@@ -170,16 +171,16 @@ public class ITRFEquinoxProviderTest {
 
         // time scales checks
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2007, 4, 5), TimeComponents.H12, utc);
-        Assertions.assertEquals(0.50075444444444,
+        assertEquals(0.50075444444444,
                             date.getComponents(tt).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             5.0e-15);
-        Assertions.assertEquals(0.499999165813831,
+        assertEquals(0.499999165813831,
                             date.getComponents(ut1).getTime().getSecondsInUTCDay() / Constants.JULIAN_DAY,
                             1.0e-15);
 
         // sidereal time check
         double gast = IERSConventions.IERS_1996.getGASTFunction(ut1, eopHistory).value(date);
-        Assertions.assertEquals(13.412402380740 * 3600 * 1.0e6,
+        assertEquals(13.412402380740 * 3600 * 1.0e6,
                             radToMicroAS(MathUtils.normalizeAngle(gast, 0)),
                             25);
 
@@ -190,7 +191,7 @@ public class ITRFEquinoxProviderTest {
             { +0.000712264667137, +0.000044385492226, +0.999999745354454 }
         }, 1.0e-13);
         Rotation npb = gcrf.getTransformTo(tod, date).getRotation();
-        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 27.0);
+        assertEquals(0.0, radToMicroAS(Rotation.distance(refNPB, npb)), 27.0);
 
         // celestial to terrestrial frames matrix, without polar motion
         Rotation refWithoutPolarMotion = new Rotation(new double[][] {
@@ -199,7 +200,7 @@ public class ITRFEquinoxProviderTest {
             { +0.000712264667137, +0.000044385492226, +0.999999745354454 }
         }, 1.0e-13);
         Rotation withoutPM = gcrf.getTransformTo(gtod, date).getRotation();
-        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 9);
+        assertEquals(0.0, radToMicroAS(Rotation.distance(refWithoutPolarMotion, withoutPM)), 9);
 
         // celestial to terrestrial frames matrix, with polar motion
         Rotation refWithPolarMotion = new Rotation(new double[][] {
@@ -208,12 +209,12 @@ public class ITRFEquinoxProviderTest {
             { +0.000711560100206, +0.000046626645796, +0.999999745754058 }
         }, 1.0e-13);
         Rotation withPM = gcrf.getTransformTo(itrf, date).getRotation();
-        Assertions.assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 10);
+        assertEquals(0.0, radToMicroAS(Rotation.distance(refWithPolarMotion, withPM)), 10);
 
     }
 
     @Test
-    public void testNROvsEquinoxRealEOP() {
+    void testNROvsEquinoxRealEOP() {
         Utils.setDataRoot("regular-data");
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true),
@@ -221,7 +222,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testNROvsEquinoxNoEOP2010() {
+    void testNROvsEquinoxNoEOP2010() {
         Utils.setLoaders(IERSConventions.IERS_2010, new ArrayList<EOPEntry>());
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true),
@@ -229,7 +230,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testNROvsEquinoxNoEOP2003() {
+    void testNROvsEquinoxNoEOP2003() {
         Utils.setLoaders(IERSConventions.IERS_2003, new ArrayList<EOPEntry>());
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2003, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_2003, true),
@@ -237,7 +238,7 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    public void testNROvsEquinoxNoEOP1996() {
+    void testNROvsEquinoxNoEOP1996() {
         Utils.setLoaders(IERSConventions.IERS_1996, new ArrayList<EOPEntry>());
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_1996, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true),
@@ -252,12 +253,12 @@ public class ITRFEquinoxProviderTest {
             Transform t = FramesFactory.getNonInterpolatingTransform(frame1, frame2, date);
             Vector3D a = t.getRotation().getAxis(RotationConvention.VECTOR_OPERATOR);
             double delta = FastMath.copySign(radToMicroAS(t.getRotation().getAngle()), a.getZ());
-            Assertions.assertEquals(0.0, delta, toleranceMicroAS);
+            assertEquals(0.0, delta, toleranceMicroAS);
         }
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("rapid-data-columns");
     }
 
@@ -266,8 +267,8 @@ public class ITRFEquinoxProviderTest {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assertions.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
-        Assertions.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
+        assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     double radToMicroAS(double deltaRad) {

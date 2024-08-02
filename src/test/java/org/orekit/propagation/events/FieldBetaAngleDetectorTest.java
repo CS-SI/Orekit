@@ -41,7 +41,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 
-public class FieldBetaAngleDetectorTest {
+class FieldBetaAngleDetectorTest {
     private FieldPropagator<Binary64> propagator;
     private FieldAbsoluteDate<Binary64> date;
 

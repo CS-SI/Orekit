@@ -17,7 +17,6 @@
 package org.orekit.models.earth.atmosphere;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -28,11 +27,13 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class SimpleExponentialAtmosphereTest {
+
+class SimpleExponentialAtmosphereTest {
 
     @Test
-    public void testExpAtmosphere() {
+    void testExpAtmosphere() {
         Vector3D posInEME2000 = new Vector3D(10000, Vector3D.PLUS_I);
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -44,12 +45,12 @@ public class SimpleExponentialAtmosphereTest {
         Transform toBody = FramesFactory.getEME2000().getTransformTo(itrf, date);
         Vector3D test = Vector3D.crossProduct(toBody.getRotationRate(), posInEME2000);
         test = test.subtract(vel);
-        Assertions.assertEquals(0, test.getNorm(), 2.9e-5);
+        assertEquals(0, test.getNorm(), 2.9e-5);
 
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

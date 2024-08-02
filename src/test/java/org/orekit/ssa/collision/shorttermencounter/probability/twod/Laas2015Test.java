@@ -19,7 +19,6 @@ package org.orekit.ssa.collision.shorttermencounter.probability.twod;
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.util.Binary64;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +28,8 @@ import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.cdm.Cdm;
 import org.orekit.ssa.metrics.FieldProbabilityOfCollision;
 import org.orekit.ssa.metrics.ProbabilityOfCollision;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Laas2015Test {
 
@@ -54,9 +55,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.742e-3, result.getValue(), 1e-6);
-        Assertions.assertEquals(9.704e-3, result.getLowerLimit(), 1e-6);
-        Assertions.assertEquals(9.742e-3, result.getUpperLimit(), 1e-6);
+        assertEquals(9.742e-3, result.getValue(), 1e-6);
+        assertEquals(9.704e-3, result.getLowerLimit(), 1e-6);
+        assertEquals(9.742e-3, result.getUpperLimit(), 1e-6);
     }
 
     @Test
@@ -73,9 +74,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.181e-3, result.getValue(), 1e-6);
-        Assertions.assertEquals(9.139e-3, result.getLowerLimit(), 1e-6);
-        Assertions.assertEquals(9.182e-3, result.getUpperLimit(), 1e-6);
+        assertEquals(9.181e-3, result.getValue(), 1e-6);
+        assertEquals(9.139e-3, result.getLowerLimit(), 1e-6);
+        assertEquals(9.182e-3, result.getUpperLimit(), 1e-6);
     }
 
     @Test
@@ -92,9 +93,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.571e-3, result.getValue(), 1e-6);
-        Assertions.assertEquals(6.542e-3, result.getLowerLimit(), 1e-6);
-        Assertions.assertEquals(6.572e-3, result.getUpperLimit(), 1e-6);
+        assertEquals(6.571e-3, result.getValue(), 1e-6);
+        assertEquals(6.542e-3, result.getLowerLimit(), 1e-6);
+        assertEquals(6.572e-3, result.getUpperLimit(), 1e-6);
     }
 
     @Test
@@ -111,9 +112,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.125e-3, result.getValue(), 1e-6);
-        Assertions.assertEquals(6.09e-3, result.getLowerLimit(), 1e-5);
-        Assertions.assertEquals(6.13e-3, result.getUpperLimit(), 1e-5);
+        assertEquals(6.125e-3, result.getValue(), 1e-6);
+        assertEquals(6.09e-3, result.getLowerLimit(), 1e-5);
+        assertEquals(6.13e-3, result.getUpperLimit(), 1e-5);
     }
 
     @Test
@@ -130,9 +131,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue(), 1e-8);
-        Assertions.assertEquals(1.576561e-5, result.getLowerLimit(), 1e-9);
-        Assertions.assertEquals(1.576576e-5, result.getUpperLimit(), 1e-9);
+        assertEquals(1.577e-5, result.getValue(), 1e-8);
+        assertEquals(1.576561e-5, result.getLowerLimit(), 1e-9);
+        assertEquals(1.576576e-5, result.getUpperLimit(), 1e-9);
     }
 
     @Test
@@ -149,9 +150,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue(), 1e-8);
-        Assertions.assertEquals(1.010860e-5, result.getLowerLimit(), 1e-11);
-        Assertions.assertEquals(1.010883e-5, result.getUpperLimit(), 1e-11);
+        assertEquals(1.011e-5, result.getValue(), 1e-8);
+        assertEquals(1.010860e-5, result.getLowerLimit(), 1e-11);
+        assertEquals(1.010883e-5, result.getUpperLimit(), 1e-11);
     }
 
     @Test
@@ -168,9 +169,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue(), 1e-11);
-        Assertions.assertEquals(6.44304e-8, result.getLowerLimit(), 1e-13);
-        Assertions.assertEquals(6.44321e-8, result.getUpperLimit(), 1e-13);
+        assertEquals(6.443e-8, result.getValue(), 1e-11);
+        assertEquals(6.44304e-8, result.getLowerLimit(), 1e-13);
+        assertEquals(6.44321e-8, result.getUpperLimit(), 1e-13);
     }
 
     @Test
@@ -187,9 +188,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.219e-27, result.getValue(), 1e-30);
-        Assertions.assertEquals(3.2145e-27, result.getLowerLimit(), 1e-31);
-        Assertions.assertEquals(3.2186e-27, result.getUpperLimit(), 1e-31);
+        assertEquals(3.219e-27, result.getValue(), 1e-30);
+        assertEquals(3.2145e-27, result.getLowerLimit(), 1e-31);
+        assertEquals(3.2186e-27, result.getUpperLimit(), 1e-31);
     }
 
     @Test
@@ -206,9 +207,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue(), 1e-9);
-        Assertions.assertEquals(3.03258e-6, result.getLowerLimit(), 1e-11);
-        Assertions.assertEquals(3.03261e-6, result.getUpperLimit(), 1e-11);
+        assertEquals(3.033e-6, result.getValue(), 1e-9);
+        assertEquals(3.03258e-6, result.getLowerLimit(), 1e-11);
+        assertEquals(3.03261e-6, result.getUpperLimit(), 1e-11);
     }
 
     @Test
@@ -225,9 +226,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.656e-28, result.getValue(), 1e-31);
-        Assertions.assertEquals(9.643e-28, result.getLowerLimit(), 1e-31);
-        Assertions.assertEquals(9.656e-28, result.getUpperLimit(), 1e-31);
+        assertEquals(9.656e-28, result.getValue(), 1e-31);
+        assertEquals(9.643e-28, result.getLowerLimit(), 1e-31);
+        assertEquals(9.656e-28, result.getUpperLimit(), 1e-31);
     }
 
     @Test
@@ -244,9 +245,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue(), 1e-7);
-        Assertions.assertEquals(1.03831e-4, result.getLowerLimit(), 1e-9);
-        Assertions.assertEquals(1.03871e-4, result.getUpperLimit(), 1e-9);
+        assertEquals(1.039e-4, result.getValue(), 1e-7);
+        assertEquals(1.03831e-4, result.getLowerLimit(), 1e-9);
+        assertEquals(1.03871e-4, result.getUpperLimit(), 1e-9);
     }
 
     @Test
@@ -263,9 +264,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.564e-9, result.getValue(), 1e-12);
-        Assertions.assertEquals(1.552e-9, result.getLowerLimit(), 1e-12);
-        Assertions.assertEquals(1.565e-9, result.getUpperLimit(), 1e-12);
+        assertEquals(1.564e-9, result.getValue(), 1e-12);
+        assertEquals(1.552e-9, result.getLowerLimit(), 1e-12);
+        assertEquals(1.565e-9, result.getUpperLimit(), 1e-12);
     }
 
     @Test
@@ -282,9 +283,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.9002e-3, result.getValue(), 1e-7);
-        Assertions.assertEquals(1.878e-3, result.getLowerLimit(), 1e-6);
-        Assertions.assertEquals(1.900e-3, result.getUpperLimit(), 1e-6);
+        assertEquals(1.9002e-3, result.getValue(), 1e-7);
+        assertEquals(1.878e-3, result.getLowerLimit(), 1e-6);
+        assertEquals(1.900e-3, result.getUpperLimit(), 1e-6);
     }
 
     @Test
@@ -301,9 +302,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0553e-11, result.getValue(), 1e-15);
-        Assertions.assertEquals(2.0101e-11, result.getLowerLimit(), 1e-15);
-        Assertions.assertEquals(2.0557e-11, result.getUpperLimit(), 1e-15);
+        assertEquals(2.0553e-11, result.getValue(), 1e-15);
+        assertEquals(2.0101e-11, result.getLowerLimit(), 1e-15);
+        assertEquals(2.0557e-11, result.getUpperLimit(), 1e-15);
     }
 
     @Test
@@ -320,9 +321,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2003e-5, result.getValue(), 1e-9);
-        Assertions.assertEquals(7.194e-5, result.getLowerLimit(), 1e-8);
-        Assertions.assertEquals(7.200e-5, result.getUpperLimit(), 1e-8);
+        assertEquals(7.2003e-5, result.getValue(), 1e-9);
+        assertEquals(7.194e-5, result.getLowerLimit(), 1e-8);
+        assertEquals(7.200e-5, result.getUpperLimit(), 1e-8);
     }
 
     @Test
@@ -339,9 +340,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3904e-7, result.getValue(), 1e-11);
-        Assertions.assertEquals(5.3902e-7, result.getLowerLimit(), 1e-11);
-        Assertions.assertEquals(5.3904e-7, result.getUpperLimit(), 1e-11);
+        assertEquals(5.3904e-7, result.getValue(), 1e-11);
+        assertEquals(5.3902e-7, result.getLowerLimit(), 1e-11);
+        assertEquals(5.3904e-7, result.getUpperLimit(), 1e-11);
     }
 
     @Test
@@ -358,9 +359,9 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.2796e-20, result.getValue(), 1e-24);
-        Assertions.assertEquals(2.2517e-20, result.getLowerLimit(), 1e-24);
-        Assertions.assertEquals(2.2797e-20, result.getUpperLimit(), 1e-24);
+        assertEquals(2.2796e-20, result.getValue(), 1e-24);
+        assertEquals(2.2517e-20, result.getLowerLimit(), 1e-24);
+        assertEquals(2.2797e-20, result.getUpperLimit(), 1e-24);
     }
 
     @Test
@@ -377,7 +378,7 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.0038e-1, result.getValue(), 1e-5);
+        assertEquals(1.0038e-1, result.getValue(), 1e-5);
     }
 
     /**
@@ -404,7 +405,7 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(4.4507e-2, result.getValue(), 1e-6);
+        assertEquals(4.4507e-2, result.getValue(), 1e-6);
     }
 
     @Test
@@ -423,7 +424,7 @@ class Laas2015Test {
         final ProbabilityOfCollision result = customMethod.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.1e-3, result.getValue(), 1e-4);
+        assertEquals(6.1e-3, result.getValue(), 1e-4);
     }
 
     @Test
@@ -448,7 +449,7 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(cdm, primaryRadius, secondaryRadius);
 
         // THEN
-        Assertions.assertEquals(0.0034965176443840897, result.getValue(), 1e-18);
+        assertEquals(0.0034965176443840897, result.getValue(), 1e-18);
     }
 
     @Test
@@ -465,9 +466,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.742e-3, result.getValue().getReal(), 1e-6);
-        Assertions.assertEquals(9.704e-3, result.getLowerLimit().getReal(), 1e-6);
-        Assertions.assertEquals(9.742e-3, result.getUpperLimit().getReal(), 1e-6);
+        assertEquals(9.742e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.704e-3, result.getLowerLimit().getReal(), 1e-6);
+        assertEquals(9.742e-3, result.getUpperLimit().getReal(), 1e-6);
     }
 
     @Test
@@ -484,9 +485,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.181e-3, result.getValue().getReal(), 1e-6);
-        Assertions.assertEquals(9.139e-3, result.getLowerLimit().getReal(), 1e-6);
-        Assertions.assertEquals(9.182e-3, result.getUpperLimit().getReal(), 1e-6);
+        assertEquals(9.181e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.139e-3, result.getLowerLimit().getReal(), 1e-6);
+        assertEquals(9.182e-3, result.getUpperLimit().getReal(), 1e-6);
     }
 
     @Test
@@ -503,9 +504,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.571e-3, result.getValue().getReal(), 1e-6);
-        Assertions.assertEquals(6.542e-3, result.getLowerLimit().getReal(), 1e-6);
-        Assertions.assertEquals(6.572e-3, result.getUpperLimit().getReal(), 1e-6);
+        assertEquals(6.571e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.542e-3, result.getLowerLimit().getReal(), 1e-6);
+        assertEquals(6.572e-3, result.getUpperLimit().getReal(), 1e-6);
     }
 
     @Test
@@ -522,9 +523,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.125e-3, result.getValue().getReal(), 1e-6);
-        Assertions.assertEquals(6.09e-3, result.getLowerLimit().getReal(), 1e-5);
-        Assertions.assertEquals(6.13e-3, result.getUpperLimit().getReal(), 1e-5);
+        assertEquals(6.125e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.09e-3, result.getLowerLimit().getReal(), 1e-5);
+        assertEquals(6.13e-3, result.getUpperLimit().getReal(), 1e-5);
     }
 
     @Test
@@ -541,9 +542,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
-        Assertions.assertEquals(1.576561e-5, result.getLowerLimit().getReal(), 1e-9);
-        Assertions.assertEquals(1.576576e-5, result.getUpperLimit().getReal(), 1e-9);
+        assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.576561e-5, result.getLowerLimit().getReal(), 1e-9);
+        assertEquals(1.576576e-5, result.getUpperLimit().getReal(), 1e-9);
     }
 
     @Test
@@ -560,9 +561,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
-        Assertions.assertEquals(1.010860e-5, result.getLowerLimit().getReal(), 1e-11);
-        Assertions.assertEquals(1.010883e-5, result.getUpperLimit().getReal(), 1e-11);
+        assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.010860e-5, result.getLowerLimit().getReal(), 1e-11);
+        assertEquals(1.010883e-5, result.getUpperLimit().getReal(), 1e-11);
     }
 
     @Test
@@ -579,9 +580,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
-        Assertions.assertEquals(6.44304e-8, result.getLowerLimit().getReal(), 1e-13);
-        Assertions.assertEquals(6.44321e-8, result.getUpperLimit().getReal(), 1e-13);
+        assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
+        assertEquals(6.44304e-8, result.getLowerLimit().getReal(), 1e-13);
+        assertEquals(6.44321e-8, result.getUpperLimit().getReal(), 1e-13);
     }
 
     @Test
@@ -598,9 +599,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.219e-27, result.getValue().getReal(), 1e-30);
-        Assertions.assertEquals(3.2145e-27, result.getLowerLimit().getReal(), 1e-31);
-        Assertions.assertEquals(3.2186e-27, result.getUpperLimit().getReal(), 1e-31);
+        assertEquals(3.219e-27, result.getValue().getReal(), 1e-30);
+        assertEquals(3.2145e-27, result.getLowerLimit().getReal(), 1e-31);
+        assertEquals(3.2186e-27, result.getUpperLimit().getReal(), 1e-31);
     }
 
     @Test
@@ -617,9 +618,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
-        Assertions.assertEquals(3.03258e-6, result.getLowerLimit().getReal(), 1e-11);
-        Assertions.assertEquals(3.03261e-6, result.getUpperLimit().getReal(), 1e-11);
+        assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
+        assertEquals(3.03258e-6, result.getLowerLimit().getReal(), 1e-11);
+        assertEquals(3.03261e-6, result.getUpperLimit().getReal(), 1e-11);
     }
 
     @Test
@@ -636,9 +637,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.656e-28, result.getValue().getReal(), 1e-31);
-        Assertions.assertEquals(9.643e-28, result.getLowerLimit().getReal(), 1e-31);
-        Assertions.assertEquals(9.656e-28, result.getUpperLimit().getReal(), 1e-31);
+        assertEquals(9.656e-28, result.getValue().getReal(), 1e-31);
+        assertEquals(9.643e-28, result.getLowerLimit().getReal(), 1e-31);
+        assertEquals(9.656e-28, result.getUpperLimit().getReal(), 1e-31);
     }
 
     @Test
@@ -655,9 +656,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
-        Assertions.assertEquals(1.03831e-4, result.getLowerLimit().getReal(), 1e-9);
-        Assertions.assertEquals(1.03871e-4, result.getUpperLimit().getReal(), 1e-9);
+        assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
+        assertEquals(1.03831e-4, result.getLowerLimit().getReal(), 1e-9);
+        assertEquals(1.03871e-4, result.getUpperLimit().getReal(), 1e-9);
     }
 
     @Test
@@ -674,9 +675,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.564e-9, result.getValue().getReal(), 1e-12);
-        Assertions.assertEquals(1.552e-9, result.getLowerLimit().getReal(), 1e-12);
-        Assertions.assertEquals(1.565e-9, result.getUpperLimit().getReal(), 1e-12);
+        assertEquals(1.564e-9, result.getValue().getReal(), 1e-12);
+        assertEquals(1.552e-9, result.getLowerLimit().getReal(), 1e-12);
+        assertEquals(1.565e-9, result.getUpperLimit().getReal(), 1e-12);
     }
 
     @Test
@@ -693,9 +694,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.9002e-3, result.getValue().getReal(), 1e-7);
-        Assertions.assertEquals(1.878e-3, result.getLowerLimit().getReal(), 1e-6);
-        Assertions.assertEquals(1.900e-3, result.getUpperLimit().getReal(), 1e-6);
+        assertEquals(1.9002e-3, result.getValue().getReal(), 1e-7);
+        assertEquals(1.878e-3, result.getLowerLimit().getReal(), 1e-6);
+        assertEquals(1.900e-3, result.getUpperLimit().getReal(), 1e-6);
     }
 
     @Test
@@ -712,9 +713,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0553e-11, result.getValue().getReal(), 1e-15);
-        Assertions.assertEquals(2.0101e-11, result.getLowerLimit().getReal(), 1e-15);
-        Assertions.assertEquals(2.0557e-11, result.getUpperLimit().getReal(), 1e-15);
+        assertEquals(2.0553e-11, result.getValue().getReal(), 1e-15);
+        assertEquals(2.0101e-11, result.getLowerLimit().getReal(), 1e-15);
+        assertEquals(2.0557e-11, result.getUpperLimit().getReal(), 1e-15);
     }
 
     @Test
@@ -731,9 +732,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2003e-5, result.getValue().getReal(), 1e-9);
-        Assertions.assertEquals(7.194e-5, result.getLowerLimit().getReal(), 1e-8);
-        Assertions.assertEquals(7.200e-5, result.getUpperLimit().getReal(), 1e-8);
+        assertEquals(7.2003e-5, result.getValue().getReal(), 1e-9);
+        assertEquals(7.194e-5, result.getLowerLimit().getReal(), 1e-8);
+        assertEquals(7.200e-5, result.getUpperLimit().getReal(), 1e-8);
     }
 
     @Test
@@ -750,9 +751,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3904e-7, result.getValue().getReal(), 1e-11);
-        Assertions.assertEquals(5.3902e-7, result.getLowerLimit().getReal(), 1e-11);
-        Assertions.assertEquals(5.3904e-7, result.getUpperLimit().getReal(), 1e-11);
+        assertEquals(5.3904e-7, result.getValue().getReal(), 1e-11);
+        assertEquals(5.3902e-7, result.getLowerLimit().getReal(), 1e-11);
+        assertEquals(5.3904e-7, result.getUpperLimit().getReal(), 1e-11);
     }
 
     @Test
@@ -769,9 +770,9 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.2796e-20, result.getValue().getReal(), 1e-24);
-        Assertions.assertEquals(2.2517e-20, result.getLowerLimit().getReal(), 1e-24);
-        Assertions.assertEquals(2.2797e-20, result.getUpperLimit().getReal(), 1e-24);
+        assertEquals(2.2796e-20, result.getValue().getReal(), 1e-24);
+        assertEquals(2.2517e-20, result.getLowerLimit().getReal(), 1e-24);
+        assertEquals(2.2797e-20, result.getUpperLimit().getReal(), 1e-24);
     }
 
     @Test
@@ -788,7 +789,7 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.0038e-1, result.getValue().getReal(), 1e-5);
+        assertEquals(1.0038e-1, result.getValue().getReal(), 1e-5);
     }
 
     /**
@@ -815,7 +816,7 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(4.4515e-2, result.getValue().getReal(), 1e-6);
+        assertEquals(4.4515e-2, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -834,7 +835,7 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = customMethod.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.1e-3, result.getValue().getReal(), 1e-4);
+        assertEquals(6.1e-3, result.getValue().getReal(), 1e-4);
     }
 
     @Test
@@ -859,7 +860,7 @@ class Laas2015Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(cdm, primaryRadius, secondaryRadius);
 
         // THEN
-        Assertions.assertEquals(0.0034965176443840893, result.getValue().getReal(), 1e-19);
+        assertEquals(0.0034965176443840893, result.getValue().getReal(), 1e-19);
     }
 
     @Test
@@ -889,8 +890,8 @@ class Laas2015Test {
                 method.compute(xmNominal, ymNominal, sigmaXNominal, sigmaYNominal, radiusNominal + dRadius).getValue();
 
         // THEN
-        Assertions.assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
-        Assertions.assertEquals(exactResult, taylorResult, 1e-16);
+        assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
+        assertEquals(exactResult, taylorResult, 1e-16);
     }
 
     @Test
@@ -1050,6 +1051,6 @@ class Laas2015Test {
         final ProbabilityOfCollision result = method.compute(cdm, combinedHbr);
 
         // Then
-        Assertions.assertEquals(expected, result.getValue(), tolerance);
+        assertEquals(expected, result.getValue(), tolerance);
     }
 }

@@ -16,11 +16,16 @@
  */
 package org.orekit.propagation.conversion;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -53,7 +58,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
-public class DSSTPropagatorBuilderTest {
+class DSSTPropagatorBuilderTest {
 
     private static final double eps  = 2.0e-10;
 
@@ -69,21 +74,21 @@ public class DSSTPropagatorBuilderTest {
     private DSSTForceModel sun;
 
     @Test
-    public void testIntegrators01() {
+    void testIntegrators01() {
 
         ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
         doTestBuildPropagator(abBuilder);
     }
 
     @Test
-    public void testIntegrators02() {
+    void testIntegrators02() {
 
         ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
         doTestBuildPropagator(amBuilder);
     }
 
     @Test
-    public void testIntegrators03() {
+    void testIntegrators03() {
 
         final double stepSize = 100.;
 
@@ -92,7 +97,7 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators04() {
+    void testIntegrators04() {
 
         final double stepSize = 100.;
 
@@ -101,14 +106,14 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators05() {
+    void testIntegrators05() {
 
         ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         doTestBuildPropagator(dp54Builder);
     }
 
     @Test
-    public void testIntegrators06() {
+    void testIntegrators06() {
 
         final double stepSize = 100.;
 
@@ -117,7 +122,7 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators07() {
+    void testIntegrators07() {
 
         final double stepSize = 100.;
 
@@ -126,21 +131,21 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators08() {
+    void testIntegrators08() {
 
         ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
         doTestBuildPropagator(gbsBuilder);
     }
 
     @Test
-    public void testIntegrators09() {
+    void testIntegrators09() {
 
         ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
         doTestBuildPropagator(hh54Builder);
     }
 
     @Test
-    public void testIntegrators10() {
+    void testIntegrators10() {
 
         final double stepSize = 100.;
 
@@ -149,7 +154,7 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    public void testIntegrators11() {
+    void testIntegrators11() {
 
         final double stepSize = 100.;
 
@@ -184,15 +189,15 @@ public class DSSTPropagatorBuilderTest {
                                                     final DSSTPropagatorBuilder actual) {
         assertPropagatorBuilderIsACopy(expected, actual);
 
-        Assertions.assertEquals(expected.getIntegratorBuilder().getClass(), actual.getIntegratorBuilder().getClass());
-        Assertions.assertEquals(expected.getPropagationType(), actual.getPropagationType());
-        Assertions.assertEquals(expected.getStateType(), actual.getStateType());
-        Assertions.assertEquals(expected.getMass(), actual.getMass());
+        assertEquals(expected.getIntegratorBuilder().getClass(), actual.getIntegratorBuilder().getClass());
+        assertEquals(expected.getPropagationType(), actual.getPropagationType());
+        assertEquals(expected.getStateType(), actual.getStateType());
+        assertEquals(expected.getMass(), actual.getMass());
         final List<DSSTForceModel> expectedForceModelList = expected.getAllForceModels();
         final List<DSSTForceModel> actualForceModelList   = actual.getAllForceModels();
-        Assertions.assertEquals(expectedForceModelList.size(), actualForceModelList.size());
+        assertEquals(expectedForceModelList.size(), actualForceModelList.size());
         for (int i = 0; i < expectedForceModelList.size(); i++) {
-            Assertions.assertEquals(expectedForceModelList.get(i).getClass(), actualForceModelList.get(i).getClass());
+            assertEquals(expectedForceModelList.get(i).getClass(), actualForceModelList.get(i).getClass());
         }
 
     }
@@ -218,17 +223,17 @@ public class DSSTPropagatorBuilderTest {
         final Orbit orbitWithBuilder = prop.propagate(initDate.shiftedBy(600)).getOrbit();
 
         // Verify
-        Assertions.assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
-        Assertions.assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getEquinoctialEy(), orbitWithBuilder.getEquinoctialEy(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getHx(),            orbitWithBuilder.getHx(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getHy(),            orbitWithBuilder.getHy(), eps);
-        Assertions.assertEquals(orbitWithPropagator.getLM(),            orbitWithBuilder.getLM(), 8.0e-10);
+        assertEquals(orbitWithPropagator.getA(),             orbitWithBuilder.getA(), 1.e-1);
+        assertEquals(orbitWithPropagator.getEquinoctialEx(), orbitWithBuilder.getEquinoctialEx(), eps);
+        assertEquals(orbitWithPropagator.getEquinoctialEy(), orbitWithBuilder.getEquinoctialEy(), eps);
+        assertEquals(orbitWithPropagator.getHx(),            orbitWithBuilder.getHx(), eps);
+        assertEquals(orbitWithPropagator.getHy(),            orbitWithBuilder.getHy(), eps);
+        assertEquals(orbitWithPropagator.getLM(),            orbitWithBuilder.getLM(), 8.0e-10);
 
     }
 
     @Test
-    public void testIssue598() {
+    void testIssue598() {
         // Integrator builder
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
@@ -239,18 +244,18 @@ public class DSSTPropagatorBuilderTest {
                                                                   PropagationType.MEAN);
         builder.addForceModel(moon);
         // Verify that there is no Newtonian attraction force model
-        Assertions.assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
+        assertFalse(hasNewtonianAttraction(builder.getAllForceModels()));
         // Build the DSST propagator (not used here)
         builder.buildPropagator();
         // Verify the addition of the Newtonian attraction force model
-        Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
         // Add a new force model to ensure the Newtonian attraction stay at the last position
         builder.addForceModel(sun);
-        Assertions.assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
+        assertTrue(hasNewtonianAttraction(builder.getAllForceModels()));
     }
 
     @Test
-    public void testAdditionalEquations() {
+    void testAdditionalEquations() {
         // Integrator builder
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
@@ -298,14 +303,14 @@ public class DSSTPropagatorBuilderTest {
         try {
             // Build the propagator
             builder.buildPropagator();
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+            assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testDeselectOrbitals() {
+    void testDeselectOrbitals() {
         // Integrator builder
         final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
         // Propagator builder
@@ -315,16 +320,16 @@ public class DSSTPropagatorBuilderTest {
                                                                   PropagationType.MEAN,
                                                                   PropagationType.MEAN);
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assertions.assertTrue(driver.isSelected());
+            assertTrue(driver.isSelected());
         }
         builder.deselectDynamicParameters();
         for (ParameterDriver driver : builder.getOrbitalParametersDrivers().getDrivers()) {
-            Assertions.assertFalse(driver.isSelected());
+            assertFalse(driver.isSelected());
         }
     }
 
     @BeforeEach
-    public void setUp() throws IOException, ParseException {
+    void setUp() throws IOException, ParseException {
 
         Utils.setDataRoot("regular-data:potential");
 

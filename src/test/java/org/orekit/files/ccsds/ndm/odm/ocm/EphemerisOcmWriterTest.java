@@ -31,7 +31,6 @@ import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -60,27 +59,32 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class EphemerisOcmWriterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
+class EphemerisOcmWriterTest {
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         Utils.setDataRoot("regular-data");
     }
 
     @Test
-    public void testOCMWriter() {
-        Assertions.assertNotNull(new WriterBuilder().buildOcmWriter());
+    void testOCMWriter() {
+        assertNotNull(new WriterBuilder().buildOcmWriter());
     }
 
     @Test
-    public void testWriteOCM3Kvn() throws IOException {
+    void testWriteOCM3Kvn() throws IOException {
         final CharArrayWriter caw = new CharArrayWriter();
         final Generator generator = new KvnGenerator(caw, 0, "", Constants.JULIAN_DAY, 60);
         doTestWriteOCM3(caw, generator);
     }
 
     @Test
-    public void testWriteOCM3Xml() throws IOException {
+    void testWriteOCM3Xml() throws IOException {
         final CharArrayWriter caw = new CharArrayWriter();
         final Generator generator = new XmlGenerator(caw, 2, "", Constants.JULIAN_DAY, true, XmlGenerator.NDM_XML_V3_SCHEMA_LOCATION);
         doTestWriteOCM3(caw, generator);
@@ -111,7 +115,7 @@ public class EphemerisOcmWriterTest {
     }
 
     @Test
-    public void testUnfoundSpaceId() throws IOException {
+    void testUnfoundSpaceId() throws IOException {
         final String ex = "/ccsds/odm/ocm/OCMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OcmParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOcmParser();
@@ -123,16 +127,16 @@ public class EphemerisOcmWriterTest {
                                                            Constants.JULIAN_DAY, 0);
         try {
             writer.write(new CharArrayWriter(), ocm);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
-            Assertions.assertEquals(dummyMetadata().getInternationalDesignator(), oiae.getParts()[0]);
+            assertEquals(OrekitMessages.VALUE_NOT_FOUND, oiae.getSpecifier());
+            assertEquals(dummyMetadata().getInternationalDesignator(), oiae.getParts()[0]);
         }
 
     }
 
     @Test
-    public void testNullFile() throws IOException {
+    void testNullFile() throws IOException {
         final String ex = "/ccsds/odm/ocm/OCMExample1.txt";
         final DataSource source =  new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final OcmParser parser  = new ParserBuilder().withMu(CelestialBodyFactory.getEarth().getGM()).buildOcmParser();
@@ -145,31 +149,31 @@ public class EphemerisOcmWriterTest {
                                                            Constants.JULIAN_DAY, 0);
         try {
             writer.write((BufferedWriter) null, ocm);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitIllegalArgumentException oiae) {
-            Assertions.assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
-            Assertions.assertEquals("writer", oiae.getParts()[0]);
+            assertEquals(OrekitMessages.NULL_ARGUMENT, oiae.getSpecifier());
+            assertEquals("writer", oiae.getParts()[0]);
         }
     }
 
     @Test
-    public void testNullEphemeris() throws IOException {
+    void testNullEphemeris() throws IOException {
         EphemerisOcmWriter writer = new EphemerisOcmWriter(new WriterBuilder().buildOcmWriter(),
                                                            null, dummyMetadata(), dummyTrajectoryMetadata(),
                                                            FileFormat.KVN, "nullEphemeris",
                                                            Constants.JULIAN_DAY, 60);
         CharArrayWriter caw = new CharArrayWriter();
         writer.write(caw, null);
-        Assertions.assertEquals(0, caw.size());
+        assertEquals(0, caw.size());
     }
 
     @Test
-    public void testGenerateKVN() throws IOException {
+    void testGenerateKVN() throws IOException {
         doTestGenerate(FileFormat.KVN, 45);
     }
 
     @Test
-    public void testGenerateXML() throws IOException {
+    void testGenerateXML() throws IOException {
         doTestGenerate(FileFormat.XML, 55);
     }
 
@@ -203,56 +207,56 @@ public class EphemerisOcmWriterTest {
                 ++count;
             }
         }
-        Assertions.assertEquals(expectedLines, count);
+        assertEquals(expectedLines, count);
 
     }
 
     private static void compareOcmEphemerisBlocks(TrajectoryStateHistory block1, TrajectoryStateHistory block2) {
         compareOcmEphemerisBlocksMetadata(block1.getMetadata(), block2.getMetadata());
-        Assertions.assertEquals(0.0, block1.getStart().durationFrom(block2.getStart()), 1.0e-12);
-        Assertions.assertEquals(0.0, block1.getStop().durationFrom(block2.getStop()), 1.0e-12);
-        Assertions.assertEquals(block1.getMetadata().getInterpolationDegree(), block2.getMetadata().getInterpolationDegree());
-        Assertions.assertEquals(block1.getMetadata().getInterpolationMethod(), block2.getMetadata().getInterpolationMethod());
-        Assertions.assertEquals(block1.getTrajectoryStates().size(), block2.getTrajectoryStates().size());
+        assertEquals(0.0, block1.getStart().durationFrom(block2.getStart()), 1.0e-12);
+        assertEquals(0.0, block1.getStop().durationFrom(block2.getStop()), 1.0e-12);
+        assertEquals(block1.getMetadata().getInterpolationDegree(), block2.getMetadata().getInterpolationDegree());
+        assertEquals(block1.getMetadata().getInterpolationMethod(), block2.getMetadata().getInterpolationMethod());
+        assertEquals(block1.getTrajectoryStates().size(), block2.getTrajectoryStates().size());
         for (int i = 0; i < block1.getTrajectoryStates().size(); i++) {
             TrajectoryState c1 = block1.getTrajectoryStates().get(i);
             TrajectoryState c2 = block2.getTrajectoryStates().get(i);
-            Assertions.assertEquals(0.0, c1.getDate().durationFrom(c2.getDate()), 1.0e-12);
-            Assertions.assertEquals(c1.getType(), c2.getType());
-            Assertions.assertEquals(c1.getElements().length, c2.getElements().length);
+            assertEquals(0.0, c1.getDate().durationFrom(c2.getDate()), 1.0e-12);
+            assertEquals(c1.getType(), c2.getType());
+            assertEquals(c1.getElements().length, c2.getElements().length);
             for (int j = 0; j < c1.getElements().length; ++j) {
-            Assertions.assertTrue(Precision.equals(c1.getElements()[j], c2.getElements()[j], 2));
+            assertTrue(Precision.equals(c1.getElements()[j], c2.getElements()[j], 2));
             }
         }
     }
 
     private static void compareOcmEphemerisBlocksMetadata(TrajectoryStateHistoryMetadata meta1, TrajectoryStateHistoryMetadata meta2) {
-        Assertions.assertEquals(meta1.getTrajID(),                                 meta2.getTrajID());
-        Assertions.assertEquals(meta1.getTrajPrevID(),                             meta2.getTrajPrevID());
-        Assertions.assertEquals(meta1.getTrajNextID(),                             meta2.getTrajNextID());
-        Assertions.assertEquals(meta1.getTrajBasis(),                              meta2.getTrajBasis());
-        Assertions.assertEquals(meta1.getTrajBasisID(),                            meta2.getTrajBasisID());
-        Assertions.assertEquals(meta1.getInterpolationMethod(),                    meta2.getInterpolationMethod());
-        Assertions.assertEquals(meta1.getInterpolationDegree(),                    meta2.getInterpolationDegree());
-        Assertions.assertEquals(meta1.getPropagator(),                             meta2.getPropagator());
-        Assertions.assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
-        Assertions.assertEquals(meta1.getTrajReferenceFrame().getName(),           meta2.getTrajReferenceFrame().getName());
-        Assertions.assertEquals(meta1.getTrajFrameEpoch(),                         meta2.getTrajFrameEpoch());
-        Assertions.assertEquals(meta1.getUseableStartTime(),                       meta2.getUseableStartTime());
-        Assertions.assertEquals(meta1.getUseableStopTime(),                        meta2.getUseableStopTime());
-        Assertions.assertEquals(meta1.getOrbRevNum(),                              meta2.getOrbRevNum());
-        Assertions.assertEquals(meta1.getOrbRevNumBasis(),                         meta2.getOrbRevNumBasis());
-        Assertions.assertEquals(meta1.getOrbAveraging(),                           meta2.getOrbAveraging());
-        Assertions.assertEquals(meta1.getTrajType(),                               meta2.getTrajType());
-        Assertions.assertEquals(meta1.getTrajUnits().size(),                       meta2.getTrajUnits().size());
+        assertEquals(meta1.getTrajID(),                                 meta2.getTrajID());
+        assertEquals(meta1.getTrajPrevID(),                             meta2.getTrajPrevID());
+        assertEquals(meta1.getTrajNextID(),                             meta2.getTrajNextID());
+        assertEquals(meta1.getTrajBasis(),                              meta2.getTrajBasis());
+        assertEquals(meta1.getTrajBasisID(),                            meta2.getTrajBasisID());
+        assertEquals(meta1.getInterpolationMethod(),                    meta2.getInterpolationMethod());
+        assertEquals(meta1.getInterpolationDegree(),                    meta2.getInterpolationDegree());
+        assertEquals(meta1.getPropagator(),                             meta2.getPropagator());
+        assertEquals(meta1.getCenter().getName(),                       meta2.getCenter().getName());
+        assertEquals(meta1.getTrajReferenceFrame().getName(),           meta2.getTrajReferenceFrame().getName());
+        assertEquals(meta1.getTrajFrameEpoch(),                         meta2.getTrajFrameEpoch());
+        assertEquals(meta1.getUseableStartTime(),                       meta2.getUseableStartTime());
+        assertEquals(meta1.getUseableStopTime(),                        meta2.getUseableStopTime());
+        assertEquals(meta1.getOrbRevNum(),                              meta2.getOrbRevNum());
+        assertEquals(meta1.getOrbRevNumBasis(),                         meta2.getOrbRevNumBasis());
+        assertEquals(meta1.getOrbAveraging(),                           meta2.getOrbAveraging());
+        assertEquals(meta1.getTrajType(),                               meta2.getTrajType());
+        assertEquals(meta1.getTrajUnits().size(),                       meta2.getTrajUnits().size());
         for (int i = 0; i < meta1.getTrajUnits().size(); ++i) {
-            Assertions.assertEquals(meta1.getTrajUnits().get(i), meta2.getTrajUnits().get(i));
+            assertEquals(meta1.getTrajUnits().get(i), meta2.getTrajUnits().get(i));
         }
     }
 
     static void compareOcms(Ocm file1, Ocm file2) {
-        Assertions.assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
-        Assertions.assertEquals(file1.getSegments().get(0).getData().getTrajectoryBlocks().size(),
+        assertEquals(file1.getHeader().getOriginator(), file2.getHeader().getOriginator());
+        assertEquals(file1.getSegments().get(0).getData().getTrajectoryBlocks().size(),
                                 file2.getSegments().get(0).getData().getTrajectoryBlocks().size());
         for (int i = 0; i < file1.getSegments().get(0).getData().getTrajectoryBlocks().size(); i++) {
             compareOcmEphemerisBlocks(file1.getSegments().get(0).getData().getTrajectoryBlocks().get(i),

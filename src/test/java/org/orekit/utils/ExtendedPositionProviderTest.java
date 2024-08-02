@@ -22,12 +22,13 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ExtendedPositionProviderTest {
 
@@ -41,9 +42,9 @@ class ExtendedPositionProviderTest {
         final TimeStampedPVCoordinates pvCoordinates = positionProvider.getPVCoordinates(date, frame);
         // THEN
         final Vector3D expectedPosition = positionProvider.getPosition(date, frame);
-        Assertions.assertEquals(expectedPosition, pvCoordinates.getPosition());
-        Assertions.assertEquals(1., pvCoordinates.getVelocity().getX());
-        Assertions.assertEquals(0., pvCoordinates.getAcceleration().getNorm());
+        assertEquals(expectedPosition, pvCoordinates.getPosition());
+        assertEquals(1., pvCoordinates.getVelocity().getX());
+        assertEquals(0., pvCoordinates.getAcceleration().getNorm());
     }
 
     @Test
@@ -56,9 +57,9 @@ class ExtendedPositionProviderTest {
         final TimeStampedFieldPVCoordinates<Complex> pvCoordinates = positionProvider.getPVCoordinates(date, frame);
         // THEN
         final FieldVector3D<Complex> expectedPosition = positionProvider.getPosition(date, frame);
-        Assertions.assertEquals(expectedPosition, pvCoordinates.getPosition());
-        Assertions.assertEquals(1., pvCoordinates.getVelocity().getX().getReal());
-        Assertions.assertEquals(0., pvCoordinates.getAcceleration().getNorm().getReal());
+        assertEquals(expectedPosition, pvCoordinates.getPosition());
+        assertEquals(1., pvCoordinates.getVelocity().getX().getReal());
+        assertEquals(0., pvCoordinates.getAcceleration().getNorm().getReal());
     }
 
     @Test
@@ -73,12 +74,12 @@ class ExtendedPositionProviderTest {
         // THEN
         final FieldVector3D<Complex> expectedPosition = positionProvider.getPosition(date, frame);
         final FieldVector3D<Complex> actualPosition = fieldPVCoordinatesProvider.getPosition(date, frame);
-        Assertions.assertEquals(expectedPosition, actualPosition);
+        assertEquals(expectedPosition, actualPosition);
         final FieldPVCoordinates<Complex> expectedPV = positionProvider.getPVCoordinates(date, frame);
         final FieldPVCoordinates<Complex> actualPV = fieldPVCoordinatesProvider.getPVCoordinates(date, frame);
-        Assertions.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
-        Assertions.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
-        Assertions.assertEquals(expectedPV.getAcceleration(), actualPV.getAcceleration());
+        assertEquals(expectedPV.getPosition(), actualPV.getPosition());
+        assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+        assertEquals(expectedPV.getAcceleration(), actualPV.getAcceleration());
     }
 
     private static class TestExtendedPositionProvider implements ExtendedPositionProvider {

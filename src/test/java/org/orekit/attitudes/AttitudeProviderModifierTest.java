@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
@@ -30,6 +29,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class AttitudeProviderModifierTest {
 
@@ -46,11 +47,11 @@ class AttitudeProviderModifierTest {
         final AttitudeProviderModifier frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
         final Attitude attitude = frozenAttitudeProvider.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame);
         // THEN
-        Assertions.assertEquals(attitudeProvider, frozenAttitudeProvider.getUnderlyingAttitudeProvider());
+        assertEquals(attitudeProvider, frozenAttitudeProvider.getUnderlyingAttitudeProvider());
         final Rotation actualRotation = attitude.getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
-        Assertions.assertEquals(Vector3D.ZERO, attitude.getRotationAcceleration());
-        Assertions.assertEquals(Vector3D.ZERO, attitude.getSpin());
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(Vector3D.ZERO, attitude.getRotationAcceleration());
+        assertEquals(Vector3D.ZERO, attitude.getSpin());
     }
 
     @SuppressWarnings("unchecked")
@@ -71,9 +72,9 @@ class AttitudeProviderModifierTest {
                 mockedFrame);
         // THEN
         final Rotation actualRotation = attitude.getRotation().toRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
-        Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getRotationAcceleration());
-        Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getSpin());
+        assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        assertEquals(FieldVector3D.getZero(field), attitude.getRotationAcceleration());
+        assertEquals(FieldVector3D.getZero(field), attitude.getSpin());
     }
 
 }

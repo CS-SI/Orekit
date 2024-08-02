@@ -26,7 +26,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -46,12 +45,15 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class GLONASSNumericalPropagatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class GLONASSNumericalPropagatorTest {
 
     private static GLONASSEphemeris ephemeris;
 
     @BeforeAll
-    public static void setUpBeforeClass() {
+    static void setUpBeforeClass() {
         Utils.setDataRoot("regular-data");
         // Reference values for validation are given into Glonass Interface Control Document v1.0 2016
         ephemeris = new GLONASSEphemeris(5, 251, 11700,
@@ -67,7 +69,7 @@ public class GLONASSNumericalPropagatorTest {
     }
 
     @Test
-    public void testPerfectValues() {
+    void testPerfectValues() {
 
         // 4th order Runge-Kutta
         final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(10.);
@@ -86,11 +88,11 @@ public class GLONASSNumericalPropagatorTest {
 
         // Initial verifications
         final GLONASSOrbitalElements poe = propagator.getGLONASSOrbitalElements();
-        Assertions.assertEquals(0.0, poe.getXDotDot(), Precision.SAFE_MIN);
-        Assertions.assertEquals(0.0, poe.getYDotDot(), Precision.SAFE_MIN);
-        Assertions.assertEquals(0.0, poe.getZDotDot(), Precision.SAFE_MIN);
-        Assertions.assertEquals(5,   poe.getN4());
-        Assertions.assertEquals(251, poe.getNa());
+        assertEquals(0.0, poe.getXDotDot(), Precision.SAFE_MIN);
+        assertEquals(0.0, poe.getYDotDot(), Precision.SAFE_MIN);
+        assertEquals(0.0, poe.getZDotDot(), Precision.SAFE_MIN);
+        assertEquals(5,   poe.getN4());
+        assertEquals(251, poe.getNa());
 
         // Propagation
         final SpacecraftState finalState = propagator.propagate(target);
@@ -104,12 +106,12 @@ public class GLONASSNumericalPropagatorTest {
         final Vector3D computedPosition = pvFinal.getPosition();
         final Vector3D computedVelocity = pvFinal.getVelocity();
 
-        Assertions.assertEquals(0.0, computedPosition.distance(expectedPosition), 1.1e-3);
-        Assertions.assertEquals(0.0, computedVelocity.distance(expectedVelocity), 3.3e-6);
+        assertEquals(0.0, computedPosition.distance(expectedPosition), 1.1e-3);
+        assertEquals(0.0, computedVelocity.distance(expectedVelocity), 3.3e-6);
     }
 
     @Test
-    public void testFromITRF2008ToPZ90() {
+    void testFromITRF2008ToPZ90() {
         // Reference for the test
         // "PARAMETRY ZEMLI 1990" (PZ-90.11) Reference Document
         //  MILITARY TOPOGRAPHIC DEPARTMENT OF THE GENERAL STAFF OF ARMED FORCES OF THE RUSSIAN FEDERATION, Moscow, 2014"
@@ -126,13 +128,13 @@ public class GLONASSNumericalPropagatorTest {
         final Vector3D comPZ90 = itrf2008.getStaticTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 
         // Check
-        Assertions.assertEquals(refPZ90.getX(), comPZ90.getX(), 1.0e-4);
-        Assertions.assertEquals(refPZ90.getY(), comPZ90.getY(), 1.0e-4);
-        Assertions.assertEquals(refPZ90.getZ(), comPZ90.getZ(), 1.0e-4);
+        assertEquals(refPZ90.getX(), comPZ90.getX(), 1.0e-4);
+        assertEquals(refPZ90.getY(), comPZ90.getY(), 1.0e-4);
+        assertEquals(refPZ90.getZ(), comPZ90.getZ(), 1.0e-4);
     }
 
     @Test
-    public void testFromITRF2008ToPZ90Field() {
+    void testFromITRF2008ToPZ90Field() {
         doTestFromITRF2008ToPZ90Field(Binary64Field.getInstance());
     }
 
@@ -155,13 +157,13 @@ public class GLONASSNumericalPropagatorTest {
         final FieldVector3D<T> comPZ90 = itrf2008.getStaticTransformTo(pz90, new AbsoluteDate(2010, 1, 1, 12, 0, 0, TimeScalesFactory.getTT())).transformPosition(itrf2008P);
 
         // Check
-        Assertions.assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
-        Assertions.assertEquals(refPZ90.getY().getReal(), comPZ90.getY().getReal(), 1.0e-4);
-        Assertions.assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
+        assertEquals(refPZ90.getX().getReal(), comPZ90.getX().getReal(), 1.0e-4);
+        assertEquals(refPZ90.getY().getReal(), comPZ90.getY().getReal(), 1.0e-4);
+        assertEquals(refPZ90.getZ().getReal(), comPZ90.getZ().getReal(), 1.0e-4);
     }
 
     @Test
-    public void testPosition() {
+    void testPosition() {
         // Frames
         final Frame pz90 = FramesFactory.getPZ9011(IERSConventions.IERS_2010, true);
         final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
@@ -189,18 +191,18 @@ public class GLONASSNumericalPropagatorTest {
         // Expected position (reference from IGS file igv20692_06.sp3)
         final Vector3D expectedPos = new Vector3D(-10742801.600, -15247162.619, -17347541.633);
         // Verify
-        Assertions.assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.8);
+        assertEquals(0., Vector3D.distance(expectedPos, computedPos), 2.8);
     }
 
     @Test
-    public void testIssue544() {
+    void testIssue544() {
         try {
             Method eMeSinEM = GLONASSNumericalPropagator.class.getDeclaredMethod("eMeSinE",
                                                                                  Double.TYPE, Double.TYPE);
             eMeSinEM.setAccessible(true);
             final double value = (double) eMeSinEM.invoke(null, Double.NaN, Double.NaN);
             // Verify that an infinite loop did not occur
-            Assertions.assertTrue(Double.isNaN(value));
+            assertTrue(Double.isNaN(value));
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (SecurityException e) {
@@ -215,9 +217,9 @@ public class GLONASSNumericalPropagatorTest {
     }
 
     @Test
-    public void testIssue1032() {
+    void testIssue1032() {
         final GLONASSNumericalPropagator propagator = new GLONASSNumericalPropagatorBuilder(new ClassicalRungeKuttaIntegrator(10.), ephemeris, false).build();
-        Assertions.assertEquals(PropagationType.OSCULATING, propagator.getPropagationType());
+        assertEquals(PropagationType.OSCULATING, propagator.getPropagationType());
     }
 
 }

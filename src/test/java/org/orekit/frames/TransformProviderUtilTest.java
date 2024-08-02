@@ -27,7 +27,6 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.time.AbsoluteDate;
@@ -35,7 +34,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
-public class TransformProviderUtilTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class TransformProviderUtilTest {
 
     @Test
     void testGetCombinedProviderGetKinematicTransform() {
@@ -53,9 +54,9 @@ public class TransformProviderUtilTest {
         final KinematicTransform actualTransform = combinedProvider.getKinematicTransform(date);
         // THEN
         final KinematicTransform expectedTransform = KinematicTransform.getIdentity();
-        Assertions.assertEquals(expectedTransform.getDate(), actualTransform.getDate());
-        Assertions.assertEquals(expectedTransform.getTranslation(), actualTransform.getTranslation());
-        Assertions.assertEquals(expectedTransform.getVelocity(), actualTransform.getVelocity());
+        assertEquals(expectedTransform.getDate(), actualTransform.getDate());
+        assertEquals(expectedTransform.getTranslation(), actualTransform.getTranslation());
+        assertEquals(expectedTransform.getVelocity(), actualTransform.getVelocity());
     }
 
     @Test
@@ -75,10 +76,10 @@ public class TransformProviderUtilTest {
         final FieldKinematicTransform<Complex> actualTransform = combinedProvider.getKinematicTransform(date);
         // THEN
         final FieldKinematicTransform<Complex> expectedTransform = FieldKinematicTransform.getIdentity(field);
-        Assertions.assertEquals(expectedTransform.getDate(), actualTransform.getDate());
-        Assertions.assertEquals(expectedTransform.getTranslation().toVector3D(),
+        assertEquals(expectedTransform.getDate(), actualTransform.getDate());
+        assertEquals(expectedTransform.getTranslation().toVector3D(),
                 actualTransform.getTranslation().toVector3D());
-        Assertions.assertEquals(expectedTransform.getVelocity().toVector3D(),
+        assertEquals(expectedTransform.getVelocity().toVector3D(),
                 actualTransform.getVelocity().toVector3D());
     }
 
@@ -99,8 +100,8 @@ public class TransformProviderUtilTest {
         final FieldStaticTransform<Complex> actualTransform = combinedProvider.getStaticTransform(date);
         // THEN
         final FieldStaticTransform<Complex> expectedTransform = FieldStaticTransform.getIdentity(field);
-        Assertions.assertEquals(expectedTransform.getDate(), actualTransform.getDate());
-        Assertions.assertEquals(expectedTransform.getTranslation().toVector3D(),
+        assertEquals(expectedTransform.getDate(), actualTransform.getDate());
+        assertEquals(expectedTransform.getTranslation().toVector3D(),
                 actualTransform.getTranslation().toVector3D());
     }
 
@@ -117,7 +118,7 @@ public class TransformProviderUtilTest {
         // WHEN
         final KinematicTransform actualTransform = reversedProvider.getKinematicTransform(date);
         // THEN
-        Assertions.assertEquals(expectedTransform, actualTransform);
+        assertEquals(expectedTransform, actualTransform);
     }
 
     @Test
@@ -135,7 +136,7 @@ public class TransformProviderUtilTest {
         // WHEN
         final FieldKinematicTransform<Complex> actualTransform = reversedProvider.getKinematicTransform(date);
         // THEN
-        Assertions.assertEquals(expectedTransform, actualTransform);
+        assertEquals(expectedTransform, actualTransform);
     }
 
     @Test
@@ -153,18 +154,18 @@ public class TransformProviderUtilTest {
         // WHEN
         final FieldStaticTransform<Complex> actualTransform = reversedProvider.getStaticTransform(date);
         // THEN
-        Assertions.assertEquals(expectedTransform, actualTransform);
+        assertEquals(expectedTransform, actualTransform);
     }
 
     @Test
-    public void testIdentity() {
+    void testIdentity() {
         RandomGenerator random = new Well19937a(0x87c3a5c51fb0235el);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         checkNoTransform(TransformProviderUtils.IDENTITY_PROVIDER.getTransform(date), random);
     }
 
     @Test
-    public void testIdentityField() {
+    void testIdentityField() {
         RandomGenerator random = new Well19937a(0x7086a8e4ad1265b0l);
         final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
@@ -172,7 +173,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testReverse() {
+    void testReverse() {
         RandomGenerator random = new Well19937a(0xba49d4909717ec6cl);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
@@ -184,7 +185,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testReverseField() {
+    void testReverseField() {
         RandomGenerator random = new Well19937a(0xd74443b3079403e7l);
         final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
@@ -197,7 +198,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testCombine() {
+    void testCombine() {
         RandomGenerator random = new Well19937a(0x6e3b2c793680e7e3l);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
@@ -212,7 +213,7 @@ public class TransformProviderUtilTest {
     }
 
     @Test
-    public void testCombineField() {
+    void testCombineField() {
         RandomGenerator random = new Well19937a(0x1f8bf20bfa4b54eal);
         final FieldAbsoluteDate<Binary64> date = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
                                                                           AbsoluteDate.J2000_EPOCH);
@@ -273,10 +274,10 @@ public class TransformProviderUtilTest {
         for (int i = 0; i < 100; ++i) {
             Vector3D a = randomVector(1.0e3, random);
             Vector3D tA = transform.transformVector(a).toVector3D();
-            Assertions.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
+            assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
             Vector3D b = randomVector(1.0e3, random);
             Vector3D tB = transform.transformPosition(b).toVector3D();
-            Assertions.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
+            assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
             PVCoordinates pv  = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv).toPVCoordinates();
             checkVector(pv.getPosition(),     tPv.getPosition(), 1.0e-10);
@@ -289,10 +290,10 @@ public class TransformProviderUtilTest {
         for (int i = 0; i < 100; ++i) {
             Vector3D a = randomVector(1.0e3, random);
             Vector3D tA = transform.transformVector(a);
-            Assertions.assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
+            assertEquals(0, a.subtract(tA).getNorm(), 1.0e-10 * a.getNorm());
             Vector3D b = randomVector(1.0e3, random);
             Vector3D tB = transform.transformPosition(b);
-            Assertions.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
+            assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * b.getNorm());
             PVCoordinates pv  = new PVCoordinates(randomVector(1.0e3, random), randomVector(1.0, random), randomVector(1.0e-3, random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
             checkVector(pv.getPosition(),     tPv.getPosition(), 1.0e-10);
@@ -305,7 +306,7 @@ public class TransformProviderUtilTest {
         double refNorm = reference.getNorm();
         double resNorm = result.getNorm();
         double tolerance = relativeTolerance * (1 + FastMath.max(refNorm, resNorm));
-        Assertions.assertEquals(0, Vector3D.distance(reference, result), tolerance,"ref = " + reference + ", res = " + result + " -> " +
+        assertEquals(0, Vector3D.distance(reference, result), tolerance,"ref = " + reference + ", res = " + result + " -> " +
                 (Vector3D.distance(reference, result) / (1 + FastMath.max(refNorm, resNorm))));
     }
 

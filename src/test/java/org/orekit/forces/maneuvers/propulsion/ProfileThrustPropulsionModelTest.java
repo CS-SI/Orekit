@@ -27,7 +27,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -53,6 +52,8 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeSpanMap;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ProfileThrustPropulsionModelTest {
 
@@ -132,12 +133,12 @@ class ProfileThrustPropulsionModelTest {
                               t3, false);
         final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
-        Assertions.assertEquals("ABM", propulsionModel.getName());
-        Assertions.assertEquals(0.0,     thrust(initialState, t0.shiftedBy(-0.001),              propulsionModel), 1.0e-8);
-        Assertions.assertEquals(0.5 * f, thrust(initialState, t0.shiftedBy(+0.5 * rampDuration), propulsionModel), 1.0e-8);
-        Assertions.assertEquals(f,       thrust(initialState, t1.shiftedBy(+0.001),              propulsionModel), 1.0e-8);
-        Assertions.assertEquals(0.5 * f, thrust(initialState, t3.shiftedBy(-0.5 * rampDuration), propulsionModel), 1.0e-8);
-        Assertions.assertEquals(0.0,     thrust(initialState, t3.shiftedBy(+0.001),              propulsionModel), 1.0e-8);
+        assertEquals("ABM", propulsionModel.getName());
+        assertEquals(0.0,     thrust(initialState, t0.shiftedBy(-0.001),              propulsionModel), 1.0e-8);
+        assertEquals(0.5 * f, thrust(initialState, t0.shiftedBy(+0.5 * rampDuration), propulsionModel), 1.0e-8);
+        assertEquals(f,       thrust(initialState, t1.shiftedBy(+0.001),              propulsionModel), 1.0e-8);
+        assertEquals(0.5 * f, thrust(initialState, t3.shiftedBy(-0.5 * rampDuration), propulsionModel), 1.0e-8);
+        assertEquals(0.0,     thrust(initialState, t3.shiftedBy(+0.001),              propulsionModel), 1.0e-8);
 
         final Maneuver maneuver = new Maneuver(null, new DateBasedManeuverTriggers(fireDate, duration), propulsionModel);
 
@@ -151,8 +152,8 @@ class ProfileThrustPropulsionModelTest {
         propagator.addForceModel(maneuver);
         final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
-        Assertions.assertEquals(expectedM, finalorb.getMass(), 0.001);
-        Assertions.assertEquals(expectedA, finalorb.getA(),    0.002);
+        assertEquals(expectedM, finalorb.getMass(), 0.001);
+        assertEquals(expectedA, finalorb.getA(),    0.002);
 
     }
 
@@ -223,12 +224,12 @@ class ProfileThrustPropulsionModelTest {
                               t3, false);
         final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
-        Assertions.assertEquals("ABM", propulsionModel.getName());
-        Assertions.assertEquals(0.0,     thrust(initialState, fireDate.shiftedBy(-0.001),                        propulsionModel).getReal(), 1.0e-8);
-        Assertions.assertEquals(0.5 * f, thrust(initialState, fireDate.shiftedBy(0.5 * rampDuration),            propulsionModel).getReal(), 1.0e-8);
-        Assertions.assertEquals(f,       thrust(initialState, fireDate.shiftedBy( rampDuration + 0.001),         propulsionModel).getReal(), 1.0e-8);
-        Assertions.assertEquals(0.5 * f, thrust(initialState, fireDate.shiftedBy(duration - 0.5 * rampDuration), propulsionModel).getReal(), 1.0e-8);
-        Assertions.assertEquals(0.0,     thrust(initialState, fireDate.shiftedBy(duration + 0.001),              propulsionModel).getReal(), 1.0e-8);
+        assertEquals("ABM", propulsionModel.getName());
+        assertEquals(0.0,     thrust(initialState, fireDate.shiftedBy(-0.001),                        propulsionModel).getReal(), 1.0e-8);
+        assertEquals(0.5 * f, thrust(initialState, fireDate.shiftedBy(0.5 * rampDuration),            propulsionModel).getReal(), 1.0e-8);
+        assertEquals(f,       thrust(initialState, fireDate.shiftedBy( rampDuration + 0.001),         propulsionModel).getReal(), 1.0e-8);
+        assertEquals(0.5 * f, thrust(initialState, fireDate.shiftedBy(duration - 0.5 * rampDuration), propulsionModel).getReal(), 1.0e-8);
+        assertEquals(0.0,     thrust(initialState, fireDate.shiftedBy(duration + 0.001),              propulsionModel).getReal(), 1.0e-8);
 
         final Maneuver maneuver = new Maneuver(null, new DateBasedManeuverTriggers(fireDate.toAbsoluteDate(), duration), propulsionModel);
 
@@ -244,8 +245,8 @@ class ProfileThrustPropulsionModelTest {
         propagator.addForceModel(maneuver);
         final FieldSpacecraftState<T> finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
-        Assertions.assertEquals(expectedM, finalorb.getMass().getReal(), 0.001);
-        Assertions.assertEquals(expectedA, finalorb.getA().getReal(),    0.002);
+        assertEquals(expectedM, finalorb.getMass().getReal(), 0.001);
+        assertEquals(expectedA, finalorb.getA().getReal(),    0.002);
 
     }
 
@@ -262,7 +263,7 @@ class ProfileThrustPropulsionModelTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

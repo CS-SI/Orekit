@@ -30,7 +30,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -87,13 +86,19 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 
-public class FieldEcksteinHechlerPropagatorTest {
+class FieldEcksteinHechlerPropagatorTest {
 
     private static final AttitudeProvider DEFAULT_LAW = Utils.defaultLaw();
 
@@ -101,7 +106,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     private double ae;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         mu  = 3.9860047e14;
         ae  = 6.378137e6;
@@ -116,7 +121,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void sameDateCartesian() {
+    void sameDateCartesian() {
         doSameDateCartesian(Binary64Field.getInstance());
     }
 
@@ -143,7 +148,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
 
         // positions match perfectly
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             FieldVector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()).getReal(),
                             1.0e-8);
@@ -158,16 +163,16 @@ public class FieldEcksteinHechlerPropagatorTest {
         // This is shown in the testInitializationCorrectness() where a numerical
         // fit is used to check initialization
 
-        Assertions.assertEquals(0.137,
+        assertEquals(0.137,
                             FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-3);
-        Assertions.assertEquals(125.2, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
+        assertEquals(125.2, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
 
     }
 
     @Test
-    public void sameDateKeplerian() {
+    void sameDateKeplerian() {
         doSameDateKeplerian(Binary64Field.getInstance());
     }
 
@@ -193,7 +198,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
 
         // positions match perfectly
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             FieldVector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()).getReal(),
                             3.0e-8);
@@ -207,16 +212,16 @@ public class FieldEcksteinHechlerPropagatorTest {
         // that remains close to a numerical reference throughout the orbit.
         // This is shown in the testInitializationCorrectness() where a numerical
         // fit is used to check initialization
-        Assertions.assertEquals(0.137,
+        assertEquals(0.137,
                             FieldVector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()).getReal(),
                             1.0e-3);
-        Assertions.assertEquals(126.8, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
+        assertEquals(126.8, finalOrbit.getA().getReal() - initialOrbit.getA().getReal(), 0.1);
 
     }
 
     @Test
-    public void almostSphericalBody() {
+    void almostSphericalBody() {
         doAlmostSphericalBody(Binary64Field.getInstance());
     }
 
@@ -263,35 +268,35 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldSpacecraftState<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate);
         FieldSpacecraftState<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate);
 
-        Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), 0.0,
-                     Utils.epsilonTest);
+        assertEquals(0.0, finalOrbitAna.getDate().durationFrom(extrapDate).getReal(),
+                Utils.epsilonTest);
         // comparison of each orbital parameters
-        Assertions.assertEquals(finalOrbitAna.getA().getReal(), finalOrbitKep.getA().getReal(), 10
+        assertEquals(finalOrbitAna.getA().getReal(), finalOrbitKep.getA().getReal(), 10
                      * Utils.epsilonTest * finalOrbitKep.getA().getReal());
-        Assertions.assertEquals(finalOrbitAna.getEquinoctialEx().getReal(), finalOrbitKep.getEquinoctialEx().getReal(), Utils.epsilonE
+        assertEquals(finalOrbitAna.getEquinoctialEx().getReal(), finalOrbitKep.getEquinoctialEx().getReal(), Utils.epsilonE
                      * finalOrbitKep.getE().getReal());
-        Assertions.assertEquals(finalOrbitAna.getEquinoctialEy().getReal(), finalOrbitKep.getEquinoctialEy().getReal(), Utils.epsilonE
+        assertEquals(finalOrbitAna.getEquinoctialEy().getReal(), finalOrbitKep.getEquinoctialEy().getReal(), Utils.epsilonE
                      * finalOrbitKep.getE().getReal());
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx().getReal(), finalOrbitKep.getHx().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHx().getReal(), finalOrbitKep.getHx().getReal()),
                      finalOrbitKep.getHx().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI().getReal()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy().getReal(), finalOrbitKep.getHy().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getHy().getReal(), finalOrbitKep.getHy().getReal()),
                      finalOrbitKep.getHy().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getI().getReal()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv().getReal(), finalOrbitKep.getLv().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLv().getReal(), finalOrbitKep.getLv().getReal()),
                      finalOrbitKep.getLv().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLv().getReal()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE().getReal(), finalOrbitKep.getLE().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLE().getReal(), finalOrbitKep.getLE().getReal()),
                      finalOrbitKep.getLE().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLE().getReal()));
-        Assertions.assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM().getReal(), finalOrbitKep.getLM().getReal()),
+        assertEquals(MathUtils.normalizeAngle(finalOrbitAna.getLM().getReal(), finalOrbitKep.getLM().getReal()),
                      finalOrbitKep.getLM().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbitKep.getLM().getReal()));
 
     }
 
     @Test
-    public void propagatedCartesian() {
+    void propagatedCartesian() {
         doPropagatedCartesian(Binary64Field.getInstance());
     }
 
@@ -323,18 +328,18 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
 
-        Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate).getReal(), 1.0e-9);
+        assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate).getReal(), 1.0e-9);
 
         // computation of M final orbit
         T LM = finalOrbit.getLE().subtract(finalOrbit.getEquinoctialEx().multiply(
         finalOrbit.getLE().sin())).add(finalOrbit.getEquinoctialEy()
         .multiply(finalOrbit.getLE().cos()));
 
-        Assertions.assertEquals(LM.getReal(), finalOrbit.getLM().getReal(), Utils.epsilonAngle
+        assertEquals(LM.getReal(), finalOrbit.getLM().getReal(), Utils.epsilonAngle
                      * FastMath.abs(finalOrbit.getLM().getReal()));
 
         // test of tan ((LE - Lv)/2) :
-        Assertions.assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal()) / 2.),
+        assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal()) / 2.),
                      tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit
                                .getEquinoctialEy()).getReal(), Utils.epsilonAngle);
 
@@ -346,7 +351,7 @@ public class FieldEcksteinHechlerPropagatorTest {
                  finalOrbit.getEquinoctialEy().multiply(finalOrbit.getLE().cos())).add(
                  initialOrbit.getEquinoctialEy().multiply(initialOrbit.getLE().cos()));
 
-        Assertions.assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle
+        assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle
                      * FastMath.abs(deltaE.getReal() - delta.getReal()));
 
         // for final orbit
@@ -377,14 +382,14 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(),
+        assertEquals(finalOrbit.getPosition().getNorm().getReal(),
                             r.getNorm().getReal(),
                             Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
     @Test
-    public void propagatedKeplerian() {
+    void propagatedKeplerian() {
 
         doPropagatedKeplerian(Binary64Field.getInstance());
 
@@ -414,17 +419,17 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
 
-        Assertions.assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate).getReal(), 1.0e-9);
+        assertEquals(0.0, finalOrbit.getDate().durationFrom(extrapDate).getReal(), 1.0e-9);
 
         // computation of M final orbit
         T LM = finalOrbit.getLE().subtract(finalOrbit.getEquinoctialEx().multiply(
         finalOrbit.getLE().sin())).add(finalOrbit.getEquinoctialEy().multiply(
         finalOrbit.getLE().cos()));
 
-        Assertions.assertEquals(LM.getReal(), finalOrbit.getLM().getReal(), Utils.epsilonAngle);
+        assertEquals(LM.getReal(), finalOrbit.getLM().getReal(), Utils.epsilonAngle);
 
         // test of tan((LE - Lv)/2) :
-        Assertions.assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal()) / 2.),
+        assertEquals(FastMath.tan((finalOrbit.getLE().getReal() - finalOrbit.getLv().getReal()) / 2.),
                      tangLEmLv(finalOrbit.getLv(), finalOrbit.getEquinoctialEx(), finalOrbit
                                .getEquinoctialEy()).getReal(), Utils.epsilonAngle);
 
@@ -437,7 +442,7 @@ public class FieldEcksteinHechlerPropagatorTest {
                   finalOrbit.getEquinoctialEy().multiply(finalOrbit.getLE().cos())).add(
                 initialOrbit.getEquinoctialEy().multiply(initialOrbit.getLE().cos()));
 
-        Assertions.assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle
+        assertEquals(deltaM.getReal(), deltaE.getReal() - delta.getReal(), Utils.epsilonAngle
                      * FastMath.abs(deltaE.getReal() - delta.getReal()));
 
         // for final orbit
@@ -467,13 +472,13 @@ public class FieldEcksteinHechlerPropagatorTest {
                                                  hx.multiply(2).divide(h2p1));
         FieldVector3D<T> r = new FieldVector3D<>(finalOrbit.getA(), new FieldVector3D<>(x3, U, y3, V));
 
-        Assertions.assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(),
+        assertEquals(finalOrbit.getPosition().getNorm().getReal(), r.getNorm().getReal(),
                      Utils.epsilonTest * r.getNorm().getReal());
 
     }
 
     @Test
-    public void undergroundOrbit() {
+    void undergroundOrbit() {
         doUndergroundOrbit(Binary64Field.getInstance());
     }
 
@@ -497,14 +502,14 @@ public class FieldEcksteinHechlerPropagatorTest {
             double delta_t = 0.0;
             FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
             extrapolator.propagate(extrapDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, oe.getSpecifier());
+            assertEquals(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void equatorialOrbit() {
+    void equatorialOrbit() {
         doEquatorialOrbit(Binary64Field.getInstance());
     }
 
@@ -528,14 +533,14 @@ public class FieldEcksteinHechlerPropagatorTest {
             double delta_t = 0.0;
             FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
             extrapolator.propagate(extrapDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.ALMOST_EQUATORIAL_ORBIT, oe.getSpecifier());
+            assertEquals(OrekitMessages.ALMOST_EQUATORIAL_ORBIT, oe.getSpecifier());
         }
     }
 
     @Test
-    public void criticalInclination() {
+    void criticalInclination() {
         doCriticalInclination(Binary64Field.getInstance());
     }
 
@@ -562,14 +567,14 @@ public class FieldEcksteinHechlerPropagatorTest {
             double delta_t = 0.0;
             FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
             extrapolator.propagate(extrapDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT, oe.getSpecifier());
+            assertEquals(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT, oe.getSpecifier());
         }
     }
 
     @Test
-    public void tooEllipticalOrbit() {
+    void tooEllipticalOrbit() {
         doTooEllipticalOrbit(Binary64Field.getInstance());
     }
 
@@ -593,14 +598,14 @@ public class FieldEcksteinHechlerPropagatorTest {
             double delta_t = 0.0;
             FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
             extrapolator.propagate(extrapDate);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, oe.getSpecifier());
+            assertEquals(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, oe.getSpecifier());
         }
     }
 
     @Test
-    public void hyperbolic() {
+    void hyperbolic() {
         doHyperbolic(Binary64Field.getInstance());
     }
 
@@ -614,14 +619,14 @@ public class FieldEcksteinHechlerPropagatorTest {
             FieldEcksteinHechlerPropagator<T> propagator =
                             new FieldEcksteinHechlerPropagator<>(hyperbolic, provider);
             propagator.propagate(date.shiftedBy(10.0));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, oe.getSpecifier());
+            assertEquals(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, oe.getSpecifier());
         }
     }
 
     @Test
-    public void wrongAttitude() {
+    void wrongAttitude() {
         doWrongAttitude(Binary64Field.getInstance());
     }
 
@@ -653,14 +658,14 @@ public class FieldEcksteinHechlerPropagatorTest {
             FieldEcksteinHechlerPropagator<T> propagator =
                             new FieldEcksteinHechlerPropagator<>(orbit, wrongLaw, provider);
             propagator.propagate(date.shiftedBy(10.0));
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertSame(gasp, oe.getSpecifier());
+            assertSame(gasp, oe.getSpecifier());
         }
     }
 
     @Test
-    public void testAcceleration() {
+    void testAcceleration() {
         doTestAcceleration(Binary64Field.getInstance());
     }
 
@@ -705,29 +710,29 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldVector3D<T> keplerianA    = keplerian.getPVCoordinates().getAcceleration();
 
         // perturbed orbit position should be similar to Keplerian orbit position
-        Assertions.assertEquals(0.0, FieldVector3D.distance(referenceP, computedP).getReal(), 1.0e-15);
-        Assertions.assertEquals(0.0, FieldVector3D.distance(referenceP, keplerianP).getReal(), 4.0e-9);
+        assertEquals(0.0, FieldVector3D.distance(referenceP, computedP).getReal(), 1.0e-15);
+        assertEquals(0.0, FieldVector3D.distance(referenceP, keplerianP).getReal(), 4.0e-9);
 
         // perturbed orbit velocity should be equal to Keplerian orbit because
         // it was in fact reconstructed from Cartesian coordinates
         T computationErrorV   = FieldVector3D.distance(referenceV, computedV);
         T nonKeplerianEffectV = FieldVector3D.distance(referenceV, keplerianV);
-        Assertions.assertEquals(0.0, nonKeplerianEffectV.getReal() - computationErrorV.getReal(), 9.0e-12);
-        Assertions.assertEquals(2.2e-4, computationErrorV.getReal(), 3.0e-6);
+        assertEquals(0.0, nonKeplerianEffectV.getReal() - computationErrorV.getReal(), 9.0e-12);
+        assertEquals(2.2e-4, computationErrorV.getReal(), 3.0e-6);
 
         // perturbed orbit acceleration should be different from Keplerian orbit because
         // Keplerian orbit doesn't take orbit shape changes into account
         // perturbed orbit acceleration should be consistent with position evolution
         T computationErrorA   = FieldVector3D.distance(referenceA, computedA);
         T nonKeplerianEffectA = FieldVector3D.distance(referenceA, keplerianA);
-        Assertions.assertEquals(1.0e-7,  computationErrorA.getReal(), 6.0e-9);
-        Assertions.assertEquals(6.37e-3, nonKeplerianEffectA.getReal(), 7.0e-6);
-        Assertions.assertTrue(computationErrorA.getReal() < nonKeplerianEffectA.getReal() / 60000);
+        assertEquals(1.0e-7,  computationErrorA.getReal(), 6.0e-9);
+        assertEquals(6.37e-3, nonKeplerianEffectA.getReal(), 7.0e-6);
+        assertTrue(computationErrorA.getReal() < nonKeplerianEffectA.getReal() / 60000);
 
     }
 
     @Test
-    public void ascendingNode() {
+    void ascendingNode() {
         doAscendingNode(Binary64Field.getInstance());
     }
 
@@ -740,7 +745,7 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldEcksteinHechlerPropagator<T> propagator =
             new FieldEcksteinHechlerPropagator<>(orbit, provider);
         FieldNodeDetector<T> detector = new FieldNodeDetector<>(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertTrue(FramesFactory.getITRF(IERSConventions.IERS_2010, true) == detector.getFrame());
+        assertTrue(FramesFactory.getITRF(IERSConventions.IERS_2010, true) == detector.getFrame());
         propagator.addEventDetector(detector);
 
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
@@ -748,19 +753,19 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
 
         FieldPVCoordinates<T> pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3500.0);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 4000.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3500.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 4000.0);
 
-        Assertions.assertEquals(0, pv.getPosition().getZ().getReal(), 1.0e-6);
-        Assertions.assertTrue(pv.getVelocity().getZ().getReal() > 0);
+        assertEquals(0, pv.getPosition().getZ().getReal(), 1.0e-6);
+        assertTrue(pv.getVelocity().getZ().getReal() > 0);
         Collection<FieldEventDetector<T>> detectors = propagator.getEventsDetectors();
-        Assertions.assertEquals(1, detectors.size());
+        assertEquals(1, detectors.size());
         propagator.clearEventsDetectors();
-        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
+        assertEquals(0, propagator.getEventsDetectors().size());
     }
 
     @Test
-    public void stopAtTargetDate() {
+    void stopAtTargetDate() {
         doStopAtTargetDate(Binary64Field.getInstance());
     }
 
@@ -777,11 +782,11 @@ public class FieldEcksteinHechlerPropagatorTest {
                                     withHandler(new FieldContinueOnEvent<T>()));
         FieldAbsoluteDate<T> farTarget = orbit.getDate().shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        Assertions.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
+        assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate()).getReal()), 1.0e-3);
     }
 
     @Test
-    public void perigee() {
+    void perigee() {
         doPerigee(Binary64Field.getInstance());
     }
 
@@ -797,13 +802,13 @@ public class FieldEcksteinHechlerPropagatorTest {
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
         FieldVector3D<T> position = propagated.getPosition(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3000.0);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 3500.0);
-        Assertions.assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), position.getNorm().getReal(), 410);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 3000.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 3500.0);
+        assertEquals(orbit.getA().getReal() * (1.0 - orbit.getE().getReal()), position.getNorm().getReal(), 410);
     }
 
     @Test
-    public void date() {
+    void date() {
         doDate(Binary64Field.getInstance());
 
     }
@@ -821,11 +826,11 @@ public class FieldEcksteinHechlerPropagatorTest {
         propagator.addEventDetector(detector);
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
         FieldSpacecraftState<T> propagated = propagator.propagate(farTarget);
-        Assertions.assertEquals(0, stopDate.durationFrom(propagated.getDate()).getReal(), 1.0e-10);
+        assertEquals(0, stopDate.durationFrom(propagated.getDate()).getReal(), 1.0e-10);
     }
 
     @Test
-    public void fixedStep() {
+    void fixedStep() {
 
         doFixedStep(Binary64Field.getInstance());
 
@@ -846,7 +851,7 @@ public class FieldEcksteinHechlerPropagatorTest {
             @Override
             public void handleStep(FieldSpacecraftState<T> currentState) {
                 if (previous != null) {
-                    Assertions.assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
+                    assertEquals(step.getReal(), currentState.getDate().durationFrom(previous).getReal(), 1.0e-10);
                 }
                 previous = currentState.getDate();
             }
@@ -856,7 +861,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @Test
-    public void setting() {
+    void setting() {
 
         doSetting(Binary64Field.getInstance());
 
@@ -875,8 +880,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         FieldElevationDetector<T> detector = new FieldElevationDetector<>(zero.add(60), zero.add(1.0e-9), topo).withConstantElevation(0.09);
-        Assertions.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
-        Assertions.assertTrue(topo == detector.getTopocentricFrame());
+        assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
+        assertTrue(topo == detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
 
         FieldAbsoluteDate<T> farTarget = date.shiftedBy(10000.0);
@@ -887,15 +892,15 @@ public class FieldEcksteinHechlerPropagatorTest {
                                                         propagated.getDate().toAbsoluteDate()).
                                  getElevation();
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ().getReal();
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 7800.0);
-        Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 7900.0,
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() > 7800.0);
+        assertTrue(farTarget.durationFrom(propagated.getDate()).getReal() < 7900.0,
                 "Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900");
-        Assertions.assertEquals(0.09, elevation, 1.0e-11);
-        Assertions.assertTrue(zVelocity < 0);
+        assertEquals(0.09, elevation, 1.0e-11);
+        assertTrue(zVelocity < 0);
     }
 
     @Test
-    public void testIssue504() {
+    void testIssue504() {
         doTestIssue504(Binary64Field.getInstance());
     }
 
@@ -920,23 +925,23 @@ public class FieldEcksteinHechlerPropagatorTest {
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA().getReal(),             finalState.getA().getReal(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
-        Assertions.assertEquals(0.0,
+        assertEquals(initialState.getA().getReal(),             finalState.getA().getReal(),             18.0);
+        assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-6);
+        assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 5.0e-6);
+        assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
+        assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
+        assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPosition(),
                                                    finalState.getPosition()).getReal(),
                             11.4);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPVCoordinates().getVelocity(),
                                                    finalState.getPVCoordinates().getVelocity()).getReal(),
                             4.2e-2);
     }
 
     @Test
-    public void testIssue504Bis() {
+    void testIssue504Bis() {
         doTestIssue504Bis(Binary64Field.getInstance());
     }
 
@@ -961,23 +966,23 @@ public class FieldEcksteinHechlerPropagatorTest {
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate);
 
         // Verify
-        Assertions.assertEquals(initialState.getA().getReal(),             finalState.getA().getReal(),             18.0);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-6);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 5.0e-6);
-        Assertions.assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
-        Assertions.assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
-        Assertions.assertEquals(0.0,
+        assertEquals(initialState.getA().getReal(),             finalState.getA().getReal(),             18.0);
+        assertEquals(initialState.getEquinoctialEx().getReal(), finalState.getEquinoctialEx().getReal(), 1.0e-6);
+        assertEquals(initialState.getEquinoctialEy().getReal(), finalState.getEquinoctialEy().getReal(), 5.0e-6);
+        assertEquals(initialState.getHx().getReal(),            finalState.getHx().getReal(),            1.0e-6);
+        assertEquals(initialState.getHy().getReal(),            finalState.getHy().getReal(),            2.0e-6);
+        assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPosition(),
                                                    finalState.getPosition()).getReal(),
                             11.4);
-        Assertions.assertEquals(0.0,
+        assertEquals(0.0,
                             FieldVector3D.distance(initialState.getPVCoordinates().getVelocity(),
                                                    finalState.getPVCoordinates().getVelocity()).getReal(),
                             4.2e-2);
     }
 
     @Test
-    public void testMeanOrbit() throws IOException {
+    void testMeanOrbit() throws IOException {
         doTestMeanOrbit(Binary64Field.getInstance());
     }
 
@@ -1017,8 +1022,8 @@ public class FieldEcksteinHechlerPropagatorTest {
         });
         num.propagate(initialOsculating.getDate().shiftedBy(Constants.JULIAN_DAY));
 
-        Assertions.assertEquals(3190.029, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
-        Assertions.assertEquals(  49.638, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
+        assertEquals(3190.029, oscMax.getResult()  - oscMin.getResult(),  1.0e-3);
+        assertEquals(  49.638, meanMax.getResult() - meanMin.getResult(), 1.0e-3);
 
     }
 
@@ -1031,7 +1036,7 @@ public class FieldEcksteinHechlerPropagatorTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         provider = null;
     }
 

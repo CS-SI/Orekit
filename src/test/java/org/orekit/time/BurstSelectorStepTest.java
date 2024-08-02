@@ -16,108 +16,109 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
 import java.util.List;
 
-public class BurstSelectorStepTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class BurstSelectorStepTest {
 
     @Test
-    public void testNoAlign() {
+    void testNoAlign() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, null);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(71);
         final List<AbsoluteDate> list = selector.selectDates(t0, t1);
-        Assertions.assertEquals(5, list.size());
-        Assertions.assertEquals( 27.0, list.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 37.0, list.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 47.0, list.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 87.0, list.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 97.0, list.get(4).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(5, list.size());
+        assertEquals( 27.0, list.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 37.0, list.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 47.0, list.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 87.0, list.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 97.0, list.get(4).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
     }
 
     @Test
-    public void testAlignUTCBeforeForward() {
+    void testAlignUTCBeforeForward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(2, 10.0, 30.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(62);
         final List<AbsoluteDate> list = selector.selectDates(t0, t1);
-        Assertions.assertEquals(4, list.size());
-        Assertions.assertEquals( 30.0, list.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 40.0, list.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 60.0, list.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 70.0, list.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(4, list.size());
+        assertEquals( 30.0, list.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 40.0, list.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 60.0, list.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 70.0, list.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
     }
 
     @Test
-    public void testAlignUTCBeforeBackward() {
+    void testAlignUTCBeforeBackward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(2, 10.0, 30.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(62);
         final List<AbsoluteDate> list = selector.selectDates(t1, t0);
-        Assertions.assertEquals(4, list.size());
-        Assertions.assertEquals( 70.0, list.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 60.0, list.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 40.0, list.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 30.0, list.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(4, list.size());
+        assertEquals( 70.0, list.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 60.0, list.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 40.0, list.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 30.0, list.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
     }
 
     @Test
-    public void testAlignUTCAfterForward() {
+    void testAlignUTCAfterForward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(2);
         final AbsoluteDate t2 = t1.shiftedBy(98);
         final List<AbsoluteDate> list1 = selector.selectDates(t0, t1);
-        Assertions.assertEquals(0, list1.size());
+        assertEquals(0, list1.size());
         final List<AbsoluteDate> list2 = selector.selectDates(t1, t2);
-        Assertions.assertEquals(4, list2.size());
-        Assertions.assertEquals( 60.0, list2.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 70.0, list2.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 80.0, list2.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals(120.0, list2.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(4, list2.size());
+        assertEquals( 60.0, list2.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 70.0, list2.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 80.0, list2.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(120.0, list2.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
     }
 
     @Test
-    public void testAlignUTCAfterBackward() {
+    void testAlignUTCAfterBackward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(2);
         final AbsoluteDate t2 = t1.shiftedBy(98);
         final List<AbsoluteDate> list1 = selector.selectDates(t2, t1);
-        Assertions.assertEquals(4, list1.size());
-        Assertions.assertEquals(120.0, list1.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 80.0, list1.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 70.0, list1.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 60.0, list1.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(4, list1.size());
+        assertEquals(120.0, list1.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 80.0, list1.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 70.0, list1.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 60.0, list1.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
         final List<AbsoluteDate> list2 = selector.selectDates(t1, t0);
-        Assertions.assertEquals(0, list2.size());
+        assertEquals(0, list2.size());
     }
 
     @Test
-    public void testInterruptedStream() {
+    void testInterruptedStream() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, null);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(71);
         final AbsoluteDate t2 = t1.shiftedBy(30);
         final List<AbsoluteDate> list1 = selector.selectDates(t0, t1);
-        Assertions.assertEquals(5, list1.size());
+        assertEquals(5, list1.size());
         final List<AbsoluteDate> list2 = selector.selectDates(t1, t2);
-        Assertions.assertEquals(1, list2.size());
-        Assertions.assertEquals(10.0, list2.get(0).durationFrom(list1.get(list1.size() - 1)), 1.0e-15);
+        assertEquals(1, list2.size());
+        assertEquals(10.0, list2.get(0).durationFrom(list1.get(list1.size() - 1)), 1.0e-15);
     }
 
     @Test
-    public void testMissedHighRateNoReset() {
+    void testMissedHighRateNoReset() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, null);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
@@ -125,14 +126,14 @@ public class BurstSelectorStepTest {
         final AbsoluteDate t2 = t1.shiftedBy(30);
         final AbsoluteDate t3 = t2.shiftedBy(19);
         final List<AbsoluteDate> list1 = selector.selectDates(t0, t1);
-        Assertions.assertEquals(5, list1.size());
+        assertEquals(5, list1.size());
         final List<AbsoluteDate> list2 = selector.selectDates(t2, t3);
-        Assertions.assertEquals(1, list2.size());
-        Assertions.assertEquals(50.0, list2.get(0).durationFrom(list1.get(list1.size() - 1)), 1.0e-15);
+        assertEquals(1, list2.size());
+        assertEquals(50.0, list2.get(0).durationFrom(list1.get(list1.size() - 1)), 1.0e-15);
     }
 
     @Test
-    public void testResetStream() {
+    void testResetStream() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, null);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
@@ -140,60 +141,60 @@ public class BurstSelectorStepTest {
         final AbsoluteDate t2 = t1.shiftedBy(50);
         final AbsoluteDate t3 = t2.shiftedBy(15);
         final List<AbsoluteDate> list1 = selector.selectDates(t0, t1);
-        Assertions.assertEquals(5, list1.size());
+        assertEquals(5, list1.size());
         final List<AbsoluteDate> list2 = selector.selectDates(t2, t3);
-        Assertions.assertEquals(2, list2.size());
-        Assertions.assertEquals( 0.0, list2.get(0).durationFrom(t2), 1.0e-15);
-        Assertions.assertEquals(10.0, list2.get(1).durationFrom(t2), 1.0e-15);
+        assertEquals(2, list2.size());
+        assertEquals( 0.0, list2.get(0).durationFrom(t2), 1.0e-15);
+        assertEquals(10.0, list2.get(1).durationFrom(t2), 1.0e-15);
     }
 
     @Test
-    public void testShortInterval() {
+    void testShortInterval() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, null);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:27.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(71);
         final AbsoluteDate t2 = t1.shiftedBy(8);
         final List<AbsoluteDate> list1 = selector.selectDates(t0, t1);
-        Assertions.assertEquals(5, list1.size());
+        assertEquals(5, list1.size());
         final List<AbsoluteDate> list2 = selector.selectDates(t1, t2);
-        Assertions.assertEquals(0, list2.size());
+        assertEquals(0, list2.size());
     }
 
     @Test
-    public void testStartMidBurstForward() {
+    void testStartMidBurstForward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:17.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(118);
         final List<AbsoluteDate> list1 = selector.selectDates(t0, t1);
-        Assertions.assertEquals(6, list1.size());
-        Assertions.assertEquals( 20.0, list1.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 60.0, list1.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 70.0, list1.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 80.0, list1.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals(120.0, list1.get(4).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals(130.0, list1.get(5).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(6, list1.size());
+        assertEquals( 20.0, list1.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 60.0, list1.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 70.0, list1.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 80.0, list1.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(120.0, list1.get(4).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(130.0, list1.get(5).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
     }
 
     @Test
-    public void testStartMidBurstBackward() {
+    void testStartMidBurstBackward() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final DatesSelector selector = new BurstSelector(3, 10.0, 60.0, utc);
         final AbsoluteDate t0 = new AbsoluteDate("2003-02-25T00:00:17.0", utc);
         final AbsoluteDate t1 = t0.shiftedBy(118);
         final List<AbsoluteDate> list1 = selector.selectDates(t1, t0);
-        Assertions.assertEquals(6, list1.size());
-        Assertions.assertEquals(130.0, list1.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals(120.0, list1.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 80.0, list1.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 70.0, list1.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 60.0, list1.get(4).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
-        Assertions.assertEquals( 20.0, list1.get(5).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(6, list1.size());
+        assertEquals(130.0, list1.get(0).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals(120.0, list1.get(1).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 80.0, list1.get(2).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 70.0, list1.get(3).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 60.0, list1.get(4).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
+        assertEquals( 20.0, list1.get(5).getComponents(utc).getTime().getSecondsInLocalDay(), 1.0e-15);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

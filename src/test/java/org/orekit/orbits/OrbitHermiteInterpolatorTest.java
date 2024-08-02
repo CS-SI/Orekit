@@ -18,7 +18,6 @@ package org.orekit.orbits;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
@@ -30,12 +29,14 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 class OrbitHermiteInterpolatorTest {
 
     @Test
-    public void testCartesianInterpolationWithDerivatives() {
+    void testCartesianInterpolationWithDerivatives() {
         doTestCartesianInterpolation(true, CartesianDerivativesFilter.USE_P,
                                      394, 0.1968, 3.21, 0.021630,
                                      2474, 2707.6418, 6.6, 26.28);
@@ -53,7 +54,7 @@ class OrbitHermiteInterpolatorTest {
     }
 
     @Test
-    public void testCartesianInterpolationWithoutDerivatives() {
+    void testCartesianInterpolationWithoutDerivatives() {
         doTestCartesianInterpolation(false, CartesianDerivativesFilter.USE_P,
                                      394, 0.1968, 3.21, 0.02163,
                                      2474, 2707.6419, 6.55, 26.2826);
@@ -70,7 +71,7 @@ class OrbitHermiteInterpolatorTest {
     }
 
     @Test
-    public void testCircularInterpolationWithDerivatives() {
+    void testCircularInterpolationWithDerivatives() {
         doTestCircularInterpolation(true,
                                     397, 1.88e-8,
                                     610, 3.52e-6,
@@ -78,7 +79,7 @@ class OrbitHermiteInterpolatorTest {
     }
 
     @Test
-    public void testCircularInterpolationWithoutDerivatives() {
+    void testCircularInterpolationWithoutDerivatives() {
         doTestCircularInterpolation(false,
                                     397, 0.0372,
                                     610.0, 1.23,
@@ -86,7 +87,7 @@ class OrbitHermiteInterpolatorTest {
     }
 
     @Test
-    public void testEquinoctialInterpolationWithDerivatives() {
+    void testEquinoctialInterpolationWithDerivatives() {
         doTestEquinoctialInterpolation(true,
                                        397, 1.17e-8,
                                        610, 4.48e-6,
@@ -94,7 +95,7 @@ class OrbitHermiteInterpolatorTest {
     }
 
     @Test
-    public void testEquinoctialInterpolationWithoutDerivatives() {
+    void testEquinoctialInterpolationWithoutDerivatives() {
         doTestEquinoctialInterpolation(false,
                                        397, 0.0372,
                                        610.0, 1.23,
@@ -102,14 +103,14 @@ class OrbitHermiteInterpolatorTest {
     }
 
     @Test
-    public void testKeplerianInterpolationWithDerivatives() {
+    void testKeplerianInterpolationWithDerivatives() {
         doTestKeplerianInterpolation(true,
                                      397, 4.01, 4.75e-4, 1.28e-7,
                                      2159, 1.05e7, 1.19e-3, 0.773);
     }
 
     @Test
-    public void testKeplerianInterpolationWithoutDerivatives() {
+    void testKeplerianInterpolationWithoutDerivatives() {
         doTestKeplerianInterpolation(false,
                                      397, 62.0, 4.75e-4, 2.87e-6,
                                      2159, 79365, 1.19e-3, 3.89e-3);
@@ -184,11 +185,11 @@ class OrbitHermiteInterpolatorTest {
                                                   interpolationError.getVelocity().getNorm());
         }
 
-        Assertions.assertEquals(shiftPositionErrorWithin, maxShiftPError, 0.01 * shiftPositionErrorWithin);
-        Assertions.assertEquals(interpolationPositionErrorWithin, maxInterpolationPError,
+        assertEquals(shiftPositionErrorWithin, maxShiftPError, 0.01 * shiftPositionErrorWithin);
+        assertEquals(interpolationPositionErrorWithin, maxInterpolationPError,
                                 0.01 * interpolationPositionErrorWithin);
-        Assertions.assertEquals(shiftVelocityErrorWithin, maxShiftVError, 0.01 * shiftVelocityErrorWithin);
-        Assertions.assertEquals(interpolationVelocityErrorWithin, maxInterpolationVError,
+        assertEquals(shiftVelocityErrorWithin, maxShiftVError, 0.01 * shiftVelocityErrorWithin);
+        assertEquals(interpolationVelocityErrorWithin, maxInterpolationVError,
                                 0.01 * interpolationVelocityErrorWithin);
 
         // if we go far past sample end, interpolation becomes worse than Keplerian shift
@@ -216,11 +217,11 @@ class OrbitHermiteInterpolatorTest {
 
         }
 
-        Assertions.assertEquals(shiftPositionErrorFarPast, maxShiftPError, 0.01 * shiftPositionErrorFarPast);
-        Assertions.assertEquals(interpolationPositionErrorFarPast, maxInterpolationPError,
+        assertEquals(shiftPositionErrorFarPast, maxShiftPError, 0.01 * shiftPositionErrorFarPast);
+        assertEquals(interpolationPositionErrorFarPast, maxInterpolationPError,
                                 0.01 * interpolationPositionErrorFarPast);
-        Assertions.assertEquals(shiftVelocityErrorFarPast, maxShiftVError, 0.01 * shiftVelocityErrorFarPast);
-        Assertions.assertEquals(interpolationVelocityErrorFarPast, maxInterpolationVError,
+        assertEquals(shiftVelocityErrorFarPast, maxShiftVError, 0.01 * shiftVelocityErrorFarPast);
+        assertEquals(interpolationVelocityErrorFarPast, maxInterpolationVError,
                                 0.01 * interpolationVelocityErrorFarPast);
     }
 
@@ -276,8 +277,8 @@ class OrbitHermiteInterpolatorTest {
             maxShiftError         = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assertions.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
-        Assertions.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
+        assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
+        assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
 
         // slightly past sample end, interpolation should quickly increase, but remain reasonable
         maxShiftError         = 0;
@@ -290,8 +291,8 @@ class OrbitHermiteInterpolatorTest {
             maxShiftError         = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assertions.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
-        Assertions.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError,
+        assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
+        assertEquals(interpolationErrorSlightlyPast, maxInterpolationError,
                                 0.01 * interpolationErrorSlightlyPast);
 
         // far past sample end, interpolation should become really wrong
@@ -305,8 +306,8 @@ class OrbitHermiteInterpolatorTest {
             maxShiftError         = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assertions.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
-        Assertions.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
+        assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
+        assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 
@@ -362,8 +363,8 @@ class OrbitHermiteInterpolatorTest {
             maxShiftError         = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assertions.assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
-        Assertions.assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
+        assertEquals(shiftErrorWithin, maxShiftError, 0.01 * shiftErrorWithin);
+        assertEquals(interpolationErrorWithin, maxInterpolationError, 0.01 * interpolationErrorWithin);
 
         // slightly past sample end, interpolation should quickly increase, but remain reasonable
         maxShiftError         = 0;
@@ -376,8 +377,8 @@ class OrbitHermiteInterpolatorTest {
             maxShiftError         = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assertions.assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
-        Assertions.assertEquals(interpolationErrorSlightlyPast, maxInterpolationError,
+        assertEquals(shiftErrorSlightlyPast, maxShiftError, 0.01 * shiftErrorSlightlyPast);
+        assertEquals(interpolationErrorSlightlyPast, maxInterpolationError,
                                 0.01 * interpolationErrorSlightlyPast);
 
         // far past sample end, interpolation should become really wrong
@@ -392,8 +393,8 @@ class OrbitHermiteInterpolatorTest {
             maxShiftError         = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assertions.assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
-        Assertions.assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
+        assertEquals(shiftErrorFarPast, maxShiftError, 0.01 * shiftErrorFarPast);
+        assertEquals(interpolationErrorFarPast, maxInterpolationError, 0.01 * interpolationErrorFarPast);
 
     }
 
@@ -466,12 +467,12 @@ class OrbitHermiteInterpolatorTest {
             maxInterpolationEccentricityError =
                     FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
-        Assertions.assertEquals(shiftPositionErrorWithin, maxShiftPositionError, 0.01 * shiftPositionErrorWithin);
-        Assertions.assertEquals(interpolationPositionErrorWithin, maxInterpolationPositionError,
+        assertEquals(shiftPositionErrorWithin, maxShiftPositionError, 0.01 * shiftPositionErrorWithin);
+        assertEquals(interpolationPositionErrorWithin, maxInterpolationPositionError,
                                 0.01 * interpolationPositionErrorWithin);
-        Assertions.assertEquals(shiftEccentricityErrorWithin, maxShiftEccentricityError,
+        assertEquals(shiftEccentricityErrorWithin, maxShiftEccentricityError,
                                 0.01 * shiftEccentricityErrorWithin);
-        Assertions.assertEquals(interpolationEccentricityErrorWithin, maxInterpolationEccentricityError,
+        assertEquals(interpolationEccentricityErrorWithin, maxInterpolationEccentricityError,
                                 0.01 * interpolationEccentricityErrorWithin);
 
         // slightly past sample end, bad eccentricity interpolation shows up
@@ -499,13 +500,13 @@ class OrbitHermiteInterpolatorTest {
             maxInterpolationEccentricityError =
                     FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
-        Assertions.assertEquals(shiftPositionErrorSlightlyPast, maxShiftPositionError,
+        assertEquals(shiftPositionErrorSlightlyPast, maxShiftPositionError,
                                 0.01 * shiftPositionErrorSlightlyPast);
-        Assertions.assertEquals(interpolationPositionErrorSlightlyPast, maxInterpolationPositionError,
+        assertEquals(interpolationPositionErrorSlightlyPast, maxInterpolationPositionError,
                                 0.01 * interpolationPositionErrorSlightlyPast);
-        Assertions.assertEquals(shiftEccentricityErrorSlightlyPast, maxShiftEccentricityError,
+        assertEquals(shiftEccentricityErrorSlightlyPast, maxShiftEccentricityError,
                                 0.01 * shiftEccentricityErrorSlightlyPast);
-        Assertions.assertEquals(interpolationEccentricityErrorSlightlyPast, maxInterpolationEccentricityError,
+        assertEquals(interpolationEccentricityErrorSlightlyPast, maxInterpolationEccentricityError,
                                 0.01 * interpolationEccentricityErrorSlightlyPast);
 
     }
@@ -521,11 +522,11 @@ class OrbitHermiteInterpolatorTest {
                 new OrbitHermiteInterpolator(interpolationPoints, FramesFactory.getGCRF());
 
         // Then
-        Assertions.assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+        assertEquals(AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                 interpolator.getExtrapolationThreshold());
-        Assertions.assertEquals(interpolationPoints,
+        assertEquals(interpolationPoints,
                                 interpolator.getNbInterpolationPoints());
-        Assertions.assertEquals(CartesianDerivativesFilter.USE_PVA, interpolator.getPVAFilter());
+        assertEquals(CartesianDerivativesFilter.USE_PVA, interpolator.getPVAFilter());
     }
 
 }

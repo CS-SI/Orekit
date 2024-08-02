@@ -16,38 +16,39 @@
  */
 package org.orekit.time;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
-public class UTCTAIHistoryFilesLoaderRegularDataTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+class UTCTAIHistoryFilesLoaderRegularDataTest {
 
     @Test
-    public void testRegular() {
-        Assertions.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
+    void testRegular() {
+        assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 10e-8);
     }
 
     @Test
-    public void testFirstLeap() {
+    void testFirstLeap() {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.4228180,
+        assertEquals(1.4228180,
                             afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
                             1.0e-12);
     }
 
     @Test
-    public void testLaststLeap() {
+    void testLaststLeap() {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
         AbsoluteDate afterLeap = new AbsoluteDate(2017, 1, 1, 0, 0, 0.0, utc);
-        Assertions.assertEquals(1.0,
+        assertEquals(1.0,
                             afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
                             1.0e-12);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
     }
 

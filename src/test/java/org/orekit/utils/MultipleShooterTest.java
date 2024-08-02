@@ -23,7 +23,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -40,7 +39,10 @@ import org.orekit.propagation.numerical.EpochDerivativesEquations;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 
-public class MultipleShooterTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class MultipleShooterTest {
 
     /** arbitrary date */
     private static final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
@@ -59,7 +61,7 @@ public class MultipleShooterTest {
     private EpochDerivativesEquations pde;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data");
         propagator = new NumericalPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
         forceModel = new ThirdBodyAttractionEpoch(CelestialBodyFactory.getSun());
@@ -75,7 +77,7 @@ public class MultipleShooterTest {
     }
 
     @Test
-    public void testHaloAllFree() {
+    void testHaloAllFree() {
 
         final double mu          = CelestialBodyFactory.getEarth().getGM();
         final CelestialBody sun  = CelestialBodyFactory.getSun();
@@ -133,19 +135,19 @@ public class MultipleShooterTest {
         for (int i = 0; i < actualSol.size(); i++) {
             actPva = actualSol.get(i).getAbsPVA();
             expPva = expectedSol.get(i).getAbsPVA();
-            Assertions.assertEquals(0.0, expPva.getDate().durationFrom(actPva.getDate()), 1e-2);
-            Assertions.assertEquals(expPva.getPosition().getX(), actPva.getPosition().getX(), 100.);
-            Assertions.assertEquals(expPva.getPosition().getY(), actPva.getPosition().getY(), 100.);
-            Assertions.assertEquals(expPva.getPosition().getZ(), actPva.getPosition().getZ(), 100.);
-            Assertions.assertEquals(expPva.getVelocity().getX(), actPva.getVelocity().getX(), 1e-4);
-            Assertions.assertEquals(expPva.getVelocity().getY(), actPva.getVelocity().getY(), 1e-4);
-            Assertions.assertEquals(expPva.getVelocity().getZ(), actPva.getVelocity().getZ(), 1e-4);
+            assertEquals(0.0, expPva.getDate().durationFrom(actPva.getDate()), 1e-2);
+            assertEquals(expPva.getPosition().getX(), actPva.getPosition().getX(), 100.);
+            assertEquals(expPva.getPosition().getY(), actPva.getPosition().getY(), 100.);
+            assertEquals(expPva.getPosition().getZ(), actPva.getPosition().getZ(), 100.);
+            assertEquals(expPva.getVelocity().getX(), actPva.getVelocity().getX(), 1e-4);
+            assertEquals(expPva.getVelocity().getY(), actPva.getVelocity().getY(), 1e-4);
+            assertEquals(expPva.getVelocity().getZ(), actPva.getVelocity().getZ(), 1e-4);
         }
 
     }
 
     @Test
-    public void testDROFix() {
+    void testDROFix() {
 
         final double mu          = CelestialBodyFactory.getEarth().getGM();
         final CelestialBody sun  = CelestialBodyFactory.getSun();
@@ -213,45 +215,45 @@ public class MultipleShooterTest {
         for (int i = 0; i < actualSol.size(); i++) {
             actPva = actualSol.get(i).getAbsPVA();
             expPva = expectedSol.get(i).getAbsPVA();
-            Assertions.assertEquals(0.0, expPva.getDate().durationFrom(actPva.getDate()), 1e-1);
-            Assertions.assertEquals(expPva.getPosition().getX(), actPva.getPosition().getX(), 100.);
-            Assertions.assertEquals(expPva.getPosition().getY(), actPva.getPosition().getY(), 100.);
-            Assertions.assertEquals(expPva.getPosition().getZ(), actPva.getPosition().getZ(), 100.);
-            Assertions.assertEquals(expPva.getVelocity().getX(), actPva.getVelocity().getX(), 1e-4);
-            Assertions.assertEquals(expPva.getVelocity().getY(), actPva.getVelocity().getY(), 1e-4);
-            Assertions.assertEquals(expPva.getVelocity().getZ(), actPva.getVelocity().getZ(), 1e-4);
+            assertEquals(0.0, expPva.getDate().durationFrom(actPva.getDate()), 1e-1);
+            assertEquals(expPva.getPosition().getX(), actPva.getPosition().getX(), 100.);
+            assertEquals(expPva.getPosition().getY(), actPva.getPosition().getY(), 100.);
+            assertEquals(expPva.getPosition().getZ(), actPva.getPosition().getZ(), 100.);
+            assertEquals(expPva.getVelocity().getX(), actPva.getVelocity().getX(), 1e-4);
+            assertEquals(expPva.getVelocity().getY(), actPva.getVelocity().getY(), 1e-4);
+            assertEquals(expPva.getVelocity().getZ(), actPva.getVelocity().getZ(), 1e-4);
         }
 
-        Assertions.assertEquals(et0[0] * tc, actualSol.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1e-15);
-        Assertions.assertEquals(et0[9] * tc, actualSol.get(9).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1e-15);
-        Assertions.assertEquals(x0[0][0] * lc, actualSol.get(0).getAbsPVA().getPosition().getX(), 1e-15);
-        Assertions.assertEquals(x0[0][1] * lc, actualSol.get(0).getAbsPVA().getPosition().getY(), 1e-15);
-        Assertions.assertEquals(x0[0][2] * lc, actualSol.get(0).getAbsPVA().getPosition().getZ(), 1e-15);
-        Assertions.assertEquals(x0[5][0] * lc, actualSol.get(5).getAbsPVA().getPosition().getX(), 1e-15);
-        Assertions.assertEquals(x0[5][1] * lc, actualSol.get(5).getAbsPVA().getPosition().getY(), 1e-15);
-        Assertions.assertEquals(x0[5][2] * lc, actualSol.get(5).getAbsPVA().getPosition().getZ(), 1e-15);
+        assertEquals(et0[0] * tc, actualSol.get(0).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1e-15);
+        assertEquals(et0[9] * tc, actualSol.get(9).getDate().durationFrom(AbsoluteDate.J2000_EPOCH), 1e-15);
+        assertEquals(x0[0][0] * lc, actualSol.get(0).getAbsPVA().getPosition().getX(), 1e-15);
+        assertEquals(x0[0][1] * lc, actualSol.get(0).getAbsPVA().getPosition().getY(), 1e-15);
+        assertEquals(x0[0][2] * lc, actualSol.get(0).getAbsPVA().getPosition().getZ(), 1e-15);
+        assertEquals(x0[5][0] * lc, actualSol.get(5).getAbsPVA().getPosition().getX(), 1e-15);
+        assertEquals(x0[5][1] * lc, actualSol.get(5).getAbsPVA().getPosition().getY(), 1e-15);
+        assertEquals(x0[5][2] * lc, actualSol.get(5).getAbsPVA().getPosition().getZ(), 1e-15);
 
     }
 
     @Test
-    public void testTooSmallDimension() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testTooSmallDimension() {
+        assertThrows(OrekitException.class, () -> {
             final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
             partials.setInitialJacobians(state, new double[5][6], new double[6][2]);
         });
     }
 
     @Test
-    public void testTooLargeDimension() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testTooLargeDimension() {
+        assertThrows(OrekitException.class, () -> {
             final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
             partials.setInitialJacobians(state, new double[8][6], new double[6][2]);
         });
     }
 
     @Test
-    public void testMismatchedDimensions() {
-        Assertions.assertThrows(OrekitException.class, () -> {
+    void testMismatchedDimensions() {
+        assertThrows(OrekitException.class, () -> {
             final EpochDerivativesEquations partials = new EpochDerivativesEquations("partials", propagator);
             partials.setInitialJacobians(state, new double[6][6], new double[7][2]);
         });

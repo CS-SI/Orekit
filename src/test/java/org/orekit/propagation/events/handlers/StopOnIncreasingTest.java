@@ -17,7 +17,6 @@
 package org.orekit.propagation.events.handlers;
 
 import org.hipparchus.ode.events.Action;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -26,36 +25,38 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
-public class StopOnIncreasingTest {
+import static org.junit.jupiter.api.Assertions.assertSame;
+
+class StopOnIncreasingTest {
 
     @Test
-    public void testNoReset() {
+    void testNoReset() {
         SpacecraftState s = new SpacecraftState(new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
                                                                    0.048363, PositionAngleType.MEAN,
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(s, new StopOnIncreasing().resetState(null, s));
+        assertSame(s, new StopOnIncreasing().resetState(null, s));
     }
 
     @Test
-    public void testIncreasing() {
+    void testIncreasing() {
         SpacecraftState s = new SpacecraftState(new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
                                                                    0.048363, PositionAngleType.MEAN,
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(Action.STOP, new StopOnIncreasing().eventOccurred(s, null, true));
+        assertSame(Action.STOP, new StopOnIncreasing().eventOccurred(s, null, true));
     }
 
     @Test
-    public void testDecreasing() {
+    void testDecreasing() {
         SpacecraftState s = new SpacecraftState(new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
                                                                    0.048363, PositionAngleType.MEAN,
                                                                    FramesFactory.getEME2000(),
                                                                    AbsoluteDate.J2000_EPOCH,
                                                                    Constants.EIGEN5C_EARTH_MU));
-        Assertions.assertSame(Action.CONTINUE, new StopOnIncreasing().eventOccurred(s, null, false));
+        assertSame(Action.CONTINUE, new StopOnIncreasing().eventOccurred(s, null, false));
     }
 
 }

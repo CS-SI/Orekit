@@ -24,7 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -44,6 +43,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 class AbstractGaussianContributionTest {
@@ -76,7 +77,7 @@ class AbstractGaussianContributionTest {
         // WHEN
         final double[] rates = testContribution.getMeanElementRate(state, elements, new double[1]);
         // THEN
-        Assertions.assertEquals(6, rates.length);
+        assertEquals(6, rates.length);
     }
 
     @Test
@@ -112,7 +113,7 @@ class AbstractGaussianContributionTest {
         // WHEN
         final Complex[] rates = testContribution.getMeanElementRate(new FieldSpacecraftState<>(fieldOrbit), elements, parameters);
         // THEN
-        Assertions.assertEquals(6, rates.length);
+        assertEquals(6, rates.length);
     }
 
     private static class TestContribution extends AbstractGaussianContribution {

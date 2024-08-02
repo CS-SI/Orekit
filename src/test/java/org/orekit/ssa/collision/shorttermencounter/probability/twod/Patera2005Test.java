@@ -25,7 +25,6 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -53,6 +52,8 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 class Patera2005Test {
@@ -79,7 +80,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.741e-3, result.getValue(), 1e-6);
+        assertEquals(9.741e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -96,7 +97,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.181e-3, result.getValue(), 1e-6);
+        assertEquals(9.181e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -113,7 +114,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.571e-3, result.getValue(), 1e-6);
+        assertEquals(6.571e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -130,7 +131,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.125e-3, result.getValue(), 1e-6);
+        assertEquals(6.125e-3, result.getValue(), 1e-6);
     }
 
     @Test
@@ -147,7 +148,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue(), 1e-8);
+        assertEquals(1.577e-5, result.getValue(), 1e-8);
     }
 
     @Test
@@ -164,7 +165,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue(), 1e-8);
+        assertEquals(1.011e-5, result.getValue(), 1e-8);
     }
 
     @Test
@@ -181,7 +182,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue(), 1e-11);
+        assertEquals(6.443e-8, result.getValue(), 1e-11);
     }
 
     @Test
@@ -198,7 +199,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.219e-27, result.getValue(), 1e-30);
+        assertEquals(3.219e-27, result.getValue(), 1e-30);
     }
 
     @Test
@@ -215,7 +216,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue(), 1e-9);
+        assertEquals(3.033e-6, result.getValue(), 1e-9);
     }
 
     @Test
@@ -232,7 +233,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.656e-28, result.getValue(), 1e-31);
+        assertEquals(9.656e-28, result.getValue(), 1e-31);
     }
 
     @Test
@@ -249,7 +250,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue(), 1e-7);
+        assertEquals(1.039e-4, result.getValue(), 1e-7);
     }
 
     @Test
@@ -266,7 +267,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.564e-9, result.getValue(), 1e-12);
+        assertEquals(1.564e-9, result.getValue(), 1e-12);
     }
 
     @Test
@@ -283,7 +284,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.9002e-3, result.getValue(), 1e-7);
+        assertEquals(1.9002e-3, result.getValue(), 1e-7);
     }
 
     @Test
@@ -300,7 +301,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0553e-11, result.getValue(), 1e-15);
+        assertEquals(2.0553e-11, result.getValue(), 1e-15);
     }
 
     @Test
@@ -317,7 +318,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2003e-5, result.getValue(), 1e-9);
+        assertEquals(7.2003e-5, result.getValue(), 1e-9);
     }
 
     @Test
@@ -334,7 +335,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3904e-7, result.getValue(), 1e-11);
+        assertEquals(5.3904e-7, result.getValue(), 1e-11);
     }
 
     @Test
@@ -351,7 +352,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.2795e-20, result.getValue(), 1e-24);
+        assertEquals(2.2795e-20, result.getValue(), 1e-24);
     }
 
     @Test
@@ -368,7 +369,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.0038e-1, result.getValue(), 1e-5);
+        assertEquals(1.0038e-1, result.getValue(), 1e-5);
     }
 
     @Disabled("Alfano test case 5 (Patera2005 method) : This test is numerically unstable and is ignored as it doesn't " +
@@ -389,7 +390,7 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(4.4509e-2, result.getValue(), 1e-6);
+        assertEquals(4.4509e-2, result.getValue(), 1e-6);
     }
 
     @Test
@@ -431,7 +432,7 @@ class Patera2005Test {
                         halfCombinedRadius);
 
         // THEN
-        Assertions.assertEquals(0.0012768565223002992, pateraResult.getValue(), 1e-19);
+        assertEquals(0.0012768565223002992, pateraResult.getValue(), 1e-19);
 
     }
 
@@ -460,7 +461,7 @@ class Patera2005Test {
                 new TrapezoidIntegrator(), 50, 1e-15);
 
         // THEN
-        Assertions.assertEquals(0.003496517644384083, result.getValue(), 1e-18);
+        assertEquals(0.003496517644384083, result.getValue(), 1e-18);
     }
 
     @Test
@@ -477,7 +478,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.741e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.741e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -494,7 +495,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.181e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(9.181e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -511,7 +512,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.571e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.571e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -528,7 +529,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.125e-3, result.getValue().getReal(), 1e-6);
+        assertEquals(6.125e-3, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -545,7 +546,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.577e-5, result.getValue().getReal(), 1e-8);
     }
 
     @Test
@@ -562,7 +563,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
+        assertEquals(1.011e-5, result.getValue().getReal(), 1e-8);
     }
 
     @Test
@@ -579,7 +580,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
+        assertEquals(6.443e-8, result.getValue().getReal(), 1e-11);
     }
 
     @Test
@@ -596,7 +597,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.219e-27, result.getValue().getReal(), 1e-30);
+        assertEquals(3.219e-27, result.getValue().getReal(), 1e-30);
     }
 
     @Test
@@ -613,7 +614,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
+        assertEquals(3.033e-6, result.getValue().getReal(), 1e-9);
     }
 
     @Test
@@ -630,7 +631,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(9.656e-28, result.getValue().getReal(), 1e-31);
+        assertEquals(9.656e-28, result.getValue().getReal(), 1e-31);
     }
 
     @Test
@@ -647,7 +648,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
+        assertEquals(1.039e-4, result.getValue().getReal(), 1e-7);
     }
 
     @Test
@@ -664,7 +665,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.564e-9, result.getValue().getReal(), 1e-12);
+        assertEquals(1.564e-9, result.getValue().getReal(), 1e-12);
     }
 
     @Test
@@ -681,7 +682,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.9002e-3, result.getValue().getReal(), 1e-7);
+        assertEquals(1.9002e-3, result.getValue().getReal(), 1e-7);
     }
 
     @Test
@@ -698,7 +699,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.0553e-11, result.getValue().getReal(), 1e-15);
+        assertEquals(2.0553e-11, result.getValue().getReal(), 1e-15);
     }
 
     @Test
@@ -715,7 +716,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(7.2003e-5, result.getValue().getReal(), 1e-9);
+        assertEquals(7.2003e-5, result.getValue().getReal(), 1e-9);
     }
 
     @Test
@@ -732,7 +733,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(5.3904e-7, result.getValue().getReal(), 1e-11);
+        assertEquals(5.3904e-7, result.getValue().getReal(), 1e-11);
     }
 
     @Test
@@ -749,7 +750,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(2.2795e-20, result.getValue().getReal(), 1e-24);
+        assertEquals(2.2795e-20, result.getValue().getReal(), 1e-24);
     }
 
     @Test
@@ -766,7 +767,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(1.0038e-1, result.getValue().getReal(), 1e-5);
+        assertEquals(1.0038e-1, result.getValue().getReal(), 1e-5);
     }
 
     @Disabled(
@@ -789,7 +790,7 @@ class Patera2005Test {
         final FieldProbabilityOfCollision<Binary64> result = method.compute(xm, ym, sigmaX, sigmaY, radius);
 
         // THEN
-        Assertions.assertEquals(4.4509e-2, result.getValue().getReal(), 1e-6);
+        assertEquals(4.4509e-2, result.getValue().getReal(), 1e-6);
     }
 
     @Test
@@ -819,8 +820,8 @@ class Patera2005Test {
                 method.compute(xmNominal, ymNominal, sigmaXNominal, sigmaYNominal, radiusNominal + dRadius).getValue();
 
         // THEN
-        Assertions.assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
-        Assertions.assertEquals(exactResult, taylorResult, 1e-16);
+        assertEquals(6.1e-3, resultNominal.getValue().getReal(), 1e-4);
+        assertEquals(exactResult, taylorResult, 1e-16);
     }
 
     @Test
@@ -867,7 +868,7 @@ class Patera2005Test {
                         halfCombinedRadius);
 
         // THEN
-        Assertions.assertEquals(0.0012768565222964375, pateraResult.getValue().getReal(), 1e-19);
+        assertEquals(0.0012768565222964375, pateraResult.getValue().getReal(), 1e-19);
 
     }
 
@@ -899,7 +900,7 @@ class Patera2005Test {
                 1e-15);
 
         // THEN
-        Assertions.assertEquals(0.0034965176443840836, result.getValue().getReal(), 2e-18);
+        assertEquals(0.0034965176443840836, result.getValue().getReal(), 2e-18);
     }
 
 
@@ -1060,6 +1061,6 @@ class Patera2005Test {
         final ProbabilityOfCollision result = method.compute(cdm, combinedHbr);
 
         // Then
-        Assertions.assertEquals(expected, result.getValue(), tolerance);
+        assertEquals(expected, result.getValue(), tolerance);
     }
 }

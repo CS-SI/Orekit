@@ -23,7 +23,6 @@ import org.hipparchus.random.GaussianRandomGenerator;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
@@ -44,7 +43,10 @@ import org.orekit.time.TimeScalesFactory;
 
 import java.util.SortedSet;
 
-public class PositionBuilderTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class PositionBuilderTest {
 
     private static final double SIGMA = 10.0;
     private static final double BIAS  =  5.0;
@@ -67,12 +69,12 @@ public class PositionBuilderTest {
     }
 
     @Test
-    public void testForward() {
+    void testForward() {
         doTest(0x292b6e87436fe4c7L, 0.0, 1.2, 3.3 * SIGMA);
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
         doTest(0x2f3285aa70b83c47L, 0.0, -1.0, 3.3 * SIGMA);
     }
 
@@ -109,8 +111,8 @@ public class PositionBuilderTest {
         for (EstimatedMeasurementBase<?> measurement : measurements) {
             AbsoluteDate date = measurement.getDate();
             double[] m = measurement.getObservedValue();
-            Assertions.assertTrue(date.compareTo(tInf) >= 0);
-            Assertions.assertTrue(date.compareTo(tSup) <= 0);
+            assertTrue(date.compareTo(tInf) >= 0);
+            assertTrue(date.compareTo(tSup) <= 0);
             if (previous != null) {
                 // measurements are always chronological, even with backward propagation,
                 // due to the SortedSet (which is intended for combining several
@@ -120,10 +122,10 @@ public class PositionBuilderTest {
                                         highRateStep;
                 if (t0.isBefore(t1)) {
                     // measurements are expected to be chronological
-                    Assertions.assertEquals(expected, date.durationFrom(previous), 1.0e-10 * expected);
+                    assertEquals(expected, date.durationFrom(previous), 1.0e-10 * expected);
                 } else {
                     // measurements are expected to be reverse chronological
-                    Assertions.assertEquals(expected, previous.durationFrom(date), 1.0e-10 * expected);
+                    assertEquals(expected, previous.durationFrom(date), 1.0e-10 * expected);
                 }
             }
             previous = date;
@@ -137,11 +139,11 @@ public class PositionBuilderTest {
                 maxError = FastMath.max(maxError, FastMath.abs(e[i] - m[i]));
             }
         }
-        Assertions.assertEquals(0.0, maxError, tolerance);
+        assertEquals(0.0, maxError, tolerance);
      }
 
-     @BeforeEach
-     public void setUp() {
+    @BeforeEach
+    void setUp() {
          context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
          propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true,

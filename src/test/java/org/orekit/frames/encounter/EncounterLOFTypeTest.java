@@ -17,13 +17,15 @@
 package org.orekit.frames.encounter;
 
 import org.hipparchus.util.Binary64;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.LOF;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 class EncounterLOFTypeTest {
 
@@ -44,10 +46,10 @@ class EncounterLOFTypeTest {
         final LOF valsecchiEncounterField = EncounterLOFType.VALSECCHI.getFrame(pvFieldMock);
 
         // Then
-        Assertions.assertInstanceOf(DefaultEncounterLOF.class, defaultEncounter);
-        Assertions.assertInstanceOf(ValsecchiEncounterFrame.class, valsecchiEncounter);
-        Assertions.assertInstanceOf(DefaultEncounterLOF.class, defaultEncounterField);
-        Assertions.assertInstanceOf(ValsecchiEncounterFrame.class, valsecchiEncounterField);
+        assertInstanceOf(DefaultEncounterLOF.class, defaultEncounter);
+        assertInstanceOf(ValsecchiEncounterFrame.class, valsecchiEncounter);
+        assertInstanceOf(DefaultEncounterLOF.class, defaultEncounterField);
+        assertInstanceOf(ValsecchiEncounterFrame.class, valsecchiEncounterField);
     }
 
     @Test
@@ -63,7 +65,7 @@ class EncounterLOFTypeTest {
        // THEN
         final String expectedName = "DEFAULT_ENCOUNTER_LOF";
 
-        Assertions.assertEquals(expectedName, name);
+        assertEquals(expectedName, name);
     }
 
 }

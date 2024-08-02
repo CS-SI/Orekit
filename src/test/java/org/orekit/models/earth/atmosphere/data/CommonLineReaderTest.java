@@ -18,13 +18,16 @@
 
 package org.orekit.models.earth.atmosphere.data;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataSource;
 
 import java.io.BufferedReader;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -34,15 +37,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
 
-public class CommonLineReaderTest {
+class CommonLineReaderTest {
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Utils.setDataRoot("regular-data:atmosphere");
     }
 
     @Test
-    public void testParsing() throws IOException, URISyntaxException {
+    void testParsing() throws IOException, URISyntaxException {
         final String name = "DTCFILE_CommonLineReaderTest.txt";
         URL url = CommonLineReaderTest.class.getClassLoader().getResource("atmosphere/"+name);
         DataSource ds = new DataSource(Paths.get(url.toURI()).toString());
@@ -53,11 +56,11 @@ public class CommonLineReaderTest {
 
                CommonLineReader reader = new CommonLineReader(br);
                reader.readLine();
-               Assertions.assertTrue(reader.isEmptyLine());
+               assertTrue(reader.isEmptyLine());
                reader.readLine();
-               Assertions.assertEquals(reader.getLine(), "DTC 2003 360   50  17  17  17  38  38  38  74  74  74  74  74  74  31  31  31  38  38  38  38  38  38  44  44");
-               Assertions.assertEquals(reader.getLineNumber(), 2);
-               Assertions.assertFalse(reader.isEmptyLine());
+            assertEquals("DTC 2003 360   50  17  17  17  38  38  38  74  74  74  74  74  74  31  31  31  38  38  38  38  38  38  44  44", reader.getLine());
+            assertEquals(2, reader.getLineNumber());
+               assertFalse(reader.isEmptyLine());
 
            }
     }

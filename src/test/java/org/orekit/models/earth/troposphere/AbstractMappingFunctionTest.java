@@ -18,7 +18,6 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -26,6 +25,9 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public abstract class AbstractMappingFunctionTest {
 
@@ -55,8 +57,8 @@ public abstract class AbstractMappingFunctionTest {
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
-        Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
+        assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
+        assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
 
     }
 
@@ -75,8 +77,8 @@ public abstract class AbstractMappingFunctionTest {
                                                           point,
                                                           TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                           date);
-            Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
-            Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
+            assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
             lastFactors[0] = factors[0];
             lastFactors[1] = factors[1];
         }

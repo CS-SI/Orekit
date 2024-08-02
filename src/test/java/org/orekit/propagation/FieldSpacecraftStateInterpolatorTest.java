@@ -25,7 +25,6 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -74,6 +73,10 @@ import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 
 import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Collections;
 import java.util.List;
 
@@ -88,7 +91,7 @@ class FieldSpacecraftStateInterpolatorTest {
     private       FieldPropagator<Binary64>            absPVPropagator;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         try {
             Utils.setDataRoot("regular-data:potential/icgem-format");
             Binary64 mu  = new Binary64(3.9860047e14);
@@ -130,12 +133,12 @@ class FieldSpacecraftStateInterpolatorTest {
 
         }
         catch (OrekitException oe) {
-            Assertions.fail(oe.getLocalizedMessage());
+            fail(oe.getLocalizedMessage());
         }
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         mass                 = org.hipparchus.util.Binary64.NAN;
         orbit                = null;
         attitudeLaw          = null;
@@ -143,7 +146,7 @@ class FieldSpacecraftStateInterpolatorTest {
     }
 
     @Test
-    public void testOrbitInterpolation()
+    void testOrbitInterpolation()
             throws OrekitException {
 
         // Given
@@ -166,7 +169,7 @@ class FieldSpacecraftStateInterpolatorTest {
     }
 
     @Test
-    public void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSize() {
+    void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSize() {
         // GIVEN
         final Frame outputFrame = Mockito.mock(Frame.class);
 
@@ -193,17 +196,17 @@ class FieldSpacecraftStateInterpolatorTest {
                                                        null, null);
 
         // WHEN & THEN
-        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        OrekitIllegalArgumentException thrown = assertThrows(OrekitIllegalArgumentException.class, () ->
                 AbstractFieldTimeInterpolator.checkInterpolatorCompatibilityWithSampleSize(stateInterpolator, 2));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
-        Assertions.assertEquals(2, ((Integer) thrown.getParts()[0]).intValue());
+        assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        assertEquals(2, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
     @SuppressWarnings("deprecation")
     @Test
-    public void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSizeDeprecated() {
+    void testErrorThrownWhenOneInterpolatorIsNotConsistentWithSampleSizeDeprecated() {
         // GIVEN
         final Frame outputFrame = Mockito.mock(Frame.class);
 
@@ -232,16 +235,16 @@ class FieldSpacecraftStateInterpolatorTest {
                                                        null, null);
 
         // WHEN & THEN
-        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        OrekitIllegalArgumentException thrown = assertThrows(OrekitIllegalArgumentException.class, () ->
                 AbstractFieldTimeInterpolator.checkInterpolatorCompatibilityWithSampleSize(stateInterpolator, 2));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
-        Assertions.assertEquals(2, ((Integer) thrown.getParts()[0]).intValue());
+        assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        assertEquals(2, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
     @Test
-    public void testAbsPVAInterpolation()
+    void testAbsPVAInterpolation()
             throws OrekitException {
 
         // Given
@@ -285,7 +288,7 @@ class FieldSpacecraftStateInterpolatorTest {
     }
 
     @Test
-    public void testIssue775() {
+    void testIssue775() {
         final Field<Binary64> field = Binary64Field.getInstance();
         final Binary64        zero  = field.getZero();
 
@@ -326,7 +329,7 @@ class FieldSpacecraftStateInterpolatorTest {
 
         // Interpolation
         withoutOrbit = interpolator.interpolate(states.get(10).getDate(), states);
-        Assertions.assertEquals(0.0, FieldVector3D.distance(withoutOrbit.getAbsPVA().getPosition(),
+        assertEquals(0.0, FieldVector3D.distance(withoutOrbit.getAbsPVA().getPosition(),
                                                             states.get(10).getAbsPVA().getPosition()).getReal(), 1.0e-10);
     }
 
@@ -466,12 +469,12 @@ class FieldSpacecraftStateInterpolatorTest {
                                  FastMath.abs(interpolated.getAdditionalStateDerivative("quadratic-dot")[0].getReal()
                                                       - dt * dt));
         }
-        Assertions.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
-        Assertions.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assertions.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
-        Assertions.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
-        Assertions.assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
-        Assertions.assertEquals(expectedErrorD, maxErrorD, 2.0e-10);
+        assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
+        assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
+        assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
+        assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
+        assertEquals(expectedErrorQ, maxErrorQ, 2.0e-10);
+        assertEquals(expectedErrorD, maxErrorD, 2.0e-10);
     }
 
     /**
@@ -515,10 +518,10 @@ class FieldSpacecraftStateInterpolatorTest {
             maxErrorM =
                     FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass().getReal() - propagated.getMass().getReal()));
         }
-        Assertions.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
-        Assertions.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assertions.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
-        Assertions.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
+        assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
+        assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
+        assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
+        assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
     }
 
     @Test
@@ -530,11 +533,11 @@ class FieldSpacecraftStateInterpolatorTest {
         final List<FieldSpacecraftState<Binary64>> states = new ArrayList<>();
 
         // WHEN & THEN
-        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        OrekitIllegalArgumentException thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                                         () -> interpolator.interpolate(new AbsoluteDate(), states.stream()));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
-        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+        assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
@@ -587,7 +590,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
 
         // THEN
-        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
+        assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
     @SuppressWarnings("deprecation")
@@ -642,7 +645,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final int returnedNbInterpolationPoints = stateInterpolator.getNbInterpolationPoints();
 
         // THEN
-        Assertions.assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
+        assertEquals(AdditionalStateNbInterpolationPoints, returnedNbInterpolationPoints);
     }
 
     @Test
@@ -678,10 +681,10 @@ class FieldSpacecraftStateInterpolatorTest {
                 new FieldSpacecraftStateInterpolator<>(inertialFrameMock);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> stateInterpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(
+        assertEquals(
                 "one state is defined using an orbit while the other is defined using an absolute position-velocity-acceleration",
                 thrown.getMessage());
     }
@@ -694,12 +697,12 @@ class FieldSpacecraftStateInterpolatorTest {
         Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, inertialFrameMock,
                                                                                                 null, null, null, null,
                                                                                                 null));
 
-        Assertions.assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
+        assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
                                         + "absolute position-velocity-acceleration interpolator", thrown.getMessage());
     }
 
@@ -712,14 +715,14 @@ class FieldSpacecraftStateInterpolatorTest {
         Mockito.when(inertialFrameMock.isPseudoInertial()).thenReturn(true);
 
         // When & Then
-        Exception thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class,
+        Exception thrown = assertThrows(OrekitIllegalArgumentException.class,
                                                    () -> new FieldSpacecraftStateInterpolator<>(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
                                                                                                 AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
                                                                                                 inertialFrameMock,
                                                                                                 null, null, null, null,
                                                                                                 null));
 
-        Assertions.assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
+        assertEquals("creating a spacecraft state interpolator requires at least one orbit interpolator or an "
                                         + "absolute position-velocity-acceleration interpolator", thrown.getMessage());
     }
 
@@ -744,11 +747,11 @@ class FieldSpacecraftStateInterpolatorTest {
                 new FieldSpacecraftStateInterpolator<>(2, 1.0e-3, inertialFrame, orbitInterpolatorMock, null, null, null, null);
 
         // When & Then
-        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        OrekitIllegalArgumentException thrown = assertThrows(OrekitIllegalArgumentException.class, () ->
                                                                         interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
-        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+        assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
@@ -777,11 +780,11 @@ class FieldSpacecraftStateInterpolatorTest {
                                         null, null, null, null);
 
         // When & Then
-        OrekitIllegalArgumentException thrown = Assertions.assertThrows(OrekitIllegalArgumentException.class, () ->
+        OrekitIllegalArgumentException thrown = assertThrows(OrekitIllegalArgumentException.class, () ->
                                                                         interpolator.interpolate(interpolationDate, states));
 
-        Assertions.assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
-        Assertions.assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
+        assertEquals(OrekitMessages.NOT_ENOUGH_DATA, thrown.getSpecifier());
+        assertEquals(0, ((Integer) thrown.getParts()[0]).intValue());
 
     }
 
@@ -818,12 +821,12 @@ class FieldSpacecraftStateInterpolatorTest {
                                                        additionalInterpolatorMock);
 
         // Then
-        Assertions.assertEquals(inertialFrameMock, interpolator.getOutputFrame());
-        Assertions.assertEquals(orbitInterpolatorMock, interpolator.getOrbitInterpolator().get());
-        Assertions.assertEquals(absPVInterpolatorMock, interpolator.getAbsPVAInterpolator().get());
-        Assertions.assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
-        Assertions.assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
-        Assertions.assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
+        assertEquals(inertialFrameMock, interpolator.getOutputFrame());
+        assertEquals(orbitInterpolatorMock, interpolator.getOrbitInterpolator().get());
+        assertEquals(absPVInterpolatorMock, interpolator.getAbsPVAInterpolator().get());
+        assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
+        assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
+        assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
 
     }
 
@@ -863,12 +866,12 @@ class FieldSpacecraftStateInterpolatorTest {
                                                        additionalInterpolatorMock);
 
         // Then
-        Assertions.assertEquals(inertialFrameMock, interpolator.getOutputFrame());
-        Assertions.assertEquals(orbitInterpolatorMock, interpolator.getOrbitInterpolator().get());
-        Assertions.assertEquals(absPVInterpolatorMock, interpolator.getAbsPVAInterpolator().get());
-        Assertions.assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
-        Assertions.assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
-        Assertions.assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
+        assertEquals(inertialFrameMock, interpolator.getOutputFrame());
+        assertEquals(orbitInterpolatorMock, interpolator.getOrbitInterpolator().get());
+        assertEquals(absPVInterpolatorMock, interpolator.getAbsPVAInterpolator().get());
+        assertEquals(massInterpolatorMock, interpolator.getMassInterpolator().get());
+        assertEquals(attitudeInterpolatorMock, interpolator.getAttitudeInterpolator().get());
+        assertEquals(additionalInterpolatorMock, interpolator.getAdditionalStateInterpolator().get());
 
     }
 
@@ -879,7 +882,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final FakeFieldStateInterpolator fakeStateInterpolator = new FakeFieldStateInterpolator();
 
         // WHEN & THEN
-        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+        assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
     }
 
     @Test
@@ -889,7 +892,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final FakeFieldStateInterpolator fakeStateInterpolator = new FakeFieldStateInterpolator();
 
         // WHEN & THEN
-        Assertions.assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
+        assertThrows(OrekitInternalError.class, fakeStateInterpolator::getNbInterpolationPoints);
     }
 
     private static class FakeFieldStateInterpolator extends AbstractFieldTimeInterpolator<FieldSpacecraftState<Binary64>,Binary64> {

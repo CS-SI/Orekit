@@ -17,7 +17,6 @@
 package org.orekit.frames;
 
 import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
@@ -29,49 +28,53 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 import java.util.SortedSet;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.TreeSet;
 
 
-public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoaderTest {
+class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
-    public void testStartDateDaily1980() {
+    void testStartDateDaily1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
+        assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, true).getStartDate());
     }
 
     @Test
-    public void testEndDateDaily1980() {
+    void testEndDateDaily1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
+        assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_1996, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, true).getEndDate());
     }
 
     @Test
-    public void testStartDateDaily2000() {
+    void testStartDateDaily2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals\\.daily$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
+        assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, true).getStartDate());
     }
 
     @Test
-    public void testMissingColumnsPadding1980() {
+    void testMissingColumnsPadding1980() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
@@ -83,44 +86,44 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         // after 2011-05-31, the example daily file has no columns for Bulletin B data
         // we don't see anything since we fall back to bulletin A
         AbsoluteDate t1Inf = new AbsoluteDate(2011, 6, 1, TimeScalesFactory.getUTC());
-        Assertions.assertEquals(-67.724,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Inf)[0]), 1.0e-10);
-        Assertions.assertEquals(-11.807,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Inf)[1]), 1.0e-10);
-        Assertions.assertEquals(-0.2778790, history.getUT1MinusUTC(t1Inf),                                                1.0e-10);
-        Assertions.assertEquals( 0.5773,    1000 * history.getLOD(t1Inf),                                                 1.0e-10);
+        assertEquals(-67.724,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Inf)[0]), 1.0e-10);
+        assertEquals(-11.807,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Inf)[1]), 1.0e-10);
+        assertEquals(-0.2778790, history.getUT1MinusUTC(t1Inf),                                                1.0e-10);
+        assertEquals( 0.5773,    1000 * history.getLOD(t1Inf),                                                 1.0e-10);
         AbsoluteDate t1Sup = t1Inf.shiftedBy(Constants.JULIAN_DAY);
-        Assertions.assertEquals(-67.800,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Sup)[0]), 1.0e-10);
-        Assertions.assertEquals(-11.810,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Sup)[1]), 1.0e-10);
-        Assertions.assertEquals(-0.2784173, history.getUT1MinusUTC(t1Sup),                                                1.0e-10);
-        Assertions.assertEquals( 0.5055,    1000 * history.getLOD(t1Sup),                                                 1.0e-10);
+        assertEquals(-67.800,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Sup)[0]), 1.0e-10);
+        assertEquals(-11.810,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t1Sup)[1]), 1.0e-10);
+        assertEquals(-0.2784173, history.getUT1MinusUTC(t1Sup),                                                1.0e-10);
+        assertEquals( 0.5055,    1000 * history.getLOD(t1Sup),                                                 1.0e-10);
 
         // after 2011-07-06, the example daily file has no columns for LOD, but it is interpolated
         AbsoluteDate t2Inf = new AbsoluteDate(2011, 7, 6, TimeScalesFactory.getUTC());
-        Assertions.assertEquals(-72.717,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Inf)[0]), 1.0e-10);
-        Assertions.assertEquals(-10.620,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Inf)[1]), 1.0e-10);
-        Assertions.assertEquals(-0.2915826, history.getUT1MinusUTC(t2Inf),                                                1.0e-10);
-        Assertions.assertEquals( 0.5020,    1000 * history.getLOD(t2Inf),                                                 1.0e-10);
+        assertEquals(-72.717,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Inf)[0]), 1.0e-10);
+        assertEquals(-10.620,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Inf)[1]), 1.0e-10);
+        assertEquals(-0.2915826, history.getUT1MinusUTC(t2Inf),                                                1.0e-10);
+        assertEquals( 0.5020,    1000 * history.getLOD(t2Inf),                                                 1.0e-10);
         AbsoluteDate t2Sup = t2Inf.shiftedBy(Constants.JULIAN_DAY);
-        Assertions.assertEquals(-73.194,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Sup)[0]), 1.0e-10);
-        Assertions.assertEquals(-10.535,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Sup)[1]), 1.0e-10);
-        Assertions.assertEquals(-0.2920866, history.getUT1MinusUTC(t2Sup),                                                1.0e-10);
-        Assertions.assertEquals( 5.3509e-6, 1000 * history.getLOD(t2Sup),                                                 1.0e-10);
+        assertEquals(-73.194,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Sup)[0]), 1.0e-10);
+        assertEquals(-10.535,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t2Sup)[1]), 1.0e-10);
+        assertEquals(-0.2920866, history.getUT1MinusUTC(t2Sup),                                                1.0e-10);
+        assertEquals( 5.3509e-6, 1000 * history.getLOD(t2Sup),                                                 1.0e-10);
 
         // after 2011-09-19, the example daily file has no columns for nutation
         AbsoluteDate t3Inf = new AbsoluteDate(2011, 9, 19, TimeScalesFactory.getUTC());
-        Assertions.assertEquals(-79.889,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Inf)[0]), 1.0e-10);
-        Assertions.assertEquals(-11.125,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Inf)[1]), 1.0e-10);
-        Assertions.assertEquals(-0.3112849, history.getUT1MinusUTC(t3Inf),                                                1.0e-10);
-        Assertions.assertEquals( 3.2137e-6, 1000 * history.getLOD(t3Inf),                                                 1.0e-10);
+        assertEquals(-79.889,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Inf)[0]), 1.0e-10);
+        assertEquals(-11.125,    3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Inf)[1]), 1.0e-10);
+        assertEquals(-0.3112849, history.getUT1MinusUTC(t3Inf),                                                1.0e-10);
+        assertEquals( 3.2137e-6, 1000 * history.getLOD(t3Inf),                                                 1.0e-10);
         AbsoluteDate t3Sup = t3Inf.shiftedBy(Constants.JULIAN_DAY);
-        Assertions.assertEquals( 0.0,       3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Sup)[0]), 1.0e-10);
-        Assertions.assertEquals( 0.0,       3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Sup)[1]), 1.0e-10);
-        Assertions.assertEquals(-0.3115675, history.getUT1MinusUTC(t3Sup),                                                1.0e-10);
-        Assertions.assertEquals( 3.4186e-6, 1000 * history.getLOD(t3Sup),                                                 1.0e-10);
+        assertEquals( 0.0,       3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Sup)[0]), 1.0e-10);
+        assertEquals( 0.0,       3600000 * FastMath.toDegrees(history.getEquinoxNutationCorrection(t3Sup)[1]), 1.0e-10);
+        assertEquals(-0.3115675, history.getUT1MinusUTC(t3Sup),                                                1.0e-10);
+        assertEquals( 3.4186e-6, 1000 * history.getLOD(t3Sup),                                                 1.0e-10);
 
     }
 
     @Test
-    public void testMissingColumnsPadding2000() {
+    void testMissingColumnsPadding2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
@@ -132,44 +135,44 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         // after 2011-05-31, the example daily file has no columns for Bulletin B data
         // we don't see anything since we fall back to bulletin A
         AbsoluteDate t1Inf = new AbsoluteDate(2011, 6, 1, TimeScalesFactory.getUTC());
-        Assertions.assertEquals(-0.015313,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getXp()), 1.0e-10);
-        Assertions.assertEquals( 0.403214,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getYp()), 1.0e-10);
-        Assertions.assertEquals(-0.2778790, history.getUT1MinusUTC(t1Inf),                                       1.0e-10);
-        Assertions.assertEquals( 0.5773,    1000 * history.getLOD(t1Inf),                                        1.0e-10);
+        assertEquals(-0.015313,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getXp()), 1.0e-10);
+        assertEquals( 0.403214,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Inf).getYp()), 1.0e-10);
+        assertEquals(-0.2778790, history.getUT1MinusUTC(t1Inf),                                       1.0e-10);
+        assertEquals( 0.5773,    1000 * history.getLOD(t1Inf),                                        1.0e-10);
         AbsoluteDate t1Sup = t1Inf.shiftedBy(Constants.JULIAN_DAY);
-        Assertions.assertEquals(-0.014222,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Sup).getXp()), 1.0e-10);
-        Assertions.assertEquals( 0.404430,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Sup).getYp()), 1.0e-10);
-        Assertions.assertEquals(-0.2784173, history.getUT1MinusUTC(t1Sup),                                       1.0e-10);
-        Assertions.assertEquals( 0.5055,    1000 * history.getLOD(t1Sup),                                        1.0e-10);
+        assertEquals(-0.014222,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Sup).getXp()), 1.0e-10);
+        assertEquals( 0.404430,  3600 * FastMath.toDegrees(history.getPoleCorrection(t1Sup).getYp()), 1.0e-10);
+        assertEquals(-0.2784173, history.getUT1MinusUTC(t1Sup),                                       1.0e-10);
+        assertEquals( 0.5055,    1000 * history.getLOD(t1Sup),                                        1.0e-10);
 
         // after 2011-07-06, the example daily file has no columns for LOD, but it is interpolated
         AbsoluteDate t2Inf = new AbsoluteDate(2011, 7, 6, TimeScalesFactory.getUTC());
-        Assertions.assertEquals( 0.052605,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Inf).getXp()), 1.0e-10);
-        Assertions.assertEquals( 0.440076,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Inf).getYp()), 1.0e-10);
-        Assertions.assertEquals(-0.2915826, history.getUT1MinusUTC(t2Inf),                                       1.0e-10);
-        Assertions.assertEquals( 0.5020,    1000 * history.getLOD(t2Inf),                                        1.0e-10);
+        assertEquals( 0.052605,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Inf).getXp()), 1.0e-10);
+        assertEquals( 0.440076,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Inf).getYp()), 1.0e-10);
+        assertEquals(-0.2915826, history.getUT1MinusUTC(t2Inf),                                       1.0e-10);
+        assertEquals( 0.5020,    1000 * history.getLOD(t2Inf),                                        1.0e-10);
         AbsoluteDate t2Sup = t2Inf.shiftedBy(Constants.JULIAN_DAY);
-        Assertions.assertEquals( 0.055115,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Sup).getXp()), 1.0e-10);
-        Assertions.assertEquals( 0.440848,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Sup).getYp()), 1.0e-10);
-        Assertions.assertEquals(-0.2920866, history.getUT1MinusUTC(t2Sup),                                       1.0e-10);
-        Assertions.assertEquals( 5.3509e-6, 1000 * history.getLOD(t2Sup),                                        1.0e-10);
+        assertEquals( 0.055115,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Sup).getXp()), 1.0e-10);
+        assertEquals( 0.440848,  3600 * FastMath.toDegrees(history.getPoleCorrection(t2Sup).getYp()), 1.0e-10);
+        assertEquals(-0.2920866, history.getUT1MinusUTC(t2Sup),                                       1.0e-10);
+        assertEquals( 5.3509e-6, 1000 * history.getLOD(t2Sup),                                        1.0e-10);
 
     }
 
     @Test
-    public void testEndDateDaily2000() {
+    void testEndDateDaily2000() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
+        assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2003, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, true).getEndDate());
     }
 
     @Test
-    public void testNoColumns() {
+    void testNoColumns() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
@@ -177,86 +180,86 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-no-columns\\.daily$", manager, () -> utc).fillHistory(converter, history);
         EOPHistory eopH = new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                          history, true);
-        Assertions.assertEquals(new AbsoluteDate(2011, 4, 16, TimeScalesFactory.getUTC()), eopH.getEndDate());
+        assertEquals(new AbsoluteDate(2011, 4, 16, TimeScalesFactory.getUTC()), eopH.getEndDate());
         AbsoluteDate testDate = eopH.getEndDate().shiftedBy(-2 * Constants.JULIAN_DAY);
-        Assertions.assertEquals(0.0, eopH.getPoleCorrection(testDate).getXp(),                1.0e-15);
-        Assertions.assertEquals(0.0, eopH.getPoleCorrection(testDate).getYp(),                1.0e-15);
-        Assertions.assertEquals(0.0, eopH.getUT1MinusUTC(testDate),                           1.0e-15);
-        Assertions.assertEquals(0.0, eopH.getLOD(testDate),                                   1.0e-15);
-        Assertions.assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[0], 1.0e-15);
-        Assertions.assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[1], 1.0e-15);
+        assertEquals(0.0, eopH.getPoleCorrection(testDate).getXp(),                1.0e-15);
+        assertEquals(0.0, eopH.getPoleCorrection(testDate).getYp(),                1.0e-15);
+        assertEquals(0.0, eopH.getUT1MinusUTC(testDate),                           1.0e-15);
+        assertEquals(0.0, eopH.getLOD(testDate),                                   1.0e-15);
+        assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[0], 1.0e-15);
+        assertEquals(0.0, eopH.getNonRotatinOriginNutationCorrection(testDate)[1], 1.0e-15);
     }
 
     @Test
-    public void testPost2070() {
+    void testPost2070() {
         setRoot("rapid-data-columns");
         IERSConventions.NutationCorrectionConverter converter =
                         IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A-post-2070\\.daily$", manager, () -> utc).fillHistory(converter, history);
-        Assertions.assertEquals(new AbsoluteDate(2075, 4, 16, TimeScalesFactory.getUTC()),
+        assertEquals(new AbsoluteDate(2075, 4, 16, TimeScalesFactory.getUTC()),
                             new EOPHistory(IERSConventions.IERS_2010, EOPHistory.DEFAULT_INTERPOLATION_DEGREE,
                                            history, true).getEndDate());
 
     }
 
     @Test
-    public void testTruncatedLine() {
+    void testTruncatedLine() {
         doTestWrongFile("^finals2000A-truncated-line\\.daily$", 3);
     }
 
     @Test
-    public void testWrongDateFormat() {
+    void testWrongDateFormat() {
         doTestWrongFile("^finals2000A-wrong-date-format\\.daily$", 3);
     }
 
     @Test
-    public void testWrongYear() {
+    void testWrongYear() {
         doTestWrongFile("^finals2000A-wrong-year\\.daily$", 6);
     }
 
     @Test
-    public void testWrongMonth() {
+    void testWrongMonth() {
         doTestWrongFile("^finals2000A-wrong-month\\.daily$", 5);
     }
 
     @Test
-    public void testWrongDay() {
+    void testWrongDay() {
         doTestWrongFile("^finals2000A-wrong-day\\.daily$", 4);
     }
 
     @Test
-    public void testWrongPoleAFormat() {
+    void testWrongPoleAFormat() {
         doTestWrongFile("^finals2000A-wrong-pole-A-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongPoleBFormat() {
+    void testWrongPoleBFormat() {
         doTestWrongFile("^finals2000A-wrong-pole-B-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongUT1UTCAFormat() {
+    void testWrongUT1UTCAFormat() {
         doTestWrongFile("^finals2000A-wrong-ut1-utc-A-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongUT1UTCBFormat() {
+    void testWrongUT1UTCBFormat() {
         doTestWrongFile("^finals2000A-wrong-ut1-utc-B-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongLODAFormat() {
+    void testWrongLODAFormat() {
         doTestWrongFile("^finals2000A-wrong-lod-A-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongNutationAFormat() {
+    void testWrongNutationAFormat() {
         doTestWrongFile("^finals2000A-wrong-nutation-A-format\\.daily$", 7);
     }
 
     @Test
-    public void testWrongNutationBFormat() {
+    void testWrongNutationBFormat() {
         doTestWrongFile("^finals2000A-wrong-nutation-B-format\\.daily$", 7);
     }
 
@@ -267,10 +270,10 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         try {
             new RapidDataAndPredictionColumnsLoader(true, fileName, manager, () -> utc).fillHistory(converter, history);
-            Assertions.fail("an exception should have been thrown");
+            fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-            Assertions.assertEquals(lineNumber, ((Integer) oe.getParts()[0]).intValue());
+            assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            assertEquals(lineNumber, ((Integer) oe.getParts()[0]).intValue());
         }
     }
 
