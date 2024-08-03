@@ -126,7 +126,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public FieldAbsoluteDate(final Field<T> field, final AbsoluteDate date) {
         this.field  = field;
         this.epoch  = date.getSeconds();
-        this.offset = field.getZero().newInstance(date.getAttoSeconds() / SplitTime.ATTOSECOND.toDouble());
+        this.offset = field.getZero().newInstance(date.getAttoSeconds() * SplitTime.ATTOSECOND.toDouble());
     }
 
     /** Create an instance with a default value ({@link #getJ2000Epoch(Field)}).
@@ -403,7 +403,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * instant, as measured in a regular time scale
      */
     public FieldAbsoluteDate(final AbsoluteDate since, final T elapsedDuration) {
-        this(since.getSeconds(), since.getAttoSeconds() / SplitTime.ATTOSECOND.toDouble(), elapsedDuration);
+        this(since.getSeconds(), since.getAttoSeconds() * SplitTime.ATTOSECOND.toDouble(), elapsedDuration);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -422,7 +422,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         final long elapsedDurationNanoseconds = TimeUnit.NANOSECONDS.convert(elapsedDuration, timeUnit);
         final long deltaEpoch = elapsedDurationNanoseconds / TimeUnit.SECONDS.toNanos(1);
         final double deltaOffset = (elapsedDurationNanoseconds - (deltaEpoch * TimeUnit.SECONDS.toNanos(1))) / (double) TimeUnit.SECONDS.toNanos(1);
-        final T newOffset = field.getZero().add(since.getAttoSeconds() / SplitTime.ATTOSECOND.toDouble()).add(deltaOffset);
+        final T newOffset = field.getZero().add(since.getAttoSeconds() * SplitTime.ATTOSECOND.toDouble()).add(deltaOffset);
 
         if (newOffset.getReal() >= 1.0) {
             // newOffset is in [1.0, 2.0]
@@ -1198,7 +1198,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public T durationFrom(final AbsoluteDate instant) {
         return offset.
-               subtract(instant.getAttoSeconds() / SplitTime.ATTOSECOND.toDouble()).
+               subtract(instant.getAttoSeconds() * SplitTime.ATTOSECOND.toDouble()).
                add(epoch - instant.getSeconds());
     }
 
@@ -1230,7 +1230,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                               getField().
                               getZero().
                               newInstance(offset.
-                                          subtract(instant.getAttoSeconds() / SplitTime.ATTOSECOND.toDouble()).
+                                          subtract(instant.getAttoSeconds() * SplitTime.ATTOSECOND.toDouble()).
                                           multiply(multiplier).
                                           round());
 
