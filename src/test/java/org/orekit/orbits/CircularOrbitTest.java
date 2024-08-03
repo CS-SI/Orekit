@@ -767,7 +767,7 @@ class CircularOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertEquals(bos.size(), 527);
+        Assertions.assertEquals(551, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

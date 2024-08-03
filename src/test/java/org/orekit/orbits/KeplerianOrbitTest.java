@@ -1292,7 +1292,7 @@ class KeplerianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertEquals(bos.size(), 461);
+        Assertions.assertEquals(485, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

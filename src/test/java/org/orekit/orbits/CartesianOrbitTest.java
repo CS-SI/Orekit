@@ -281,8 +281,7 @@ public class CartesianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 270);
-        Assertions.assertTrue(bos.size() < 320);
+        Assertions.assertEquals(300, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -321,8 +320,7 @@ public class CartesianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 320);
-        Assertions.assertTrue(bos.size() < 370);
+        Assertions.assertEquals(356, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
