@@ -104,6 +104,9 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     /** Nanoseconds in one second. */
     private static final long NANOS_IN_SECOND = 1000000000L;
 
+    /** Attoseconds in one nanosecond. */
+    private static final long ATTOS_IN_NANO = 1000000000L;
+
     /** Attoseconds in one second. */
     private static final long ATTOS_IN_SECOND = 1000000000000000000L;
 
@@ -435,6 +438,30 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         } else {
             // regular subtraction between two finite times
             return new SplitTime(t1.seconds - t2.seconds, t1.attoSeconds - t2.attoSeconds);
+        }
+    }
+
+    /** Multiply an instance by a constant.
+     * @param n multiplication factor
+     * @param t time
+     * @return t1+t2
+     */
+    public static SplitTime multiply(final int n, final SplitTime t) {
+        if (t.isFinite()) {
+            final int  p  = FastMath.abs(n);
+            final long pn = p * (t.attoSeconds / ATTOS_IN_NANO);
+            final long ps = p * t.seconds + pn / NANOS_IN_SECOND;
+            final long pa = p * (t.attoSeconds % ATTOS_IN_NANO) +
+                            ATTOS_IN_NANO * (pn % NANOS_IN_SECOND);
+            final SplitTime pt = new SplitTime(ps, pa);
+            return n < 0 ? pt.negate() : pt;
+        } else {
+            // gather all special cases in one big check to avoid rare multiple tests
+            if (t.isNaN() || n == 0) {
+                return NaN;
+            } else {
+                return n < 0 ? t.negate() : t;
+            }
         }
     }
 

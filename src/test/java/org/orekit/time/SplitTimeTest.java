@@ -500,6 +500,33 @@ public class SplitTimeTest {
     }
 
     @Test
+    public void testMultiply() {
+        checkComponents(SplitTime.multiply(        0, new SplitTime(   1L, 45L)),  0L,                  0L);
+        checkComponents(SplitTime.multiply(        1, new SplitTime(   1L, 45L)),  1L,                 45L);
+        checkComponents(SplitTime.multiply(        3, new SplitTime(   1L, 45L)),  3L,                135L);
+        checkComponents(SplitTime.multiply(       -3, new SplitTime(   1L, 45L)), -4L, 999999999999999865L);
+        checkComponents(SplitTime.multiply(     7233, new SplitTime(1234L, 123456789012345678L)),      8926414L, 962954926296288974L);
+        checkComponents(SplitTime.multiply(    -7233, new SplitTime(1234L, 123456789012345678L)),     -8926415L,  37045073703711026L);
+        checkComponents(SplitTime.multiply( 23012696, new SplitTime(1234L, 999999999999999999L)),  28420679559L, 999999999976987304L);
+        checkComponents(SplitTime.multiply(-23012696, new SplitTime(1234L, 999999999999999999L)), -28420679560L,           23012696L);
+    }
+
+    @Test
+    public void testMultiplySpecialValues() {
+        Assertions.assertTrue(SplitTime.multiply(  0, SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(  3, SplitTime.NEGATIVE_INFINITY).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.multiply( -5, SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.multiply(  0, SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(  3, SplitTime.POSITIVE_INFINITY).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.multiply( -5, SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.multiply(-32, SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.multiply( -1, SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(  0, SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(  1, SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.multiply( 17, SplitTime.NaN).isNaN());
+    }
+
+    @Test
     public void testNegate() {
         for (long s = -1000L; s < 1000L; s += 10L) {
             for (long a = -1000L; a < 1000L; a += 10L) {
@@ -806,11 +833,7 @@ public class SplitTimeTest {
     }
 
     private void checkMultiple(final int n, final SplitTime small, final SplitTime large) {
-        SplitTime sum = SplitTime.ZERO;
-        for (int i = 0; i < n; ++i) {
-            sum = SplitTime.add(sum, small);
-        }
-        Assertions.assertTrue(SplitTime.subtract(sum, large).isZero());
+        Assertions.assertTrue(SplitTime.subtract(SplitTime.multiply(n, small), large).isZero());
     }
 
     private void checkComponents(final SplitTime st , final long seconds, final long attoseconds) {
