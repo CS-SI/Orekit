@@ -17,8 +17,6 @@
 package org.orekit.time;
 
 import java.io.Serializable;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -540,7 +538,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public SplitTime getSplitSecondsInUTCDay() {
-        return SplitTime.add(new SplitTime(60 * (minute - minutesFromUTC) + 3600 * hour, 0L), splitSecond);
+        return SplitTime.add(new SplitTime(60L * (minute - minutesFromUTC) + 3600L * hour, 0L), splitSecond);
     }
 
     /**
