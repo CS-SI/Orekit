@@ -48,6 +48,9 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "^LeapSecond\\.dat$";
 
+    /** Number of seconds in one day. */
+    private static final long DAY = 86400L;
+
     /**
      * Build a loader for LeapSecond.dat file from AGI. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -199,7 +202,7 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
                         final double mjdRef = Double.parseDouble(matcher.group(6));
                         offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef),
                                                     SplitTime.parse(matcher.group(5)),
-                                                    SplitTime.parse(matcher.group(7)).getAttoSeconds()));
+                                                    SplitTime.parse(matcher.group(7)).getAttoSeconds() / DAY));
 
                     }
                 }

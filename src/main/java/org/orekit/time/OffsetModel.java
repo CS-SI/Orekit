@@ -89,7 +89,7 @@ public class OffsetModel implements Serializable {
         return offset;
     }
 
-    /** Offset slope in seconds per UTC day (TAI minus UTC / dUTC).
+    /** Offset slope in attoseconds per UTC day (TAI minus UTC / dUTC).
      * @return offset slope in attoseconds per UTC day (TAI minus UTC / dUTC)
      */
     public long getSlope() {

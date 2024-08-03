@@ -423,7 +423,7 @@ public class UTCScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);
 
-        Assertions.assertEquals(1887, bos.size());
+        Assertions.assertEquals(2284, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
