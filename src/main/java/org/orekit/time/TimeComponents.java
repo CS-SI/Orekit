@@ -104,10 +104,6 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240712L;
 
-    /** Formatting symbols used in {@link #toString()}. */
-    private static final DecimalFormatSymbols US_SYMBOLS =
-            new DecimalFormatSymbols(Locale.US);
-
     /** Basic and extends formats for local time, with optional timezone. */
     private static final Pattern ISO8601_FORMATS = Pattern.compile("^(\\d\\d):?(\\d\\d):?(\\d\\d(?:[.,]\\d+)?)?(?:Z|([-+]\\d\\d(?::?\\d\\d)?))?$");
 
@@ -438,10 +434,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // is the date a calendar date ?
         final Matcher timeMatcher = ISO8601_FORMATS.matcher(string);
         if (timeMatcher.matches()) {
-            final int    hour      = Integer.parseInt(timeMatcher.group(1));
-            final int    minute    = Integer.parseInt(timeMatcher.group(2));
-            final double second    = timeMatcher.group(3) == null ? 0.0 : Double.parseDouble(timeMatcher.group(3).replace(',', '.'));
-            final String offset    = timeMatcher.group(4);
+            final int       hour        = Integer.parseInt(timeMatcher.group(1));
+            final int       minute      = Integer.parseInt(timeMatcher.group(2));
+            final SplitTime splitSecond = timeMatcher.group(3) == null ?
+                                          SplitTime.ZERO :
+                                          SplitTime.parse(timeMatcher.group(3).replace(',', '.'));
+            final String    offset      = timeMatcher.group(4);
             final int    minutesFromUTC;
             if (offset == null) {
                 // no offset from UTC is given
@@ -455,7 +453,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                 final int minutesOffset = offset.length() <= 3 ? 0 : Integer.parseInt(offset.substring(offset.length() - 2));
                 minutesFromUTC          = sign * (minutesOffset + 60 * hourOffset);
             }
-            return new TimeComponents(hour, minute, second, minutesFromUTC);
+            return new TimeComponents(hour, minute, splitSecond, minutesFromUTC);
         }
 
         throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_TIME, string);
@@ -520,7 +518,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public SplitTime getSplitSecondsInLocalDay() {
-        return SplitTime.add(new SplitTime(60 * minute + 3600 * hour, 0L), splitSecond);
+        return SplitTime.add(new SplitTime(60L * minute + 3600L * hour, 0L), splitSecond);
     }
 
     /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
@@ -616,9 +614,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                                          rounded.hour, rounded.minute, rounded.splitSecond.getSeconds()));
             if (fractionDigits > 0) {
                 builder.append('.');
-                builder.append(String.
-                               format("%018d", rounded.splitSecond.getAttoSeconds()).
-                               substring(0, fractionDigits));
+                builder.append(String.format("%018d", rounded.splitSecond.getAttoSeconds()), 0, fractionDigits);
             }
             return builder.toString();
         } else if (splitSecond.isNaN()) {

@@ -133,7 +133,8 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
            100000000000000L,
           1000000000000000L,
          10000000000000000L,
-        100000000000000000L
+        100000000000000000L,
+       1000000000000000000L
     };
     // CHECKSTYLE: resume Indentation check
 
@@ -547,68 +548,147 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      */
     public static SplitTime parse(final String s) {
 
-        // handle sign
-        final long sign;
-        final int firstDigit;
-        if (s.charAt(0) == '-') {
-            sign       = -1;
-            firstDigit = 1;
-        } else if (s.charAt(0) == '+') {
-            sign       = 1;
-            firstDigit = 1;
-        } else {
-            sign       = 1;
-            firstDigit = 0;
+        // decompose the string
+        // we use neither Long.parseLong nor Integer.parseInt because we want to avoid
+        // performing several loops over the characters as we need to keep track of
+        // delimiters decimal point and exponent marker positions
+        final int length = s.length();
+        long significandSign = 1L;
+        int  exponentSign    = 1;
+        int  separatorIndex  = length;
+        int  exponentIndex   = length;
+        long beforeSeparator = 0L;
+        long afterSeparator  = 0L;
+        int  exponent        = 0;
+        int  digitsBefore    = 0;
+        int  digitsAfter     = 0;
+        int  digitsExponent  = 0;
+        int index = 0;
+        while (index < length) {
+
+            // current character
+            final char c = s.charAt(index);
+
+            if (Character.isDigit(c)) {
+                if (separatorIndex == length) {
+                    // we are parsing the part before separator
+                    ++digitsBefore;
+                    beforeSeparator = beforeSeparator * 10 + c - '0';
+                    if (digitsBefore > 19 || beforeSeparator < 0) {
+                        // overflow occurred
+                        break;
+                    }
+                } else if (exponentIndex == length) {
+                    // we are parsing the part between separator and exponent
+                    if (digitsAfter < DIGITS_ATTOS) {
+                        // we never overflow here, we just ignore extra digits
+                        afterSeparator = afterSeparator * 10 + c - '0';
+                        ++digitsAfter;
+                    }
+                } else {
+                    // we are parsing the exponent
+                    ++digitsExponent;
+                    exponent = exponent * 10 + c - '0';
+                    if (digitsExponent > 10 || exponent < 0) {
+                        // overflow occurred
+                        break;
+                    }
+                }
+            } else if (c == '.' && separatorIndex == length) {
+                separatorIndex = index;
+            } else if ((c == 'e' || c == 'E') && exponentIndex == length) {
+                if (separatorIndex == length) {
+                    separatorIndex = index;
+                }
+                exponentIndex = index;
+            } else if (c == '-') {
+                if (index == 0) {
+                    significandSign = -1L;
+                } else if (index == exponentIndex + 1) {
+                    exponentSign = -1;
+                } else {
+                    break;
+                }
+            } else if (c == '+') {
+                if (index == 0) {
+                    significandSign = 1L;
+                } else if (index == exponentIndex + 1) {
+                    exponentSign = 1;
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+
+            ++index;
+
         }
 
-        // gather all digits, keeping track of separator position
-        final StringBuilder allDigits = new StringBuilder();
-        int  separatorPosition = s.length() - firstDigit;
-        for (int index = firstDigit; index < s.length(); ++index) {
-            if (Character.isDigit(s.charAt(index))) {
-                allDigits.append(s.charAt(index));
-            } else if (s.charAt(index) == '.') {
-                separatorPosition = index - firstDigit;
-            } else if (s.charAt(index) == 'e' || s.charAt(index) == 'E') {
-                separatorPosition += Integer.parseInt(s.substring(index + 1));
-                break;
+        if (length == 0 || index < length) {
+            // decomposition failed, either it is a special case or an unparsable string
+            if (s.equals("-∞")) {
+                return SplitTime.NEGATIVE_INFINITY;
+            } else if (s.equals("+∞")) {
+                return SplitTime.POSITIVE_INFINITY;
+            } else if (s.equalsIgnoreCase("NaN")) {
+                return SplitTime.NaN;
+            } else {
+                throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA, s);
             }
         }
 
-        if (allDigits.toString().isEmpty()) {
-            throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA, s);
-        }
-
-        // parse the whole number of seconds
-        final int startSec = 0;
-        final int endSec   = FastMath.min(separatorPosition, allDigits.length());
-        long seconds = endSec <= startSec ?
-                       0L :
-                       MULTIPLIERS[separatorPosition - endSec] *
-                       Long.parseLong(allDigits.substring(startSec, endSec));
-
-        // parse attoseconds
-        final int startAttos = FastMath.max(0, separatorPosition);
-        final int endAttos   = FastMath.min(DIGITS_ATTOS + separatorPosition, allDigits.length());
-        long attoseconds = endAttos <= startAttos ?
-                           0L :
-                           MULTIPLIERS[FastMath.max(0, DIGITS_ATTOS - (endAttos - separatorPosition))] *
-                           Long.parseLong(allDigits.substring(startAttos, endAttos));
-
-        if (separatorPosition + DIGITS_ATTOS < allDigits.length()) {
-            // there are decimals left
-            if (separatorPosition + DIGITS_ATTOS >= 0 &&
-                allDigits.charAt(separatorPosition + DIGITS_ATTOS) >= '5') {
-                // round up
-                attoseconds++;
-                if (attoseconds > ATTOS_IN_SECOND) {
-                    attoseconds -= ATTOS_IN_SECOND;
-                    seconds++;
+        // decomposition was successful, build the split time
+        long seconds;
+        long attoseconds;
+        if (exponentSign < 0) {
+            // the part before separator must be split into seconds and attoseconds
+            if (exponent >= MULTIPLIERS.length) {
+                seconds = 0L;
+                if (exponent - DIGITS_ATTOS >= MULTIPLIERS.length) {
+                    // underflow
+                    attoseconds = 0L;
+                } else {
+                    attoseconds = beforeSeparator / MULTIPLIERS[exponent - DIGITS_ATTOS];
+                }
+            } else {
+                final long secondsMultiplier    = MULTIPLIERS[exponent];
+                final long attoBeforeMultiplier = MULTIPLIERS[DIGITS_ATTOS - exponent];
+                seconds     = beforeSeparator / secondsMultiplier;
+                attoseconds = (beforeSeparator % secondsMultiplier) * attoBeforeMultiplier;
+                while (digitsAfter + exponent > DIGITS_ATTOS) {
+                    // drop least significant digit below one attosecond
+                    afterSeparator /= 10;
+                    digitsAfter--;
+                }
+                final long attoAfterMultiplier = MULTIPLIERS[DIGITS_ATTOS - exponent - digitsAfter];
+                attoseconds += afterSeparator * attoAfterMultiplier;
+            }
+        } else {
+            // the part after separator must be split into seconds and attoseconds
+            if (exponent >= MULTIPLIERS.length) {
+                if (beforeSeparator == 0L && afterSeparator == 0L) {
+                    return SplitTime.ZERO;
+                } else if (significandSign < 0) {
+                    return SplitTime.NEGATIVE_INFINITY;
+                } else {
+                    return SplitTime.POSITIVE_INFINITY;
+                }
+            } else {
+                final long secondsMultiplier    = MULTIPLIERS[exponent];
+                seconds = beforeSeparator * secondsMultiplier;
+                if (exponent > digitsAfter) {
+                    seconds += afterSeparator * MULTIPLIERS[exponent - digitsAfter];
+                    attoseconds = 0L;
+                } else {
+                    seconds += (afterSeparator / MULTIPLIERS[digitsAfter - exponent]);
+                    attoseconds = (afterSeparator % MULTIPLIERS[digitsAfter - exponent]) *
+                                  MULTIPLIERS[DIGITS_ATTOS - digitsAfter + exponent];
                 }
             }
         }
 
-        return new SplitTime(sign * seconds, sign * attoseconds);
+        return new SplitTime(significandSign * seconds, significandSign * attoseconds);
 
     }
 
