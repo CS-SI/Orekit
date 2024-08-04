@@ -104,6 +104,7 @@ public class UTCScale implements TimeScale {
             //  0.0012960 s/d → 15 ns/s
             //  0.0011232 s/d → 13 ns/s
             //  0.0025920 s/d → 30 ns/s
+            // CHECKSTYLE: stop MultipleStringLiterals check
             offsetModels.add( 0, linearModel(1961,  1, 1, 37300, "1.4228180", "0.001296"));
             offsetModels.add( 1, linearModel(1961,  8, 1, 37300, "1.3728180", "0.001296"));
             offsetModels.add( 2, linearModel(1962,  1, 1, 37665, "1.8458580", "0.0011232"));
@@ -117,6 +118,7 @@ public class UTCScale implements TimeScale {
             offsetModels.add(10, linearModel(1965,  9, 1, 38761, "3.8401300", "0.001296"));
             offsetModels.add(11, linearModel(1966,  1, 1, 39126, "4.3131700", "0.002592"));
             offsetModels.add(12, linearModel(1968,  2, 1, 39126, "4.2131700", "0.002592"));
+            // CHECKSTYLE: resume MultipleStringLiterals check
         }
 
         // create cache
