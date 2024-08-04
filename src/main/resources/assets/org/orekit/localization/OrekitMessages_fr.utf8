@@ -828,6 +828,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = aucune transformation unscented configurée
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
 
+# value is not positive: {0}
+NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas positive
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = la transformation de {0} vers {1} n'est pas implémentée
 

@@ -16,6 +16,9 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
+import org.hipparchus.random.RandomGenerator;
+import org.hipparchus.random.Well1024a;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -501,29 +504,88 @@ public class SplitTimeTest {
 
     @Test
     public void testMultiply() {
-        checkComponents(SplitTime.multiply(        0, new SplitTime(   1L, 45L)),  0L,                  0L);
-        checkComponents(SplitTime.multiply(        1, new SplitTime(   1L, 45L)),  1L,                 45L);
-        checkComponents(SplitTime.multiply(        3, new SplitTime(   1L, 45L)),  3L,                135L);
-        checkComponents(SplitTime.multiply(       -3, new SplitTime(   1L, 45L)), -4L, 999999999999999865L);
-        checkComponents(SplitTime.multiply(     7233, new SplitTime(1234L, 123456789012345678L)),      8926414L, 962954926296288974L);
-        checkComponents(SplitTime.multiply(    -7233, new SplitTime(1234L, 123456789012345678L)),     -8926415L,  37045073703711026L);
-        checkComponents(SplitTime.multiply( 23012696, new SplitTime(1234L, 999999999999999999L)),  28420679559L, 999999999976987304L);
-        checkComponents(SplitTime.multiply(-23012696, new SplitTime(1234L, 999999999999999999L)), -28420679560L,           23012696L);
+        try {
+            SplitTime.multiply(new SplitTime(   1L, 45L), -1);
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NOT_POSITIVE, oe.getSpecifier());
+            Assertions.assertEquals(-1, (Long) oe.getParts()[0]);
+        }
+        checkComponents(SplitTime.multiply(new SplitTime(   1L, 45L), 0),  0L,                  0L);
+        checkComponents(SplitTime.multiply(new SplitTime(1L, 45L), 1), 1L, 45L);
+        checkComponents(SplitTime.multiply(new SplitTime(1L, 45L), 3), 3L, 135L);
+        checkComponents(SplitTime.multiply(new SplitTime(1234L, 123456789012345678L), 7233L), 8926414L, 962954926296288974L);
+        checkComponents(SplitTime.multiply(new SplitTime(1234L, 999999999999999999L), 23012696L), 28420679559L, 999999999976987304L);
+        checkComponents(SplitTime.multiply(new SplitTime(1234L, 999999999999999999L), 123456789012L),
+                        152469134429819L, 999999876543210988L);
+         try {
+             SplitTime.multiply(new SplitTime(10000000000L, 1L), 123456789012L);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(LocalizedCoreFormats.OVERFLOW_IN_MULTIPLICATION, oe.getSpecifier());
+            Assertions.assertEquals(10000000000L, (Long) oe.getParts()[0]);
+            Assertions.assertEquals(123456789012L, (Long) oe.getParts()[1]);
+        }
+
+        try {
+            SplitTime.multiply(new SplitTime(922382683L, 717054400620018329L), 1573105907129L);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(LocalizedCoreFormats.OVERFLOW_IN_MULTIPLICATION, oe.getSpecifier());
+            Assertions.assertEquals(922382683L, (Long) oe.getParts()[0]);
+            Assertions.assertEquals(1573105907129L, (Long) oe.getParts()[1]);
+        }
     }
 
     @Test
     public void testMultiplySpecialValues() {
-        Assertions.assertTrue(SplitTime.multiply(  0, SplitTime.NEGATIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.multiply(  3, SplitTime.NEGATIVE_INFINITY).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.multiply( -5, SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.multiply(  0, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.multiply(  3, SplitTime.POSITIVE_INFINITY).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.multiply( -5, SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.multiply(-32, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.multiply( -1, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.multiply(  0, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.multiply(  1, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.multiply( 17, SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(SplitTime.NEGATIVE_INFINITY, 0).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(SplitTime.NEGATIVE_INFINITY, 3).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.multiply(SplitTime.POSITIVE_INFINITY, 0).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(SplitTime.POSITIVE_INFINITY, 3).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.multiply(SplitTime.NaN,               0).isNaN());
+        Assertions.assertTrue(SplitTime.multiply(SplitTime.NaN,               3).isNaN());
+    }
+
+    @Test
+    public void testDivide() {
+        try {
+            SplitTime.divide(new SplitTime(1L, 45L), 0);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
+            Assertions.assertEquals(0, (Integer) oe.getParts()[0]);
+        }
+        checkComponents(SplitTime.divide(new SplitTime(1L,  45L), 1), 1L, 45L);
+        checkComponents(SplitTime.divide(new SplitTime(3L, 135L), 3), 1L, 45L);
+        checkComponents(SplitTime.divide(new SplitTime(8926414L, 962954926296288974L), 7233), 1234L, 123456789012345678L);
+        checkComponents(SplitTime.divide(new SplitTime(28420679559L, 999999999976987304L), 23012696), 1234L, 999999999999999999L);
+        checkComponents(SplitTime.divide(new SplitTime(1L, 0L), 1000000000), 0L, 1000000000L);
+
+        // we consider a 15 nanosecond per UTC second slope for TAI-UTC offset (this is what was used in 1961)
+        // then 1 day in UTC corresponds to 1 day + 1296 µs in TAI, and we perform the computation the other way round
+        // we start from the 1 day + 1296 µs duration in TAI and recover the 1296 µs change in TAI-UTC offset
+        checkComponents(SplitTime.divide(SplitTime.multiply(new SplitTime(86400L, 1296000000000000L), 15), 1000000015),
+                        0L, 1296000000000000L);
+
+    }
+
+    @Test
+    public void testRandomDivide() {
+        final RandomGenerator random = new Well1024a(0x83977774b8d4eb2eL);
+        for (int i = 0; i < 1000000; i++) {
+            final SplitTime t = new SplitTime(random.nextLong(1000L * 365L * 86400L),
+                                              random.nextLong(1000000000000000000L));
+            final int p = FastMath.max(1, random.nextInt(10000000));
+            Assertions.assertEquals(0, t.compareTo(SplitTime.divide(SplitTime.multiply(t, p), p)));
+        }
+
+    }
+
+    @Test
+    public void testDivideSpecialValues() {
+        Assertions.assertTrue(SplitTime.divide(SplitTime.NEGATIVE_INFINITY, 3).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.divide(SplitTime.POSITIVE_INFINITY, 3).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.divide(SplitTime.NaN,               3).isNaN());
     }
 
     @Test
@@ -833,7 +895,7 @@ public class SplitTimeTest {
     }
 
     private void checkMultiple(final int n, final SplitTime small, final SplitTime large) {
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.multiply(n, small), large).isZero());
+        Assertions.assertTrue(SplitTime.subtract(SplitTime.multiply(small, n), large).isZero());
     }
 
     private void checkComponents(final SplitTime st , final long seconds, final long attoseconds) {

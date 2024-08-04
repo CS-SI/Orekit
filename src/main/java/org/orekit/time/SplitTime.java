@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -104,14 +105,18 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     /** Nanoseconds in one second. */
     private static final long NANOS_IN_SECOND = 1000000000L;
 
-    /** Attoseconds in one nanosecond. */
-    private static final long ATTOS_IN_NANO = 1000000000L;
-
     /** Attoseconds in one second. */
     private static final long ATTOS_IN_SECOND = 1000000000000000000L;
 
     /** Attoseconds in one half-second. */
     private static final long ATTOS_IN_HALF_SECOND = 500000000000000000L;
+
+    /** Factor to split long for multiplications.
+     * <p>
+     * It is important that SPLIT * SPLIT = ATTOS_IN_SECOND.
+     * </p>
+     */
+    private static final long SPLIT = 1000000000L;
 
     /** Number of digits after separator for attoseconds. */
     private static final int DIGITS_ATTOS = 18;
@@ -177,7 +182,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         long normalizedAttoSeconds;
         try {
             final long qAtto = attoSeconds / ATTOS_IN_SECOND;
-            final long rAtto = attoSeconds % ATTOS_IN_SECOND;
+            final long rAtto = attoSeconds - qAtto * ATTOS_IN_SECOND;
             if (rAtto < 0L) {
                 normalizedSeconds     = FastMath.subtractExact(FastMath.addExact(seconds, qAtto), 1L);
                 normalizedAttoSeconds = ATTOS_IN_SECOND + rAtto;
@@ -288,7 +293,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                 break;
             case MILLISECONDS: {
                 final long s = time / MILLIS_IN_SECOND;
-                final long r = (time % MILLIS_IN_SECOND) * MILLISECOND.attoSeconds;
+                final long r = (time - s * MILLIS_IN_SECOND) * MILLISECOND.attoSeconds;
                 if (r < 0L) {
                     seconds     = s - 1L;
                     attoSeconds = ATTOS_IN_SECOND + r;
@@ -300,7 +305,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             }
             case MICROSECONDS: {
                 final long s = time / MICROS_IN_SECOND;
-                final long r = (time % MICROS_IN_SECOND) * MICROSECOND.attoSeconds;
+                final long r = (time - s * MICROS_IN_SECOND) * MICROSECOND.attoSeconds;
                 if (r < 0L) {
                     seconds     = s - 1L;
                     attoSeconds = ATTOS_IN_SECOND + r;
@@ -312,7 +317,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             }
             case NANOSECONDS: {
                 final long s = time / NANOS_IN_SECOND;
-                final long r = (time % NANOS_IN_SECOND) * NANOSECOND.attoSeconds;
+                final long r = (time - s * NANOS_IN_SECOND) * NANOSECOND.attoSeconds;
                 if (r < 0L) {
                     seconds     = s - 1L;
                     attoSeconds = ATTOS_IN_SECOND + r;
@@ -441,27 +446,71 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         }
     }
 
-    /** Multiply an instance by a constant.
-     * @param n multiplication factor
+    /**
+     * Multiply an instance by a positive or zero constant.
+     *
      * @param t time
-     * @return t1+t2
+     * @param p multiplication factor (must be positive)
+     * @return p ⨉ t
      */
-    public static SplitTime multiply(final int n, final SplitTime t) {
+    public static SplitTime multiply(final SplitTime t, final long p) {
+        if (p < 0) {
+            throw new OrekitException(OrekitMessages.NOT_POSITIVE, p);
+        }
         if (t.isFinite()) {
-            final int  p  = FastMath.abs(n);
-            final long pn = p * (t.attoSeconds / ATTOS_IN_NANO);
-            final long ps = p * t.seconds + pn / NANOS_IN_SECOND;
-            final long pa = p * (t.attoSeconds % ATTOS_IN_NANO) +
-                            ATTOS_IN_NANO * (pn % NANOS_IN_SECOND);
-            final SplitTime pt = new SplitTime(ps, pa);
-            return n < 0 ? pt.negate() : pt;
-        } else {
-            // gather all special cases in one big check to avoid rare multiple tests
-            if (t.isNaN() || n == 0) {
-                return NaN;
-            } else {
-                return n < 0 ? t.negate() : t;
+            final SplitTime abs   = t.seconds < 0 ? t.negate() : t;
+            final long      pHigh = p / SPLIT;
+            final long      pLow  = p - pHigh * SPLIT;
+            final long      sHigh = abs.seconds / SPLIT;
+            final long      sLow  = abs.seconds - sHigh * SPLIT;
+            final long      aHigh = abs.attoSeconds / SPLIT;
+            final long      aLow  = abs.attoSeconds - aHigh * SPLIT;
+            final long ps1     = pHigh * sLow + pLow * sHigh;
+            final long ps0     = pLow * sLow;
+            final long pa2     = pHigh * aHigh;
+            final long pa1     = pHigh * aLow + pLow * aHigh;
+            final long pa1High = pa1 / SPLIT;
+            final long pa1Low  = pa1 - pa1High * SPLIT;
+            final long pa0     = pLow * aLow;
+
+            // check for overflow
+            if (pHigh * sHigh != 0 || ps1 / SPLIT != 0) {
+                throw new OrekitException(LocalizedCoreFormats.OVERFLOW_IN_MULTIPLICATION, abs.seconds, p);
             }
+
+            // here we use the fact that SPLIT * SPLIT = ATTOS_IN_SECOND
+            final SplitTime mul = new SplitTime(SPLIT * ps1 + ps0 + pa2 + pa1High, SPLIT * pa1Low + pa0);
+            return t.seconds < 0 ? mul.negate() : mul;
+        } else {
+            // already NaN, +∞ or -∞, unchanged except 0 ⨉ ±∞ = NaN
+            return p == 0 ? SplitTime.NaN : t;
+        }
+    }
+
+    /** Divide an instance by a positive constant.
+     * @param t time
+     * @param q division factor (must be strictly positive)
+     * @return t ÷ q
+     */
+    public static SplitTime divide(final SplitTime t, final int q) {
+        if (q <= 0) {
+            throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, q);
+        }
+        if (t.isFinite()) {
+            final long      sSec  = t.seconds       / q;
+            final long      rSec  = t.seconds       - sSec * q;
+            final long      sK    = ATTOS_IN_SECOND / q;
+            final long      rK    = ATTOS_IN_SECOND - sK * q;
+            final SplitTime tsSec = new SplitTime(0L, sSec);
+            final SplitTime trSec = new SplitTime(0L, rSec);
+            return new SplitTime(SplitTime.multiply(SplitTime.multiply(tsSec, sK), q),
+                                 SplitTime.multiply(tsSec, rK),
+                                 SplitTime.multiply(trSec, sK),
+                                 // here, we use the fact q is a positive int, hence rSec * rK does not overflow
+                                 new SplitTime(0L, (t.attoSeconds + rSec * rK) / q));
+        } else {
+            // already NaN, +∞ or -∞, unchanged as q > 0
+            return t;
         }
     }
 
@@ -682,7 +731,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                 final long secondsMultiplier    = MULTIPLIERS[exponent];
                 final long attoBeforeMultiplier = MULTIPLIERS[DIGITS_ATTOS - exponent];
                 seconds     = beforeSeparator / secondsMultiplier;
-                attoseconds = (beforeSeparator % secondsMultiplier) * attoBeforeMultiplier;
+                attoseconds = (beforeSeparator - seconds * secondsMultiplier) * attoBeforeMultiplier;
                 while (digitsAfter + exponent > DIGITS_ATTOS) {
                     // drop least significant digit below one attosecond
                     afterSeparator /= 10;
@@ -708,8 +757,9 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                     seconds += afterSeparator * MULTIPLIERS[exponent - digitsAfter];
                     attoseconds = 0L;
                 } else {
-                    seconds += (afterSeparator / MULTIPLIERS[digitsAfter - exponent]);
-                    attoseconds = (afterSeparator % MULTIPLIERS[digitsAfter - exponent]) *
+                    final long q = afterSeparator / MULTIPLIERS[digitsAfter - exponent];
+                    seconds += q;
+                    attoseconds = (afterSeparator - q * MULTIPLIERS[digitsAfter - exponent]) *
                                   MULTIPLIERS[DIGITS_ATTOS - digitsAfter + exponent];
                 }
             }

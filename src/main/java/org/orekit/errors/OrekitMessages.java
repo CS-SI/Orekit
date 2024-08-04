@@ -866,6 +866,9 @@ public enum OrekitMessages implements Localizable {
     /** NOT_STRICTLY_POSITIVE. */
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
 
+    /** NOT_POSITIVE. */
+    NOT_POSITIVE("value is not positive: {0}"),
+
     /** UNSUPPORTED_TRANSFORM. */
     UNSUPPORTED_TRANSFORM("transform from {0} to {1} is not implemented"),
 
