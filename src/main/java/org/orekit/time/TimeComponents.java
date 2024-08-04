@@ -640,12 +640,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // Format for seconds to prevent rounding up to an invalid time. See #591
         final String formatted = toStringWithoutUtcOffset(18);
         int last = formatted.length() - 1;
-        while (formatted.charAt(last) == '0') {
-            // we want to remove final zeros
-            --last;
-        }
-        if (formatted.charAt(last) == '.') {
-            // also remove decimal separator if whole second
+        while (last > 11 && formatted.charAt(last) == '0') {
+            // we want to remove final zeros (but keeping milliseconds for compatibility)
             --last;
         }
         return formatted.substring(0, last + 1);
