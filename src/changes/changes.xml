@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1477">
+        Add adjoint dynamics for inertial force.
+      </action>
       <action dev="serrof" type="add" issue="1482">
         Add adjoint dynamics for single absolute attraction.
       </action>

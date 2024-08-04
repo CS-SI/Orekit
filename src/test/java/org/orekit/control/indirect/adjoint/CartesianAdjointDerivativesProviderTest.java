@@ -146,12 +146,12 @@ class CartesianAdjointDerivativesProviderTest {
     private static class TestAdjointTerm implements CartesianAdjointEquationTerm {
 
         @Override
-        public double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables) {
+        public double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables) {
             return new double[] { 1., 10., 100. };
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables) {
+        public <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables) {
             return null;
         }
     }
