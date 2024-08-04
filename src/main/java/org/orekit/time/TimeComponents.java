@@ -229,7 +229,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * less than {@code 61.0}. This constructor may produce an invalid value of
      * {@link #getSecond()} and {@link #getSplitSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #TimeComponents(SplitTime, double, int)}.
+     * the final minute use {@link #TimeComponents(SplitTime, SplitTime, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
@@ -237,7 +237,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
      *                    1} (excluded)
      * @throws OrekitIllegalArgumentException if seconds number is out of range
-     * @see #TimeComponents(SplitTime, double, int)
+     * @see #TimeComponents(SplitTime, SplitTime, int)
      * @see #TimeComponents(int, double)
      */
     public TimeComponents(final double secondInDay)
@@ -256,7 +256,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
      * may produce an invalid value of {@link #getSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #TimeComponents(SplitTime, double, int)}.
+     * the final minute use {@link #TimeComponents(SplitTime, SplitTime, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will
      * return 0).
@@ -264,13 +264,13 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number
      * @throws OrekitIllegalArgumentException if seconds number is out of range
-     * @see #TimeComponents(SplitTime, double, int)
+     * @see #TimeComponents(SplitTime, SplitTime, int)
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB)
             throws OrekitIllegalArgumentException {
          // if the total is at least 86400 then assume there is a leap second
         this(new SplitTime(secondInDayA).add(new SplitTime(secondInDayB)),
-             (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 0 : 1,
+             (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? SplitTime.ZERO : SplitTime.SECOND,
              (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
     }
 
@@ -281,14 +281,14 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * will be less than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
      * may produce an invalid value of {@link #getSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #TimeComponents(SplitTime, double, int)}.
+     * the final minute use {@link #TimeComponents(SplitTime, SplitTime, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
      *
      * @param splitSecondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
      *                    1} (excluded)
-     * @see #TimeComponents(SplitTime, double, int)
+     * @see #TimeComponents(SplitTime, SplitTime, int)
      * @see #TimeComponents(int, double)
      * @since 13.0
      */
@@ -359,7 +359,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @throws OrekitIllegalArgumentException if the inequalities above do not hold.
      * @since 10.2
      */
-    public TimeComponents(final SplitTime secondInDay, final double leap, final int minuteDuration) {
+    public TimeComponents(final SplitTime secondInDay, final SplitTime leap, final int minuteDuration) {
 
         minutesFromUTC = 0;
 
@@ -378,7 +378,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                                                      secondInDay.toDouble(), 0, Constants.JULIAN_DAY);
         }
         final int maxExtraSeconds = minuteDuration - 60;
-        if (leap * maxExtraSeconds < 0 || FastMath.abs(leap) > FastMath.abs(maxExtraSeconds)) {
+        if (leap.getSeconds() * maxExtraSeconds < 0 || FastMath.abs(leap.getSeconds()) > FastMath.abs(maxExtraSeconds)) {
             throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                                                      leap, 0, maxExtraSeconds);
         }

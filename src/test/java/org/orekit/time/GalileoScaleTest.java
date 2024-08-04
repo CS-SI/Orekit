@@ -54,9 +54,9 @@ public class GalileoScaleTest {
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
         Assertions.assertEquals(61, utc.minuteDuration(during));
-        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(1.0, utc.getLeap(during).toDouble(), 1.0e-10);
         Assertions.assertEquals(60, scale.minuteDuration(during));
-        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(0.0, scale.getLeap(during).toDouble(), 1.0e-10);
     }
 
     @Test

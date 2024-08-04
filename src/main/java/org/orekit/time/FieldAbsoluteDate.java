@@ -1361,7 +1361,9 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         // extract calendar elements
         final DateComponents dateComponents = new DateComponents(DateComponents.J2000_EPOCH, date);
         // extract time element, accounting for leap seconds
-        final double leap = timeScale.insideLeap(this) ? timeScale.getLeap(this.toAbsoluteDate()) : 0;
+        final SplitTime leap = timeScale.insideLeap(this) ?
+                               timeScale.getLeap(this.toAbsoluteDate()) :
+                               SplitTime.ZERO;
         final int minuteDuration = timeScale.minuteDuration(this);
         final TimeComponents timeComponents =
             new TimeComponents(new SplitTime(time).add(new SplitTime(offset2000B)),

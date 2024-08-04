@@ -172,21 +172,21 @@ public class UTCScaleTest {
             final AbsoluteDate end = offset.getValidityStart();
             AbsoluteDate d = start.shiftedBy(end.durationFrom(start) / 2.0);
             int excess = utc.minuteDuration(d) - 60;
-            double leap = offset.getLeap();
+            SplitTime leap = offset.getLeap();
             // verify
-            Assertions.assertTrue(leap <= excess, "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess);
-            Assertions.assertTrue(leap > (excess - 1));
+            Assertions.assertTrue(leap.toDouble() <= excess, "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess);
+            Assertions.assertTrue(leap.toDouble() > (excess - 1));
             // before the leap starts but still in the same minute
             d = start.shiftedBy(-30);
             int newExcess = utc.minuteDuration(d) - 60;
-            double newLeap = offset.getLeap();
+            SplitTime newLeap = offset.getLeap();
             // verify
-            Assertions.assertTrue(newLeap <= newExcess, "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess);
-            Assertions.assertTrue(leap > (excess - 1));
+            Assertions.assertTrue(newLeap.toDouble() <= newExcess, "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess);
+            Assertions.assertTrue(leap.toDouble() > (excess - 1));
             Assertions.assertEquals(excess, newExcess);
-            Assertions.assertEquals(leap, newLeap, 0.0);
-            MatcherAssert.assertThat("" + offset.getValidityStart(), leap,
-                    OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
+            Assertions.assertEquals(leap, newLeap);
+            MatcherAssert.assertThat("" + offset.getValidityStart(), leap.toDouble(),
+                                     OrekitMatchers.numberCloseTo(end.durationFrom(start), 1e-16, 1));
         }
     }
 

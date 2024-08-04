@@ -58,7 +58,7 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
     private final AbsoluteDate reference;
 
     /** Value of the leap at offset validity start (in seconds). */
-    private final double leap;
+    private final SplitTime leap;
 
     /** Offset at validity start in seconds (TAI minus UTC). */
     private final SplitTime offset;
@@ -76,7 +76,7 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @param reference date for slope computations.
      */
     UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
-                 final double leap, final SplitTime offset,
+                 final SplitTime leap, final SplitTime offset,
                  final int mjdRef, final int slope, final AbsoluteDate reference) {
         this.leapDate      = leapDate;
         this.leapDateMJD   = leapDateMJD;
@@ -123,10 +123,10 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
         return validityStart;
     }
 
-    /** Get the value of the leap at offset validity start (in seconds).
-     * @return value of the leap at offset validity start (in seconds)
+    /** Get the value of the leap at offset validity start.
+     * @return value of the leap at offset validity start
      */
-    public double getLeap() {
+    public SplitTime getLeap() {
         return leap;
     }
 

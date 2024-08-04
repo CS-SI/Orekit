@@ -97,7 +97,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double getLeap(final AbsoluteDate date) {
+    public SplitTime getLeap(final AbsoluteDate date) {
         return utc.getLeap(date);
     }
 

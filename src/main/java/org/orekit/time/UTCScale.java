@@ -141,11 +141,14 @@ public class UTCScale implements TimeScale {
 
             // end of the leap
             final long         dt          = (date.getMJD() - mjdRef) * SEC_PER_DAY;
-            final SplitTime    startOffset = offset.add(SplitTime.NANOSECOND.multiply(slope * dt));
+            final SplitTime    drift       = SplitTime.NANOSECOND.multiply(slope * FastMath.abs(dt));
+            final SplitTime    startOffset = dt < 0 ? offset.subtract(drift) : offset.add(drift);
             final AbsoluteDate leapEnd     = new AbsoluteDate(date, tai).shiftedBy(startOffset);
 
             // leap computed at leap start and in UTC scale
-            final double leap              = leapEnd.durationFrom(leapStart) / (1 + slope / SplitTime.ATTOSECOND.toDouble());
+            final SplitTime leap           = leapEnd.splitDurationFrom(leapStart).
+                                             multiply(1000000000).
+                                             divide(1000000000 + slope);
 
             final AbsoluteDate reference = AbsoluteDate.createMJDDate(mjdRef, 0, tai).shiftedBy(offset);
             previous = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, slope, reference);
@@ -285,7 +288,8 @@ public class UTCScale implements TimeScale {
         if (offset != null) {
             // since this method returns an int we can't return the precise duration in
             // all cases, but we can bound it. Some leaps are more than 1s. See #694
-            return 60 + (int) FastMath.ceil(offset.getLeap());
+            return 60 + (int) (offset.getLeap().getSeconds() +
+                               FastMath.min(1, offset.getLeap().getAttoSeconds()));
         }
         // no leap is expected within the next minute
         return 60;
@@ -299,11 +303,11 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double getLeap(final AbsoluteDate date) {
+    public SplitTime getLeap(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
         if (offsetIndex < 0) {
             // the date is before the first known leap
-            return 0;
+            return SplitTime.ZERO;
         } else {
             return offsets[offsetIndex].getLeap();
         }
@@ -312,7 +316,7 @@ public class UTCScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T getLeap(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().newInstance(getLeap(date.toAbsoluteDate()));
+        return date.getField().getZero().newInstance(getLeap(date.toAbsoluteDate()).toDouble());
     }
 
     /** Find the index of the offset valid at some date.

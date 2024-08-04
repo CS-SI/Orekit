@@ -126,14 +126,14 @@ public interface TimeScale extends Serializable {
 
     /** Get the value of the previous leap.
      * <p>
-     * This method will return 0.0 for all time scales that do <em>not</em>
+     * This method will return 0 for all time scales that do <em>not</em>
      * implement leap seconds.
      * </p>
      * @param date date to check
      * @return value of the previous leap
      */
-    default double getLeap(final AbsoluteDate date) {
-        return 0;
+    default SplitTime getLeap(final AbsoluteDate date) {
+        return SplitTime.ZERO;
     }
 
     /** Get the value of the previous leap.
