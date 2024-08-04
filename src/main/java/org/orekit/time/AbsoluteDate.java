@@ -29,7 +29,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
-
+import org.orekit.utils.Constants;
 
 /** This class represents a specific instant in time.
 
@@ -1506,4 +1506,53 @@ public class AbsoluteDate
                 .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
     }
 
+    /**
+     * Return the given date as a Modified Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     *
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getMJD() {
+        return this.getJD() - DateComponents.JD_TO_MJD;
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     *
+     * @since 12.2
+     */
+    public double getMJD(final TimeScale ts) {
+        return this.getJD(ts) - DateComponents.JD_TO_MJD;
+    }
+
+    /**
+     * Return the given date as a Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Julian Date.
+     *
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getJD() {
+        return getJD(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return the given date as a Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     *
+     * @return double representation of the given date as Julian Date.
+     *
+     * @since 12.2
+     */
+    public double getJD(final TimeScale ts) {
+        return this.getComponents(ts).offsetFrom(DateTimeComponents.JULIAN_EPOCH) / Constants.JULIAN_DAY;
+    }
 }

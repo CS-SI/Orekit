@@ -829,7 +829,7 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = aucune transformation unscented configurée
 NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
 
 # value is not positive: {0}
-NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas positive
+NOT_POSITIVE = la valeur {0} n''est pas positive
 
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = la transformation de {0} vers {1} n'est pas implémentée
@@ -897,5 +897,9 @@ INFINITE_NRLMSISE00_DENSITY = Valeur infinie lors du calcul de la densité atmos
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE = Le constructor de propagateur ne peut pas être cloné
 
+# field "{0}" is too long, maximum length is {1} characters
+FIELD_TOO_LONG = le champ « {0} » est trop long, la longueur maximale est de {1} caractères
+
 # cannot parse data {0}
 CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}
+

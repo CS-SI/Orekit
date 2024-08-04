@@ -1654,6 +1654,34 @@ public class AbsoluteDateTest {
         }
     }
 
+    @Test
+    public void testGetJulianDates() {
+        // GIVEN a reference date
+        final TimeScale utc = TimeScalesFactory.getUTC();
+
+        AbsoluteDate reference              = new AbsoluteDate(2024, 7, 4, 13, 0, 0, utc);
+        AbsoluteDate referenceFromJDMethod  = AbsoluteDate.createJDDate(2460496, .0416667 * Constants.JULIAN_DAY, utc);
+        AbsoluteDate referenceFromMJDMethod = AbsoluteDate.createMJDDate(60495, 0.54166670 * Constants.JULIAN_DAY, utc);
+
+        // WHEN converting it to Julian Date or Modified Julian Date
+        double mjdDateDefaultData = reference.getMJD();
+        double jdDateDefaultData  = reference.getJD();
+        double mjdDate            = reference.getMJD(utc);
+        double jdDate             = reference.getJD(utc);
+
+        // THEN
+        // source : Time/Date Converter - HEASARC - NASA
+        Assertions.assertEquals(2460496.0416667, jdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(60495.54166670, mjdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(jdDate, jdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(mjdDateDefaultData, mjdDate);
+
+        // Assert that static method are correct when creating date from JD or MJD
+        Assertions.assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
+        Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
+    }
+
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
@@ -1682,5 +1710,4 @@ public class AbsoluteDateTest {
             return date;
         }
     }
-
 }

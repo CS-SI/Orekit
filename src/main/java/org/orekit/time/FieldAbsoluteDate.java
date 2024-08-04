@@ -1778,6 +1778,50 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public boolean hasZeroField() {
         return (offset instanceof Derivative<?> || offset instanceof Complex) && offset.subtract(offset.getReal()).isZero();
     }
+
+    /**
+     * Return the given date as a Modified Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getMJD() {
+        return this.toAbsoluteDate().getMJD();
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     * @return double representation of the given date as Modified Julian Date.
+     * @since 12.2
+     */
+    public double getMJD(final TimeScale ts) {
+        return this.toAbsoluteDate().getMJD(ts);
+    }
+
+    /**
+     * Return the given date as a Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Julian Date.
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getJD() {
+        return this.toAbsoluteDate().getJD();
+    }
+
+    /**
+     * Return the given date as a Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     * @return double representation of the given date as Julian Date.
+     * @since 12.2
+     */
+    public double getJD(final TimeScale ts) {
+        return this.toAbsoluteDate().getJD(ts);
+    }
 }
 
 

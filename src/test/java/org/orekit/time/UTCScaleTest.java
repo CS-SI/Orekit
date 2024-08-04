@@ -51,7 +51,7 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        Assertions.assertEquals("2020-12-31T23:59:59Z", d1.toString());
+        Assertions.assertEquals("2020-12-31T23:59:59.000Z", d1.toString());
     }
 
     @Test
@@ -88,10 +88,10 @@ public class UTCScaleTest {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                           new TimeComponents(23, 59, 59),
                                           utc);
-        Assertions.assertEquals("1983-06-30T23:58:59", d.shiftedBy(-60).toString(utc));
+        Assertions.assertEquals("1983-06-30T23:58:59.000", d.shiftedBy(-60).toString(utc));
         Assertions.assertEquals(60, utc.minuteDuration(d.shiftedBy(-60)));
         Assertions.assertFalse(utc.insideLeap(d.shiftedBy(-60)));
-        Assertions.assertEquals("1983-06-30T23:59:59", d.toString(utc));
+        Assertions.assertEquals("1983-06-30T23:59:59.000", d.toString(utc));
         Assertions.assertEquals(61, utc.minuteDuration(d));
         Assertions.assertFalse(utc.insideLeap(d));
         d = d.shiftedBy(0.251);

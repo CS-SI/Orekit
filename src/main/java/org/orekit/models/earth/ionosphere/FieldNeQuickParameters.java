@@ -21,7 +21,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.SinCos;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
@@ -76,21 +75,21 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
 
     /**
      * Build a new instance.
-     * @param field field of the elements
      * @param dateTime current date time components
-     * @param f2 F2 coefficients used by the F2 layer
-     * @param fm3 Fm3 coefficients used by the F2 layer
+     * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
+     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
      * @param alpha effective ionisation level coefficients
      * @param modipGrip modip grid
      */
-    FieldNeQuickParameters(final Field<T> field, final DateTimeComponents dateTime, final double[][][] f2,
-                           final double[][][] fm3, final T latitude, final T longitude,
+    FieldNeQuickParameters(final DateTimeComponents dateTime,
+                           final double[] flattenF2, final double[] flattenFm3,
+                           final T latitude, final T longitude,
                            final double[] alpha, final double[][] modipGrip) {
 
         // Zero
-        final T zero = field.getZero();
+        final T zero = latitude.getField().getZero();
 
         // MODIP in degrees
         final T modip = computeMODIP(latitude, longitude, modipGrip);
@@ -106,25 +105,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         // Effective solar zenith angle in radians
         final T xeff = computeEffectiveSolarAngle(date.getMonth(), hours, latitude, longitude);
 
-        // Coefficients for F2 layer parameters
-        // Compute the array of interpolated coefficients for foF2 (Eq. 44)
-        final T[][] af2 = MathArrays.buildArray(field, 76, 13);
-        for (int j = 0; j < 76; j++) {
-            for (int k = 0; k < 13; k++ ) {
-                af2[j][k] = azr.multiply(0.01).negate().add(1.0).multiply(f2[0][j][k]).add(azr.multiply(0.01).multiply(f2[1][j][k]));
-            }
-        }
-
-        // Compute the array of interpolated coefficients for M(3000)F2 (Eq. 46)
-        final T[][] am3 = MathArrays.buildArray(field, 49, 9);
-        for (int j = 0; j < 49; j++) {
-            for (int k = 0; k < 9; k++ ) {
-                am3[j][k] = azr.multiply(0.01).negate().add(1.0).multiply(fm3[0][j][k]).add(azr.multiply(0.01).multiply(fm3[1][j][k]));
-            }
-        }
-
         // E layer maximum density height in km (Eq. 78)
-        this.hmE = field.getZero().newInstance(120.0);
+        this.hmE = zero.newInstance(120.0);
         // E layer critical frequency in MHz
         final T foE = computefoE(date.getMonth(), az, xeff, latitude);
         // E layer maximum density in 10^11 m-3 (Eq. 36)
@@ -133,19 +115,21 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         // Time argument (Eq. 49)
         final double t = FastMath.toRadians(15 * hours) - FastMath.PI;
         // Compute Fourier time series for foF2 and M(3000)F2
-        final T[] cf2 = computeCF2(field, af2, t);
-        final T[] cm3 = computeCm3(field, am3, t);
+        final T[] scT = sinCos(zero.newInstance(t), 6);
+        final T[] cf2 = computeCF2(flattenF2, azr, scT);
+        final T[] cm3 = computeCm3(flattenFm3, azr, scT);
         // F2 layer critical frequency in MHz
-        final T foF2 = computefoF2(field, modip, cf2, latitude, longitude);
+        final T[] scL = sinCos(longitude, 8);
+        final T foF2 = computefoF2(modip, cf2, latitude, scL);
         // Maximum Usable Frequency factor
-        final T mF2  = computeMF2(field, modip, cm3, latitude, longitude);
+        final T mF2  = computeMF2(modip, cm3, latitude, scL);
         // F2 layer maximum density in 10^11 m-3
         this.nmF2 = foF2.multiply(foF2).multiply(0.124);
         // F2 layer maximum density height in km
-        this.hmF2 = computehmF2(field, foE, foF2, mF2);
+        this.hmF2 = computehmF2(foE, foF2, mF2);
 
         // F1 layer critical frequency in MHz
-        final T foF1 = computefoF1(field, foE, foF2);
+        final T foF1 = computefoF1(foE, foF2);
         // F1 layer maximum density in 10^11 m-3
         final T nmF1;
         if (foF1.getReal() <= 0.0 && foE.getReal() > 2.0) {
@@ -166,10 +150,10 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         this.beBot = zero.newInstance(5.0);
 
         // Layer amplitude coefficients
-        this.amplitudes = computeLayerAmplitudes(field, nmE, nmF1, foF1);
+        this.amplitudes = computeLayerAmplitudes(nmE, nmF1, foF1);
 
         // Topside thickness parameter
-        this.h0 = computeH0(field, date.getMonth(), azr);
+        this.h0 = computeH0(date.getMonth(), azr);
     }
 
     /**
@@ -323,9 +307,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final T y  = b.subtract(bF);
 
         // MODIP (Ref Eq. 16)
-        final T modip = interpolate(z1, z2, z3, z4, y);
+        return interpolate(z1, z2, z3, z4, y);
 
-        return modip;
     }
 
     /**
@@ -425,21 +408,20 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final T seasp = ee.subtract(1.0).divide(ee.add(1.0)).multiply(seas);
         // Critical frequency (Eq. 35)
         final T coef = seasp.multiply(0.019).negate().add(1.112);
-        final T foE = FastMath.sqrt(coef .multiply(coef).multiply(sqAz).multiply(FastMath.cos(xeff).pow(0.6)).add(0.49));
-        return foE;
+        return FastMath.sqrt(coef .multiply(coef).multiply(sqAz).multiply(FastMath.cos(xeff).pow(0.6)).add(0.49));
+
     }
 
     /**
      * Computes the F2 layer height of maximum electron density.
-     * @param field field of the elements
      * @param foE E layer layer critical frequency in MHz
      * @param foF2 F2 layer layer critical frequency in MHz
      * @param mF2 maximum usable frequency factor
      * @return hmF2 in km
      */
-    private T computehmF2(final Field<T> field, final T foE, final T foF2, final T mF2) {
+    private T computehmF2(final T foE, final T foF2, final T mF2) {
         // Zero
-        final T zero = field.getZero();
+        final T zero = foE.getField().getZero();
         // Ratio
         final T fo = foF2.divide(foE);
         final T ratio = join(fo, zero.newInstance(1.75), zero.newInstance(20.0), fo.subtract(1.75));
@@ -453,163 +435,192 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         // hmF2 Eq. 80
         final T mF2Sq = mF2.square();
         final T temp  = FastMath.sqrt(mF2Sq.multiply(0.0196).add(1.0).divide(mF2Sq.multiply(1.2967).subtract(1.0)));
-        final T height  = mF2.multiply(1490.0).multiply(temp).divide(mF2.add(deltaM)).subtract(176.0);
-        return height;
+        return mF2.multiply(1490.0).multiply(temp).divide(mF2.add(deltaM)).subtract(176.0);
+
+    }
+
+    /** Compute sines and cosines.
+     * @param a argument
+     * @param n number of terms
+     * @return sin(a), cos(a), sin(2a), cos(2a) … sin(n a), cos(n a) array
+     * @since 12.1.3
+     */
+    private T[] sinCos(final T a, final int n) {
+
+        final FieldSinCos<T> sc0 = FastMath.sinCos(a);
+        FieldSinCos<T> sci = sc0;
+        final T[] sc = MathArrays.buildArray(a.getField(), 2 * n);
+        int isc = 0;
+        sc[isc++] = sci.sin();
+        sc[isc++] = sci.cos();
+        for (int i = 1; i < n; i++) {
+            sci = FieldSinCos.sum(sc0, sci);
+            sc[isc++] = sci.sin();
+            sc[isc++] = sci.cos();
+        }
+
+        return sc;
+
     }
 
     /**
      * Computes cf2 coefficients.
-     * @param field field of the elements
-     * @param af2 interpolated coefficients for foF2
-     * @param t time argument
+     * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
+     * @param azr effective sunspot number (Eq. 19)
+     * @param scT sines/cosines array of time argument
      * @return the cf2 coefficients array
      */
-    private T[] computeCF2(final Field<T> field, final T[][] af2, final double t) {
-        // Eq. 50
-        final T[] cf2 = MathArrays.buildArray(field, 76);
+    private T[] computeCF2(final double[] flattenF2, final T azr, final T[] scT) {
+
+        // interpolation coefficients for effective spot number
+        final T azr01 = azr.multiply(0.01);
+        final T omazr01 = azr01.negate().add(1);
+
+        // Eq. 44 and Eq. 50 merged into one loop
+        final T[] cf2 = MathArrays.buildArray(azr.getField(), 76);
+        int index = 0;
         for (int i = 0; i < cf2.length; i++) {
-            T sum = field.getZero();
-            for (int k = 0; k < 6; k++) {
-                final SinCos sc = FastMath.sinCos((k + 1) * t);
-                sum = sum.add(af2[i][2 * k + 1].multiply(sc.sin()).add(af2[i][2 * (k + 1)].multiply(sc.cos())));
-            }
-            cf2[i] = af2[i][0].add(sum);
+            // CHECKSTYLE: stop Indentation check
+            cf2[i] = omazr01.multiply(flattenF2[index     ]).add(azr01.multiply(flattenF2[index +  1])).
+                 add(omazr01.multiply(flattenF2[index +  2]).add(azr01.multiply(flattenF2[index +  3])).multiply(scT[ 0])).
+                 add(omazr01.multiply(flattenF2[index +  4]).add(azr01.multiply(flattenF2[index +  5])).multiply(scT[ 1])).
+                 add(omazr01.multiply(flattenF2[index +  6]).add(azr01.multiply(flattenF2[index +  7])).multiply(scT[ 2])).
+                 add(omazr01.multiply(flattenF2[index +  8]).add(azr01.multiply(flattenF2[index +  9])).multiply(scT[ 3])).
+                 add(omazr01.multiply(flattenF2[index + 10]).add(azr01.multiply(flattenF2[index + 11])).multiply(scT[ 4])).
+                 add(omazr01.multiply(flattenF2[index + 12]).add(azr01.multiply(flattenF2[index + 13])).multiply(scT[ 5])).
+                 add(omazr01.multiply(flattenF2[index + 14]).add(azr01.multiply(flattenF2[index + 15])).multiply(scT[ 6])).
+                 add(omazr01.multiply(flattenF2[index + 16]).add(azr01.multiply(flattenF2[index + 17])).multiply(scT[ 7])).
+                 add(omazr01.multiply(flattenF2[index + 18]).add(azr01.multiply(flattenF2[index + 19])).multiply(scT[ 8])).
+                 add(omazr01.multiply(flattenF2[index + 20]).add(azr01.multiply(flattenF2[index + 21])).multiply(scT[ 9])).
+                 add(omazr01.multiply(flattenF2[index + 22]).add(azr01.multiply(flattenF2[index + 23])).multiply(scT[10])).
+                 add(omazr01.multiply(flattenF2[index + 24]).add(azr01.multiply(flattenF2[index + 25])).multiply(scT[11]));
+            index += 26;
+            // CHECKSTYLE: resume Indentation check
         }
         return cf2;
     }
 
     /**
      * Computes Cm3 coefficients.
-     * @param field field of the elements
-     * @param am3 interpolated coefficients for foF2
-     * @param t time argument
+     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
+     * @param azr effective sunspot number (Eq. 19)
+     * @param scT sines/cosines array of time argument
      * @return the Cm3 coefficients array
      */
-    private T[] computeCm3(final Field<T> field, final T[][] am3, final double t) {
-        // Eq. 51
-        final T[] cm3 = MathArrays.buildArray(field, 49);
+    private T[] computeCm3(final double[] flattenFm3, final T azr, final T[] scT) {
+
+        // interpolation coefficients for effective spot number
+        final T azr01 = azr.multiply(0.01);
+        final T omazr01 = azr01.negate().add(1);
+
+        // Eq. 44 and Eq. 51 merged into one loop
+        final T[] cm3 = MathArrays.buildArray(azr.getField(), 49);
+        int index = 0;
         for (int i = 0; i < cm3.length; i++) {
-            T sum = field.getZero();
-            for (int k = 0; k < 4; k++) {
-                final SinCos sc = FastMath.sinCos((k + 1) * t);
-                sum = sum.add(am3[i][2 * k + 1].multiply(sc.sin()).add(am3[i][2 * (k + 1)].multiply(sc.cos())));
-            }
-            cm3[i] = am3[i][0].add(sum);
+            cm3[i] = omazr01.multiply(flattenFm3[index     ]).add(azr01.multiply(flattenFm3[index +  1])).
+                 add(omazr01.multiply(flattenFm3[index +  2]).add(azr01.multiply(flattenFm3[index +  3])).multiply(scT[ 0])).
+                 add(omazr01.multiply(flattenFm3[index +  4]).add(azr01.multiply(flattenFm3[index +  5])).multiply(scT[ 1])).
+                 add(omazr01.multiply(flattenFm3[index +  6]).add(azr01.multiply(flattenFm3[index +  7])).multiply(scT[ 2])).
+                 add(omazr01.multiply(flattenFm3[index +  8]).add(azr01.multiply(flattenFm3[index +  9])).multiply(scT[ 3])).
+                 add(omazr01.multiply(flattenFm3[index + 10]).add(azr01.multiply(flattenFm3[index + 11])).multiply(scT[ 4])).
+                 add(omazr01.multiply(flattenFm3[index + 12]).add(azr01.multiply(flattenFm3[index + 13])).multiply(scT[ 5])).
+                 add(omazr01.multiply(flattenFm3[index + 14]).add(azr01.multiply(flattenFm3[index + 15])).multiply(scT[ 6])).
+                 add(omazr01.multiply(flattenFm3[index + 16]).add(azr01.multiply(flattenFm3[index + 17])).multiply(scT[ 7]));
+            index += 18;
         }
         return cm3;
     }
 
     /**
      * This method computes the F2 layer critical frequency.
-     * @param field field of the elements
      * @param modip modified DIP latitude, in degrees
      * @param cf2 Fourier time series for foF2
      * @param latitude latitude in radians
-     * @param longitude longitude in radians
+     * @param scL sines/cosines array of longitude argument
      * @return the F2 layer critical frequency, MHz
      */
-    private T computefoF2(final Field<T> field, final T modip, final T[] cf2,
-                          final T latitude, final T longitude) {
-
-        // One
-        final T one = field.getOne();
+    private T computefoF2(final T modip, final T[] cf2,
+                          final T latitude, final T[] scL) {
 
         // Legendre grades (Eq. 63)
         final int[] q = new int[] {
             12, 12, 9, 5, 2, 1, 1, 1, 1
         };
 
-        // Array for geographic terms
-        final T[] g = MathArrays.buildArray(field, cf2.length);
-        g[0] = one;
+        T frequency = cf2[0];
 
         // MODIP coefficients Eq. 57
         final T sinMODIP = FastMath.sin(FastMath.toRadians(modip));
-        final T[] m = MathArrays.buildArray(field, 12);
-        m[0] = one;
+        final T[] m = MathArrays.buildArray(latitude.getField(), 12);
+        m[0] = latitude.getField().getOne();
         for (int i = 1; i < q[0]; i++) {
             m[i] = sinMODIP.multiply(m[i - 1]);
-            g[i] = m[i];
-        }
-
-        // Latitude coefficients (Eq. 58)
-        final T cosLat = FastMath.cos(latitude);
-        final T[] p = MathArrays.buildArray(field, 8);
-        p[0] = cosLat;
-        for (int n = 2; n < 9; n++) {
-            p[n - 1] = cosLat.multiply(p[n - 2]);
+            frequency = frequency.add(m[i].multiply(cf2[i]));
         }
 
         // latitude and longitude terms
         int index = 12;
+        final T cosLat1 = FastMath.cos(latitude);
+        T cosLatI = cosLat1;
         for (int i = 1; i < q.length; i++) {
-            final FieldSinCos<T> sc = FastMath.sinCos(longitude.multiply(i));
+            final T c = cosLatI.multiply(scL[2 * i - 1]);
+            final T s = cosLatI.multiply(scL[2 * i - 2]);
             for (int j = 0; j < q[i]; j++) {
-                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.cos());
-                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.sin());
+                frequency = frequency.add(m[j].multiply(c).multiply(cf2[index++]));
+                frequency = frequency.add(m[j].multiply(s).multiply(cf2[index++]));
             }
+            cosLatI = cosLatI.multiply(cosLat1);
         }
 
-        // Compute foF2 by linear combination
-        final T frequency = one.linearCombination(g, cf2);
         return frequency;
+
     }
 
     /**
      * This method computes the Maximum Usable Frequency factor.
-     * @param field field of the elements
      * @param modip modified DIP latitude, in degrees
      * @param cm3 Fourier time series for M(3000)F2
      * @param latitude latitude in radians
-     * @param longitude longitude in radians
+     * @param scL sines/cosines array of longitude argument
      * @return the Maximum Usable Frequency factor
      */
-    private T computeMF2(final Field<T> field, final T modip, final T[] cm3,
-                         final T latitude, final T longitude) {
+    private T computeMF2(final T modip, final T[] cm3,
+                         final T latitude, final T[] scL) {
 
-        // One
-        final T one = field.getOne();
         // Legendre grades (Eq. 71)
         final int[] r = new int[] {
             7, 8, 6, 3, 2, 1, 1
         };
 
-        // Array for geographic terms
-        final T[] g = MathArrays.buildArray(field, cm3.length);
-        g[0] = one;
+        T m3000 = cm3[0];
 
         // MODIP coefficients Eq. 57
         final T sinMODIP = FastMath.sin(FastMath.toRadians(modip));
-        final T[] m = MathArrays.buildArray(field, 12);
-        m[0] = one;
+        final T[] m = MathArrays.buildArray(latitude.getField(), 12);
+        m[0] = latitude.getField().getOne();
         for (int i = 1; i < 12; i++) {
             m[i] = sinMODIP.multiply(m[i - 1]);
             if (i < 7) {
-                g[i] = m[i];
+                m3000 = m3000.add(m[i].multiply(cm3[i]));
             }
-        }
-
-        // Latitude coefficients (Eq. 58)
-        final T cosLat = FastMath.cos(latitude);
-        final T[] p = MathArrays.buildArray(field, 8);
-        p[0] = cosLat;
-        for (int n = 2; n < 9; n++) {
-            p[n - 1] = cosLat.multiply(p[n - 2]);
         }
 
         // latitude and longitude terms
         int index = 7;
+        final T cosLat1 = FastMath.cos(latitude);
+        T cosLatI = cosLat1;
         for (int i = 1; i < r.length; i++) {
-            final FieldSinCos<T> sc = FastMath.sinCos(longitude.multiply(i));
+            final T c = cosLatI.multiply(scL[2 * i - 1]);
+            final T s = cosLatI.multiply(scL[2 * i - 2]);
             for (int j = 0; j < r[i]; j++) {
-                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.cos());
-                g[index++] = m[j].multiply(p[i - 1]).multiply(sc.sin());
+                m3000 = m3000.add(m[j].multiply(c).multiply(cm3[index++]));
+                m3000 = m3000.add(m[j].multiply(s).multiply(cm3[index++]));
             }
+            cosLatI = cosLatI.multiply(cosLat1); // Eq. 58
         }
 
-        // Compute m3000 by linear combination
-        final T m3000 = one.linearCombination(g, cm3);
         return m3000;
+
     }
 
     /**
@@ -618,13 +629,12 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * This computation performs the algorithm exposed in Annex F
      * of the reference document.
      * </p>
-     * @param field field of the elements
      * @param foE the E layer critical frequency, MHz
      * @return the F1 layer critical frequency, MHz
      * @param foF2 the F2 layer critical frequency, MHz
      */
-    private T computefoF1(final Field<T> field, final T foE, final T foF2) {
-        final T zero = field.getZero();
+    private T computefoF1(final T foE, final T foF2) {
+        final T zero = foE.getField().getZero();
         final T temp  = join(foE.multiply(1.4), zero, zero.newInstance(1000.0), foE.subtract(2.0));
         final T temp2 = join(zero, temp, zero.newInstance(1000.0), foE.subtract(temp));
         final T value = join(temp2, temp2.multiply(0.85), zero.newInstance(60.0), foF2.multiply(0.85).subtract(temp2));
@@ -645,18 +655,17 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * <li>double[2] = A3 → E  layer amplitude
      * </ul>
      * </p>
-     * @param field field of the elements
      * @param nmE E layer maximum density in 10^11 m-3
      * @param nmF1 F1 layer maximum density in 10^11 m-3
      * @param foF1 F1 layer critical frequency in MHz
      * @return a three components array containing the layer amplitudes
      */
-    private T[] computeLayerAmplitudes(final Field<T> field, final T nmE, final T nmF1, final T foF1) {
+    private T[] computeLayerAmplitudes(final T nmE, final T nmF1, final T foF1) {
         // Zero
-        final T zero = field.getZero();
+        final T zero = nmE.getField().getZero();
 
         // Initialize array
-        final T[] amplitude = MathArrays.buildArray(field, 3);
+        final T[] amplitude = MathArrays.buildArray(nmE.getField(), 3);
 
         // F2 layer amplitude (Eq. 90)
         final T a1 = nmF2.multiply(4.0);
@@ -671,7 +680,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
             T a3a = nmE.multiply(4.0);
             for (int i = 0; i < 5; i++) {
                 a2a = nmF1.subtract(epst(a1, hmF2, b2Bot, hmF1)).subtract(epst(a3a, hmE, beTop, hmF1)).multiply(4.0);
-                a2a = join(a2a, nmF1.multiply(0.8), field.getOne(), a2a.subtract(nmF1.multiply(0.8)));
+                a2a = join(a2a, nmF1.multiply(0.8), nmE.getField().getOne(), a2a.subtract(nmF1.multiply(0.8)));
                 a3a = nmE.subtract(epst(a2a, hmF1, b1Bot, hmE)).subtract(epst(a1, hmF2, b2Bot, hmE)).multiply(4.0);
             }
             amplitude[1] = a2a;
@@ -684,15 +693,14 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     /**
      * This method computes the topside thickness parameter H0.
      *
-     * @param field field of the elements
      * @param month current month
      * @param azr effective sunspot number
      * @return H0 in km
      */
-    private T computeH0(final Field<T> field, final int month, final T azr) {
+    private T computeH0(final int month, final T azr) {
 
         // One
-        final T one = field.getOne();
+        final T one = azr.getField().getOne();
 
         // Auxiliary parameter ka (Eq. 99 and 100)
         final T ka;
@@ -717,8 +725,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final T v = x.multiply(0.041163).subtract(0.183981).multiply(x).add(1.424472);
 
         // Topside thickness parameter (Eq. 106)
-        final T h = hA.divide(v);
-        return h;
+        return hA.divide(v);
+
     }
 
     /**
@@ -769,9 +777,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final T a1 = g2.multiply(9.0).subtract(g4);
         final T a2 = g3.subtract(g1);
         final T a3 = g4.subtract(g2);
-        final T zx = delta.multiply(a3).add(a2).multiply(delta).add(a1).multiply(delta).add(a0).multiply(0.0625);
+        return delta.multiply(a3).add(a2).multiply(delta).add(a1).multiply(delta).add(a0).multiply(0.0625);
 
-        return zx;
     }
 
     /**
@@ -809,8 +816,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
                    final T z, final T w) {
         final T ex  = clipExp(w.subtract(y).divide(z));
         final T opex = ex.add(1.0);
-        final T epst = x.multiply(ex).divide(opex.multiply(opex));
-        return epst;
+        return x.multiply(ex).divide(opex.multiply(opex));
+
     }
 
 }

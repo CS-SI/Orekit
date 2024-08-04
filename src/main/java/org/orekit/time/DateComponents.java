@@ -103,6 +103,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      */
     public static final DateComponents MIN_EPOCH;
 
+    /** Offset between julian day epoch and modified julian day epoch. */
+    public static final double JD_TO_MJD = 2400000.5;
+
     /** Serializable UID. */
     private static final long serialVersionUID = -2462694707837970938L;
 
@@ -132,6 +135,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
 
     /** Offset between J2000 epoch and modified julian day epoch. */
     private static final int MJD_TO_J2000 = 51544;
+
 
     /** Basic and extended format calendar date. */
     private static final Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");

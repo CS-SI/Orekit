@@ -44,7 +44,7 @@ class UnboundedCartesianEnergyTest {
     void testGetMassFlowRateFactor() {
         // GIVEN
         final double expectedRateFactor = 1.;
-        final UnboundedCartesianEnergy unboundedCartesianEnergy = new UnboundedCartesianEnergy(expectedRateFactor);
+        final UnboundedCartesianEnergy unboundedCartesianEnergy = new UnboundedCartesianEnergy("", expectedRateFactor);
         // WHEN
         final double actualRateFactor = unboundedCartesianEnergy.getMassFlowRateFactor();
         // THEN
@@ -55,7 +55,7 @@ class UnboundedCartesianEnergyTest {
     void testGetThrustVectorFieldFactor() {
         // GIVEN
         final double massRateFactor = 1.;
-        final UnboundedCartesianEnergy unboundedCartesianEnergy = new UnboundedCartesianEnergy(massRateFactor);
+        final UnboundedCartesianEnergy unboundedCartesianEnergy = new UnboundedCartesianEnergy("", massRateFactor);
         final ComplexField field = ComplexField.getInstance();
         final Complex[] fieldAdjoint = MathArrays.buildArray(field, 7);
         fieldAdjoint[3] = new Complex(1.0, 0.0);
@@ -76,8 +76,8 @@ class UnboundedCartesianEnergyTest {
     void testDerivatives() {
         // GIVEN
         final String name = "a";
-        final UnboundedCartesianEnergy energy = new UnboundedCartesianEnergy(1.);
-        final FieldCartesianAdjointDerivativesProvider<Gradient> fieldAdjointDerivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(name, energy);
+        final UnboundedCartesianEnergy energy = new UnboundedCartesianEnergy(name, 1.);
+        final FieldCartesianAdjointDerivativesProvider<Gradient> fieldAdjointDerivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(energy);
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(7e6, 1e3, 0), new Vector3D(10., 7e3, -200)),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
         final SpacecraftState state = new SpacecraftState(orbit, 10.).addAdditionalState(name, 1., 2., 3., 4., 5., 6., 7.);
@@ -85,7 +85,7 @@ class UnboundedCartesianEnergyTest {
         // WHEN
         final FieldCombinedDerivatives<Gradient>fieldCombinedDerivatives = fieldAdjointDerivativesProvider.combinedDerivatives(fieldState);
         // THEN
-        final CartesianAdjointDerivativesProvider adjointDerivativesProvider = new CartesianAdjointDerivativesProvider(name, energy);
+        final CartesianAdjointDerivativesProvider adjointDerivativesProvider = new CartesianAdjointDerivativesProvider(energy);
         final CombinedDerivatives combinedDerivatives = adjointDerivativesProvider.combinedDerivatives(state);
         for (int i = 0; i < 7; i++) {
             Assertions.assertEquals(combinedDerivatives.getMainStateDerivativesIncrements()[i],

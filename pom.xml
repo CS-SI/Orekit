@@ -54,7 +54,7 @@
     <orekit.maven-install-plugin.version>3.1.2</orekit.maven-install-plugin.version>
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
-    <orekit.hipparchus.version>3.1</orekit.hipparchus.version>
+    <orekit.hipparchus.version>3.2-SNAPSHOT</orekit.hipparchus.version>
     <orekit.junit.version>5.10.0</orekit.junit.version>
     <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>

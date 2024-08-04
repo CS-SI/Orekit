@@ -444,7 +444,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         }
     }
 
-    /** Multiply ths instance by a positive or zero constant.
+    /** Multiply the instance by a positive or zero constant.
      * @param p multiplication factor (must be positive)
      * @return this ⨉ p
      */
@@ -454,12 +454,12 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         }
         if (isFinite()) {
             final SplitTime abs   = seconds < 0 ? negate() : this;
-            final long      pHigh = p / SPLIT;
-            final long      pLow  = p - pHigh * SPLIT;
-            final long      sHigh = abs.seconds / SPLIT;
-            final long      sLow  = abs.seconds - sHigh * SPLIT;
-            final long      aHigh = abs.attoSeconds / SPLIT;
-            final long      aLow  = abs.attoSeconds - aHigh * SPLIT;
+            final long pHigh   = p / SPLIT;
+            final long pLow    = p - pHigh * SPLIT;
+            final long sHigh   = abs.seconds / SPLIT;
+            final long sLow    = abs.seconds - sHigh * SPLIT;
+            final long aHigh   = abs.attoSeconds / SPLIT;
+            final long aLow    = abs.attoSeconds - aHigh * SPLIT;
             final long ps1     = pHigh * sLow + pLow * sHigh;
             final long ps0     = pLow * sLow;
             final long pa2     = pHigh * aHigh;
@@ -482,7 +482,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         }
     }
 
-    /** Divide ths instance by a positive constant.
+    /** Divide the instance by a positive constant.
      * @param q division factor (must be strictly positive)
      * @return this ÷ q
      */
@@ -500,7 +500,8 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             return new SplitTime(tsSec.multiply(sK).multiply(q),
                                  tsSec.multiply(rK),
                                  trSec.multiply(sK),
-                                 // here, we use the fact q is a positive int, hence rSec * rK does not overflow
+                                 // here, we use the fact q is a positive int (not a long!)
+                                 // hence rSec * rK < q² does not overflow
                                  new SplitTime(0L, (attoSeconds + rSec * rK) / q));
         } else {
             // already NaN, +∞ or -∞, unchanged as q > 0

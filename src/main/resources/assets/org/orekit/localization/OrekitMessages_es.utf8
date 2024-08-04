@@ -829,7 +829,7 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = ninguna transformación unscented configurad
 NOT_STRICTLY_POSITIVE = el valor {0} no es estrictamente positivo
 
 # value is not positive: {0}
-NOT_STRICTLY_POSITIVE = el valor {0} no es positivo
+NOT_POSITIVE = el valor {0} no es positivo
 
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = la transformación de {0} a {1} no se ha implementado
@@ -896,6 +896,9 @@ INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
 
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
+
+# field "{0}" is too long, maximum length is {1} characters
+FIELD_TOO_LONG = <MISSING TRANSLATION>
 
 # cannot parse data {0}
 CANNOT_PARSE_DATA = <MISSING TRANSLATION>
