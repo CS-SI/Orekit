@@ -86,7 +86,7 @@ public class SatelliteClockScale implements TimeScale {
         this.name          = name;
         this.epoch         = epoch;
         this.epochDT       = epoch.getComponents(epochScale);
-        this.offsetAtEpoch = SplitTime.add(epochScale.offsetFromTAI(epoch), new SplitTime(countAtEpoch));
+        this.offsetAtEpoch = epochScale.offsetFromTAI(epoch).add(new SplitTime(countAtEpoch));
         this.countAtEpoch  = countAtEpoch;
         this.drift         = drift;
         this.rate          = 1.0 + drift;
@@ -95,7 +95,7 @@ public class SatelliteClockScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public SplitTime offsetFromTAI(final AbsoluteDate date) {
-        return SplitTime.add(offsetAtEpoch, new SplitTime(drift * date.durationFrom(epoch)));
+        return offsetAtEpoch.add(new SplitTime(drift * date.durationFrom(epoch)));
     }
 
     /** {@inheritDoc} */
@@ -103,11 +103,11 @@ public class SatelliteClockScale implements TimeScale {
     public SplitTime offsetToTAI(final DateComponents date, final TimeComponents time) {
         final long      deltaDate      = (date.getJ2000Day() - epochDT.getDate().getJ2000Day()) *
                                          SplitTime.DAY.getSeconds();
-        final SplitTime deltaTime      = SplitTime.subtract(time.getSplitSecondsInUTCDay(),
-                                                            epochDT.getTime().getSplitSecondsInUTCDay());
+        final SplitTime deltaTime      = time.getSplitSecondsInUTCDay().
+                                         subtract(epochDT.getTime().getSplitSecondsInUTCDay());
         final double    delta          = deltaDate + deltaTime.toDouble();
         final double    timeSinceEpoch = (delta - countAtEpoch) / rate;
-        return SplitTime.add(offsetAtEpoch, new SplitTime(drift * timeSinceEpoch)).negate();
+        return offsetAtEpoch.add(new SplitTime(drift * timeSinceEpoch)).negate();
     }
 
     /** Compute date corresponding to some clock count.

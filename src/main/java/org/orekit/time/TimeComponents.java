@@ -269,7 +269,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public TimeComponents(final int secondInDayA, final double secondInDayB)
             throws OrekitIllegalArgumentException {
          // if the total is at least 86400 then assume there is a leap second
-        this(SplitTime.add(new SplitTime(secondInDayA), new SplitTime(secondInDayB)),
+        this(new SplitTime(secondInDayA).add(new SplitTime(secondInDayB)),
              (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 0 : 1,
              (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
     }
@@ -308,13 +308,13 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
             } else {
                 hour        = TWENTY_THREE;
                 minute      = FIFTY_NINE;
-                splitSecond = SplitTime.subtract(splitSecondInDay, TWENTY_THREE_FIFTY_NINE);
+                splitSecond = splitSecondInDay.subtract(TWENTY_THREE_FIFTY_NINE);
             }
         } else {
             // regular time within day
             hour        = (int) splitSecondInDay.getSeconds() / HOUR;
             minute      = ((int) splitSecondInDay.getSeconds() % HOUR) / MINUTE;
-            splitSecond = SplitTime.subtract(splitSecondInDay, new SplitTime(hour * HOUR + minute * MINUTE, 0L));
+            splitSecond = splitSecondInDay.subtract(new SplitTime(hour * HOUR + minute * MINUTE, 0L));
         }
 
         minutesFromUTC = 0;
@@ -394,8 +394,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // naiveSecond may round to minuteDuration, creating an invalid time.
         // In that case round down to preserve a valid time at the cost of up to 1as of error.
         // See #676 and #681.
-        final SplitTime naiveSecond = SplitTime.add(new SplitTime(wholeSeconds, secondInDay.getAttoSeconds()),
-                                                    new SplitTime(leap));
+        final SplitTime naiveSecond = new SplitTime(wholeSeconds, secondInDay.getAttoSeconds()).
+                                      add(new SplitTime(leap));
         if (naiveSecond.compareTo(SplitTime.ZERO) < 0) {
             throw new OrekitIllegalArgumentException(
                     OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
@@ -516,7 +516,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public SplitTime getSplitSecondsInLocalDay() {
-        return SplitTime.add(new SplitTime(60L * minute + 3600L * hour, 0L), splitSecond);
+        return new SplitTime(60L * minute + 3600L * hour, 0L).add(splitSecond);
     }
 
     /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
@@ -538,7 +538,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public SplitTime getSplitSecondsInUTCDay() {
-        return SplitTime.add(new SplitTime(60L * (minute - minutesFromUTC) + 3600L * hour, 0L), splitSecond);
+        return new SplitTime(60L * (minute - minutesFromUTC) + 3600L * hour, 0L).add(splitSecond);
     }
 
     /**
@@ -567,8 +567,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         SplitTime second = getSplitSecond();
 
         // adjust limit according to current minute duration
-        final SplitTime limit = SplitTime.add(WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)],
-                                              new SplitTime(minuteDuration - 60, 0L));
+        final SplitTime limit = WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)].
+                                add(new SplitTime(minuteDuration - 60, 0L));
 
         if (second.compareTo(limit) >= 0) {
             // we should wrap around to the next minute

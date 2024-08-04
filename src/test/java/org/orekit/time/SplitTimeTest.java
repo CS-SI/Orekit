@@ -405,18 +405,17 @@ public class SplitTimeTest {
 
     @Test
     public void testAdd() {
-        final SplitTime a1 = SplitTime.add(new SplitTime(1234L, 5678L), new SplitTime(76L, -876L));
+        final SplitTime a1 = new SplitTime(1234L, 5678L).add(new SplitTime(76L, -876L));
         Assertions.assertEquals(1310L, a1.getSeconds());
         Assertions.assertEquals(4802L, a1.getAttoSeconds());
         Assertions.assertTrue(a1.isFinite());
 
-        final SplitTime a2 = SplitTime.add(new SplitTime(1L, 500000000000000000L),
-                                             new SplitTime(2L, 500000000000000001L));
+        final SplitTime a2 = new SplitTime(1L, 500000000000000000L).add(new SplitTime(2L, 500000000000000001L));
         Assertions.assertEquals(4L, a2.getSeconds());
         Assertions.assertEquals(1L, a2.getAttoSeconds());
         Assertions.assertTrue(a2.isFinite());
 
-        final SplitTime a3 = SplitTime.add(new SplitTime(1234L, 23L), new SplitTime(76L, -876L));
+        final SplitTime a3 = new SplitTime(1234L, 23L).add(new SplitTime(76L, -876L));
         Assertions.assertEquals(1309L,               a3.getSeconds());
         Assertions.assertEquals(999999999999999147L, a3.getAttoSeconds());
         Assertions.assertTrue(a3.isFinite());
@@ -425,47 +424,47 @@ public class SplitTimeTest {
     @Test
     public void testAddSpecialValues() {
 
-        Assertions.assertTrue(SplitTime.add(SplitTime.NaN, SplitTime.HOUR).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.HOUR, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.POSITIVE_INFINITY, SplitTime.HOUR).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.add(SplitTime.HOUR, SplitTime.POSITIVE_INFINITY).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NEGATIVE_INFINITY, SplitTime.HOUR).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.add(SplitTime.HOUR, SplitTime.NEGATIVE_INFINITY).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.NaN.add(SplitTime.HOUR).isNaN());
+        Assertions.assertTrue(SplitTime.HOUR.add(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.add(SplitTime.HOUR).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.HOUR.add(SplitTime.POSITIVE_INFINITY).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.add(SplitTime.HOUR).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.HOUR.add(SplitTime.NEGATIVE_INFINITY).isNegativeInfinity());
 
-        Assertions.assertTrue(SplitTime.add(SplitTime.NaN, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NaN, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.POSITIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NaN, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NEGATIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NaN, SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.add(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.add(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.add(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.add(SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.add(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.add(SplitTime.NEGATIVE_INFINITY).isNaN());
 
-        Assertions.assertTrue(SplitTime.add(SplitTime.NaN, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.POSITIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.POSITIVE_INFINITY, SplitTime.POSITIVE_INFINITY).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NEGATIVE_INFINITY, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.POSITIVE_INFINITY, SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.add(SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.add(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.add(SplitTime.POSITIVE_INFINITY).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.add(SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.add(SplitTime.NEGATIVE_INFINITY).isNaN());
 
-        Assertions.assertTrue(SplitTime.add(SplitTime.NaN, SplitTime.NEGATIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NEGATIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.POSITIVE_INFINITY, SplitTime.NEGATIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NEGATIVE_INFINITY, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.add(SplitTime.NEGATIVE_INFINITY, SplitTime.NEGATIVE_INFINITY).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.NaN.add(SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.add(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.add(SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.add(SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.add(SplitTime.NEGATIVE_INFINITY).isNegativeInfinity());
 
     }
 
     @Test
     public void testSubtract() {
-        final SplitTime s1 = SplitTime.subtract(new SplitTime(1234L, 5678L), new SplitTime(76L, 876L));
+        final SplitTime s1 = new SplitTime(1234L, 5678L).subtract(new SplitTime(76L, 876L));
         Assertions.assertEquals(1158L, s1.getSeconds());
         Assertions.assertEquals(4802L, s1.getAttoSeconds());
         Assertions.assertTrue(s1.isFinite());
 
-        final SplitTime s2 = SplitTime.subtract(new SplitTime(1L, 0L), new SplitTime(2L, 1L));
+        final SplitTime s2 = new SplitTime(1L, 0L).subtract(new SplitTime(2L, 1L));
         Assertions.assertEquals(-2L, s2.getSeconds());
         Assertions.assertEquals(999999999999999999L, s2.getAttoSeconds());
         Assertions.assertTrue(s2.isFinite());
 
-        final SplitTime s3 = SplitTime.subtract(new SplitTime(1234L, 999999999999999999L), new SplitTime(76L, 123456L));
+        final SplitTime s3 = new SplitTime(1234L, 999999999999999999L).subtract(new SplitTime(76L, 123456L));
         Assertions.assertEquals(1158L,               s3.getSeconds());
         Assertions.assertEquals(999999999999876543L, s3.getAttoSeconds());
         Assertions.assertTrue(s3.isFinite());
@@ -474,51 +473,51 @@ public class SplitTimeTest {
     @Test
     public void testSubtractSpecialValues() {
 
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NaN, SplitTime.HOUR).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.HOUR, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.POSITIVE_INFINITY, SplitTime.HOUR).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.HOUR, SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NEGATIVE_INFINITY, SplitTime.HOUR).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.HOUR, SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NaN.subtract(SplitTime.HOUR).isNaN());
+        Assertions.assertTrue(SplitTime.HOUR.subtract(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.subtract(SplitTime.HOUR).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.HOUR.subtract(SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.subtract(SplitTime.HOUR).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.HOUR.subtract(SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
 
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NaN, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NaN, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.POSITIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NaN, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NEGATIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NaN, SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.subtract(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.subtract(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.subtract(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.subtract(SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.subtract(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.subtract(SplitTime.NEGATIVE_INFINITY).isNaN());
 
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NaN, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.POSITIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.POSITIVE_INFINITY, SplitTime.POSITIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NEGATIVE_INFINITY, SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.POSITIVE_INFINITY, SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NaN.subtract(SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.subtract(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.subtract(SplitTime.POSITIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.subtract(SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.subtract(SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
 
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NaN, SplitTime.NEGATIVE_INFINITY).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NEGATIVE_INFINITY, SplitTime.NaN).isNaN());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.POSITIVE_INFINITY, SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NEGATIVE_INFINITY, SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.NEGATIVE_INFINITY, SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.subtract(SplitTime.NEGATIVE_INFINITY).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.subtract(SplitTime.NaN).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.subtract(SplitTime.NEGATIVE_INFINITY).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.subtract(SplitTime.POSITIVE_INFINITY).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.subtract(SplitTime.NEGATIVE_INFINITY).isNaN());
 
     }
 
     @Test
     public void testMultiply() {
         try {
-            SplitTime.multiply(new SplitTime(   1L, 45L), -1);
+            new SplitTime(   1L, 45L).multiply(-1);
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NOT_POSITIVE, oe.getSpecifier());
             Assertions.assertEquals(-1, (Long) oe.getParts()[0]);
         }
-        checkComponents(SplitTime.multiply(new SplitTime(   1L, 45L), 0),  0L,                  0L);
-        checkComponents(SplitTime.multiply(new SplitTime(1L, 45L), 1), 1L, 45L);
-        checkComponents(SplitTime.multiply(new SplitTime(1L, 45L), 3), 3L, 135L);
-        checkComponents(SplitTime.multiply(new SplitTime(1234L, 123456789012345678L), 7233L), 8926414L, 962954926296288974L);
-        checkComponents(SplitTime.multiply(new SplitTime(1234L, 999999999999999999L), 23012696L), 28420679559L, 999999999976987304L);
-        checkComponents(SplitTime.multiply(new SplitTime(1234L, 999999999999999999L), 123456789012L),
+        checkComponents(new SplitTime(   1L, 45L).multiply(0),  0L,                  0L);
+        checkComponents(new SplitTime(1L, 45L).multiply(1), 1L, 45L);
+        checkComponents(new SplitTime(1L, 45L).multiply(3), 3L, 135L);
+        checkComponents(new SplitTime(1234L, 123456789012345678L).multiply(7233L), 8926414L, 962954926296288974L);
+        checkComponents(new SplitTime(1234L, 999999999999999999L).multiply(23012696L), 28420679559L, 999999999976987304L);
+        checkComponents(new SplitTime(1234L, 999999999999999999L).multiply(123456789012L),
                         152469134429819L, 999999876543210988L);
          try {
-             SplitTime.multiply(new SplitTime(10000000000L, 1L), 123456789012L);
+             new SplitTime(10000000000L, 1L).multiply(123456789012L);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(LocalizedCoreFormats.OVERFLOW_IN_MULTIPLICATION, oe.getSpecifier());
@@ -527,7 +526,7 @@ public class SplitTimeTest {
         }
 
         try {
-            SplitTime.multiply(new SplitTime(922382683L, 717054400620018329L), 1573105907129L);
+            new SplitTime(922382683L, 717054400620018329L).multiply(1573105907129L);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(LocalizedCoreFormats.OVERFLOW_IN_MULTIPLICATION, oe.getSpecifier());
@@ -538,33 +537,33 @@ public class SplitTimeTest {
 
     @Test
     public void testMultiplySpecialValues() {
-        Assertions.assertTrue(SplitTime.multiply(SplitTime.NEGATIVE_INFINITY, 0).isNaN());
-        Assertions.assertTrue(SplitTime.multiply(SplitTime.NEGATIVE_INFINITY, 3).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.multiply(SplitTime.POSITIVE_INFINITY, 0).isNaN());
-        Assertions.assertTrue(SplitTime.multiply(SplitTime.POSITIVE_INFINITY, 3).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.multiply(SplitTime.NaN,               0).isNaN());
-        Assertions.assertTrue(SplitTime.multiply(SplitTime.NaN,               3).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.multiply(0).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.multiply(3).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.multiply(0).isNaN());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.multiply(3).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NaN.multiply(              0).isNaN());
+        Assertions.assertTrue(SplitTime.NaN.multiply(              3).isNaN());
     }
 
     @Test
     public void testDivide() {
         try {
-            SplitTime.divide(new SplitTime(1L, 45L), 0);
+            new SplitTime(1L, 45L).divide(0);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NOT_STRICTLY_POSITIVE, oe.getSpecifier());
             Assertions.assertEquals(0, (Integer) oe.getParts()[0]);
         }
-        checkComponents(SplitTime.divide(new SplitTime(1L,  45L), 1), 1L, 45L);
-        checkComponents(SplitTime.divide(new SplitTime(3L, 135L), 3), 1L, 45L);
-        checkComponents(SplitTime.divide(new SplitTime(8926414L, 962954926296288974L), 7233), 1234L, 123456789012345678L);
-        checkComponents(SplitTime.divide(new SplitTime(28420679559L, 999999999976987304L), 23012696), 1234L, 999999999999999999L);
-        checkComponents(SplitTime.divide(new SplitTime(1L, 0L), 1000000000), 0L, 1000000000L);
+        checkComponents(new SplitTime(1L,  45L).divide(1), 1L, 45L);
+        checkComponents(new SplitTime(3L, 135L).divide(3), 1L, 45L);
+        checkComponents(new SplitTime(8926414L, 962954926296288974L).divide(7233), 1234L, 123456789012345678L);
+        checkComponents(new SplitTime(28420679559L, 999999999976987304L).divide(23012696), 1234L, 999999999999999999L);
+        checkComponents(new SplitTime(1L, 0L).divide(1000000000), 0L, 1000000000L);
 
         // we consider a 15 nanosecond per UTC second slope for TAI-UTC offset (this is what was used in 1961)
         // then 1 day in UTC corresponds to 1 day + 1296 µs in TAI, and we perform the computation the other way round
         // we start from the 1 day + 1296 µs duration in TAI and recover the 1296 µs change in TAI-UTC offset
-        checkComponents(SplitTime.divide(SplitTime.multiply(new SplitTime(86400L, 1296000000000000L), 15), 1000000015),
+        checkComponents(new SplitTime(86400L, 1296000000000000L).multiply(15).divide(1000000015),
                         0L, 1296000000000000L);
 
     }
@@ -576,16 +575,16 @@ public class SplitTimeTest {
             final SplitTime t = new SplitTime(random.nextLong(1000L * 365L * 86400L),
                                               random.nextLong(1000000000000000000L));
             final int p = FastMath.max(1, random.nextInt(10000000));
-            Assertions.assertEquals(0, t.compareTo(SplitTime.divide(SplitTime.multiply(t, p), p)));
+            Assertions.assertEquals(0, t.compareTo(t.multiply(p).divide(p)));
         }
 
     }
 
     @Test
     public void testDivideSpecialValues() {
-        Assertions.assertTrue(SplitTime.divide(SplitTime.NEGATIVE_INFINITY, 3).isNegativeInfinity());
-        Assertions.assertTrue(SplitTime.divide(SplitTime.POSITIVE_INFINITY, 3).isPositiveInfinity());
-        Assertions.assertTrue(SplitTime.divide(SplitTime.NaN,               3).isNaN());
+        Assertions.assertTrue(SplitTime.NEGATIVE_INFINITY.divide(3).isNegativeInfinity());
+        Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.divide(3).isPositiveInfinity());
+        Assertions.assertTrue(SplitTime.NaN.divide(              3).isNaN());
     }
 
     @Test
@@ -593,7 +592,7 @@ public class SplitTimeTest {
         for (long s = -1000L; s < 1000L; s += 10L) {
             for (long a = -1000L; a < 1000L; a += 10L) {
                 final SplitTime st = new SplitTime(s, a);
-                Assertions.assertTrue(SplitTime.add(st, st.negate()).isZero());
+                Assertions.assertTrue(st.add(st.negate()).isZero());
             }
         }
         Assertions.assertTrue(SplitTime.POSITIVE_INFINITY.negate().isNegativeInfinity());
@@ -895,7 +894,7 @@ public class SplitTimeTest {
     }
 
     private void checkMultiple(final int n, final SplitTime small, final SplitTime large) {
-        Assertions.assertTrue(SplitTime.subtract(SplitTime.multiply(small, n), large).isZero());
+        Assertions.assertTrue(small.multiply(n).subtract(large).isZero());
     }
 
     private void checkComponents(final SplitTime st , final long seconds, final long attoseconds) {

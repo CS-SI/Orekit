@@ -772,8 +772,9 @@ public class AbsoluteDate
         final AbsoluteDate dateInPivotTimeScale = createJDDate(jd, secondsSinceNoon, pivotTimeScale);
 
         // Compare offsets to TAI of the two time scales
-        final SplitTime offsetFromTAI = SplitTime.subtract(timeScale.offsetFromTAI(dateInPivotTimeScale),
-                                                           pivotTimeScale.offsetFromTAI(dateInPivotTimeScale));
+        final SplitTime offsetFromTAI = timeScale.
+                                        offsetFromTAI(dateInPivotTimeScale).
+                                        subtract(pivotTimeScale.offsetFromTAI(dateInPivotTimeScale));
 
         // Return date in desired timescale
         return new AbsoluteDate(dateInPivotTimeScale, offsetFromTAI.negate());
@@ -808,7 +809,7 @@ public class AbsoluteDate
         if (secondsInDay.compareTo(SplitTime.DAY) >= 0) {
             // check we are really allowed to use this number of seconds
             final SplitTime secondsA = new SplitTime(86399); // 23:59:59, i.e. 59s in the last minute of the day
-            final SplitTime secondsB = SplitTime.subtract(secondsInDay, secondsA);
+            final SplitTime secondsB = secondsInDay.subtract(secondsA);
             final TimeComponents safeTC = new TimeComponents(secondsA);
             final AbsoluteDate safeDate = new AbsoluteDate(dc, safeTC, timeScale);
             if (timeScale.minuteDuration(safeDate) > 59 + secondsB.toDouble()) {
@@ -817,7 +818,7 @@ public class AbsoluteDate
             } else {
                 // let TimeComponents trigger an OrekitIllegalArgumentException
                 // for the wrong number of seconds
-                tc = new TimeComponents(SplitTime.add(secondsA, secondsB));
+                tc = new TimeComponents(secondsA.add(secondsB));
             }
         } else {
             tc = new TimeComponents(secondsInDay);
@@ -965,7 +966,7 @@ public class AbsoluteDate
      * @since 13.0
      */
     public SplitTime splitDurationFrom(final AbsoluteDate instant) {
-        return SplitTime.subtract(this, instant);
+        return this.subtract(instant);
     }
 
     /** Compute the physically elapsed duration between two instants.
@@ -985,7 +986,7 @@ public class AbsoluteDate
      * @since 12.1
      */
     public long durationFrom(final AbsoluteDate instant, final TimeUnit timeUnit) {
-        return SplitTime.subtract(this, instant).getRoundedTime(timeUnit);
+        return splitDurationFrom(instant).getRoundedTime(timeUnit);
     }
 
     /** Compute the apparent <em>clock</em> offset between two instant <em>in the
@@ -1030,7 +1031,7 @@ public class AbsoluteDate
      * current instant
      */
     public double timeScalesOffset(final TimeScale scale1, final TimeScale scale2) {
-        return SplitTime.subtract(scale1.offsetFromTAI(this), scale2.offsetFromTAI(this)).toDouble();
+        return scale1.offsetFromTAI(this).subtract(scale2.offsetFromTAI(this)).toDouble();
     }
 
     /** Convert the instance to a Java {@link java.util.Date Date}.
@@ -1042,7 +1043,7 @@ public class AbsoluteDate
      * of the instant in the time scale
      */
     public Date toDate(final TimeScale timeScale) {
-        final SplitTime time = SplitTime.add(this, timeScale.offsetFromTAI(this));
+        final SplitTime time = add(timeScale.offsetFromTAI(this));
         return new Date(FastMath.round((time.toDouble() + 10957.5 * 86400.0) * 1000));
     }
 
@@ -1093,7 +1094,7 @@ public class AbsoluteDate
             }
         }
 
-        final SplitTime sum = SplitTime.add(this, timeScale.offsetFromTAI(this));
+        final SplitTime sum = add(timeScale.offsetFromTAI(this));
 
         // split date and time
         final long offset2000A = sum.getSeconds() + 43200L;

@@ -49,7 +49,13 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
     public static final String DEFAULT_SUPPORTED_NAMES = "^LeapSecond\\.dat$";
 
     /** Number of seconds in one day. */
-    private static final long DAY = 86400L;
+    private static final long SEC_PER_DAY = 86400L;
+
+    /** Number of attoseconds in one second. */
+    private static final long ATTOS_PER_NANO = 1000000000L;
+
+    /** Slope conversion factor from seconds per day to nanoseconds per second. */
+    private static final long SLOPE_FACTOR = SEC_PER_DAY * ATTOS_PER_NANO;
 
     /**
      * Build a loader for LeapSecond.dat file from AGI. This constructor uses the {@link
@@ -202,7 +208,7 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
                         final double mjdRef = Double.parseDouble(matcher.group(6));
                         offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef),
                                                     SplitTime.parse(matcher.group(5)),
-                                                    SplitTime.parse(matcher.group(7)).getAttoSeconds() / DAY));
+                                                    (int) (SplitTime.parse(matcher.group(7)).getAttoSeconds() / SLOPE_FACTOR)));
 
                     }
                 }

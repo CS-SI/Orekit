@@ -34,7 +34,7 @@ public class TCGScaleTest {
         final double dtTT = 1e6;
         final AbsoluteDate t1 = AbsoluteDate.J2000_EPOCH;
         final AbsoluteDate t2 = t1.shiftedBy(dtTT);
-        final double dtTCG = dtTT + SplitTime.subtract(scale.offsetFromTAI(t2), scale.offsetFromTAI(t1)).toDouble();
+        final double dtTCG = dtTT + scale.offsetFromTAI(t2).subtract(scale.offsetFromTAI(t1)).toDouble();
         Assertions.assertEquals(1 - 6.969290134e-10, dtTT / dtTCG, 1.0e-15);
     }
 
@@ -83,7 +83,7 @@ public class TCGScaleTest {
     public void testSofa() {
         TimeScale tt  = TimeScalesFactory.getTT();
         AbsoluteDate date = new AbsoluteDate(2006, 1, 15, 21, 25, 10.5000096, tt);
-        SplitTime delta = SplitTime.subtract(TimeScalesFactory.getTCG().offsetFromTAI(date), tt.offsetFromTAI(date));
+        SplitTime delta = TimeScalesFactory.getTCG().offsetFromTAI(date).subtract(tt.offsetFromTAI(date));
         Assertions.assertEquals(Constants.JULIAN_DAY * (0.8924900312508587113 -  0.892482639), delta.toDouble(), 5.0e-10);
     }
 

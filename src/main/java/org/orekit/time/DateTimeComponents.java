@@ -185,12 +185,12 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         SplitTime seconds = reference.getTime().getSplitSecondsInLocalDay();
 
         // apply offset
-        seconds = SplitTime.add(seconds, offset);
+        seconds = seconds.add(offset);
 
         // fix range
         final int dayShift = (int) FastMath.floor(seconds.toDouble() / Constants.JULIAN_DAY);
         if (dayShift != 0) {
-            seconds = SplitTime.subtract(seconds, new SplitTime(dayShift * SplitTime.DAY.getSeconds(), 0L));
+            seconds = seconds.subtract(new SplitTime(dayShift * SplitTime.DAY.getSeconds(), 0L));
         }
         day     += dayShift;
         final TimeComponents tmpTime = new TimeComponents(seconds);
@@ -217,13 +217,13 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         SplitTime seconds = reference.getTime().getSplitSecondsInLocalDay();
 
         // apply offset
-        seconds = SplitTime.add(seconds, new SplitTime(offset, timeUnit));
+        seconds = seconds.add(new SplitTime(offset, timeUnit));
 
         // fix range
         final long dayShift = seconds.getSeconds() / SplitTime.DAY.getSeconds() +
                               (seconds.getSeconds() < 0L ? -1L : 0L);
         if (dayShift != 0) {
-            seconds = SplitTime.subtract(seconds, new SplitTime(dayShift * SplitTime.DAY.getSeconds(), 0L));
+            seconds = seconds.subtract(new SplitTime(dayShift * SplitTime.DAY.getSeconds(), 0L));
             day    += dayShift;
         }
         final TimeComponents tmpTime = new TimeComponents(seconds);
@@ -266,8 +266,8 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public double offsetFrom(final DateTimeComponents dateTime) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final SplitTime timeOffset = SplitTime.subtract(time.getSplitSecondsInUTCDay(),
-                                                        dateTime.time.getSplitSecondsInUTCDay());
+        final SplitTime timeOffset = time.getSplitSecondsInUTCDay().
+                                     subtract(dateTime.time.getSplitSecondsInUTCDay());
         return Constants.JULIAN_DAY * dateOffset + timeOffset.toDouble();
     }
 
@@ -281,8 +281,8 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public long offsetFrom(final DateTimeComponents dateTime, final TimeUnit timeUnit) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final SplitTime timeOffset = SplitTime.subtract(time.getSplitSecondsInUTCDay(),
-                                                        dateTime.time.getSplitSecondsInUTCDay());
+        final SplitTime timeOffset = time.getSplitSecondsInUTCDay().
+                                     subtract(dateTime.time.getSplitSecondsInUTCDay());
         return SplitTime.DAY.getRoundedTime(timeUnit) * dateOffset + timeOffset.getRoundedTime(timeUnit);
     }
 

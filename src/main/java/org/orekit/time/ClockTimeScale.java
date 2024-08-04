@@ -52,8 +52,7 @@ public class ClockTimeScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public SplitTime offsetFromTAI(final AbsoluteDate date) {
-        return SplitTime.add(reference.offsetFromTAI(date),
-                             new SplitTime(clockModel.getOffset(date).getOffset()));
+        return reference.offsetFromTAI(date).add(new SplitTime(clockModel.getOffset(date).getOffset()));
     }
 
     /** {@inheritDoc} */

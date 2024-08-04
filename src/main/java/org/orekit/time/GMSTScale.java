@@ -83,7 +83,7 @@ public class GMSTScale implements TimeScale {
         final double gmst0h = C0 + tc * (C1 + tc * (C2 + tc * C3));
 
         // offset with respect to TAI
-        final SplitTime offset = SplitTime.add(new SplitTime(gmst0h), ut1.offsetFromTAI(date));
+        final SplitTime offset = new SplitTime(gmst0h).add(ut1.offsetFromTAI(date));
 
         // normalize offset between -43200 and +43200 seconds
         long clipped = offset.getSeconds() < 0L ?

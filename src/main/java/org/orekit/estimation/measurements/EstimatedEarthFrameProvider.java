@@ -489,7 +489,7 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
         @Override
         public SplitTime offsetFromTAI(final AbsoluteDate date) {
             final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
-            return SplitTime.add(baseUT1.offsetFromTAI(date), new SplitTime(dut1));
+            return baseUT1.offsetFromTAI(date).add(new SplitTime(dut1));
         }
 
         /** {@inheritDoc} */

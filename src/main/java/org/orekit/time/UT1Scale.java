@@ -68,7 +68,7 @@ public class UT1Scale implements TimeScale {
     public SplitTime offsetFromTAI(final AbsoluteDate date) {
         final double    dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);
         final SplitTime utcMinusTai = utc.offsetFromTAI(date);
-        return SplitTime.add(utcMinusTai, new SplitTime(dtu1));
+        return utcMinusTai.add(new SplitTime(dtu1));
     }
 
     /** {@inheritDoc} */

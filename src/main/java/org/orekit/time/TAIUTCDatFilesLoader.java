@@ -47,9 +47,6 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "^tai-utc\\.dat$";
 
-    /** Number of seconds in one day. */
-    private static final long DAY = 86400L;
-
     /**
      * Build a loader for tai-utc.dat file from USNO. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -83,6 +80,15 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
 
     /** Internal class performing the parsing. */
     public static class Parser implements UTCTAIOffsetsLoader.Parser {
+
+        /** Number of seconds in one day. */
+        private static final long SEC_PER_DAY = 86400L;
+
+        /** Number of attoseconds in one second. */
+        private static final long ATTOS_PER_NANO = 1000000000L;
+
+        /** Slope conversion factor from seconds per day to nanoseconds per second. */
+        private static final long SLOPE_FACTOR = SEC_PER_DAY * ATTOS_PER_NANO;
 
         /** Regular expression for optional blanks. */
         private static final String BLANKS               = "\\p{Blank}*";
@@ -199,7 +205,7 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
                         final double mjdRef = Double.parseDouble(matcher.group(6));
                         offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef),
                                                     SplitTime.parse(matcher.group(5)),
-                                                    SplitTime.parse(matcher.group(7)).getAttoSeconds() / DAY));
+                                                    (int) (SplitTime.parse(matcher.group(7)).getAttoSeconds() / SLOPE_FACTOR)));
 
                     }
                 }

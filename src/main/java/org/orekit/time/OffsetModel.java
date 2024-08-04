@@ -37,8 +37,8 @@ public class OffsetModel implements Serializable {
     /** Offset at reference date in seconds (TAI minus UTC). */
     private final SplitTime offset;
 
-    /** Offset slope in attoseconds per second (TAI minus UTC / dUTC). */
-    private final long slope;
+    /** Offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC). */
+    private final int slope;
 
     /** Constructor for a linear offset model.
      * <p>
@@ -47,10 +47,10 @@ public class OffsetModel implements Serializable {
      * @param start date of the offset start
      * @param mjdRef reference date of the linear model as a modified julian day
      * @param offset offset at reference date in seconds (TAI minus UTC)
-     * @param slope offset slope in attoseconds per second (TAI minus UTC / dUTC)
+     * @param slope offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC)
      */
     public OffsetModel(final DateComponents start,
-                       final int mjdRef, final SplitTime offset, final long slope) {
+                       final int mjdRef, final SplitTime offset, final int slope) {
         this.start  = start;
         this.mjdRef = mjdRef;
         this.offset = offset;
@@ -65,7 +65,7 @@ public class OffsetModel implements Serializable {
      * @param offset offset at reference date in seconds (TAI minus UTC)
      */
     public OffsetModel(final DateComponents start, final int offset) {
-        this(start, 41317, new SplitTime(offset, 0L), 0L);
+        this(start, 41317, new SplitTime(offset, 0L), 0);
     }
 
     /** Get the date of the offset start.
@@ -89,10 +89,10 @@ public class OffsetModel implements Serializable {
         return offset;
     }
 
-    /** Offset slope in attoseconds per UTC day (TAI minus UTC / dUTC).
-     * @return offset slope in attoseconds per UTC day (TAI minus UTC / dUTC)
+    /** Offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC).
+     * @return offset slope in nanoseconds per UTC second  (TAI minus UTC / dUTC)
      */
-    public long getSlope() {
+    public int getSlope() {
         return slope;
     }
 

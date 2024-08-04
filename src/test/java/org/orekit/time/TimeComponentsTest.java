@@ -132,17 +132,14 @@ public class TimeComponentsTest {
         Assertions.assertEquals("18:00:00.000-04:30", new TimeComponents(18,  0,  0,   -270).toString());
         Assertions.assertEquals("23:59:59.900-04:30", new TimeComponents(23, 59, 59.9, -270).toString());
         // test leap seconds
-        Assertions.assertEquals("23:59:60.500+00:00", new TimeComponents(SplitTime.add(new SplitTime(86399),
-                                                                                       new SplitTime(0.5)),
+        Assertions.assertEquals("23:59:60.500+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(0.5)),
                                                                          1, 61).toString());
         // leap second on 1961 is between 1 and 2 seconds in duration
-        Assertions.assertEquals("23:59:61.32281798015773+00:00", new TimeComponents(SplitTime.add(new SplitTime(86399),
-                                                                                                  new SplitTime(0.32281798015773)),
+        Assertions.assertEquals("23:59:61.32281798015773+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(0.32281798015773)),
                                                                                     2, 62).toString());
         // test rounding
         Assertions.assertEquals("23:59:59.99999999998545+00:00", new TimeComponents(86399.99999999999).toString());
-        Assertions.assertEquals("23:59:59.99999999999999+00:00", new TimeComponents(SplitTime.add(new SplitTime(86399),
-                                                                                                  new SplitTime(FastMath.nextDown(1.0))),
+        Assertions.assertEquals("23:59:59.99999999999999+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(FastMath.nextDown(1.0))),
                                                                                     0, 60).toString());
     }
 
@@ -218,57 +215,57 @@ public class TimeComponentsTest {
         double sixtyOne = FastMath.nextDown(61.0);
 
         // action + verify
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(0), new SplitTime(0)), 0, 60).getSecond(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(0).add(new SplitTime(0)), 0, 60).getSecond(),
                                  CoreMatchers.is(0.0));
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(0), new SplitTime(zeroUlp)), 0, 60).getSecond(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(0).add(new SplitTime(zeroUlp)), 0, 60).getSecond(),
                                  CoreMatchers.is(0.0));
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(one)), 0, 60).getSecond(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(86399).add(new SplitTime(one)), 0, 60).getSecond(),
                                  CoreMatchers.is(sixty));
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(one)), 1, 61).getSecond(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(86399).add(new SplitTime(one)), 1, 61).getSecond(),
                                  CoreMatchers.is(sixtyOne));
         // I don't like this NaN behavior, but it matches the 10.1 implementation and
         // GLONASSAnalyticalPropagatorTest relied on it.
         // It seems more logical to throw an out of range exception in this case.
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(Double.NaN)), 0, 60).getSecond(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(86399).add(new SplitTime(Double.NaN)), 0, 60).getSecond(),
                                  CoreMatchers.is(Double.NaN));
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(Double.NaN)), 0, 60).getMinute(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(86399).add(new SplitTime(Double.NaN)), 0, 60).getMinute(),
                                  CoreMatchers.is(59));
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(Double.NaN)), 1, 61).getSecond(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(86399).add(new SplitTime(Double.NaN)), 1, 61).getSecond(),
                                  CoreMatchers.is(Double.NaN));
-        MatcherAssert.assertThat(new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(Double.NaN)), 1, 61).getMinute(),
+        MatcherAssert.assertThat(new TimeComponents(new SplitTime(86399).add(new SplitTime(Double.NaN)), 1, 61).getMinute(),
                                  CoreMatchers.is(59));
 
         // check errors
         try {
-            new TimeComponents(SplitTime.add(new SplitTime(0), new SplitTime(FastMath.nextDown(0))), 0, 60);
+            new TimeComponents(new SplitTime(0).add(new SplitTime(FastMath.nextDown(0))), 0, 60);
             Assertions.fail("Expected Exception");
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),
                     CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
         }
         try {
-            new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(1)), 0, 60);
+            new TimeComponents(new SplitTime(86399).add(new SplitTime(1)), 0, 60);
             Assertions.fail("Expected Exception");
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),
                     CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
         }
         try {
-            new TimeComponents(SplitTime.add(new SplitTime(86399), new SplitTime(1)), 1, 61);
+            new TimeComponents(new SplitTime(86399).add(new SplitTime(1)), 1, 61);
             Assertions.fail("Expected Exception");
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),
                     CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
         }
         try {
-            new TimeComponents(SplitTime.add(new SplitTime(0), new SplitTime(0)), -1, 59);
+            new TimeComponents(new SplitTime(0).add(new SplitTime(0)), -1, 59);
             Assertions.fail("Expected Exception");
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),
                     CoreMatchers.is(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL));
         }
         try {
-            new TimeComponents(SplitTime.add(new SplitTime(0), new SplitTime(0)), 1, 59);
+            new TimeComponents(new SplitTime(0).add(new SplitTime(0)), 1, 59);
             Assertions.fail("Expected Exception");
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),

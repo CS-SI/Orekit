@@ -162,7 +162,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     public SplitTime(final SplitTime...times) {
         SplitTime sum = SplitTime.ZERO;
         for (final SplitTime time : times) {
-            sum = SplitTime.add(sum, time);
+            sum = sum.add(time);
         }
         this.seconds     = sum.getSeconds();
         this.attoSeconds = sum.getAttoSeconds();
@@ -395,70 +395,65 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     }
 
     /** Build a time by adding two times.
-     * @param t1 first time
-     * @param t2 second time
-     * @return t1+t2
+     * @param t time to add
+     * @return this+t
      */
-    public static SplitTime add(final SplitTime t1, final SplitTime t2) {
-        if (t1.attoSeconds < 0 || t2.attoSeconds < 0) {
+    public SplitTime add(final SplitTime t) {
+        if (attoSeconds < 0 || t.attoSeconds < 0) {
             // gather all special cases in one big check to avoid rare multiple tests
-            if (t1.isNaN() ||
-                t2.isNaN() ||
-                t1.isPositiveInfinity() && t2.isNegativeInfinity() ||
-                t1.isNegativeInfinity() && t2.isPositiveInfinity()) {
+            if (isNaN() ||
+                t.isNaN() ||
+                isPositiveInfinity() && t.isNegativeInfinity() ||
+                isNegativeInfinity() && t.isPositiveInfinity()) {
                 return NaN;
-            } else if (t1.isInfinite()) {
-                // t2 is either a finite time or the same infinity as t1
-                return t1;
+            } else if (isInfinite()) {
+                // t is either a finite time or the same infinity as this
+                return this;
             } else {
-                // t1 is either a finite time or the same infinity as t2
-                return t2;
+                // this is either a finite time or the same infinity as t
+                return t;
             }
         } else {
             // regular addition between two finite times
-            return new SplitTime(t1.seconds + t2.seconds, t1.attoSeconds + t2.attoSeconds);
+            return new SplitTime(seconds + t.seconds, attoSeconds + t.attoSeconds);
         }
     }
 
-    /** Build a time by subtracting one time from another one.
-     * @param t1 first time
-     * @param t2 second time
-     * @return t1-t2
+    /** Build a time by subtracting one time from the instance.
+     * @param t time to subtract
+     * @return this-t
      */
-    public static SplitTime subtract(final SplitTime t1, final SplitTime t2) {
-        if (t1.attoSeconds < 0 || t2.attoSeconds < 0) {
+    public SplitTime subtract(final SplitTime t) {
+        if (attoSeconds < 0 || t.attoSeconds < 0) {
             // gather all special cases in one big check to avoid rare multiple tests
-            if (t1.isNaN() ||
-                t2.isNaN() ||
-                t1.isPositiveInfinity() && t2.isPositiveInfinity() ||
-                t1.isNegativeInfinity() && t2.isNegativeInfinity()) {
+            if (isNaN() ||
+                t.isNaN() ||
+                isPositiveInfinity() && t.isPositiveInfinity() ||
+                isNegativeInfinity() && t.isNegativeInfinity()) {
                 return NaN;
-            } else if (t1.isInfinite()) {
-                // t2 is either a finite time or the infinity opposite to t1
-                return t1;
+            } else if (isInfinite()) {
+                // t is either a finite time or the infinity opposite to this
+                return this;
             } else {
-                // t1 is either a finite time or the infinity opposite to t2
-                return t2.isPositiveInfinity() ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
+                // this is either a finite time or the infinity opposite to t
+                return t.isPositiveInfinity() ? NEGATIVE_INFINITY : POSITIVE_INFINITY;
             }
         } else {
             // regular subtraction between two finite times
-            return new SplitTime(t1.seconds - t2.seconds, t1.attoSeconds - t2.attoSeconds);
+            return new SplitTime(seconds - t.seconds, attoSeconds - t.attoSeconds);
         }
     }
 
-    /**
-     * Multiply an instance by a positive or zero constant.
-     *
-     * @param t time
+    /** Multiply ths instance by a positive or zero constant.
      * @param p multiplication factor (must be positive)
-     * @return p ⨉ t
+     * @return this ⨉ p
      */
-    public static SplitTime multiply(final SplitTime t, final long p) {
+    public SplitTime multiply(final long p) {
         if (p < 0) {
             throw new OrekitException(OrekitMessages.NOT_POSITIVE, p);
         }
-        if (t.isFinite()) {
-            final SplitTime abs   = t.seconds < 0 ? t.negate() : t;
+        if (isFinite()) {
+            final SplitTime abs   = seconds < 0 ? negate() : this;
             final long      pHigh = p / SPLIT;
             final long      pLow  = p - pHigh * SPLIT;
             final long      sHigh = abs.seconds / SPLIT;
@@ -480,37 +475,36 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
 
             // here we use the fact that SPLIT * SPLIT = ATTOS_IN_SECOND
             final SplitTime mul = new SplitTime(SPLIT * ps1 + ps0 + pa2 + pa1High, SPLIT * pa1Low + pa0);
-            return t.seconds < 0 ? mul.negate() : mul;
+            return seconds < 0 ? mul.negate() : mul;
         } else {
             // already NaN, +∞ or -∞, unchanged except 0 ⨉ ±∞ = NaN
-            return p == 0 ? SplitTime.NaN : t;
+            return p == 0 ? SplitTime.NaN : this;
         }
     }
 
-    /** Divide an instance by a positive constant.
-     * @param t time
+    /** Divide ths instance by a positive constant.
      * @param q division factor (must be strictly positive)
-     * @return t ÷ q
+     * @return this ÷ q
      */
-    public static SplitTime divide(final SplitTime t, final int q) {
+    public SplitTime divide(final int q) {
         if (q <= 0) {
             throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, q);
         }
-        if (t.isFinite()) {
-            final long      sSec  = t.seconds       / q;
-            final long      rSec  = t.seconds       - sSec * q;
+        if (isFinite()) {
+            final long      sSec  = seconds         / q;
+            final long      rSec  = seconds         - sSec * q;
             final long      sK    = ATTOS_IN_SECOND / q;
             final long      rK    = ATTOS_IN_SECOND - sK * q;
             final SplitTime tsSec = new SplitTime(0L, sSec);
             final SplitTime trSec = new SplitTime(0L, rSec);
-            return new SplitTime(SplitTime.multiply(SplitTime.multiply(tsSec, sK), q),
-                                 SplitTime.multiply(tsSec, rK),
-                                 SplitTime.multiply(trSec, sK),
+            return new SplitTime(tsSec.multiply(sK).multiply(q),
+                                 tsSec.multiply(rK),
+                                 trSec.multiply(sK),
                                  // here, we use the fact q is a positive int, hence rSec * rK does not overflow
-                                 new SplitTime(0L, (t.attoSeconds + rSec * rK) / q));
+                                 new SplitTime(0L, (attoSeconds + rSec * rK) / q));
         } else {
             // already NaN, +∞ or -∞, unchanged as q > 0
-            return t;
+            return this;
         }
     }
 

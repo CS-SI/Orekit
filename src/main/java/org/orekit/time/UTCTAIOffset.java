@@ -39,6 +39,9 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = 20240720L;
 
+    /** Nanoseconds in one second. */
+    private static final int NANOS_IN_SECOND = 1000000000;
+
     /** Leap date. */
     private final AbsoluteDate leapDate;
 
@@ -60,11 +63,8 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
     /** Offset at validity start in seconds (TAI minus UTC). */
     private final SplitTime offset;
 
-    /** Offset slope in attoseconds per UTC second (TAI minus UTC / dUTC). */
-    private final long slopeUTC;
-
-    /** Offset slope in seconds per TAI second (TAI minus UTC / dTAI). */
-    private final double slopeTAI;
+    /** Offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC). */
+    private final int slope;
 
     /** Simple constructor for a linear model.
      * @param leapDate leap date
@@ -72,12 +72,12 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @param leap value of the leap at offset validity start (in seconds)
      * @param offset offset in seconds (TAI minus UTC)
      * @param mjdRef reference date for the slope multiplication as Modified Julian Day
-     * @param slope offset slope in attoseconds per UTC second (TAI minus UTC / dUTC)
+     * @param slope offset slope in nanoseconds per UTC second (TAI minus UTC / dUTC)
      * @param reference date for slope computations.
      */
     UTCTAIOffset(final AbsoluteDate leapDate, final int leapDateMJD,
                  final double leap, final SplitTime offset,
-                 final int mjdRef, final long slope, final AbsoluteDate reference) {
+                 final int mjdRef, final int slope, final AbsoluteDate reference) {
         this.leapDate      = leapDate;
         this.leapDateMJD   = leapDateMJD;
         this.validityStart = leapDate.shiftedBy(leap);
@@ -85,8 +85,17 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
         this.reference     = reference;
         this.leap          = leap;
         this.offset        = offset;
-        this.slopeUTC      = slope;
-        this.slopeTAI      = slope / (1.0e18 + slope);
+
+        // at some absolute instant t₀, we can associate reading a₀ on a TAI clock and u₀ on a UTC clock
+        // at this instant, the offset between TAI and UTC is therefore τ₀ = a₀ - u₀
+        // at another absolute instant t₁, we can associate reading a₁ on a TAI clock and u₁ on a UTC clock
+        // at this instant, the offset between TAI and UTC is therefore τ₁ = a₁ - u₁
+        // the slope is defined according to offsets counted in UTC, i.e.:
+        // τ₁ = τ₀ + (u₁ - u₀) * slope/n (where n = 10⁹ because the slope is in ns/s)
+        // if we have a₁ - a₀ (i.e. dates in TAI) instead of u₁ - u₀, we need to invert the expression
+        // we get: τ₁ = τ₀ + (a₁ - a₀) * slope / (n + slope)
+        this.slope = slope;
+
     }
 
     /** Get the date of the start of the leap.
@@ -126,14 +135,22 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @return TAI - UTC offset in seconds.
      */
     public SplitTime getOffset(final AbsoluteDate date) {
-        if (slopeTAI == 0) {
+        if (slope == 0) {
             // we use an if statement here so the offset computation returns
             // a finite value when date is AbsoluteDate.FUTURE_INFINITY
             // without this if statement, the multiplication between an
             // infinite duration and a zero slope would induce a NaN offset
             return offset;
         } else {
-            return SplitTime.add(offset, new SplitTime(date.durationFrom(reference) * slopeTAI));
+
+            // time during which slope applies
+            final SplitTime delta = date.splitDurationFrom(reference);
+
+            // accumulated drift
+            final SplitTime drift = delta.multiply(slope).divide(slope + NANOS_IN_SECOND);
+
+            return offset.add(drift);
+
         }
     }
 
@@ -144,14 +161,15 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @since 9.0
      */
     public <T extends CalculusFieldElement<T>> T getOffset(final FieldAbsoluteDate<T> date) {
-        if (slopeTAI == 0) {
+        if (slope == 0) {
             // we use an if statement here so the offset computation returns
             // a finite value when date is FieldAbsoluteDate.getFutureInfinity(field)
             // without this if statement, the multiplication between an
             // infinite duration and a zero slope would induce a NaN offset
             return date.getField().getZero().newInstance(offset.toDouble());
         } else {
-            return date.durationFrom(reference).multiply(slopeTAI).add(offset.toDouble());
+            // TODO perform complete computation
+            return date.getField().getZero().newInstance(getOffset(date.toAbsoluteDate()).toDouble());
         }
     }
 
@@ -161,15 +179,20 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
      * @return TAI - UTC offset in seconds.
      */
     public SplitTime getOffset(final DateComponents date, final TimeComponents time) {
-        if (slopeUTC == 0) {
+        if (slope == 0) {
             return offset;
         } else {
-            final long deltaSeconds     = (date.getMJD() - mjdRef) * SplitTime.DAY.getSeconds() +
-                                          time.getSplitSecond().getSeconds();
-            final long deltaAttoSeconds = time.getSplitSecond().getAttoSeconds();
-            final long drift = slopeUTC * deltaSeconds +
-                               (slopeUTC * deltaAttoSeconds) / 1000000000000000000L;
-            return SplitTime.add(offset, new SplitTime(0L,  drift));
+
+            // time during which slope applies
+            final SplitTime delta = new SplitTime((date.getMJD() - mjdRef) * SplitTime.DAY.getSeconds() +
+                                                  time.getSplitSecond().getSeconds(),
+                                                  time.getSplitSecond().getAttoSeconds());
+
+            // accumulated drift
+            final SplitTime drift = delta.multiply(slope).divide(NANOS_IN_SECOND);
+
+            return offset.add(drift);
+
         }
     }
 

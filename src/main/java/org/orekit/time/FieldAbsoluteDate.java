@@ -1364,7 +1364,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         final double leap = timeScale.insideLeap(this) ? timeScale.getLeap(this.toAbsoluteDate()) : 0;
         final int minuteDuration = timeScale.minuteDuration(this);
         final TimeComponents timeComponents =
-            new TimeComponents(SplitTime.add(new SplitTime(time), new SplitTime(offset2000B)),
+            new TimeComponents(new SplitTime(time).add(new SplitTime(offset2000B)),
                                leap, minuteDuration);
 
         // build the components
@@ -1763,8 +1763,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return AbsoluteDate of the FieldObject
      * */
     public AbsoluteDate toAbsoluteDate() {
-        return new AbsoluteDate(new SplitTime(SplitTime.add(new SplitTime(epoch, 0L),
-                                                            new SplitTime(offset.getReal()))));
+        return new AbsoluteDate(new SplitTime(epoch, 0L).add(new SplitTime(offset.getReal())));
     }
 
     /** Check if the Field is semantically equal to zero.

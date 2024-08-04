@@ -62,7 +62,7 @@ public class TCGScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public SplitTime offsetFromTAI(final AbsoluteDate date) {
-        return SplitTime.add(ttOffset, new SplitTime(LG_RATE * date.durationFrom(referenceDate)));
+        return ttOffset.add(new SplitTime(LG_RATE * date.durationFrom(referenceDate)));
     }
 
     /** {@inheritDoc} */

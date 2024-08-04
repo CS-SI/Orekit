@@ -79,8 +79,8 @@ public class TDBScaleTest {
 
         AbsoluteDate date = new AbsoluteDate(1992, 11, 13, 2, 57, 7.2,
                                              TimeScalesFactory.getTAI());
-        SplitTime delta = SplitTime.subtract(TimeScalesFactory.getTDB().offsetFromTAI(date),
-                                             TimeScalesFactory.getTT().offsetFromTAI(date));
+        SplitTime delta = TimeScalesFactory.getTDB().offsetFromTAI(date).
+                          subtract(TimeScalesFactory.getTT().offsetFromTAI(date));
         Assertions.assertEquals(-0.001279984433218163669, delta.toDouble(), 1.0e-5);
 
     }

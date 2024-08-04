@@ -71,8 +71,8 @@ public class TDBScale implements TimeScale {
     public SplitTime offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(j2000Epoch) / Constants.JULIAN_DAY;
         final double g = FastMath.toRadians(G0 + G1 * dtDays);
-        return SplitTime.add(tt.offsetFromTAI(date),
-                             new SplitTime(SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g)));
+        return tt.offsetFromTAI(date).
+               add(new SplitTime(SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g)));
     }
 
     /** {@inheritDoc} */
@@ -81,7 +81,7 @@ public class TDBScale implements TimeScale {
         final T dtDays = date.durationFrom(j2000Epoch).divide(Constants.JULIAN_DAY);
         final T g = dtDays.multiply(G1).add(G0).multiply(dtDays.getPi().divide(180));
         return tt.offsetFromTAI(date).
-                        add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));
+               add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));
     }
 
     /** {@inheritDoc} */

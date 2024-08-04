@@ -49,7 +49,13 @@ import org.orekit.errors.OrekitInternalError;
 public class UTCScale implements TimeScale {
 
     /** Number of seconds in one day. */
-    private static final long DAY = 86400L;
+    private static final long SEC_PER_DAY = 86400L;
+
+    /** Number of attoseconds in one second. */
+    private static final long ATTOS_PER_NANO = 1000000000L;
+
+    /** Slope conversion factor from seconds per day to nanoseconds per second. */
+    private static final long SLOPE_FACTOR = SEC_PER_DAY * ATTOS_PER_NANO;
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20240720L;
@@ -95,22 +101,22 @@ public class UTCScale implements TimeScale {
             //  1966  Jan.  1 - 1968  Feb.  1     4.313 170 0s + (MJD - 39 126) x 0.002 592s
             //  1968  Feb.  1 - 1972  Jan.  1     4.213 170 0s +        ""
             // the slopes in second per day correspond in fact to values in scaled nanoseconds per seconds:
-            //  0.0012960 s/d → 15 ns/s → 15000000000 as/s
-            //  0.0011232 s/d → 13 ns/s → 13000000000 as/s
-            //  0.0025920 s/d → 30 ns/s → 30000000000 as/s
-            offsetModels.add( 0, new OffsetModel(new DateComponents(1961,  1, 1), 37300, SplitTime.parse("1.4228180"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add( 1, new OffsetModel(new DateComponents(1961,  8, 1), 37300, SplitTime.parse("1.3728180"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add( 2, new OffsetModel(new DateComponents(1962,  1, 1), 37665, SplitTime.parse("1.8458580"), SplitTime.parse("0.0011232").getAttoSeconds() / DAY));
-            offsetModels.add( 3, new OffsetModel(new DateComponents(1963, 11, 1), 37665, SplitTime.parse("1.9458580"), SplitTime.parse("0.0011232").getAttoSeconds() / DAY));
-            offsetModels.add( 4, new OffsetModel(new DateComponents(1964,  1, 1), 38761, SplitTime.parse("3.2401300"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add( 5, new OffsetModel(new DateComponents(1964,  4, 1), 38761, SplitTime.parse("3.3401300"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add( 6, new OffsetModel(new DateComponents(1964,  9, 1), 38761, SplitTime.parse("3.4401300"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add( 7, new OffsetModel(new DateComponents(1965,  1, 1), 38761, SplitTime.parse("3.5401300"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add( 8, new OffsetModel(new DateComponents(1965,  3, 1), 38761, SplitTime.parse("3.6401300"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add( 9, new OffsetModel(new DateComponents(1965,  7, 1), 38761, SplitTime.parse("3.7401300"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add(10, new OffsetModel(new DateComponents(1965,  9, 1), 38761, SplitTime.parse("3.8401300"), SplitTime.parse("0.001296").getAttoSeconds()  / DAY));
-            offsetModels.add(11, new OffsetModel(new DateComponents(1966,  1, 1), 39126, SplitTime.parse("4.3131700"), SplitTime.parse("0.002592").getAttoSeconds()  / DAY));
-            offsetModels.add(12, new OffsetModel(new DateComponents(1968,  2, 1), 39126, SplitTime.parse("4.2131700"), SplitTime.parse("0.002592").getAttoSeconds()  / DAY));
+            //  0.0012960 s/d → 15 ns/s
+            //  0.0011232 s/d → 13 ns/s
+            //  0.0025920 s/d → 30 ns/s
+            offsetModels.add( 0, linearModel(1961,  1, 1, 37300, "1.4228180", "0.001296"));
+            offsetModels.add( 1, linearModel(1961,  8, 1, 37300, "1.3728180", "0.001296"));
+            offsetModels.add( 2, linearModel(1962,  1, 1, 37665, "1.8458580", "0.0011232"));
+            offsetModels.add( 3, linearModel(1963, 11, 1, 37665, "1.9458580", "0.0011232"));
+            offsetModels.add( 4, linearModel(1964,  1, 1, 38761, "3.2401300", "0.001296"));
+            offsetModels.add( 5, linearModel(1964,  4, 1, 38761, "3.3401300", "0.001296"));
+            offsetModels.add( 6, linearModel(1964,  9, 1, 38761, "3.4401300", "0.001296"));
+            offsetModels.add( 7, linearModel(1965,  1, 1, 38761, "3.5401300", "0.001296"));
+            offsetModels.add( 8, linearModel(1965,  3, 1, 38761, "3.6401300", "0.001296"));
+            offsetModels.add( 9, linearModel(1965,  7, 1, 38761, "3.7401300", "0.001296"));
+            offsetModels.add(10, linearModel(1965,  9, 1, 38761, "3.8401300", "0.001296"));
+            offsetModels.add(11, linearModel(1966,  1, 1, 39126, "4.3131700", "0.002592"));
+            offsetModels.add(12, linearModel(1968,  2, 1, 39126, "4.2131700", "0.002592"));
         }
 
         // create cache
@@ -125,7 +131,7 @@ public class UTCScale implements TimeScale {
             final DateComponents date   = o.getStart();
             final int            mjdRef = o.getMJDRef();
             final SplitTime      offset = o.getOffset();
-            final long           slope  = o.getSlope();
+            final int            slope  = o.getSlope();
 
             // start of the leap
             final SplitTime previousOffset = (previous == null) ?
@@ -134,7 +140,8 @@ public class UTCScale implements TimeScale {
             final AbsoluteDate leapStart   = new AbsoluteDate(date, tai).shiftedBy(previousOffset);
 
             // end of the leap
-            final SplitTime startOffset    = SplitTime.add(offset, new SplitTime(slope * (date.getMJD() - mjdRef)));
+            final long         dt          = (date.getMJD() - mjdRef) * SEC_PER_DAY;
+            final SplitTime    startOffset = offset.add(SplitTime.NANOSECOND.multiply(slope * dt));
             final AbsoluteDate leapEnd     = new AbsoluteDate(date, tai).shiftedBy(startOffset);
 
             // leap computed at leap start and in UTC scale
@@ -358,6 +365,23 @@ public class UTCScale implements TimeScale {
         } else {
             return offsets[inf];
         }
+    }
+
+    /** Create a linear model.
+     * @param year year
+     * @param month month
+     * @param day day
+     * @param mjdRef reference date for the linear model
+     * @param offset offset
+     * @param slope slope
+     * @return linear model
+     */
+    private OffsetModel linearModel(final int year, final int month, final int day,
+                                    final int mjdRef, final String offset, final String slope) {
+        return new OffsetModel(new DateComponents(year, month, day),
+                               mjdRef,
+                               SplitTime.parse(offset),
+                               (int) (SplitTime.parse(slope).getAttoSeconds()  / SLOPE_FACTOR));
     }
 
     /** Replace the instance with a data transfer object for serialization.
