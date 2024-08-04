@@ -113,7 +113,7 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
         private static final String INTEGER_REGEXP        = "[-+]?\\p{Digit}+";
 
         /** Regular expression matching real numbers. */
-        private static final String REAL_REGEXP           = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+        private static final String REAL_REGEXP           = "[-+]?(?:\\p{Digit}+(?:\\.\\p{Digit}*)?|\\.\\p{Digit}+)(?:[eE][-+]?\\p{Digit}+)?";
 
         /** Regular expression matching an integer field to store. */
         private static final String STORED_INTEGER_FIELD  = BLANKS + STORAGE_START + INTEGER_REGEXP + STORAGE_END;

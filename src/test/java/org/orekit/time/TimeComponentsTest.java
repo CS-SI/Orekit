@@ -29,58 +29,42 @@ public class TimeComponentsTest {
 
     @Test
     public void testOutOfRangeA() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(-1, 10, 10);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(-1, 10, 10));
     }
 
     @Test
     public void testOutOfRangeB() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(24, 10, 10);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(24, 10, 10));
     }
 
     @Test
     public void testOutOfRangeC() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(10, -1, 10);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(10, -1, 10));
     }
 
     @Test
     public void testOutOfRangeD() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(10, 60, 10);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(10, 60, 10));
     }
 
     @Test
     public void testOutOfRangeE() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(10, 10, -1);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(10, 10, -1));
     }
 
     @Test
     public void testOutOfRangeF() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(10, 10, 61);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(10, 10, 61));
     }
 
     @Test
     public void testOutOfRangeG() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(86399, 4.5);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(86399, 4.5));
     }
 
     @Test
     public void testOutOfRangeH() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            new TimeComponents(0, -1.0);
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(0, -1.0));
     }
 
     @Test
@@ -159,9 +143,7 @@ public class TimeComponentsTest {
 
     @Test
     public void testBadFormat() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            TimeComponents.parseTime("23h59m59s");
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> TimeComponents.parseTime("23h59m59s"));
     }
 
     @Test
@@ -184,26 +166,26 @@ public class TimeComponentsTest {
             for (int j = 0; j < times.length; ++j) {
                 if (times[i].compareTo(times[j]) < 0) {
                     Assertions.assertTrue(times[j].compareTo(times[i]) > 0);
-                    Assertions.assertFalse(times[i].equals(times[j]));
-                    Assertions.assertFalse(times[j].equals(times[i]));
+                    Assertions.assertNotEquals(times[i], times[j]);
+                    Assertions.assertNotEquals(times[j], times[i]);
                     Assertions.assertTrue(times[i].hashCode() != times[j].hashCode());
                     Assertions.assertTrue(i < j);
                 } else if (times[i].compareTo(times[j]) > 0) {
                     Assertions.assertTrue(times[j].compareTo(times[i]) < 0);
-                    Assertions.assertFalse(times[i].equals(times[j]));
-                    Assertions.assertFalse(times[j].equals(times[i]));
+                    Assertions.assertNotEquals(times[i], times[j]);
+                    Assertions.assertNotEquals(times[j], times[i]);
                     Assertions.assertTrue(times[i].hashCode() != times[j].hashCode());
                     Assertions.assertTrue(i > j);
                 } else {
-                    Assertions.assertTrue(times[j].compareTo(times[i]) == 0);
-                    Assertions.assertTrue(times[i].equals(times[j]));
-                    Assertions.assertTrue(times[j].equals(times[i]));
-                    Assertions.assertTrue(times[i].hashCode() == times[j].hashCode());
-                    Assertions.assertTrue(i == j);
+                    Assertions.assertEquals(0, times[j].compareTo(times[i]));
+                    Assertions.assertEquals(times[i], times[j]);
+                    Assertions.assertEquals(times[j], times[i]);
+                    Assertions.assertEquals(times[i].hashCode(), times[j].hashCode());
+                    Assertions.assertEquals(i, j);
                 }
             }
         }
-        Assertions.assertFalse(times[0].equals(this));
+        Assertions.assertNotEquals(times[0], this);
     }
 
     @Test
