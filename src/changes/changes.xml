@@ -103,6 +103,9 @@
       </action>
     </release>
     <release version="12.1.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1487">
+        Fixed NeQuick ionospheric model for perfect zenith observation.
+      </action>
       <action dev="luc" type="fix" issue="1480">
         Fixed wrong agency name length in Rinex observation writer.
       </action>

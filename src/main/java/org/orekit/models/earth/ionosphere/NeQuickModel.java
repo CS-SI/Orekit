@@ -1016,20 +1016,18 @@ public class NeQuickModel implements IonosphericModel {
             final double cosD = scLatRec.sin() * scLatSat.sin() +
                                 scLatRec.cos() * scLatSat.cos() * scLon21.cos();
             final double sinD = FastMath.sqrt(1.0 - cosD * cosD);
-            final double z = FastMath.atan2(sinD, cosD - (r1 / r2));
+            final double z    = FastMath.atan2(sinD, cosD - (r1 / r2));
+            final SinCos scZ  = FastMath.sinCos(z);
 
             // Ray-perigee computation in meters (Eq. 156)
-            this.rp = r1 * FastMath.sin(z);
+            this.rp = r1 * scZ.sin();
 
             // Ray-perigee latitude and longitude
             if (FastMath.abs(FastMath.abs(lat1) - 0.5 * FastMath.PI) < THRESHOLD) {
+                // receiver is almost at North or South pole
 
                 // Ray-perigee latitude (Eq. 157)
-                if (lat1 < 0) {
-                    this.latP = -z;
-                } else {
-                    this.latP = z;
-                }
+                this.latP = FastMath.copySign(z, lat1);
 
                 // Ray-perigee longitude (Eq. 164)
                 if (z < 0) {
@@ -1038,20 +1036,24 @@ public class NeQuickModel implements IonosphericModel {
                     this.lonP = lon2 + FastMath.PI;
                 }
 
+            } else if (FastMath.abs(scZ.sin()) < THRESHOLD) {
+                // satellite is almost on receiver zenith
+
+                this.latP = recP.getLatitude();
+                this.lonP = recP.getLongitude();
+
             } else {
 
                 // Ray-perigee latitude (Eq. 158 to 163)
-                final double deltaP   = 0.5 * FastMath.PI - z;
-                final SinCos scDeltaP = FastMath.sinCos(deltaP);
                 final double sinAz    = scLon21.sin() * scLatSat.cos() / sinD;
                 final double cosAz    = (scLatSat.sin() - cosD * scLatRec.sin()) / (sinD * scLatRec.cos());
-                final double sinLatP  = scLatRec.sin() * scDeltaP.cos() - scLatRec.cos() * scDeltaP.sin() * cosAz;
+                final double sinLatP  = scLatRec.sin() * scZ.sin() - scLatRec.cos() * scZ.cos() * cosAz;
                 final double cosLatP  = FastMath.sqrt(1.0 - sinLatP * sinLatP);
                 this.latP = FastMath.atan2(sinLatP, cosLatP);
 
                 // Ray-perigee longitude (Eq. 165 to 167)
-                final double sinLonP = -sinAz * scDeltaP.sin() / cosLatP;
-                final double cosLonP = (scDeltaP.cos() - scLatRec.sin() * sinLatP) / (scLatRec.cos() * cosLatP);
+                final double sinLonP = -sinAz * scZ.cos() / cosLatP;
+                final double cosLonP = (scZ.sin() - scLatRec.sin() * sinLatP) / (scLatRec.cos() * cosLatP);
                 this.lonP = FastMath.atan2(sinLonP, cosLonP) + lon1;
 
             }
@@ -1059,19 +1061,15 @@ public class NeQuickModel implements IonosphericModel {
             // Sine and cosine of ray-perigee latitude
             this.scLatP = FastMath.sinCos(latP);
 
-            final SinCos scLon = FastMath.sinCos(lon2 - lonP);
-            // Sine and cosine of azimuth of satellite as seen from ray-perigee
-            final double psi   = greatCircleAngle(scLatSat, scLon);
-            final SinCos scPsi = FastMath.sinCos(psi);
-            if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD) {
+            if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD ||
+                FastMath.abs(scZ.sin()) < THRESHOLD) {
                 // Eq. 172 and 173
                 this.sinAzP = 0.0;
-                if (latP < 0.0) {
-                    this.cosAzP = 1;
-                } else {
-                    this.cosAzP = -1;
-                }
+                this.cosAzP = -FastMath.copySign(1, latP);
             } else {
+                final SinCos scLon = FastMath.sinCos(lon2 - lonP);
+                // Sine and cosine of azimuth of satellite as seen from ray-perigee
+                final SinCos scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
                 // Eq. 174 and 175
                 this.sinAzP =  scLatSat.cos() * scLon.sin()                 /  scPsi.sin();
                 this.cosAzP = (scLatSat.sin() - scLatP.sin() * scPsi.cos()) / (scLatP.cos() * scPsi.sin());
@@ -1212,25 +1210,23 @@ public class NeQuickModel implements IonosphericModel {
             final T lon2 = satP.getLongitude();
             final FieldSinCos<T> scLatSat = FastMath.sinCos(lat2);
             final FieldSinCos<T> scLatRec = FastMath.sinCos(lat1);
+            final FieldSinCos<T> scLon21  = FastMath.sinCos(lon2.subtract(lon1));
 
             // Zenith angle computation (Eq. 153 to 155)
             final T cosD = scLatRec.sin().multiply(scLatSat.sin()).
-                            add(scLatRec.cos().multiply(scLatSat.cos()).multiply(FastMath.cos(lon2.subtract(lon1))));
+                            add(scLatRec.cos().multiply(scLatSat.cos()).multiply(scLon21.cos()));
             final T sinD = FastMath.sqrt(cosD.multiply(cosD).negate().add(1.0));
             final T z = FastMath.atan2(sinD, cosD.subtract(r1.divide(r2)));
+            final FieldSinCos<T> scZ  = FastMath.sinCos(z);
 
             // Ray-perigee computation in meters (Eq. 156)
-            this.rp = r1.multiply(FastMath.sin(z));
+            this.rp = r1.multiply(scZ.sin());
 
             // Ray-perigee latitude and longitude
             if (FastMath.abs(FastMath.abs(lat1).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
 
                 // Ray-perigee latitude (Eq. 157)
-                if (lat1.getReal() < 0) {
-                    this.latP = z.negate();
-                } else {
-                    this.latP = z;
-                }
+                this.latP = FastMath.copySign(z, lat1);
 
                 // Ray-perigee longitude (Eq. 164)
                 if (z.getReal() < 0) {
@@ -1239,20 +1235,24 @@ public class NeQuickModel implements IonosphericModel {
                     this.lonP = lon2.add(pi);
                 }
 
+            } else if (FastMath.abs(scZ.sin().getReal()) < THRESHOLD) {
+                // satellite is almost on receiver zenith
+
+                this.latP = recP.getLatitude();
+                this.lonP = recP.getLongitude();
+
             } else {
 
                 // Ray-perigee latitude (Eq. 158 to 163)
-                final T deltaP = z.negate().add(pi.multiply(0.5));
-                final FieldSinCos<T> scDeltaP = FastMath.sinCos(deltaP);
                 final T sinAz    = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
                 final T cosAz    = scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).divide(sinD.multiply(scLatRec.cos()));
-                final T sinLatP  = scLatRec.sin().multiply(scDeltaP.cos()).subtract(scLatRec.cos().multiply(scDeltaP.sin()).multiply(cosAz));
+                final T sinLatP  = scLatRec.sin().multiply(scZ.sin()).subtract(scLatRec.cos().multiply(scZ.cos()).multiply(cosAz));
                 final T cosLatP  = FastMath.sqrt(sinLatP.multiply(sinLatP).negate().add(1.0));
                 this.latP = FastMath.atan2(sinLatP, cosLatP);
 
                 // Ray-perigee longitude (Eq. 165 to 167)
-                final T sinLonP = sinAz.negate().multiply(scDeltaP.sin()).divide(cosLatP);
-                final T cosLonP = scDeltaP.cos().subtract(scLatRec.sin().multiply(sinLatP)).divide(scLatRec.cos().multiply(cosLatP));
+                final T sinLonP = sinAz.negate().multiply(scZ.cos()).divide(cosLatP);
+                final T cosLonP = scZ.sin().subtract(scLatRec.sin().multiply(sinLatP)).divide(scLatRec.cos().multiply(cosLatP));
                 this.lonP = FastMath.atan2(sinLonP, cosLonP).add(lon1);
 
             }
@@ -1260,19 +1260,15 @@ public class NeQuickModel implements IonosphericModel {
             // Sine and cosine of ray-perigee latitude
             this.scLatP = FastMath.sinCos(latP);
 
-            final FieldSinCos<T> scLon = FastMath.sinCos(lon2.subtract(lonP));
-            // Sine and cosie of azimuth of satellite as seen from ray-perigee
-            final T psi = greatCircleAngle(scLatSat, scLon);
-            final FieldSinCos<T> scPsi = FastMath.sinCos(psi);
-            if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
+            if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD ||
+                FastMath.abs(scZ.sin().getReal()) < THRESHOLD) {
                 // Eq. 172 and 173
                 this.sinAzP = field.getZero();
-                if (latP.getReal() < 0.0) {
-                    this.cosAzP = field.getOne();
-                } else {
-                    this.cosAzP = field.getOne().negate();
-                }
+                this.cosAzP = FastMath.copySign(field.getOne(), latP).negate();
             } else {
+                final FieldSinCos<T> scLon = FastMath.sinCos(lon2.subtract(lonP));
+                // Sine and cosine of azimuth of satellite as seen from ray-perigee
+                final FieldSinCos<T> scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
                 // Eq. 174 and 175
                 this.sinAzP = scLatSat.cos().multiply(scLon.sin()).divide(scPsi.sin());
                 this.cosAzP = scLatSat.sin().subtract(scLatP.sin().multiply(scPsi.cos())).divide(scLatP.cos().multiply(scPsi.sin()));
@@ -1363,6 +1359,9 @@ public class NeQuickModel implements IonosphericModel {
     /** Performs the computation of the coordinates along the integration path. */
     private static class Segment {
 
+        /** Threshold for zenith segment. */
+        private static final double THRESHOLD = 1.0e-3;
+
         /** Latitudes [rad]. */
         private final double[] latitudes;
 
@@ -1404,20 +1403,26 @@ public class NeQuickModel implements IonosphericModel {
                 // Heights (Eq. 178)
                 heights[i] = FastMath.sqrt(s[i] * s[i] + rp * rp) - RE;
 
-                // Great circle parameters (Eq. 179 to 181)
-                final double tanDs = s[i] / rp;
-                final double cosDs = 1.0 / FastMath.sqrt(1.0 + tanDs * tanDs);
-                final double sinDs = tanDs * cosDs;
+                if (rp < THRESHOLD) {
+                    // zenith segment
+                    latitudes[i]  = ray.getLatitude();
+                    longitudes[i] = ray.getLongitude();
+                } else {
+                    // Great circle parameters (Eq. 179 to 181)
+                    final double tanDs = s[i] / rp;
+                    final double cosDs = 1.0 / FastMath.sqrt(1.0 + tanDs * tanDs);
+                    final double sinDs = tanDs * cosDs;
 
-                // Latitude (Eq. 182 to 183)
-                final double sinLatS = scLatP.sin() * cosDs + scLatP.cos() * sinDs * ray.getCosineAz();
-                final double cosLatS = FastMath.sqrt(1.0 - sinLatS * sinLatS);
-                latitudes[i] = FastMath.atan2(sinLatS, cosLatS);
+                    // Latitude (Eq. 182 to 183)
+                    final double sinLatS = scLatP.sin() * cosDs + scLatP.cos() * sinDs * ray.getCosineAz();
+                    final double cosLatS = FastMath.sqrt(1.0 - sinLatS * sinLatS);
+                    latitudes[i] = FastMath.atan2(sinLatS, cosLatS);
 
-                // Longitude (Eq. 184 to 187)
-                final double sinLonS = sinDs * ray.getSineAz() * scLatP.cos();
-                final double cosLonS = cosDs - scLatP.sin() * sinLatS;
-                longitudes[i] = FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude();
+                    // Longitude (Eq. 184 to 187)
+                    final double sinLonS = sinDs * ray.getSineAz() * scLatP.cos();
+                    final double cosLonS = cosDs - scLatP.sin() * sinLatS;
+                    longitudes[i] = FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude();
+                }
             }
         }
 
@@ -1480,6 +1485,9 @@ public class NeQuickModel implements IonosphericModel {
     /** Performs the computation of the coordinates along the integration path. */
     private static class FieldSegment <T extends CalculusFieldElement<T>> {
 
+        /** Threshold for zenith segment. */
+        private static final double THRESHOLD = 1.0e-3;
+
         /** Latitudes [rad]. */
         private final T[] latitudes;
 
@@ -1522,20 +1530,26 @@ public class NeQuickModel implements IonosphericModel {
                 // Heights (Eq. 178)
                 heights[i] = FastMath.sqrt(s[i].multiply(s[i]).add(rp.multiply(rp))).subtract(RE);
 
-                // Great circle parameters (Eq. 179 to 181)
-                final T tanDs = s[i].divide(rp);
-                final T cosDs = FastMath.sqrt(tanDs.multiply(tanDs).add(1.0)).reciprocal();
-                final T sinDs = tanDs.multiply(cosDs);
+                if (rp.getReal() < THRESHOLD) {
+                    // zenith segment
+                    latitudes[i]  = ray.getLatitude();
+                    longitudes[i] = ray.getLongitude();
+                } else {
+                    // Great circle parameters (Eq. 179 to 181)
+                    final T tanDs = s[i].divide(rp);
+                    final T cosDs = FastMath.sqrt(tanDs.multiply(tanDs).add(1.0)).reciprocal();
+                    final T sinDs = tanDs.multiply(cosDs);
 
-                // Latitude (Eq. 182 to 183)
-                final T sinLatS = scLatP.sin().multiply(cosDs).add(scLatP.cos().multiply(sinDs).multiply(ray.getCosineAz()));
-                final T cosLatS = FastMath.sqrt(sinLatS.multiply(sinLatS).negate().add(1.0));
-                latitudes[i] = FastMath.atan2(sinLatS, cosLatS);
+                    // Latitude (Eq. 182 to 183)
+                    final T sinLatS = scLatP.sin().multiply(cosDs).add(scLatP.cos().multiply(sinDs).multiply(ray.getCosineAz()));
+                    final T cosLatS = FastMath.sqrt(sinLatS.multiply(sinLatS).negate().add(1.0));
+                    latitudes[i] = FastMath.atan2(sinLatS, cosLatS);
 
-                // Longitude (Eq. 184 to 187)
-                final T sinLonS = sinDs.multiply(ray.getSineAz()).multiply(scLatP.cos());
-                final T cosLonS = cosDs.subtract(scLatP.sin().multiply(sinLatS));
-                longitudes[i] = FastMath.atan2(sinLonS, cosLonS).add(ray.getLongitude());
+                    // Longitude (Eq. 184 to 187)
+                    final T sinLonS = sinDs.multiply(ray.getSineAz()).multiply(scLatP.cos());
+                    final T cosLonS = cosDs.subtract(scLatP.sin().multiply(sinLatS));
+                    longitudes[i] = FastMath.atan2(sinLonS, cosLonS).add(ray.getLongitude());
+                }
             }
         }
 
