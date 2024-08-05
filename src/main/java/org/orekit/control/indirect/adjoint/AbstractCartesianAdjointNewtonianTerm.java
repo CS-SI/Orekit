@@ -27,7 +27,7 @@ import org.hipparchus.util.MathArrays;
  * @see CartesianAdjointEquationTerm
  * @since 12.2
  */
-public abstract class AbstractCartesianAdjointNewtonianTerm implements CartesianAdjointEquationTerm {
+public abstract class AbstractCartesianAdjointNewtonianTerm extends AbstractCartesianAdjointGravitationalTerm {
 
     /** Minus three. */
     private static final double MINUS_THREE = -3;
@@ -71,7 +71,8 @@ public abstract class AbstractCartesianAdjointNewtonianTerm implements Cartesian
      * @param <T> field type
      * @return contribution to velocity adjoint derivatives
      */
-    protected  <T extends CalculusFieldElement<T>> T[] getFieldNewtonianVelocityAdjointContribution(final double mu, final T[] relativePosition,
+    protected  <T extends CalculusFieldElement<T>> T[] getFieldNewtonianVelocityAdjointContribution(final double mu,
+                                                                                                    final T[] relativePosition,
                                                                                                     final T[] adjointVariables) {
         final T[] contribution = MathArrays.buildArray(adjointVariables[0].getField(), 3);
         final T x = relativePosition[0];

@@ -38,7 +38,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see org.orekit.forces.gravity.J2OnlyPerturbation
  * @since 12.2
  */
-public class CartesianAdjointJ2Term implements CartesianAdjointEquationTerm {
+public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationalTerm {
 
     /** Central body gravitational constant. */
     private final double mu;
@@ -125,7 +125,9 @@ public class CartesianAdjointJ2Term implements CartesianAdjointEquationTerm {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(final FieldAbsoluteDate<T> date, final T[] stateVariables, final T[] adjointVariables) {
+    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(final FieldAbsoluteDate<T> date,
+                                                                                       final T[] stateVariables,
+                                                                                       final T[] adjointVariables) {
         final Field<T> field = adjointVariables[0].getField();
         final T[] contribution = MathArrays.buildArray(field, 3);
         final int numberOfGradientVariables = 3;

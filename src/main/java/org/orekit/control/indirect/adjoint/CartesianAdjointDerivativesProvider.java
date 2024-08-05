@@ -90,13 +90,13 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         additionalDerivatives[4] = -adjointVariables[1];
         additionalDerivatives[5] = -adjointVariables[2];
 
-        // Cartesian velocity adjoint
+        // Update position and velocity adjoint derivatives
         final AbsoluteDate date = state.getDate();
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final double[] contribution = equationTerm.getVelocityAdjointContribution(date, cartesianVariablesAndMass, adjointVariables);
-            additionalDerivatives[0] += contribution[0];
-            additionalDerivatives[1] += contribution[1];
-            additionalDerivatives[2] += contribution[2];
+            final double[] contribution = equationTerm.getContribution(date, cartesianVariablesAndMass, adjointVariables);
+            for (int i = 0; i < contribution.length; i++) {
+                additionalDerivatives[i] += contribution[i];
+            }
         }
 
         // other

@@ -51,13 +51,16 @@ public class CartesianAdjointKeplerianTerm extends AbstractCartesianAdjointNewto
 
     /** {@inheritDoc} */
     @Override
-    public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables, final double[] adjointVariables) {
+    public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
+                                                   final double[] adjointVariables) {
         return getNewtonianVelocityAdjointContribution(mu, stateVariables, adjointVariables);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(final FieldAbsoluteDate<T> date, final T[] stateVariables, final T[] adjointVariables) {
+    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(final FieldAbsoluteDate<T> date,
+                                                                                       final T[] stateVariables,
+                                                                                       final T[] adjointVariables) {
         return getFieldNewtonianVelocityAdjointContribution(mu, stateVariables, adjointVariables);
     }
 }

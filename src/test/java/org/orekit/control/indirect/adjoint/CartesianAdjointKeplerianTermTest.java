@@ -60,15 +60,15 @@ class CartesianAdjointKeplerianTermTest {
         fieldMu[0] = Gradient.constant(dimension, keplerianTerm.getMu());
         final FieldVector3D<Gradient> acceleration = newtonianAttraction.acceleration(mockedState, fieldMu);
         Assertions.assertEquals(-contribution[0], acceleration.getX().getGradient()[0] * adjoint[3]
-                + acceleration.getX().getGradient()[1] * adjoint[4] + acceleration.getX().getGradient()[2] * adjoint[5]);
-        Assertions.assertEquals(-contribution[1], acceleration.getY().getGradient()[0] * adjoint[3]
-                + acceleration.getY().getGradient()[1] * adjoint[4] + acceleration.getY().getGradient()[2] * adjoint[5]);
-        Assertions.assertEquals(-contribution[2], acceleration.getZ().getGradient()[0] * adjoint[3]
-                + acceleration.getZ().getGradient()[1] * adjoint[4] + acceleration.getZ().getGradient()[2] * adjoint[5]);
+                + acceleration.getY().getGradient()[0] * adjoint[4] + acceleration.getZ().getGradient()[0] * adjoint[5]);
+        Assertions.assertEquals(-contribution[1], acceleration.getX().getGradient()[1] * adjoint[3]
+                + acceleration.getY().getGradient()[1] * adjoint[4] + acceleration.getZ().getGradient()[1] * adjoint[5]);
+        Assertions.assertEquals(-contribution[2], acceleration.getX().getGradient()[2] * adjoint[3]
+                + acceleration.getY().getGradient()[2] * adjoint[4] + acceleration.getZ().getGradient()[2] * adjoint[5]);
     }
 
     @Test
-    void testGetVelocityAdjointContributionField() {
+    void testGetVelocityAdjointFieldContribution() {
         // GIVEN
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(Constants.EGM96_EARTH_MU);
         final Binary64Field field = Binary64Field.getInstance();
@@ -80,7 +80,7 @@ class CartesianAdjointKeplerianTermTest {
         }
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = keplerianTerm.getVelocityAdjointContribution(fieldDate, fieldState, fieldAdjoint);
+        final Binary64[] fieldContribution = keplerianTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState, fieldAdjoint);
         // THEN
         final double[] state = new double[fieldState.length];
         for (int i = 0; i < fieldState.length; i++) {

@@ -29,24 +29,24 @@ import org.orekit.time.FieldAbsoluteDate;
 public interface CartesianAdjointEquationTerm {
 
     /**
-     * Computes the contribution to the rates of the velocity adjoint variables.
+     * Computes the contribution to the rates of the adjoint variables.
      *
      * @param date date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
-     * @return contribution to the velocity adjoing derivative vector
+     * @return contribution to the adjoint derivative vector
      */
-    double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables);
+    double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables);
 
     /**
-     * Computes the contribution to the rates of the velocity adjoint variables.
+     * Computes the contribution to the rates of the adjoint variables.
      *
      * @param <T>              field type
      * @param date             date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
-     * @return contribution to the velocity adjoing derivative vector
+     * @return contribution to the adjoint derivative vector
      */
-    <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables);
+    <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables);
 
 }
