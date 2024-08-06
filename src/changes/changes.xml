@@ -24,6 +24,9 @@
       <action dev="luc" type="fix" issue="1487">
         Fixed NeQuick ionospheric model for perfect zenith observation.
       </action>
+      <action dev="vincent" type="fix" issue="1485">
+        Fixed introduced noises when changing covariance frame with identical frame.
+      </action>
       <action dev="luc" type="fix" issue="1480">
         Fixed wrong agency name length in Rinex observation writer.
       </action>
