@@ -403,9 +403,11 @@ public class RinexClock {
      */
     public void addSystemObservationType(final SatelliteSystem satSystem,
                                          final ObservationType observationType) {
-        systemObservationTypes.
-            computeIfAbsent(satSystem, s -> new ArrayList<>()).
-            add(observationType);
+        final List<ObservationType> list;
+        synchronized (systemObservationTypes) {
+            list = systemObservationTypes.computeIfAbsent(satSystem, s -> new ArrayList<>());
+        }
+        list.add(observationType);
     }
 
     /** Getter for the file time system.
@@ -663,7 +665,11 @@ public class RinexClock {
      */
     public void addClockData(final String id,
                              final ClockDataLine clockDataLine) {
-        clockData.computeIfAbsent(id, i -> new ArrayList<>()).add(clockDataLine);
+        final List<ClockDataLine> list;
+        synchronized (clockData) {
+            list = clockData.computeIfAbsent(id, i -> new ArrayList<>());
+        }
+        list.add(clockDataLine);
         final AbsoluteDate epoch = clockDataLine.getEpoch();
         if (epoch.isBefore(earliestEpoch)) {
             earliestEpoch = epoch;

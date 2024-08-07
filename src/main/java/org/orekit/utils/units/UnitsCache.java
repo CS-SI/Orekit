@@ -50,7 +50,9 @@ public class UnitsCache {
             return Unit.NONE;
         }
 
-        return cache.computeIfAbsent(specification, s -> Unit.parse(specification));
+        synchronized (cache) {
+            return cache.computeIfAbsent(specification, s -> Unit.parse(specification));
+        }
 
     }
 

@@ -274,8 +274,11 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
                             type,
                             dsParameters);
             // create a copy of the list to protect against inadvertent modification
-            fieldShortPeriodTerms.computeIfAbsent(forceModel, x -> new ArrayList<>())
-                    .addAll(terms);
+            final List<FieldShortPeriodTerms<Gradient>> list;
+            synchronized (fieldShortPeriodTerms) {
+                list = fieldShortPeriodTerms.computeIfAbsent(forceModel, x -> new ArrayList<>());
+            }
+            list.addAll(terms);
 
         }
 
@@ -324,8 +327,10 @@ public class DSSTHarvester extends AbstractMatricesHarvester {
             final Gradient zero = dsState.getDate().getField().getZero();
             final Gradient[] shortPeriod = new Gradient[6];
             Arrays.fill(shortPeriod, zero);
-            final List<FieldShortPeriodTerms<Gradient>> terms = fieldShortPeriodTerms
-                    .computeIfAbsent(forceModel, x -> new ArrayList<>(0));
+            final List<FieldShortPeriodTerms<Gradient>> terms;
+            synchronized (fieldShortPeriodTerms) {
+                terms = fieldShortPeriodTerms.computeIfAbsent(forceModel, x -> new ArrayList<>(0));
+            }
             for (final FieldShortPeriodTerms<Gradient> spt : terms) {
                 final Gradient[] spVariation = spt.value(dsState.getOrbit());
                 for (int i = 0; i < spVariation .length; i++) {

@@ -114,7 +114,11 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * @since 11.0.1
      */
     public void addSatelliteCoordinates(final String id, final List<CPFCoordinate> coord) {
-        ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i)).coordinates.addAll(coord);
+        final CPFEphemeris e;
+        synchronized (ephemeris) {
+            e = ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i));
+        }
+        e.coordinates.addAll(coord);
     }
 
     /**
@@ -124,7 +128,11 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      * @since 11.0.1
      */
     public void addSatelliteCoordinate(final String id, final CPFCoordinate coord) {
-        ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i)).coordinates.add(coord);
+        final CPFEphemeris e;
+        synchronized (ephemeris) {
+            e = ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i));
+        }
+        e.coordinates.add(coord);
     }
 
     /**
