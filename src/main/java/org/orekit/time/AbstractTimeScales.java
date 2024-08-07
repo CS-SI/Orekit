@@ -79,7 +79,7 @@ public abstract class AbstractTimeScales implements TimeScales {
     @Override
     public UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP) {
         final Pair<IERSConventions, Boolean> key = new Pair<>(conventions, simpleEOP);
-        synchronized (ut1Map) {
+        synchronized (this) {
             return ut1Map.computeIfAbsent(key, k -> getUT1(getEopHistory(conventions, simpleEOP)));
         }
     }
@@ -87,7 +87,7 @@ public abstract class AbstractTimeScales implements TimeScales {
     @Override
     public GMSTScale getGMST(final IERSConventions conventions, final boolean simpleEOP) {
         final Pair<IERSConventions, Boolean> key = new Pair<>(conventions, simpleEOP);
-        synchronized (gmstMap) {
+        synchronized (this) {
             return gmstMap.computeIfAbsent(key, k -> new GMSTScale(getUT1(conventions, simpleEOP)));
         }
     }

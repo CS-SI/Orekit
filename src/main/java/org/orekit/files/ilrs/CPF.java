@@ -56,13 +56,13 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     private CartesianDerivativesFilter filter;
 
     /** CPF file header. */
-    private CPFHeader header;
+    private final CPFHeader header;
 
     /** Map containing satellite information. */
-    private Map<String, CPFEphemeris> ephemeris;
+    private final Map<String, CPFEphemeris> ephemeris;
 
     /** List of comments contained in the file. */
-    private List<String> comments;
+    private final List<String> comments;
 
     /**
      * Constructor.
@@ -115,8 +115,8 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      */
     public void addSatelliteCoordinates(final String id, final List<CPFCoordinate> coord) {
         final CPFEphemeris e;
-        synchronized (ephemeris) {
-            e = ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i));
+        synchronized (this) {
+            e = ephemeris.computeIfAbsent(id, CPFEphemeris::new);
         }
         e.coordinates.addAll(coord);
     }
@@ -129,8 +129,8 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
      */
     public void addSatelliteCoordinate(final String id, final CPFCoordinate coord) {
         final CPFEphemeris e;
-        synchronized (ephemeris) {
-            e = ephemeris.computeIfAbsent(id, i -> new CPFEphemeris(i));
+        synchronized (this) {
+            e = ephemeris.computeIfAbsent(id, CPFEphemeris::new);
         }
         e.coordinates.add(coord);
     }
