@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.hipparchus.util.FastMath;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -32,32 +31,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  */
 public class DSSTZonalContext extends DSSTGravityContext {
 
-    // Common factors for potential computation
-    /** A = sqrt(μ * a). */
-    private final double A;
-    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private double X;
-    /** &Chi;². */
-    private double XX;
-    /** &Chi;³. */
-    private double XXX;
-    /** 1 / (A * B) . */
-    private double ooAB;
-    /** B / A . */
-    private double BoA;
-    /** B / A(1 + B) . */
-    private double BoABpo;
-    /** -C / (2 * A * B) . */
-    private double mCo2AB;
-    /** -2 * a / A . */
-    private double m2aoA;
-    /** μ / a . */
-    private double muoa;
-    /** R / a . */
-    private double roa;
-
-    /** Keplerian mean motion. */
-    private final double n;
+    /** &Chi;³ = 1 / B³. */
+    private final double chi3;
 
     // Short period terms
     /** h * k. */
@@ -95,37 +70,14 @@ public class DSSTZonalContext extends DSSTGravityContext {
                      final UnnormalizedSphericalHarmonicsProvider provider,
                      final double[] parameters) {
 
-        super(auxiliaryElements, centralBodyFrame);
+        super(auxiliaryElements, centralBodyFrame, provider, parameters);
 
-        final double mu = parameters[0];
-
-        // Keplerian Mean Motion
-        final double absA = FastMath.abs(auxiliaryElements.getSma());
-        n = FastMath.sqrt(mu / absA) / absA;
-
-        A = FastMath.sqrt(mu * auxiliaryElements.getSma());
-
-        // &Chi; = 1 / B
-        X = 1. / auxiliaryElements.getB();
-        XX = X * X;
-        XXX = X * XX;
-
-        // 1 / AB
-        ooAB = 1. / (A * auxiliaryElements.getB());
-        // B / A
-        BoA = auxiliaryElements.getB() / A;
-        // -C / 2AB
-        mCo2AB = -auxiliaryElements.getC() * ooAB / 2.;
-        // B / A(1 + B)
-        BoABpo = BoA / (1. + auxiliaryElements.getB());
-        // -2 * a / A
-        m2aoA = -2 * auxiliaryElements.getSma() / A;
-        // μ / a
-        muoa = mu / auxiliaryElements.getSma();
-        // R / a
-        roa = provider.getAe() / auxiliaryElements.getSma();
+        // Chi3
+        final double chi = getChi();
+        this.chi3 = chi * getChi2();
 
         // Short period terms
+        // -----
 
         // h * k.
         hk = auxiliaryElements.getH() * auxiliaryElements.getK();
@@ -134,98 +86,66 @@ public class DSSTZonalContext extends DSSTGravityContext {
         // (k² - h²) / 2.
         k2mh2o2 = k2mh2 / 2.;
         // 1 / (n² * a²) = 1 / (n * A)
-        oon2a2 = 1 / (A * n);
+        oon2a2 = 1 / (getA() * getMeanMotion());
         // 1 / (n² * a) = a / (n * A)
         oon2a = auxiliaryElements.getSma() * oon2a2;
         // χ³ / (n² * a)
-        x3on2a = XXX * oon2a;
+        x3on2a = chi3 * oon2a;
         // χ / (n² * a²)
-        xon2a2 = X * oon2a2;
+        xon2a2 = getChi() * oon2a2;
         // (C * χ) / ( 2 * n² * a² )
         cxo2n2a2 = xon2a2 * auxiliaryElements.getC() / 2;
         // (χ²) / (n² * a² * (χ + 1 ) )
-        x2on2a2xp1 = xon2a2 * X / (X + 1);
+        x2on2a2xp1 = xon2a2 * chi / (chi + 1);
         // B * B
         BB = auxiliaryElements.getB() * auxiliaryElements.getB();
     }
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
      * @return &Chi;
+     * @deprecated since 12.1.3. Use getChi() instead
      */
     public double getX() {
-        return X;
+        return getChi();
     }
 
     /** Get &Chi;².
      * @return &Chi;².
+     * @deprecated since 12.1.3. Use getChi2() instead
      */
     public double getXX() {
-        return XX;
+        return getChi2();
+    }
+
+    /** Getter for the &Chi;³.
+     * @return the &Chi;³
+     */
+    public double getChi3() {
+        return chi3;
     }
 
     /** Get &Chi;³.
      * @return &Chi;³
+     * @deprecated since 12.1.3. Use getChi3() instead
      */
     public double getXXX() {
-        return XXX;
+        return getChi3();
     }
 
     /** Get m2aoA = -2 * a / A.
      * @return m2aoA
+     * @deprecated since 12.1.3. Use -getAx2oA()() instead
      */
     public double getM2aoA() {
-        return m2aoA;
-    }
-
-    /** Get B / A.
-     * @return BoA
-     */
-    public double getBoA() {
-        return BoA;
-    }
-
-    /** Get ooAB = 1 / (A * B).
-     * @return ooAB
-     */
-    public double getOoAB() {
-        return ooAB;
+        return -getAx2oA();
     }
 
     /** Get mCo2AB = -C / 2AB.
      * @return mCo2AB
+     * @deprecated since 12.1.3. Use -getCo2AB()() instead
      */
     public double getMCo2AB() {
-        return mCo2AB;
-    }
-
-    /** Get BoABpo = B / A(1 + B).
-     * @return BoABpo
-     */
-    public double getBoABpo() {
-        return BoABpo;
-    }
-
-    /** Get μ / a .
-     * @return muoa
-     */
-    public double getMuoa() {
-        return muoa;
-    }
-
-    /** Get roa = R / a.
-     * @return roa
-     */
-    public double getRoa() {
-        return roa;
-    }
-
-    /** Get the Keplerian mean motion.
-     * <p>The Keplerian mean motion is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian mean motion in radians per second
-     */
-    public double getMeanMotion() {
-        return n;
+        return -getCo2AB();
     }
 
     /** Get h * k.
