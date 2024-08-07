@@ -49,7 +49,7 @@ public class AmbiguityCache {
      */
     public AmbiguityDriver getAmbiguity(final String emitter, final String receiver, final double wavelength) {
         final Key key = new Key(emitter, receiver, wavelength);
-        synchronized (this) {
+        synchronized (cache) {
             return cache.computeIfAbsent(key, k -> new AmbiguityDriver(emitter, receiver, wavelength));
         }
     }
