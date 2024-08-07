@@ -57,14 +57,10 @@ public class FixedTransformProvider implements TransformProvider {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
-
-        @SuppressWarnings("unchecked")
-        final FieldTransform<T> ft =
-                (FieldTransform<T>) cached.computeIfAbsent(date.getField(),
-                                                           f -> new FieldTransform<>((Field<T>) f, transform));
-
-        return ft;
-
+        synchronized (cached) {
+            return (FieldTransform<T>) cached.computeIfAbsent(date.getField(),
+                                                            f -> new FieldTransform<>((Field<T>) f, transform));
+        }
     }
 
     /** Replace the instance with a data transfer object for serialization.

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.1.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1489">
+        Protected several maps against concurrent modifications.
+      </action>
       <action dev="luc" type="fix" issue="1487">
         Fixed NeQuick ionospheric model for perfect zenith observation.
       </action>
