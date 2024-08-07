@@ -1299,20 +1299,21 @@ public class DSSTTesseral implements DSSTForceModel {
                     dRdGaSin += nSumSneg[6][1];
                 }
             }
-            dRdaCos  *= -context.getMoa() / auxiliaryElements.getSma();
-            dRdaSin  *= -context.getMoa() / auxiliaryElements.getSma();
-            dRdhCos  *=  context.getMoa();
-            dRdhSin  *=  context.getMoa();
-            dRdkCos  *=  context.getMoa();
-            dRdkSin  *=  context.getMoa();
-            dRdlCos  *=  context.getMoa();
-            dRdlSin  *=  context.getMoa();
-            dRdAlCos *=  context.getMoa();
-            dRdAlSin *=  context.getMoa();
-            dRdBeCos *=  context.getMoa();
-            dRdBeSin *=  context.getMoa();
-            dRdGaCos *=  context.getMoa();
-            dRdGaSin *=  context.getMoa();
+            final double muOnA = context.getMuoa();
+            dRdaCos  *= -muOnA / auxiliaryElements.getSma();
+            dRdaSin  *= -muOnA / auxiliaryElements.getSma();
+            dRdhCos  *=  muOnA;
+            dRdhSin  *=  muOnA;
+            dRdkCos  *=  muOnA;
+            dRdkSin  *=  muOnA;
+            dRdlCos  *=  muOnA;
+            dRdlSin  *=  muOnA;
+            dRdAlCos *=  muOnA;
+            dRdAlSin *=  muOnA;
+            dRdBeCos *=  muOnA;
+            dRdBeSin *=  muOnA;
+            dRdGaCos *=  muOnA;
+            dRdGaSin *=  muOnA;
 
             // Compute the cross derivative operator :
             final double RAlphaGammaCos   = context.getAlpha() * dRdGaCos - context.getGamma() * dRdAlCos;
@@ -1567,20 +1568,21 @@ public class DSSTTesseral implements DSSTForceModel {
                     dRdGaSin = dRdGaSin.add(nSumSneg[6][1]);
                 }
             }
-            dRdaCos  =  dRdaCos.multiply(context.getMoa().negate().divide(auxiliaryElements.getSma()));
-            dRdaSin  =  dRdaSin.multiply(context.getMoa().negate().divide(auxiliaryElements.getSma()));
-            dRdhCos  =  dRdhCos.multiply(context.getMoa());
-            dRdhSin  =  dRdhSin.multiply(context.getMoa());
-            dRdkCos  =  dRdkCos.multiply(context.getMoa());
-            dRdkSin  =  dRdkSin.multiply(context.getMoa());
-            dRdlCos  =  dRdlCos.multiply(context.getMoa());
-            dRdlSin  =  dRdlSin.multiply(context.getMoa());
-            dRdAlCos = dRdAlCos.multiply(context.getMoa());
-            dRdAlSin = dRdAlSin.multiply(context.getMoa());
-            dRdBeCos = dRdBeCos.multiply(context.getMoa());
-            dRdBeSin = dRdBeSin.multiply(context.getMoa());
-            dRdGaCos = dRdGaCos.multiply(context.getMoa());
-            dRdGaSin = dRdGaSin.multiply(context.getMoa());
+            final T muOnA = context.getMuoa();
+            dRdaCos  =  dRdaCos.multiply(muOnA.negate().divide(auxiliaryElements.getSma()));
+            dRdaSin  =  dRdaSin.multiply(muOnA.negate().divide(auxiliaryElements.getSma()));
+            dRdhCos  =  dRdhCos.multiply(muOnA);
+            dRdhSin  =  dRdhSin.multiply(muOnA);
+            dRdkCos  =  dRdkCos.multiply(muOnA);
+            dRdkSin  =  dRdkSin.multiply(muOnA);
+            dRdlCos  =  dRdlCos.multiply(muOnA);
+            dRdlSin  =  dRdlSin.multiply(muOnA);
+            dRdAlCos = dRdAlCos.multiply(muOnA);
+            dRdAlSin = dRdAlSin.multiply(muOnA);
+            dRdBeCos = dRdBeCos.multiply(muOnA);
+            dRdBeSin = dRdBeSin.multiply(muOnA);
+            dRdGaCos = dRdGaCos.multiply(muOnA);
+            dRdGaSin = dRdGaSin.multiply(muOnA);
 
             // Compute the cross derivative operator :
             final T RAlphaGammaCos   = context.getAlpha().multiply(dRdGaCos).subtract(context.getGamma().multiply(dRdAlCos));
@@ -2425,13 +2427,14 @@ public class DSSTTesseral implements DSSTForceModel {
                     dUdGa += cosPhi * dUdGaCos + sinPhi * dUdGaSin;
                 }
 
-                this.dUda  = dUda * (-context.getMoa() / auxiliaryElements.getSma());
-                this.dUdh  = dUdh * context.getMoa();
-                this.dUdk  = dUdk * context.getMoa();
-                this.dUdl  = dUdl * context.getMoa();
-                this.dUdAl = dUdAl * context.getMoa();
-                this.dUdBe = dUdBe * context.getMoa();
-                this.dUdGa = dUdGa * context.getMoa();
+                final double muOnA = context.getMuoa();
+                this.dUda  = dUda * (-muOnA / auxiliaryElements.getSma());
+                this.dUdh  = dUdh * muOnA;
+                this.dUdk  = dUdk * muOnA;
+                this.dUdl  = dUdl * muOnA;
+                this.dUdAl = dUdAl * muOnA;
+                this.dUdBe = dUdBe * muOnA;
+                this.dUdGa = dUdGa * muOnA;
             }
 
         }
@@ -2650,16 +2653,15 @@ public class DSSTTesseral implements DSSTForceModel {
                     dUdGa = dUdGa.add(dUdGaCos.multiply(cosPhi).add(dUdGaSin.multiply(sinPhi)));
                 }
 
-                dUda  =  dUda.multiply(context.getMoa().divide(auxiliaryElements.getSma())).negate();
-                dUdh  =  dUdh.multiply(context.getMoa());
-                dUdk  =  dUdk.multiply(context.getMoa());
-                dUdl  =  dUdl.multiply(context.getMoa());
-                dUdAl =  dUdAl.multiply(context.getMoa());
-                dUdBe =  dUdBe.multiply(context.getMoa());
-                dUdGa =  dUdGa.multiply(context.getMoa());
-
+                final T muOnA = context.getMuoa();
+                dUda  =  dUda.multiply(muOnA.divide(auxiliaryElements.getSma())).negate();
+                dUdh  =  dUdh.multiply(muOnA);
+                dUdk  =  dUdk.multiply(muOnA);
+                dUdl  =  dUdl.multiply(muOnA);
+                dUdAl =  dUdAl.multiply(muOnA);
+                dUdBe =  dUdBe.multiply(muOnA);
+                dUdGa =  dUdGa.multiply(muOnA);
             }
-
         }
 
         /** Return value of dU / da.

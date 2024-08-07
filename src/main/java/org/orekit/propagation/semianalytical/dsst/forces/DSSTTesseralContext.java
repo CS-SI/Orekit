@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
@@ -49,46 +50,11 @@ public class DSSTTesseralContext extends DSSTGravityContext {
      */
     private static final int I = 1;
 
-    /** A = sqrt(μ * a). */
-    private double A;
-
-    // Common factors for potential computation
-    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private double chi;
-
-    /** &Chi;². */
-    private double chi2;
-
     /** Central body rotation angle θ. */
     private double theta;
 
-    // Common factors from equinoctial coefficients
-    /** 2 * a / A . */
-    private double ax2oA;
-
-    /** 1 / (A * B) . */
-    private double ooAB;
-
-    /** B / A . */
-    private double BoA;
-
-    /** B / (A * (1 + B)) . */
-    private double BoABpo;
-
-    /** C / (2 * A * B) . */
-    private double Co2AB;
-
-    /** μ / a . */
-    private double moa;
-
-    /** R / a . */
-    private double roa;
-
     /** ecc². */
     private double e2;
-
-    /** Keplerian mean motion. */
-    private double n;
 
     /** Keplerian period. */
     private double period;
@@ -113,19 +79,11 @@ public class DSSTTesseralContext extends DSSTGravityContext {
                         final double bodyPeriod,
                         final double[] parameters) {
 
-        super(auxiliaryElements, centralBodyFrame);
-
-        final double mu = parameters[0];
-
-        // Keplerian Mean Motion
-        final double absA = FastMath.abs(auxiliaryElements.getSma());
-        n = FastMath.sqrt(mu / absA) / absA;
+        super(auxiliaryElements, centralBodyFrame, provider, parameters);
 
         // Keplerian period
         final double a = auxiliaryElements.getSma();
-        period = (a < 0) ? Double.POSITIVE_INFINITY : 2.0 * FastMath.PI * a * FastMath.sqrt(a / mu);
-
-        A = FastMath.sqrt(mu * auxiliaryElements.getSma());
+        period = (a < 0) ? Double.POSITIVE_INFINITY : MathUtils.TWO_PI / getMeanMotion();
 
         // Eccentricity square
         e2 = auxiliaryElements.getEcc() * auxiliaryElements.getEcc();
@@ -137,29 +95,8 @@ public class DSSTTesseralContext extends DSSTGravityContext {
         theta = FastMath.atan2(-auxiliaryElements.getVectorF().dotProduct(yB) + I * auxiliaryElements.getVectorG().dotProduct(xB),
                 auxiliaryElements.getVectorF().dotProduct(xB) + I * auxiliaryElements.getVectorG().dotProduct(yB));
 
-        // Common factors from equinoctial coefficients
-        // 2 * a / A
-        ax2oA = 2. * auxiliaryElements.getSma() / A;
-        // B / A
-        BoA = auxiliaryElements.getB() / A;
-        // 1 / AB
-        ooAB = 1. / (A * auxiliaryElements.getB());
-        // C / 2AB
-        Co2AB = auxiliaryElements.getC() * ooAB / 2.;
-        // B / (A * (1 + B))
-        BoABpo = BoA / (1. + auxiliaryElements.getB());
-        // &mu / a
-        moa = mu / auxiliaryElements.getSma();
-        // R / a
-        roa = provider.getAe() / auxiliaryElements.getSma();
-
-        // &Chi; = 1 / B
-        chi = 1. / auxiliaryElements.getB();
-        chi2 = chi * chi;
-
         // Ratio of satellite to central body periods to define resonant terms
         ratio = period / bodyPeriod;
-
     }
 
     /** Get ecc².
@@ -178,75 +115,12 @@ public class DSSTTesseralContext extends DSSTGravityContext {
     }
 
     /**
-     * Get ax2oA = 2 * a / A .
-     * @return ax2oA
-     */
-    public double getAx2oA() {
-        return ax2oA;
-    }
-
-    /**
-     * Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
-     * @return chi
-     */
-    public double getChi() {
-        return chi;
-    }
-
-    /**
-     * Get &Chi;².
-     * @return chi2
-     */
-    public double getChi2() {
-        return chi2;
-    }
-
-    /**
-     * Get B / A.
-     * @return BoA
-     */
-    public double getBoA() {
-        return BoA;
-    }
-
-    /**
-     * Get ooAB = 1 / (A * B).
-     * @return ooAB
-     */
-    public double getOoAB() {
-        return ooAB;
-    }
-
-    /**
-     * Get Co2AB = C / 2AB.
-     * @return Co2AB
-     */
-    public double getCo2AB() {
-        return Co2AB;
-    }
-
-    /**
-     * Get BoABpo = B / A(1 + B).
-     * @return BoABpo
-     */
-    public double getBoABpo() {
-        return BoABpo;
-    }
-
-    /**
      * Get μ / a .
      * @return moa
+     * @deprecated since 12.1.3. Use getMuoa() instead
      */
     public double getMoa() {
-        return moa;
-    }
-
-    /**
-     * Get roa = R / a.
-     * @return roa
-     */
-    public double getRoa() {
-        return roa;
+        return getMuoa();
     }
 
     /**
@@ -260,18 +134,6 @@ public class DSSTTesseralContext extends DSSTGravityContext {
      */
     public double getOrbitPeriod() {
         return period;
-    }
-
-    /**
-     * Get the Keplerian mean motion.
-     * <p>
-     * The Keplerian mean motion is computed directly from semi major axis and
-     * central acceleration constant.
-     * </p>
-     * @return Keplerian mean motion in radians per second
-     */
-    public double getMeanMotion() {
-        return n;
     }
 
     /**

@@ -17,6 +17,8 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -27,10 +29,47 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * It performs parameters initialization at each integration step for the Tesseral  and Zonal contribution
  * to the central body gravitational perturbation.
  * </p>
+ * @author Bryan Cazabonne
  * @author Maxime Journot
- * @since 12.1
+ * @since 12.1.3
  */
 public class DSSTGravityContext extends ForceModelContext {
+
+    /** A = sqrt(μ * a). */
+    private final double A;
+
+    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
+    private final double chi;
+
+    /** &Chi;². */
+    private final double chi2;
+
+    // Common factors from equinoctial coefficients
+    /** 2 * a / A . */
+    // FIXME: zonal = -
+    private final double ax2oA;
+
+    /** 1 / (A * B) . */
+    private final double ooAB;
+
+    /** B / A . */
+    private final double BoA;
+
+    /** B / (A * (1 + B)) . */
+    private final double BoABpo;
+
+    /** C / (2 * A * B) . */
+    // FIXME: - zonal
+    private final double Co2AB;
+
+    /** μ / a . */
+    private final double muoa;
+
+    /** R / a . */
+    private final double roa;
+
+    /** Keplerian mean motion. */
+    private final double n;
 
     /** Direction cosine α. */
     private final double alpha;
@@ -48,26 +87,146 @@ public class DSSTGravityContext extends ForceModelContext {
      * Constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param centralBodyFrame  rotating body frame
+     * @param centralBodyFixedFrame  rotating body frame
+     * @param provider   provider for spherical harmonics
+     * @param parameters values of the force model parameters
      */
     DSSTGravityContext(final AuxiliaryElements auxiliaryElements,
-                       final Frame centralBodyFrame) {
+                       final Frame centralBodyFixedFrame,
+                       final UnnormalizedSphericalHarmonicsProvider provider,
+                       final double[] parameters) {
 
         super(auxiliaryElements);
 
+        // µ
+        final double mu = parameters[0];
+
+        // Semi-major axis
+        final double a = auxiliaryElements.getSma();
+
+        // Keplerian Mean Motion
+        final double absA = FastMath.abs(a);
+        this.n = FastMath.sqrt(mu / absA) / absA;
+
+        // A = sqrt(µ * |a|)
+        this.A = FastMath.sqrt(mu * absA);
+
+        // &Chi; = 1 / B
+        final double B = auxiliaryElements.getB();
+        this.chi = 1. / B;
+        this.chi2 = chi * chi;
+
+        // Common factors from equinoctial coefficients
+        // 2 * a / A
+        this.ax2oA = 2. * a / A;
+        // B / A
+        this.BoA = B / A;
+        // 1 / AB
+        this.ooAB = 1. / (A * B);
+        // C / 2AB
+        this.Co2AB = auxiliaryElements.getC() * ooAB / 2.;
+        // B / (A * (1 + B))
+        this.BoABpo = BoA / (1. + B);
+        // &mu / a
+        this.muoa = mu / a;
+        // R / a
+        this.roa = provider.getAe() / a;
+
         // If (centralBodyFrame == null), then centralBodyFrame = orbit frame (see DSSTZonal constructors for more on this).
-        final Frame internalCentralBodyFrame = centralBodyFrame == null ? auxiliaryElements.getFrame() : centralBodyFrame;
+        final Frame internalCentralBodyFrame = centralBodyFixedFrame == null ? auxiliaryElements.getFrame() : centralBodyFixedFrame;
 
         // Transform from body-fixed frame (typically ITRF) to inertial frame
-        bodyFixedToInertialTransform = internalCentralBodyFrame.
+        this.bodyFixedToInertialTransform = internalCentralBodyFrame.
                         getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
 
         final Vector3D zB = bodyFixedToInertialTransform.transformVector(Vector3D.PLUS_K);
 
         // Direction cosines for central body [Eq. 2.1.9-(1)]
-        alpha = Vector3D.dotProduct(zB, auxiliaryElements.getVectorF());
-        beta  = Vector3D.dotProduct(zB, auxiliaryElements.getVectorG());
-        gamma = Vector3D.dotProduct(zB, auxiliaryElements.getVectorW());
+        this.alpha = Vector3D.dotProduct(zB, auxiliaryElements.getVectorF());
+        this.beta  = Vector3D.dotProduct(zB, auxiliaryElements.getVectorG());
+        this.gamma = Vector3D.dotProduct(zB, auxiliaryElements.getVectorW());
+    }
+
+    /** Getter for the a.
+     * @return the a
+     */
+    public double getA() {
+        return A;
+    }
+
+    /** Getter for the chi.
+     * @return the chi
+     */
+    public double getChi() {
+        return chi;
+    }
+
+    /** Getter for the chi2.
+     * @return the chi2
+     */
+    public double getChi2() {
+        return chi2;
+    }
+
+    /** Getter for the ax2oA.
+     * @return the ax2oA
+     */
+    public double getAx2oA() {
+        return ax2oA;
+    }
+
+    /** ooAB = 1 / (A * B).
+     * @return the ooAB
+     */
+    public double getOoAB() {
+        return ooAB;
+    }
+
+    /** Get B / A.
+     * @return the boA
+     */
+    public double getBoA() {
+        return BoA;
+    }
+
+    /** Get BoABpo = B / A(1 + B).
+     * @return the boABpo
+     */
+    public double getBoABpo() {
+        return BoABpo;
+    }
+
+    /** Get Co2AB = C / 2AB.
+     * @return the co2AB
+     */
+    public double getCo2AB() {
+        return Co2AB;
+    }
+
+    /** Get μ / a.
+     * @return the muoa
+     */
+    public double getMuoa() {
+        return muoa;
+    }
+
+    /** Get roa = R / a.
+     * @return the roa
+     */
+    public double getRoa() {
+        return roa;
+    }
+
+    /**
+     * Get the Keplerian mean motion.
+     * <p>
+     * The Keplerian mean motion is computed directly from semi major axis and
+     * central acceleration constant.
+     * </p>
+     * @return Keplerian mean motion in radians per second
+     */
+    public double getMeanMotion() {
+        return n;
     }
 
     /** Get direction cosine α for central body.
