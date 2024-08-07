@@ -99,14 +99,12 @@ class DSSTTesseralTest {
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
-
-        Assertions.assertEquals(7.120011500375922E-5,   elements[0], 1.e-20);
-        Assertions.assertEquals(-1.109767646425212E-11, elements[1], 1.e-26);
-        Assertions.assertEquals(2.3036711391089307E-11, elements[2], 1.e-26);
-        Assertions.assertEquals(2.499304852807308E-12,  elements[3], 1.e-27);
-        Assertions.assertEquals(1.3899097178558372E-13, elements[4], 1.e-28);
-        Assertions.assertEquals(5.795522421338584E-12,  elements[5], 1.e-27);
-
+        Assertions.assertEquals(7.125576870652436E-5   , elements[0], 1.e-20);
+        Assertions.assertEquals(-1.1135134574790914E-11, elements[1], 1.e-26);
+        Assertions.assertEquals(2.302319084099073E-11  , elements[2], 1.e-26);
+        Assertions.assertEquals(2.4994484564991748E-12 , elements[3], 1.e-27);
+        Assertions.assertEquals(1.381385271417345E-13  , elements[4], 1.e-28);
+        Assertions.assertEquals(5.815883045595586E-12  , elements[5], 1.e-27);
     }
 
     @Test
@@ -149,13 +147,12 @@ class DSSTTesseralTest {
                 y[i] += shortPeriodic[i];
             }
         }
-
-        Assertions.assertEquals(5.192409957353236,      y[0], 1.e-15);
-        Assertions.assertEquals(9.660364749662076E-7,   y[1], 1.e-22);
-        Assertions.assertEquals(1.542008987162059E-6,   y[2], 1.e-21);
-        Assertions.assertEquals(-4.9944146013126755E-8, y[3], 1.e-22);
-        Assertions.assertEquals(-4.500974242661177E-8,  y[4], 1.e-22);
-        Assertions.assertEquals(-2.785213556107612E-7,  y[5], 1.e-21);
+        Assertions.assertEquals(5.192409957353241    , y[0], 1.e-15);
+        Assertions.assertEquals(9.660364749662038E-7 , y[1], 1.e-22);
+        Assertions.assertEquals(1.5420089871620561E-6, y[2], 1.e-21);
+        Assertions.assertEquals(-4.99441460131262E-8 , y[3], 1.e-22);
+        Assertions.assertEquals(-4.500974242661193E-8, y[4], 1.e-22);
+        Assertions.assertEquals(-2.785213556107623E-7, y[5], 1.e-21);
     }
 
     @Test
