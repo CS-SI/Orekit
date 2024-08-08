@@ -112,8 +112,8 @@ public class DSSTZonal implements DSSTForceModel {
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
-    /** Central body rotating frame. */
-    private final Frame bodyFrame;
+    /** Central body rotating frame (fixed with respect to body). */
+    private final Frame bodyFixedFrame;
 
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
@@ -159,12 +159,12 @@ public class DSSTZonal implements DSSTForceModel {
      *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
      *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
      * </ul>
-     * @param centralBodyFrame rotating body frame
+     * @param bodyFixedFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @since 12.1
      */
-    public DSSTZonal(final Frame centralBodyFrame, final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(centralBodyFrame, provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
+    public DSSTZonal(final Frame bodyFixedFrame, final UnnormalizedSphericalHarmonicsProvider provider) {
+        this(bodyFixedFrame, provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
     }
 
     /**
@@ -194,7 +194,7 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /** Constructor.
-     * @param centralBodyFrame rotating body frame
+     * @param bodyFixedFrame rotating body frame
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
      * (must be between 2 and {@code provider.getMaxDegree()})
@@ -205,7 +205,7 @@ public class DSSTZonal implements DSSTForceModel {
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
      * @since 12.1
      */
-    public DSSTZonal(final Frame centralBodyFrame,
+    public DSSTZonal(final Frame bodyFixedFrame,
                      final UnnormalizedSphericalHarmonicsProvider provider,
                      final int maxDegreeShortPeriodics,
                      final int maxEccPowShortPeriodics,
@@ -216,7 +216,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                 0.0, Double.POSITIVE_INFINITY);
 
         // Central body rotating frame
-        this.bodyFrame = centralBodyFrame;
+        this.bodyFixedFrame = bodyFixedFrame;
 
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
@@ -375,7 +375,7 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
-        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, bodyFrame, provider, parameters);
+        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, bodyFixedFrame, provider, parameters);
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
             maxEccPowMeanElements = 0;
@@ -481,7 +481,7 @@ public class DSSTZonal implements DSSTForceModel {
                                                                                     final Field<T> field) {
 
         final T zero = field.getZero();
-        final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, bodyFrame, provider, parameters);
+        final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, bodyFixedFrame, provider, parameters);
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
             maxEccPowMeanElements = 0;
@@ -585,7 +585,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  @return new force model context
      */
     private DSSTZonalContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
-        return new DSSTZonalContext(auxiliaryElements, bodyFrame, provider, parameters);
+        return new DSSTZonalContext(auxiliaryElements, bodyFixedFrame, provider, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -599,7 +599,7 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private <T extends CalculusFieldElement<T>> FieldDSSTZonalContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                     final T[] parameters) {
-        return new FieldDSSTZonalContext<>(auxiliaryElements, bodyFrame, provider, parameters);
+        return new FieldDSSTZonalContext<>(auxiliaryElements, bodyFixedFrame, provider, parameters);
     }
 
     /** {@inheritDoc} */
