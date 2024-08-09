@@ -210,7 +210,7 @@ public class RinexObservationParserTest {
         final List<ObservationType> types = map.get(SatelliteSystem.USER_DEFINED_K);
         Assertions.assertEquals(2, types.size());
         Assertions.assertEquals("X1C", types.get(0).getName());
-        Assertions.assertEquals(MeasurementType.PSEUDO_RANGE, types.get(0).getMeasurementType());
+        Assertions.assertEquals(MeasurementType.TWO_WAY_TIME_TRANSFER, types.get(0).getMeasurementType());
         Assertions.assertEquals(1.0, types.get(0).getSignal(SatelliteSystem.USER_DEFINED_K).getRatio(), 1.0e-15);
         Assertions.assertEquals("U09", types.get(0).getSignal(SatelliteSystem.USER_DEFINED_K).getName());
         Assertions.assertEquals(SatelliteSystem.USER_DEFINED_K, types.get(0).getSignal(SatelliteSystem.USER_DEFINED_K).getSatelliteSystem());
