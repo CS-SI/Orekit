@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1496">
+            Declared two-way time transfer entry in MeasurementType (measurement not implemented yet).
+        </action>
         <action dev="luc" type="add" issue="1495">
             Allow computation of angular wind-up without modifying a measurement.
         </action>

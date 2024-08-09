@@ -39,7 +39,7 @@ class CustomType implements ObservationType {
 
     @Override
     public MeasurementType getMeasurementType() {
-        return name.charAt(0) == 'X' ? MeasurementType.PSEUDO_RANGE : MeasurementType.CARRIER_PHASE;
+        return name.charAt(0) == 'X' ? MeasurementType.TWO_WAY_TIME_TRANSFER : MeasurementType.CARRIER_PHASE;
     }
 
     @Override
