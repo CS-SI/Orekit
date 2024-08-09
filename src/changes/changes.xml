@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1495">
+            Allow computation of angular wind-up without modifying a measurement.
+        </action>
         <action dev="luc" type="add" issue="1468">
             Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
             added signalTimeOfFlightAdjustableReceiver.

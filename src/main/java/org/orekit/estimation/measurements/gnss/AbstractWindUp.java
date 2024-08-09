@@ -78,7 +78,7 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
      */
     protected abstract Rotation receiverToInert(EstimatedMeasurementBase<T> estimated);
 
-    /** Cache angular wind-up
+    /** Cache angular wind-up.
      * @param participants particpants to the carrier-phase measurement
      * @param receiverToInert rotation for receiver to inertial frame
      * @param emitterToInert rotation from emitter to inertial frame
