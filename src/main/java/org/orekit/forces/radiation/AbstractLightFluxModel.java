@@ -117,11 +117,32 @@ public abstract class AbstractLightFluxModel implements LightFluxModel {
     protected abstract <T extends CalculusFieldElement<T>> FieldVector3D<T> getUnoccultedFluxVector(FieldVector3D<T> relativePosition);
 
     /** Get the lighting ratio ([0-1]).
+     * @param state state
+     * @return lighting ratio
+     */
+    public double getLightingRatio(final SpacecraftState state) {
+        final Vector3D position = state.getPosition();
+        final Vector3D lightSourcePosition = getOccultedBodyPosition(state.getDate(), state.getFrame());
+        return getLightingRatio(position, lightSourcePosition);
+    }
+
+    /** Get the lighting ratio ([0-1]).
      * @param position object's position
      * @param occultedBodyPosition occulted body position in same frame
      * @return lighting ratio
      */
     protected abstract double getLightingRatio(Vector3D position, Vector3D occultedBodyPosition);
+
+    /** Get the lighting ratio ([0-1]).
+     * @param state state
+     * @param <T> field type
+     * @return lighting ratio
+     */
+    public <T extends CalculusFieldElement<T>> T getLightingRatio(final FieldSpacecraftState<T> state) {
+        final FieldVector3D<T> position = state.getPosition();
+        final FieldVector3D<T> lightSourcePosition = getOccultedBodyPosition(state.getDate(), state.getFrame());
+        return getLightingRatio(position, lightSourcePosition);
+    }
 
     /** Get the lighting ratio ([0-1]). Field version.
      * @param position object's position
