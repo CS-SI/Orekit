@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -42,6 +43,7 @@ import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ClockOffset;
+import org.orekit.time.ConstantOffsetTimeScale;
 import org.orekit.time.SampledClockModel;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -202,9 +204,16 @@ public class RinexObservationParserTest {
     public void testCustomSystem() {
         final String name = "rinex/custom-system.01o";
         final DataSource dataSource = new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name));
+        final AtomicBoolean found = new AtomicBoolean(false);
         final RinexObservation loaded = new RinexObservationParser(CustomType::new,
+                                                                   (system, timeScales) -> {
+                                                                       Assertions.assertEquals(SatelliteSystem.USER_DEFINED_K, system);
+                                                                       found.set(true);
+                                                                       return new ConstantOffsetTimeScale(system.name(), 45);
+                                                                   },
                                                                    TimeScalesFactory.getTimeScales()).
                                         parse(dataSource);
+        Assertions.assertTrue(found.get());
         final Map<SatelliteSystem, List<ObservationType>> map = loaded.getHeader().getTypeObs();
         Assertions.assertEquals(1, map.size());
         final List<ObservationType> types = map.get(SatelliteSystem.USER_DEFINED_K);

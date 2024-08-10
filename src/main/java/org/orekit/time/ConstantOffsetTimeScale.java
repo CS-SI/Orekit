@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
 
-/** Base class for time scales with constant offset with respecto to TAI.
+/** Base class for time scales with constant offset with respect to to TAI.
  * @author Luc Maisonobe
  * @since 12.1
  */
@@ -37,7 +37,7 @@ public class ConstantOffsetTimeScale implements TimeScale {
      * @param name name of the time scale
      * @param offset offset from TAI
      */
-    protected ConstantOffsetTimeScale(final String name, final double offset) {
+    public ConstantOffsetTimeScale(final String name, final double offset) {
         this.name   = name;
         this.offset = offset;
     }
