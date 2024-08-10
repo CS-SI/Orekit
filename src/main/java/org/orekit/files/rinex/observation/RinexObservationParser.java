@@ -171,7 +171,7 @@ public class RinexObservationParser {
 
         return parseInfo.file;
 
-        }
+    }
 
     /** Transient data used for parsing a RINEX observation messages file.
      * @since 12.0
