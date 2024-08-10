@@ -171,9 +171,9 @@ public class RinexObservationWriter implements AutoCloseable {
     @DefaultDataContext
     public RinexObservationWriter(final Appendable output, final String outputName) {
         this(output, outputName,
-             (system, timeScales) -> system.getObservationTimeScale() == null ?
-                                     null :
-                                     system.getObservationTimeScale().getTimeScale(timeScales),
+             (system, ts) -> system.getObservationTimeScale() == null ?
+                             null :
+                             system.getObservationTimeScale().getTimeScale(ts),
              DataContext.getDefault().getTimeScales());
     }
 

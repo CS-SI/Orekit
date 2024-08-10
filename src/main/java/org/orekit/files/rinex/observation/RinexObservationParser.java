@@ -106,9 +106,9 @@ public class RinexObservationParser {
     @DefaultDataContext
     public RinexObservationParser() {
         this(PredefinedObservationType::valueOf,
-             (system, timeScales) -> system.getObservationTimeScale() == null ?
-                                     null :
-                                     system.getObservationTimeScale().getTimeScale(timeScales),
+             (system, ts) -> system.getObservationTimeScale() == null ?
+                             null :
+                             system.getObservationTimeScale().getTimeScale(ts),
              DataContext.getDefault().getTimeScales());
     }
 
@@ -171,7 +171,7 @@ public class RinexObservationParser {
 
         return parseInfo.file;
 
-    }
+        }
 
     /** Transient data used for parsing a RINEX observation messages file.
      * @since 12.0
