@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -88,28 +89,42 @@ public class RinexObservationParser {
      */
     private final Function<? super String, ? extends ObservationType> typeBuilder;
 
+    /** Mapper from satellite system to time scales.
+     * @since 13.0
+     */
+    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
+
     /** Simple constructor.
      * <p>
      * This constructor uses the {@link DataContext#getDefault() default data context}
-     * and recognizes only {@link PredefinedObservationType}.
+     * and recognizes only {@link PredefinedObservationType} and {@link SatelliteSystem}
+     * with non-null {@link SatelliteSystem#getObservationTimeScale() time scales}
+     * (i.e. neither user-defined, nor {@link SatelliteSystem#SBAS}, nor {@link SatelliteSystem#MIXED}).
      * </p>
-     * @see #RinexObservationParser(Function, TimeScales)
+     * @see #RinexObservationParser(Function, BiFunction, TimeScales)
      */
     @DefaultDataContext
     public RinexObservationParser() {
-        this(PredefinedObservationType::valueOf, DataContext.getDefault().getTimeScales());
+        this(PredefinedObservationType::valueOf,
+             (system, timeScales) -> system.getObservationTimeScale() == null ?
+                                     null :
+                                     system.getObservationTimeScale().getTimeScale(timeScales),
+             DataContext.getDefault().getTimeScales());
     }
 
     /**
      * Create a RINEX loader/parser with the given source of RINEX auxiliary data files.
      * @param typeBuilder mapper from string to observation type
+     * @param timeScaleBuilder mapper from satellite system to time scales (useful for user-defined satellite systems)
      * @param timeScales the set of time scales to use when parsing dates
      * @since 13.0
      */
     public RinexObservationParser(final Function<? super String, ? extends ObservationType> typeBuilder,
+                                  final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
                                   final TimeScales timeScales) {
-        this.typeBuilder = typeBuilder;
-        this.timeScales  = timeScales;
+        this.typeBuilder      = typeBuilder;
+        this.timeScaleBuilder = timeScaleBuilder;
+        this.timeScales       = timeScales;
     }
 
     /**
@@ -165,6 +180,11 @@ public class RinexObservationParser {
 
         /** Name of the data source. */
         private final String name;
+
+        /** Mapper from satellite system to time scales.
+         * @since 13.0
+         */
+        private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
 
         /** Set of time scales for parsing dates. */
         private final TimeScales timeScales;
@@ -257,6 +277,7 @@ public class RinexObservationParser {
             // Initialize default values for fields
             this.name                   = name;
             this.timeScales             = RinexObservationParser.this.timeScales;
+            this.timeScaleBuilder       = RinexObservationParser.this.timeScaleBuilder;
             this.file                   = new RinexObservation();
             this.lineNumber             = 0;
             this.tObs                   = AbsoluteDate.PAST_INFINITY;
@@ -552,12 +573,12 @@ public class RinexObservationParser {
                                                                 parseInfo.lineNumber, parseInfo.name, line);
                                   }
                               } else {
-                                  final ObservationTimeScale observationTimeScale = parseInfo.file.getHeader().getSatelliteSystem().getObservationTimeScale();
-                                  if (observationTimeScale == null) {
+                                  parseInfo.timeScale = parseInfo.timeScaleBuilder.apply(parseInfo.file.getHeader().getSatelliteSystem(),
+                                                                                         parseInfo.timeScales);
+                                  if (parseInfo.timeScale == null) {
                                       throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                 parseInfo.lineNumber, parseInfo.name, line);
                                   }
-                                  parseInfo.timeScale = observationTimeScale.getTimeScale(parseInfo.timeScales);
                               }
                               parseInfo.file.getHeader().setTFirstObs(new AbsoluteDate(RinexUtils.parseInt(line, 0, 6),
                                                                                        RinexUtils.parseInt(line, 6, 6),
