@@ -83,7 +83,10 @@ public abstract class AbstractInterSatellitesMeasurement<T extends ObservedMeasu
             final TimeStampedFieldPVCoordinates<Gradient> pv0 = getCoordinates(states[1], 6, freeParameters);
 
             // shift to desired date
-            return pv0.shiftedBy(date.durationFrom(states[1].getDate()));
+            final TimeStampedFieldPVCoordinates<Gradient> shifted = pv0.shiftedBy(date.durationFrom(states[1].getDate()));
+
+            // transform to desired frame
+            return states[1].getFrame().getTransformTo(frame, states[1].getDate()).transformPVCoordinates(shifted);
 
         };
     }
