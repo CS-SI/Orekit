@@ -42,6 +42,9 @@
       <action dev="luc" type="fix" issue="1473">
         Protected AmbiguityCache against concurrent modifications.
       </action>
+      <action dev="serrof" type="add" issue="1472">
+        Add indirect single shooting method for fixed time fixed boundaries with Cartesian coordinates.
+      </action>
       <action dev="serrof" type="add" issue="1471">
         Add bounded energy cost for Cartesian adjoint dynamics.
       </action>
