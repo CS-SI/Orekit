@@ -7,7 +7,7 @@
   <packaging>jar</packaging>
   <version>12.2-SNAPSHOT</version>
   <name>OREKIT</name>
-  <url>http://www.orekit.org/</url>
+  <url>https://www.orekit.org/</url>
 
   <inceptionYear>2002</inceptionYear>
   <description>
@@ -479,7 +479,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.10.0</version>
+      <version>${orekit.junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
