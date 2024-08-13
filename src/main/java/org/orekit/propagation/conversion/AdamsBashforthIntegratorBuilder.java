@@ -26,21 +26,12 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class AdamsBashforthIntegratorBuilder implements ODEIntegratorBuilder {
+public class AdamsBashforthIntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
 
     /** Number of steps. */
     private final int nSteps;
 
-    /** Minimum step size (s). */
-    private final double minStep;
-
-    /** Maximum step size (s). */
-    private final double maxStep;
-
-    /** Minimum step size (s). */
-    private final double dP;
-
-    /** Build a new instance.
+    /** Build a new instance. Should only use this constructor with {@link Orbit}.
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
@@ -50,15 +41,31 @@ public class AdamsBashforthIntegratorBuilder implements ODEIntegratorBuilder {
      */
     public AdamsBashforthIntegratorBuilder(final int nSteps, final double minStep,
                                            final double maxStep, final double dP) {
+        super(minStep, maxStep, dP);
         this.nSteps  = nSteps;
-        this.minStep = minStep;
-        this.maxStep = maxStep;
-        this.dP      = dP;
+    }
+
+    /** Build a new instance.
+     * @param nSteps number of steps
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param dP position error (m)
+     * @param dV velocity error (m/s)
+     *
+     * @since 12.2
+     * @see AdamsBashforthIntegrator
+     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
+     */
+    public AdamsBashforthIntegratorBuilder(final int nSteps, final double minStep,
+                                           final double maxStep, final double dP, final double dV) {
+        super(minStep, maxStep, dP, dV);
+        this.nSteps  = nSteps;
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        final double[][] tol = getTolerances(orbit, orbitType);
         return new AdamsBashforthIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
     }
 

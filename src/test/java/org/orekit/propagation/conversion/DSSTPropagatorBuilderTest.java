@@ -60,6 +60,7 @@ public class DSSTPropagatorBuilderTest {
     private double minStep;
     private double maxStep;
     private double dP;
+    private double dV;
     private double[][] tolerance;
 
     private AbsoluteDate initDate;
@@ -71,14 +72,14 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIntegrators01() {
 
-        ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP, dV);
         doTestBuildPropagator(abBuilder);
     }
 
     @Test
     public void testIntegrators02() {
 
-        ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP, dV);
         doTestBuildPropagator(amBuilder);
     }
 
@@ -128,14 +129,14 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIntegrators08() {
 
-        ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP, dV);
         doTestBuildPropagator(gbsBuilder);
     }
 
     @Test
     public void testIntegrators09() {
 
-        ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP, dV);
         doTestBuildPropagator(hh54Builder);
     }
 
@@ -331,7 +332,7 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testDeselectOrbitals() {
         // Integrator builder
-        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP, dV);
         // Propagator builder
         final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
                                                                   dp54Builder,
@@ -355,6 +356,7 @@ public class DSSTPropagatorBuilderTest {
         minStep = 1.0;
         maxStep = 600.0;
         dP      = 10.0;
+        dV      = 0.0001;
 
         final Frame earthFrame = FramesFactory.getEME2000();
         initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());

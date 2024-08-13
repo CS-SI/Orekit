@@ -24,6 +24,9 @@
       <action dev="serrof" type="add" issue="1493">
         Add direct access to lighting ratio from state in AbstractLightFluxModel.
       </action>
+      <action dev="serrof" type="add" issue="1483">
+        Add constructor with dV error in adaptive step integrator builder.
+      </action>
       <action dev="serrof" type="add" issue="1482">
         Add adjoint dynamics for single absolute attraction.
       </action>
