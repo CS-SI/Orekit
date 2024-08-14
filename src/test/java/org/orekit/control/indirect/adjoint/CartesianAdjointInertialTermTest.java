@@ -49,8 +49,7 @@ class CartesianAdjointInertialTermTest {
         final Frame referenceFrame = Mockito.mock(Frame.class);
         Mockito.when(referenceFrame.isPseudoInertial()).thenReturn(false);
         // WHEN & THEN
-        Assertions.assertThrows(OrekitIllegalArgumentException.class, () -> new CartesianAdjointInertialTerm(referenceFrame,
-                referenceFrame));
+        Assertions.assertThrows(OrekitIllegalArgumentException.class, () -> new CartesianAdjointInertialTerm(referenceFrame));
     }
 
     @Test
@@ -58,8 +57,7 @@ class CartesianAdjointInertialTermTest {
         // GIVEN
         final Frame referenceFrame = FramesFactory.getGCRF();
         final Frame propagationFrame = FramesFactory.getGTOD(true);
-        final CartesianAdjointInertialTerm inertialTerm = new CartesianAdjointInertialTerm(referenceFrame,
-                propagationFrame);
+        final CartesianAdjointInertialTerm inertialTerm = new CartesianAdjointInertialTerm(referenceFrame);
         final double[] adjoint = new double[6];
         final double[] state = new double[6];
         for (int i = 0; i < adjoint.length; i++) {
@@ -68,7 +66,7 @@ class CartesianAdjointInertialTermTest {
         }
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         // WHEN
-        final double[] contribution = inertialTerm.getContribution(date, state, adjoint);
+        final double[] contribution = inertialTerm.getContribution(date, state, adjoint, propagationFrame);
         // THEN
         final InertialForces inertialForces = new InertialForces(referenceFrame);
         final int dimension = 6;
@@ -106,8 +104,8 @@ class CartesianAdjointInertialTermTest {
         // GIVEN
         final Frame referenceFrame = FramesFactory.getGCRF();
         final Frame propagationFrame = FramesFactory.getGTOD(true);
-        final CartesianAdjointInertialTerm inertialTerm = new CartesianAdjointInertialTerm(referenceFrame,
-                propagationFrame);        final Binary64Field field = Binary64Field.getInstance();
+        final CartesianAdjointInertialTerm inertialTerm = new CartesianAdjointInertialTerm(referenceFrame);
+        final Binary64Field field = Binary64Field.getInstance();
         final Binary64[] fieldAdjoint = MathArrays.buildArray(field, 6);
         final Binary64[] fieldState = MathArrays.buildArray(field, 6);
         for (int i = 0; i < fieldAdjoint.length; i++) {
@@ -116,7 +114,8 @@ class CartesianAdjointInertialTermTest {
         }
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = inertialTerm.getFieldContribution(fieldDate, fieldState, fieldAdjoint);
+        final Binary64[] fieldContribution = inertialTerm.getFieldContribution(fieldDate, fieldState, fieldAdjoint,
+                propagationFrame);
         // THEN
         final double[] state = new double[fieldState.length];
         for (int i = 0; i < fieldState.length; i++) {
@@ -126,7 +125,8 @@ class CartesianAdjointInertialTermTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final double[] contribution = inertialTerm.getContribution(fieldDate.toAbsoluteDate(), state, adjoint);
+        final double[] contribution = inertialTerm.getContribution(fieldDate.toAbsoluteDate(), state, adjoint,
+                propagationFrame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i], 1e-22);
         }

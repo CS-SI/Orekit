@@ -48,17 +48,12 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
     /** Reference frame for inertial forces. Must be inertial. */
     private final Frame referenceInertialFrame;
 
-    /** Propagation frame (where state variables are integrated). Should be inertial otherwise there is no need for this contribution. */
-    private final Frame propagationFrame;
-
     /**
      * Constructor.
      * @param referenceInertialFrame reference inertial frame
-     * @param propagationFrame propagation frame (non-inertial, otherwise no need for contribution).
      */
-    public CartesianAdjointInertialTerm(final Frame referenceInertialFrame, final Frame propagationFrame) {
+    public CartesianAdjointInertialTerm(final Frame referenceInertialFrame) {
         this.referenceInertialFrame = referenceInertialFrame;
-        this.propagationFrame = propagationFrame;
         if (!referenceInertialFrame.isPseudoInertial()) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_AS_REFERENCE_FOR_INERTIAL_FORCES,
                     referenceInertialFrame.getName());
@@ -73,18 +68,10 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
         return referenceInertialFrame;
     }
 
-    /**
-     * Getter for propagation frame.
-     * @return frame
-     */
-    public Frame getPropagationFrame() {
-        return propagationFrame;
-    }
-
     /** {@inheritDoc} */
     @Override
     public double[] getContribution(final AbsoluteDate date, final double[] stateVariables,
-                                    final double[] adjointVariables) {
+                                    final double[] adjointVariables, final Frame frame) {
         final double[] contribution = new double[adjointVariables.length];
         final GradientField field = GradientField.getField(GRADIENT_DIMENSION);
         final Gradient[] gradients = MathArrays.buildArray(field, GRADIENT_DIMENSION);
@@ -94,7 +81,7 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
         gradients[3] = Gradient.variable(GRADIENT_DIMENSION, 3, stateVariables[3]);
         gradients[4] = Gradient.variable(GRADIENT_DIMENSION, 4, stateVariables[4]);
         gradients[5] = Gradient.variable(GRADIENT_DIMENSION, 5, stateVariables[5]);
-        final Transform transform = getReferenceInertialFrame().getTransformTo(getPropagationFrame(), date);
+        final Transform transform = getReferenceInertialFrame().getTransformTo(frame, date);
         final FieldTransform<Gradient> fieldTransform = new FieldTransform<>(field, transform);
         final FieldVector3D<Gradient> acceleration = getFieldAcceleration(fieldTransform, gradients);
         final double[] accelerationXgradient = acceleration.getX().getGradient();
@@ -110,7 +97,7 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
     @Override
     public <T extends CalculusFieldElement<T>> T[] getFieldContribution(final FieldAbsoluteDate<T> date,
                                                                         final T[] stateVariables,
-                                                                        final T[] adjointVariables) {
+                                                                        final T[] adjointVariables, final Frame frame) {
         final T[] contribution = MathArrays.buildArray(date.getField(), 6);
         final FieldGradientField<T> field = FieldGradientField.getField(date.getField(), GRADIENT_DIMENSION);
         final FieldGradient<T>[] gradients = MathArrays.buildArray(field, GRADIENT_DIMENSION);
@@ -120,7 +107,7 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
         gradients[3] = FieldGradient.variable(GRADIENT_DIMENSION, 3, stateVariables[3]);
         gradients[4] = FieldGradient.variable(GRADIENT_DIMENSION, 4, stateVariables[4]);
         gradients[5] = FieldGradient.variable(GRADIENT_DIMENSION, 5, stateVariables[5]);
-        final FieldTransform<T> transform = getReferenceInertialFrame().getTransformTo(getPropagationFrame(), date);
+        final FieldTransform<T> transform = getReferenceInertialFrame().getTransformTo(frame, date);
         final FieldTransform<FieldGradient<T>> fieldTransform = new FieldTransform<>(field,
                 new Transform(date.toAbsoluteDate(), transform.getAngular().toAngularCoordinates()));
         final FieldVector3D<FieldGradient<T>> acceleration = getFieldAcceleration(fieldTransform, gradients);

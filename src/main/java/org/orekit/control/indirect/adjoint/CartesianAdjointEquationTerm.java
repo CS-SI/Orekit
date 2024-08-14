@@ -17,6 +17,7 @@
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -31,12 +32,13 @@ public interface CartesianAdjointEquationTerm {
     /**
      * Computes the contribution to the rates of the adjoint variables.
      *
-     * @param date date
+     * @param date             date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
+     * @param frame            propagation frame
      * @return contribution to the adjoint derivative vector
      */
-    double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables);
+    double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame);
 
     /**
      * Computes the contribution to the rates of the adjoint variables.
@@ -45,8 +47,9 @@ public interface CartesianAdjointEquationTerm {
      * @param date             date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
+     * @param frame            propagation frame
      * @return contribution to the adjoint derivative vector
      */
-    <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables);
+    <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame);
 
 }

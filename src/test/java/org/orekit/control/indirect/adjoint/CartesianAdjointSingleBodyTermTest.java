@@ -52,22 +52,18 @@ class CartesianAdjointSingleBodyTermTest {
         // GIVEN
         final CelestialBody body = getCelestialBody(Vector3D.MINUS_I);
         final Frame expectedFrame = FramesFactory.getGCRF();
-        final CartesianAdjointSingleBodyTerm singleBodyTerm = new CartesianAdjointSingleBodyTerm(body.getGM(), body,
-                expectedFrame);
+        final CartesianAdjointSingleBodyTerm singleBodyTerm = new CartesianAdjointSingleBodyTerm(body.getGM(), body);
         // WHEN
         final double mu = singleBodyTerm.getMu();
-        final Frame actualFrame = singleBodyTerm.getPropagationFrame();
         // THEN
         Assertions.assertEquals(body.getGM(), mu);
-        Assertions.assertEquals(expectedFrame, actualFrame);
     }
 
     @Test
     void testGetVelocityAdjointContribution() {
         // GIVEN
         final CelestialBody body = getCelestialBody(Vector3D.MINUS_I);
-        final CartesianAdjointSingleBodyTerm singleBodyTerm = new CartesianAdjointSingleBodyTerm(body.getGM(), body,
-                FramesFactory.getGCRF());
+        final CartesianAdjointSingleBodyTerm singleBodyTerm = new CartesianAdjointSingleBodyTerm(body.getGM(), body);
         final double[] adjoint = new double[6];
         final double[] state = new double[6];
         for (int i = 0; i < adjoint.length; i++) {
@@ -76,7 +72,8 @@ class CartesianAdjointSingleBodyTermTest {
         }
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2015, 1, 1), TimeScalesFactory.getUTC());
         // WHEN
-        final double[] contribution = singleBodyTerm.getVelocityAdjointContribution(date, state, adjoint);
+        final double[] contribution = singleBodyTerm.getVelocityAdjointContribution(date, state, adjoint,
+                FramesFactory.getGCRF());
         // THEN
         final SingleBodyAbsoluteAttraction singleBodyAbsoluteAttraction = new SingleBodyAbsoluteAttraction(body);
         final int dimension = 3;
@@ -106,7 +103,7 @@ class CartesianAdjointSingleBodyTermTest {
         // GIVEN
         final CelestialBody celestialBody = getCelestialBody(Vector3D.ZERO);
         final CartesianAdjointSingleBodyTerm cartesianAdjointSingleBodyTerm = new CartesianAdjointSingleBodyTerm(celestialBody.getGM(),
-                celestialBody, celestialBody.getInertiallyOrientedFrame());
+                celestialBody);
         final Binary64Field field = Binary64Field.getInstance();
         final Binary64[] fieldAdjoint = MathArrays.buildArray(field, 6);
         final Binary64[] fieldState = MathArrays.buildArray(field, 6);
@@ -114,12 +111,15 @@ class CartesianAdjointSingleBodyTermTest {
             fieldState[i] = field.getZero().newInstance(-i+1);
             fieldAdjoint[i] = field.getZero().newInstance(i);
         }
+        final Frame frame = celestialBody.getInertiallyOrientedFrame();
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = cartesianAdjointSingleBodyTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState, fieldAdjoint);
+        final Binary64[] fieldContribution = cartesianAdjointSingleBodyTerm.getVelocityAdjointFieldContribution(fieldDate,
+                fieldState, fieldAdjoint, frame);
         // THEN
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(celestialBody.getGM());
-        final Binary64[] contribution = keplerianTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState, fieldAdjoint);
+        final Binary64[] contribution = keplerianTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState,
+                fieldAdjoint, frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i], contribution[i]);
         }

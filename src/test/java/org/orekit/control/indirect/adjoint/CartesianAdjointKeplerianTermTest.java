@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.forces.gravity.NewtonianAttraction;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -45,7 +47,7 @@ class CartesianAdjointKeplerianTermTest {
         }
         // WHEN
         final double[] contribution = keplerianTerm.getVelocityAdjointContribution(Mockito.mock(AbsoluteDate.class),
-                state, adjoint);
+                state, adjoint, FramesFactory.getGCRF());
         // THEN
         final NewtonianAttraction newtonianAttraction = new NewtonianAttraction(keplerianTerm.getMu());
         final int dimension = 3;
@@ -78,9 +80,11 @@ class CartesianAdjointKeplerianTermTest {
             fieldState[i] = field.getZero().newInstance(-i+1);
             fieldAdjoint[i] = field.getZero().newInstance(i);
         }
+        final Frame frame = FramesFactory.getGCRF();
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = keplerianTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState, fieldAdjoint);
+        final Binary64[] fieldContribution = keplerianTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState,
+                fieldAdjoint, frame);
         // THEN
         final double[] state = new double[fieldState.length];
         for (int i = 0; i < fieldState.length; i++) {
@@ -90,7 +94,8 @@ class CartesianAdjointKeplerianTermTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint);
+        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state,
+                adjoint, frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i]);
         }

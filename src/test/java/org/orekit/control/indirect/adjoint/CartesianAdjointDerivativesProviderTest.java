@@ -27,6 +27,7 @@ import org.orekit.control.indirect.adjoint.cost.TestCost;
 import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -146,12 +147,12 @@ class CartesianAdjointDerivativesProviderTest {
     private static class TestAdjointTerm implements CartesianAdjointEquationTerm {
 
         @Override
-        public double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables) {
+        public double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame) {
             return new double[] { 1., 10., 100. };
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables) {
+        public <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame) {
             return null;
         }
     }

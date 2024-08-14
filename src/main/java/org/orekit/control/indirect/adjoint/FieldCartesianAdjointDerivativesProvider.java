@@ -22,6 +22,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
@@ -91,8 +92,10 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
 
         // Cartesian velocity adjoint
         final FieldAbsoluteDate<T> date = state.getDate();
+        final Frame propagationFrame = state.getFrame();
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final T[] contribution = equationTerm.getFieldContribution(date, cartesianVariablesAndMass, adjointVariables);
+            final T[] contribution = equationTerm.getFieldContribution(date, cartesianVariablesAndMass, adjointVariables,
+                    propagationFrame);
             for (int i = 0; i < contribution.length; i++) {
                 additionalDerivatives[i] = additionalDerivatives[i].add(contribution[i]);
             }

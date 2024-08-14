@@ -42,20 +42,14 @@ public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewt
     /** Extended position provider for the body. */
     private final ExtendedPositionProvider bodyPositionProvider;
 
-    /** Propagation frame. */
-    private final Frame propagationFrame;
-
     /**
      * Constructor.
      * @param mu body gravitational parameter.
      * @param bodyPositionProvider body position provider
-     * @param propagationFrame propagation frame
      */
-    public CartesianAdjointSingleBodyTerm(final double mu, final ExtendedPositionProvider bodyPositionProvider,
-                                          final Frame propagationFrame) {
+    public CartesianAdjointSingleBodyTerm(final double mu, final ExtendedPositionProvider bodyPositionProvider) {
         this.mu = mu;
         this.bodyPositionProvider = bodyPositionProvider;
-        this.propagationFrame = propagationFrame;
     }
 
     /**
@@ -66,19 +60,11 @@ public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewt
         return mu;
     }
 
-    /**
-     * Getter for the propagation frame (where the equations of motion are integrated).
-     * @return propagation frame
-     */
-    public Frame getPropagationFrame() {
-        return propagationFrame;
-    }
-
     /** {@inheritDoc} */
     @Override
     public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
-                                                   final double[] adjointVariables) {
-        final Vector3D bodyPosition = bodyPositionProvider.getPosition(date, propagationFrame);
+                                                   final double[] adjointVariables, final Frame frame) {
+        final Vector3D bodyPosition = bodyPositionProvider.getPosition(date, frame);
         final double x = stateVariables[0] - bodyPosition.getX();
         final double y = stateVariables[1] - bodyPosition.getY();
         final double z = stateVariables[2] - bodyPosition.getZ();
@@ -89,8 +75,9 @@ public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewt
     @Override
     public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(final FieldAbsoluteDate<T> date,
                                                                                        final T[] stateVariables,
-                                                                                       final T[] adjointVariables) {
-        final FieldVector3D<T> bodyPosition = bodyPositionProvider.getPosition(date, propagationFrame);
+                                                                                       final T[] adjointVariables,
+                                                                                       final Frame frame) {
+        final FieldVector3D<T> bodyPosition = bodyPositionProvider.getPosition(date, frame);
         final T x = stateVariables[0].subtract(bodyPosition.getX());
         final T y = stateVariables[1].subtract(bodyPosition.getY());
         final T z = stateVariables[2].subtract(bodyPosition.getZ());

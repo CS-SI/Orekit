@@ -38,7 +38,7 @@ class CartesianAdjointJ2TermTest {
         final double expectedJ2 = 3.;
         final Frame frame = Mockito.mock(Frame.class);
         final CartesianAdjointJ2Term cartesianAdjointJ2Term = new CartesianAdjointJ2Term(expectedMu, expectedrEq,
-                expectedJ2, frame, frame);
+                expectedJ2, frame);
         // WHEN
         final double actualMu = cartesianAdjointJ2Term.getMu();
         final double actualrEq = cartesianAdjointJ2Term.getrEq();
@@ -54,18 +54,19 @@ class CartesianAdjointJ2TermTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final CartesianAdjointJ2Term j2Term = new CartesianAdjointJ2Term(Constants.EGM96_EARTH_MU,
-                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, -Constants.EGM96_EARTH_C20, frame, frame);
+                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, -Constants.EGM96_EARTH_C20, frame);
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6};
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final double[] positionVelocity = new double[] {1, 1, 1, 1, 1, 1};
         // WHEN
-        final double[] contribution = j2Term.getVelocityAdjointContribution(date, positionVelocity, adjoint);
+        final double[] contribution = j2Term.getVelocityAdjointContribution(date, positionVelocity, adjoint, frame);
         // THEN
         final double[] doubleAdjoint = new double[6];
         for (int i = 0; i < 6; i++) {
             doubleAdjoint[i] = adjoint[i] * 2;
         }
-        final double[] contributionDouble = j2Term.getVelocityAdjointContribution(date, positionVelocity, doubleAdjoint);
+        final double[] contributionDouble = j2Term.getVelocityAdjointContribution(date, positionVelocity, doubleAdjoint,
+                frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(contribution[i] * 2, contributionDouble[i]);
         }
@@ -76,7 +77,7 @@ class CartesianAdjointJ2TermTest {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final CartesianAdjointJ2Term j2Term = new CartesianAdjointJ2Term(Constants.EGM96_EARTH_MU,
-                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, -Constants.EGM96_EARTH_C20, frame, frame);
+                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, -Constants.EGM96_EARTH_C20, frame);
         final Binary64Field field = Binary64Field.getInstance();
         final Binary64[] fieldAdjoint = MathArrays.buildArray(field, 6);
         final Binary64[] fieldState = MathArrays.buildArray(field, 6);
@@ -86,7 +87,8 @@ class CartesianAdjointJ2TermTest {
         }
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = j2Term.getVelocityAdjointFieldContribution(fieldDate, fieldState, fieldAdjoint);
+        final Binary64[] fieldContribution = j2Term.getVelocityAdjointFieldContribution(fieldDate, fieldState,
+                fieldAdjoint, frame);
         // THEN
         final double[] state = new double[fieldState.length];
         for (int i = 0; i < fieldState.length; i++) {
@@ -96,7 +98,8 @@ class CartesianAdjointJ2TermTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final double[] contribution = j2Term.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint);
+        final double[] contribution = j2Term.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint,
+                frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i]);
         }
