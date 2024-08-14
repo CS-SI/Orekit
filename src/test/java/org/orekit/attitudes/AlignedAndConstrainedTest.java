@@ -32,6 +32,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -42,6 +44,7 @@ import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -323,6 +326,35 @@ public class AlignedAndConstrainedTest {
 
     private <T extends CalculusFieldElement<T>> FieldOrbit<T> getOrbit(final Field<T> field) {
         return orbit.getType().convertToFieldOrbit(field, orbit);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PredefinedTarget.class)
+    void testGetAttitudeRotation(final PredefinedTarget target) {
+        // GIVEN
+        final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
+        final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
+                Vector3D.MINUS_J, groundPointTarget, sun, earth);
+        // WHEN
+        final Rotation actualRotation = alignedAndConstrained.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
+        // THEN
+        final Rotation expectedRotation = alignedAndConstrained.getAttitude(orbit, orbit.getDate(), orbit.getFrame()).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation), 5e-9);
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PredefinedTarget.class)
+    void testFieldGetAttitudeRotation(final PredefinedTarget target) {
+        // GIVEN
+        final GroundPointTarget groundPointTarget = new GroundPointTarget(new Vector3D(1., 2.));
+        final AlignedAndConstrained alignedAndConstrained = new AlignedAndConstrained(Vector3D.PLUS_I, target,
+                Vector3D.MINUS_J, groundPointTarget, sun, earth);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final FieldRotation<Binary64> actualRotation = alignedAndConstrained.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
+        // THEN
+        final FieldRotation<Binary64> expectedRotation = alignedAndConstrained.getAttitude(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()), 5e-9);
     }
 
     @BeforeEach

@@ -28,20 +28,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldGradient;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.analysis.differentiation.SparseGradient;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
+import org.hipparchus.analysis.differentiation.*;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.complex.FieldComplex;
@@ -1803,5 +1790,19 @@ public class FieldAbsoluteDateTest {
         // Assert that static method are correct when creating date from JD or MJD
         Assertions.assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
         Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
+    }
+
+    @Test
+    void testToFUD2Field() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<Binary64>> ud2Date = date.toFUD2Field();
+        // THEN
+        Assertions.assertEquals(date.toAbsoluteDate(), ud2Date.toAbsoluteDate());
+        final FieldUnivariateDerivative2<Binary64> shift = ud2Date.durationFrom(date.toAbsoluteDate());
+        Assertions.assertEquals(field.getOne(), shift.getFirstDerivative());
+        Assertions.assertEquals(field.getZero(), shift.getSecondDerivative());
     }
 }

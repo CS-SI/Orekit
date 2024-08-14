@@ -78,6 +78,9 @@
       <action dev="rafa" type="add" issue="1368">
         Added a parser for gravity models in SHA format.
       </action>
+      <action dev="serrof" type="add" issue="1349">
+        Add more overrides of getAttitudeRotation.
+      </action>
     </release>
     <release version="12.1.2" date="13/07/2024"
              description="Version 12.1.2 is a patch release of Orekit.

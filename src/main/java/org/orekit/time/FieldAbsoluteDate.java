@@ -28,6 +28,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.analysis.differentiation.Derivative;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -515,6 +517,20 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
             this.epoch = epoch + deltaEpoch;
             offset = newOffset;
         }
+    }
+
+    /**
+     * Creates Field date with offset as univariate derivative of second order, with a unit linear coefficient in time.
+     * @return univariate derivative 2 date
+     * @since 12.2
+     */
+    public FieldAbsoluteDate<FieldUnivariateDerivative2<T>> toFUD2Field() {
+        final FieldUnivariateDerivative2Field<T> fud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field);
+        final AbsoluteDate date = toAbsoluteDate();
+        final T fieldShift = durationFrom(date);
+        final FieldUnivariateDerivative2<T> fud2Shift = new FieldUnivariateDerivative2<>(fieldShift, field.getOne(),
+                field.getZero());
+        return new FieldAbsoluteDate<>(fud2Field, date).shiftedBy(fud2Shift);
     }
 
     /** Extract time components from an instant within the day.

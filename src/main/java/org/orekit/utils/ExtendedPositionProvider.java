@@ -20,7 +20,6 @@ package org.orekit.utils;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -68,13 +67,7 @@ public interface ExtendedPositionProvider extends PVCoordinatesProvider {
      */
     default <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> date,
                                                                                                   final Frame frame) {
-        final Field<T> field = date.getField();
-        final FieldUnivariateDerivative2Field<T> fud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field);
-        final T fieldShift = date.durationFrom(date.toAbsoluteDate());
-        final FieldUnivariateDerivative2<T> fud2Shift = new FieldUnivariateDerivative2<>(fieldShift, field.getOne(),
-            field.getZero());
-        final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> fud2Date = new FieldAbsoluteDate<>(fud2Field,
-            date.toAbsoluteDate()).shiftedBy(fud2Shift);
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> fud2Date = date.toFUD2Field();
         final FieldVector3D<FieldUnivariateDerivative2<T>> fud2Position = getPosition(fud2Date, frame);
         final FieldVector3D<T> position = new FieldVector3D<>(fud2Position.getX().getValue(), fud2Position.getY().getValue(),
             fud2Position.getZ().getValue());
