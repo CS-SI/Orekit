@@ -18,6 +18,7 @@ package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathArrays;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -33,44 +34,51 @@ public abstract class AbstractCartesianAdjointGravitationalTerm implements Carte
     /** {@inheritDoc} */
     @Override
     public double[] getContribution(final AbsoluteDate date, final double[] stateVariables,
-                                    final double[] adjointVariables) {
+                                    final double[] adjointVariables, final Frame frame) {
         final double[] contribution = new double[adjointVariables.length];
-        final double[] adjointVelocityDerivativesContribution = getVelocityAdjointContribution(date, stateVariables, adjointVariables);
+        final double[] adjointVelocityDerivativesContribution = getVelocityAdjointContribution(date, stateVariables,
+            adjointVariables, frame);
         System.arraycopy(adjointVelocityDerivativesContribution, 0, contribution, 3, adjointVelocityDerivativesContribution.length);
         return contribution;
     }
 
     /**
      * Computes the contribution to velocity adjoint derivatives.
-     * @param date date
-     * @param stateVariables state variables
+     *
+     * @param date             date
+     * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
+     * @param frame            propagation frame
      * @return contribution to velocity adjoint derivatives
      */
     protected abstract double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables,
-                                                               double[] adjointVariables);
+                                                               double[] adjointVariables, Frame frame);
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T[] getFieldContribution(final FieldAbsoluteDate<T> date,
                                                                         final T[] stateVariables,
-                                                                        final T[] adjointVariables) {
+                                                                        final T[] adjointVariables, final Frame frame) {
         final T[] contribution = MathArrays.buildArray(date.getField(), adjointVariables.length);
-        final T[] adjointVelocityDerivativesContribution = getVelocityAdjointFieldContribution(date, stateVariables, adjointVariables);
+        final T[] adjointVelocityDerivativesContribution = getVelocityAdjointFieldContribution(date, stateVariables,
+            adjointVariables, frame);
         System.arraycopy(adjointVelocityDerivativesContribution, 0, contribution, 3, adjointVelocityDerivativesContribution.length);
         return contribution;
     }
 
     /**
      * Computes the contribution to velocity adjoint derivatives.
-     * @param date date
-     * @param stateVariables state variables
+     *
+     * @param <T>              field type
+     * @param date             date
+     * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
-     * @param <T> field type
+     * @param frame            propagation frame
      * @return contribution to velocity adjoint derivatives
      */
     protected abstract <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(FieldAbsoluteDate<T> date,
                                                                                                    T[] stateVariables,
-                                                                                                   T[] adjointVariables);
+                                                                                                   T[] adjointVariables,
+                                                                                                   Frame frame);
 
 }

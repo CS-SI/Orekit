@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -92,8 +93,10 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
 
         // Update position and velocity adjoint derivatives
         final AbsoluteDate date = state.getDate();
+        final Frame propagationFrame = state.getFrame();
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final double[] contribution = equationTerm.getContribution(date, cartesianVariablesAndMass, adjointVariables);
+            final double[] contribution = equationTerm.getContribution(date, cartesianVariablesAndMass, adjointVariables,
+                    propagationFrame);
             for (int i = 0; i < contribution.length; i++) {
                 additionalDerivatives[i] += contribution[i];
             }

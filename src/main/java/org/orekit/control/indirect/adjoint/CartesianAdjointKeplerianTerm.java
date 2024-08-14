@@ -17,6 +17,7 @@
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -52,7 +53,7 @@ public class CartesianAdjointKeplerianTerm extends AbstractCartesianAdjointNewto
     /** {@inheritDoc} */
     @Override
     public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
-                                                   final double[] adjointVariables) {
+                                                   final double[] adjointVariables, final Frame frame) {
         return getNewtonianVelocityAdjointContribution(mu, stateVariables, adjointVariables);
     }
 
@@ -60,7 +61,8 @@ public class CartesianAdjointKeplerianTerm extends AbstractCartesianAdjointNewto
     @Override
     public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(final FieldAbsoluteDate<T> date,
                                                                                        final T[] stateVariables,
-                                                                                       final T[] adjointVariables) {
+                                                                                       final T[] adjointVariables,
+                                                                                       final Frame frame) {
         return getFieldNewtonianVelocityAdjointContribution(mu, stateVariables, adjointVariables);
     }
 }

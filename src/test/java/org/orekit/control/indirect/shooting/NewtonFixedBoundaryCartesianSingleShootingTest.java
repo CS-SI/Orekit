@@ -133,7 +133,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", 1e-3);
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(initialOrbit.getMu());
         final CartesianAdjointJ2Term j2Term = new CartesianAdjointJ2Term(j2OnlyPerturbation.getMu(), j2OnlyPerturbation.getrEq(),
-                j2OnlyPerturbation.getJ2(initialOrbit.getDate()), initialOrbit.getFrame(), j2OnlyPerturbation.getFrame());
+                j2OnlyPerturbation.getJ2(initialOrbit.getDate()), j2OnlyPerturbation.getFrame());
         final AdjointDynamicsProvider adjointDynamicsProvider = new CartesianAdjointDynamicsProvider(cartesianCost,
                 keplerianTerm, j2Term);
         return new ShootingPropagationSettings(forceModelList, adjointDynamicsProvider,

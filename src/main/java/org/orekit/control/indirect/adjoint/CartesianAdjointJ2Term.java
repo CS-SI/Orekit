@@ -49,9 +49,6 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
     /** Equatorial radius of central body. */
     private final double rEq;
 
-    /** State vector frame. */
-    private final Frame stateFrame;
-
     /** Frame where J2 applies. */
     private final Frame j2Frame;
 
@@ -60,15 +57,13 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
      * @param mu central body gravitational parameter.
      * @param rEq equatorial radius
      * @param j2 J2 coefficient
-     * @param stateFrame state vector frame
      * @param j2Frame J2 frame
      */
     public CartesianAdjointJ2Term(final double mu, final double rEq, final double j2,
-                                  final Frame stateFrame, final Frame j2Frame) {
+                                  final Frame j2Frame) {
         this.mu = mu;
         this.j2 = j2;
         this.rEq = rEq;
-        this.stateFrame = stateFrame;
         this.j2Frame = j2Frame;
     }
 
@@ -99,13 +94,13 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
     /** {@inheritDoc} */
     @Override
     public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
-                                                   final double[] adjointVariables) {
+                                                   final double[] adjointVariables, final Frame frame) {
         final double[] contribution = new double[3];
         final int numberOfGradientVariables = 3;
         final FieldVector3D<Gradient> position = new FieldVector3D<>(Gradient.variable(numberOfGradientVariables, 0, stateVariables[0]),
             Gradient.variable(numberOfGradientVariables, 1, stateVariables[1]),
             Gradient.variable(numberOfGradientVariables, 2, stateVariables[2]));
-        final StaticTransform transform = stateFrame.getStaticTransformTo(j2Frame, date);
+        final StaticTransform transform = frame.getStaticTransformTo(j2Frame, date);
         final FieldVector3D<Gradient> positionInJ2Frame = transform.transformPosition(position);
         final Gradient fieldJ2 = Gradient.constant(numberOfGradientVariables, j2);
         final FieldVector3D<Gradient> accelerationInJ2Frame = J2OnlyPerturbation.computeAccelerationInJ2Frame(positionInJ2Frame,
@@ -127,7 +122,8 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
     @Override
     public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(final FieldAbsoluteDate<T> date,
                                                                                        final T[] stateVariables,
-                                                                                       final T[] adjointVariables) {
+                                                                                       final T[] adjointVariables,
+                                                                                       final Frame frame) {
         final Field<T> field = adjointVariables[0].getField();
         final T[] contribution = MathArrays.buildArray(field, 3);
         final int numberOfGradientVariables = 3;
@@ -138,7 +134,7 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
         final FieldGradientField<T> gradientField = FieldGradientField.getField(field, 3);
         final FieldAbsoluteDate<FieldGradient<T>> gradientDate = new FieldAbsoluteDate<>(gradientField, date.toAbsoluteDate())
             .shiftedBy(FieldGradient.constant(numberOfGradientVariables, shift));
-        final FieldStaticTransform<FieldGradient<T>> transform = stateFrame.getStaticTransformTo(j2Frame, gradientDate);
+        final FieldStaticTransform<FieldGradient<T>> transform = frame.getStaticTransformTo(j2Frame, gradientDate);
         final FieldVector3D<FieldGradient<T>> positionInJ2Frame = transform.transformPosition(position);
         final FieldGradient<T> fieldJ2 = FieldGradient.constant(numberOfGradientVariables, field.getZero().newInstance(j2));
         final FieldVector3D<FieldGradient<T>> accelerationInJ2Frame = J2OnlyPerturbation.computeAccelerationInJ2Frame(positionInJ2Frame,
