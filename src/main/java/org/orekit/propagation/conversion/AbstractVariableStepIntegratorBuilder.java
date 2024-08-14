@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.CalculusFieldElement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -24,12 +23,10 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 /**
  * Abstract class for integrator builder using variable step size.
  *
- * @param <T> type of the field elements
- *
- * @author Vincent Cucchietti
+ * @author Romain Serra
+ * @since 12.2
  */
-public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractFieldIntegratorBuilder<T> {
+public abstract class AbstractVariableStepIntegratorBuilder implements ODEIntegratorBuilder {
 
     // CHECKSTYLE: stop VisibilityModifier check
     /** Minimum step size (s). */
@@ -52,7 +49,7 @@ public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends Calcu
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      */
-    AbstractVariableStepFieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
+    protected AbstractVariableStepIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
         this(minStep, maxStep, dP, Double.NaN);
     }
 
@@ -63,10 +60,9 @@ public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends Calcu
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      * @param dV velocity error (m/s)
-     * @since 12.2
      */
-    AbstractVariableStepFieldIntegratorBuilder(final double minStep, final double maxStep, final double dP,
-                                               final double dV) {
+    protected AbstractVariableStepIntegratorBuilder(final double minStep, final double maxStep, final double dP,
+                                          final double dV) {
         this.minStep = minStep;
         this.maxStep = maxStep;
         this.dP      = dP;
