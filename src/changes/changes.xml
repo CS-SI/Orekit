@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1506">
+        Add toGeodeticPoint in FieldGeodeticPoint.
+      </action>
       <action dev="serrof" type="update" issue="1505">
         Pass propagation frame as argument when evaluating adjoint contribution.
       </action>
