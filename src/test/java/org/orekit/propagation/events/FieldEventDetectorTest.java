@@ -24,6 +24,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
@@ -35,6 +36,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -64,6 +66,24 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 public class FieldEventDetectorTest {
 
     private double mu;
+
+    @Test
+    void testGetDetectionSettings() {
+        // GIVEN
+        final FieldEventDetector mockedDetector = Mockito.mock(FieldEventDetector.class);
+        final FieldAdaptableInterval<Complex> mockedInterval = Mockito.mock(FieldAdaptableInterval.class);
+        final FieldEventDetectionSettings<Complex> settings = new FieldEventDetectionSettings<>(mockedInterval, Complex.ONE, 10);
+        Mockito.when(mockedDetector.getThreshold()).thenReturn(settings.getThreshold());
+        Mockito.when(mockedDetector.getMaxIterationCount()).thenReturn(settings.getMaxIterationCount());
+        Mockito.when(mockedDetector.getMaxCheckInterval()).thenReturn(mockedInterval);
+        Mockito.when(mockedDetector.getDetectionSettings()).thenCallRealMethod();
+        // WHEN
+        final FieldEventDetectionSettings<Complex> actualSettings = mockedDetector.getDetectionSettings();
+        // THEN
+        Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
+        Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
+        Assertions.assertEquals(settings.getThreshold(), actualSettings.getThreshold());
+    }
 
     @Test
     public void testEventHandlerInit() {

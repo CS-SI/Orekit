@@ -27,9 +27,11 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 
@@ -48,6 +50,24 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
     /** Maximum value of thrust force Euclidean norm. */
     private final double maximumThrustMagnitude;
 
+    /** Detection settings for the singularity events. */
+    private final EventDetectionSettings eventDetectionSettings;
+
+    /**
+     * Constructor.
+     * @param name name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param eventDetectionSettings singularity event detection settings
+     */
+    public BoundedCartesianEnergy(final String name, final double massFlowRateFactor,
+                                  final double maximumThrustMagnitude,
+                                  final EventDetectionSettings eventDetectionSettings) {
+        super(name, massFlowRateFactor);
+        this.maximumThrustMagnitude = FastMath.abs(maximumThrustMagnitude);
+        this.eventDetectionSettings = eventDetectionSettings;
+    }
+
     /**
      * Constructor.
      * @param name name
@@ -56,8 +76,7 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
      */
     public BoundedCartesianEnergy(final String name, final double massFlowRateFactor,
                                   final double maximumThrustMagnitude) {
-        super(name, massFlowRateFactor);
-        this.maximumThrustMagnitude = FastMath.abs(maximumThrustMagnitude);
+        this(name, massFlowRateFactor, maximumThrustMagnitude, EventDetectionSettings.getDefaultEventDetectionSettings());
     }
 
     /** {@inheritDoc} */
@@ -143,7 +162,8 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
     @Override
     public Stream<EventDetector> getEventDetectors() {
         final UnboundedCartesianEnergy unboundedCartesianEnergyForEvent = new UnboundedCartesianEnergy(getAdjointName(), getMassFlowRateFactor());
-        return Stream.of(new EnergyCostAdjointSingularityDetector(unboundedCartesianEnergyForEvent, maximumThrustMagnitude));
+        return Stream.of(new EnergyCostAdjointSingularityDetector(unboundedCartesianEnergyForEvent,
+            maximumThrustMagnitude, eventDetectionSettings));
     }
 
     /** {@inheritDoc} */
@@ -152,7 +172,7 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
         final UnboundedCartesianEnergy unboundedCartesianEnergyForEvent = new UnboundedCartesianEnergy(getAdjointName(), getMassFlowRateFactor());
         final T maximumThrustMagnitudeForEvent = field.getZero().newInstance(maximumThrustMagnitude);
         return Stream.of(new FieldEnergyCostAdjointSingularityDetector<>(unboundedCartesianEnergyForEvent,
-            maximumThrustMagnitudeForEvent));
+            maximumThrustMagnitudeForEvent, new FieldEventDetectionSettings<>(field, eventDetectionSettings)));
     }
 
     /**
@@ -172,16 +192,14 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
          * Private Constructor with all detection settings.
          * @param unboundedCartesianEnergy unbounded Cartesian energy
          * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
-         * @param adaptableInterval adaptable interval
-         * @param threshold threshold for detection
-         * @param maxIter maximum number of iterations for detection
+         * @param detectionSettings event detection settings
          * @param eventHandler event handler on detection
          */
         private EnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
                                                      final double maximumThrustMagnitudeForDetector,
-                                                     final AdaptableInterval adaptableInterval, final double threshold,
-                                                     final int maxIter, final EventHandler eventHandler) {
-            super(adaptableInterval, threshold, maxIter, eventHandler);
+                                                     final EventDetectionSettings detectionSettings,
+                                                     final EventHandler eventHandler) {
+            super(detectionSettings, eventHandler);
             this.unboundedCartesianEnergy = unboundedCartesianEnergy;
             this.maximumThrustMagnitudeForDetector = maximumThrustMagnitudeForDetector;
         }
@@ -190,11 +208,13 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
          * Constructor with default detection settings.
          * @param unboundedCartesianEnergy unbounded energy cost
          * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
+         * @param detectionSettings event detection settings
          */
         EnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
-                                             final double maximumThrustMagnitudeForDetector) {
-            this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK), AbstractDetector.DEFAULT_THRESHOLD,
-                AbstractDetector.DEFAULT_MAX_ITER, (state, detector, isIncreasing) -> Action.RESET_DERIVATIVES);
+                                             final double maximumThrustMagnitudeForDetector,
+                                             final EventDetectionSettings detectionSettings) {
+            this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, detectionSettings,
+                (state, detector, isIncreasing) -> Action.RESET_DERIVATIVES);
         }
 
         /** {@inheritDoc} */
@@ -210,7 +230,7 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
         protected EnergyCostAdjointSingularityDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                               final int newMaxIter, final EventHandler newHandler) {
             return new EnergyCostAdjointSingularityDetector(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector,
-                    newMaxCheck, newThreshold, newMaxIter, newHandler);
+                    new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
         }
     }
 
@@ -231,16 +251,14 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
          * Private Constructor with all detection settings.
          * @param unboundedCartesianEnergy unbounded Cartesian energy
          * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
-         * @param adaptableInterval adaptable interval
-         * @param threshold threshold for detection
-         * @param maxIter maximum number of iterations for detection
+         * @param detectionSettings detection settings
          * @param eventHandler event handler on detection
          */
         private FieldEnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
                                                           final T maximumThrustMagnitudeForDetector,
-                                                          final FieldAdaptableInterval<T> adaptableInterval, final T threshold,
-                                                          final int maxIter, final FieldEventHandler<T> eventHandler) {
-            super(adaptableInterval, threshold, maxIter, eventHandler);
+                                                          final FieldEventDetectionSettings<T> detectionSettings,
+                                                          final FieldEventHandler<T> eventHandler) {
+            super(detectionSettings, eventHandler);
             this.unboundedCartesianEnergy = unboundedCartesianEnergy;
             this.maximumThrustMagnitudeForDetector = maximumThrustMagnitudeForDetector;
         }
@@ -249,11 +267,12 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
          * Constructor with default detection settings.
          * @param unboundedCartesianEnergy unbounded energy cost
          * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
+         * @param detectionSettings event detection settings
          */
         FieldEnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
-                                                  final T maximumThrustMagnitudeForDetector) {
-            this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, FieldAdaptableInterval.of(FieldAbstractDetector.DEFAULT_MAXCHECK),
-                maximumThrustMagnitudeForDetector.getField().getZero().newInstance(FieldAbstractDetector.DEFAULT_THRESHOLD), FieldAbstractDetector.DEFAULT_MAX_ITER,
+                                                  final T maximumThrustMagnitudeForDetector,
+                                                  final FieldEventDetectionSettings<T> detectionSettings) {
+            this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, detectionSettings,
                 (state, detector, isIncreasing) -> Action.RESET_DERIVATIVES);
         }
 
@@ -271,7 +290,7 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
                                                                       final T newThreshold, final int newMaxIter,
                                                                       final FieldEventHandler<T> newHandler) {
             return new FieldEnergyCostAdjointSingularityDetector<>(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector,
-                    newMaxCheck, newThreshold, newMaxIter, newHandler);
+                    new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
         }
     }
 }

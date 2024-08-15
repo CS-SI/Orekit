@@ -109,4 +109,12 @@ public interface EventDetector {
      */
     EventHandler getHandler();
 
+    /**
+     * Getter for the settings.
+     * @return detection settings
+     * @since 12.2
+     */
+    default EventDetectionSettings getDetectionSettings() {
+        return new EventDetectionSettings(getMaxCheckInterval(), getThreshold(), getMaxIterationCount());
+    }
 }
