@@ -17,6 +17,9 @@
 package org.orekit.bodies;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -142,6 +145,20 @@ public class FieldGeodeticPointTest {
 
         // verify
         Assertions.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
+    }
+
+    @Test
+    void testToGeodeticPoint() {
+        // GIVEN
+        final GeodeticPoint geodeticPoint = new GeodeticPoint(1., 2., 3.);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldGeodeticPoint<Complex> fieldGeodeticPoint = new FieldGeodeticPoint<>(field, geodeticPoint);
+        // WHEN
+        final GeodeticPoint actualPoint = fieldGeodeticPoint.toGeodeticPoint();
+        // THEN
+        Assertions.assertEquals(geodeticPoint.getAltitude(), actualPoint.getAltitude());
+        Assertions.assertEquals(geodeticPoint.getLatitude(), actualPoint.getLatitude());
+        Assertions.assertEquals(geodeticPoint.getLongitude(), actualPoint.getLongitude());
     }
 
 }
