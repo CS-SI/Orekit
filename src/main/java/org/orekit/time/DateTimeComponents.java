@@ -477,9 +477,17 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         // time
         final String timeString;
         if (!t.getSplitSecondsInLocalDay().isZero()) {
-            final DecimalFormat format = new DecimalFormat("00.##############", new DecimalFormatSymbols(Locale.US));
-            timeString = String.format("%02d:%02d:", t.getHour(), t.getMinute()) +
-                    format.format(t.getSecond());
+            final String formatted = t.toStringWithoutUtcOffset(18);
+            int last = formatted.length() - 1;
+            while (formatted.charAt(last) == '0') {
+                // we want to remove final zeros
+                --last;
+            }
+            if (formatted.charAt(last) == '.') {
+                // remove the decimal point if no decimals follow
+                --last;
+            }
+            timeString = formatted.substring(0, last + 1);
         } else {
             // shortcut for midnight local time
             timeString = "00:00:00";
