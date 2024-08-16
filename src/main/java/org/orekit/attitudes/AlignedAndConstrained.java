@@ -23,6 +23,7 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
@@ -94,6 +95,19 @@ public class AlignedAndConstrained implements AttitudeProvider
 
     /** {@inheritDoc} */
     @Override
+    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        final TimeStampedPVCoordinates satPV = pvProv.getPVCoordinates(date, frame);
+
+        // compute targets references at the specified date
+        final Vector3D primaryDirection   = primaryTarget.getTargetDirection(sun, earth, satPV, frame);
+        final Vector3D secondaryDirection = secondaryTarget.getTargetDirection(sun, earth, satPV, frame);
+
+        // compute transform from inertial frame to satellite frame
+        return new Rotation(primaryDirection, secondaryDirection, primarySat.toVector3D(), secondarySat.toVector3D());
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public Attitude getAttitude(final PVCoordinatesProvider pvProv,
                                 final AbsoluteDate date,
                                 final Frame frame)
@@ -101,8 +115,8 @@ public class AlignedAndConstrained implements AttitudeProvider
         final TimeStampedPVCoordinates satPV = pvProv.getPVCoordinates(date, frame);
 
         // compute targets references at the specified date
-        final FieldVector3D<UnivariateDerivative2> primaryDirection   = primaryTarget.getTargetDirection(sun, earth, satPV, frame);
-        final FieldVector3D<UnivariateDerivative2> secondaryDirection = secondaryTarget.getTargetDirection(sun, earth, satPV, frame);
+        final FieldVector3D<UnivariateDerivative2> primaryDirection   = primaryTarget.getDerivative2TargetDirection(sun, earth, satPV, frame);
+        final FieldVector3D<UnivariateDerivative2> secondaryDirection = secondaryTarget.getDerivative2TargetDirection(sun, earth, satPV, frame);
 
         // compute transform from inertial frame to satellite frame
         final FieldRotation<UnivariateDerivative2> inertToSatRotation =
@@ -111,6 +125,23 @@ public class AlignedAndConstrained implements AttitudeProvider
         // build the attitude
         return new Attitude(date, frame, new AngularCoordinates(inertToSatRotation));
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                    final FieldAbsoluteDate<T> date,
+                                                                                    final Frame frame) {
+        final TimeStampedFieldPVCoordinates<T> satPV = pvProv.getPVCoordinates(date, frame);
+
+        // compute targets references at the specified date
+        final FieldVector3D<T> primaryDirection   = primaryTarget.getTargetDirection(sun, earth, satPV, frame);
+        final FieldVector3D<T> secondaryDirection = secondaryTarget.getTargetDirection(sun, earth, satPV, frame);
+
+        // compute transform from inertial frame to satellite frame
+        final Field<T> field = date.getField();
+        return new FieldRotation<>(primaryDirection, secondaryDirection,
+                new FieldVector3D<>(field, primarySat.toVector3D()), new FieldVector3D<>(field, secondarySat.toVector3D()));
     }
 
     /** {@inheritDoc} */
@@ -128,8 +159,8 @@ public class AlignedAndConstrained implements AttitudeProvider
         final TimeStampedFieldPVCoordinates<T> satPV = pvProv.getPVCoordinates(date, frame);
 
         // compute targets references at the specified date
-        final FieldVector3D<FieldUnivariateDerivative2<T>> primaryDirection   = primaryTarget.getTargetDirection(sun, earth, satPV, frame);
-        final FieldVector3D<FieldUnivariateDerivative2<T>> secondaryDirection = secondaryTarget.getTargetDirection(sun, earth, satPV, frame);
+        final FieldVector3D<FieldUnivariateDerivative2<T>> primaryDirection   = primaryTarget.getDerivative2TargetDirection(sun, earth, satPV, frame);
+        final FieldVector3D<FieldUnivariateDerivative2<T>> secondaryDirection = secondaryTarget.getDerivative2TargetDirection(sun, earth, satPV, frame);
 
         // compute transform from inertial frame to satellite frame
         final FieldRotation<FieldUnivariateDerivative2<T>> inertToSatRotation =
