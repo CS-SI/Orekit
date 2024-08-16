@@ -446,8 +446,8 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final Instant instant, final UTCScale utcScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH, (int) (instant.getEpochSecond() / 86400L)),
-             new TimeComponents(new SplitTime(instant.getEpochSecond() % 86400L,
-                                              instant.getNano() * SplitTime.NANOSECOND.getAttoSeconds())),
+             new TimeComponents(SplitTime.SECOND.multiply(instant.getEpochSecond() % 86400L).
+                                add(new SplitTime(instant.getNano(), TimeUnit.NANOSECONDS))),
              utcScale);
     }
 
