@@ -611,8 +611,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         final CcsdsUnsegmentedTimeCode<FieldAbsoluteDate<T>> timeCode =
             new CcsdsUnsegmentedTimeCode<>(preambleField1, preambleField2, timeField,
                                            agencyDefinedEpoch, ccsdsEpoch);
-        return new FieldAbsoluteDate<>(timeCode.getEpoch(), timeCode.getSeconds()).
-               shiftedBy(timeCode.getSubSecond());
+        // TODO: don't convert split time to double
+        return timeCode.getEpoch().shiftedBy(timeCode.getTime().toDouble());
     }
 
     /** Build an instance from a CCSDS Day Segmented Time Code (CDS).

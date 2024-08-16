@@ -28,14 +28,23 @@ import org.orekit.errors.OrekitMessages;
  */
 class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
 
+    /** Numerator of scale of the sub-second part (10¹⁸/256ⁿ). */
+    private static final long[] SUB_SCALE_NUM = new long[] {
+        3906250000000000L, 15258789062500L, 3814697265625L, 3814697265625L, 3814697265625L, 3814697265625L, 3814697265625L
+    };
+
+    /** Denominator of scale of the sub-second part (10¹⁸/256ⁿ). */
+    private static final long[] SUB_SCALE_DEN = new long[] {
+        1L, 1L, 64L, 16384L, 4194304L, 1073741824L, 274877906944L
+    };
+
     /** Epoch part. */
     private final T epoch;
 
-    /** Seconds part. */
-    private final long seconds;
-
-    /** Sub-second part. */
-    private final double subSecond;
+    /** Time part.
+     * @since 13.0
+     */
+    private final SplitTime time;
 
     /** Create an instance CCSDS Day Unegmented Time Code (CDS).
      * <p>
@@ -102,17 +111,18 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
                                       timeField.length, coarseTimeLength + fineTimeLength);
         }
 
-        long s = 0L;
+        long seconds = 0L;
         for (int i = 0; i < coarseTimeLength; ++i) {
-            s = s * 256 + toUnsigned(timeField[i]);
+            seconds = seconds * 256L + toUnsigned(timeField[i]);
         }
-        seconds = s;
 
-        double sub = 0;
-        for (int i = timeField.length - 1; i >= coarseTimeLength; --i) {
-            sub = (sub + toUnsigned(timeField[i])) / 256;
+        long attoSeconds = 0L;
+        for (int i = coarseTimeLength; i < timeField.length; ++i) {
+            attoSeconds += (toUnsigned(timeField[i]) * SUB_SCALE_NUM[i - coarseTimeLength]) /
+                           SUB_SCALE_DEN[i - coarseTimeLength];
         }
-        subSecond = sub;
+
+        time = new SplitTime(seconds, attoSeconds);
 
     }
 
@@ -123,18 +133,12 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
         return epoch;
     }
 
-    /** Get the seconds part.
-     * @return seconds part
+    /** Get the time part.
+     * @return time part
+     * @since 13.0
      */
-    public long getSeconds() {
-        return seconds;
-    }
-
-    /** Get the sub-second part.
-     * @return sub-second part
-     */
-    public double getSubSecond() {
-        return subSecond;
+    public SplitTime getTime() {
+        return time;
     }
 
 }

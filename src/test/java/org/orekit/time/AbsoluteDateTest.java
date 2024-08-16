@@ -550,23 +550,25 @@ public class AbsoluteDateTest {
 
         AbsoluteDate reference = new AbsoluteDate("2095-03-03T22:02:45.789012345678901", utc);
         int leap = (int) FastMath.rint(utc.offsetFromTAI(reference).toDouble());
-        double lsb = FastMath.pow(2.0, -48);
 
         byte extendedPreamble = (byte) -0x80;
         byte identification   = (byte)  0x10;
         byte coarseLength1    = (byte)  0x0C; // four (3 + 1) bytes
         byte fineLength1      = (byte)  0x03; // 3 bytes
         byte coarseLength2    = (byte)  0x20; // 1 additional byte for coarse time
-        byte fineLength2      = (byte)  0x0C; // 3 additional bytes for fine time
+        byte fineLength2      = (byte)  0x10; // 4 additional bytes for fine time
         byte[] timeCCSDSEpoch = new byte[] {
              0x01,  0x02,  0x03,  0x04,  (byte)(0x05 - leap), // 5 bytes for coarse time (seconds)
-            -0x37, -0x04, -0x4A, -0x74, -0x2C, -0x3C          // 6 bytes for fine time (sub-seconds)
+            -0x37, -0x04, -0x4A, -0x74, -0x2C, -0x3C, -0x48   // 7 bytes for fine time (sub-seconds)
         };
         byte preamble1 = (byte) (extendedPreamble | identification | coarseLength1 | fineLength1);
         byte preamble2 = (byte) (coarseLength2 | fineLength2);
         AbsoluteDate ccsds1 =
                 AbsoluteDate.parseCCSDSUnsegmentedTimeCode(preamble1, preamble2, timeCCSDSEpoch, null);
-        Assertions.assertEquals(0, ccsds1.durationFrom(reference), lsb / 2);
+
+        // The 8 attoseconds difference comes from the fact unsegmented time is
+        // in powers of 1/256 s, so it is not a whole number of attoseconds
+        Assertions.assertEquals(-8.0e-18, ccsds1.durationFrom(reference), 1.0e-18);
 
     }
 

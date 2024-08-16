@@ -641,8 +641,7 @@ public class AbsoluteDate
         final CcsdsUnsegmentedTimeCode<AbsoluteDate> timeCode =
             new CcsdsUnsegmentedTimeCode<>(preambleField1, preambleField2, timeField,
                                            agencyDefinedEpoch, ccsdsEpoch);
-        return new AbsoluteDate(timeCode.getEpoch(), timeCode.getSeconds()).
-               shiftedBy(timeCode.getSubSecond());
+        return timeCode.getEpoch().shiftedBy(timeCode.getTime());
 
     }
 
