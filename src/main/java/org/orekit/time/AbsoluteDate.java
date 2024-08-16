@@ -1089,7 +1089,13 @@ public class AbsoluteDate
             } else if (isNegativeInfinity()) {
                 return new DateTimeComponents(DateComponents.MIN_EPOCH, TimeComponents.H00);
             } else {
-                return new DateTimeComponents(DateComponents.MAX_EPOCH, new TimeComponents(23, 59, new SplitTime(59.999)));
+                // the fact we truncate at 59.999 seconds is for compatibility reasons
+                // with pre-13.0 Orekit versions. Indeed, this date is fake and more than
+                // 5 millions years in the future, so milliseconds are not really relevant
+                // truncating makes cleaner text output
+                return new DateTimeComponents(DateComponents.MAX_EPOCH,
+                                              new TimeComponents(23, 59,
+                                                                 new SplitTime(59L, 999000000000000000L)));
             }
         }
 
