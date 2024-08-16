@@ -185,6 +185,8 @@ public class UTCTAIOffset implements TimeStamped, Serializable {
 
             // time during which slope applies
             final SplitTime delta = new SplitTime((date.getMJD() - mjdRef) * SplitTime.DAY.getSeconds() +
+                                                  time.getHour() * SplitTime.HOUR.getSeconds() +
+                                                  time.getMinute() * SplitTime.MINUTE.getSeconds() +
                                                   time.getSplitSecond().getSeconds(),
                                                   time.getSplitSecond().getAttoSeconds());
 
