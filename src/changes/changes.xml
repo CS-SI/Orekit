@@ -39,6 +39,9 @@
       <action dev="serrof" type="add" issue="1481">
         Add non-orbit build in (Field)IntegratorBuilder.
       </action>
+      <action dev="serrof" type="add" issue="1479">
+        Add (Field)EventDetectionSettings class.
+      </action>
       <action dev="luc" type="fix" issue="1478">
         Added AlignedAndConstrained attitude mode.
       </action>

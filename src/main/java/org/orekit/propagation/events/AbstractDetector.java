@@ -30,22 +30,16 @@ import org.orekit.time.AbsoluteDate;
 public abstract class AbstractDetector<T extends AbstractDetector<T>> implements EventDetector {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = 600;
+    public static final double DEFAULT_MAXCHECK = EventDetectionSettings.DEFAULT_MAXCHECK;
 
     /** Default convergence threshold (s). */
-    public static final double DEFAULT_THRESHOLD = 1.e-6;
+    public static final double DEFAULT_THRESHOLD = EventDetectionSettings.DEFAULT_THRESHOLD;
 
     /** Default maximum number of iterations in the event time search. */
-    public static final int DEFAULT_MAX_ITER = 100;
+    public static final int DEFAULT_MAX_ITER = EventDetectionSettings.DEFAULT_MAX_ITER;
 
-    /** Max check interval. */
-    private final AdaptableInterval maxCheck;
-
-    /** Convergence threshold. */
-    private final double threshold;
-
-    /** Maximum number of iterations in the event time search. */
-    private final int maxIter;
+    /** Detection settings. */
+    private final EventDetectionSettings eventDetectionSettings;
 
     /** Default handler for event overrides. */
     private final EventHandler handler;
@@ -73,10 +67,17 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      */
     protected AbstractDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                final EventHandler handler) {
-        checkStrictlyPositive(threshold);
-        this.maxCheck  = maxCheck;
-        this.threshold = threshold;
-        this.maxIter   = maxIter;
+        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+    }
+
+    /** Build a new instance.
+     * @param detectionSettings event detection settings
+     * @param handler event handler to call at event occurrences
+     * @since 12.2
+     */
+    protected AbstractDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
+        checkStrictlyPositive(detectionSettings.getThreshold());
+        this.eventDetectionSettings = detectionSettings;
         this.handler   = handler;
         this.forward   = true;
     }
@@ -99,6 +100,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * handler. If a subclass overrides this method it should call {@code
      * super.init(s0, t)}.
      */
+    @Override
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
         forward = t.durationFrom(s0.getDate()) >= 0.0;
@@ -106,25 +108,28 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /** {@inheritDoc} */
-    public abstract double g(SpacecraftState s);
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return eventDetectionSettings;
+    }
 
     /** {@inheritDoc} */
     public AdaptableInterval getMaxCheckInterval() {
-        return maxCheck;
+        return getDetectionSettings().getMaxCheckInterval();
     }
 
     /** {@inheritDoc} */
     public int getMaxIterationCount() {
-        return maxIter;
+        return getDetectionSettings().getMaxIterationCount();
     }
 
     /** {@inheritDoc} */
     public double getThreshold() {
-        return threshold;
+        return getDetectionSettings().getThreshold();
     }
 
     /**
-     * Setup the maximum checking interval.
+     * Set up the maximum checking interval.
      * <p>
      * This will override a maximum checking interval if it has been configured previously.
      * </p>
@@ -137,7 +142,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /**
-     * Setup the maximum checking interval.
+     * Set up the maximum checking interval.
      * <p>
      * This will override a maximum checking interval if it has been configured previously.
      * </p>
@@ -150,7 +155,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /**
-     * Setup the maximum number of iterations in the event time search.
+     * Set up the maximum number of iterations in the event time search.
      * <p>
      * This will override a number of iterations if it has been configured previously.
      * </p>
@@ -163,7 +168,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /**
-     * Setup the convergence threshold.
+     * Set up the convergence threshold.
      * <p>
      * This will override a convergence threshold if it has been configured previously.
      * </p>
@@ -176,7 +181,21 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /**
-     * Setup the event handler to call at event occurrences.
+     * Set up the event detection settings.
+     * <p>
+     * This will override settings previously configured.
+     * </p>
+     * @param newSettings new event detection settings
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 12.2
+     */
+    public T withDetectionSettings(final EventDetectionSettings newSettings) {
+        return create(newSettings.getMaxCheckInterval(), newSettings.getThreshold(), newSettings.getMaxIterationCount(),
+                getHandler());
+    }
+
+    /**
+     * Set up the event handler to call at event occurrences.
      * <p>
      * This will override a handler if it has been configured previously.
      * </p>
