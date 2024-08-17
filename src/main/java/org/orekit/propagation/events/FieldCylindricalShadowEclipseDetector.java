@@ -32,7 +32,8 @@ import org.orekit.utils.ExtendedPositionProvider;
  * @author Romain Serra
  * @see FieldEclipseDetector
  * @see CylindricalShadowEclipseDetector
- * @since 12.1
+ * @since 12.
+ *
  */
 public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElement<T>>
     extends FieldAbstractDetector<FieldCylindricalShadowEclipseDetector<T>, T> {
@@ -48,18 +49,35 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
      * Constructor.
      * @param sun light source provider (infinitely distant)
      * @param occultingBodyRadius occulting body radius
+     * @param eventDetectionSettings detection settings
+     * @param handler event handler
+     * @since 12.2
+     */
+    public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
+                                                 final T occultingBodyRadius,
+                                                 final FieldEventDetectionSettings<T> eventDetectionSettings,
+                                                 final FieldEventHandler<T> handler) {
+        super(eventDetectionSettings, handler);
+        this.sun = sun;
+        this.occultingBodyRadius = FastMath.abs(occultingBodyRadius);
+    }
+
+    /**
+     * Constructor.
+     * @param sun light source provider (infinitely distant)
+     * @param occultingBodyRadius occulting body radius
      * @param maxCheck maximum check for event detection
      * @param threshold threshold for event detection
      * @param maxIter maximum iteration for event detection
      * @param handler event handler
+     * @deprecated since 12.2
      */
+    @Deprecated
     public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
                                                  final T occultingBodyRadius,
                                                  final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                                  final int maxIter, final FieldEventHandler<T> handler) {
-        super(maxCheck, threshold, maxIter, handler);
-        this.sun = sun;
-        this.occultingBodyRadius = FastMath.abs(occultingBodyRadius);
+        this(sun, occultingBodyRadius, new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
     }
 
     /**
@@ -70,8 +88,8 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
      */
     public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
                                                  final T occultingBodyRadius, final FieldEventHandler<T> handler) {
-        this(sun, occultingBodyRadius, FieldAdaptableInterval.of(DEFAULT_MAXCHECK), occultingBodyRadius.getField().getZero().newInstance(DEFAULT_THRESHOLD),
-            DEFAULT_MAX_ITER, handler);
+        this(sun, occultingBodyRadius, new FieldEventDetectionSettings<>(occultingBodyRadius.getField(),
+            EventDetectionSettings.getDefaultEventDetectionSettings()), handler);
     }
 
     /**
@@ -100,6 +118,7 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
     @Override
     protected FieldCylindricalShadowEclipseDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                               final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldCylindricalShadowEclipseDetector<>(sun, occultingBodyRadius, newMaxCheck, newThreshold, newMaxIter, newHandler);
+        return new FieldCylindricalShadowEclipseDetector<>(sun, occultingBodyRadius,
+            new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
     }
 }
