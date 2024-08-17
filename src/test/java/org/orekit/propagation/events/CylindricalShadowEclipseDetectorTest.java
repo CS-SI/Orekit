@@ -10,6 +10,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.*;
 
@@ -21,9 +22,23 @@ class CylindricalShadowEclipseDetectorTest {
     }
 
     @Test
+    @Deprecated
+    void testConstructor() {
+        // GIVEN
+        final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        // WHEN
+        final CylindricalShadowEclipseDetector detector = new CylindricalShadowEclipseDetector(Mockito.mock(PVCoordinatesProvider.class),
+                1., settings.getMaxCheckInterval(), settings.getThreshold(), settings.getMaxIterationCount(),
+                Mockito.mock(EventHandler.class));
+        // THEN
+        Assertions.assertEquals(settings.getMaxIterationCount(), detector.getDetectionSettings().getMaxIterationCount());
+        Assertions.assertEquals(settings.getThreshold(), detector.getDetectionSettings().getThreshold());
+    }
+
+    @Test
     void testCreate() {
         // GIVEN
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
         final CylindricalShadowEclipseDetector eclipseDetector = new CylindricalShadowEclipseDetector(sun,
                 Constants.EGM96_EARTH_EQUATORIAL_RADIUS, new ContinueOnEvent());
         final AdaptableInterval adaptableInterval = AdaptableInterval.of(1.);

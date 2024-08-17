@@ -30,7 +30,7 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -61,7 +61,7 @@ public class AlignedAndConstrained implements AttitudeProvider
     private final TargetProvider secondaryTarget;
 
     /** Sun model. */
-    private final ExtendedPVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Earth model. */
     private final OneAxisEllipsoid earth;
@@ -81,7 +81,7 @@ public class AlignedAndConstrained implements AttitudeProvider
      */
     public AlignedAndConstrained(final Vector3D primarySat, final TargetProvider primaryTarget,
                                  final Vector3D secondarySat, final TargetProvider secondaryTarget,
-                                 final ExtendedPVCoordinatesProvider sun,
+                                 final ExtendedPositionProvider sun,
                                  final OneAxisEllipsoid earth)
     {
         this.primarySat             = new FieldVector3D<>(UnivariateDerivative2Field.getInstance(), primarySat);
