@@ -29,6 +29,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.CartesianCovarianceUtils;
 
 /** This class is the representation of a covariance matrix at a given date.
  * <p>
@@ -670,12 +671,6 @@ public class StateCovariance implements TimeStamped {
                                                         final OrbitType covOrbitType,
                                                         final PositionAngleType covAngleType) {
 
-        // Get the transform from the covariance frame to the output frame
-        final KinematicTransform inToOut = frameIn.getKinematicTransformTo(frameOut, orbit.getDate());
-
-        // Matrix to perform the covariance transformation
-        final RealMatrix j = getJacobian(inToOut);
-
         // Input frame pseudo-inertial
         if (frameIn.isPseudoInertial()) {
 
@@ -686,7 +681,8 @@ public class StateCovariance implements TimeStamped {
                                         inputCov).getMatrix();
 
             // Get the Cartesian covariance matrix converted to frameOut
-            final RealMatrix cartesianCovarianceOut = j.multiply(cartesianCovarianceIn.multiplyTransposed(j));
+            final RealMatrix cartesianCovarianceOut = CartesianCovarianceUtils.changeReferenceFrame(frameIn,
+                    cartesianCovarianceIn, date, frameOut);
 
             // Output frame is pseudo-inertial
             if (frameOut.isPseudoInertial()) {
@@ -713,7 +709,8 @@ public class StateCovariance implements TimeStamped {
             // Method checkInputConsistency already verify that input covariance is defined in CARTESIAN type
 
             // Convert covariance matrix to frameOut
-            final RealMatrix covInFrameOut = j.multiply(inputCov.multiplyTransposed(j));
+            final RealMatrix covInFrameOut = CartesianCovarianceUtils.changeReferenceFrame(frameIn,
+                    inputCov, date, frameOut);
 
             // Output the Cartesian covariance matrix converted to frameOut
             return new StateCovariance(covInFrameOut, date, frameOut, OrbitType.CARTESIAN, DEFAULT_POSITION_ANGLE);
