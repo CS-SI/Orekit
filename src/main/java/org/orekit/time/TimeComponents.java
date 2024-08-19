@@ -45,7 +45,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Constant for NaN time.
      * @since 13.0
      */
-    public static final TimeComponents NaN   = new TimeComponents(0, 0, SplitTime.NaN);
+    public static final TimeComponents NaN   = new TimeComponents(23, 59, SplitTime.NaN);
     // CHECKSTYLE: resume ConstantName
 
     /** Wrapping limits for rounding to next minute.
@@ -195,7 +195,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * in the {@link UTCScale UTC} time scale.</p>
      * @param hour hour number from 0 to 23
      * @param minute minute number from 0 to 59
-     * @param splitSecond second number from 0.0 to 61.0 (excluded)
+     * @param splitSecond second number from 0.0 to 62.0 (excluded, more than 61 s occurred on
+     *                    the 1961 leap second, which was between 1 and 2 seconds in duration)
      * @param minutesFromUTC offset between the specified date and UTC, as an
      * integral number of minutes, as per ISO-8601 standard
      * @exception IllegalArgumentException if inconsistent arguments
@@ -209,7 +210,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // range check
         if (hour < 0 || hour > 23 ||
             minute < 0 || minute > 59 ||
-            splitSecond.getSeconds() < 0L || splitSecond.getSeconds() >= 61L) {
+            splitSecond.getSeconds() < 0L || splitSecond.getSeconds() >= 62L) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
                                                      hour, minute, splitSecond.toDouble());
         }
@@ -270,8 +271,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
             throws OrekitIllegalArgumentException {
          // if the total is at least 86400 then assume there is a leap second
         this(new SplitTime(secondInDayA).add(new SplitTime(secondInDayB)),
-             (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? SplitTime.ZERO : SplitTime.SECOND,
-             (Constants.JULIAN_DAY - secondInDayA) - secondInDayB > 0 ? 60 : 61);
+             (SplitTime.DAY.getSeconds() - secondInDayA) - secondInDayB > 0 ? SplitTime.ZERO : SplitTime.SECOND,
+             (SplitTime.DAY.getSeconds() - secondInDayA) - secondInDayB > 0 ? 60 : 61);
     }
 
     /**
@@ -365,8 +366,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         if (secondInDay.isNaN()) {
             // special handling for NaN
-            hour        = 0;
-            minute      = 0;
+            hour        = 23;
+            minute      = 59;
             splitSecond = secondInDay;
             return;
         }
