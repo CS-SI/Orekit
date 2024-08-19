@@ -36,7 +36,7 @@ public class GLONASSScale implements TimeScale {
     private static final long serialVersionUID = 20240720L;
 
     /** Constant offset with respect to UTC (3 hours). */
-    private static final SplitTime OFFSET = SplitTime.HOUR.multiply(3);
+    private static final SplitTime OFFSET = new SplitTime(3, SplitTime.HOUR);
 
     /** Constant negative offset with respect to UTC (-3 hours). */
     private static final SplitTime NEGATIVE_OFFSET = OFFSET.negate();

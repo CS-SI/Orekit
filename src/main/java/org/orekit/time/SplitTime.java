@@ -238,6 +238,34 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     }
 
     /**
+     * Multiplicative constructor.
+     * <p>
+     * This constructors builds a split time corresponding to {@code factor} ⨉ {@code time}
+     * </p>
+     * @param factor multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param time base time
+     */
+    public SplitTime(final long factor, final SplitTime time) {
+        this(factor < 0 ? time.multiply(-factor).negate() : time.multiply(factor));
+    }
+
+    /**
+     * Linear combination constructor.
+     * <p>
+     * This constructors builds a split time corresponding to
+     * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2}
+     * </p>
+     * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t1 first base time
+     * @param f2 second multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t2 second base time
+     */
+    public SplitTime(final long f1, final SplitTime t1,
+                     final long f2, final SplitTime t2) {
+        this(new SplitTime(f1, t1).add(new SplitTime(f2, t2)));
+    }
+
+    /**
      * Build a time from a value defined in some time unit.
      *
      * @param time time
@@ -330,6 +358,14 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             default:
                 throw new OrekitInternalError(null);
         }
+    }
+
+    /** Copy constructor, for internal use only.
+     * @param time time to copy
+     */
+    private SplitTime(final SplitTime time) {
+        seconds     = time.seconds;
+        attoSeconds = time.attoSeconds;
     }
 
     /** check if the time is zero.

@@ -82,6 +82,28 @@ public class SplitTimeTest {
     }
 
     @Test
+    public void testMultiplicativeConstructor() {
+        final SplitTime s101 = new SplitTime(1L, 10000000000000000L);
+        Assertions.assertEquals(1.01, s101.toDouble(), 1.0e-15);
+        final SplitTime p303 = new SplitTime(3, s101);
+        Assertions.assertEquals(3L, p303.getSeconds());
+        Assertions.assertEquals(30000000000000000L, p303.getAttoSeconds());
+        final SplitTime m303 = new SplitTime(-3, s101);
+        Assertions.assertEquals(-4L, m303.getSeconds());
+        Assertions.assertEquals(970000000000000000L, m303.getAttoSeconds());
+    }
+
+    @Test
+    public void testLinearConstructor() {
+        final SplitTime p305 = new SplitTime(3, SplitTime.SECOND, 50, SplitTime.MILLISECOND);
+        Assertions.assertEquals(3L, p305.getSeconds());
+        Assertions.assertEquals(50000000000000000L, p305.getAttoSeconds());
+        final SplitTime m305 = new SplitTime(-3, SplitTime.SECOND, -50, SplitTime.MILLISECOND);
+        Assertions.assertEquals(-4L, m305.getSeconds());
+        Assertions.assertEquals(950000000000000000L, m305.getAttoSeconds());
+    }
+
+    @Test
     public void testOverflow() {
         Assertions.assertTrue(new SplitTime(Long.MAX_VALUE, 999999999999999999L).isFinite());
         Assertions.assertTrue(new SplitTime(Long.MAX_VALUE, 1000000000000000000L).isPositiveInfinity());

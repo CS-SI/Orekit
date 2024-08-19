@@ -76,10 +76,10 @@ public class GLONASSScaleTest {
         AbsoluteDate d = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                           new TimeComponents(23, 59, 59),
                                           TimeScalesFactory.getUTC());
-        Assertions.assertEquals("1983-07-01T02:58:59", d.shiftedBy(-60).toString(glonass));
+        Assertions.assertEquals("1983-07-01T02:58:59.000", d.shiftedBy(-60).toString(glonass));
         Assertions.assertEquals(60, glonass.minuteDuration(d.shiftedBy(-60)));
         Assertions.assertFalse(glonass.insideLeap(d.shiftedBy(-60)));
-        Assertions.assertEquals("1983-07-01T02:59:59", d.toString(glonass));
+        Assertions.assertEquals("1983-07-01T02:59:59.000", d.toString(glonass));
         Assertions.assertEquals(61, glonass.minuteDuration(d));
         Assertions.assertFalse(glonass.insideLeap(d));
         d = d.shiftedBy(0.251);
