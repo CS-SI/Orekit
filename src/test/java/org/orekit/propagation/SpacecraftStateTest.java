@@ -33,7 +33,6 @@ import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -151,14 +150,10 @@ class SpacecraftStateTest {
             orbit10Shifts = orbit10Shifts.shiftedBy(0.1);
         }
         final Orbit orbit1Shift = orbit.shiftedBy(1);
-        Attitude shiftedAttitude = attitudeLaw
-                .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
+        Attitude shiftedAttitude = attitudeLaw.getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
 
-        //verify dates are very close, but not equal
-        Assertions.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
-        Assertions.assertEquals(
-                shiftedAttitude.getDate().durationFrom(orbit10Shifts.getDate()),
-                0, Precision.EPSILON);
+        // since Orekit 13, dates are equal
+        Assertions.assertEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
 
         //action + verify no exception is thrown
         new SpacecraftState(orbit10Shifts, shiftedAttitude);
@@ -491,8 +486,7 @@ class SpacecraftStateTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(state);
 
-        Assertions.assertTrue(bos.size() >  900);
-        Assertions.assertTrue(bos.size() < 1000);
+        Assertions.assertEquals(939, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

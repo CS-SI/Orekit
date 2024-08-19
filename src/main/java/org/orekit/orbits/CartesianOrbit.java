@@ -560,7 +560,7 @@ public class CartesianOrbit extends Orbit {
          * @return replacement {@link CartesianOrbit}
          */
         private Object readResolve() {
-            if (d.length > 7) {
+            if (d.length >= 10) {
                 // we have derivatives
                 return new CartesianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate(new SplitTime(seconds, attoseconds)),
                                                                        new Vector3D(d[1], d[2], d[3]),
