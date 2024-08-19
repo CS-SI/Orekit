@@ -269,10 +269,18 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB)
             throws OrekitIllegalArgumentException {
-         // if the total is at least 86400 then assume there is a leap second
-        this(new SplitTime(secondInDayA).add(new SplitTime(secondInDayB)),
-             (SplitTime.DAY.getSeconds() - secondInDayA) - secondInDayB > 0 ? SplitTime.ZERO : SplitTime.SECOND,
-             (SplitTime.DAY.getSeconds() - secondInDayA) - secondInDayB > 0 ? 60 : 61);
+
+        // if the total is at least 86400 then assume there is a leap second
+        final SplitTime      aPlusB = new SplitTime(secondInDayA).add(new SplitTime(secondInDayB));
+        final TimeComponents tc     = aPlusB.compareTo(SplitTime.DAY) >= 0 ?
+                                      new TimeComponents(aPlusB.subtract(SplitTime.SECOND), SplitTime.SECOND, 61) :
+                                      new TimeComponents(aPlusB, SplitTime.ZERO, 60);
+
+        this.hour           = tc.hour;
+        this.minute         = tc.minute;
+        this.splitSecond    = tc.splitSecond;
+        this.minutesFromUTC = tc.minutesFromUTC;
+
     }
 
     /**
