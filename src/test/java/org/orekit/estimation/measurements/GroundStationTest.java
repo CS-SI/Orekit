@@ -236,30 +236,29 @@ public class GroundStationTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
 
-        Assertions.assertTrue(bos.size() > 138000);
-        Assertions.assertTrue(bos.size() < 139000);
+        Assertions.assertEquals(139045, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         EstimatedEarthFrameProvider deserialized  = (EstimatedEarthFrameProvider) ois.readObject();
         Assertions.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(),
-                            deserialized.getPrimeMeridianOffsetDriver().getValue(),
-                            1.0e-15);
+                                deserialized.getPrimeMeridianOffsetDriver().getValue(),
+                                1.0e-15);
         Assertions.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(),
-                            deserialized.getPrimeMeridianDriftDriver().getValue(),
-                            1.0e-15);
+                                deserialized.getPrimeMeridianDriftDriver().getValue(),
+                                1.0e-15);
         Assertions.assertEquals(moved.getPolarOffsetXDriver().getValue(),
-                            deserialized.getPolarOffsetXDriver().getValue(),
-                            1.0e-15);
+                                deserialized.getPolarOffsetXDriver().getValue(),
+                                1.0e-15);
         Assertions.assertEquals(moved.getPolarDriftXDriver().getValue(),
-                            deserialized.getPolarDriftXDriver().getValue(),
-                            1.0e-15);
+                                deserialized.getPolarDriftXDriver().getValue(),
+                                1.0e-15);
         Assertions.assertEquals(moved.getPolarOffsetYDriver().getValue(),
-                            deserialized.getPolarOffsetYDriver().getValue(),
-                            1.0e-15);
+                                deserialized.getPolarOffsetYDriver().getValue(),
+                                1.0e-15);
         Assertions.assertEquals(moved.getPolarDriftYDriver().getValue(),
-                            deserialized.getPolarDriftYDriver().getValue(),
-                            1.0e-15);
+                                deserialized.getPolarDriftYDriver().getValue(),
+                                1.0e-15);
 
     }
 

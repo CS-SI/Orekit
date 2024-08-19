@@ -43,6 +43,7 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.SplitTime;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -196,7 +197,7 @@ public class AcmParserTest {
         Assertions.assertEquals(52,            acm.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",           acm.getMetadata().getLaunchPiece());
         Assertions.assertEquals("UTC",         acm.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND), TimeScalesFactory.getUTC()),
                                 acm.getMetadata().getEpochT0());        
 
         // attitude data
@@ -344,7 +345,7 @@ public class AcmParserTest {
         Assertions.assertEquals("TEST_SAT",    acm.getMetadata().getObjectName());
         Assertions.assertNull(acm.getMetadata().getInternationalDesignator());
         Assertions.assertEquals("TAI",         acm.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getTAI()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND), TimeScalesFactory.getTAI()),
                                 acm.getMetadata().getEpochT0());  
         Assertions.assertEquals(36.0,          acm.getMetadata().getTaimutcT0(), 1.0e-15);
 

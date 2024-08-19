@@ -45,7 +45,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Constant for NaN time.
      * @since 13.0
      */
-    public static final TimeComponents NaN   = new TimeComponents(23, 59, SplitTime.NaN);
+    public static final TimeComponents NaN   = new TimeComponents(0, 0, SplitTime.NaN);
     // CHECKSTYLE: resume ConstantName
 
     /** Wrapping limits for rounding to next minute.
@@ -366,8 +366,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         if (secondInDay.isNaN()) {
             // special handling for NaN
-            hour        = 23;
-            minute      = 59;
+            hour        = 0;
+            minute      = 0;
             splitSecond = secondInDay;
             return;
         }

@@ -54,7 +54,7 @@ public class TimeComponentsTest {
 
     @Test
     public void testOutOfRangeF() throws IllegalArgumentException {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(10, 10, 61));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> new TimeComponents(10, 10, 62));
     }
 
     @Test
@@ -109,22 +109,24 @@ public class TimeComponentsTest {
         Assertions.assertEquals("06:00:00.000+00:00", new TimeComponents(21600).toString());
         Assertions.assertEquals("12:00:00.000+00:00", new TimeComponents(43200).toString());
         Assertions.assertEquals("18:00:00.000+00:00", new TimeComponents(64800).toString());
-        Assertions.assertEquals("23:59:59.89999999999418+00:00", new TimeComponents(86399.9).toString());
+        Assertions.assertEquals("23:59:59.899999999994179232+00:00", new TimeComponents(86399.9).toString());
         Assertions.assertEquals("00:00:00.000+10:00", new TimeComponents( 0,  0,  0,    600).toString());
         Assertions.assertEquals("06:00:00.000+10:00", new TimeComponents( 6,  0,  0,    600).toString());
         Assertions.assertEquals("12:00:00.000-04:30", new TimeComponents(12,  0,  0,   -270).toString());
         Assertions.assertEquals("18:00:00.000-04:30", new TimeComponents(18,  0,  0,   -270).toString());
-        Assertions.assertEquals("23:59:59.900-04:30", new TimeComponents(23, 59, 59.9, -270).toString());
+        Assertions.assertEquals("23:59:59.900-04:30", new TimeComponents(23, 59,
+                                                                         new SplitTime(59, SplitTime.SECOND, 900, SplitTime.MILLISECOND),
+                                                                         -270).toString());
         // test leap seconds
         Assertions.assertEquals("23:59:60.500+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(0.5)),
                                                                          SplitTime.SECOND, 61).toString());
         // leap second on 1961 is between 1 and 2 seconds in duration
-        Assertions.assertEquals("23:59:61.32281798015773+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(0.32281798015773)),
-                                                                                    SplitTime.SECOND.multiply(2), 62).toString());
+        Assertions.assertEquals("23:59:61.322817980157729984+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(0.32281798015773)),
+                                                                                        SplitTime.SECOND.multiply(2), 62).toString());
         // test rounding
-        Assertions.assertEquals("23:59:59.99999999998545+00:00", new TimeComponents(86399.99999999999).toString());
-        Assertions.assertEquals("23:59:59.99999999999999+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(FastMath.nextDown(1.0))),
-                                                                                    SplitTime.ZERO, 60).toString());
+        Assertions.assertEquals("23:59:59.999999999985448085+00:00", new TimeComponents(86399.99999999999).toString());
+        Assertions.assertEquals("23:59:59.999999999999999889+00:00", new TimeComponents(new SplitTime(86399).add(new SplitTime(FastMath.nextDown(1.0))),
+                                                                                        SplitTime.ZERO, 60).toString());
     }
 
     @Test
@@ -191,10 +193,11 @@ public class TimeComponentsTest {
     @Test
     public void testFromSeconds() {
         // setup
-        double zeroUlp = FastMath.nextUp(0.0);
-        double one = FastMath.nextDown(1.0);
-        double sixty = FastMath.nextDown(60.0);
-        double sixtyOne = FastMath.nextDown(61.0);
+        double zeroUlp  = FastMath.nextUp(0.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+        double one      =  1.0 - sixtyUlp;
+        double sixty    = 60.0 - sixtyUlp;
+        double sixtyOne = 61.0 - sixtyUlp;
 
         // action + verify
         MatcherAssert.assertThat(new TimeComponents(new SplitTime(0).add(new SplitTime(0)), SplitTime.ZERO, 60).getSecond(),
@@ -219,7 +222,7 @@ public class TimeComponentsTest {
 
         // check errors
         try {
-            new TimeComponents(new SplitTime(0).add(new SplitTime(FastMath.nextDown(0))), SplitTime.ZERO, 60);
+            new TimeComponents(new SplitTime(FastMath.nextDown(0)), SplitTime.ZERO, 60);
             Assertions.fail("Expected Exception");
         } catch (OrekitIllegalArgumentException e) {
             MatcherAssert.assertThat(e.getSpecifier(),
@@ -291,11 +294,11 @@ public class TimeComponentsTest {
     @Test
     public void testTimeComponentsIntDouble658() {
         // setup
-        double zeroUlp = FastMath.nextUp(0.0);
+        double zeroUlp  = FastMath.nextUp(0.0);
         double sixtyUlp = FastMath.ulp(60.0);
-        double one = FastMath.nextDown(1.0);
-        double sixty = FastMath.nextDown(60.0);
-        double sixtyOne = FastMath.nextDown(61.0);
+        double one      =  1.0 - sixtyUlp;
+        double sixty    = 60.0 - sixtyUlp;
+        double sixtyOne = 61.0 - sixtyUlp;
 
         // action + verify
         check(new TimeComponents(0, 0.0), 0, 0, 0);

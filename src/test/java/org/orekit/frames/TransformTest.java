@@ -30,12 +30,14 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.SplitTime;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -105,16 +107,17 @@ public class TransformTest {
     public void testAcceleration() {
 
         PVCoordinates initPV = new PVCoordinates(new Vector3D(9, 8, 7), new Vector3D(6, 5, 4), new Vector3D(3, 2, 1));
-        for (double dt = 0; dt < 1; dt += 0.01) {
-            PVCoordinates basePV        = initPV.shiftedBy(dt);
+        for (SplitTime dt = SplitTime.ZERO; dt.compareTo(SplitTime.SECOND) < 0; dt = dt.add(SplitTime.MILLISECOND.multiply(10))) {
+            PVCoordinates basePV        = initPV.shiftedBy(dt.toDouble());
             PVCoordinates transformedPV = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt).transformPVCoordinates(basePV);
 
             // rebuild transformed acceleration, relying only on transformed position and velocity
             List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
-            double h = 1.0e-2;
+            SplitTime h = SplitTime.MILLISECOND.multiply(10);
             for (int i = -3; i < 4; ++i) {
-                Transform t = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt + i * h);
-                PVCoordinates pv = t.transformPVCoordinates(initPV.shiftedBy(dt + i * h));
+                SplitTime dthi = i < 0 ? dt.subtract(h.multiply(-i)) : dt.add(h.multiply(i));
+                Transform t = evolvingTransform(AbsoluteDate.J2000_EPOCH, dthi);
+                PVCoordinates pv = t.transformPVCoordinates(initPV.shiftedBy(dthi.toDouble()));
                 sample.add(new TimeStampedPVCoordinates(t.getDate(), pv.getPosition(), pv.getVelocity(), Vector3D.ZERO));
             }
 
@@ -1027,10 +1030,12 @@ public class TransformTest {
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         List<Transform> sample = new ArrayList<Transform>();
         for (int i = 0; i < 5; ++i) {
-            sample.add(evolvingTransform(t0, i * 0.8));
+            sample.add(evolvingTransform(t0, SplitTime.MILLISECOND.multiply(800 * i)));
         }
 
-        for (double dt = 0.1; dt <= 3.1; dt += 0.01) {
+        for (SplitTime dt = SplitTime.MILLISECOND.multiply(100);
+             dt.compareTo(SplitTime.MILLISECOND.multiply(3100)) < 0;
+             dt = dt.add(SplitTime.MILLISECOND.multiply(100))) {
             Transform reference = evolvingTransform(t0, dt);
             Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample.stream());
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
@@ -1045,20 +1050,19 @@ public class TransformTest {
 
     }
 
-    private Transform evolvingTransform(final AbsoluteDate t0, final double dt) {
+    private Transform evolvingTransform(final AbsoluteDate t0, final SplitTime dt) {
         // the following transform corresponds to a frame moving along the circle r = 1
         // with its x axis always pointing to the reference frame center
         final double omega = 0.2;
         final AbsoluteDate date = t0.shiftedBy(dt);
-        final double cos = FastMath.cos(omega * dt);
-        final double sin = FastMath.sin(omega * dt);
+        final SinCos sc = FastMath.sinCos(omega * dt.toDouble());
         return new Transform(date,
                 new Transform(date,
-                        new Vector3D(-cos, -sin, 0),
-                        new Vector3D(omega * sin, -omega * cos, 0),
-                        new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
+                        new Vector3D(-sc.cos(), -sc.sin(), 0),
+                        new Vector3D(omega * sc.sin(), -omega * sc.cos(), 0),
+                        new Vector3D(omega * omega * sc.cos(), omega * omega * sc.sin(), 0)),
                 new Transform(date,
-                        new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt,
+                        new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt.toDouble(),
                                 RotationConvention.VECTOR_OPERATOR),
                         new Vector3D(omega, Vector3D.PLUS_K)));
     }

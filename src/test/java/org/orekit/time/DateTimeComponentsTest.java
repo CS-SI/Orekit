@@ -74,7 +74,7 @@ public class DateTimeComponentsTest {
     public void testString() {
         final DateTimeComponents date =
             new DateTimeComponents(DateComponents.J2000_EPOCH, TimeComponents.H12);
-        Assertions.assertEquals("2000-01-01T12:00:00+00:00", date.toString());
+        Assertions.assertEquals("2000-01-01T12:00:00.000+00:00", date.toString());
     }
 
     @Test
@@ -87,9 +87,9 @@ public class DateTimeComponentsTest {
 
     @Test
     public void testParse() {
-        String s = "2000-01-02T03:04:05";
+        String s = "2000-01-02T03:04:05.000";
         Assertions.assertEquals(s, DateTimeComponents.parseDateTime(s).toStringWithoutUtcOffset());
-        s = "2000-01-02T03:04:05+00:00";
+        s = "2000-01-02T03:04:05.000+00:00";
         Assertions.assertEquals(s, DateTimeComponents.parseDateTime(s).toString());
     }
 
@@ -129,8 +129,8 @@ public class DateTimeComponentsTest {
         check(2009, 1, 2, 1, 0, 0, 60, "2009-01-02T01:00:00+01:00");
         check(2009, 1, 1, 23, 0, 0, -60, "2009-01-01T23:00:00-01:00");
         // leap seconds
-        check(2009, 12, 31, 23, 59, sixtyOne, m, "2009-12-31T23:59:60.99999999999999+12:59");
-        check(2009, 12, 31, 23, 59, sixtyOne, -m, "2009-12-31T23:59:60.99999999999999-12:59");
+        check(2009, 12, 31, 23, 59, sixtyOne, m, "2009-12-31T23:59:60.999999999999992895+12:59");
+        check(2009, 12, 31, 23, 59, sixtyOne, -m, "2009-12-31T23:59:60.999999999999992895-12:59");
         check(9999, 2, 3, 4, 5, 60.5, 60, "9999-02-03T04:05:60.5+01:00");
         check(9999, 2, 3, 4, 5, 60.5, -60, "9999-02-03T04:05:60.5-01:00");
         // time zone offsets larger than 99:59?

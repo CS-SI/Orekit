@@ -18,8 +18,6 @@ package org.orekit.time;
 
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -27,7 +25,6 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import java.util.concurrent.TimeUnit;
@@ -1255,15 +1252,19 @@ public class AbsoluteDateTest {
         //check(d3.shiftedBy(FastMath.nextDown(1.422818)), "1960-12-31T23:59:61.422818Z");
 
         // test proleptic
-        check(new AbsoluteDate(123, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "0123-04-05T06:07:08.9Z");
+        check(new AbsoluteDate(123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+              "0123-04-05T06:07:08.9Z");
 
         // there is no way to produce valid RFC3339 for these cases
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
-        check(new AbsoluteDate(-123, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "-123-04-05T06:07:08.9Z");
-        check(new AbsoluteDate(-1230, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "-1230-04-05T06:07:08.9Z");
+        check(new AbsoluteDate(-123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+              "-123-04-05T06:07:08.9Z");
+        check(new AbsoluteDate(-1230, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+              "-1230-04-05T06:07:08.9Z");
         // test far future
-        check(new AbsoluteDate(12300, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "12300-04-05T06:07:08.9Z");
+        check(new AbsoluteDate(12300, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+              "12300-04-05T06:07:08.9Z");
         // test infinity
         check(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999Z");
         check(AbsoluteDate.PAST_INFINITY, "-5877490-03-03T00:00:00Z");
@@ -1374,15 +1375,19 @@ public class AbsoluteDateTest {
         //checkToString(d3.shiftedBy(FastMath.nextDown(1.422818)), "1960-12-31T23:59:61.423");
 
         // test proleptic
-        checkToString(new AbsoluteDate(123, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "0123-04-05T06:07:08.900");
+        checkToString(new AbsoluteDate(123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+                      "0123-04-05T06:07:08.900");
 
         // there is no way to produce valid RFC3339 for these cases
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
-        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "-0123-04-05T06:07:08.900");
-        checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "-1230-04-05T06:07:08.900");
+        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+                      "-0123-04-05T06:07:08.900");
+        checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+                      "-1230-04-05T06:07:08.900");
         // test far future
-        checkToString(new AbsoluteDate(12300, 4, 5, 6, 7, new SplitTime(8L, 900000000000000000L), utc), "12300-04-05T06:07:08.900");
+        checkToString(new AbsoluteDate(12300, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+                      "12300-04-05T06:07:08.900");
         // test infinity
         checkToString(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999");
         checkToString(AbsoluteDate.PAST_INFINITY, "-5877490-03-03T00:00:00.000");
@@ -1469,12 +1474,12 @@ public class AbsoluteDateTest {
         // try some unusual values
         MatcherAssert.assertThat(present.toString(), CoreMatchers.is("2000-01-01T12:00:32.000 TAI"));
         MatcherAssert.assertThat(present.shiftedBy(Double.POSITIVE_INFINITY).toString(),
-                CoreMatchers.is("5881610-07-11T23:59:59.999 TAI"));
+                                 CoreMatchers.is("5881610-07-11T23:59:59.999 TAI"));
         MatcherAssert.assertThat(present.shiftedBy(Double.NEGATIVE_INFINITY).toString(),
-                CoreMatchers.is("-5877490-03-03T00:00:00.000 TAI"));
+                                 CoreMatchers.is("-5877490-03-03T00:00:00.000 TAI"));
         String nan = "1.8".equals(System.getProperty("java.specification.version")) ? "\uFFFD" : "NaN";
         MatcherAssert.assertThat(present.shiftedBy(Double.NaN).toString(),
-                CoreMatchers.is("2000-01-01T00:00:" + nan + " TAI"));
+                                 CoreMatchers.is("2000-01-01T00:00:" + nan + " TAI"));
         // infinity is special cased, but I can make AbsoluteDate.offset larger than
         // Long.MAX_VALUE see #584
         Assertions.assertTrue(Double.isInfinite(present.shiftedBy(1e300).durationFrom(present)));
