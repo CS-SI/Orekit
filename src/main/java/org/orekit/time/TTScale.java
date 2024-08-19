@@ -33,7 +33,7 @@ public class TTScale extends ConstantOffsetTimeScale {
     /** Package private constructor for the factory.
      */
     TTScale() {
-        super("TT", new SplitTime(32L, 184000000000000000L));
+        super("TT", new SplitTime(32L, SplitTime.SECOND, 184L, SplitTime.MILLISECOND));
     }
 
 }

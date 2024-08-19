@@ -223,7 +223,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         final long dayShift = seconds.getSeconds() / SplitTime.DAY.getSeconds() +
                               (seconds.getSeconds() < 0L ? -1L : 0L);
         if (dayShift != 0) {
-            seconds = seconds.subtract(new SplitTime(dayShift * SplitTime.DAY.getSeconds(), 0L));
+            seconds = seconds.subtract(new SplitTime(dayShift, SplitTime.DAY));
             day    += dayShift;
         }
         final TimeComponents tmpTime = new TimeComponents(seconds);
