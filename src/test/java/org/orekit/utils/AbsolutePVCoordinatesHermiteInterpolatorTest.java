@@ -37,7 +37,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPVA() {
-        Random       random = new Random(0xfe3945fcb8bf47cel);
+        Random       random = new Random(0xfe3945fcb8bf47ceL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -53,7 +53,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
             PolynomialFunction pzDotDot = pzDot.polynomialDerivative();
 
             // Create sample
-            List<AbsolutePVCoordinates> sample = new ArrayList<AbsolutePVCoordinates>();
+            List<AbsolutePVCoordinates> sample = new ArrayList<>();
             for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
                 Vector3D position     = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
                 Vector3D velocity     = new Vector3D(pxDot.value(dt), pyDot.value(dt), pzDot.value(dt));
@@ -88,7 +88,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPV() {
-        Random       random = new Random(0xae7771c9933407bdl);
+        Random       random = new Random(0xae7771c9933407bdL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -104,7 +104,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
             PolynomialFunction pzDotDot = pzDot.polynomialDerivative();
 
             // Create sample
-            List<AbsolutePVCoordinates> sample = new ArrayList<AbsolutePVCoordinates>();
+            List<AbsolutePVCoordinates> sample = new ArrayList<>();
             for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
                 Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
                 Vector3D velocity = new Vector3D(pxDot.value(dt), pyDot.value(dt), pzDot.value(dt));
@@ -138,7 +138,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPositionOnly() {
-        Random       random = new Random(0x88740a12e4299003l);
+        Random       random = new Random(0x88740a12e4299003L);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         Frame        frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -154,7 +154,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
             PolynomialFunction pzDotDot = pzDot.polynomialDerivative();
 
             // Create sample
-            List<AbsolutePVCoordinates> sample = new ArrayList<AbsolutePVCoordinates>();
+            List<AbsolutePVCoordinates> sample = new ArrayList<>();
             for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
                 Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
                 sample.add(new AbsolutePVCoordinates(frame, t0.shiftedBy(dt), position, Vector3D.ZERO, Vector3D.ZERO));
@@ -190,7 +190,7 @@ class AbsolutePVCoordinatesHermiteInterpolatorTest {
         Frame        frame = FramesFactory.getEME2000();
 
         // Create sample
-        List<AbsolutePVCoordinates> sample = new ArrayList<AbsolutePVCoordinates>();
+        List<AbsolutePVCoordinates> sample = new ArrayList<>();
         for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
             Vector3D position     = new Vector3D(FastMath.cos(dt), FastMath.sin(dt), 0.0);
             Vector3D velocity     = new Vector3D(-FastMath.sin(dt), FastMath.cos(dt), 0.0);

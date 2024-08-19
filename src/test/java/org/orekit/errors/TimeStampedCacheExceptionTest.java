@@ -48,7 +48,7 @@ public class TimeStampedCacheExceptionTest {
                         new TimeStampedCacheException(new ArrayIndexOutOfBoundsException(),
                                                       OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                       AbsoluteDate.MODIFIED_JULIAN_EPOCH);
-        Assertions.assertTrue(e.getCause() instanceof ArrayIndexOutOfBoundsException);
+        Assertions.assertInstanceOf(ArrayIndexOutOfBoundsException.class, e.getCause());
         Assertions.assertEquals(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE, e.getSpecifier());
         Assertions.assertEquals(1, e.getParts().length);
         Assertions.assertEquals(0, ((AbsoluteDate) e.getParts()[0]).durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH), 1.0e-10);

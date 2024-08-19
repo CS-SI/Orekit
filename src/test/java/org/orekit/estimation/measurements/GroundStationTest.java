@@ -72,7 +72,7 @@ import java.util.Map;
 public class GroundStationTest {
 
     @Test
-    public void testEstimateClockOffset() throws IOException, ClassNotFoundException {
+    public void testEstimateClockOffset() {
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
 
@@ -161,7 +161,7 @@ public class GroundStationTest {
                                                                1.0, 3.0, 300.0);
 
         // move one station
-        final RandomGenerator random = new Well19937a(0x4adbecfc743bda60l);
+        final RandomGenerator random = new Well19937a(0x4adbecfc743bda60L);
         final TopocentricFrame base = context.stations.get(0).getBaseFrame();
         final BodyShape parent = base.getParentShape();
         final Vector3D baseOrigin = parent.transform(base.getPoint());
@@ -1286,7 +1286,7 @@ public class GroundStationTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
         }
 
         try {
@@ -1308,7 +1308,7 @@ public class GroundStationTest {
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_REFERENCE_DATE_FOR_PARAMETER, oe.getSpecifier());
-            Assertions.assertEquals("prime-meridian-offset", (String) oe.getParts()[0]);
+            Assertions.assertEquals("prime-meridian-offset", oe.getParts()[0]);
         }
 
     }
@@ -1338,16 +1338,16 @@ public class GroundStationTest {
         }
         Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFCartesian.length; ++k) {
-            for (int i = 0; i < allDrivers.length; ++i) {
-                if (allDrivers[i].getName().matches(parameterPattern[k])) {
-                    selectedDrivers[k] = allDrivers[i];
+            for (final ParameterDriver allDriver : allDrivers) {
+                if (allDriver.getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDriver;
                     dFCartesian[k] = differentiatedStationPV(station, eme2000, date, selectedDrivers[k], stepFactor);
                     indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
-        };
+        }
 
-        RandomGenerator generator = new Well19937a(0x084d58a19c498a54l);
+        RandomGenerator generator = new Well19937a(0x084d58a19c498a54L);
 
         double maxPositionValueRelativeError      = 0;
         double maxPositionDerivativeRelativeError = 0;
@@ -1447,15 +1447,15 @@ public class GroundStationTest {
         }
         Map<String, Integer> indices = new HashMap<>();
         for (int k = 0; k < dFAngular.length; ++k) {
-            for (int i = 0; i < allDrivers.length; ++i) {
-                if (allDrivers[i].getName().matches(parameterPattern[k])) {
-                    selectedDrivers[k] = allDrivers[i];
-                    dFAngular[k]   = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
+            for (final ParameterDriver allDriver : allDrivers) {
+                if (allDriver.getName().matches(parameterPattern[k])) {
+                    selectedDrivers[k] = allDriver;
+                    dFAngular[k] = differentiatedTransformAngular(station, eme2000, date, selectedDrivers[k], stepFactor);
                     indices.put(selectedDrivers[k].getNameSpan(date0), k);
                 }
             }
-        };
-        RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7l);
+        }
+        RandomGenerator generator = new Well19937a(0xa01a1d8fe5d80af7L);
 
         double maxRotationValueError          = 0;
         double maxRotationDerivativeError     = 0;
@@ -1550,27 +1550,24 @@ public class GroundStationTest {
         final FiniteDifferencesDifferentiator differentiator =
                         new FiniteDifferencesDifferentiator(5, stepFactor * driver.getScale());
 
-        return differentiator.differentiate(new UnivariateVectorFunction() {
-            @Override
-            public double[] value(double x) {
-                final double[] result = new double[6];
-                try {
-                    final double previouspI = driver.getValue(date);
-                    driver.setValue(x, new AbsoluteDate());
-                    Transform t = station.getOffsetToInertial(eme2000, date, false);
-                    driver.setValue(previouspI, date);
-                    PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
-                    result[ 0] = stationPV.getPosition().getX();
-                    result[ 1] = stationPV.getPosition().getY();
-                    result[ 2] = stationPV.getPosition().getZ();
-                    result[ 3] = stationPV.getVelocity().getX();
-                    result[ 4] = stationPV.getVelocity().getY();
-                    result[ 5] = stationPV.getVelocity().getZ();
-                } catch (OrekitException oe) {
-                    Assertions.fail(oe.getLocalizedMessage());
-                }
-                return result;
+        return differentiator.differentiate((UnivariateVectorFunction) x -> {
+            final double[] result = new double[6];
+            try {
+                final double previouspI = driver.getValue(date);
+                driver.setValue(x, new AbsoluteDate());
+                Transform t = station.getOffsetToInertial(eme2000, date, false);
+                driver.setValue(previouspI, date);
+                PVCoordinates stationPV = t.transformPVCoordinates(PVCoordinates.ZERO);
+                result[ 0] = stationPV.getPosition().getX();
+                result[ 1] = stationPV.getPosition().getY();
+                result[ 2] = stationPV.getPosition().getZ();
+                result[ 3] = stationPV.getVelocity().getX();
+                result[ 4] = stationPV.getVelocity().getY();
+                result[ 5] = stationPV.getVelocity().getZ();
+            } catch (OrekitException oe) {
+                Assertions.fail(oe.getLocalizedMessage());
             }
+            return result;
         });
     }
 

@@ -43,7 +43,7 @@ class TimeStampedPVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPVA() {
-        Random       random = new Random(0xfe3945fcb8bf47cel);
+        Random       random = new Random(0xfe3945fcb8bf47ceL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
 
@@ -91,7 +91,7 @@ class TimeStampedPVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPV() {
-        Random       random = new Random(0xae7771c9933407bdl);
+        Random       random = new Random(0xae7771c9933407bdL);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
 
@@ -138,7 +138,7 @@ class TimeStampedPVCoordinatesHermiteInterpolatorTest {
 
     @Test
     public void testInterpolatePolynomialPositionOnly() {
-        Random       random = new Random(0x88740a12e4299003l);
+        Random       random = new Random(0x88740a12e4299003L);
         AbsoluteDate t0     = AbsoluteDate.J2000_EPOCH;
         for (int i = 0; i < 20; ++i) {
 

@@ -56,7 +56,6 @@ import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +68,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testNonExistentKvnFile() throws URISyntaxException {
+    public void testNonExistentKvnFile() {
         final String realName = "/ccsds/odm/ocm/OCMExample1.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -83,7 +82,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testNonExistentXmlFile() throws URISyntaxException {
+    public void testNonExistentXmlFile() {
         final String realName = "/ccsds/odm/ocm/OCMExample1.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -97,7 +96,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testMissingT0() throws URISyntaxException {
+    public void testMissingT0() {
         final String name = "/ccsds/odm/ocm/OCM-missing-t0.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -113,7 +112,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testMissingManeuverTime() throws URISyntaxException {
+    public void testMissingManeuverTime() {
         final String name = "/ccsds/odm/ocm/OCM-missing-maneuver-time.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -129,7 +128,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testWrongTimeSpan() throws URISyntaxException {
+    public void testWrongTimeSpan() {
         final String name = "/ccsds/odm/ocm/OCM-wrong-time-span.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -147,7 +146,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testMissingRevnumBasis() throws URISyntaxException {
+    public void testMissingRevnumBasis() {
         final String name = "/ccsds/odm/ocm/OCM-missing-revnum-basis.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -163,7 +162,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/odm/ocm/OCM-spurious-metadata-section.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -180,7 +179,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testIncompatibleUnitsDimension() throws URISyntaxException {
+    public void testIncompatibleUnitsDimension() {
         final String name = "/ccsds/odm/ocm/OCM-incompatible-units-dimension.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -197,7 +196,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testIncompatibleUnitsScale() throws URISyntaxException {
+    public void testIncompatibleUnitsScale() {
         final String name = "/ccsds/odm/ocm/OCM-incompatible-units-scale.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -214,7 +213,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testWrongNbElements() throws URISyntaxException {
+    public void testWrongNbElements() {
         final String name = "/ccsds/odm/ocm/OCM-wrong-nb-elements.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -232,7 +231,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testUnknownFrame() throws URISyntaxException {
+    public void testUnknownFrame() {
         final String name = "/ccsds/odm/ocm/OCM-unknown-frame.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Ocm    ocm    = new ParserBuilder().
@@ -260,7 +259,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testUserDefined() throws URISyntaxException {
+    public void testUserDefined() {
         final String name = "/ccsds/odm/ocm/OCM-user-defined.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Ocm    ocm    = new ParserBuilder().
@@ -290,7 +289,7 @@ public class OcmParserTest {
 
         // Check Header Block;
         Assertions.assertEquals(3.0, file.getHeader().getFormatVersion(), 1.0e-10);
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
 
         // OCM is the only message for which OBJECT_NAME is not mandatory, it is not present in this minimal file
@@ -372,7 +371,7 @@ public class OcmParserTest {
                             file.getHeader().getComments().get(0));
         Assertions.assertEquals("This example shows the specification of multiple comment lines",
                             file.getHeader().getComments().get(1));
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
         Assertions.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
@@ -504,7 +503,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testWriteOCM2() throws URISyntaxException, IOException {
+    public void testWriteOCM2() throws IOException {
         final String name = "/ccsds/odm/ocm/OCMExample2.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         OcmParser parser = new ParserBuilder(). withMu(Constants.EIGEN5C_EARTH_MU).buildOcmParser();
@@ -536,7 +535,7 @@ public class OcmParserTest {
                             file.getHeader().getComments().get(2));
         Assertions.assertEquals("This example shows the specification of multiple comment lines",
                             file.getHeader().getComments().get(3));
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                             file.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
         Assertions.assertEquals("OCM 201113719185", file.getHeader().getMessageId());
@@ -638,7 +637,7 @@ public class OcmParserTest {
     }
 
     @Test
-    public void testParseOCM3() throws IOException {
+    public void testParseOCM3() {
         final String   name  = "/ccsds/odm/ocm/OCMExample3.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         final Ocm file = new ParserBuilder().

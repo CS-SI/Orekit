@@ -48,9 +48,9 @@ public class DateTimeComponentsTest {
                 Assertions.assertEquals(i  < j, dates[j].compareTo(dates[i])  > 0);
             }
         }
-        Assertions.assertFalse(dates[0].equals(this));
-        Assertions.assertFalse(dates[0].equals(dates[0].getDate()));
-        Assertions.assertFalse(dates[0].equals(dates[0].getTime()));
+        Assertions.assertNotEquals(dates[0], this);
+        Assertions.assertNotEquals(dates[0], dates[0].getDate());
+        Assertions.assertNotEquals(dates[0], dates[0].getTime());
     }
 
     @Test
@@ -95,9 +95,8 @@ public class DateTimeComponentsTest {
 
     @Test
     public void testBadDay() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            DateTimeComponents.parseDateTime("2000-02-30T03:04:05.000+00:00");
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> DateTimeComponents.parseDateTime("2000-02-30T03:04:05.000+00:00"));
     }
 
     @Test

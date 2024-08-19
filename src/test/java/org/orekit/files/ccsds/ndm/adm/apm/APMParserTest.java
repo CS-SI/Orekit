@@ -212,7 +212,7 @@ public class APMParserTest {
         Assertions.assertEquals("UTC",         segment.getMetadata().getTimeSystem().name());
 
         // Check general comments
-        ArrayList<String> generalComment = new ArrayList<String>();
+        ArrayList<String> generalComment = new ArrayList<>();
         generalComment.add("GEOCENTRIC, CARTESIAN, EARTH FIXED");
         generalComment.add("OBJECT ID: 2004-003");
         generalComment.add("$ITIM = 2004 JAN 14 22:26:18.400000, original launch time 14:36");
@@ -239,7 +239,7 @@ public class APMParserTest {
         Assertions.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
 
         // Check data block: EULER
-        ArrayList<String> eulerComment = new ArrayList<String>();
+        ArrayList<String> eulerComment = new ArrayList<>();
         eulerComment.add("Attitude specified as Euler elements");
         Assertions.assertEquals(eulerComment,    segment.getData().getEulerBlock().getComments());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getEulerBlock().getEndpoints().getFrameA().asCelestialBodyFrame());
@@ -257,7 +257,7 @@ public class APMParserTest {
         Assertions.assertEquals(  0.03214, FastMath.toDegrees(segment.getData().getEulerBlock().getRotationRates()[2]),  ANGLE_PRECISION);
 
         // Check data block: SPACECRAFT PARAMETERS
-        ArrayList<String> spacecraftComment = new ArrayList<String>();
+        ArrayList<String> spacecraftComment = new ArrayList<>();
         spacecraftComment.add("Spacecraft Parameters");
         Assertions.assertEquals(spacecraftComment, segment.getData().getInertiaBlock().getComments());
         Assertions.assertEquals(6080.0,            segment.getData().getInertiaBlock().getInertiaMatrix().getEntry(0, 0), SPACECRAFT_PRECISION);
@@ -268,7 +268,7 @@ public class APMParserTest {
         Assertions.assertEquals(-90.7,             segment.getData().getInertiaBlock().getInertiaMatrix().getEntry(1, 2), SPACECRAFT_PRECISION);
 
         // Check data block: MANEUVER
-        ArrayList<String> maneuverComment = new ArrayList<String>();
+        ArrayList<String> maneuverComment = new ArrayList<>();
         maneuverComment.add("Data follows for 1 planned maneuver.");
         maneuverComment.add("First attitude maneuver for: MARS SPIRIT");
         maneuverComment.add("Impulsive, torque direction fixed in body frame");
@@ -347,7 +347,7 @@ public class APMParserTest {
         Assertions.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
 
         // Check data block: SPIN
-        ArrayList<String> spinComment = new ArrayList<String>();
+        ArrayList<String> spinComment = new ArrayList<>();
         spinComment.add("SPIN Parameters");
         Assertions.assertEquals(spinComment, segment.getData().getSpinStabilizedBlock().getComments());
         Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
@@ -1227,7 +1227,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingTwoSpacecraftFrames() throws URISyntaxException {
+    public void testMissingTwoSpacecraftFrames() {
         final String name = "/ccsds/adm/apm/APM-two-spacecraft-frames.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1243,7 +1243,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testNoSpacecraftFrames() throws URISyntaxException {
+    public void testNoSpacecraftFrames() {
         final String name = "/ccsds/adm/apm/APM-no-spacecraft-frames.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1259,7 +1259,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingFrame() throws URISyntaxException {
+    public void testMissingFrame() {
         final String name = "/ccsds/adm/apm/APM-missing-frame.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1275,7 +1275,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingQuaternionComponent() throws URISyntaxException {
+    public void testMissingQuaternionComponent() {
         final String name = "/ccsds/adm/apm/APM-missing-quaternion-component.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1291,7 +1291,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testWrongKeyword() throws URISyntaxException {
+    public void testWrongKeyword() {
         final String name = "/ccsds/adm/apm/APM-wrong-keyword.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1308,7 +1308,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testWrongEulerSequence() throws URISyntaxException {
+    public void testWrongEulerSequence() {
         final String name = "/ccsds/adm/apm/APM-wrong-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1326,7 +1326,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingEulerSequence() throws URISyntaxException {
+    public void testMissingEulerSequence() {
         final String name = "/ccsds/adm/apm/APM-missing-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1342,7 +1342,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testRepeatedEulerAngle() throws URISyntaxException {
+    public void testRepeatedEulerAngle() {
         final String name = "/ccsds/adm/apm/APM-repeated-Euler-angle.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1358,7 +1358,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/apm/spurious-metadata.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {

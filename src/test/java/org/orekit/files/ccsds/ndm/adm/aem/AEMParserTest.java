@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +73,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM01() throws IOException {
+    public void testParseAEM01() {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
@@ -149,7 +148,7 @@ public class AEMParserTest {
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment0.getData().getAngularCoordinates().get(2), 1.0e-5);
-        ArrayList<String> ephemeridesDataLinesComment = new ArrayList<String>();
+        ArrayList<String> ephemeridesDataLinesComment = new ArrayList<>();
         ephemeridesDataLinesComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         ephemeridesDataLinesComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         ephemeridesDataLinesComment.add("attitudes is 0.1 degrees per axis.");
@@ -201,13 +200,13 @@ public class AEMParserTest {
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment1.getData().getAngularCoordinates().get(2), 1.0e-5);
-        ArrayList<String> ephemeridesDataLinesComment2 = new ArrayList<String>();
+        ArrayList<String> ephemeridesDataLinesComment2 = new ArrayList<>();
         ephemeridesDataLinesComment2.add("This block begins after trajectory correction maneuver TCM-3.");
         Assertions.assertEquals(ephemeridesDataLinesComment2, segment1.getMetadata().getComments());
     }
 
     @Test
-    public void testParseAEM02() throws URISyntaxException {
+    public void testParseAEM02() {
         final String name = "/ccsds/adm/aem/AEMExample02.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         AemParser parser = new ParserBuilder().
@@ -217,10 +216,10 @@ public class AEMParserTest {
 
         final Aem file = parser.parse(source); // using generic API here
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("comment");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
@@ -243,14 +242,14 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseKvnAEM03() throws URISyntaxException {
+    public void testParseKvnAEM03() {
         final String ex = "/ccsds/adm/aem/AEMExample03.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         validateAEM03(new ParserBuilder().buildAemParser().parseMessage(source));
     }
 
     @Test
-    public void testParseXmlAEM03() throws URISyntaxException {
+    public void testParseXmlAEM03() {
         final String ex = "/ccsds/adm/aem/AEMExample03.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -302,7 +301,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM04() throws URISyntaxException {
+    public void testParseAEM04() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final String ex = "/ccsds/adm/aem/AEMExample04.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -354,16 +353,16 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM05() throws URISyntaxException {
+    public void testParseAEM05() {
         final String ex = "/ccsds/adm/aem/AEMExample05.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("comment");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
@@ -399,7 +398,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM06a() throws URISyntaxException {
+    public void testParseAEM06a() {
         final String ex = "/ccsds/adm/aem/AEMExample06a.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -412,7 +411,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM06b() throws URISyntaxException {
+    public void testParseAEM06b() {
         final String ex = "/ccsds/adm/aem/AEMExample06b.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -425,16 +424,16 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM07() throws URISyntaxException {
+    public void testParseAEM07() {
         final String ex = "/ccsds/adm/aem/AEMExample07.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("comment");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
@@ -490,16 +489,16 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM11() throws URISyntaxException {
+    public void testParseAEM11() {
         final String ex = "/ccsds/adm/aem/AEMExample11.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("This example shows an AEM with a rotation");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
         Assertions.assertEquals(metadataComment, segment0.getMetadata().getComments());
@@ -542,7 +541,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM13() throws URISyntaxException {
+    public void testParseAEM13() {
         final TimeScale tai = TimeScalesFactory.getTAI();
         final String ex = "/ccsds/adm/aem/AEMExample13.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -608,7 +607,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM14() throws URISyntaxException {
+    public void testParseAEM14() {
         final TimeScale tai = TimeScalesFactory.getTAI();
         final String ex = "/ccsds/adm/aem/AEMExample14.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -689,7 +688,7 @@ public class AEMParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
             Assertions.assertEquals(AemMetadataKey.ATTITUDE_DIR, oe.getParts()[0]);
-            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
+            Assertions.assertEquals(2.0, (Double) oe.getParts()[1], 1.0e-15);
         }
     }
 
@@ -703,7 +702,7 @@ public class AEMParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
             Assertions.assertEquals(AemMetadataKey.QUATERNION_TYPE, oe.getParts()[0]);
-            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
+            Assertions.assertEquals(2.0, (Double) oe.getParts()[1], 1.0e-15);
         }
     }
 
@@ -736,8 +735,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testWrongKeyword()
-        throws URISyntaxException {
+    public void testWrongKeyword() {
         // simple test for AEM file, contains a wrong keyword in the metadata.
         final String name = "/ccsds/adm/aem/AEM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -767,8 +765,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testKeywordWithinEphemeris()
-        throws URISyntaxException {
+    public void testKeywordWithinEphemeris() {
         // simple test for AEM file, contains p/v entries and other mandatory data.
         final String name = "/ccsds/adm/aem/AEM-keyword-within-ephemeris.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -783,7 +780,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testWrongRotationSequence() throws URISyntaxException {
+    public void testWrongRotationSequence() {
         // simple test for AEM file, contains a wrong keyword in the metadata.
         final String name = "/ccsds/adm/aem/AEM-inconsistent-rotation-sequence.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -799,7 +796,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/aem/spurious-metadata.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -813,7 +810,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testMissingConvention() throws URISyntaxException {
+    public void testMissingConvention() {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
@@ -844,8 +841,7 @@ public class AEMParserTest {
      * (the parsed one or the default if there is none)
      */
     @Test
-    public void testDefaultInterpolationDegree()
-        throws URISyntaxException {
+    public void testDefaultInterpolationDegree() {
 
         final String name = "/ccsds/adm/aem/AEMExample01.txt";
         ParserBuilder builder = new ParserBuilder();

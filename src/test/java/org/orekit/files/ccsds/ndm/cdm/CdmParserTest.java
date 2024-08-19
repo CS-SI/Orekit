@@ -56,7 +56,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM1() {
-        /** Test for CdmExample1.txt, with only required data. */
+        /* Test for CdmExample1.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample1.txt";
 
@@ -311,7 +311,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM2() {
-        /** Test for CdmExample2.txt, with only required data. */
+        /* Test for CdmExample2.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample2.txt";
 
@@ -386,11 +386,11 @@ public class CdmParserTest {
 
         // Check data block
         // OD parameters block
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 02, 14,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 2, 14,
                                                  new SplitTime(12, SplitTime.SECOND, 746, SplitTime.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getDataObject1().getODParametersBlock().getTimeLastObsStart());
-        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 02, 14,
+        Assertions.assertEquals(new AbsoluteDate(2010, 3, 12, 2, 14,
                                                  new SplitTime(12, SplitTime.SECOND, 746, SplitTime.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getDataObject1().getODParametersBlock().getTimeLastObsEnd());
@@ -558,7 +558,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM3() {
-        /** Test for CdmExample3.txt, with only required data. */
+        /* Test for CdmExample3.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample3.txt";
 
@@ -620,7 +620,7 @@ public class CdmParserTest {
         Assertions.assertEquals("GALAXY 15", file.getMetadataObject1().getObjectName());
         Assertions.assertEquals("2005-041A", file.getMetadataObject1().getInternationalDes());
         Assertions.assertEquals(ObjectType.PAYLOAD, file.getMetadataObject1().getObjectType());
-        Assertions.assertEquals(null, file.getMetadataObject1().getOperatorContactPosition());
+        Assertions.assertNull(file.getMetadataObject1().getOperatorContactPosition());
         Assertions.assertEquals("INTELSAT", file.getMetadataObject1().getOperatorOrganization());
         Assertions.assertEquals("GALAXY-15A-2012JAN-WMANEUVER23A", file.getMetadataObject1().getEphemName());
         Assertions.assertEquals(CovarianceMethod.CALCULATED, file.getMetadataObject1().getCovarianceMethod());
@@ -771,7 +771,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseCDM4() {
-        /** Test for CdmExample2.txt, with only required data. */
+        /* Test for CdmExample2.txt, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample4.txt";
 
@@ -976,7 +976,7 @@ public class CdmParserTest {
 
     @Test
     public void testParseXML_CDM1() {
-        /** Test for CdmExample1.xml, with only required data. */
+        /* Test for CdmExample1.xml, with only required data. */
         // File
         final String ex = "/ccsds/cdm/CDMExample1.xml";
 
@@ -1202,39 +1202,39 @@ public class CdmParserTest {
                                 COVARIANCE_PRECISION);
 
         // Check relative metadata comments for Object1
-        ArrayList<String> relativeMetadataComment = new ArrayList<String>();
+        ArrayList<String> relativeMetadataComment = new ArrayList<>();
         relativeMetadataComment.add("Relative Metadata/Data");
         Assertions.assertEquals(relativeMetadataComment, file.getRelativeMetadata().getComment());
 
         // Check metadata comments for Object1
-        ArrayList<String> MetadataComment = new ArrayList<String>();
+        ArrayList<String> MetadataComment = new ArrayList<>();
         MetadataComment.add("Object1 Metadata");
         Assertions.assertEquals(MetadataComment, file.getMetadataObject1().getComments());
 
         // Check data general comments and OD parameters comments for Object1
-        ArrayList<String> generalComment = new ArrayList<String>();
+        ArrayList<String> generalComment = new ArrayList<>();
         generalComment.add("Object1 Data");
         Assertions.assertEquals(generalComment, file.getDataObject1().getComments());
 
         // Check additional parameters comments Object1
-        ArrayList<String> addParametersComment = new ArrayList<String>();
+        ArrayList<String> addParametersComment = new ArrayList<>();
         addParametersComment.add("Object 1 Additional Parameters");
         Assertions.assertEquals(addParametersComment,
                                 file.getDataObject1().getAdditionalParametersBlock().getComments());
 
         // Check state vector comments Object1
-        ArrayList<String> stateVectorComment = new ArrayList<String>();
+        ArrayList<String> stateVectorComment = new ArrayList<>();
         stateVectorComment.add("Object1 State Vector");
         Assertions.assertEquals(stateVectorComment, file.getDataObject1().getStateVectorBlock().getComments());
 
         // Check RTN covariance comments Object1
-        ArrayList<String> RTNComment = new ArrayList<String>();
+        ArrayList<String> RTNComment = new ArrayList<>();
         RTNComment.add("Object1 Covariance in the RTN Coordinate Frame");
         Assertions.assertEquals(RTNComment, file.getDataObject1().getRTNCovarianceBlock().getComments());
 
 
         // Check general comments Object2
-        ArrayList<String> generalCommentObj2AddParam = new ArrayList<String>();
+        ArrayList<String> generalCommentObj2AddParam = new ArrayList<>();
         generalCommentObj2AddParam.add("Object2 Additional Parameters");
         generalCommentObj2AddParam.add("Apogee Altitude=768 km, Perigee Altitude=414 km, Inclination=98.8 deg");
         Assertions.assertEquals(generalCommentObj2AddParam.toString(),
@@ -1259,7 +1259,7 @@ public class CdmParserTest {
     }
 
     @Test
-    public void testMissingTCA() throws URISyntaxException {
+    public void testMissingTCA() {
         final String name = "/ccsds/cdm/CDM-missing-TCA.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1274,7 +1274,7 @@ public class CdmParserTest {
     }
 
     @Test
-    public void testMissingObj2StateVectorX() throws URISyntaxException {
+    public void testMissingObj2StateVectorX() {
         final String name = "/ccsds/cdm/CDM-missing-object2-state-vector.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1289,7 +1289,7 @@ public class CdmParserTest {
     }
 
     @Test
-    public void testMissingObj1CovarianceCNDOT_NDOT() throws URISyntaxException {
+    public void testMissingObj1CovarianceCNDOT_NDOT() {
         final String name = "/ccsds/cdm/CDM-missing-object1-covariance-block.xml";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1824,15 +1824,15 @@ public class CdmParserTest {
 
         // Improve coverage
         // ----------------
-        
-        Assertions.assertEquals(true, parser.inData()); // Always true by construction
+
+        Assertions.assertTrue(parser.inData()); // Always true by construction
         
         // AdditionalCovarianceMetadata conditions coverage
         file.getDataObject1().getAdditionalCovMetadataBlock().validate(1.0);
         file.getDataObject1().getAdditionalCovMetadataBlock().setDcpSensitivityVectorPosition(null);
         file.getDataObject1().getAdditionalCovMetadataBlock().setDcpSensitivityVectorVelocity(null);
-        Assertions.assertEquals(null, file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition());
-        Assertions.assertEquals(null, file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity());
+        Assertions.assertNull(file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorPosition());
+        Assertions.assertNull(file.getDataObject1().getAdditionalCovMetadataBlock().getDcpSensitivityVectorVelocity());
     }
 
     @Test
@@ -1910,7 +1910,7 @@ public class CdmParserTest {
         // Generated CDM file
         final Cdm file = parser.parseMessage(source);
 
-        Assertions.assertEquals(null, file.getRelativeMetadata().getStartScreenPeriod());
+        Assertions.assertNull(file.getRelativeMetadata().getStartScreenPeriod());
     }
 
     @Test
@@ -1943,6 +1943,6 @@ public class CdmParserTest {
         Cdm file = parser.parseMessage(source);
 
         // dummy assertion: the aim of the test is to show that empty unit can be parsed
-        Assertions.assertEquals(null, file.getDataObject1().getODParametersBlock());
+        Assertions.assertNull(file.getDataObject1().getODParametersBlock());
     }
 }
