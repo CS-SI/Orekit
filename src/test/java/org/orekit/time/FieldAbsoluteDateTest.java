@@ -1775,21 +1775,51 @@ public class FieldAbsoluteDateTest {
                 FieldAbsoluteDate.createMJDDate(60495, one.multiply(0.54166670 * Constants.JULIAN_DAY), utc);
 
         // WHEN converting it to Julian Date or Modified Julian Date
-        double mjdDateDefaultData = reference.getMJD();
-        double jdDateDefaultData  = reference.getJD();
-        double mjdDate = reference.getMJD(utc);
-        double jdDate  = reference.getJD(utc);
+        T mjdDateDefaultData = reference.getMJD();
+        T jdDateDefaultData  = reference.getJD();
+        T mjdDate = reference.getMJD(utc);
+        T jdDate  = reference.getJD(utc);
 
         // THEN
         // source : Time/Date Converter - HEASARC - NASA
-        Assertions.assertEquals(2460496.0416667, jdDateDefaultData, 1.0e-6);
-        Assertions.assertEquals(60495.54166670, mjdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(2460496.0416667, jdDateDefaultData.getReal(), 1.0e-6);
+        Assertions.assertEquals(60495.54166670, mjdDateDefaultData.getReal(), 1.0e-6);
         Assertions.assertEquals(jdDate, jdDateDefaultData);
         Assertions.assertEquals(mjdDate, mjdDateDefaultData);
 
         // Assert that static method are correct when creating date from JD or MJD
         Assertions.assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
         Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
+    }
+
+    @Test
+    void testGetJD() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(),
+                date).shiftedBy(new UnivariateDerivative1(0., 1));
+        // WHEN
+        final UnivariateDerivative1 jdField = fieldDate.getJD();
+        // THEN
+        final double shift = 10.;
+        final FieldAbsoluteDate<UnivariateDerivative1> shiftedDate = fieldDate.shiftedBy(shift);
+        final double expectedJdDerivative = (shiftedDate.getJD().getReal() - jdField.getReal()) / shift;
+        Assertions.assertEquals(expectedJdDerivative, jdField.getFirstDerivative(), 1e-10);
+    }
+
+    @Test
+    void testGetMJD() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(),
+                date).shiftedBy(new UnivariateDerivative1(0., 1));
+        // WHEN
+        final UnivariateDerivative1 mjdField = fieldDate.getMJD();
+        // THEN
+        final double shift = 10.;
+        final FieldAbsoluteDate<UnivariateDerivative1> shiftedDate = fieldDate.shiftedBy(shift);
+        final double expectedMjdDerivative = (shiftedDate.getMJD().getReal() - mjdField.getReal()) / shift;
+        Assertions.assertEquals(expectedMjdDerivative, mjdField.getFirstDerivative(), 1e-10);
     }
 
     @Test

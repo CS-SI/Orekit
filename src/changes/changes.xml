@@ -72,6 +72,9 @@
       <action dev="serrof" type="add" issue="1466">
         Add unbounded energy cost for Cartesian adjoint dynamics.
       </action>
+      <action dev="serrof" type="add" issue="1464">
+        Add analytical solar ephemerides.
+      </action>
       <action dev="serrof" type="add" issue="1457">
         Add indirect control package with Cartesian adjoint dynamics for Keplerian motion.
       </action>

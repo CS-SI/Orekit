@@ -1790,8 +1790,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 12.2
      */
     @DefaultDataContext
-    public double getMJD() {
-        return this.toAbsoluteDate().getMJD();
+    public T getMJD() {
+        return this.getMJD(TimeScalesFactory.getUTC());
     }
 
     /**
@@ -1801,8 +1801,10 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return double representation of the given date as Modified Julian Date.
      * @since 12.2
      */
-    public double getMJD(final TimeScale ts) {
-        return this.toAbsoluteDate().getMJD(ts);
+    public T getMJD(final TimeScale ts) {
+        final AbsoluteDate absoluteDate = toAbsoluteDate();
+        final T shift = durationFrom(absoluteDate).divide(Constants.JULIAN_DAY);
+        return shift.add(absoluteDate.getMJD(ts));
     }
 
     /**
@@ -1812,8 +1814,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 12.2
      */
     @DefaultDataContext
-    public double getJD() {
-        return this.toAbsoluteDate().getJD();
+    public T getJD() {
+        return getJD(TimeScalesFactory.getUTC());
     }
 
     /**
@@ -1823,8 +1825,10 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return double representation of the given date as Julian Date.
      * @since 12.2
      */
-    public double getJD(final TimeScale ts) {
-        return this.toAbsoluteDate().getJD(ts);
+    public T getJD(final TimeScale ts) {
+        final AbsoluteDate absoluteDate = toAbsoluteDate();
+        final T shift = durationFrom(absoluteDate).divide(Constants.JULIAN_DAY);
+        return shift.add(absoluteDate.getJD(ts));
     }
 }
 
