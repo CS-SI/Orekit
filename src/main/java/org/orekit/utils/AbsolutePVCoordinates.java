@@ -21,9 +21,7 @@ import java.io.Serializable;
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -335,7 +333,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         private final long attoseconds;
 
         /** Double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Frame in which acoordinates are defined. */
         private final Frame frame;

@@ -17,9 +17,6 @@
 package org.orekit.time;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.util.Locale;
 
 import java.util.concurrent.TimeUnit;
 import org.hipparchus.util.FastMath;
