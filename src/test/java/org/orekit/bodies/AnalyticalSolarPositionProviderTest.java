@@ -45,7 +45,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-class LowFidelitySolarPositionProviderTest {
+class AnalyticalSolarPositionProviderTest {
 
     @BeforeEach
     void setUp() {
@@ -58,7 +58,7 @@ class LowFidelitySolarPositionProviderTest {
         // GIVEN
         final AbsoluteDate date = new AbsoluteDate(new DateTimeComponents(2000, month, 1, 0, 0, 0),
                 TimeScalesFactory.getUTC());
-        final LowFidelitySolarPositionProvider solarPositionProvider = new LowFidelitySolarPositionProvider();
+        final AnalyticalSolarPositionProvider solarPositionProvider = new AnalyticalSolarPositionProvider();
         final Frame frame = FramesFactory.getGCRF();
         // WHEN
         final Vector3D actualPosition = solarPositionProvider.getPosition(date, frame);
@@ -77,7 +77,7 @@ class LowFidelitySolarPositionProviderTest {
         final DataContext dataContext = DataContext.getDefault();
         final Frames frames = dataContext.getFrames();
         final Frame frame = frames.getEME2000();
-        final LowFidelitySolarPositionProvider solarPositionProvider = new LowFidelitySolarPositionProvider(dataContext);
+        final AnalyticalSolarPositionProvider solarPositionProvider = new AnalyticalSolarPositionProvider(dataContext);
         final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(ComplexField.getInstance(), date);
         // WHEN
         final FieldVector3D<Complex> fieldPosition = solarPositionProvider.getPosition(fieldDate, frame);
@@ -94,7 +94,7 @@ class LowFidelitySolarPositionProviderTest {
         final DataContext dataContext = DataContext.getDefault();
         final Frames frames = dataContext.getFrames();
         final Frame frame = frames.getGCRF();
-        final LowFidelitySolarPositionProvider solarPositionProvider = new LowFidelitySolarPositionProvider(dataContext);
+        final AnalyticalSolarPositionProvider solarPositionProvider = new AnalyticalSolarPositionProvider(dataContext);
         final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(),
                 date).shiftedBy(new UnivariateDerivative1(0., 1.));
         // WHEN
@@ -107,7 +107,7 @@ class LowFidelitySolarPositionProviderTest {
     void testPropagation() {
         // GIVEN
         final CelestialBody sun = CelestialBodyFactory.getSun();
-        final ExtendedPositionProvider positionProvider = new LowFidelitySolarPositionProvider();
+        final ExtendedPositionProvider positionProvider = new AnalyticalSolarPositionProvider();
         final CelestialBody body = createCelestialBody(sun.getGM(), positionProvider);
         // WHEN
         final NumericalPropagator propagator = createPropagator(body);

@@ -41,7 +41,7 @@ import org.orekit.utils.ExtendedPositionProvider;
  * @author Romain Serra
  * @since 12.2
  */
-public class LowFidelitySolarPositionProvider implements ExtendedPositionProvider {
+public class AnalyticalSolarPositionProvider implements ExtendedPositionProvider {
 
     /** Sine anc cosine of approximate ecliptic angle used when converting from ecliptic to EME2000. */
     private static final SinCos SIN_COS_ECLIPTIC_ANGLE_EME2000 = FastMath.sinCos(FastMath.toRadians(23.43929111));
@@ -59,7 +59,7 @@ public class LowFidelitySolarPositionProvider implements ExtendedPositionProvide
      * Constructor.
      * @param dataContext data context
      */
-    public LowFidelitySolarPositionProvider(final DataContext dataContext) {
+    public AnalyticalSolarPositionProvider(final DataContext dataContext) {
         this.eme2000 = dataContext.getFrames().getEME2000();
         this.timeScale = dataContext.getTimeScales().getUTC();
     }
@@ -68,7 +68,7 @@ public class LowFidelitySolarPositionProvider implements ExtendedPositionProvide
      * Constructor with default data context.
      */
     @DefaultDataContext
-    public LowFidelitySolarPositionProvider() {
+    public AnalyticalSolarPositionProvider() {
         this(DataContext.getDefault());
     }
 
