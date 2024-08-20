@@ -121,7 +121,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     /** Number of digits after separator for attoseconds. */
     private static final int DIGITS_ATTOS = 18;
 
-    /** Multiplers for parsing partial strings. */
+    /** Multipliers for parsing partial strings. */
     // CHECKSTYLE: stop Indentation check
     private static final long[] MULTIPLIERS = new long[] {
                          1L,
@@ -764,7 +764,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                 seconds     = beforeSeparator / secondsMultiplier;
                 attoseconds = (beforeSeparator - seconds * secondsMultiplier) * attoBeforeMultiplier;
                 while (digitsAfter + exponent > DIGITS_ATTOS) {
-                    // drop least significant digit below one attosecond
+                    // drop least significant digits below one attosecond
                     afterSeparator /= 10;
                     digitsAfter--;
                 }
@@ -782,14 +782,14 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                     return SplitTime.POSITIVE_INFINITY;
                 }
             } else {
-                final long secondsMultiplier    = MULTIPLIERS[exponent];
+                final long secondsMultiplier = MULTIPLIERS[exponent];
                 seconds = beforeSeparator * secondsMultiplier;
                 if (exponent > digitsAfter) {
                     seconds += afterSeparator * MULTIPLIERS[exponent - digitsAfter];
                     attoseconds = 0L;
                 } else {
                     final long q = afterSeparator / MULTIPLIERS[digitsAfter - exponent];
-                    seconds += q;
+                    seconds    += q;
                     attoseconds = (afterSeparator - q * MULTIPLIERS[digitsAfter - exponent]) *
                                   MULTIPLIERS[DIGITS_ATTOS - digitsAfter + exponent];
                 }

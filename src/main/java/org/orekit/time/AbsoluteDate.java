@@ -752,11 +752,14 @@ public class AbsoluteDate
      * <p>
      * This function should be preferred to {@link #createMJDDate(int, double, TimeScale)} when the target time scale
      * has a non-constant offset with respect to TAI.
+     * </p>
      * <p>
      * The idea is to introduce a pivot time scale that is close to the target time scale but has a constant bias with TAI.
+     * </p>
      * <p>
      * For example, to get a date from an MJD in TDB time scale, it's advised to use the TT time scale
      * as a pivot scale. TT is very close to TDB and has constant offset to TAI.
+     * </p>
      * @param jd Julian day
      * @param secondsSinceNoon seconds in the Julian day
      * (BEWARE, Julian days start at noon, so 0.0 is noon)
@@ -840,7 +843,7 @@ public class AbsoluteDate
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Julian Epoch.
      * </p>
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.</p>
      *
      * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference J2000.0
      * @return a new instant
@@ -865,7 +868,7 @@ public class AbsoluteDate
      * This method reverts the formula above and computes an {@code AbsoluteDate} from the Besselian Epoch.
      * </p>
      *
-     * <p>This method uses the {@link DataContext#getDefault() default data context}.
+     * <p>This method uses the {@link DataContext#getDefault() default data context}.</p>
      *
      * @param besselianEpoch Besselian epoch, like 1950 for defining the classical reference B1950.0
      * @return a new instant
@@ -874,8 +877,7 @@ public class AbsoluteDate
      */
     @DefaultDataContext
     public static AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
-        return DataContext.getDefault().getTimeScales()
-                .createBesselianEpoch(besselianEpoch);
+        return DataContext.getDefault().getTimeScales().createBesselianEpoch(besselianEpoch);
     }
 
     /** Get a time-shifted date.
@@ -897,12 +899,13 @@ public class AbsoluteDate
      * <p>
      * Calling this method is equivalent to call <code>new AbsoluteDate(this, dt)</code>.
      * </p>
-     * @param dt time shift in seconds
+     * @param dt time shift
      * @return a new date, shifted with respect to instance (which is immutable)
      * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
      * @see org.orekit.attitudes.Attitude#shiftedBy(double)
      * @see org.orekit.orbits.Orbit#shiftedBy(double)
      * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
+     * @since 13.0
      */
     public AbsoluteDate shiftedBy(final SplitTime dt) {
         return new AbsoluteDate(this, dt);
@@ -1095,7 +1098,8 @@ public class AbsoluteDate
                 // truncating makes cleaner text output
                 return new DateTimeComponents(DateComponents.MAX_EPOCH,
                                               new TimeComponents(23, 59,
-                                                                 new SplitTime(59L, 999000000000000000L)));
+                                                                 new SplitTime( 59, SplitTime.SECOND,
+                                                                               999, SplitTime.MILLISECOND)));
             }
         }
 
