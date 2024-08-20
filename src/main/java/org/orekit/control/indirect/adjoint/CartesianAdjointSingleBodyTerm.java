@@ -70,7 +70,7 @@ public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewt
     /** {@inheritDoc} */
     @Override
     public Vector3D getAcceleration(final AbsoluteDate date, final double[] stateVariables,
-                                    final double[] adjointVariables, final Frame frame) {
+                                    final Frame frame) {
         final double[] relativePosition = formRelativePosition(date, stateVariables, frame);
         return getNewtonianAcceleration(relativePosition);
     }
@@ -79,7 +79,6 @@ public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewt
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldAcceleration(final FieldAbsoluteDate<T> date,
                                                                                      final T[] stateVariables,
-                                                                                     final T[] adjointVariables,
                                                                                      final Frame frame) {
         final T[] relativePosition = formFieldRelativePosition(date, stateVariables, frame);
         return getFieldNewtonianAcceleration(relativePosition);
