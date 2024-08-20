@@ -31,6 +31,7 @@ import org.orekit.control.indirect.adjoint.CartesianAdjointKeplerianTerm;
 import org.orekit.control.indirect.adjoint.cost.BoundedCartesianEnergy;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergy;
+import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
@@ -99,7 +100,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final double timeOfFlight = 1e4;
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
         final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", 1e-3);
+        final CartesianCost cartesianCost = new UnboundedCartesianEnergyNeglectingMass("adjoint");
         final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, cartesianCost,
                 new ClassicalRungeKuttaIntegrationSettings(10.));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
@@ -107,7 +108,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1e3;
-        final double[] guess = new double[] {0., 0., 0., 0.005307988954045267, 0.015505564884403, 0.010685627468070606};
+        final double[] guess = new double[6];
         // WHEN
         final ShootingBoundaryOutput output = shooting.solve(mass, guess);
         // THEN

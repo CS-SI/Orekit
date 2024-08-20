@@ -53,23 +53,26 @@ public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCar
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector(final double[] adjointVariables, final double mass) {
-        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
+    public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
+        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass) {
-        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(final T[] adjointVariables,
+                                                                                                 final T mass) {
+        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]);
     }
 
     @Override
-    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass, final double[] adjointDerivatives) {
+    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
+                                         final double[] adjointDerivatives) {
         // nothing to do
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
+    public <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass,
+                                                                                  final T[] adjointDerivatives) {
         // nothing to do
     }
 }

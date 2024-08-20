@@ -76,10 +76,10 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
 
         // mass flow rate and control acceleration
         final double[] mainDerivativesIncrements = new double[7];
-        final Vector3D thrustVector = getCost().getThrustVector(adjointVariables, mass);
-        mainDerivativesIncrements[3] = thrustVector.getX() / mass;
-        mainDerivativesIncrements[4] = thrustVector.getY() / mass;
-        mainDerivativesIncrements[5] = thrustVector.getZ() / mass;
+        final Vector3D thrustAccelerationVector = getCost().getThrustAccelerationVector(adjointVariables, mass);
+        mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
+        mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
+        mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
         mainDerivativesIncrements[6] = -getCost().getMassFlowRateFactor();
 
         // Cartesian position adjoint

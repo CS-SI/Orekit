@@ -85,14 +85,14 @@ public abstract class AbstractCartesianEnergy implements CartesianCost {
     /** {@inheritDoc} */
     @Override
     public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
-        final Vector3D thrustAcceleration = getThrustVector(adjointVariables, mass).scalarMultiply(1. / mass);
+        final Vector3D thrustAcceleration = getThrustAccelerationVector(adjointVariables, mass);
         return -thrustAcceleration.getNormSq() / 2.;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(final T[] adjointVariables, final T mass) {
-        final FieldVector3D<T> thrustAcceleration = getThrustVector(adjointVariables, mass).scalarMultiply(mass.reciprocal());
+        final FieldVector3D<T> thrustAcceleration = getFieldThrustAccelerationVector(adjointVariables, mass);
         return thrustAcceleration.getNormSq().multiply(-1. / 2.);
     }
 }

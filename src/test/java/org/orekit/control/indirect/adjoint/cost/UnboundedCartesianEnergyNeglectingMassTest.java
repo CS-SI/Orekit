@@ -47,15 +47,15 @@ class UnboundedCartesianEnergyNeglectingMassTest {
     }
 
     @Test
-    void testGetThrustVector() {
+    void testGetFieldThrustAccelerationVector() {
         // GIVEN
         final UnboundedCartesianEnergyNeglectingMass energyNeglectingMass = new UnboundedCartesianEnergyNeglectingMass("");
         final Binary64[] adjoint = MathArrays.buildArray(Binary64Field.getInstance(), 6);
         adjoint[3] = Binary64.ONE;
         // WHEN
-        final FieldVector3D<Binary64> fieldThrustVector = energyNeglectingMass.getThrustVector(adjoint, Binary64.ONE);
+        final FieldVector3D<Binary64> fieldThrustVector = energyNeglectingMass.getFieldThrustAccelerationVector(adjoint, Binary64.ONE);
         // THEN
-        final Vector3D thrustVector = energyNeglectingMass.getThrustVector(new double[] { 0., 0., 0., 1., 0., 0.}, 1.);
+        final Vector3D thrustVector = energyNeglectingMass.getThrustAccelerationVector(new double[] { 0., 0., 0., 1., 0., 0.}, 1.);
         Assertions.assertEquals(thrustVector, fieldThrustVector.toVector3D());
     }
 

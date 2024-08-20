@@ -52,7 +52,7 @@ class UnboundedCartesianEnergyTest {
     }
 
     @Test
-    void testGetThrustVectorFieldFactor() {
+    void testGetFieldThrustAccelerationVectorFieldFactor() {
         // GIVEN
         final double massRateFactor = 1.;
         final UnboundedCartesianEnergy unboundedCartesianEnergy = new UnboundedCartesianEnergy("", massRateFactor);
@@ -62,13 +62,13 @@ class UnboundedCartesianEnergyTest {
         fieldAdjoint[4] = new Complex(2.0, 0.0);
         final Complex mass = new Complex(3., 0.);
         // WHEN
-        final FieldVector3D<Complex> fieldThrustVector = unboundedCartesianEnergy.getThrustVector(fieldAdjoint, mass);
+        final FieldVector3D<Complex> fieldThrustVector = unboundedCartesianEnergy.getFieldThrustAccelerationVector(fieldAdjoint, mass);
         // THEN
         final double[] adjoint = new double[7];
         for (int i = 0; i < adjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final Vector3D thrustVector = unboundedCartesianEnergy.getThrustVector(adjoint, mass.getReal());
+        final Vector3D thrustVector = unboundedCartesianEnergy.getThrustAccelerationVector(adjoint, mass.getReal());
         Assertions.assertEquals(thrustVector, fieldThrustVector.toVector3D());
     }
 

@@ -115,10 +115,9 @@ class FieldCartesianAdjointDerivativesProviderTest {
         for (int i = 0; i < 3; i++) {
             Assertions.assertEquals(0., increment[i].getReal());
         }
-        final double mass = state.getMass().getReal();
-        Assertions.assertEquals(1., increment[3].getReal() * mass);
-        Assertions.assertEquals(2., increment[4].getReal() * mass);
-        Assertions.assertEquals(3., increment[5].getReal() * mass);
+        Assertions.assertEquals(1., increment[3].getReal());
+        Assertions.assertEquals(2., increment[4].getReal());
+        Assertions.assertEquals(3., increment[5].getReal());
         Assertions.assertEquals(-10., increment[6].getReal());
     }
 

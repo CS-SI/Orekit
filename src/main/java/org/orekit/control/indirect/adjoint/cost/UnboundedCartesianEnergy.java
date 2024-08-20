@@ -42,23 +42,25 @@ public class UnboundedCartesianEnergy extends AbstractUnboundedCartesianEnergy {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector(final double[] adjointVariables, final double mass) {
+    public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
         final double norm = getAdjointVelocityNorm(adjointVariables);
-        final double factor = mass * (1. - getMassFlowRateFactor() * adjointVariables[6] / norm);
+        final double factor = 1. - getMassFlowRateFactor() * adjointVariables[6] / norm;
         return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(factor);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(final T[] adjointVariables,
+                                                                                                 final T mass) {
         final T norm = getAdjointVelocityNorm(adjointVariables);
-        final T factor = mass.multiply(adjointVariables[6].multiply(-getMassFlowRateFactor()).divide(norm).add(1));
+        final T factor = adjointVariables[6].multiply(-getMassFlowRateFactor()).divide(norm).add(1);
         return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(factor);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass, final double[] adjointDerivatives) {
+    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
+                                         final double[] adjointDerivatives) {
         final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
         final double factor = getMassFlowRateFactor() * adjointVariables[6];
         adjointDerivatives[6] = factor * (mass * factor - adjointVelocityNorm);
@@ -66,7 +68,8 @@ public class UnboundedCartesianEnergy extends AbstractUnboundedCartesianEnergy {
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
+    public <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass,
+                                                                                  final T[] adjointDerivatives) {
         final T adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
         final T factor = adjointVariables[6].multiply(getMassFlowRateFactor());
         adjointDerivatives[6] = factor.multiply(mass.multiply(factor).subtract(adjointVelocityNorm));

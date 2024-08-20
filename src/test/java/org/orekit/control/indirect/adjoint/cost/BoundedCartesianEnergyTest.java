@@ -108,7 +108,7 @@ class BoundedCartesianEnergyTest {
     }
 
     @Test
-    void testGetThrustVectorFieldFactor() {
+    void testGetFieldThrustAccelerationVectorFieldFactor() {
         // GIVEN
         final double massRateFactor = 1.;
         final BoundedCartesianEnergy boundedCartesianEnergy = new BoundedCartesianEnergy("", massRateFactor,
@@ -119,13 +119,13 @@ class BoundedCartesianEnergyTest {
         fieldAdjoint[4] = new Complex(2.0, 0.0);
         final Complex mass = new Complex(3., 0.);
         // WHEN
-        final FieldVector3D<Complex> fieldThrustVector = boundedCartesianEnergy.getThrustVector(fieldAdjoint, mass);
+        final FieldVector3D<Complex> fieldThrustVector = boundedCartesianEnergy.getFieldThrustAccelerationVector(fieldAdjoint, mass);
         // THEN
         final double[] adjoint = new double[7];
         for (int i = 0; i < adjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final Vector3D thrustVector = boundedCartesianEnergy.getThrustVector(adjoint, mass.getReal());
+        final Vector3D thrustVector = boundedCartesianEnergy.getThrustAccelerationVector(adjoint, mass.getReal());
         Assertions.assertEquals(thrustVector, fieldThrustVector.toVector3D());
     }
 
@@ -150,7 +150,7 @@ class BoundedCartesianEnergyTest {
     }
 
     @Test
-    void testGetThrustVectorVersusUnbounded() {
+    void testGetFieldThrustAccelerationVectorVersusUnbounded() {
         // GIVEN
         final double massRateFactor = 1.;
         final double maximumThrustMagnitude = 2.;
@@ -162,10 +162,10 @@ class BoundedCartesianEnergyTest {
         adjoint[5] = 3e-2;
         final double mass = 3e-3;
         // WHEN
-        final Vector3D thrustVector = boundedCartesianEnergy.getThrustVector(adjoint, mass);
+        final Vector3D thrustVector = boundedCartesianEnergy.getThrustAccelerationVector(adjoint, mass);
         // THEN
         final Vector3D expectedThrustVector = new UnboundedCartesianEnergy("", massRateFactor)
-                .getThrustVector(adjoint, mass).scalarMultiply(maximumThrustMagnitude);
+                .getThrustAccelerationVector(adjoint, mass).scalarMultiply(maximumThrustMagnitude);
         Assertions.assertEquals(0., expectedThrustVector.subtract(thrustVector).getNorm(), 1e-12);
     }
 
@@ -184,13 +184,13 @@ class BoundedCartesianEnergyTest {
         final Complex mass = new Complex(3.e-3, 0.);
         final Complex[] derivatives = MathArrays.buildArray(field, 7);
         // WHEN
-        boundedCartesianEnergy.updateAdjointDerivatives(fieldAdjoint, mass, derivatives);
+        boundedCartesianEnergy.updateFieldAdjointDerivatives(fieldAdjoint, mass, derivatives);
         // THEN
         Assertions.assertNotEquals(0., derivatives[6].getReal());
     }
 
     @Test
-    void testGetThrustVectorFieldVersusUnbounded() {
+    void testGetFieldThrustAccelerationVectorFieldVersusUnbounded() {
         // GIVEN
         final double massRateFactor = 1.;
         final double maximumThrustMagnitude = 2.;
@@ -202,10 +202,10 @@ class BoundedCartesianEnergyTest {
         fieldAdjoint[4] = new Complex(2.0e-3, 0.0);
         final Complex mass = new Complex(3.e-3, 0.);
         // WHEN
-        final FieldVector3D<Complex> fieldThrustVector = boundedCartesianEnergy.getThrustVector(fieldAdjoint, mass);
+        final FieldVector3D<Complex> fieldThrustVector = boundedCartesianEnergy.getFieldThrustAccelerationVector(fieldAdjoint, mass);
         // THEN
         final FieldVector3D<Complex> expectedThrustVector = new UnboundedCartesianEnergy("", massRateFactor)
-                .getThrustVector(fieldAdjoint, mass).scalarMultiply(maximumThrustMagnitude);
+                .getFieldThrustAccelerationVector(fieldAdjoint, mass).scalarMultiply(maximumThrustMagnitude);
         Assertions.assertEquals(expectedThrustVector, fieldThrustVector);
     }
 }
