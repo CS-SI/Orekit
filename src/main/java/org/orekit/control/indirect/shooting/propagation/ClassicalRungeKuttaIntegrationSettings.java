@@ -20,8 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaFieldIntegratorBuilder;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
-import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
-import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 
 /**
  * Integration settings using the classical Runge-Kutta 4 scheme.
@@ -45,13 +43,13 @@ public class ClassicalRungeKuttaIntegrationSettings implements ShootingIntegrati
 
     /** {@inheritDoc} */
     @Override
-    public ODEIntegratorBuilder getIntegratorBuilder() {
+    public ClassicalRungeKuttaIntegratorBuilder getIntegratorBuilder() {
         return new ClassicalRungeKuttaIntegratorBuilder(step);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldODEIntegratorBuilder<T> getFieldIntegratorBuilder(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> ClassicalRungeKuttaFieldIntegratorBuilder<T> getFieldIntegratorBuilder(final Field<T> field) {
         return new ClassicalRungeKuttaFieldIntegratorBuilder<>(field.getZero().newInstance(step));
     }
 }
