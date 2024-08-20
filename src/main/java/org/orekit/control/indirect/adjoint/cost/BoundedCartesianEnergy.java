@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -34,6 +33,8 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
@@ -214,7 +215,7 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
                                              final double maximumThrustMagnitudeForDetector,
                                              final EventDetectionSettings detectionSettings) {
             this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, detectionSettings,
-                (state, detector, isIncreasing) -> Action.RESET_DERIVATIVES);
+                new ResetDerivativesOnEvent());
         }
 
         /** {@inheritDoc} */
@@ -273,7 +274,7 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
                                                   final T maximumThrustMagnitudeForDetector,
                                                   final FieldEventDetectionSettings<T> detectionSettings) {
             this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, detectionSettings,
-                (state, detector, isIncreasing) -> Action.RESET_DERIVATIVES);
+                new FieldResetDerivativesOnEvent<>());
         }
 
         /** {@inheritDoc} */

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1511">
+        Add (Field)ResetDerivativesOnEvent.
+      </action>
       <action dev="serrof" type="add" issue="1510">
         Add adaptive step integration for indirect shooting.
       </action>

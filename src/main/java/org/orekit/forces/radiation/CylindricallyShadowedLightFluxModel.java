@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.events.CylindricalShadowEclipseDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -28,6 +27,8 @@ import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldCylindricalShadowEclipseDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.ArrayList;
@@ -181,7 +182,7 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
      */
     private CylindricalShadowEclipseDetector createCylindricalShadowEclipseDetector() {
         return new CylindricalShadowEclipseDetector(getOccultedBody(), getOccultingBodyRadius(),
-                (state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                new ResetDerivativesOnEvent());
     }
 
     /** {@inheritDoc} */
@@ -202,6 +203,6 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
     private <T extends CalculusFieldElement<T>> FieldCylindricalShadowEclipseDetector<T> createFieldCylindricalShadowEclipseDetector(final Field<T> field) {
         final T occultingBodyRadiusAsField = field.getZero().newInstance(getOccultingBodyRadius());
         return new FieldCylindricalShadowEclipseDetector<>(getOccultedBody(), occultingBodyRadiusAsField,
-                (state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                new FieldResetDerivativesOnEvent<>());
     }
 }
