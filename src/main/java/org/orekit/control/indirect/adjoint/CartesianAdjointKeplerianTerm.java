@@ -57,16 +57,17 @@ public class CartesianAdjointKeplerianTerm extends AbstractCartesianAdjointNewto
         return getFieldNewtonianVelocityAdjointContribution(stateVariables, adjointVariables);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Vector3D getAcceleration(final AbsoluteDate date, final double[] stateVariables,
-                                       final double[] adjointVariables, final Frame frame) {
+                                       final Frame frame) {
         return getNewtonianAcceleration(stateVariables);
     }
 
+    /** {@inheritDoc} */
     @Override
     protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldAcceleration(final FieldAbsoluteDate<T> date,
                                                                                         final T[] stateVariables,
-                                                                                        final T[] adjointVariables,
                                                                                         final Frame frame) {
         return getFieldNewtonianAcceleration(stateVariables);
     }

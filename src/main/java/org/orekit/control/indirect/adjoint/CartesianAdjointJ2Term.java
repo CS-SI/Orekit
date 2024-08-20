@@ -148,7 +148,7 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
     /** {@inheritDoc} */
     @Override
     public Vector3D getAcceleration(final AbsoluteDate date, final double[] stateVariables,
-                                    final double[] adjointVariables, final Frame frame) {
+                                    final Frame frame) {
         final StaticTransform transform = frame.getStaticTransformTo(j2Frame, date);
         final Vector3D positionInJ2Frame = transform.transformPosition(new Vector3D(stateVariables[0], stateVariables[1], stateVariables[2]));
         final Vector3D accelerationInJ2Frame = J2OnlyPerturbation.computeAccelerationInJ2Frame(positionInJ2Frame,
@@ -160,7 +160,6 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldAcceleration(final FieldAbsoluteDate<T> date,
                                                                                      final T[] stateVariables,
-                                                                                     final T[] adjointVariables,
                                                                                      final Frame frame) {
         final FieldStaticTransform<T> transform = frame.getStaticTransformTo(j2Frame, date);
         final FieldVector3D<T> positionInJ2Frame = transform.transformPosition(new FieldVector3D<>(stateVariables[0], stateVariables[1], stateVariables[2]));

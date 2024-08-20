@@ -38,12 +38,12 @@ public class TestCost implements CartesianCost {
     }
 
     @Override
-    public Vector3D getThrustVector(double[] adjointVariables, double mass) {
+    public Vector3D getThrustAccelerationVector(double[] adjointVariables, double mass) {
         return new Vector3D(1, 2, 3);
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(T[] adjointVariables, T mass) {
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(T[] adjointVariables, T mass) {
         return new FieldVector3D<>(mass.getField(), new Vector3D(1, 2, 3));
     }
 
@@ -53,7 +53,7 @@ public class TestCost implements CartesianCost {
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives) {
+    public <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives) {
 
     }
 

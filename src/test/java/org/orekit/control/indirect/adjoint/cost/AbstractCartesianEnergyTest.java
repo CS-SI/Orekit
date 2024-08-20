@@ -35,7 +35,7 @@ class AbstractCartesianEnergyTest {
         final Vector3D vector = new Vector3D(1.0, 2.0, 3.0);
         final double mass = 1.;
         final double[] adjoint = new double[6];
-        Mockito.when(mockedEnergy.getThrustVector(adjoint, mass)).thenReturn(vector);
+        Mockito.when(mockedEnergy.getThrustAccelerationVector(adjoint, mass)).thenReturn(vector);
         Mockito.when(mockedEnergy.getHamiltonianContribution(adjoint, mass)).thenCallRealMethod();
         // WHEN
         final double contribution = mockedEnergy.getHamiltonianContribution(adjoint, mass);
@@ -54,8 +54,8 @@ class AbstractCartesianEnergyTest {
         final Complex fieldMass = Complex.ONE;
         final double mass = fieldMass.getReal();
         final double[] adjoint = new double[fieldAdjoint.length];
-        Mockito.when(mockedEnergy.getThrustVector(fieldAdjoint, fieldMass)).thenReturn(fieldVector3D);
-        Mockito.when(mockedEnergy.getThrustVector(adjoint, mass)).thenReturn(vector);
+        Mockito.when(mockedEnergy.getFieldThrustAccelerationVector(fieldAdjoint, fieldMass)).thenReturn(fieldVector3D);
+        Mockito.when(mockedEnergy.getThrustAccelerationVector(adjoint, mass)).thenReturn(vector);
         Mockito.when(mockedEnergy.getFieldHamiltonianContribution(fieldAdjoint, fieldMass)).thenCallRealMethod();
         Mockito.when(mockedEnergy.getHamiltonianContribution(adjoint, mass)).thenCallRealMethod();
         // WHEN

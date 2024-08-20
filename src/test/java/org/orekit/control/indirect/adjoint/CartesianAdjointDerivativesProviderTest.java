@@ -124,10 +124,9 @@ class CartesianAdjointDerivativesProviderTest {
         for (int i = 0; i < 3; i++) {
             Assertions.assertEquals(0., increment[i]);
         }
-        final double mass = state.getMass();
-        Assertions.assertEquals(1., increment[3] * mass);
-        Assertions.assertEquals(2., increment[4] * mass);
-        Assertions.assertEquals(3., increment[5] * mass);
+        Assertions.assertEquals(1., increment[3]);
+        Assertions.assertEquals(2., increment[4]);
+        Assertions.assertEquals(3., increment[5]);
         Assertions.assertEquals(-10., increment[6]);
     }
 

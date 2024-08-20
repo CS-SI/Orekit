@@ -75,10 +75,10 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
 
         // mass flow rate and control acceleration
         final T[] mainDerivativesIncrements = MathArrays.buildArray(mass.getField(), 7);
-        final FieldVector3D<T> thrustVector = getCost().getThrustVector(adjointVariables, mass);
-        mainDerivativesIncrements[3] = thrustVector.getX().divide(mass);
-        mainDerivativesIncrements[4] = thrustVector.getY().divide(mass);
-        mainDerivativesIncrements[5] = thrustVector.getZ().divide(mass);
+        final FieldVector3D<T> thrustAccelerationVector = getCost().getFieldThrustAccelerationVector(adjointVariables, mass);
+        mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
+        mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
+        mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
         mainDerivativesIncrements[6] = mass.newInstance(-getCost().getMassFlowRateFactor());
 
         // Cartesian position adjoint
@@ -98,7 +98,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         }
 
         // other
-        getCost().updateAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
+        getCost().updateFieldAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
 
         return new FieldCombinedDerivatives<>(additionalDerivatives, mainDerivativesIncrements);
     }
