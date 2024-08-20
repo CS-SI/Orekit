@@ -22,9 +22,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
- * Interface to define terms in the adjoint equations for Cartesian coordinates.
+ * Interface to define terms in the adjoint equations and Hamiltonian for Cartesian coordinates.
  * @author Romain Serra
  * @see CartesianAdjointDerivativesProvider
+ * @see FieldCartesianAdjointDerivativesProvider
  * @since 12.2
  */
 public interface CartesianAdjointEquationTerm {
@@ -38,7 +39,7 @@ public interface CartesianAdjointEquationTerm {
      * @param frame            propagation frame
      * @return contribution to the adjoint derivative vector
      */
-    double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame);
+    double[] getRatesContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame);
 
     /**
      * Computes the contribution to the rates of the adjoint variables.
@@ -50,6 +51,31 @@ public interface CartesianAdjointEquationTerm {
      * @param frame            propagation frame
      * @return contribution to the adjoint derivative vector
      */
-    <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame);
+    <T extends CalculusFieldElement<T>> T[] getFieldRatesContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame);
+
+    /**
+     * Computes the contribution to the Hamiltonian.
+     *
+     * @param date             date
+     * @param stateVariables   state variables
+     * @param adjointVariables adjoint variables
+     * @param frame            propagation frame
+     * @return contribution to the Hamiltonian
+     */
+    double getHamiltonianContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame);
+
+    /**
+     * Computes the contribution to the Hamiltonian.
+     *
+     * @param date             date
+     * @param stateVariables   state variables
+     * @param adjointVariables adjoint variables
+     * @param frame            propagation frame
+     * @param <T> field type
+     * @return contribution to the Hamiltonian
+     */
+    <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(FieldAbsoluteDate<T> date,
+                                                                          T[] stateVariables,
+                                                                          T[] adjointVariables, Frame frame);
 
 }

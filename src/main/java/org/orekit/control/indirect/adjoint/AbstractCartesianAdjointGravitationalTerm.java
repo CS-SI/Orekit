@@ -29,12 +29,31 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see CartesianAdjointEquationTerm
  * @since 12.2
  */
-public abstract class AbstractCartesianAdjointGravitationalTerm implements CartesianAdjointEquationTerm {
+public abstract class AbstractCartesianAdjointGravitationalTerm extends AbstractCartesianAdjointEquationTerm {
+
+    /** Body gravitational parameter. */
+    private final double mu;
+
+    /**
+     * Constructor.
+     * @param mu body gravitational parameter
+     */
+    protected AbstractCartesianAdjointGravitationalTerm(final double mu) {
+        this.mu = mu;
+    }
+
+    /**
+     * Getter for the gravitational constant.
+     * @return mu
+     */
+    public double getMu() {
+        return mu;
+    }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getContribution(final AbsoluteDate date, final double[] stateVariables,
-                                    final double[] adjointVariables, final Frame frame) {
+    public double[] getRatesContribution(final AbsoluteDate date, final double[] stateVariables,
+                                         final double[] adjointVariables, final Frame frame) {
         final double[] contribution = new double[adjointVariables.length];
         final double[] adjointVelocityDerivativesContribution = getVelocityAdjointContribution(date, stateVariables,
             adjointVariables, frame);
@@ -56,9 +75,9 @@ public abstract class AbstractCartesianAdjointGravitationalTerm implements Carte
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getFieldContribution(final FieldAbsoluteDate<T> date,
-                                                                        final T[] stateVariables,
-                                                                        final T[] adjointVariables, final Frame frame) {
+    public <T extends CalculusFieldElement<T>> T[] getFieldRatesContribution(final FieldAbsoluteDate<T> date,
+                                                                             final T[] stateVariables,
+                                                                             final T[] adjointVariables, final Frame frame) {
         final T[] contribution = MathArrays.buildArray(date.getField(), adjointVariables.length);
         final T[] adjointVelocityDerivativesContribution = getVelocityAdjointFieldContribution(date, stateVariables,
             adjointVariables, frame);
@@ -80,5 +99,4 @@ public abstract class AbstractCartesianAdjointGravitationalTerm implements Carte
                                                                                                    T[] stateVariables,
                                                                                                    T[] adjointVariables,
                                                                                                    Frame frame);
-
 }

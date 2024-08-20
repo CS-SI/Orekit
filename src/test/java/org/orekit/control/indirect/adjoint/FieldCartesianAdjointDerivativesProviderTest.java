@@ -16,6 +16,7 @@
  */
 package org.orekit.control.indirect.adjoint;
 
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.util.Binary64;
@@ -84,6 +85,20 @@ class FieldCartesianAdjointDerivativesProviderTest {
         Assertions.assertEquals(0., adjoint[3].getReal());
         Assertions.assertEquals(0., adjoint[4].getReal());
         Assertions.assertEquals(0., adjoint[5].getReal());
+    }
+
+    @Test
+    void testEvaluateHamiltonian() {
+        // GIVEN
+        final CartesianCost cost = new TestCost();
+        final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(cost);
+        final FieldSpacecraftState<Binary64> state = getState(derivativesProvider.getName());
+        // WHEN
+        final Binary64 hamiltonian = derivativesProvider.evaluateHamiltonian(state);
+        // THEN
+        final FieldVector3D<Binary64> velocity = state.getPVCoordinates().getVelocity();
+        final FieldVector3D<Binary64> vector = new FieldVector3D<>(Binary64.ONE, Binary64.ONE, Binary64.ONE);
+        Assertions.assertEquals(velocity.dotProduct(vector), hamiltonian);
     }
 
     @Test

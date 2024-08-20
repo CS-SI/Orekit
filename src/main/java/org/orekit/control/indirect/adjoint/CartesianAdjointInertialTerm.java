@@ -23,6 +23,8 @@ import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -40,7 +42,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @see org.orekit.forces.inertia.InertialForces
  * @since 12.2
  */
-public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTerm {
+public class CartesianAdjointInertialTerm extends AbstractCartesianAdjointEquationTerm {
 
     /** Dimension of gradient. */
     private static final int GRADIENT_DIMENSION = 6;
@@ -70,8 +72,8 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
 
     /** {@inheritDoc} */
     @Override
-    public double[] getContribution(final AbsoluteDate date, final double[] stateVariables,
-                                    final double[] adjointVariables, final Frame frame) {
+    public double[] getRatesContribution(final AbsoluteDate date, final double[] stateVariables,
+                                         final double[] adjointVariables, final Frame frame) {
         final double[] contribution = new double[adjointVariables.length];
         final GradientField field = GradientField.getField(GRADIENT_DIMENSION);
         final Gradient[] gradients = MathArrays.buildArray(field, GRADIENT_DIMENSION);
@@ -95,9 +97,9 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getFieldContribution(final FieldAbsoluteDate<T> date,
-                                                                        final T[] stateVariables,
-                                                                        final T[] adjointVariables, final Frame frame) {
+    public <T extends CalculusFieldElement<T>> T[] getFieldRatesContribution(final FieldAbsoluteDate<T> date,
+                                                                             final T[] stateVariables,
+                                                                             final T[] adjointVariables, final Frame frame) {
         final T[] contribution = MathArrays.buildArray(date.getField(), 6);
         final FieldGradientField<T> field = FieldGradientField.getField(date.getField(), GRADIENT_DIMENSION);
         final FieldGradient<T>[] gradients = MathArrays.buildArray(field, GRADIENT_DIMENSION);
@@ -119,6 +121,46 @@ public class CartesianAdjointInertialTerm implements CartesianAdjointEquationTer
                 .add(accelerationYgradient[i].multiply(adjointVariables[4])).add(accelerationZgradient[i].multiply(adjointVariables[5]))).negate();
         }
         return contribution;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected Vector3D getAcceleration(final AbsoluteDate date, final double[] stateVariables,
+                                       final double[] adjointVariables, final Frame frame) {
+        final Transform transform = getReferenceInertialFrame().getTransformTo(frame, date);
+        return getAcceleration(transform, stateVariables);
+    }
+
+    /**
+     * Evaluates the inertial acceleration vector.
+     * @param inertialToPropagationFrame transform from inertial to propagation frame
+     * @param stateVariables state variables
+     * @return acceleration
+     */
+    public Vector3D getAcceleration(final Transform inertialToPropagationFrame, final double[] stateVariables) {
+        final Vector3D  a1                = inertialToPropagationFrame.getCartesian().getAcceleration();
+        final Rotation r1                = inertialToPropagationFrame.getAngular().getRotation();
+        final Vector3D  o1                = inertialToPropagationFrame.getAngular().getRotationRate();
+        final Vector3D  oDot1             = inertialToPropagationFrame.getAngular().getRotationAcceleration();
+
+        final Vector3D  p2                = new Vector3D(stateVariables[0], stateVariables[1], stateVariables[2]);
+        final Vector3D  v2                = new Vector3D(stateVariables[3], stateVariables[4], stateVariables[5]);
+
+        final Vector3D crossCrossP        = Vector3D.crossProduct(o1,    Vector3D.crossProduct(o1, p2));
+        final Vector3D crossV             = Vector3D.crossProduct(o1,    v2);
+        final Vector3D crossDotP          = Vector3D.crossProduct(oDot1, p2);
+
+        return r1.applyTo(a1).subtract(new Vector3D(2, crossV, 1, crossCrossP, 1, crossDotP));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldAcceleration(final FieldAbsoluteDate<T> date,
+                                                                                        final T[] stateVariables,
+                                                                                        final T[] adjointVariables,
+                                                                                        final Frame frame) {
+        final FieldTransform<T> transform = getReferenceInertialFrame().getTransformTo(frame, date);
+        return getFieldAcceleration(transform, stateVariables);
     }
 
     /**

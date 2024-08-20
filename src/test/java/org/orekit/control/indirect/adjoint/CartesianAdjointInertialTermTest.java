@@ -53,7 +53,7 @@ class CartesianAdjointInertialTermTest {
     }
 
     @Test
-    void testGetContribution() {
+    void testGetRatesContribution() {
         // GIVEN
         final Frame referenceFrame = FramesFactory.getGCRF();
         final Frame propagationFrame = FramesFactory.getGTOD(true);
@@ -66,7 +66,7 @@ class CartesianAdjointInertialTermTest {
         }
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         // WHEN
-        final double[] contribution = inertialTerm.getContribution(date, state, adjoint, propagationFrame);
+        final double[] contribution = inertialTerm.getRatesContribution(date, state, adjoint, propagationFrame);
         // THEN
         final InertialForces inertialForces = new InertialForces(referenceFrame);
         final int dimension = 6;
@@ -100,7 +100,7 @@ class CartesianAdjointInertialTermTest {
     }
 
     @Test
-    void testGetFieldContribution() {
+    void testGetFieldRatesContribution() {
         // GIVEN
         final Frame referenceFrame = FramesFactory.getGCRF();
         final Frame propagationFrame = FramesFactory.getGTOD(true);
@@ -114,7 +114,7 @@ class CartesianAdjointInertialTermTest {
         }
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = inertialTerm.getFieldContribution(fieldDate, fieldState, fieldAdjoint,
+        final Binary64[] fieldContribution = inertialTerm.getFieldRatesContribution(fieldDate, fieldState, fieldAdjoint,
                 propagationFrame);
         // THEN
         final double[] state = new double[fieldState.length];
@@ -125,10 +125,52 @@ class CartesianAdjointInertialTermTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final double[] contribution = inertialTerm.getContribution(fieldDate.toAbsoluteDate(), state, adjoint,
+        final double[] contribution = inertialTerm.getRatesContribution(fieldDate.toAbsoluteDate(), state, adjoint,
                 propagationFrame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i], 1e-22);
         }
+    }
+
+    @Test
+    void testGetHamiltonianContribution() {
+        // GIVEN
+        final Frame referenceFrame = FramesFactory.getGCRF();
+        final CartesianAdjointInertialTerm cartesianAdjointInertialTerm = new CartesianAdjointInertialTerm(referenceFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final double[] adjoint = { -1, 2, -3, 4, -5, 6 };
+        final double[] state = {1, 3, 5, 7, 9, 11};
+        // WHEN
+        final double contribution = cartesianAdjointInertialTerm.getHamiltonianContribution(date, state, adjoint, referenceFrame);
+        // THEN
+        Assertions.assertEquals(0., contribution);
+    }
+
+    @Test
+    void testGetFieldHamiltonianContribution() {
+        // GIVEN
+        final CartesianAdjointInertialTerm cartesianAdjointInertialTerm = new CartesianAdjointInertialTerm(FramesFactory.getGCRF());
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64[] fieldAdjoint = MathArrays.buildArray(field, 6);
+        final Binary64[] fieldState = MathArrays.buildArray(field, 6);
+        for (int i = 0; i < fieldAdjoint.length; i++) {
+            fieldState[i] = field.getZero().newInstance(-i + 1);
+            fieldAdjoint[i] = field.getZero().newInstance(i);
+        }
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Frame frame = FramesFactory.getGTOD(true);
+        // WHEN
+        final Binary64 fieldContribution = cartesianAdjointInertialTerm.getFieldHamiltonianContribution(fieldDate,
+                fieldState, fieldAdjoint, frame);
+        // THEN
+        final double[] adjoint = new double[fieldAdjoint.length];
+        final double[] state = adjoint.clone();
+        for (int i = 0; i < fieldAdjoint.length; i++) {
+            state[i] = fieldState[i].getReal();
+            adjoint[i] = fieldAdjoint[i].getReal();
+        }
+        final double contribution = cartesianAdjointInertialTerm.getHamiltonianContribution(fieldDate.toAbsoluteDate(),
+                state, adjoint, frame);
+        Assertions.assertEquals(contribution, fieldContribution.getReal(), 1e-15);
     }
 }

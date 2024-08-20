@@ -105,4 +105,32 @@ class CartesianAdjointJ2TermTest {
         }
     }
 
+    @Test
+    void testGetFieldHamiltonianContribution() {
+        // GIVEN
+        final Frame frame = FramesFactory.getGCRF();
+        final CartesianAdjointJ2Term cartesianAdjointJ2Term = new CartesianAdjointJ2Term(1., 1., 0.001, frame);
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64[] fieldAdjoint = MathArrays.buildArray(field, 6);
+        final Binary64[] fieldState = MathArrays.buildArray(field, 6);
+        for (int i = 0; i < fieldAdjoint.length; i++) {
+            fieldState[i] = field.getZero().newInstance(-i + 1);
+            fieldAdjoint[i] = field.getZero().newInstance(i);
+        }
+        final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final Binary64 fieldContribution = cartesianAdjointJ2Term.getFieldHamiltonianContribution(fieldDate,
+                fieldState, fieldAdjoint, frame);
+        // THEN
+        final double[] adjoint = new double[fieldAdjoint.length];
+        final double[] state = adjoint.clone();
+        for (int i = 0; i < fieldAdjoint.length; i++) {
+            state[i] = fieldState[i].getReal();
+            adjoint[i] = fieldAdjoint[i].getReal();
+        }
+        final double contribution = cartesianAdjointJ2Term.getHamiltonianContribution(fieldDate.toAbsoluteDate(),
+                state, adjoint, frame);
+        Assertions.assertEquals(contribution, fieldContribution.getReal());
+    }
+
 }

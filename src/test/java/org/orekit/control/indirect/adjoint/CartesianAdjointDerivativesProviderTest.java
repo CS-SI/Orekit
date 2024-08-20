@@ -99,6 +99,19 @@ class CartesianAdjointDerivativesProviderTest {
     }
 
     @Test
+    void testEvaluateHamiltonian() {
+        // GIVEN
+        final CartesianCost cost = new TestCost();
+        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost);
+        final SpacecraftState state = getState(derivativesProvider.getName());
+        // WHEN
+        final double hamiltonian = derivativesProvider.evaluateHamiltonian(state);
+        // THEN
+        final Vector3D velocity = state.getPVCoordinates().getVelocity();
+        Assertions.assertEquals(velocity.dotProduct(new Vector3D(1, 1, 1)), hamiltonian);
+    }
+
+    @Test
     void testCombinedDerivatives() {
         // GIVEN
         final CartesianCost cost = new TestCost();
@@ -147,13 +160,23 @@ class CartesianAdjointDerivativesProviderTest {
     private static class TestAdjointTerm implements CartesianAdjointEquationTerm {
 
         @Override
-        public double[] getContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame) {
+        public double[] getRatesContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame) {
             return new double[] { 1., 10., 100. };
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> T[] getFieldContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame) {
+        public <T extends CalculusFieldElement<T>> T[] getFieldRatesContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame) {
             return null;
+        }
+
+        @Override
+        public double getHamiltonianContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame) {
+            return 0;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(FieldAbsoluteDate<T> date, T[] stateVariables, T[] adjointVariables, Frame frame) {
+            return date.getField().getZero();
         }
     }
 
