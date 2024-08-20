@@ -18,6 +18,8 @@ package org.orekit.control.indirect.adjoint.cost;
 
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 
 /**
@@ -78,5 +80,19 @@ public abstract class AbstractCartesianEnergy implements CartesianCost {
      */
     protected <T extends CalculusFieldElement<T>> T getAdjointVelocityNorm(final T[] adjointVariables) {
         return FastMath.sqrt(adjointVariables[3].square().add(adjointVariables[4].square()).add(adjointVariables[5].square()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
+        final Vector3D thrustAcceleration = getThrustVector(adjointVariables, mass).scalarMultiply(1. / mass);
+        return -thrustAcceleration.getNormSq() / 2.;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(final T[] adjointVariables, final T mass) {
+        final FieldVector3D<T> thrustAcceleration = getThrustVector(adjointVariables, mass).scalarMultiply(mass.reciprocal());
+        return thrustAcceleration.getNormSq().multiply(-1. / 2.);
     }
 }

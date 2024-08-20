@@ -87,4 +87,20 @@ public interface CartesianCost extends EventDetectorsProvider {
      */
     <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives);
 
+    /**
+     * Computes the Hamiltonian contribution of the cost function.
+     * @param adjointVariables adjoint vector
+     * @param mass mass
+     * @return contribution to Hamiltonian
+     */
+    double getHamiltonianContribution(double[] adjointVariables, double mass);
+
+    /**
+     * Computes the Hamiltonian contribution of the cost function.
+     * @param adjointVariables adjoint vector
+     * @param mass mass
+     * @param <T> field type
+     * @return contribution to Hamiltonian
+     */
+    <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(T[] adjointVariables, T mass);
 }

@@ -30,6 +30,9 @@
       <action dev="serrof" type="update" issue="1505">
         Pass propagation frame as argument when evaluating adjoint contribution.
       </action>
+      <action dev="serrof" type="add" issue="1500">
+        Add evaluation of Hamiltonian in adjoint dynamics.
+      </action>
       <action dev="serrof" type="add" issue="1493">
         Add direct access to lighting ratio from state in AbstractLightFluxModel.
       </action>

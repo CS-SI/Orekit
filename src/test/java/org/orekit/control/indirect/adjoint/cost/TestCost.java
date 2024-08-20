@@ -58,6 +58,16 @@ public class TestCost implements CartesianCost {
     }
 
     @Override
+    public double getHamiltonianContribution(double[] adjointVariables, double mass) {
+        return 0;
+    }
+
+    @Override
+    public <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(T[] adjointVariables, T mass) {
+        return mass.getField().getZero();
+    }
+
+    @Override
     public Stream<EventDetector> getEventDetectors() {
         return null;
     }
@@ -66,4 +76,5 @@ public class TestCost implements CartesianCost {
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
         return null;
     }
+
 }

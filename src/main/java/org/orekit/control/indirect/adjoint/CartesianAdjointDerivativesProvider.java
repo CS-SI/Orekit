@@ -71,12 +71,8 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         final double[] adjointVariables = state.getAdditionalState(getName());
         final int adjointDimension = getDimension();
         final double[] additionalDerivatives = new double[adjointDimension];
-        final double[] cartesianVariablesAndMass = new double[7];
-        final PVCoordinates pvCoordinates = state.getPVCoordinates();
-        System.arraycopy(pvCoordinates.getPosition().toArray(), 0, cartesianVariablesAndMass, 0, 3);
-        System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, cartesianVariablesAndMass, 3, 3);
+        final double[] cartesianVariablesAndMass = formCartesianAndMassVector(state);
         final double mass = state.getMass();
-        cartesianVariablesAndMass[6] = mass;
 
         // mass flow rate and control acceleration
         final double[] mainDerivativesIncrements = new double[7];
@@ -91,11 +87,11 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         additionalDerivatives[4] = -adjointVariables[1];
         additionalDerivatives[5] = -adjointVariables[2];
 
-        // Update position and velocity adjoint derivatives
+        // update position and velocity adjoint derivatives
         final AbsoluteDate date = state.getDate();
         final Frame propagationFrame = state.getFrame();
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final double[] contribution = equationTerm.getContribution(date, cartesianVariablesAndMass, adjointVariables,
+            final double[] contribution = equationTerm.getRatesContribution(date, cartesianVariablesAndMass, adjointVariables,
                     propagationFrame);
             for (int i = 0; i < contribution.length; i++) {
                 additionalDerivatives[i] += contribution[i];
@@ -106,5 +102,39 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         getCost().updateAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
 
         return new CombinedDerivatives(additionalDerivatives, mainDerivativesIncrements);
+    }
+
+    /**
+     * Gather Cartesian variables and mass in same vector.
+     * @param state propagation state
+     * @return Cartesian variables and mass
+     */
+    private double[] formCartesianAndMassVector(final SpacecraftState state) {
+        final double[] cartesianVariablesAndMass = new double[7];
+        final PVCoordinates pvCoordinates = state.getPVCoordinates();
+        System.arraycopy(pvCoordinates.getPosition().toArray(), 0, cartesianVariablesAndMass, 0, 3);
+        System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, cartesianVariablesAndMass, 3, 3);
+        final double mass = state.getMass();
+        cartesianVariablesAndMass[6] = mass;
+        return cartesianVariablesAndMass;
+    }
+
+    /**
+     * Evaluate the Hamiltonian from Pontryagin's Maximum Principle.
+     * @param state state assumed to hold the adjoint variables
+     * @return Hamiltonian
+     */
+    public double evaluateHamiltonian(final SpacecraftState state) {
+        final double[] cartesianAndMassVector = formCartesianAndMassVector(state);
+        final double[] adjointVariables = state.getAdditionalState(getName());
+        double hamiltonian = adjointVariables[0] * cartesianAndMassVector[3] + adjointVariables[1] * cartesianAndMassVector[4] + adjointVariables[2] * cartesianAndMassVector[5];
+        final AbsoluteDate date = state.getDate();
+        final Frame propagationFrame = state.getFrame();
+        for (final CartesianAdjointEquationTerm adjointEquationTerm : adjointEquationTerms) {
+            hamiltonian += adjointEquationTerm.getHamiltonianContribution(date, adjointVariables, adjointVariables,
+                    propagationFrame);
+        }
+        hamiltonian += getCost().getHamiltonianContribution(adjointVariables, state.getMass());
+        return hamiltonian;
     }
 }
