@@ -880,33 +880,14 @@ public class AbsoluteDate
         return DataContext.getDefault().getTimeScales().createBesselianEpoch(besselianEpoch);
     }
 
-    /** Get a time-shifted date.
-     * <p>
-     * Calling this method is equivalent to call <code>new AbsoluteDate(this, dt)</code>.
-     * </p>
-     * @param dt time shift in seconds
-     * @return a new date, shifted with respect to instance (which is immutable)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
-     */
+    /** {@inheritDoc} */
+    @Override
     public AbsoluteDate shiftedBy(final double dt) {
         return new AbsoluteDate(this, dt);
     }
 
-    /** Get a time-shifted date.
-     * <p>
-     * Calling this method is equivalent to call <code>new AbsoluteDate(this, dt)</code>.
-     * </p>
-     * @param dt time shift
-     * @return a new date, shifted with respect to instance (which is immutable)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
-     * @since 13.0
-     */
+    /** {@inheritDoc} */
+    @Override
     public AbsoluteDate shiftedBy(final SplitTime dt) {
         return new AbsoluteDate(this, dt);
     }

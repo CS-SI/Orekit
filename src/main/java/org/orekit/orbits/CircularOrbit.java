@@ -1111,10 +1111,18 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public CircularOrbit shiftedBy(final double dt) {
+        return shiftedBy(new SplitTime(dt));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit shiftedBy(final SplitTime dt) {
+
+        final double dtS = dt.toDouble();
 
         // use Keplerian-only motion
         final CircularOrbit keplerianShifted = new CircularOrbit(a, ex, ey, i, raan,
-                                                                 getAlphaM() + getKeplerianMeanMotion() * dt,
+                                                                 getAlphaM() + getKeplerianMeanMotion() * dtS,
                                                                  PositionAngleType.MEAN, cachedPositionAngleType,
                                                                  getFrame(), getDate().shiftedBy(dt), getMu());
 
@@ -1126,11 +1134,11 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final Vector3D fixedP   = new Vector3D(1, keplerianShifted.partialPV.getPosition(),
-                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+                                                   0.5 * dtS * dtS, nonKeplerianAcceleration);
             final double   fixedR2 = fixedP.getNormSq();
             final double   fixedR  = FastMath.sqrt(fixedR2);
             final Vector3D fixedV  = new Vector3D(1, keplerianShifted.partialPV.getVelocity(),
-                                                  dt, nonKeplerianAcceleration);
+                                                  dtS, nonKeplerianAcceleration);
             final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), keplerianShifted.partialPV.getPosition(),
                                                   1, nonKeplerianAcceleration);
 

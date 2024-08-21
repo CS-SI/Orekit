@@ -399,6 +399,12 @@ public class CartesianOrbit extends Orbit {
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
 
+    /** {@inheritDoc} */
+    public CartesianOrbit shiftedBy(final SplitTime dt) {
+        final PVCoordinates shiftedPV = shiftPV(dt.toDouble());
+        return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
+    }
+
     /** Compute shifted position and velocity.
      * @param dt time shift
      * @return shifted position and velocity

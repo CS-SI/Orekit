@@ -231,6 +231,22 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
         return new AbsolutePVCoordinates(frame, spv);
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * @since 13.0
+     */
+    public AbsolutePVCoordinates shiftedBy(final SplitTime dt) {
+        final TimeStampedPVCoordinates spv = super.shiftedBy(dt);
+        return new AbsolutePVCoordinates(frame, spv);
+    }
+
     /** Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.
      * <p>
      * The time evolution is based on a simple Taylor expansion. It is <em>not</em> intended as a

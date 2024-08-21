@@ -527,20 +527,6 @@ public abstract class Orbit
      */
     protected abstract TimeStampedPVCoordinates initPVCoordinates();
 
-    /** Get a time-shifted orbit.
-     * <p>
-     * The orbit can be slightly shifted to close dates. The shifting model is a
-     * Keplerian one if no derivatives are available in the orbit, or Keplerian
-     * plus quadratic effect of the non-Keplerian acceleration if derivatives are
-     * available. Shifting is <em>not</em> intended as a replacement for proper
-     * orbit propagation but should be sufficient for small time shifts or coarse
-     * accuracy.
-     * </p>
-     * @param dt time shift in seconds
-     * @return a new orbit, shifted with respect to the instance (which is immutable)
-     */
-    public abstract Orbit shiftedBy(double dt);
-
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with

@@ -28,4 +28,13 @@ public interface TimeShiftable<T extends TimeShiftable<T>> {
      */
     T shiftedBy(double dt);
 
+    /** Get a time-shifted instance.
+     * @param dt time shift
+     * @return a new instance, shifted with respect to instance (which is not changed)
+     * @since 13.0
+     */
+    default T shiftedBy(SplitTime dt) {
+        return shiftedBy(dt.toDouble());
+    }
+
 }
