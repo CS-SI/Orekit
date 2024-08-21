@@ -28,12 +28,16 @@ import org.orekit.errors.OrekitMessages;
  */
 class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
 
-    /** Numerator of scale of the sub-second part (10¹⁸/256ⁿ). */
+    /** Numerator of scale of the sub-second part (10¹⁸/256ⁿ).
+     * @since 13.0
+     */
     private static final long[] SUB_SCALE_NUM = new long[] {
         3906250000000000L, 15258789062500L, 3814697265625L, 3814697265625L, 3814697265625L, 3814697265625L, 3814697265625L
     };
 
-    /** Denominator of scale of the sub-second part (10¹⁸/256ⁿ). */
+    /** Denominator of scale of the sub-second part (10¹⁸/256ⁿ).
+     * @since 13.0
+     */
     private static final long[] SUB_SCALE_DEN = new long[] {
         1L, 1L, 64L, 16384L, 4194304L, 1073741824L, 274877906944L
     };
@@ -68,9 +72,10 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
      * @param timeField          byte array containing the time code
      * @param agencyDefinedEpoch reference epoch, ignored if the preamble field specifies
      *                           the {@link DateComponents#CCSDS_EPOCH CCSDS reference epoch} is used
-     *                           (and hence may be null in this case)
+     *                           (and hence may be null in this case, but then {@code ccsdsEpoch} must be non-null)
      * @param ccsdsEpoch         reference epoch, ignored if the preamble field specifies
-     *                           the agency epoch is used.
+     *                           the agency epoch is used (and hence may be null in this case,
+     *                           but then {@code agencyDefinedEpoch} must be non-null).
      */
     CcsdsUnsegmentedTimeCode(final byte preambleField1,
                              final byte preambleField2,

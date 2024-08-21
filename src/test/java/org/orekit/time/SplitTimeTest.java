@@ -94,13 +94,27 @@ public class SplitTimeTest {
     }
 
     @Test
-    public void testLinearConstructor() {
+    public void testLinear2Constructor() {
         final SplitTime p305 = new SplitTime(3, SplitTime.SECOND, 50, SplitTime.MILLISECOND);
         Assertions.assertEquals(3L, p305.getSeconds());
         Assertions.assertEquals(50000000000000000L, p305.getAttoSeconds());
         final SplitTime m305 = new SplitTime(-3, SplitTime.SECOND, -50, SplitTime.MILLISECOND);
         Assertions.assertEquals(-4L, m305.getSeconds());
         Assertions.assertEquals(950000000000000000L, m305.getAttoSeconds());
+    }
+
+    @Test
+    public void testLinear3Constructor() {
+        final SplitTime p3005007 = new SplitTime(3, SplitTime.SECOND,
+                                                 5, SplitTime.MILLISECOND,
+                                                 7, SplitTime.MICROSECOND);
+        Assertions.assertEquals(3L, p3005007.getSeconds());
+        Assertions.assertEquals(5007000000000000L, p3005007.getAttoSeconds());
+        final SplitTime m3005007 = new SplitTime(-3, SplitTime.SECOND,
+                                                 -5, SplitTime.MILLISECOND,
+                                                 -7, SplitTime.MICROSECOND);
+        Assertions.assertEquals(-4L, m3005007.getSeconds());
+        Assertions.assertEquals(994993000000000000L, m3005007.getAttoSeconds());
     }
 
     @Test

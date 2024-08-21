@@ -16,7 +16,6 @@
  */
 package org.orekit.time;
 
-import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -1518,41 +1517,26 @@ public class AbsoluteDateTest {
 
     @Test
     public void testNegativeOffsetConstructor() {
-        try {
-            AbsoluteDate date = new AbsoluteDate(2019, 10, 11, 20, 40,
-                                                 FastMath.scalb(6629298651489277.0, -55),
-                                                 TimeScalesFactory.getTT());
-            AbsoluteDate after = date.shiftedBy(Precision.EPSILON);
-            Field secondsField = SplitTime.class.getDeclaredField("seconds");
-            secondsField.setAccessible(true);
-            Field attosecondsField = SplitTime.class.getDeclaredField("attoSeconds");
-            attosecondsField.setAccessible(true);
-            Assertions.assertEquals(624098367L, secondsField.getLong(date));
-            Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), 1.0e-18 * attosecondsField.getLong(date), 2.4e-15);
-            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(date), 1.0e-18);
-        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
-        }
+        AbsoluteDate date = new AbsoluteDate(2019, 10, 11, 20, 40,
+                                             FastMath.scalb(6629298651489277.0, -55),
+                                             TimeScalesFactory.getTT());
+        AbsoluteDate after = date.shiftedBy(Precision.EPSILON);
+        Assertions.assertEquals(624098367L, date.getSeconds());
+        Assertions.assertEquals(FastMath.nextAfter(1.0, Double.NEGATIVE_INFINITY), 1.0e-18 * date.getAttoSeconds(), 2.4e-15);
+        Assertions.assertEquals(Precision.EPSILON, after.durationFrom(date), 1.0e-18);
     }
 
     @Test
     public void testNegativeOffsetShift() {
-        try {
-            AbsoluteDate reference = new AbsoluteDate(2019, 10, 11, 20, 40, 1.6667019180022178E-7,
-                                                      TimeScalesFactory.getTAI());
-            double dt = FastMath.scalb(6596520010750484.0, -39);
-            AbsoluteDate shifted = reference.shiftedBy(dt);
-            AbsoluteDate after   = shifted.shiftedBy(Precision.EPSILON);
-            Field secondsField = SplitTime.class.getDeclaredField("seconds");
-            secondsField.setAccessible(true);
-            Field attosecondsField = SplitTime.class.getDeclaredField("attoSeconds");
-            attosecondsField.setAccessible(true);
-            Assertions.assertEquals(624110398L, secondsField.getLong(shifted));
-            Assertions.assertEquals((1.0 - 1.6922e-13) * 1.0e18, (double) attosecondsField.getLong(shifted), 1.0e-15);
-            Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted), 1.0e-18);
-        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-            Assertions.fail(e.getLocalizedMessage());
-        }
+        AbsoluteDate reference = new AbsoluteDate(2019, 10, 11, 20, 40,
+                                                  1.6667019180022178E-7,
+                                                  TimeScalesFactory.getTAI());
+        double dt = FastMath.scalb(6596520010750484.0, -39);
+        AbsoluteDate shifted = reference.shiftedBy(dt);
+        AbsoluteDate after = shifted.shiftedBy(Precision.EPSILON);
+        Assertions.assertEquals(624110398L, shifted.getSeconds());
+        Assertions.assertEquals((1.0 - 1.6922e-13) * 1.0e18, shifted.getAttoSeconds(), 1.0e-15);
+        Assertions.assertEquals(Precision.EPSILON, after.durationFrom(shifted), 1.0e-18);
     }
 
     @Test

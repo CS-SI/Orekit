@@ -266,6 +266,25 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     }
 
     /**
+     * Linear combination constructor.
+     * <p>
+     * This constructors builds a split time corresponding to
+     * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2} + {@code f3} ⨉ {@code t3}
+     * </p>
+     * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t1 first base time
+     * @param f2 second multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t2 second base time
+     * @param f3 third multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t3 third base time
+     */
+    public SplitTime(final long f1, final SplitTime t1,
+                     final long f2, final SplitTime t2,
+                     final long f3, final SplitTime t3) {
+        this(new SplitTime(f1, t1).add(new SplitTime(f2, t2).add(new SplitTime(f3, t3))));
+    }
+
+    /**
      * Build a time from a value defined in some time unit.
      *
      * @param time time
