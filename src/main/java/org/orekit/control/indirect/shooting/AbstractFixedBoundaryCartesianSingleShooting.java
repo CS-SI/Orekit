@@ -50,6 +50,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public abstract class AbstractFixedBoundaryCartesianSingleShooting extends AbstractIndirectShooting {
 
+    /** Default value for defects scaling. */
+    private static final double DEFAULT_SCALE = 1.;
+
     /** Template for initial state. Contains the initial Cartesian coordinates. */
     private final SpacecraftState initialSpacecraftStateTemplate;
 
@@ -58,6 +61,12 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
 
     /** Condition checker. */
     private final CartesianBoundaryConditionChecker conditionChecker;
+
+    /** Scale for velocity defects (m). */
+    private double scaleVelocityDefects;
+
+    /** Scale for position defects (m/s). */
+    private double scalePositionDefects;
 
     /** Tolerance for convergence on terminal mass adjoint, if applicable to dynamics. */
     private double toleranceMassAdjoint = DEFAULT_TOLERANCE_MASS_ADJOINT;
@@ -75,6 +84,8 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         this.conditionChecker = conditionChecker;
         this.initialSpacecraftStateTemplate = buildInitialStateTemplate(boundaryConditions.getInitialCartesianState());
         this.terminalCartesianState = boundaryConditions.getTerminalCartesianState().getPVCoordinates(propagationSettings.getPropagationFrame());
+        this.scalePositionDefects = DEFAULT_SCALE;
+        this.scaleVelocityDefects = DEFAULT_SCALE;
     }
 
     /**
@@ -90,6 +101,40 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         this.conditionChecker = conditionChecker;
         this.initialSpacecraftStateTemplate = buildInitialStateTemplate(boundaryConditions.getInitialOrbit());
         this.terminalCartesianState = boundaryConditions.getTerminalOrbit().getPVCoordinates(propagationSettings.getPropagationFrame());
+        this.scalePositionDefects = DEFAULT_SCALE;
+        this.scaleVelocityDefects = DEFAULT_SCALE;
+    }
+
+    /**
+     * Setter for scale of position defects.
+     * @param scalePositionDefects new scale
+     */
+    public void setScalePositionDefects(final double scalePositionDefects) {
+        this.scalePositionDefects = scalePositionDefects;
+    }
+
+    /**
+     * Getter for scale of position defects.
+     * @return scale
+     */
+    public double getScalePositionDefects() {
+        return scalePositionDefects;
+    }
+
+    /**
+     * Setter for scale of velocity defects.
+     * @param scaleVelocityDefects new scale
+     */
+    public void setScaleVelocityDefects(final double scaleVelocityDefects) {
+        this.scaleVelocityDefects = scaleVelocityDefects;
+    }
+
+    /**
+     * Getter for scale of velocity defects.
+     * @return scale
+     */
+    public double getScaleVelocityDefects() {
+        return scaleVelocityDefects;
     }
 
     /**
@@ -214,7 +259,7 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         final boolean isCartesianConverged = getConditionChecker().isConverged(getTerminalCartesianState(),
                 actualTerminalState.getPVCoordinates());
         if (isCartesianConverged) {
-            final String adjointName = getPropagationSettings().getAdjointDerivativesProvider().getAdjointName();
+            final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
             final double[] terminalAdjoint = actualTerminalState.getAdditionalState(adjointName);
             if (terminalAdjoint.length == 7) {
                 return FastMath.abs(terminalAdjoint[6]) < toleranceMassAdjoint;
@@ -233,7 +278,7 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
      * @return state
      */
     protected SpacecraftState createStateWithMassAndAdjoint(final double initialMass, final double[] initialAdjoint) {
-        final String adjointName = getPropagationSettings().getAdjointDerivativesProvider().getAdjointName();
+        final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
         return createStateWithMass(initialMass).addAdditionalState(adjointName, initialAdjoint);
     }
 
@@ -267,15 +312,14 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         for (int i = 0; i < parametersNumber; i++) {
             fieldInitialAdjoint[i] = Gradient.variable(parametersNumber, i, initialAdjoint[i]);
         }
-        final String adjointName = getPropagationSettings().getAdjointDerivativesProvider()
-            .buildFieldAdditionalDerivativesProvider(field).getName();
+        final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
         return stateWithoutAdjoint.addAdditionalState(adjointName, fieldInitialAdjoint);
     }
 
     /**
      * Update initial adjoint vector.
-     * @param originalInitialAdjoint initial adjoint before update
-     * @param fieldTerminalState propagated field state at terminal date
+     * @param originalInitialAdjoint original initial adjoint (before update)
+     * @param fieldTerminalState final state of gradient propagation
      * @return updated initial adjoint vector
      */
     protected abstract double[] updateAdjoint(double[] originalInitialAdjoint,

@@ -127,7 +127,7 @@ class CartesianAdjointDerivativesProviderTest {
         Assertions.assertEquals(1., increment[3]);
         Assertions.assertEquals(2., increment[4]);
         Assertions.assertEquals(3., increment[5]);
-        Assertions.assertEquals(-10., increment[6]);
+        Assertions.assertEquals(-10. * state.getMass() * new Vector3D(1., 2., 3).getNorm(), increment[6], 1e-10);
     }
 
     @Test

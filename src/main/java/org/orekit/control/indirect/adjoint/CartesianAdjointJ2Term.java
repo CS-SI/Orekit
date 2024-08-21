@@ -83,7 +83,7 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
 
     /** {@inheritDoc} */
     @Override
-    public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
+    public double[] getPositionAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
                                                    final double[] adjointVariables, final Frame frame) {
         final double[] contribution = new double[3];
         final int numberOfGradientVariables = 3;
@@ -110,7 +110,7 @@ public class CartesianAdjointJ2Term extends AbstractCartesianAdjointGravitationa
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T[] getPositionAdjointFieldContribution(final FieldAbsoluteDate<T> date,
                                                                                        final T[] stateVariables,
                                                                                        final T[] adjointVariables,
                                                                                        final Frame frame) {

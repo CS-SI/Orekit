@@ -18,6 +18,7 @@ package org.orekit.control.indirect.shooting.propagation;
 
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -41,7 +42,7 @@ public class ShootingPropagationSettings {
     private final List<ForceModel> forceModels;
 
     /** Adjoint dynamics. */
-    private final AdjointDynamicsProvider adjointDerivativesProvider;
+    private final AdjointDynamicsProvider adjointDynamicsProvider;
 
     /** Attitude provider. */
     private final AttitudeProvider attitudeProvider;
@@ -55,43 +56,43 @@ public class ShootingPropagationSettings {
     /**
      * Simple constructor with default frame and attitude provider.
      * @param forceModels forces for numerical propagation
-     * @param adjointDerivativesProvider adjoint derivatives provider
+     * @param adjointDynamicsProvider adjoint derivatives provider
      * @param integrationSettings integration settings
      */
     @DefaultDataContext
     public ShootingPropagationSettings(final List<ForceModel> forceModels,
-                                       final AdjointDynamicsProvider adjointDerivativesProvider,
+                                       final AdjointDynamicsProvider adjointDynamicsProvider,
                                        final ShootingIntegrationSettings integrationSettings) {
-        this(forceModels, adjointDerivativesProvider, FramesFactory.getGCRF(), integrationSettings,
-            new FrameAlignedProvider(FramesFactory.getGCRF()));
+        this(forceModels, adjointDynamicsProvider, FramesFactory.getGCRF(), integrationSettings,
+            AttitudeProviderModifier.getFrozenAttitudeProvider(new FrameAlignedProvider(FramesFactory.getGCRF())));
     }
 
     /**
      * Constructor.
      * @param forceModels forces for numerical propagation
      * @param propagationFrame frame used as reference frame in equations of motion by integrator
-     * @param adjointDerivativesProvider adjoint derivatives provider
+     * @param adjointDynamicsProvider adjoint derivatives provider
      * @param integrationSettings integration settings
      * @param attitudeProvider attitude provider
      */
     public ShootingPropagationSettings(final List<ForceModel> forceModels,
-                                       final AdjointDynamicsProvider adjointDerivativesProvider,
+                                       final AdjointDynamicsProvider adjointDynamicsProvider,
                                        final Frame propagationFrame,
                                        final ShootingIntegrationSettings integrationSettings,
                                        final AttitudeProvider attitudeProvider) {
         this.forceModels = forceModels;
-        this.adjointDerivativesProvider = adjointDerivativesProvider;
+        this.adjointDynamicsProvider = adjointDynamicsProvider;
         this.propagationFrame = propagationFrame;
         this.integrationSettings = integrationSettings;
         this.attitudeProvider = attitudeProvider;
     }
 
     /**
-     * Getter for adjoint derivatives provider.
+     * Getter for adjoint dynamics provider.
      * @return adjoint dynamics
      */
-    public AdjointDynamicsProvider getAdjointDerivativesProvider() {
-        return adjointDerivativesProvider;
+    public AdjointDynamicsProvider getAdjointDynamicsProvider() {
+        return adjointDynamicsProvider;
     }
 
     /**

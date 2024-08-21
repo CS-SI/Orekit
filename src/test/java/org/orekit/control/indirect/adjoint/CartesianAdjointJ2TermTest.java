@@ -50,7 +50,7 @@ class CartesianAdjointJ2TermTest {
     }
 
     @Test
-    void testGetVelocityAdjointContributionLinearity() {
+    void testGetPositionAdjointContributionLinearity() {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final CartesianAdjointJ2Term j2Term = new CartesianAdjointJ2Term(Constants.EGM96_EARTH_MU,
@@ -59,13 +59,13 @@ class CartesianAdjointJ2TermTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final double[] positionVelocity = new double[] {1, 1, 1, 1, 1, 1};
         // WHEN
-        final double[] contribution = j2Term.getVelocityAdjointContribution(date, positionVelocity, adjoint, frame);
+        final double[] contribution = j2Term.getPositionAdjointContribution(date, positionVelocity, adjoint, frame);
         // THEN
         final double[] doubleAdjoint = new double[6];
         for (int i = 0; i < 6; i++) {
             doubleAdjoint[i] = adjoint[i] * 2;
         }
-        final double[] contributionDouble = j2Term.getVelocityAdjointContribution(date, positionVelocity, doubleAdjoint,
+        final double[] contributionDouble = j2Term.getPositionAdjointContribution(date, positionVelocity, doubleAdjoint,
                 frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(contribution[i] * 2, contributionDouble[i]);
@@ -73,7 +73,7 @@ class CartesianAdjointJ2TermTest {
     }
 
     @Test
-    void testGetVelocityAdjointFieldContribution() {
+    void testGetPositionAdjointFieldContribution() {
         // GIVEN
         final Frame frame = FramesFactory.getGCRF();
         final CartesianAdjointJ2Term j2Term = new CartesianAdjointJ2Term(Constants.EGM96_EARTH_MU,
@@ -87,7 +87,7 @@ class CartesianAdjointJ2TermTest {
         }
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = j2Term.getVelocityAdjointFieldContribution(fieldDate, fieldState,
+        final Binary64[] fieldContribution = j2Term.getPositionAdjointFieldContribution(fieldDate, fieldState,
                 fieldAdjoint, frame);
         // THEN
         final double[] state = new double[fieldState.length];
@@ -98,7 +98,7 @@ class CartesianAdjointJ2TermTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final double[] contribution = j2Term.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint,
+        final double[] contribution = j2Term.getPositionAdjointContribution(fieldDate.toAbsoluteDate(), state, adjoint,
                 frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i]);

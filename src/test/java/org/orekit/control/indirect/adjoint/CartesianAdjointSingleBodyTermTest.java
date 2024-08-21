@@ -60,7 +60,7 @@ class CartesianAdjointSingleBodyTermTest {
     }
 
     @Test
-    void testGetVelocityAdjointContribution() {
+    void testGetPositionAdjointContribution() {
         // GIVEN
         final CelestialBody body = getCelestialBody(Vector3D.MINUS_I);
         final CartesianAdjointSingleBodyTerm singleBodyTerm = new CartesianAdjointSingleBodyTerm(body.getGM(), body);
@@ -72,7 +72,7 @@ class CartesianAdjointSingleBodyTermTest {
         }
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2015, 1, 1), TimeScalesFactory.getUTC());
         // WHEN
-        final double[] contribution = singleBodyTerm.getVelocityAdjointContribution(date, state, adjoint,
+        final double[] contribution = singleBodyTerm.getPositionAdjointContribution(date, state, adjoint,
                 FramesFactory.getGCRF());
         // THEN
         final SingleBodyAbsoluteAttraction singleBodyAbsoluteAttraction = new SingleBodyAbsoluteAttraction(body);
@@ -98,7 +98,7 @@ class CartesianAdjointSingleBodyTermTest {
     }
 
     @Test
-    void testGetVelocityAdjointFieldContribution() {
+    void testGetPositionAdjointFieldContribution() {
         // GIVEN
         final CelestialBody celestialBody = getCelestialBody(Vector3D.ZERO);
         final CartesianAdjointSingleBodyTerm cartesianAdjointSingleBodyTerm = new CartesianAdjointSingleBodyTerm(celestialBody.getGM(),
@@ -113,11 +113,11 @@ class CartesianAdjointSingleBodyTermTest {
         final Frame frame = celestialBody.getInertiallyOrientedFrame();
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = cartesianAdjointSingleBodyTerm.getVelocityAdjointFieldContribution(fieldDate,
+        final Binary64[] fieldContribution = cartesianAdjointSingleBodyTerm.getPositionAdjointFieldContribution(fieldDate,
                 fieldState, fieldAdjoint, frame);
         // THEN
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(celestialBody.getGM());
-        final Binary64[] contribution = keplerianTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState,
+        final Binary64[] contribution = keplerianTerm.getPositionAdjointFieldContribution(fieldDate, fieldState,
                 fieldAdjoint, frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i], contribution[i]);
