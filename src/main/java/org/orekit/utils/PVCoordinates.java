@@ -30,7 +30,6 @@ import org.hipparchus.util.Blendable;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.time.SplitTime;
 import org.orekit.time.TimeShiftable;
 
 /** Simple container for Position/Velocity/Acceleration triplets.
@@ -652,7 +651,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
         private static final long serialVersionUID = 20140723L;
 
         /** Double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Simple constructor.
          * @param pv instance to serialize

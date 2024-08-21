@@ -1075,7 +1075,7 @@ public class SpacecraftState
         private final AbsolutePVCoordinates absPva;
 
         /** Attitude and mass double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Additional states. */
         private final DoubleArrayDictionary additional;

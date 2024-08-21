@@ -30,7 +30,6 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.SplitTime;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link PVCoordinates}.
@@ -301,7 +300,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         private static final long serialVersionUID = 20140723L;
 
         /** Double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Simple constructor.
          * @param pv instance to serialize
