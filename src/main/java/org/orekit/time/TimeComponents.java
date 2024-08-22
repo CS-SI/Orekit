@@ -403,8 +403,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // naiveSecond may round to minuteDuration, creating an invalid time.
         // In that case round down to preserve a valid time at the cost of up to 1as of error.
         // See #676 and #681.
-        final SplitTime naiveSecond = new SplitTime(wholeSeconds, secondInDay.getAttoSeconds()).
-                                      add(new SplitTime(leap));
+        final SplitTime naiveSecond = new SplitTime(wholeSeconds, secondInDay.getAttoSeconds()).add(leap);
         if (naiveSecond.compareTo(SplitTime.ZERO) < 0) {
             throw new OrekitIllegalArgumentException(
                     OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,

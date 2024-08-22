@@ -160,10 +160,11 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param times times to add
      */
     public SplitTime(final SplitTime...times) {
-        SplitTime sum = SplitTime.ZERO;
+        final RunningSum runningSum = new RunningSum();
         for (final SplitTime time : times) {
-            sum = sum.add(time);
+            runningSum.add(time);
         }
+        final SplitTime sum = runningSum.normalize();
         this.seconds     = sum.getSeconds();
         this.attoSeconds = sum.getAttoSeconds();
     }
@@ -184,10 +185,10 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             final long qAtto = attoSeconds / ATTOS_IN_SECOND;
             final long rAtto = attoSeconds - qAtto * ATTOS_IN_SECOND;
             if (rAtto < 0L) {
-                normalizedSeconds     = FastMath.subtractExact(FastMath.addExact(seconds, qAtto), 1L);
+                normalizedSeconds     = seconds + qAtto - 1L;
                 normalizedAttoSeconds = ATTOS_IN_SECOND + rAtto;
             } else {
-                normalizedSeconds     = FastMath.addExact(seconds, qAtto);
+                normalizedSeconds     = seconds + qAtto;
                 normalizedAttoSeconds = rAtto;
             }
         } catch (MathRuntimeException mre) {
@@ -454,24 +455,10 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @return this+t
      */
     public SplitTime add(final SplitTime t) {
-        if (attoSeconds < 0 || t.attoSeconds < 0) {
-            // gather all special cases in one big check to avoid rare multiple tests
-            if (isNaN() ||
-                t.isNaN() ||
-                isPositiveInfinity() && t.isNegativeInfinity() ||
-                isNegativeInfinity() && t.isPositiveInfinity()) {
-                return NaN;
-            } else if (isInfinite()) {
-                // t is either a finite time or the same infinity as this
-                return this;
-            } else {
-                // this is either a finite time or the same infinity as t
-                return t;
-            }
-        } else {
-            // regular addition between two finite times
-            return new SplitTime(seconds + t.seconds, attoSeconds + t.attoSeconds);
-        }
+        final RunningSum runningSum = new RunningSum();
+        runningSum.add(this);
+        runningSum.add(t);
+        return runningSum.normalize();
     }
 
     /** Build a time by subtracting one time from the instance.
@@ -871,6 +858,89 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     @Override
     public int hashCode() {
         return Long.hashCode(seconds) ^ Long.hashCode(attoSeconds);
+    }
+
+    /** Local class for summing several instances. */
+    private static class RunningSum {
+
+        /** Number of terms that can be added before normalization is needed. */
+        private static final int COUNT_DOWN_MAX = 9;
+
+        /** Seconds part. */
+        private long seconds;
+
+        /** AttoSeconds part. */
+        private long attoSeconds;
+
+        /** Indicator for NaN presence. */
+        private boolean addedNaN;
+
+        /** Indicator for +∞ presence. */
+        private boolean addedPositiveInfinity;
+
+        /** Indicator for -∞ presence. */
+        private boolean addedNegativeInfinity;
+
+        /** Countdown for checking carry. */
+        private int countDown;
+
+        /** Simple constructor.
+         */
+        RunningSum() {
+            countDown = COUNT_DOWN_MAX;
+        }
+
+        /** Add one term.
+         * @param term term to add
+         */
+        public void add(SplitTime term) {
+            if (term.isFinite()) {
+                // regular addition
+                seconds     += term.seconds;
+                attoSeconds += term.attoSeconds;
+                if (--countDown == 0) {
+                    // we have added several terms, we should normalize
+                    // the fields before attoseconds overflow (it may overflow after 9 additions)
+                    normalize();
+                    countDown = COUNT_DOWN_MAX - 1;
+                }
+            } else if (term.isNegativeInfinity()) {
+                addedNegativeInfinity = true;
+            } else if (term.isPositiveInfinity()) {
+                addedPositiveInfinity = true;
+            } else {
+                addedNaN = true;
+            }
+        }
+
+        /** Normalize current running sum.
+         * @return normalized value
+         */
+        public SplitTime normalize() {
+            if (addedNaN || (addedNegativeInfinity && addedPositiveInfinity)) {
+                // we have built a NaN
+                seconds     = NaN.seconds;
+                attoSeconds = NaN.attoSeconds;
+                return NaN;
+            } else if (addedNegativeInfinity) {
+                // we have built -∞
+                seconds     = NEGATIVE_INFINITY.seconds;
+                attoSeconds = NEGATIVE_INFINITY.attoSeconds;
+                return NEGATIVE_INFINITY;
+            } else if (addedPositiveInfinity) {
+                // we have built +∞
+                seconds     = POSITIVE_INFINITY.seconds;
+                attoSeconds = POSITIVE_INFINITY.attoSeconds;
+                return POSITIVE_INFINITY;
+            } else {
+                // this is a regular time
+                final SplitTime regular = new SplitTime(seconds, attoSeconds);
+                seconds     = regular.seconds;
+                attoSeconds = regular.attoSeconds;
+                return regular;
+            }
+        }
+
     }
 
 }

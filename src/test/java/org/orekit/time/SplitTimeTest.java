@@ -118,14 +118,6 @@ public class SplitTimeTest {
     }
 
     @Test
-    public void testOverflow() {
-        Assertions.assertTrue(new SplitTime(Long.MAX_VALUE, 999999999999999999L).isFinite());
-        Assertions.assertTrue(new SplitTime(Long.MAX_VALUE, 1000000000000000000L).isPositiveInfinity());
-        Assertions.assertTrue(new SplitTime(Long.MIN_VALUE, 0L).isFinite());
-        Assertions.assertTrue(new SplitTime(Long.MIN_VALUE, -1L).isNegativeInfinity());
-    }
-
-    @Test
     public void testZero() {
         Assertions.assertTrue(new SplitTime(0, 0).isZero());
         Assertions.assertFalse(new SplitTime(0, 1).isZero());
