@@ -893,7 +893,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         /** Add one term.
          * @param term term to add
          */
-        public void add(SplitTime term) {
+        public void add(final SplitTime term) {
             if (term.isFinite()) {
                 // regular addition
                 seconds     += term.seconds;
@@ -917,7 +917,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
          * @return normalized value
          */
         public SplitTime normalize() {
-            if (addedNaN || (addedNegativeInfinity && addedPositiveInfinity)) {
+            if (addedNaN || addedNegativeInfinity && addedPositiveInfinity) {
                 // we have built a NaN
                 seconds     = NaN.seconds;
                 attoSeconds = NaN.attoSeconds;
