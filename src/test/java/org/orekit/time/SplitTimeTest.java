@@ -270,14 +270,20 @@ public class SplitTimeTest {
 
     @Test
     public void testSumConstructor() {
-        final SplitTime so = new SplitTime(new SplitTime(1L, 2L),
-                                           new SplitTime(3L, 4L),
-                                           new SplitTime(5L, 6L),
-                                           new SplitTime(7L, 8L),
-                                           new SplitTime(9L, 10L),
-                                           new SplitTime(11L, 12L));
-        Assertions.assertEquals(36L, so.getSeconds());
-        Assertions.assertEquals(42L, so.getAttoSeconds());
+        final SplitTime so = new SplitTime(new SplitTime( 1L,  2L),
+                                           new SplitTime( 3L,  4L),
+                                           new SplitTime( 5L,  6L),
+                                           new SplitTime( 7L,  8L),
+                                           new SplitTime( 9L, 10L),
+                                           new SplitTime(11L, 12L),
+                                           new SplitTime(13L, 14L),
+                                           new SplitTime(15L, 16L),
+                                           new SplitTime(17L, 18L),
+                                           new SplitTime(19L, 20L),
+                                           new SplitTime(21L, 22L),
+                                           new SplitTime(23L, 24L));
+        Assertions.assertEquals(144L, so.getSeconds());
+        Assertions.assertEquals(156L, so.getAttoSeconds());
     }
 
     @Test
