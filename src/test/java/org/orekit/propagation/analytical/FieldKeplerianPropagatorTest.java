@@ -32,7 +32,6 @@ import org.hipparchus.util.Tuple;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -214,8 +213,6 @@ public class FieldKeplerianPropagatorTest {
     }
 
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testIssue107() {
         doTestIssue107(Binary64Field.getInstance());

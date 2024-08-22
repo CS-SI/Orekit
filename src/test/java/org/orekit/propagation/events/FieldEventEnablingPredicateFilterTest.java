@@ -28,7 +28,6 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
@@ -58,8 +57,6 @@ public class FieldEventEnablingPredicateFilterTest {
     private GeodeticPoint gp;
     private FieldOrbit<Binary64> orbit;
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testForward0Degrees() {
         doElevationTest(FastMath.toRadians(0.0),
@@ -68,8 +65,6 @@ public class FieldEventEnablingPredicateFilterTest {
                8, true);
     }
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testForward5Degrees() {
         doElevationTest(FastMath.toRadians(5.0),
@@ -78,8 +73,6 @@ public class FieldEventEnablingPredicateFilterTest {
                6, false);
     }
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testForward5DegreesStartEnabled() {
         doElevationTest(FastMath.toRadians(5.0),
@@ -177,8 +170,6 @@ public class FieldEventEnablingPredicateFilterTest {
 
     }
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testResetState() {
         final List<FieldAbsoluteDate<Binary64>> reset = new ArrayList<>();
@@ -225,8 +216,6 @@ public class FieldEventEnablingPredicateFilterTest {
 
     }
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testExceedHistoryForward() throws IOException {
         final double period = 900.0;

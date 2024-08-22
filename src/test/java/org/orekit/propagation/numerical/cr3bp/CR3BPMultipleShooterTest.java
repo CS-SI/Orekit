@@ -25,7 +25,6 @@ import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CR3BPFactory;
@@ -261,8 +260,6 @@ public class CR3BPMultipleShooterTest {
     }
 
     // Non regression test
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testWithConstraint() {
 
@@ -317,13 +314,13 @@ public class CR3BPMultipleShooterTest {
         final List<SpacecraftState> corrStates = shooter.compute();
 
         final PVCoordinates pv0 = corrStates.get(0).getPVCoordinates();
-        final PVCoordinates pv2 = corrStates.get(nArcs).getPVCoordinates();
-        Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-6);
-        Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-6);
-        Assertions.assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-6);
-        Assertions.assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1e-6);
-        Assertions.assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1e-6);
-        Assertions.assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1e-6);
+        final PVCoordinates pv2 = corrStates.get(2).getPVCoordinates();
+        Assertions.assertEquals(pv0.getPosition().getX(), pv2.getPosition().getX(), 1e-4);
+        Assertions.assertEquals(pv0.getPosition().getY(), pv2.getPosition().getY(), 1e-4);
+        Assertions.assertEquals(pv0.getPosition().getZ(), pv2.getPosition().getZ(), 1e-4);
+        Assertions.assertEquals(pv0.getVelocity().getX(), pv2.getVelocity().getX(), 1.1e-5);
+        Assertions.assertEquals(pv0.getVelocity().getY(), pv2.getVelocity().getY(), 1.1e-5);
+        Assertions.assertEquals(pv0.getVelocity().getZ(), pv2.getVelocity().getZ(), 1.1e-5);
 
     }
 

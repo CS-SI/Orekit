@@ -26,7 +26,6 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -57,8 +56,6 @@ public class FieldLongitudeCrossingDetectorTest {
     private static final Binary64Field field = Binary64Field.getInstance();
 
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void testRegularCrossing() {
 

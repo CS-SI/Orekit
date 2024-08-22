@@ -44,7 +44,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -1745,8 +1744,6 @@ public class FieldNumericalPropagatorTest {
         }
     }
 
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     void testInfinitePropagation() {
         doTestInfinitePropagation(Binary64Field.getInstance());
