@@ -42,7 +42,7 @@ public class ConstantOffsetTimeScale implements TimeScale {
      * @param name name of the time scale
      * @param offset offset from TAI
      */
-    protected ConstantOffsetTimeScale(final String name, final SplitTime offset) {
+    public ConstantOffsetTimeScale(final String name, final SplitTime offset) {
         this.name          = name;
         this.offset        = offset;
         this.negatedOffset = offset.negate();

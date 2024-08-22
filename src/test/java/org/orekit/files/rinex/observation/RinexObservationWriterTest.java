@@ -48,6 +48,7 @@ import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ConstantOffsetTimeScale;
+import org.orekit.time.SplitTime;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 
@@ -184,7 +185,9 @@ public class RinexObservationWriterTest {
                         CustomType::new,
                         (system, timeScales) -> {
                            final ObservationTimeScale ots = system.getObservationTimeScale();
-                           return ots != null ? ots.getTimeScale(timeScales) : new ConstantOffsetTimeScale(system.name(), 45);
+                           return ots != null ?
+                                  ots.getTimeScale(timeScales) :
+                                  new ConstantOffsetTimeScale(system.name(), new SplitTime(45, SplitTime.SECOND));
                         },
                         DataContext.getDefault().getTimeScales());
     }
