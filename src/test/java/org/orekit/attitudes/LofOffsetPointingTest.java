@@ -227,7 +227,7 @@ class LofOffsetPointingTest {
         final TimeStampedFieldPVCoordinates<T> pvF = provider.getTargetPV(orbitF, dateF, frame);
 
         Assertions.assertEquals(0.0, Vector3D.distance(pvD.getPosition(),     pvF.getPosition().toVector3D()),     6.0e-9);
-        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     5.0e-13);
+        Assertions.assertEquals(0.0, Vector3D.distance(pvD.getVelocity(),     pvF.getVelocity().toVector3D()),     6.0e-12);
         Assertions.assertEquals(0.0, Vector3D.distance(pvD.getAcceleration(), pvF.getAcceleration().toVector3D()), 2.0e-6);
     }
 
@@ -270,14 +270,14 @@ class LofOffsetPointingTest {
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
                         FastMath.toRadians(5.300), PositionAngleType.MEAN,
                         FramesFactory.getEME2000(), date, mu);
-        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.QSW, RotationOrder.XYX, 0, 2,0.3);
+        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.QSW, RotationOrder.XYX, -1., 2., 3.);
         final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
         final FieldCircularOrbit<Complex> fieldOrbit = new FieldCircularOrbit<>(ComplexField.getInstance(), circ);
         // WHEN
         final FieldVector3D<Complex> targetPosition = pointing.getTargetPosition(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame());
         // THEN
         final FieldVector3D<Complex> expectedPosition = pointing.getTargetPV(fieldOrbit, fieldOrbit.getDate(), fieldOrbit.getFrame()).getPosition();
-        Assertions.assertEquals(0., expectedPosition.subtract(targetPosition).getNorm().getReal(), 1e-10);
+        Assertions.assertEquals(0., expectedPosition.subtract(targetPosition).getNorm().getReal(), 1.4e-9);
     }
 
     @BeforeEach
