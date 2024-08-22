@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.utils.Constants;
 
 /** Barycentric Dynamic Time.
@@ -38,16 +40,16 @@ public class TDBScale implements TimeScale {
     private static final long serialVersionUID = 20240720L;
 
     /** Constant term for g angle. */
-    private static final double G0 = 357.53;
+    private static final double G0 = FastMath.toRadians(357.53);
 
     /** Slope term for g angle. */
-    private static final double G1 = 0.9856003;
+    private static final double G1 = FastMath.toRadians(0.9856003);
 
     /** Factor for sin(g). */
     private static final double SIN_G_FACTOR = 0.001658;
 
     /** Factor for sin(2g). */
-    private static final double SIN_2G_FACTOR = 0.000014;
+    private static final double TWO_SIN_2G_FACTOR = 2 * 0.000014;
 
     /** TT time scale. */
     private final TimeScale tt;
@@ -70,18 +72,18 @@ public class TDBScale implements TimeScale {
     @Override
     public SplitTime offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(j2000Epoch) / Constants.JULIAN_DAY;
-        final double g = FastMath.toRadians(G0 + G1 * dtDays);
+        final SinCos sc = FastMath.sinCos(G0 + G1 * dtDays);
         return tt.offsetFromTAI(date).
-               add(new SplitTime(SIN_G_FACTOR * FastMath.sin(g) + SIN_2G_FACTOR * FastMath.sin(2 * g)));
+               add(new SplitTime(sc.sin() * (SIN_G_FACTOR + TWO_SIN_2G_FACTOR * sc.cos())));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
         final T dtDays = date.durationFrom(j2000Epoch).divide(Constants.JULIAN_DAY);
-        final T g = dtDays.multiply(G1).add(G0).multiply(dtDays.getPi().divide(180));
+        final FieldSinCos<T> sc = FastMath.sinCos(dtDays.multiply(G1).add(G0));
         return tt.offsetFromTAI(date).
-               add(g.sin().multiply(SIN_G_FACTOR).add(g.multiply(2).sin().multiply(SIN_2G_FACTOR)));
+               add(sc.sin().multiply(sc.cos().multiply(TWO_SIN_2G_FACTOR).add(SIN_G_FACTOR)));
     }
 
     /** {@inheritDoc} */
