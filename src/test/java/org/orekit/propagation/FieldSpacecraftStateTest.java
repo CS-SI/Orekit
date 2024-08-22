@@ -89,9 +89,7 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testDatesConsistency() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestDatesConsistency(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> doTestDatesConsistency(Binary64Field.getInstance()));
     }
 
     @Test
@@ -101,9 +99,7 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testFramesConsistency() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistency(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class, () -> doTestFramesConsistency(Binary64Field.getInstance()));
     }
 
     @Test
@@ -133,9 +129,8 @@ class FieldSpacecraftStateTest {
 
     @Test
     void testFramesConsistencyAbsPV() {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            doTestFramesConsistencyAbsPV(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(IllegalArgumentException.class,
+                                () -> doTestFramesConsistencyAbsPV(Binary64Field.getInstance()));
     }
 
     @Test
@@ -435,11 +430,8 @@ class FieldSpacecraftStateTest {
         FieldAttitude<T> shiftedAttitude = attitudeLaw
                 .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
 
-        //verify dates are very close, but not equal
-        Assertions.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
-        Assertions.assertEquals(
-                shiftedAttitude.getDate().durationFrom(orbit10Shifts.getDate()).getReal(),
-                0, Precision.EPSILON);
+        // since Orekit 13, dates are equal
+        Assertions.assertEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
 
         //action + verify no exception is thrown
         new FieldSpacecraftState<>(orbit10Shifts, shiftedAttitude);
@@ -783,14 +775,11 @@ class FieldSpacecraftStateTest {
 
         BodyCenterPointing attitudeLaw = new BodyCenterPointing(absPV_f.getFrame(), earth);
 
-        FieldAttitude<T> shiftedAttitude = attitudeLaw
-                .getAttitude(AbsolutePVCoordinates1Shift, AbsolutePVCoordinates1Shift.getDate(), absPV_f.getFrame());
-
-        //verify dates are very close, but not equal
-        Assertions.assertNotEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
-        Assertions.assertEquals(
-                shiftedAttitude.getDate().durationFrom(AbsolutePVCoordinates10Shifts.getDate()).getReal(),
-                0, Precision.EPSILON);
+        FieldAttitude<T> shiftedAttitude = attitudeLaw.getAttitude(AbsolutePVCoordinates1Shift,
+                                                                   AbsolutePVCoordinates1Shift.getDate(),
+                                                                   absPV_f.getFrame());
+        // since Orekit 13, dates are equal
+        Assertions.assertEquals(shiftedAttitude.getDate(), AbsolutePVCoordinates10Shifts.getDate());
 
         //action + verify no exception is thrown
         FieldSpacecraftState<T> s1 = new FieldSpacecraftState<>(AbsolutePVCoordinates10Shifts, shiftedAttitude);

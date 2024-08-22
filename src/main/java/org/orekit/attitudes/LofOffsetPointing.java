@@ -39,6 +39,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
+import org.orekit.time.SplitTime;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -118,12 +119,11 @@ public class LofOffsetPointing extends GroundPointing {
                                                 final AbsoluteDate date, final Frame frame) {
 
         // sample intersection points in current date neighborhood
-        final double h  = 0.1;
         final List<TimeStampedPVCoordinates> sample = new ArrayList<>();
         Transform centralRefToBody = null;
         for (int i = -1; i < 2; ++i) {
 
-            final AbsoluteDate shifted = date.shiftedBy(i * h);
+            final AbsoluteDate shifted = date.shiftedBy(new SplitTime(i * 100, SplitTime.MILLISECOND));
 
             // transform from specified reference frame to spacecraft frame
             final StaticTransform refToSc = StaticTransform.of(shifted, pvProv.getPosition(shifted, frame).negate(),
@@ -177,12 +177,11 @@ public class LofOffsetPointing extends GroundPointing {
                                                                                             final Frame frame) {
 
         // sample intersection points in current date neighborhood
-        final double h  = 0.1;
         final List<TimeStampedFieldPVCoordinates<T>> sample = new ArrayList<>();
         FieldTransform<T> centralRefToBody = null;
         for (int i = -1; i < 2; ++i) {
 
-            final FieldAbsoluteDate<T> shifted = date.shiftedBy(i * h);
+            final FieldAbsoluteDate<T> shifted = date.shiftedBy(new SplitTime(i * 100, SplitTime.MILLISECOND));
 
             // transform from specified reference frame to spacecraft frame
             final FieldStaticTransform<T> refToSc = FieldStaticTransform.of(shifted,
