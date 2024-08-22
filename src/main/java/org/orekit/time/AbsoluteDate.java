@@ -1288,13 +1288,6 @@ public class AbsoluteDate
         return this.isEqualTo(boundary) || this.isEqualTo(otherBoundary) || this.isBetween(boundary, otherBoundary);
     }
 
-    /** Get a hashcode for this date.
-     * @return hashcode
-     */
-    public int hashCode() {
-        return (int) ((getSeconds() ^ (getSeconds() >>> 32)) ^ (getAttoSeconds() ^ (getAttoSeconds() >>> 32)));
-    }
-
     /**
      * Get a String representation of the instant location with up to 18 digits of
      * precision for the seconds value.
