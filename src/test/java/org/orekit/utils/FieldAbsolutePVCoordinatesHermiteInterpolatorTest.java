@@ -118,7 +118,7 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
     void testInterpolatePolynomialPositionOnly() {
         final Field<Binary64>       field  = Binary64Field.getInstance();
         final Binary64              one    = field.getOne();
-        Random                      random = new Random(0x88740a12e4299003l);
+        Random                      random = new Random(0x88740a12e4299003L);
         FieldAbsoluteDate<Binary64> t0     = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame                       frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -173,7 +173,7 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
     void testInterpolatePolynomialPV() {
         final Field<Binary64>       field  = Binary64Field.getInstance();
         final Binary64              one    = field.getOne();
-        Random                      random = new Random(0xae7771c9933407bdl);
+        Random                      random = new Random(0xae7771c9933407bdL);
         FieldAbsoluteDate<Binary64> t0     = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame                       frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
@@ -232,7 +232,7 @@ class FieldAbsolutePVCoordinatesHermiteInterpolatorTest {
     void testInterpolatePolynomialPVA() {
         final Field<Binary64>       field  = Binary64Field.getInstance();
         final Binary64              one    = field.getOne();
-        Random                      random = new Random(0xfe3945fcb8bf47cel);
+        Random                      random = new Random(0xfe3945fcb8bf47ceL);
         FieldAbsoluteDate<Binary64> t0     = FieldAbsoluteDate.getJ2000Epoch(field);
         Frame                       frame  = FramesFactory.getEME2000();
         for (int i = 0; i < 20; ++i) {
