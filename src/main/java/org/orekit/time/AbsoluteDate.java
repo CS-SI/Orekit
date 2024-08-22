@@ -1189,24 +1189,6 @@ public class AbsoluteDate
         return this;
     }
 
-    /** Check if the instance represents the same time as another instance.
-     * @param other other date
-     * @return true if the instance and the other date refer to the same instant
-     */
-    public boolean equals(final Object other) {
-
-        if (other == this) {
-            // first fast check
-            return true;
-        }
-
-        if (other instanceof AbsoluteDate) {
-            return compareTo((AbsoluteDate) other) == 0;
-        }
-
-        return false;
-    }
-
     /** Check if the instance represents the same time as another.
      * @param other the instant to compare this date to
      * @return true if the instance and the argument refer to the same instant

@@ -860,7 +860,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof SplitTime)) {
+        if (o == null || o.getClass() != this.getClass()) {
             return false;
         }
         final SplitTime splitTime = (SplitTime) o;
