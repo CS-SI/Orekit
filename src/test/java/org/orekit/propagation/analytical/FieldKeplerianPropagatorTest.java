@@ -231,23 +231,17 @@ public class FieldKeplerianPropagatorTest {
 
     @Test
     public void testWrongAttitude() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestWrongAttitude(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(OrekitException.class, () -> doTestWrongAttitude(Binary64Field.getInstance()));
     }
 
     @Test
     public void testStepException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestStepException(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(OrekitException.class, () -> doTestStepException(Binary64Field.getInstance()));
     }
 
     @Test
     public void testWrappedAttitudeException() {
-        Assertions.assertThrows(OrekitException.class, () -> {
-            doTestWrappedAttitudeException(Binary64Field.getInstance());
-        });
+        Assertions.assertThrows(OrekitException.class, () -> doTestWrappedAttitudeException(Binary64Field.getInstance()));
     }
 
     @Test
@@ -564,9 +558,6 @@ public class FieldKeplerianPropagatorTest {
         FieldStepHandlerMultiplexer<T> multiplexer = new FieldStepHandlerMultiplexer<>();
         propagator.setStepHandler(multiplexer);
         multiplexer.add(new FieldOrekitStepHandler<T>() {
-            @Override
-            public void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
-            }
             @Override
             public void handleStep(FieldOrekitStepInterpolator<T> interpolator) {
             }

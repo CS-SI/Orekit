@@ -61,7 +61,7 @@ public class CR3BPMultipleShooterTest {
                                                                              date,
                                                                              firstGuess1)));
 
-            new CR3BPMultipleShooter(firstGuessList, new ArrayList<NumericalPropagator>(), cr3bpAdditionalEquations, 1E-8, 20).setEpochFreedom(1, false);
+            new CR3BPMultipleShooter(firstGuessList, new ArrayList<>(), cr3bpAdditionalEquations, 1E-8, 20).setEpochFreedom(1, false);
         });
     }
 
@@ -80,7 +80,7 @@ public class CR3BPMultipleShooterTest {
                                                                              date,
                                                                              firstGuess1)));
 
-            new CR3BPMultipleShooter(firstGuessList, new ArrayList<NumericalPropagator>(), cr3bpAdditionalEquations, 1E-8, 20).setScaleLength(1);
+            new CR3BPMultipleShooter(firstGuessList, new ArrayList<>(), cr3bpAdditionalEquations, 1E-8, 20).setScaleLength(1);
         });
     }
 
@@ -99,7 +99,7 @@ public class CR3BPMultipleShooterTest {
                                                                              date,
                                                                              firstGuess1)));
 
-            new CR3BPMultipleShooter(firstGuessList, new ArrayList<NumericalPropagator>(), cr3bpAdditionalEquations, 1E-8, 20).setScaleTime(1);
+            new CR3BPMultipleShooter(firstGuessList, new ArrayList<>(), cr3bpAdditionalEquations, 1E-8, 20).setScaleTime(1);
         });
     }
 
@@ -353,7 +353,7 @@ public class CR3BPMultipleShooterTest {
         Assertions.assertThrows(OrekitException.class, () -> {
             // Time settings
             final AbsoluteDate initialDate =
-                    new AbsoluteDate(1996, 06, 25, 0, 0, 00.000,
+                    new AbsoluteDate(1996, 6, 25, 0, 0, 00.000,
                             TimeScalesFactory.getUTC());
             CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 

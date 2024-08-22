@@ -33,20 +33,21 @@ import org.orekit.time.SplitTime;
 
 /** Builder class, enabling incremental building of an {@link PVCoordinatesProvider}
  * instance using waypoints defined on an ellipsoid.
- *
+ * <p>
  * Given a series of waypoints ({@code (date, point)} tuples),
  * build a {@link PVCoordinatesProvider} representing the path.
  * The static methods provide implementations for the most common path definitions
  * (cartesian, great-circle, loxodrome). If these methods are insufficient,
  * the public constructor provides a way to customize the path definition.
- *
+ * </p>
+ * <p>
  * This class connects the path segments using the {@link AggregatedPVCoordinatesProvider}.
  * As such, no effort is made to smooth the velocity between segments.
  * While position is unaffected, the velocity may be discontinuous between adjacent time points.
  * Thus, care should be taken when modeling paths with abrupt direction changes
  * (e.g. fast-moving aircraft); understand how the {@link PVCoordinatesProvider}
  * will be used in the particular application.
- *
+ * </p>
  * @author Joe Reed
  * @since 11.3
  */
@@ -98,10 +99,10 @@ public class WaypointPVBuilder {
     }
 
     /** Construct a waypoint builder interpolating points using a great-circle.
-     *
+     * <p>
      * The altitude of the intermediate points is linearly interpolated from the bounding waypoints.
      * Extrapolating before the first waypoint or after the last waypoint may result in undefined altitudes.
-     *
+     * </p>
      * @param body the reference ellipsoid on which the waypoints are defined.
      * @return the waypoint builder
      */
@@ -163,8 +164,7 @@ public class WaypointPVBuilder {
      * @return the coordinates provider instance.
      */
     public PVCoordinatesProvider build() {
-        final PVCoordinatesProvider initialProvider = createInitial(waypoints.firstKey(),
-                                                                    waypoints.firstEntry().getValue());
+        final PVCoordinatesProvider initialProvider = createInitial(waypoints.firstEntry().getValue());
         final AggregatedPVCoordinatesProvider.Builder builder = new AggregatedPVCoordinatesProvider.Builder(initialProvider);
 
         Entry<AbsoluteDate, GeodeticPoint> previousEntry = null;
@@ -186,46 +186,44 @@ public class WaypointPVBuilder {
                                    true);
         // add the final provider after the final waypoint
         builder.addPVProviderAfter(previousEntry.getKey().shiftedBy(SplitTime.ATTOSECOND),
-                                   createFinal(previousEntry.getKey(), previousEntry.getValue()),
+                                   createFinal(previousEntry.getValue()),
                                    true);
 
         return builder.build();
     }
 
-    /** Create the initial provider.
+    /**
+     * Create the initial provider.
+     * <p>
+     * This method uses the internal {@code validBefore} flag to either return an invalid PVCoordinatesProvider or a
+     * constant one.
+     * </p>
      *
-     * This method uses the internal {@code validBefore} flag to
-     * either return an invalid PVCoordinatesProvider or a constant one.
-     *
-     * @param firstDate the date at which the first waypoint is reached
-     *                  and this provider will no longer be called
      * @param firstPoint the first waypoint
      * @return the coordinate provider
      */
-    protected PVCoordinatesProvider createInitial(final AbsoluteDate firstDate, final GeodeticPoint firstPoint) {
+    protected PVCoordinatesProvider createInitial(final GeodeticPoint firstPoint) {
         if (invalidBefore) {
             return new AggregatedPVCoordinatesProvider.InvalidPVProvider();
-        }
-        else {
+        } else {
             return new ConstantPVCoordinatesProvider(firstPoint, body);
         }
     }
 
-    /** Create the final provider.
+    /**
+     * Create the final provider.
+     * <p>
+     * This method uses the internal {@code validAfter} flag to either return an invalid PVCoordinatesProvider or a
+     * constant one.
+     * </p>
      *
-     * This method uses the internal {@code validAfter} flag to
-     * either return an invalid PVCoordinatesProvider or a constant one.
-     *
-     * @param lastDate the date at which the last waypoint is reached
-     *                 and this provider will be called
      * @param lastPoint the last waypoint
      * @return the coordinate provider
      */
-    protected PVCoordinatesProvider createFinal(final AbsoluteDate lastDate, final GeodeticPoint lastPoint) {
+    protected PVCoordinatesProvider createFinal(final GeodeticPoint lastPoint) {
         if (invalidAfter) {
             return new AggregatedPVCoordinatesProvider.InvalidPVProvider();
-        }
-        else {
+        } else {
             return new ConstantPVCoordinatesProvider(lastPoint, body);
         }
     }
@@ -268,11 +266,11 @@ public class WaypointPVBuilder {
         /** Body on which the great circle is defined. */
         private final OneAxisEllipsoid body;
         /** Phase of one second. */
-        private double oneSecondPhase;
+        private final double oneSecondPhase;
         /** Altitude of the initial point. */
-        private double initialAltitude;
+        private final double initialAltitude;
         /** Time-derivative of the altitude. */
-        private double altitudeSlope;
+        private final double altitudeSlope;
 
         /** Class constructor. Aligns to the {@link InterpolationFactory} functional interface.
          *

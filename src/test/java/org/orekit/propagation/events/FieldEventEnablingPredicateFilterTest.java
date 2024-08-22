@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,13 +113,9 @@ public class FieldEventEnablingPredicateFilterTest {
                 withHandler(new FieldContinueOnEvent<>());
         final FieldEventEnablingPredicateFilter<Binary64> aboveGroundElevationDetector =
                 new FieldEventEnablingPredicateFilter<>(raw,
-                                                        new FieldEnablingPredicate<Binary64>() {
-                    public boolean eventIsEnabled(final FieldSpacecraftState<Binary64> state,
-                                                  final FieldEventDetector<Binary64> eventDetector,
-                                                  final Binary64 g) {
-                        return ((FieldElevationExtremumDetector<Binary64>) eventDetector).getElevation(state).getReal() > minElevation;
-                    }
-                }).withMaxCheck(60.0);
+                                                        (state, eventDetector, g) ->
+                                                            ((FieldElevationExtremumDetector<Binary64>) eventDetector).getElevation(state).getReal() > minElevation).
+                    withMaxCheck(60.0);
 
         Assertions.assertSame(raw, aboveGroundElevationDetector.getDetector());
         Assertions.assertEquals(0.001, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
@@ -191,13 +186,8 @@ public class FieldEventEnablingPredicateFilterTest {
             raw.addEventDate(orbit.getDate().shiftedBy(i * 3600.0));
         }
         FieldEventEnablingPredicateFilter<Binary64> filtered =
-                        new FieldEventEnablingPredicateFilter<Binary64>(raw, new FieldEnablingPredicate<Binary64>() {
-                            public boolean eventIsEnabled(FieldSpacecraftState<Binary64> state,
-                                                          FieldEventDetector<Binary64> eventDetector,
-                                                          Binary64 g) {
-                                return state.getDate().durationFrom(orbit.getDate()).getReal() > 20000.0;
-                            }
-                        });
+                        new FieldEventEnablingPredicateFilter<>(raw,
+                                                                (state, eventDetector, g) -> state.getDate().durationFrom(orbit.getDate()).getReal() > 20000.0);
         FieldPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
         propagator.addEventDetector(logger.monitorDetector(filtered));
@@ -217,7 +207,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryForward() throws IOException {
+    public void testExceedHistoryForward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -231,13 +221,9 @@ public class FieldEventEnablingPredicateFilterTest {
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
         final FieldEventEnablingPredicateFilter<Binary64> filtered =
-                        new FieldEventEnablingPredicateFilter<>(raw, new FieldEnablingPredicate<Binary64>() {
-                            public boolean eventIsEnabled(FieldSpacecraftState<Binary64> state,
-                                                          FieldEventDetector<Binary64> eventDetector,
-                                                          Binary64 g) {
-                                double nbPeriod = state.getDate().durationFrom(orbit.getDate()).getReal() / period;
-                                return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
-                            }
+                        new FieldEventEnablingPredicateFilter<>(raw, (state, eventDetector, g) -> {
+                            double nbPeriod = state.getDate().durationFrom(orbit.getDate()).getReal() / period;
+                            return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
                         });
         FieldPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();
@@ -271,7 +257,7 @@ public class FieldEventEnablingPredicateFilterTest {
     }
 
     @Test
-    public void testExceedHistoryBackward() throws IOException {
+    public void testExceedHistoryBackward() {
         final double period = 900.0;
 
         // the raw detector should trigger one event at each 900s period
@@ -285,13 +271,9 @@ public class FieldEventEnablingPredicateFilterTest {
 
         // in fact, we will filter out half of these events, so we get only one event every 2 periods
         final FieldEventEnablingPredicateFilter<Binary64> filtered =
-                        new FieldEventEnablingPredicateFilter<>(raw, new FieldEnablingPredicate<Binary64>() {
-                            public boolean eventIsEnabled(FieldSpacecraftState<Binary64> state,
-                                                          FieldEventDetector<Binary64> eventDetector,
-                                                          Binary64 g) {
-                                double nbPeriod = orbit.getDate().durationFrom(state.getDate()).getReal() / period;
-                                return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
-                            }
+                        new FieldEventEnablingPredicateFilter<>(raw, (state, eventDetector, g) -> {
+                            double nbPeriod = orbit.getDate().durationFrom(state.getDate()).getReal() / period;
+                            return ((int) FastMath.floor(nbPeriod)) % 2 == 1;
                         });
         FieldPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(orbit);
         FieldEventsLogger<Binary64> logger = new FieldEventsLogger<>();

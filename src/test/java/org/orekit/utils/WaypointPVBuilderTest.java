@@ -28,7 +28,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.LoxodromeArc;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;

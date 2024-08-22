@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 
 import static org.orekit.orbits.PositionAngleType.MEAN;
 
-import net.bytebuddy.implementation.bind.annotation.IgnoreForBinding;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
