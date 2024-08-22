@@ -21,6 +21,16 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1498">
+            Allow roundtrip write/read for Rinex observation files with non-standard
+            satellite systems.
+        </action>
+        <action dev="luc" type="add" issue="1496">
+            Declared two-way time transfer entry in MeasurementType (measurement not implemented yet).
+        </action>
+        <action dev="luc" type="add" issue="1495">
+            Allow computation of angular wind-up without modifying a measurement.
+        </action>
         <action dev="luc" type="add" issue="1468">
             Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
             added signalTimeOfFlightAdjustableReceiver.
@@ -103,6 +113,18 @@
       </action>
     </release>
     <release version="12.1.3" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1499">
+        Fixed mixed up frames in inter-satellites measurements.
+      </action>
+      <action dev="luc" type="fix" issue="1489">
+        Protected several maps against concurrent modifications.
+      </action>
+      <action dev="luc" type="fix" issue="1487">
+        Fixed NeQuick ionospheric model for perfect zenith observation.
+      </action>
+      <action dev="vincent" type="fix" issue="1485">
+        Fixed introduced noises when changing covariance frame with identical frame.
+      </action>
       <action dev="luc" type="fix" issue="1480">
         Fixed wrong agency name length in Rinex observation writer.
       </action>

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -40,11 +41,14 @@ import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.files.rinex.AppliedDCBS;
 import org.orekit.files.rinex.AppliedPCVS;
 import org.orekit.files.rinex.section.RinexComment;
+import org.orekit.gnss.ObservationTimeScale;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ConstantOffsetTimeScale;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 
 public class RinexObservationWriterTest {
@@ -59,6 +63,7 @@ public class RinexObservationWriterTest {
     public void testWriteHeaderTwice() throws IOException {
         final RinexObservation robs = load("rinex/bbbb0000.00o",
                                            PredefinedObservationType::valueOf,
+                                           (system, timeScales) -> system.getObservationTimeScale().getTimeScale(timeScales),
                                            DataContext.getDefault().getTimeScales());
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
@@ -78,6 +83,7 @@ public class RinexObservationWriterTest {
     public void testTooLongAgency() throws IOException {
         final RinexObservation robs = load("rinex/bbbb0000.00o",
                                            PredefinedObservationType::valueOf,
+                                           (system, timeScales) -> system.getObservationTimeScale().getTimeScale(timeScales),
                                            DataContext.getDefault().getTimeScales());
         robs.getHeader().setAgencyName("much too long agency name exceeding 40 characters");
         final CharArrayWriter  caw  = new CharArrayWriter();
@@ -98,6 +104,7 @@ public class RinexObservationWriterTest {
     public void testNoWriteHeader() throws IOException {
         final RinexObservation robs = load("rinex/aiub0000.00o",
                                            PredefinedObservationType::valueOf,
+                                           (system, timeScales) -> system.getObservationTimeScale().getTimeScale(timeScales),
                                            DataContext.getDefault().getTimeScales());
         final CharArrayWriter  caw  = new CharArrayWriter();
         try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
@@ -175,31 +182,41 @@ public class RinexObservationWriterTest {
     public void testCustomSystem() throws IOException {
         doTestRoundTrip("rinex/custom-system.01o", 0.0,
                         CustomType::new,
+                        (system, timeScales) -> {
+                           final ObservationTimeScale ots = system.getObservationTimeScale();
+                           return ots != null ? ots.getTimeScale(timeScales) : new ConstantOffsetTimeScale(system.name(), 45);
+                        },
                         DataContext.getDefault().getTimeScales());
     }
 
     private RinexObservation load(final String name,
                                   final Function<? super String, ? extends ObservationType> typeBuilder,
+                                  final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
                                   final TimeScales timeScales) {
         final DataSource dataSource = new DataSource(name, () -> Utils.class.getClassLoader().getResourceAsStream(name));
-        return new RinexObservationParser(typeBuilder, timeScales).parse(dataSource);
+        return new RinexObservationParser(typeBuilder, timeScaleBuilder, timeScales).parse(dataSource);
      }
 
     @DefaultDataContext
     private void doTestRoundTrip(final String resourceName, double expectedDt) throws IOException {
         doTestRoundTrip(resourceName, expectedDt,
-                        PredefinedObservationType::valueOf, DataContext.getDefault().getTimeScales());
+                        PredefinedObservationType::valueOf,
+                        (system, timeScales) -> system.getObservationTimeScale() == null ?
+                                                null :
+                                                system.getObservationTimeScale().getTimeScale(timeScales),
+                        DataContext.getDefault().getTimeScales());
      }
 
     private void doTestRoundTrip(final String resourceName, double expectedDt,
                                  final Function<? super String, ? extends ObservationType> typeBuilder,
+                                 final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
                                  final TimeScales timeScales) throws IOException {
 
-        final RinexObservation robs = load(resourceName, typeBuilder, timeScales);
+        final RinexObservation robs = load(resourceName, typeBuilder, timeScaleBuilder, timeScales);
         final CharArrayWriter  caw  = new CharArrayWriter();
-        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy")) {
+        try (RinexObservationWriter writer = new RinexObservationWriter(caw, "dummy", timeScaleBuilder, timeScales)) {
             writer.setReceiverClockModel(robs.extractClockModel(2));
-            RinexObservation patched = load(resourceName, typeBuilder, timeScales);
+            RinexObservation patched = load(resourceName, typeBuilder, timeScaleBuilder, timeScales);
             patched.getHeader().setClockOffsetApplied(robs.getHeader().getClockOffsetApplied());
             if (FastMath.abs(expectedDt) > 1.0e-15) {
                 writer.setReceiverClockModel(new QuadraticClockModel(robs.getHeader().getTFirstObs(),
@@ -211,7 +228,7 @@ public class RinexObservationWriterTest {
         // reparse the written file
         final byte[]           bytes   = caw.toString().getBytes(StandardCharsets.UTF_8);
         final DataSource       source  = new DataSource("", () -> new ByteArrayInputStream(bytes));
-        final RinexObservation rebuilt = new RinexObservationParser(typeBuilder, timeScales).parse(source);
+        final RinexObservation rebuilt = new RinexObservationParser(typeBuilder, timeScaleBuilder, timeScales).parse(source);
 
         checkRinexFile(robs, rebuilt, expectedDt);
 

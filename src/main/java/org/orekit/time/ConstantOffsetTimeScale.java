@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
 
-/** Base class for time scales with constant offset with respecto to TAI.
+/** Base class for time scales with constant offset with respect to to TAI.
  * @author Luc Maisonobe
  * @since 12.1
  */

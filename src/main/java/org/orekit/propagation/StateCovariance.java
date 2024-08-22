@@ -142,6 +142,31 @@ public class StateCovariance implements TimeStamped {
         }
     }
 
+    /**
+     * Checks if input/output orbit and angle types are identical.
+     *
+     * @param inOrbitType input orbit type
+     * @param inAngleType input angle type
+     * @param outOrbitType output orbit type
+     * @param outAngleType output angle type
+     * @return flag defining if input/output orbit and angle types are identical
+     */
+    public static boolean inputAndOutputAreIdentical(final OrbitType inOrbitType, final PositionAngleType inAngleType,
+                                                     final OrbitType outOrbitType, final PositionAngleType outAngleType) {
+        return inOrbitType == outOrbitType && inAngleType == outAngleType;
+    }
+
+    /**
+     * Checks if input and output orbit types are both {@code OrbitType.CARTESIAN}.
+     *
+     * @param inOrbitType input orbit type
+     * @param outOrbitType output orbit type
+     * @return flag defining if input and output orbit types are both {@code OrbitType.CARTESIAN}
+     */
+    public static boolean inputAndOutputOrbitTypesAreCartesian(final OrbitType inOrbitType, final OrbitType outOrbitType) {
+        return inOrbitType == OrbitType.CARTESIAN && outOrbitType == OrbitType.CARTESIAN;
+    }
+
     /** {@inheritDoc}. */
     @Override
     public AbsoluteDate getDate() {
@@ -214,7 +239,7 @@ public class StateCovariance implements TimeStamped {
                                                 final PositionAngleType outAngleType) {
 
         // Handle case where the covariance is already expressed in the output type
-        if (outOrbitType == orbitType && (outAngleType == angleType || outOrbitType == OrbitType.CARTESIAN)) {
+        if (outOrbitType == orbitType && (outOrbitType == OrbitType.CARTESIAN || outAngleType == angleType)) {
             if (lof == null) {
                 return new StateCovariance(orbitalCovariance, epoch, frame, orbitType, angleType);
             }
@@ -260,6 +285,11 @@ public class StateCovariance implements TimeStamped {
         // Verify current covariance frame
         if (lof != null) {
 
+            // Check specific case where output covariance will be the same
+            if (lofOut == lof) {
+                return new StateCovariance(orbitalCovariance, epoch, lof);
+            }
+
             // Change the covariance local orbital frame
             return changeFrameAndCreate(orbit, epoch, lof, lofOut, orbitalCovariance);
 
@@ -294,6 +324,11 @@ public class StateCovariance implements TimeStamped {
             return changeFrameAndCreate(orbit, epoch, lof, frameOut, orbitalCovariance);
 
         } else {
+
+            // Check specific case where output covariance will be the same
+            if (frame == frameOut) {
+                return new StateCovariance(orbitalCovariance, epoch, frame, orbitType, angleType);
+            }
 
             // Change covariance frame
             return changeFrameAndCreate(orbit, epoch, frame, frameOut, orbitalCovariance, orbitType, angleType);
@@ -392,11 +427,18 @@ public class StateCovariance implements TimeStamped {
      * @param inputCov input covariance
      * @return the covariance expressed in the target orbit type with the target position angle
      */
-    private static StateCovariance changeTypeAndCreate(final Orbit orbit, final AbsoluteDate date,
+    private static StateCovariance changeTypeAndCreate(final Orbit orbit,
+                                                       final AbsoluteDate date,
                                                        final Frame covFrame,
                                                        final OrbitType inOrbitType, final PositionAngleType inAngleType,
                                                        final OrbitType outOrbitType, final PositionAngleType outAngleType,
                                                        final RealMatrix inputCov) {
+
+        // Check if type change is really necessary, if not then return input covariance
+        if (inputAndOutputOrbitTypesAreCartesian(inOrbitType, outOrbitType) ||
+            inputAndOutputAreIdentical(inOrbitType, inAngleType, outOrbitType, outAngleType)) {
+            return new StateCovariance(inputCov, date, covFrame, inOrbitType, inAngleType);
+        }
 
         // Notations:
         // I: Input orbit type

@@ -78,23 +78,25 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
      */
     protected abstract Rotation receiverToInert(EstimatedMeasurementBase<T> estimated);
 
-    /** {@inheritDoc} */
-    @Override
-    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated) {
+    /** Cache angular wind-up.
+     * @param participants particpants to the carrier-phase measurement
+     * @param receiverToInert rotation for receiver to inertial frame
+     * @param emitterToInert rotation from emitter to inertial frame
+     * @since 13.0
+     */
+    public void cacheAngularWindUp(final TimeStampedPVCoordinates[] participants,
+                                   final Rotation receiverToInert, final Rotation emitterToInert) {
 
         // signal line of sight
-        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
         final Vector3D los = participants[1].getPosition().subtract(participants[0].getPosition()).normalize();
 
         // get receiver dipole
-        final Rotation receiverToInert = receiverToInert(estimated);
         final Vector3D iReceiver       = receiverToInert.applyTo(receiver.getPrimary());
         final Vector3D jReceiver       = receiverToInert.applyTo(receiver.getSecondary());
         final Vector3D dReceiver       = new Vector3D(1.0, iReceiver, -Vector3D.dotProduct(iReceiver, los), los).
                                          add(Vector3D.crossProduct(los, jReceiver));
 
         // get emitter dipole
-        final Rotation emitterToInert = emitterToInert(estimated);
         final Vector3D iEmitter       = emitterToInert.applyTo(emitter.getPrimary());
         final Vector3D jEmitter       = emitterToInert.applyTo(emitter.getSecondary());
         final Vector3D dEmitter       = new Vector3D(1.0, iEmitter, -Vector3D.dotProduct(iEmitter, los), los).
@@ -108,6 +110,26 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
         // we assume the various measurements are close enough in time
         // (less the one satellite half-turn) so the angles remain close
         angularWindUp = MathUtils.normalizeAngle(correction, angularWindUp);
+
+    }
+
+    /** Get cached value of angular wind-up.
+     * @return cached value of angular wind-up
+     * @since 13.0
+     */
+    public double getAngularWindUp() {
+        return angularWindUp;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated) {
+
+        // cache new angular wind-up
+        final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
+        final Rotation receiverToInert = receiverToInert(estimated);
+        final Rotation emitterToInert = emitterToInert(estimated);
+        cacheAngularWindUp(participants, receiverToInert, emitterToInert);
 
         // update estimate
         estimated.modifyEstimatedValue(this, estimated.getEstimatedValue()[0] + angularWindUp / MathUtils.TWO_PI);

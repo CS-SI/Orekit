@@ -37,6 +37,11 @@ public enum MeasurementType {
     SIGNAL_STRENGTH,
 
     /** Combined pseudo-range carrier-phase measurement. */
-    COMBINED_RANGE_PHASE;
+    COMBINED_RANGE_PHASE,
+
+    /** Two-way time transfer measurement.
+     * @since 13.0
+     */
+    TWO_WAY_TIME_TRANSFER;
 
 }

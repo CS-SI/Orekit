@@ -22,10 +22,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.AppliedDCBS;
@@ -42,7 +44,7 @@ import org.orekit.time.ClockModel;
 import org.orekit.time.ClockTimeScale;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeScales;
 
 /** Writer for Rinex observation file.
  * <p>
@@ -146,18 +148,54 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Column number. */
     private int column;
 
+    /** Set of time scales.
+     * @since 13.0
+     */
+    private final TimeScales timeScales;
+
+    /** Mapper from satellite system to time scales.
+     * @since 13.0
+     */
+    private final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder;
+
     /** Simple constructor.
+     * <p>
+     * This constructor uses the {@link DataContext#getDefault() default data context}
+     * and recognizes only {@link PredefinedObservationType} and {@link SatelliteSystem}
+     * with non-null {@link SatelliteSystem#getObservationTimeScale() time scales}
+     * (i.e. neither user-defined, nor {@link SatelliteSystem#SBAS}, nor {@link SatelliteSystem#MIXED}).
+     * </p>
      * @param output destination of generated output
      * @param outputName output name for error messages
      */
+    @DefaultDataContext
     public RinexObservationWriter(final Appendable output, final String outputName) {
-        this.output        = output;
-        this.outputName    = outputName;
-        this.savedHeader   = null;
-        this.savedComments = Collections.emptyList();
-        this.pending       = new ArrayList<>();
-        this.lineNumber    = 0;
-        this.column        = 0;
+        this(output, outputName,
+             (system, ts) -> system.getObservationTimeScale() == null ?
+                             null :
+                             system.getObservationTimeScale().getTimeScale(ts),
+             DataContext.getDefault().getTimeScales());
+    }
+
+    /** Simple constructor.
+     * @param output destination of generated output
+     * @param outputName output name for error messages
+     * @param timeScaleBuilder mapper from satellite system to time scales (useful for user-defined satellite systems)
+     * @param timeScales the set of time scales to use when parsing dates
+     * @since 13.0
+     */
+    public RinexObservationWriter(final Appendable output, final String outputName,
+                                  final BiFunction<SatelliteSystem, TimeScales, ? extends TimeScale> timeScaleBuilder,
+                                  final TimeScales timeScales) {
+        this.output           = output;
+        this.outputName       = outputName;
+        this.savedHeader      = null;
+        this.savedComments    = Collections.emptyList();
+        this.pending          = new ArrayList<>();
+        this.lineNumber       = 0;
+        this.column           = 0;
+        this.timeScaleBuilder = timeScaleBuilder;
+        this.timeScales       = timeScales;
     }
 
     /** {@inheritDoc} */
@@ -222,10 +260,9 @@ public class RinexObservationWriter implements AutoCloseable {
         savedHeader = header;
         lineNumber  = 1;
 
-        final ObservationTimeScale observationTimeScale = header.getSatelliteSystem().getObservationTimeScale() != null ?
-                                                          header.getSatelliteSystem().getObservationTimeScale() :
-                                                          ObservationTimeScale.GPS;
-        timeScale = observationTimeScale.getTimeScale(TimeScalesFactory.getTimeScales());
+        timeScale = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) != null ?
+                    timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) :
+                    ObservationTimeScale.GPS.getTimeScale(timeScales);
         if (!header.getClockOffsetApplied() && receiverClockModel != null) {
             // getClockOffsetApplied returned false, which means the measurements
             // should *NOT* be put in system time scale, and the receiver has a clock model
@@ -396,6 +433,11 @@ public class RinexObservationWriter implements AutoCloseable {
             finishHeaderLine(RinexLabels.INTERVAL);
         }
 
+        ObservationTimeScale ots = header.getSatelliteSystem().getObservationTimeScale();
+        if (ots == null) {
+            ots = ObservationTimeScale.GPS;
+        }
+
         // TIME OF FIRST OBS
         final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getYear(), 6);
@@ -404,7 +446,7 @@ public class RinexObservationWriter implements AutoCloseable {
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getHour(), 24);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getMinute(), 30);
         outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcFirst.getTime().getSecond(), 43);
-        outputField(observationTimeScale.name(), 51, false);
+        outputField(ots.name(), 51, false);
         finishHeaderLine(RinexLabels.TIME_OF_FIRST_OBS);
 
         // TIME OF LAST OBS
@@ -416,7 +458,7 @@ public class RinexObservationWriter implements AutoCloseable {
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getHour(), 24);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getMinute(), 30);
             outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcLast.getTime().getSecond(), 43);
-            outputField(observationTimeScale.name(), 51, false);
+            outputField(ots.name(), 51, false);
             finishHeaderLine(RinexLabels.TIME_OF_LAST_OBS);
         }
 

@@ -20,6 +20,7 @@ import java.util.SortedSet;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -170,6 +171,7 @@ public class WindUpTest {
             windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];
             final double correction = modified - original;
+            Assertions.assertEquals(correction, windUp.getAngularWindUp() / MathUtils.TWO_PI, 1.0e-5);
             min = FastMath.min(min, correction);
             max = FastMath.max(max, correction);
         }
