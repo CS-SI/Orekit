@@ -22,17 +22,19 @@ import org.hipparchus.geometry.spherical.twod.S2Point;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.LoxodromeArc;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.SplitTime;
 
 /** Unit tests for {@link WaypointPVBuilder}. */
 public class WaypointPVBuilderTest {
@@ -71,8 +73,6 @@ public class WaypointPVBuilderTest {
     }
 
     /** Verify cartesian interpolation. */
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void cartesian() {
         final WaypointPVBuilder builder = WaypointPVBuilder.cartesianBuilder(body)
@@ -120,20 +120,18 @@ public class WaypointPVBuilderTest {
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1e-16), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
-        }
-        catch (final OrekitIllegalArgumentException ex) {
-            // test passes
+        } catch (final OrekitException ex) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
         }
         Vector3D pBefore = builder.constantBefore().build().getPosition(date1.shiftedBy(-60.0), body.getBodyFrame());
         Assertions.assertEquals(0.0, Vector3D.distance(expectedPhillyPos, pBefore), 1.0e-15);
 
         // check invalid after
         try {
-            pvProv.getPVCoordinates(date3.shiftedBy(2 * Double.MIN_VALUE), body.getBodyFrame());
+            pvProv.getPVCoordinates(date3.shiftedBy(new SplitTime(2, SplitTime.ATTOSECOND)), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
-        }
-        catch (final OrekitIllegalArgumentException ex) {
-            // test passes
+        } catch (final OrekitException ex) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
         }
         Vector3D pAfter = builder.constantAfter().build().getPosition(date3.shiftedBy(+60.0), body.getBodyFrame());
         Assertions.assertEquals(0.0, Vector3D.distance(expectedLondonPos, pAfter), 1.0e-15);
@@ -141,8 +139,6 @@ public class WaypointPVBuilderTest {
     }
 
     /** Verify loxodrome interpolation. */
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void loxodrome() {
         final PVCoordinatesProvider pvProv = WaypointPVBuilder.loxodromeBuilder(body)
@@ -192,24 +188,20 @@ public class WaypointPVBuilderTest {
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1e-16), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
-        }
-        catch (final OrekitIllegalArgumentException ex) {
-            // test passes
+        } catch (final OrekitException ex) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
         }
 
         // check invalid after
         try {
-            pvProv.getPVCoordinates(date3.shiftedBy(2 * Double.MIN_VALUE), body.getBodyFrame());
+            pvProv.getPVCoordinates(date3.shiftedBy(new SplitTime(2, SplitTime.ATTOSECOND)), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
-        }
-        catch (final OrekitIllegalArgumentException ex) {
-            // test passes
+        } catch (final OrekitException ex) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
         }
     }
 
     /** Verify great-circle interpolation. */
-    // TODO: re-enable this test before finishing atto-seconds-date branch
-    @Disabled
     @Test
     public void greatCircle() {
         final PVCoordinatesProvider pvProv = WaypointPVBuilder.greatCircleBuilder(body)
@@ -253,18 +245,16 @@ public class WaypointPVBuilderTest {
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1e-16), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
-        }
-        catch (final OrekitIllegalArgumentException ex) {
-            // test passes
+        } catch (final OrekitException ex) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
         }
 
         // check invalid after
         try {
-            pvProv.getPVCoordinates(date3.shiftedBy(2 * Double.MIN_VALUE), body.getBodyFrame());
+            pvProv.getPVCoordinates(date3.shiftedBy(new SplitTime(2, SplitTime.ATTOSECOND)), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
-        }
-        catch (final OrekitIllegalArgumentException ex) {
-            // test passes
+        } catch (final OrekitException ex) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
         }
     }
 

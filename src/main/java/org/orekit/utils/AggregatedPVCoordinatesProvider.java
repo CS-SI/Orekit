@@ -19,12 +19,13 @@ package org.orekit.utils;
 import java.util.Objects;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.SplitTime;
 
-/** Aggreate multiple {@link PVCoordinatesProvider} instances together
+/** Aggregate multiple {@link PVCoordinatesProvider} instances together
  *
  * This can be used to describe an aircraft or surface vehicle.
  *
@@ -63,7 +64,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
      * @param maxDate the latest valid date, {@code null} if always valid
      */
     public AggregatedPVCoordinatesProvider(final TimeSpanMap<PVCoordinatesProvider> map,
-            final AbsoluteDate minDate, final AbsoluteDate maxDate) {
+                                           final AbsoluteDate minDate, final AbsoluteDate maxDate) {
         this.pvProvMap = Objects.requireNonNull(map, "PVCoordinatesProvider map must be non-null");
         this.minDate = minDate == null ? AbsoluteDate.PAST_INFINITY : minDate;
         this.maxDate = maxDate == null ? AbsoluteDate.FUTURE_INFINITY : maxDate;
@@ -86,7 +87,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     @Override
     public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
         if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
         }
         return pvProvMap.get(date).getPosition(date, frame);
     }
@@ -94,7 +95,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
         }
         return pvProvMap.get(date).getPVCoordinates(date, frame);
     }
@@ -190,14 +191,14 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
             }
             if (pvProvMap.getLastTransition() != null) {
                 if (pvProvMap.getLastTransition().getAfter() instanceof InvalidPVProvider) {
-                    maxDate = pvProvMap.getLastTransition().getDate();
+                    maxDate = pvProvMap.getLastTransition().getDate().shiftedBy(SplitTime.ATTOSECOND);
                 }
             }
             return new AggregatedPVCoordinatesProvider(pvProvMap, minDate, maxDate);
         }
     }
 
-    /**  Implementation of {@link PVCoordinatesProvider} that throws an illegal state exception.
+    /** Implementation of {@link PVCoordinatesProvider} that throws an {@link OrekitException} exception.
      *
      */
     public static class InvalidPVProvider implements PVCoordinatesProvider {
@@ -215,7 +216,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
 
         @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-            throw new IllegalStateException();
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date);
         }
 
     }

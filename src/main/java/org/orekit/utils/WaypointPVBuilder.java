@@ -29,6 +29,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.SplitTime;
 
 /** Builder class, enabling incremental building of an {@link PVCoordinatesProvider}
  * instance using waypoints defined on an ellipsoid.
@@ -183,8 +184,8 @@ public class WaypointPVBuilder {
         builder.addPVProviderAfter(previousEntry.getKey(),
                                    new ConstantPVCoordinatesProvider(previousEntry.getValue(), body),
                                    true);
-        // add the final propagator after the final waypoint
-        builder.addPVProviderAfter(previousEntry.getKey().shiftedBy(Double.MIN_VALUE),
+        // add the final provider after the final waypoint
+        builder.addPVProviderAfter(previousEntry.getKey().shiftedBy(SplitTime.ATTOSECOND),
                                    createFinal(previousEntry.getKey(), previousEntry.getValue()),
                                    true);
 
