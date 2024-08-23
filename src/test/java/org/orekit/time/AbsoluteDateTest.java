@@ -1687,6 +1687,13 @@ public class AbsoluteDateTest {
         Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
     }
 
+    @Test
+    public void testLargeLeapSecond() {
+        // this corresponds to issue 707
+        Assertions.assertEquals(new AbsoluteDate(1961, 1, 1, utc).
+                                shiftedBy(new SplitTime(22818, SplitTime.MICROSECOND).negate()),
+                                new AbsoluteDate("1960-12-31T23:59:61.4", utc));
+    }
 
     @BeforeEach
     public void setUp() {

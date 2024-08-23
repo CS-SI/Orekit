@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="707">
+            Properly parse dates during the 1961 leap that was 1.422818s long.
+        </action>
+        <action dev="luc" type="add" issue="1454">
+            Revamped dates handling to avoid rounding errors, improve accuracy
+            and improve robustness.
+        </action>
         <action dev="luc" type="add" issue="1498">
             Allow roundtrip write/read for Rinex observation files with non-standard
             satellite systems.
