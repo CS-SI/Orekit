@@ -20,7 +20,6 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 import java.io.Serializable;
@@ -430,7 +429,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                 break;
             }
             default:
-                throw new OrekitInternalError(null);
+                throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, unit.name());
         }
     }
 
@@ -652,7 +651,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                 return seconds * NANOS_IN_SECOND +
                        (attoSeconds + NANOSECOND.attoSeconds / 2) / NANOSECOND.attoSeconds;
             default:
-                throw new OrekitInternalError(null);
+                throw new OrekitException(OrekitMessages.UNKNOWN_UNIT, unit.name());
         }
     }
 
