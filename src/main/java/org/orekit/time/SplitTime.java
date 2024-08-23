@@ -902,7 +902,6 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                     // we have added several terms, we should normalize
                     // the fields before attoseconds overflow (it may overflow after 9 additions)
                     normalize();
-                    countDown = COUNT_DOWN_MAX - 1;
                 }
             } else if (term.isNegativeInfinity()) {
                 addedNegativeInfinity = true;
@@ -917,6 +916,10 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
          * @return normalized value
          */
         public SplitTime normalize() {
+
+            // after normalization, we will have the equivalent of one entry processed
+            countDown = COUNT_DOWN_MAX - 1;
+
             if (addedNaN || addedNegativeInfinity && addedPositiveInfinity) {
                 // we have built a NaN
                 seconds     = NaN.seconds;

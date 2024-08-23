@@ -270,20 +270,20 @@ public class SplitTimeTest {
 
     @Test
     public void testSumConstructor() {
-        final SplitTime so = new SplitTime(new SplitTime( 1L,  2L),
-                                           new SplitTime( 3L,  4L),
-                                           new SplitTime( 5L,  6L),
-                                           new SplitTime( 7L,  8L),
-                                           new SplitTime( 9L, 10L),
-                                           new SplitTime(11L, 12L),
-                                           new SplitTime(13L, 14L),
-                                           new SplitTime(15L, 16L),
-                                           new SplitTime(17L, 18L),
-                                           new SplitTime(19L, 20L),
-                                           new SplitTime(21L, 22L),
-                                           new SplitTime(23L, 24L));
-        Assertions.assertEquals(144L, so.getSeconds());
-        Assertions.assertEquals(156L, so.getAttoSeconds());
+        final SplitTime so = new SplitTime(new SplitTime( 1L, 902000000000000000L),
+                                           new SplitTime( 3L, 904000000000000000L),
+                                           new SplitTime( 5L, 906000000000000000L),
+                                           new SplitTime( 7L, 908000000000000000L),
+                                           new SplitTime( 9L, 910000000000000000L),
+                                           new SplitTime(11L, 912000000000000000L),
+                                           new SplitTime(13L, 914000000000000000L),
+                                           new SplitTime(15L, 916000000000000000L),
+                                           new SplitTime(17L, 918000000000000000L),
+                                           new SplitTime(19L, 920000000000000000L),
+                                           new SplitTime(21L, 922000000000000000L),
+                                           new SplitTime(23L, 924000000000000000L));
+        Assertions.assertEquals(154L,                so.getSeconds());
+        Assertions.assertEquals(956000000000000000L, so.getAttoSeconds());
     }
 
     @Test
