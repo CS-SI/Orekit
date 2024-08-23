@@ -95,26 +95,60 @@ public class SplitTimeTest {
 
     @Test
     public void testLinear2Constructor() {
-        final SplitTime p305 = new SplitTime(3, SplitTime.SECOND, 50, SplitTime.MILLISECOND);
-        Assertions.assertEquals(3L, p305.getSeconds());
-        Assertions.assertEquals(50000000000000000L, p305.getAttoSeconds());
-        final SplitTime m305 = new SplitTime(-3, SplitTime.SECOND, -50, SplitTime.MILLISECOND);
-        Assertions.assertEquals(-4L, m305.getSeconds());
-        Assertions.assertEquals(950000000000000000L, m305.getAttoSeconds());
+        final SplitTime p3004 = new SplitTime(3, SplitTime.SECOND, 4, SplitTime.MILLISECOND);
+        Assertions.assertEquals(3L, p3004.getSeconds());
+        Assertions.assertEquals(4000000000000000L, p3004.getAttoSeconds());
+        final SplitTime m3004 = new SplitTime(-3, SplitTime.SECOND, -4, SplitTime.MILLISECOND);
+        Assertions.assertEquals(-4L, m3004.getSeconds());
+        Assertions.assertEquals(996000000000000000L, m3004.getAttoSeconds());
     }
 
     @Test
     public void testLinear3Constructor() {
-        final SplitTime p3005007 = new SplitTime(3, SplitTime.SECOND,
-                                                 5, SplitTime.MILLISECOND,
-                                                 7, SplitTime.MICROSECOND);
-        Assertions.assertEquals(3L, p3005007.getSeconds());
-        Assertions.assertEquals(5007000000000000L, p3005007.getAttoSeconds());
-        final SplitTime m3005007 = new SplitTime(-3, SplitTime.SECOND,
-                                                 -5, SplitTime.MILLISECOND,
-                                                 -7, SplitTime.MICROSECOND);
-        Assertions.assertEquals(-4L, m3005007.getSeconds());
-        Assertions.assertEquals(994993000000000000L, m3005007.getAttoSeconds());
+        final SplitTime p3004005 = new SplitTime(3, SplitTime.SECOND,
+                                                 4, SplitTime.MILLISECOND,
+                                                 5, SplitTime.MICROSECOND);
+        Assertions.assertEquals(3L, p3004005.getSeconds());
+        Assertions.assertEquals(4005000000000000L, p3004005.getAttoSeconds());
+        final SplitTime m3004005 = new SplitTime(-3, SplitTime.SECOND,
+                                                 -4, SplitTime.MILLISECOND,
+                                                 -5, SplitTime.MICROSECOND);
+        Assertions.assertEquals(-4L, m3004005.getSeconds());
+        Assertions.assertEquals(995995000000000000L, m3004005.getAttoSeconds());
+    }
+
+    @Test
+    public void testLinear4Constructor() {
+        final SplitTime p3004005006 = new SplitTime(3, SplitTime.SECOND,
+                                                    4, SplitTime.MILLISECOND,
+                                                    5, SplitTime.MICROSECOND,
+                                                    6, SplitTime.NANOSECOND);
+        Assertions.assertEquals(3L, p3004005006.getSeconds());
+        Assertions.assertEquals(4005006000000000L, p3004005006.getAttoSeconds());
+        final SplitTime m3004005006 = new SplitTime(-3, SplitTime.SECOND,
+                                                    -4, SplitTime.MILLISECOND,
+                                                    -5, SplitTime.MICROSECOND,
+                                                    -6, SplitTime.NANOSECOND);
+        Assertions.assertEquals(-4L, m3004005006.getSeconds());
+        Assertions.assertEquals(995994994000000000L, m3004005006.getAttoSeconds());
+    }
+
+    @Test
+    public void testLinear5Constructor() {
+        final SplitTime p3004005006007 = new SplitTime(3, SplitTime.SECOND,
+                                                       4, SplitTime.MILLISECOND,
+                                                       5, SplitTime.MICROSECOND,
+                                                       6, SplitTime.NANOSECOND,
+                                                       7, SplitTime.PICOSECOND);
+        Assertions.assertEquals(3L, p3004005006007.getSeconds());
+        Assertions.assertEquals(4005006007000000L, p3004005006007.getAttoSeconds());
+        final SplitTime m3004005006007 = new SplitTime(-3, SplitTime.SECOND,
+                                                       -4, SplitTime.MILLISECOND,
+                                                       -5, SplitTime.MICROSECOND,
+                                                       -6, SplitTime.NANOSECOND,
+                                                       -7, SplitTime.PICOSECOND);
+        Assertions.assertEquals(-4L, m3004005006007.getSeconds());
+        Assertions.assertEquals(995994993993000000L, m3004005006007.getAttoSeconds());
     }
 
     @Test

@@ -282,7 +282,61 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     public SplitTime(final long f1, final SplitTime t1,
                      final long f2, final SplitTime t2,
                      final long f3, final SplitTime t3) {
-        this(new SplitTime(f1, t1).add(new SplitTime(f2, t2).add(new SplitTime(f3, t3))));
+        this(new SplitTime(f1, t1).add(new SplitTime(f2, t2)).add(new SplitTime(f3, t3)));
+    }
+
+    /**
+     * Linear combination constructor.
+     * <p>
+     * This constructors builds a split time corresponding to
+     * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2} + {@code f3} ⨉ {@code t3} + {@code f4} ⨉ {@code t4}
+     * </p>
+     * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t1 first base time
+     * @param f2 second multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t2 second base time
+     * @param f3 third multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t3 third base time
+     * @param f4 fourth multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t4 fourth base time
+     */
+    public SplitTime(final long f1, final SplitTime t1,
+                     final long f2, final SplitTime t2,
+                     final long f3, final SplitTime t3,
+                     final long f4, final SplitTime t4) {
+        this(new SplitTime(f1, t1).
+             add(new SplitTime(f2, t2)).
+             add(new SplitTime(f3, t3)).
+             add(new SplitTime(f4, t4)));
+    }
+
+    /**
+     * Linear combination constructor.
+     * <p>
+     * This constructors builds a split time corresponding to
+     * {@code f1} ⨉ {@code t1} + {@code f2} ⨉ {@code t2} + {@code f3} ⨉ {@code t3} + {@code f4} ⨉ {@code t4} + {@code f5} ⨉ {@code t5}
+     * </p>
+     * @param f1 first multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t1 first base time
+     * @param f2 second multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t2 second base time
+     * @param f3 third multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t3 third base time
+     * @param f4 fourth multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t4 fourth base time
+     * @param f5 fifth multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
+     * @param t5 fifth base time
+     */
+    public SplitTime(final long f1, final SplitTime t1,
+                     final long f2, final SplitTime t2,
+                     final long f3, final SplitTime t3,
+                     final long f4, final SplitTime t4,
+                     final long f5, final SplitTime t5) {
+        this(new SplitTime(f1, t1).
+             add(new SplitTime(f2, t2)).
+             add(new SplitTime(f3, t3)).
+             add(new SplitTime(f4, t4)).
+             add(new SplitTime(f5, t5)));
     }
 
     /**
