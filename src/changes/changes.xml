@@ -262,6 +262,9 @@
         <action dev="serrof" type="add" issue="1519">
             Allow to define body attraction without CelestialBody.
         </action>
+        <action dev="nicklafarge" type="add" issue="1515">
+            Add support for IIRV ephemeris files.
+        </action>
         <action dev="serrof" type="add" issue="1514">
             Add scales for differentiation in indirect shooting.
         </action>

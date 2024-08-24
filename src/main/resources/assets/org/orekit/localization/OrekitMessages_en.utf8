@@ -370,6 +370,30 @@ CCSDS_TDM_KEYWORD_NOT_FOUND = No CCSDS TDM keyword was found at line {0} of file
 # no Range Units converter configured for parsing Tracking Data Message
 CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = no Range Units converter configured for parsing Tracking Data Message
 
+# line break(s) missing after vector number {1} in {2}
+IIRV_MISSING_LINEBREAK_IN_FILE = line break(s) missing after vector number {1} in {2}
+
+# line {0} in IIRV vector is not valid: "{1}"
+IIRV_INVALID_LINE_IN_VECTOR = line {0} in IIRV vector is not valid: "{1}"
+
+# cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
+IIRV_EXCEEDS_MAX_VECTORS = cannot embed more than 1000 vectors in a single IIRV message file: got {0}. Consider splitting the data into multiple files
+
+# numeric value "{0}" exceeds the maximum length of {1} for string representation
+IIRV_VALUE_TOO_LARGE = numeric value "{0}" exceeds the maximum length of {1} for string representation
+
+# invalid IIRV term value: {1}
+IIRV_INVALID_TERM_VALUE = invalid IIRV term value: {1}
+
+# the "{0}" term cannot change within an IIRV message file
+IIRV_TERM_CHANGES_WITHIN_FILE = the "{0}" term cannot change within an IIRV message file
+
+# IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
+IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE = IIRV sequence number must increase by 1 for each subsequent vector entry. At at line {0}, expected sequence number {1}+1, but found {2}
+
+# IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
+IIRV_UNMAPPED_COORDINATE_SYSTEM = IIRV coordinate system "{0}" ({1}) has not been mapped to an Orekit frame
+
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = Time system should have already been set before line {0} of file {1}
 
