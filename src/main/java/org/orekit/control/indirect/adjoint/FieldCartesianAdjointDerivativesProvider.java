@@ -79,7 +79,8 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
         mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
         mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
-        mainDerivativesIncrements[6] = mass.newInstance(-getCost().getMassFlowRateFactor());
+        final T thrustForceMagnitude = thrustAccelerationVector.getNorm().multiply(mass);
+        mainDerivativesIncrements[6] = thrustForceMagnitude.multiply(-getCost().getMassFlowRateFactor());
 
         // Cartesian position adjoint
         additionalDerivatives[3] = adjointVariables[0].negate();

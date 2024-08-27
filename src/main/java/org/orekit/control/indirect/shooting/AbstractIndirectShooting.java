@@ -95,7 +95,7 @@ public abstract class AbstractIndirectShooting {
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }
-        propagator.addAdditionalDerivativesProvider(propagationSettings.getAdjointDerivativesProvider()
+        propagator.addAdditionalDerivativesProvider(propagationSettings.getAdjointDynamicsProvider()
             .buildAdditionalDerivativesProvider());
         return propagator;
     }
@@ -140,7 +140,7 @@ public abstract class AbstractIndirectShooting {
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }
-        propagator.addAdditionalDerivativesProvider(propagationSettings.getAdjointDerivativesProvider()
+        propagator.addAdditionalDerivativesProvider(propagationSettings.getAdjointDynamicsProvider()
             .buildFieldAdditionalDerivativesProvider(field));
         return propagator;
     }

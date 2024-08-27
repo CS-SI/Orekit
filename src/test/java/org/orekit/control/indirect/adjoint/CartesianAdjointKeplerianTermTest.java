@@ -36,7 +36,7 @@ import org.orekit.utils.Constants;
 class CartesianAdjointKeplerianTermTest {
 
     @Test
-    void testGetVelocityAdjointContribution() {
+    void testGetPositionAdjointContribution() {
         // GIVEN
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(Constants.EGM96_EARTH_MU);
         final double[] adjoint = new double[6];
@@ -46,7 +46,7 @@ class CartesianAdjointKeplerianTermTest {
             adjoint[i] = i;
         }
         // WHEN
-        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(Mockito.mock(AbsoluteDate.class),
+        final double[] contribution = keplerianTerm.getPositionAdjointContribution(Mockito.mock(AbsoluteDate.class),
                 state, adjoint, FramesFactory.getGCRF());
         // THEN
         final NewtonianAttraction newtonianAttraction = new NewtonianAttraction(keplerianTerm.getMu());
@@ -70,7 +70,7 @@ class CartesianAdjointKeplerianTermTest {
     }
 
     @Test
-    void testGetVelocityAdjointFieldContribution() {
+    void testGetPositionAdjointFieldContribution() {
         // GIVEN
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(Constants.EGM96_EARTH_MU);
         final Binary64Field field = Binary64Field.getInstance();
@@ -83,7 +83,7 @@ class CartesianAdjointKeplerianTermTest {
         final Frame frame = FramesFactory.getGCRF();
         final FieldAbsoluteDate<Binary64> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(field);
         // WHEN
-        final Binary64[] fieldContribution = keplerianTerm.getVelocityAdjointFieldContribution(fieldDate, fieldState,
+        final Binary64[] fieldContribution = keplerianTerm.getPositionAdjointFieldContribution(fieldDate, fieldState,
                 fieldAdjoint, frame);
         // THEN
         final double[] state = new double[fieldState.length];
@@ -94,7 +94,7 @@ class CartesianAdjointKeplerianTermTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final double[] contribution = keplerianTerm.getVelocityAdjointContribution(fieldDate.toAbsoluteDate(), state,
+        final double[] contribution = keplerianTerm.getPositionAdjointContribution(fieldDate.toAbsoluteDate(), state,
                 adjoint, frame);
         for (int i = 0; i < contribution.length; i++) {
             Assertions.assertEquals(fieldContribution[i].getReal(), contribution[i]);

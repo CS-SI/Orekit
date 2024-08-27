@@ -80,7 +80,7 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
         mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
         mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
-        mainDerivativesIncrements[6] = -getCost().getMassFlowRateFactor();
+        mainDerivativesIncrements[6] = -getCost().getMassFlowRateFactor() * thrustAccelerationVector.getNorm() * mass;
 
         // Cartesian position adjoint
         additionalDerivatives[3] = -adjointVariables[0];
