@@ -29,6 +29,7 @@ import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.utils.FieldPVCoordinates;
 
 /**
  * Class for indirect single shooting methods with Cartesian coordinates for fixed time fixed boundary.
@@ -70,27 +71,29 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         // form defects and their Jacobian matrix
         final double[] defects = new double[originalInitialAdjoint.length];
         final double[][] defectsJacobianData = new double[defects.length][defects.length];
-        final FieldVector3D<Gradient> fieldTerminalPosition = fieldTerminalState.getPVCoordinates().getPosition();
-        final FieldVector3D<Gradient> fieldTerminalVelocity = fieldTerminalState.getPVCoordinates().getVelocity();
-        final Vector3D terminalPosition = fieldTerminalPosition.toVector3D();
-        final Vector3D terminalVelocity = fieldTerminalVelocity.toVector3D();
-        final Vector3D targetPosition = getTerminalCartesianState().getPosition();
-        final Vector3D targetVelocity = getTerminalCartesianState().getVelocity();
-        defects[0] = terminalPosition.getX() - targetPosition.getX();
-        defectsJacobianData[0] = fieldTerminalPosition.getX().getGradient();
-        defects[1] = terminalPosition.getY() - targetPosition.getY();
-        defectsJacobianData[1] = fieldTerminalPosition.getY().getGradient();
-        defects[2] = terminalPosition.getZ() - targetPosition.getZ();
-        defectsJacobianData[2] = fieldTerminalPosition.getZ().getGradient();
-        defects[3] = terminalVelocity.getX() - targetVelocity.getX();
-        defectsJacobianData[3] = fieldTerminalVelocity.getX().getGradient();
-        defects[4] = terminalVelocity.getY() - targetVelocity.getY();
-        defectsJacobianData[4] = fieldTerminalVelocity.getY().getGradient();
-        defects[5] = terminalVelocity.getZ() - targetVelocity.getZ();
-        defectsJacobianData[5] = fieldTerminalVelocity.getZ().getGradient();
+        final double reciprocalScalePosition = 1. / getScalePositionDefects();
+        final double reciprocalScaleVelocity = 1. / getScaleVelocityDefects();
+        final FieldPVCoordinates<Gradient> terminalPV = fieldTerminalState.getPVCoordinates();
+        final FieldVector3D<Gradient> fieldScaledTerminalPosition = terminalPV.getPosition().scalarMultiply(reciprocalScalePosition);
+        final FieldVector3D<Gradient> fieldScaledTerminalVelocity = terminalPV.getVelocity().scalarMultiply(reciprocalScaleVelocity);
+        final Vector3D terminalScaledPosition = fieldScaledTerminalPosition.toVector3D();
+        final Vector3D terminalScaledVelocity = fieldScaledTerminalVelocity.toVector3D();
+        final Vector3D targetScaledPosition = getTerminalCartesianState().getPosition().scalarMultiply(reciprocalScalePosition);
+        final Vector3D targetScaledVelocity = getTerminalCartesianState().getVelocity().scalarMultiply(reciprocalScaleVelocity);
+        defects[0] = terminalScaledPosition.getX() - targetScaledPosition.getX();
+        defectsJacobianData[0] = fieldScaledTerminalPosition.getX().getGradient();
+        defects[1] = terminalScaledPosition.getY() - targetScaledPosition.getY();
+        defectsJacobianData[1] = fieldScaledTerminalPosition.getY().getGradient();
+        defects[2] = terminalScaledPosition.getZ() - targetScaledPosition.getZ();
+        defectsJacobianData[2] = fieldScaledTerminalPosition.getZ().getGradient();
+        defects[3] = terminalScaledVelocity.getX() - targetScaledVelocity.getX();
+        defectsJacobianData[3] = fieldScaledTerminalVelocity.getX().getGradient();
+        defects[4] = terminalScaledVelocity.getY() - targetScaledVelocity.getY();
+        defectsJacobianData[4] = fieldScaledTerminalVelocity.getY().getGradient();
+        defects[5] = terminalScaledVelocity.getZ() - targetScaledVelocity.getZ();
+        defectsJacobianData[5] = fieldScaledTerminalVelocity.getZ().getGradient();
         if (originalInitialAdjoint.length != 6) {
-            final String adjointName = getPropagationSettings().getAdjointDerivativesProvider()
-                .buildFieldAdditionalDerivativesProvider(fieldTerminalPosition.getX().getField()).getName();
+            final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
             final Gradient terminalMassAdjoint = fieldTerminalState.getAdditionalState(adjointName)[6];
             defects[6] = terminalMassAdjoint.getValue();
             defectsJacobianData[6] = terminalMassAdjoint.getGradient();

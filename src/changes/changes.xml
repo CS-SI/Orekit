@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1516">
+        Add scales for defect in indirect shooting.
+      </action>
       <action dev="serrof" type="update" issue="1512">
         Make easier implementation of user-defined adjoint.
       </action>

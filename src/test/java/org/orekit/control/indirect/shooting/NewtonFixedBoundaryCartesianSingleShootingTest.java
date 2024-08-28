@@ -25,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
-import org.orekit.control.indirect.adjoint.CartesianAdjointInertialTerm;
 import org.orekit.control.indirect.adjoint.CartesianAdjointJ2Term;
 import org.orekit.control.indirect.adjoint.CartesianAdjointKeplerianTerm;
 import org.orekit.control.indirect.adjoint.cost.BoundedCartesianEnergy;
@@ -74,6 +73,9 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 FramesFactory.getGCRF(), new FieldAbsoluteDate<>(field, targetPV.getDate()), field.getOne());
         final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(fieldOrbit);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = Mockito.mock(NewtonFixedBoundaryCartesianSingleShooting.class);
+        final double one = 1;
+        Mockito.when(shooting.getScalePositionDefects()).thenReturn(one);
+        Mockito.when(shooting.getScaleVelocityDefects()).thenReturn(one);
         Mockito.when(shooting.updateAdjoint(originalAdjoint, fieldState)).thenCallRealMethod();
         Mockito.when(shooting.getTerminalCartesianState()).thenReturn(targetPV);
         // WHEN
@@ -107,6 +109,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 boundaryOrbits, conditionChecker);
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
+        shooting.setScalePositionDefects(1.);
+        shooting.setScaleVelocityDefects(1.);
         final double mass = 1e3;
         final double[] guess = new double[6];
         // WHEN
@@ -169,7 +173,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final ShootingBoundaryOutput otherOutput = shooting.solve(mass, guess);
         Assertions.assertEquals(otherOutput.getIterationCount(), output.getIterationCount());
         Assertions.assertEquals(otherOutput.getTerminalState().getPosition(), otherOutput.getTerminalState().getPosition());
-        final String adjointName = propagationSettings.getAdjointDerivativesProvider().getAdjointName();
+        final String adjointName = propagationSettings.getAdjointDynamicsProvider().getAdjointName();
         Assertions.assertArrayEquals(output.getInitialState().getAdditionalState(adjointName),
                 otherOutput.getInitialState().getAdditionalState(adjointName));
     }
@@ -198,7 +202,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1e3;
-        final double[] guess = new double[]{0., 0., 0., 0.005307988954045267, 0.015505564884403, 0.01068562746807060};
+        final double[] guess = new double[]{-2.305656141544546E-6, -6.050107349447073E-6, -4.484389270662034E-6,
+                -9.635757291472267E-4, -0.0026076008704216066, 8.621848929368622E-5, 0.};
         // WHEN
         final ShootingBoundaryOutput output = shooting.solve(mass, guess);
         // THEN
@@ -208,9 +213,10 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 propagationSettings.getIntegrationSettings());
         final NewtonFixedBoundaryCartesianSingleShooting shootingBoundedEnergy = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettingsBoundedEnergy,
                 boundaryOrbits, conditionChecker);
-        double[] guessBoundedEnergy = output.getInitialState().getAdditionalState(cartesianCost.getAdjointName());
-        for (int i = 0; i < guessBoundedEnergy.length; i++) {
-            guessBoundedEnergy[i] /= thrustBound;
+        final double[] unboundedEnergyAdjoint = output.getInitialState().getAdditionalState(cartesianCost.getAdjointName());
+        double[] guessBoundedEnergy = unboundedEnergyAdjoint.clone();
+        for (int i = 0; i < unboundedEnergyAdjoint.length; i++) {
+            guessBoundedEnergy[i] = unboundedEnergyAdjoint[i] / thrustBound;
         }
         final ShootingBoundaryOutput outputBoundedEnergy = shootingBoundedEnergy.solve(mass, guessBoundedEnergy);
         Assertions.assertEquals(0, outputBoundedEnergy.getIterationCount());

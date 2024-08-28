@@ -51,7 +51,7 @@ public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewt
 
     /** {@inheritDoc} */
     @Override
-    public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
+    public double[] getPositionAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
                                                    final double[] adjointVariables, final Frame frame) {
         return getNewtonianVelocityAdjointContribution(formRelativePosition(date, stateVariables, frame),
             adjointVariables);
@@ -59,7 +59,7 @@ public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewt
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(final FieldAbsoluteDate<T> date,
+    public <T extends CalculusFieldElement<T>> T[] getPositionAdjointFieldContribution(final FieldAbsoluteDate<T> date,
                                                                                        final T[] stateVariables,
                                                                                        final T[] adjointVariables,
                                                                                        final Frame frame) {

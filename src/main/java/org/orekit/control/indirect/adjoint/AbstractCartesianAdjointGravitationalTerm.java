@@ -55,22 +55,22 @@ public abstract class AbstractCartesianAdjointGravitationalTerm extends Abstract
     public double[] getRatesContribution(final AbsoluteDate date, final double[] stateVariables,
                                          final double[] adjointVariables, final Frame frame) {
         final double[] contribution = new double[adjointVariables.length];
-        final double[] adjointVelocityDerivativesContribution = getVelocityAdjointContribution(date, stateVariables,
+        final double[] positionAdjointContribution = getPositionAdjointContribution(date, stateVariables,
             adjointVariables, frame);
-        System.arraycopy(adjointVelocityDerivativesContribution, 0, contribution, 3, adjointVelocityDerivativesContribution.length);
+        System.arraycopy(positionAdjointContribution, 0, contribution, 0, positionAdjointContribution.length);
         return contribution;
     }
 
     /**
-     * Computes the contribution to velocity adjoint derivatives.
+     * Computes the contribution to position adjoint derivatives.
      *
      * @param date             date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
      * @param frame            propagation frame
-     * @return contribution to velocity adjoint derivatives
+     * @return contribution to position adjoint derivatives
      */
-    protected abstract double[] getVelocityAdjointContribution(AbsoluteDate date, double[] stateVariables,
+    protected abstract double[] getPositionAdjointContribution(AbsoluteDate date, double[] stateVariables,
                                                                double[] adjointVariables, Frame frame);
 
     /** {@inheritDoc} */
@@ -79,23 +79,23 @@ public abstract class AbstractCartesianAdjointGravitationalTerm extends Abstract
                                                                              final T[] stateVariables,
                                                                              final T[] adjointVariables, final Frame frame) {
         final T[] contribution = MathArrays.buildArray(date.getField(), adjointVariables.length);
-        final T[] adjointVelocityDerivativesContribution = getVelocityAdjointFieldContribution(date, stateVariables,
+        final T[] positionAdjointFieldContribution = getPositionAdjointFieldContribution(date, stateVariables,
             adjointVariables, frame);
-        System.arraycopy(adjointVelocityDerivativesContribution, 0, contribution, 3, adjointVelocityDerivativesContribution.length);
+        System.arraycopy(positionAdjointFieldContribution, 0, contribution, 0, positionAdjointFieldContribution.length);
         return contribution;
     }
 
     /**
-     * Computes the contribution to velocity adjoint derivatives.
+     * Computes the contribution to position adjoint derivatives.
      *
      * @param <T>              field type
      * @param date             date
      * @param stateVariables   state variables
      * @param adjointVariables adjoint variables
      * @param frame            propagation frame
-     * @return contribution to velocity adjoint derivatives
+     * @return contribution to position adjoint derivatives
      */
-    protected abstract <T extends CalculusFieldElement<T>> T[] getVelocityAdjointFieldContribution(FieldAbsoluteDate<T> date,
+    protected abstract <T extends CalculusFieldElement<T>> T[] getPositionAdjointFieldContribution(FieldAbsoluteDate<T> date,
                                                                                                    T[] stateVariables,
                                                                                                    T[] adjointVariables,
                                                                                                    Frame frame);

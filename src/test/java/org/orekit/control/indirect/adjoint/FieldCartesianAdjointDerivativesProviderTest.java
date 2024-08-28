@@ -118,7 +118,8 @@ class FieldCartesianAdjointDerivativesProviderTest {
         Assertions.assertEquals(1., increment[3].getReal());
         Assertions.assertEquals(2., increment[4].getReal());
         Assertions.assertEquals(3., increment[5].getReal());
-        Assertions.assertEquals(-10., increment[6].getReal());
+        Assertions.assertEquals(-10. * state.getMass().getReal() * new Vector3D(1., 2., 3).getNorm(),
+                increment[6].getReal(), 1e-10);
     }
 
     private static FieldSpacecraftState<Binary64> getState(final String name) {
