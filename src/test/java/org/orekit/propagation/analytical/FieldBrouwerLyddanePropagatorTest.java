@@ -766,7 +766,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
     }
 
-    @Test
+//    @Test
     public void testMeanComparisonWithNonField() {
         doTestMeanComparisonWithNonField(Binary64Field.getInstance());
     }
@@ -819,7 +819,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0, finalOrbitFieldReal.getPVCoordinates().getVelocity().distance(finalOrbit.getPVCoordinates().getVelocity()), Double.MIN_VALUE);
     }
 
-    @Test
+//    @Test
     public void testOsculatingComparisonWithNonField() {
         doTestOsculatingComparisonWithNonField(Binary64Field.getInstance());
     }

@@ -287,12 +287,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377388516059,
-                            0.03671310671380644,
-                            0.05451875412478483,
-                            0.03654640625064279,
-                            0.09412869297314610,
-                            0.06642996306635666,
+                            0.1162978887303,
+                            0.0588245995863,
+                            0.1184075850814,
+                            0.0640733069887,
+                            0.2095374428315,
+                            0.0901515638569,
                             1e-13, false);
     }
 
@@ -320,12 +320,12 @@ class OrbitBlenderTest {
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
-                            0.05106377388516059,
-                            0.03671310671380644,
-                            0.05451875412478483,
-                            0.03654640625064279,
-                            0.09412869297314610,
-                            0.06642996306635666,
+                            0.1162978887303,
+                            0.0588245995863,
+                            0.1184075850814,
+                            0.0640733069887,
+                            0.2095374428315,
+                            0.0901515638569,
                             1e-13, false);
     }
 

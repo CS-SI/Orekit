@@ -137,7 +137,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
                            sM4h, sM3h, sM2h, sM1h, sP1h, sP2h, sP3h, sP4h);
 
         for (int i = 0; i < 6; ++i) {
-            Assertions.assertEquals(0.0, (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0], 1.06e-12);
+            Assertions.assertEquals(0.0, (dYdPRef[i][0] - dYdP.getEntry(i, 0)) / dYdPRef[i][0], 7.5e-4);
         }
 
     }

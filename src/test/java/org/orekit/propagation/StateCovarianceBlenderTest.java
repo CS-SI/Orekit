@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation;
 
+import java.util.Locale;
+import java.util.Map;
+
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
@@ -43,9 +46,6 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
 import org.orekit.utils.Constants;
-
-import java.util.Locale;
-import java.util.Map;
 
 class StateCovarianceBlenderTest {
 
@@ -198,12 +198,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.08234429610,
-                       0.19764677567,
-                       0.08885901386,
-                       0.20209052349,
-                       0.14461602033,
-                       0.38946109017,
+                       0.13366703421,
+                       0.13160856443,
+                       0.14205498565,
+                       0.13656688991,
+                       0.21941542631,
+                       0.25091794267,
                        tolerance,
                        showResults);
 
@@ -249,12 +249,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.082344296100,
-                       0.197646775666,
-                       0.088859013862,
-                       0.202090523492,
-                       0.144616020330,
-                       0.389461090177,
+                       0.13366703421,
+                       0.13160856443,
+                       0.14205498565,
+                       0.13656688991,
+                       0.21941542631,
+                       0.25091794267,
                        tolerance,
                        showResults);
 
