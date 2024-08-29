@@ -115,7 +115,7 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
-    public void testLocalTimeLeapSecond() throws IOException {
+    public void testLocalTimeLeapSecond() {
         doTestLocalTimeLeapSecond(Binary64Field.getInstance());
     }
 
@@ -904,8 +904,8 @@ public class FieldAbsoluteDateTest {
         FieldAbsoluteDate<T> d2 = new FieldAbsoluteDate<>(field, new DateComponents(2006, 2, 25),
                                                           new TimeComponents(17, 10, 0),
                                                           utc).shiftedBy(34);
-        Assertions.assertTrue(d1.equals(d2));
-        Assertions.assertFalse(d1.equals(this));
+        Assertions.assertEquals(d1, d2);
+        Assertions.assertNotEquals(d1, this);
     }
 
     private <T extends CalculusFieldElement<T>> void doTestIsEqualTo(final Field<T> field) {
@@ -1245,14 +1245,13 @@ public class FieldAbsoluteDateTest {
 
         final FieldAbsoluteDate<T> j2000     = FieldAbsoluteDate.getJ2000Epoch(field);
         final FieldAbsoluteDate<T> arbitrary = FieldAbsoluteDate.getArbitraryEpoch(field);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(Double.NEGATIVE_INFINITY)).getReal()
-                          == Double.POSITIVE_INFINITY);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(Double.POSITIVE_INFINITY)).getReal()
-                          == Double.NEGATIVE_INFINITY);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.NEGATIVE_INFINITY))).getReal()
-                          == Double.POSITIVE_INFINITY);
-        Assertions.assertTrue(j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.POSITIVE_INFINITY))).getReal()
-                          == Double.NEGATIVE_INFINITY);
+        Assertions.assertEquals(Double.POSITIVE_INFINITY,
+                                j2000.durationFrom(arbitrary.shiftedBy(Double.NEGATIVE_INFINITY)).getReal());
+        Assertions.assertEquals(Double.NEGATIVE_INFINITY,
+                                j2000.durationFrom(arbitrary.shiftedBy(Double.POSITIVE_INFINITY)).getReal());
+        Assertions.assertEquals(Double.POSITIVE_INFINITY, j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.NEGATIVE_INFINITY))).getReal());
+        Assertions.assertEquals(Double.NEGATIVE_INFINITY,
+                                j2000.durationFrom(arbitrary.shiftedBy(field.getZero().add(Double.POSITIVE_INFINITY))).getReal());
 
     }
 

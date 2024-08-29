@@ -140,7 +140,7 @@ public abstract class AbstractTimeScales implements TimeScales {
     @Override
     public AbsoluteDate getGlonassEpoch() {
         return new AbsoluteDate(DateComponents.GLONASS_EPOCH,
-                                new TimeComponents(new TimeOffset(29L, 0L)), this.getTAI()).shiftedBy(new TimeOffset(-10800l, 0l));
+                                new TimeComponents(new TimeOffset(29L, 0L)), this.getTAI()).shiftedBy(new TimeOffset(-10800L, 0L));
     }
 
     @Override

@@ -241,9 +241,6 @@ public class AbsoluteDate
      */
     public static final AbsoluteDate FUTURE_INFINITY = ARBITRARY_EPOCH.shiftedBy(Double.POSITIVE_INFINITY);
 
-    /** Attoseconds in one second. */
-    private static final long ATTOS_IN_SECOND = 1000000000000000000L;
-
     /** Serializable UID. */
     private static final long serialVersionUID = 20240711L;
 

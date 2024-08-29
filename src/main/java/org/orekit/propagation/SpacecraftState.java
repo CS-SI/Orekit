@@ -1021,7 +1021,7 @@ public class SpacecraftState
         private final Orbit orbit;
 
         /** Attitude and mass double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Additional states. */
         private final DoubleArrayDictionary additional;
