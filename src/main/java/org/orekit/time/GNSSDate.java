@@ -54,7 +54,7 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Reference date for ensuring continuity across GNSS week rollover.
      * @since 9.3.1
      */
-    private static final AtomicReference<DateComponents> rolloverReference = new AtomicReference<>(null);
+    private static final AtomicReference<DateComponents> ROLLOVER_REFERENCE = new AtomicReference<>(null);
 
     /** Week number since the GNSS reference epoch. */
     private final int weekNumber;
@@ -185,14 +185,14 @@ public class GNSSDate implements Serializable, TimeStamped {
         final int cycleW = GNSSDateType.getRollOverWeek(system);
         if (weekNumber < cycleW) {
 
-            DateComponents reference = rolloverReference.get();
+            DateComponents reference = ROLLOVER_REFERENCE.get();
             if (reference == null) {
                 // lazy setting of a default reference, using end of EOP entries
                 final UT1Scale       ut1       = timeScales.getUT1(IERSConventions.IERS_2010, true);
                 final List<EOPEntry> eop       = ut1.getEOPHistory().getEntries();
                 final int            lastMJD   = eop.get(eop.size() - 1).getMjd();
                 reference = new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, lastMJD);
-                rolloverReference.compareAndSet(null, reference);
+                ROLLOVER_REFERENCE.compareAndSet(null, reference);
             }
 
             // fix GNSS week rollover
@@ -333,7 +333,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @since 9.3.1
      */
     public static void setRolloverReference(final DateComponents reference) {
-        rolloverReference.set(reference);
+        ROLLOVER_REFERENCE.set(reference);
     }
 
     /** Get the reference date ensuring continuity across GNSS week rollover.
@@ -343,7 +343,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @since 9.3.1
      */
     public static DateComponents getRolloverReference() {
-        return rolloverReference.get();
+        return ROLLOVER_REFERENCE.get();
     }
 
     /** Get the week number since the GNSS reference epoch.
