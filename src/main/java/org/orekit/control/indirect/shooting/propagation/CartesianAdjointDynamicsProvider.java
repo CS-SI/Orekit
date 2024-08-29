@@ -22,8 +22,6 @@ import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.CartesianAdjointEquationTerm;
 import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
-import org.orekit.propagation.integration.AdditionalDerivativesProvider;
-import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 
 /**
  * Class for Cartesian adjoint derivatives provider (both standard and Field).
@@ -58,13 +56,13 @@ public class CartesianAdjointDynamicsProvider implements AdjointDynamicsProvider
 
     /** {@inheritDoc} */
     @Override
-    public AdditionalDerivativesProvider buildAdditionalDerivativesProvider() {
+    public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
         return new CartesianAdjointDerivativesProvider(cartesianCost, equationTerms);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldAdditionalDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
+    public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
         return new FieldCartesianAdjointDerivativesProvider<>(cartesianCost, equationTerms);
     }
 }

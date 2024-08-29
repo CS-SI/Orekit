@@ -17,61 +17,78 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.Field;
+import org.hipparchus.util.FastMath;
+import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
+
+import java.util.stream.Stream;
 
 /**
  * Class for unbounded energy cost with Cartesian coordinates.
- * Here, the control vector is chosen as the acceleration given by thrusting, expressed in the propagation frame.
+ * Here, the control vector is chosen as the thrust force, expressed in the propagation frame.
  * This leads to the optimal thrust being in the same direction as the adjoint velocity.
  * @author Romain Serra
  * @see UnboundedCartesianEnergyNeglectingMass
  * @since 12.2
  */
-public class UnboundedCartesianEnergy extends AbstractUnboundedCartesianEnergy {
+public class UnboundedCartesianEnergy extends CartesianEnergyConsideringMass {
+
+    /**
+     * Constructor.
+     * @param name name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param eventDetectionSettings detection settings for singularity detections
+     */
+    public UnboundedCartesianEnergy(final String name, final double massFlowRateFactor,
+                                    final EventDetectionSettings eventDetectionSettings) {
+        super(name, massFlowRateFactor, eventDetectionSettings);
+    }
 
     /**
      * Constructor.
      * @param name name
      * @param massFlowRateFactor mass flow rate factor
      */
-    public UnboundedCartesianEnergy(final String name,
-                                    final double massFlowRateFactor) {
-        super(name, massFlowRateFactor);
+    public UnboundedCartesianEnergy(final String name, final double massFlowRateFactor) {
+        this(name, massFlowRateFactor, EventDetectionSettings.getDefaultEventDetectionSettings());
     }
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
-        final double norm = getAdjointVelocityNorm(adjointVariables);
-        final double factor = 1. - getMassFlowRateFactor() * adjointVariables[6] / norm;
-        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(factor);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(final T[] adjointVariables,
-                                                                                                 final T mass) {
-        final T norm = getAdjointVelocityNorm(adjointVariables);
-        final T factor = adjointVariables[6].multiply(-getMassFlowRateFactor()).divide(norm).add(1);
-        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(factor);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
-                                         final double[] adjointDerivatives) {
+    protected double getThrustForceNorm(final double[] adjointVariables, final double mass) {
         final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
-        final double factor = getMassFlowRateFactor() * adjointVariables[6];
-        adjointDerivatives[6] = factor * (mass * factor - adjointVelocityNorm);
+        final double factor = adjointVelocityNorm / mass - getMassFlowRateFactor() * adjointVariables[6];
+        return FastMath.max(0., factor);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass,
-                                                                                  final T[] adjointDerivatives) {
-        final T adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
-        final T factor = adjointVariables[6].multiply(getMassFlowRateFactor());
-        adjointDerivatives[6] = factor.multiply(mass.multiply(factor).subtract(adjointVelocityNorm));
+    protected <T extends CalculusFieldElement<T>> T getFieldThrustForceNorm(final T[] adjointVariables, final T mass) {
+        final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
+        final T factor = adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        if (factor.getReal() < 0.) {
+            return adjointVelocityNorm.getField().getZero();
+        } else {
+            return factor;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
+        return Stream.of(new SingularityDetector(getEventDetectionSettings(), new ResetDerivativesOnEvent(),
+                0.));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return Stream.of(new FieldSingularityDetector<>(new FieldEventDetectionSettings<>(field, getEventDetectionSettings()),
+                new FieldResetDerivativesOnEvent<>(), field.getZero()));
     }
 }

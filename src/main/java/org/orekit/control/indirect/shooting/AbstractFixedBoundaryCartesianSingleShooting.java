@@ -22,6 +22,8 @@ import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.Attitude;
+import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
+import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
@@ -195,12 +197,32 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         // check initial guess
         final SpacecraftState initialState = createStateWithMassAndAdjoint(initialMass, initialGuess);
         final ShootingBoundaryOutput initialGuessSolution = computeCandidateSolution(initialState, 0);
-        final SpacecraftState actualTerminalState = initialGuessSolution.getTerminalState();
-        if (checkConvergence(actualTerminalState)) {
+        if (initialGuessSolution.isConverged()) {
             return initialGuessSolution;
         } else {
             return iterate(initialMass, initialGuess);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
+        final NumericalPropagator propagator = super.buildPropagator(initialState);
+        final CartesianAdjointDerivativesProvider derivativesProvider = (CartesianAdjointDerivativesProvider)
+            getPropagationSettings().getAdjointDynamicsProvider().buildAdditionalDerivativesProvider();
+        derivativesProvider.getCost().getEventDetectors().forEach(propagator::addEventDetector);
+        return propagator;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected FieldNumericalPropagator<Gradient> buildFieldPropagator(final FieldSpacecraftState<Gradient> initialState) {
+        final FieldNumericalPropagator<Gradient> fieldPropagator = super.buildFieldPropagator(initialState);
+        final Field<Gradient> field = fieldPropagator.getField();
+        final FieldCartesianAdjointDerivativesProvider<Gradient> derivativesProvider = (FieldCartesianAdjointDerivativesProvider<Gradient>)
+            getPropagationSettings().getAdjointDynamicsProvider().buildFieldAdditionalDerivativesProvider(field);
+        derivativesProvider.getCost().getFieldEventDetectors(field).forEach(fieldPropagator::addEventDetector);
+        return fieldPropagator;
     }
 
     /**
