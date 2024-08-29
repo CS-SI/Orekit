@@ -36,10 +36,10 @@ public class GLONASSScale implements TimeScale {
     private static final long serialVersionUID = 20240720L;
 
     /** Constant offset with respect to UTC (3 hours). */
-    private static final SplitTime OFFSET = new SplitTime(3, SplitTime.HOUR);
+    private static final TimeOffset OFFSET = new TimeOffset(3, TimeOffset.HOUR);
 
     /** Constant negative offset with respect to UTC (-3 hours). */
-    private static final SplitTime NEGATIVE_OFFSET = OFFSET.negate();
+    private static final TimeOffset NEGATIVE_OFFSET = OFFSET.negate();
 
     /** UTC time scale. */
     private final UTCScale utc;
@@ -53,7 +53,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
         return OFFSET.add(utc.offsetFromTAI(date));
     }
 
@@ -65,7 +65,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetToTAI(final DateComponents date, final TimeComponents time) {
+    public TimeOffset offsetToTAI(final DateComponents date, final TimeComponents time) {
         final DateTimeComponents utcComponents =
                         new DateTimeComponents(new DateTimeComponents(date, time), NEGATIVE_OFFSET);
         return utc.offsetToTAI(utcComponents.getDate(), utcComponents.getTime()).add(NEGATIVE_OFFSET);
@@ -97,7 +97,7 @@ public class GLONASSScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime getLeap(final AbsoluteDate date) {
+    public TimeOffset getLeap(final AbsoluteDate date) {
         return utc.getLeap(date);
     }
 

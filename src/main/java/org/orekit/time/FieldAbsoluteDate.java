@@ -210,7 +210,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public FieldAbsoluteDate(final Field<T> field, final int year, final int month, final int day,
                              final int hour, final int minute, final double second,
                              final TimeScale timeScale) throws IllegalArgumentException {
-        this(field, year, month, day, hour, minute, new SplitTime(second), timeScale);
+        this(field, year, month, day, hour, minute, new TimeOffset(second), timeScale);
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
@@ -227,7 +227,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 13.0
      */
     public FieldAbsoluteDate(final Field<T> field, final int year, final int month, final int day,
-                             final int hour, final int minute, final SplitTime second,
+                             final int hour, final int minute, final TimeOffset second,
                              final TimeScale timeScale) throws IllegalArgumentException {
         this(field, new DateComponents(year, month, day), new TimeComponents(hour, minute, second), timeScale);
     }
@@ -247,7 +247,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public FieldAbsoluteDate(final Field<T> field, final int year, final Month month, final int day,
                              final int hour, final int minute, final double second,
                              final TimeScale timeScale) throws IllegalArgumentException {
-        this(field, year, month, day, hour, minute, new SplitTime(second), timeScale);
+        this(field, year, month, day, hour, minute, new TimeOffset(second), timeScale);
     }
 
     /** Build an instance from a location in a {@link TimeScale time scale}.
@@ -264,7 +264,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 13.0
      */
     public FieldAbsoluteDate(final Field<T> field, final int year, final Month month, final int day,
-                             final int hour, final int minute, final SplitTime second,
+                             final int hour, final int minute, final TimeOffset second,
                              final TimeScale timeScale) throws IllegalArgumentException {
         this(field, new DateComponents(year, month, day), new TimeComponents(hour, minute, second), timeScale);
     }
@@ -320,7 +320,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public FieldAbsoluteDate(final Field<T> field, final Date location, final TimeScale timeScale) {
         this(field,
              new DateComponents(DateComponents.JAVA_EPOCH, (int) (location.getTime() / 86400000L)),
-             new TimeComponents(new SplitTime(location.getTime() % 86400000L, SplitTime.MILLISECOND)),
+             new TimeComponents(new TimeOffset(location.getTime() % 86400000L, TimeOffset.MILLISECOND)),
              timeScale);
     }
 
@@ -333,8 +333,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public FieldAbsoluteDate(final Field<T> field, final Instant instant, final TimeScale timeScale) {
         this(field,
              new DateComponents(DateComponents.JAVA_EPOCH, (int) (instant.getEpochSecond() / 86400L)),
-             new TimeComponents(new SplitTime(instant.getEpochSecond() % 86400L, SplitTime.SECOND,
-                                              instant.getNano(),                 SplitTime.NANOSECOND)),
+             new TimeComponents(new TimeOffset(instant.getEpochSecond() % 86400L, TimeOffset.SECOND,
+                                               instant.getNano(), TimeOffset.NANOSECOND)),
              timeScale);
     }
 
@@ -357,8 +357,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
     public FieldAbsoluteDate(final Field<T> field, final Instant instant, final UTCScale utcScale) {
         this(field,
              new DateComponents(DateComponents.JAVA_EPOCH, (int) (instant.getEpochSecond() / 86400L)),
-             new TimeComponents(new SplitTime(instant.getEpochSecond() % 86400L, SplitTime.SECOND,
-                                              instant.getNano(),                 SplitTime.NANOSECOND)),
+             new TimeComponents(new TimeOffset(instant.getEpochSecond() % 86400L, TimeOffset.SECOND,
+                                               instant.getNano(), TimeOffset.NANOSECOND)),
             utcScale);
     }
 
@@ -370,7 +370,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * instant, as measured in a regular time scale
      */
     public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final double elapsedDuration) {
-        this(since, new SplitTime(elapsedDuration));
+        this(since, new TimeOffset(elapsedDuration));
     }
 
     /** Build an instance from an elapsed duration since another instant.
@@ -381,7 +381,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * instant, as measured in a regular time scale
      * @since 13.0
      */
-    public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final SplitTime elapsedDuration) {
+    public FieldAbsoluteDate(final FieldAbsoluteDate<T> since, final TimeOffset elapsedDuration) {
         this.date        = since.date.shiftedBy(elapsedDuration);
         this.fieldOffset = since.fieldOffset;
     }
@@ -1547,7 +1547,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 13.0
      */
     @Override
-    public FieldAbsoluteDate<T> shiftedBy(final SplitTime dt) {
+    public FieldAbsoluteDate<T> shiftedBy(final TimeOffset dt) {
         return new FieldAbsoluteDate<>(this, dt);
     }
 

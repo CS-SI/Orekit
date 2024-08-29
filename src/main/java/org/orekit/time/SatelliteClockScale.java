@@ -37,7 +37,7 @@ public class SatelliteClockScale implements TimeScale {
     private final DateTimeComponents epochDT;
 
     /** Offset from TAI at epoch. */
-    private final SplitTime offsetAtEpoch;
+    private final TimeOffset offsetAtEpoch;
 
     /** Clock count at epoch. */
     private final double countAtEpoch;
@@ -86,7 +86,7 @@ public class SatelliteClockScale implements TimeScale {
         this.name          = name;
         this.epoch         = epoch;
         this.epochDT       = epoch.getComponents(epochScale);
-        this.offsetAtEpoch = epochScale.offsetFromTAI(epoch).add(new SplitTime(countAtEpoch));
+        this.offsetAtEpoch = epochScale.offsetFromTAI(epoch).add(new TimeOffset(countAtEpoch));
         this.countAtEpoch  = countAtEpoch;
         this.drift         = drift;
         this.rate          = 1.0 + drift;
@@ -94,20 +94,20 @@ public class SatelliteClockScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
-        return offsetAtEpoch.add(new SplitTime(drift * date.durationFrom(epoch)));
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
+        return offsetAtEpoch.add(new TimeOffset(drift * date.durationFrom(epoch)));
     }
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetToTAI(final DateComponents date, final TimeComponents time) {
+    public TimeOffset offsetToTAI(final DateComponents date, final TimeComponents time) {
         final long      deltaDate      = (date.getJ2000Day() - epochDT.getDate().getJ2000Day()) *
-                                         SplitTime.DAY.getSeconds();
-        final SplitTime deltaTime      = time.getSplitSecondsInUTCDay().
+                                         TimeOffset.DAY.getSeconds();
+        final TimeOffset deltaTime      = time.getSplitSecondsInUTCDay().
                                          subtract(epochDT.getTime().getSplitSecondsInUTCDay());
         final double    delta          = deltaDate + deltaTime.toDouble();
         final double    timeSinceEpoch = (delta - countAtEpoch) / rate;
-        return offsetAtEpoch.add(new SplitTime(drift * timeSinceEpoch)).negate();
+        return offsetAtEpoch.add(new TimeOffset(drift * timeSinceEpoch)).negate();
     }
 
     /** Compute date corresponding to some clock count.

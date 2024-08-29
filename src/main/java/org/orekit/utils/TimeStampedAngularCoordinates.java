@@ -22,7 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeStamped;
 
 /** {@link TimeStamped time-stamped} version of {@link AngularCoordinates}.
@@ -161,7 +161,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @return a new state, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
-    public TimeStampedAngularCoordinates shiftedBy(final SplitTime dt) {
+    public TimeStampedAngularCoordinates shiftedBy(final TimeOffset dt) {
         final AngularCoordinates sac = super.shiftedBy(dt);
         return new TimeStampedAngularCoordinates(date.shiftedBy(dt),
                                                  sac.getRotation(), sac.getRotationRate(), sac.getRotationAcceleration());

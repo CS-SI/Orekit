@@ -37,7 +37,7 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
@@ -487,9 +487,9 @@ public class EstimatedEarthFrameProvider implements TransformProvider {
 
         /** {@inheritDoc} */
         @Override
-        public SplitTime offsetFromTAI(final AbsoluteDate date) {
+        public TimeOffset offsetFromTAI(final AbsoluteDate date) {
             final double dut1 = linearModel(date, primeMeridianOffsetDriver, primeMeridianDriftDriver) / EARTH_ANGULAR_VELOCITY;
-            return baseUT1.offsetFromTAI(date).add(new SplitTime(dut1));
+            return baseUT1.offsetFromTAI(date).add(new TimeOffset(dut1));
         }
 
         /** {@inheritDoc} */

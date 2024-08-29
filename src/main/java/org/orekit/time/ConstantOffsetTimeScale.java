@@ -31,18 +31,18 @@ public class ConstantOffsetTimeScale implements TimeScale {
     private final String name;
 
     /** Offset from TAI. */
-    private final SplitTime offset;
+    private final TimeOffset offset;
 
     /** Negated offset from TAI.
      * @since 13.0
      */
-    private final SplitTime negatedOffset;
+    private final TimeOffset negatedOffset;
 
     /** Simple constructor.
      * @param name name of the time scale
      * @param offset offset from TAI
      */
-    public ConstantOffsetTimeScale(final String name, final SplitTime offset) {
+    public ConstantOffsetTimeScale(final String name, final TimeOffset offset) {
         this.name          = name;
         this.offset        = offset;
         this.negatedOffset = offset.negate();
@@ -50,7 +50,7 @@ public class ConstantOffsetTimeScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
         return offset;
     }
 
@@ -62,7 +62,7 @@ public class ConstantOffsetTimeScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetToTAI(final DateComponents date, final TimeComponents time) {
+    public TimeOffset offsetToTAI(final DateComponents date, final TimeComponents time) {
         return negatedOffset;
     }
 

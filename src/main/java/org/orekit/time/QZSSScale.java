@@ -35,7 +35,7 @@ public class QZSSScale extends ConstantOffsetTimeScale {
     /** Package private constructor for the factory.
      */
     QZSSScale() {
-        super("QZSS", new SplitTime(-19L, 0L));
+        super("QZSS", new TimeOffset(-19L, 0L));
     }
 
 }

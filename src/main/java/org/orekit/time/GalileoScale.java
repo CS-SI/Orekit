@@ -38,7 +38,7 @@ public class GalileoScale extends ConstantOffsetTimeScale {
     /** Package private constructor for the factory.
      */
     GalileoScale() {
-        super("GST", new SplitTime(-19L, 0L));
+        super("GST", new TimeOffset(-19L, 0L));
     }
 
 }

@@ -37,7 +37,7 @@ import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -107,15 +107,16 @@ public class TransformTest {
     public void testAcceleration() {
 
         PVCoordinates initPV = new PVCoordinates(new Vector3D(9, 8, 7), new Vector3D(6, 5, 4), new Vector3D(3, 2, 1));
-        for (SplitTime dt = SplitTime.ZERO; dt.compareTo(SplitTime.SECOND) < 0; dt = dt.add(SplitTime.MILLISECOND.multiply(10))) {
+        for (TimeOffset dt = TimeOffset.ZERO; dt.compareTo(TimeOffset.SECOND) < 0; dt = dt.add(
+            TimeOffset.MILLISECOND.multiply(10))) {
             PVCoordinates basePV        = initPV.shiftedBy(dt.toDouble());
             PVCoordinates transformedPV = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt).transformPVCoordinates(basePV);
 
             // rebuild transformed acceleration, relying only on transformed position and velocity
             List<TimeStampedPVCoordinates> sample = new ArrayList<>();
-            SplitTime h = SplitTime.MILLISECOND.multiply(10);
+            TimeOffset h = TimeOffset.MILLISECOND.multiply(10);
             for (int i = -3; i < 4; ++i) {
-                SplitTime dthi = i < 0 ? dt.subtract(h.multiply(-i)) : dt.add(h.multiply(i));
+                TimeOffset dthi = i < 0 ? dt.subtract(h.multiply(-i)) : dt.add(h.multiply(i));
                 Transform t = evolvingTransform(AbsoluteDate.J2000_EPOCH, dthi);
                 PVCoordinates pv = t.transformPVCoordinates(initPV.shiftedBy(dthi.toDouble()));
                 sample.add(new TimeStampedPVCoordinates(t.getDate(), pv.getPosition(), pv.getVelocity(), Vector3D.ZERO));
@@ -1030,12 +1031,12 @@ public class TransformTest {
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         List<Transform> sample = new ArrayList<>();
         for (int i = 0; i < 5; ++i) {
-            sample.add(evolvingTransform(t0, SplitTime.MILLISECOND.multiply(800 * i)));
+            sample.add(evolvingTransform(t0, TimeOffset.MILLISECOND.multiply(800 * i)));
         }
 
-        for (SplitTime dt = SplitTime.MILLISECOND.multiply(100);
-             dt.compareTo(SplitTime.MILLISECOND.multiply(3100)) < 0;
-             dt = dt.add(SplitTime.MILLISECOND.multiply(100))) {
+        for (TimeOffset dt = TimeOffset.MILLISECOND.multiply(100);
+             dt.compareTo(TimeOffset.MILLISECOND.multiply(3100)) < 0;
+             dt = dt.add(TimeOffset.MILLISECOND.multiply(100))) {
             Transform reference = evolvingTransform(t0, dt);
             Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample.stream());
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
@@ -1050,7 +1051,7 @@ public class TransformTest {
 
     }
 
-    private Transform evolvingTransform(final AbsoluteDate t0, final SplitTime dt) {
+    private Transform evolvingTransform(final AbsoluteDate t0, final TimeOffset dt) {
         // the following transform corresponds to a frame moving along the circle r = 1
         // with its x axis always pointing to the reference frame center
         final double omega = 0.2;

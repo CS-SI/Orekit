@@ -26,7 +26,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -400,7 +400,7 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    public CartesianOrbit shiftedBy(final SplitTime dt) {
+    public CartesianOrbit shiftedBy(final TimeOffset dt) {
         final PVCoordinates shiftedPV = shiftPV(dt.toDouble());
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
     }
@@ -568,14 +568,14 @@ public class CartesianOrbit extends Orbit {
         private Object readResolve() {
             if (d.length >= 10) {
                 // we have derivatives
-                return new CartesianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                return new CartesianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                                                        new Vector3D(d[1], d[2], d[3]),
                                                                        new Vector3D(d[4], d[5], d[6]),
                                                                        new Vector3D(d[7], d[8], d[9])),
                                           frame, d[0]);
             } else {
                 // we don't have derivatives
-                return new CartesianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                return new CartesianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                                                        new Vector3D(d[1], d[2], d[3]),
                                                                        new Vector3D(d[4], d[5], d[6])),
                                           frame, d[0]);

@@ -159,7 +159,7 @@ public class UTCTAIBulletinAFilesLoader extends AbstractSelfFeedingLoader
                     offsets.add(0,
                                 new OffsetModel(dc1972,
                                                 dc1972.getMJD(),
-                                                offsets.get(0).getOffset().subtract(SplitTime.SECOND),
+                                                offsets.get(0).getOffset().subtract(TimeOffset.SECOND),
                                                 0));
                 }
             }

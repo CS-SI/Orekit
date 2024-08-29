@@ -46,7 +46,7 @@ public class TCGScale implements TimeScale {
     private final AbsoluteDate referenceDate;
 
     /** Offset between TT and TAI scales. */
-    private final SplitTime ttOffset;
+    private final TimeOffset ttOffset;
 
     /**
      * Package private constructor for the factory.
@@ -61,8 +61,8 @@ public class TCGScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
-        return ttOffset.add(new SplitTime(LG_RATE * date.durationFrom(referenceDate)));
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
+        return ttOffset.add(new TimeOffset(LG_RATE * date.durationFrom(referenceDate)));
     }
 
     /** {@inheritDoc} */

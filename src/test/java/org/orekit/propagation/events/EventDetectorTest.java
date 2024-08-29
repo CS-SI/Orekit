@@ -50,7 +50,7 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -362,9 +362,9 @@ public class EventDetectorTest {
                                                  eme2000, initialDate, Constants.WGS84_EARTH_MU);
         Propagator propagator = new KeplerianPropagator(orbit);
         double base  = 3600.0;
-        SplitTime noise = new SplitTime(4, SplitTime.ATTOSECOND);
+        TimeOffset noise = new TimeOffset(4, TimeOffset.ATTOSECOND);
         // introduce some numerical noise by using two separate shifts
-        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(new SplitTime(2, noise));
+        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(new TimeOffset(2, noise));
         AbsoluteDate eventTime = finalTime.shiftedBy(noise.negate());
         propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise.toDouble() / 2));
         SpacecraftState finalState = propagator.propagate(finalTime);

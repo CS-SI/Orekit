@@ -61,8 +61,8 @@ public class TCBScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
-        return tdb.offsetFromTAI(date).add(new SplitTime(LB_RATE * date.durationFrom(referenceDate)));
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
+        return tdb.offsetFromTAI(date).add(new TimeOffset(LB_RATE * date.durationFrom(referenceDate)));
     }
 
     /** {@inheritDoc} */

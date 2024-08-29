@@ -36,40 +36,40 @@ import org.orekit.utils.Constants;
 public class TimeComponents implements Serializable, Comparable<TimeComponents> {
 
     /** Constant for commonly used hour 00:00:00. */
-    public static final TimeComponents H00   = new TimeComponents(0, 0, SplitTime.ZERO);
+    public static final TimeComponents H00   = new TimeComponents(0, 0, TimeOffset.ZERO);
 
     /** Constant for commonly used hour 12:00:00. */
-    public static final TimeComponents H12 = new TimeComponents(12, 0, SplitTime.ZERO);
+    public static final TimeComponents H12 = new TimeComponents(12, 0, TimeOffset.ZERO);
 
     // CHECKSTYLE: stop ConstantName
     /** Constant for NaN time.
      * @since 13.0
      */
-    public static final TimeComponents NaN   = new TimeComponents(0, 0, SplitTime.NaN);
+    public static final TimeComponents NaN   = new TimeComponents(0, 0, TimeOffset.NaN);
     // CHECKSTYLE: resume ConstantName
 
     /** Wrapping limits for rounding to next minute.
      * @since 13.0
      */
-    private static final SplitTime[] WRAPPING = new SplitTime[] {
-        new SplitTime(59L, 500000000000000000L), // round to second
-        new SplitTime(59L, 950000000000000000L), // round to 10⁻¹ second
-        new SplitTime(59L, 995000000000000000L), // round to 10⁻² second
-        new SplitTime(59L, 999500000000000000L), // round to 10⁻³ second
-        new SplitTime(59L, 999950000000000000L), // round to 10⁻⁴ second
-        new SplitTime(59L, 999995000000000000L), // round to 10⁻⁵ second
-        new SplitTime(59L, 999999500000000000L), // round to 10⁻⁶ second
-        new SplitTime(59L, 999999950000000000L), // round to 10⁻⁷ second
-        new SplitTime(59L, 999999995000000000L), // round to 10⁻⁸ second
-        new SplitTime(59L, 999999999500000000L), // round to 10⁻⁹ second
-        new SplitTime(59L, 999999999950000000L), // round to 10⁻¹⁰ second
-        new SplitTime(59L, 999999999995000000L), // round to 10⁻¹¹ second
-        new SplitTime(59L, 999999999999500000L), // round to 10⁻¹² second
-        new SplitTime(59L, 999999999999950000L), // round to 10⁻¹³ second
-        new SplitTime(59L, 999999999999995000L), // round to 10⁻¹⁴ second
-        new SplitTime(59L, 999999999999999500L), // round to 10⁻¹⁵ second
-        new SplitTime(59L, 999999999999999950L), // round to 10⁻¹⁶ second
-        new SplitTime(59L, 999999999999999995L)  // round to 10⁻¹⁷ second
+    private static final TimeOffset[] WRAPPING = new TimeOffset[] {
+        new TimeOffset(59L, 500000000000000000L), // round to second
+        new TimeOffset(59L, 950000000000000000L), // round to 10⁻¹ second
+        new TimeOffset(59L, 995000000000000000L), // round to 10⁻² second
+        new TimeOffset(59L, 999500000000000000L), // round to 10⁻³ second
+        new TimeOffset(59L, 999950000000000000L), // round to 10⁻⁴ second
+        new TimeOffset(59L, 999995000000000000L), // round to 10⁻⁵ second
+        new TimeOffset(59L, 999999500000000000L), // round to 10⁻⁶ second
+        new TimeOffset(59L, 999999950000000000L), // round to 10⁻⁷ second
+        new TimeOffset(59L, 999999995000000000L), // round to 10⁻⁸ second
+        new TimeOffset(59L, 999999999500000000L), // round to 10⁻⁹ second
+        new TimeOffset(59L, 999999999950000000L), // round to 10⁻¹⁰ second
+        new TimeOffset(59L, 999999999995000000L), // round to 10⁻¹¹ second
+        new TimeOffset(59L, 999999999999500000L), // round to 10⁻¹² second
+        new TimeOffset(59L, 999999999999950000L), // round to 10⁻¹³ second
+        new TimeOffset(59L, 999999999999995000L), // round to 10⁻¹⁴ second
+        new TimeOffset(59L, 999999999999999500L), // round to 10⁻¹⁵ second
+        new TimeOffset(59L, 999999999999999950L), // round to 10⁻¹⁶ second
+        new TimeOffset(59L, 999999999999999995L)  // round to 10⁻¹⁷ second
     };
 
     /** Offset values for rounding attoseconds.
@@ -118,8 +118,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     private static final int FIFTY_NINE = 59;
 
     /** Constant for 23:59. */
-    private static final SplitTime TWENTY_THREE_FIFTY_NINE =
-        new SplitTime(TWENTY_THREE * HOUR + FIFTY_NINE * MINUTE, 0L);
+    private static final TimeOffset TWENTY_THREE_FIFTY_NINE =
+        new TimeOffset(TWENTY_THREE * HOUR + FIFTY_NINE * MINUTE, 0L);
 
     /** Hour number. */
     private final int hour;
@@ -128,7 +128,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     private final int minute;
 
     /** Split second number. */
-    private final SplitTime splitSecond;
+    private final TimeOffset splitSecond;
 
     /** Offset between the specified date and UTC.
      * <p>
@@ -151,7 +151,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public TimeComponents(final int hour, final int minute, final double second)
         throws
         IllegalArgumentException {
-        this(hour, minute, new SplitTime(second));
+        this(hour, minute, new TimeOffset(second));
     }
 
     /** Build a time from its clock elements.
@@ -165,7 +165,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * are given (parameters out of range)
      * @since 13.0
      */
-    public TimeComponents(final int hour, final int minute, final SplitTime splitSecond)
+    public TimeComponents(final int hour, final int minute, final TimeOffset splitSecond)
         throws IllegalArgumentException {
         this(hour, minute, splitSecond, 0);
     }
@@ -186,7 +186,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public TimeComponents(final int hour, final int minute, final double second, final int minutesFromUTC)
         throws
         IllegalArgumentException {
-        this(hour, minute, new SplitTime(second), minutesFromUTC);
+        this(hour, minute, new TimeOffset(second), minutesFromUTC);
     }
 
     /** Build a time from its clock elements.
@@ -203,7 +203,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * are given (parameters out of range)
      * @since 13.0
      */
-    public TimeComponents(final int hour, final int minute, final SplitTime splitSecond,
+    public TimeComponents(final int hour, final int minute, final TimeOffset splitSecond,
                           final int minutesFromUTC)
         throws IllegalArgumentException {
 
@@ -230,7 +230,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * less than {@code 61.0}. This constructor may produce an invalid value of
      * {@link #getSecond()} and {@link #getSplitSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #TimeComponents(SplitTime, SplitTime, int)}.
+     * the final minute use {@link #TimeComponents(TimeOffset, TimeOffset, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
@@ -238,12 +238,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
      *                    1} (excluded)
      * @throws OrekitIllegalArgumentException if seconds number is out of range
-     * @see #TimeComponents(SplitTime, SplitTime, int)
+     * @see #TimeComponents(TimeOffset, TimeOffset, int)
      * @see #TimeComponents(int, double)
      */
     public TimeComponents(final double secondInDay)
             throws OrekitIllegalArgumentException {
-        this(new SplitTime(secondInDay));
+        this(new TimeOffset(secondInDay));
     }
 
     /**
@@ -257,7 +257,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
      * may produce an invalid value of {@link #getSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #TimeComponents(SplitTime, SplitTime, int)}.
+     * the final minute use {@link #TimeComponents(TimeOffset, TimeOffset, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC()} will
      * return 0).
@@ -265,16 +265,16 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number
      * @throws OrekitIllegalArgumentException if seconds number is out of range
-     * @see #TimeComponents(SplitTime, SplitTime, int)
+     * @see #TimeComponents(TimeOffset, TimeOffset, int)
      */
     public TimeComponents(final int secondInDayA, final double secondInDayB)
             throws OrekitIllegalArgumentException {
 
         // if the total is at least 86400 then assume there is a leap second
-        final SplitTime      aPlusB = new SplitTime(secondInDayA).add(new SplitTime(secondInDayB));
-        final TimeComponents tc     = aPlusB.compareTo(SplitTime.DAY) >= 0 ?
-                                      new TimeComponents(aPlusB.subtract(SplitTime.SECOND), SplitTime.SECOND, 61) :
-                                      new TimeComponents(aPlusB, SplitTime.ZERO, 60);
+        final TimeOffset aPlusB = new TimeOffset(secondInDayA).add(new TimeOffset(secondInDayB));
+        final TimeComponents tc     = aPlusB.compareTo(TimeOffset.DAY) >= 0 ?
+                                      new TimeComponents(aPlusB.subtract(TimeOffset.SECOND), TimeOffset.SECOND, 61) :
+                                      new TimeComponents(aPlusB, TimeOffset.ZERO, 60);
 
         this.hour           = tc.hour;
         this.minute         = tc.minute;
@@ -290,30 +290,30 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * will be less than {@code 60.0}, otherwise it will be less than {@code 61.0}. This constructor
      * may produce an invalid value of {@link #getSecond()} during a negative leap second,
      * through there has never been one. For more control over the number of seconds in
-     * the final minute use {@link #TimeComponents(SplitTime, SplitTime, int)}.
+     * the final minute use {@link #TimeComponents(TimeOffset, TimeOffset, int)}.
      *
      * <p>This constructor is always in UTC (i.e. {@link #getMinutesFromUTC() will return
      * 0}).
      *
      * @param splitSecondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} {@code +
      *                    1} (excluded)
-     * @see #TimeComponents(SplitTime, SplitTime, int)
+     * @see #TimeComponents(TimeOffset, TimeOffset, int)
      * @see #TimeComponents(int, double)
      * @since 13.0
      */
-    public TimeComponents(final SplitTime splitSecondInDay) {
-        if (splitSecondInDay.compareTo(SplitTime.ZERO) < 0) {
+    public TimeComponents(final TimeOffset splitSecondInDay) {
+        if (splitSecondInDay.compareTo(TimeOffset.ZERO) < 0) {
             // negative time
             throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                                                      splitSecondInDay.toDouble(),
-                                                     0, SplitTime.DAY_WITH_POSITIVE_LEAP.getSeconds());
-        } else if (splitSecondInDay.compareTo(SplitTime.DAY) >= 0) {
+                                                     0, TimeOffset.DAY_WITH_POSITIVE_LEAP.getSeconds());
+        } else if (splitSecondInDay.compareTo(TimeOffset.DAY) >= 0) {
             // if the total is at least 86400 then assume there is a leap second
-            if (splitSecondInDay.compareTo(SplitTime.DAY_WITH_POSITIVE_LEAP) >= 0) {
+            if (splitSecondInDay.compareTo(TimeOffset.DAY_WITH_POSITIVE_LEAP) >= 0) {
                 // more than one leap second is too much
                 throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                                                          splitSecondInDay.toDouble(),
-                                                         0, SplitTime.DAY_WITH_POSITIVE_LEAP.getSeconds());
+                                                         0, TimeOffset.DAY_WITH_POSITIVE_LEAP.getSeconds());
             } else {
                 hour        = TWENTY_THREE;
                 minute      = FIFTY_NINE;
@@ -323,7 +323,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
             // regular time within day
             hour        = (int) splitSecondInDay.getSeconds() / HOUR;
             minute      = ((int) splitSecondInDay.getSeconds() % HOUR) / MINUTE;
-            splitSecond = splitSecondInDay.subtract(new SplitTime(hour * HOUR + minute * MINUTE, 0L));
+            splitSecond = splitSecondInDay.subtract(new TimeOffset(hour * HOUR + minute * MINUTE, 0L));
         }
 
         minutesFromUTC = 0;
@@ -368,7 +368,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @throws OrekitIllegalArgumentException if the inequalities above do not hold.
      * @since 10.2
      */
-    public TimeComponents(final SplitTime secondInDay, final SplitTime leap, final int minuteDuration) {
+    public TimeComponents(final TimeOffset secondInDay, final TimeOffset leap, final int minuteDuration) {
 
         minutesFromUTC = 0;
 
@@ -381,7 +381,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         }
 
         // range check
-        if (secondInDay.compareTo(SplitTime.ZERO) < 0 || secondInDay.compareTo(SplitTime.DAY) >= 0) {
+        if (secondInDay.compareTo(TimeOffset.ZERO) < 0 || secondInDay.compareTo(TimeOffset.DAY) >= 0) {
             throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                                                      // this can produce some strange messages due to rounding
                                                      secondInDay.toDouble(), 0, Constants.JULIAN_DAY);
@@ -403,8 +403,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // naiveSecond may round to minuteDuration, creating an invalid time.
         // In that case round down to preserve a valid time at the cost of up to 1as of error.
         // See #676 and #681.
-        final SplitTime naiveSecond = new SplitTime(wholeSeconds, secondInDay.getAttoSeconds()).add(leap);
-        if (naiveSecond.compareTo(SplitTime.ZERO) < 0) {
+        final TimeOffset naiveSecond = new TimeOffset(wholeSeconds, secondInDay.getAttoSeconds()).add(leap);
+        if (naiveSecond.compareTo(TimeOffset.ZERO) < 0) {
             throw new OrekitIllegalArgumentException(
                     OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                     naiveSecond, 0, minuteDuration);
@@ -412,7 +412,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if (naiveSecond.getSeconds() < minuteDuration) {
             splitSecond = naiveSecond;
         } else {
-            splitSecond = new SplitTime(minuteDuration - 1, 999999999999999999L);
+            splitSecond = new TimeOffset(minuteDuration - 1, 999999999999999999L);
         }
 
     }
@@ -442,9 +442,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         if (timeMatcher.matches()) {
             final int       hour        = Integer.parseInt(timeMatcher.group(1));
             final int       minute      = Integer.parseInt(timeMatcher.group(2));
-            final SplitTime splitSecond = timeMatcher.group(3) == null ?
-                                          SplitTime.ZERO :
-                                          SplitTime.parse(timeMatcher.group(3).replace(',', '.'));
+            final TimeOffset splitSecond = timeMatcher.group(3) == null ?
+                                           TimeOffset.ZERO :
+                                           TimeOffset.parse(timeMatcher.group(3).replace(',', '.'));
             final String    offset      = timeMatcher.group(4);
             final int    minutesFromUTC;
             if (offset == null) {
@@ -492,7 +492,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @return second second number from 0.0 to 61.0 (excluded). Note that 60 &le; second
      * &lt; 61 only occurs during a leap second.
      */
-    public SplitTime getSplitSecond() {
+    public TimeOffset getSplitSecond() {
         return splitSecond;
     }
 
@@ -523,8 +523,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @see #getSplitSecondsInUTCDay()
      * @since 13.0
      */
-    public SplitTime getSplitSecondsInLocalDay() {
-        return new SplitTime(60L * minute + 3600L * hour, 0L).add(splitSecond);
+    public TimeOffset getSplitSecondsInLocalDay() {
+        return new TimeOffset(60L * minute + 3600L * hour, 0L).add(splitSecond);
     }
 
     /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
@@ -545,8 +545,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @see #getSplitSecondsInLocalDay()
      * @since 13.0
      */
-    public SplitTime getSplitSecondsInUTCDay() {
-        return new SplitTime(60L * (minute - minutesFromUTC) + 3600L * hour, 0L).add(splitSecond);
+    public TimeOffset getSplitSecondsInUTCDay() {
+        return new TimeOffset(60L * (minute - minutesFromUTC) + 3600L * hour, 0L).add(splitSecond);
     }
 
     /**
@@ -572,17 +572,17 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public TimeComponents wrapIfNeeded(final int minuteDuration, final int fractionDigits) {
-        SplitTime second = getSplitSecond();
+        TimeOffset second = getSplitSecond();
 
         // adjust limit according to current minute duration
-        final SplitTime limit = WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)].
-                                add(new SplitTime(minuteDuration - 60, 0L));
+        final TimeOffset limit = WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)].
+                                add(new TimeOffset(minuteDuration - 60, 0L));
 
         if (second.compareTo(limit) >= 0) {
             // we should wrap around to the next minute
             int wrappedMinute = minute;
             int wrappedHour   = hour;
-            second = SplitTime.ZERO;
+            second = TimeOffset.ZERO;
             ++wrappedMinute;
             if (wrappedMinute > 59) {
                 wrappedMinute = 0;
@@ -613,8 +613,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
             // general case for regular times
             final long      rounding = ROUNDING[FastMath.min(fractionDigits, ROUNDING.length - 1)];
             final TimeComponents rounded  = new TimeComponents(hour, minute,
-                                                               new SplitTime(splitSecond.getSeconds(),
-                                                                             splitSecond.getAttoSeconds() + rounding));
+                                                               new TimeOffset(splitSecond.getSeconds(),
+                                                                              splitSecond.getAttoSeconds() + rounding));
             final StringBuilder builder = new StringBuilder();
             builder.append(String.format("%02d:%02d:%02d",
                                          rounded.hour, rounded.minute, rounded.splitSecond.getSeconds()));

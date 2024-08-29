@@ -29,7 +29,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeStamped;
 
 /** Position - Velocity - Acceleration linked to a date and a frame.
@@ -242,7 +242,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
      * @return a new state, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
-    public AbsolutePVCoordinates shiftedBy(final SplitTime dt) {
+    public AbsolutePVCoordinates shiftedBy(final TimeOffset dt) {
         final TimeStampedPVCoordinates spv = super.shiftedBy(dt);
         return new AbsolutePVCoordinates(frame, spv);
     }
@@ -377,7 +377,7 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
          */
         private Object readResolve() {
             return new AbsolutePVCoordinates(frame,
-                                             new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                             new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                              new Vector3D(d[0], d[1], d[2]),
                                              new Vector3D(d[3], d[4], d[5]),
                                              new Vector3D(d[6], d[7], d[8]));

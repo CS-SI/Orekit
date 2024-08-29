@@ -70,11 +70,11 @@ public class TDBScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
         final double dtDays = date.durationFrom(j2000Epoch) / Constants.JULIAN_DAY;
         final SinCos sc = FastMath.sinCos(G0 + G1 * dtDays);
         return tt.offsetFromTAI(date).
-               add(new SplitTime(sc.sin() * (SIN_G_FACTOR + TWO_SIN_2G_FACTOR * sc.cos())));
+               add(new TimeOffset(sc.sin() * (SIN_G_FACTOR + TWO_SIN_2G_FACTOR * sc.cos())));
     }
 
     /** {@inheritDoc} */

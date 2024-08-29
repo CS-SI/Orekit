@@ -37,54 +37,55 @@ import java.util.concurrent.TimeUnit;
  * @see FieldAbsoluteDate
  * @since 13.1
  */
-public class SplitTime implements Comparable<SplitTime>, Serializable {
+public class TimeOffset
+    implements Comparable<TimeOffset>, Serializable {
 
     /** Split time representing 0. */
-    public static final SplitTime ZERO = new SplitTime(0L, 0L);
+    public static final TimeOffset ZERO = new TimeOffset(0L, 0L);
 
     /** Split time representing 1 attosecond. */
-    public static final SplitTime ATTOSECOND = new SplitTime(0L, 1L);
+    public static final TimeOffset ATTOSECOND = new TimeOffset(0L, 1L);
 
     /** Split time representing 1 femtosecond. */
-    public static final SplitTime FEMTOSECOND = new SplitTime(0L, 1000L);
+    public static final TimeOffset FEMTOSECOND = new TimeOffset(0L, 1000L);
 
     /** Split time representing 1 picosecond. */
-    public static final SplitTime PICOSECOND = new SplitTime(0L, 1000000L);
+    public static final TimeOffset PICOSECOND = new TimeOffset(0L, 1000000L);
 
     /** Split time representing 1 nanosecond. */
-    public static final SplitTime NANOSECOND = new SplitTime(0L, 1000000000L);
+    public static final TimeOffset NANOSECOND = new TimeOffset(0L, 1000000000L);
 
     /** Split time representing 1 microsecond. */
-    public static final SplitTime MICROSECOND = new SplitTime(0L, 1000000000000L);
+    public static final TimeOffset MICROSECOND = new TimeOffset(0L, 1000000000000L);
 
     /** Split time representing 1 millisecond. */
-    public static final SplitTime MILLISECOND = new SplitTime(0L, 1000000000000000L);
+    public static final TimeOffset MILLISECOND = new TimeOffset(0L, 1000000000000000L);
 
     /** Split time representing 1 second. */
-    public static final SplitTime SECOND = new SplitTime(1L, 0L);
+    public static final TimeOffset SECOND = new TimeOffset(1L, 0L);
 
     /** Split time representing 1 minute. */
-    public static final SplitTime MINUTE = new SplitTime(60L, 0L);
+    public static final TimeOffset MINUTE = new TimeOffset(60L, 0L);
 
     /** Split time representing 1 hour. */
-    public static final SplitTime HOUR = new SplitTime(3600L, 0L);
+    public static final TimeOffset HOUR = new TimeOffset(3600L, 0L);
 
     /** Split time representing 1 day. */
-    public static final SplitTime DAY = new SplitTime(86400L, 0L);
+    public static final TimeOffset DAY = new TimeOffset(86400L, 0L);
 
     /** Split time representing 1 day that includes an additional leap second. */
-    public static final SplitTime DAY_WITH_POSITIVE_LEAP = new SplitTime(86401L, 0L);
+    public static final TimeOffset DAY_WITH_POSITIVE_LEAP = new TimeOffset(86401L, 0L);
 
     // CHECKSTYLE: stop ConstantName
     /** Split time representing a NaN. */
-    public static final SplitTime NaN = new SplitTime(Double.NaN);
+    public static final TimeOffset NaN = new TimeOffset(Double.NaN);
     // CHECKSTYLE: resume ConstantName
 
     /** Split time representing negative infinity. */
-    public static final SplitTime NEGATIVE_INFINITY = new SplitTime(Double.NEGATIVE_INFINITY);
+    public static final TimeOffset NEGATIVE_INFINITY = new TimeOffset(Double.NEGATIVE_INFINITY);
 
     /** Split time representing positive infinity. */
-    public static final SplitTime POSITIVE_INFINITY = new SplitTime(Double.POSITIVE_INFINITY);
+    public static final TimeOffset POSITIVE_INFINITY = new TimeOffset(Double.POSITIVE_INFINITY);
 
     /** Indicator for NaN time (bits pattern arbitrarily selected to avoid hashcode collisions). */
     private static final long NAN_INDICATOR      = -0XFFL;
@@ -158,12 +159,12 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * Build a time by adding several times.
      * @param times times to add
      */
-    public SplitTime(final SplitTime...times) {
+    public TimeOffset(final TimeOffset...times) {
         final RunningSum runningSum = new RunningSum();
-        for (final SplitTime time : times) {
+        for (final TimeOffset time : times) {
             runningSum.add(time);
         }
-        final SplitTime sum = runningSum.normalize();
+        final TimeOffset sum = runningSum.normalize();
         this.seconds     = sum.getSeconds();
         this.attoSeconds = sum.getAttoSeconds();
     }
@@ -177,7 +178,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param seconds seconds part
      * @param attoSeconds attoseconds part
      */
-    public SplitTime(final long seconds, final long attoSeconds) {
+    public TimeOffset(final long seconds, final long attoSeconds) {
         long normalizedSeconds;
         long normalizedAttoSeconds;
         try {
@@ -212,7 +213,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      *
      * @param time time
      */
-    public SplitTime(final double time) {
+    public TimeOffset(final double time) {
         if (Double.isNaN(time)) {
             seconds     = 0L;
             attoSeconds = NAN_INDICATOR;
@@ -245,7 +246,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param factor multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
      * @param time base time
      */
-    public SplitTime(final long factor, final SplitTime time) {
+    public TimeOffset(final long factor, final TimeOffset time) {
         this(factor < 0 ? time.multiply(-factor).negate() : time.multiply(factor));
     }
 
@@ -260,9 +261,9 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param f2 second multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
      * @param t2 second base time
      */
-    public SplitTime(final long f1, final SplitTime t1,
-                     final long f2, final SplitTime t2) {
-        this(new SplitTime(f1, t1).add(new SplitTime(f2, t2)));
+    public TimeOffset(final long f1, final TimeOffset t1,
+                      final long f2, final TimeOffset t2) {
+        this(new TimeOffset(f1, t1).add(new TimeOffset(f2, t2)));
     }
 
     /**
@@ -278,10 +279,10 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param f3 third multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
      * @param t3 third base time
      */
-    public SplitTime(final long f1, final SplitTime t1,
-                     final long f2, final SplitTime t2,
-                     final long f3, final SplitTime t3) {
-        this(new SplitTime(f1, t1).add(new SplitTime(f2, t2)).add(new SplitTime(f3, t3)));
+    public TimeOffset(final long f1, final TimeOffset t1,
+                      final long f2, final TimeOffset t2,
+                      final long f3, final TimeOffset t3) {
+        this(new TimeOffset(f1, t1).add(new TimeOffset(f2, t2)).add(new TimeOffset(f3, t3)));
     }
 
     /**
@@ -299,14 +300,14 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param f4 fourth multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
      * @param t4 fourth base time
      */
-    public SplitTime(final long f1, final SplitTime t1,
-                     final long f2, final SplitTime t2,
-                     final long f3, final SplitTime t3,
-                     final long f4, final SplitTime t4) {
-        this(new SplitTime(f1, t1).
-             add(new SplitTime(f2, t2)).
-             add(new SplitTime(f3, t3)).
-             add(new SplitTime(f4, t4)));
+    public TimeOffset(final long f1, final TimeOffset t1,
+                      final long f2, final TimeOffset t2,
+                      final long f3, final TimeOffset t3,
+                      final long f4, final TimeOffset t4) {
+        this(new TimeOffset(f1, t1).
+             add(new TimeOffset(f2, t2)).
+             add(new TimeOffset(f3, t3)).
+             add(new TimeOffset(f4, t4)));
     }
 
     /**
@@ -326,16 +327,16 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param f5 fifth multiplicative factor (negative values allowed here, contrary to {@link #multiply(long)})
      * @param t5 fifth base time
      */
-    public SplitTime(final long f1, final SplitTime t1,
-                     final long f2, final SplitTime t2,
-                     final long f3, final SplitTime t3,
-                     final long f4, final SplitTime t4,
-                     final long f5, final SplitTime t5) {
-        this(new SplitTime(f1, t1).
-             add(new SplitTime(f2, t2)).
-             add(new SplitTime(f3, t3)).
-             add(new SplitTime(f4, t4)).
-             add(new SplitTime(f5, t5)));
+    public TimeOffset(final long f1, final TimeOffset t1,
+                      final long f2, final TimeOffset t2,
+                      final long f3, final TimeOffset t3,
+                      final long f4, final TimeOffset t4,
+                      final long f5, final TimeOffset t5) {
+        this(new TimeOffset(f1, t1).
+             add(new TimeOffset(f2, t2)).
+             add(new TimeOffset(f3, t3)).
+             add(new TimeOffset(f4, t4)).
+             add(new TimeOffset(f5, t5)));
     }
 
     /**
@@ -344,7 +345,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param time time
      * @param unit   time unit in which {@code time} is expressed
      */
-    public SplitTime(final long time, final TimeUnit unit) {
+    public TimeOffset(final long time, final TimeUnit unit) {
         switch (unit) {
             case DAYS: {
                 final long limit = (Long.MAX_VALUE - DAY.seconds / 2) / DAY.seconds;
@@ -436,7 +437,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     /** Copy constructor, for internal use only.
      * @param time time to copy
      */
-    private SplitTime(final SplitTime time) {
+    private TimeOffset(final TimeOffset time) {
         seconds     = time.seconds;
         attoSeconds = time.attoSeconds;
     }
@@ -507,7 +508,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param t time to add
      * @return this+t
      */
-    public SplitTime add(final SplitTime t) {
+    public TimeOffset add(final TimeOffset t) {
         final RunningSum runningSum = new RunningSum();
         runningSum.add(this);
         runningSum.add(t);
@@ -518,7 +519,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param t time to subtract
      * @return this-t
      */
-    public SplitTime subtract(final SplitTime t) {
+    public TimeOffset subtract(final TimeOffset t) {
         if (attoSeconds < 0 || t.attoSeconds < 0) {
             // gather all special cases in one big check to avoid rare multiple tests
             if (isNaN() ||
@@ -535,7 +536,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             }
         } else {
             // regular subtraction between two finite times
-            return new SplitTime(seconds - t.seconds, attoSeconds - t.attoSeconds);
+            return new TimeOffset(seconds - t.seconds, attoSeconds - t.attoSeconds);
         }
     }
 
@@ -543,12 +544,12 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param p multiplication factor (must be positive)
      * @return this ⨉ p
      */
-    public SplitTime multiply(final long p) {
+    public TimeOffset multiply(final long p) {
         if (p < 0) {
             throw new OrekitException(OrekitMessages.NOT_POSITIVE, p);
         }
         if (isFinite()) {
-            final SplitTime abs   = seconds < 0 ? negate() : this;
+            final TimeOffset abs   = seconds < 0 ? negate() : this;
             final long pHigh   = p / SPLIT;
             final long pLow    = p - pHigh * SPLIT;
             final long sHigh   = abs.seconds / SPLIT;
@@ -569,11 +570,11 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             }
 
             // here we use the fact that SPLIT * SPLIT = ATTOS_IN_SECOND
-            final SplitTime mul = new SplitTime(SPLIT * ps1 + ps0 + pa2 + pa1High, SPLIT * pa1Low + pa0);
+            final TimeOffset mul = new TimeOffset(SPLIT * ps1 + ps0 + pa2 + pa1High, SPLIT * pa1Low + pa0);
             return seconds < 0 ? mul.negate() : mul;
         } else {
             // already NaN, +∞ or -∞, unchanged except 0 ⨉ ±∞ = NaN
-            return p == 0 ? SplitTime.NaN : this;
+            return p == 0 ? TimeOffset.NaN : this;
         }
     }
 
@@ -581,7 +582,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * @param q division factor (must be strictly positive)
      * @return this ÷ q
      */
-    public SplitTime divide(final int q) {
+    public TimeOffset divide(final int q) {
         if (q <= 0) {
             throw new OrekitException(OrekitMessages.NOT_STRICTLY_POSITIVE, q);
         }
@@ -590,14 +591,14 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             final long      rSec  = seconds         - sSec * q;
             final long      sK    = ATTOS_IN_SECOND / q;
             final long      rK    = ATTOS_IN_SECOND - sK * q;
-            final SplitTime tsSec = new SplitTime(0L, sSec);
-            final SplitTime trSec = new SplitTime(0L, rSec);
-            return new SplitTime(tsSec.multiply(sK).multiply(q),
-                                 tsSec.multiply(rK),
-                                 trSec.multiply(sK),
-                                 // here, we use the fact q is a positive int (not a long!)
-                                 // hence rSec * rK < q² does not overflow
-                                 new SplitTime(0L, (attoSeconds + rSec * rK) / q));
+            final TimeOffset tsSec = new TimeOffset(0L, sSec);
+            final TimeOffset trSec = new TimeOffset(0L, rSec);
+            return new TimeOffset(tsSec.multiply(sK).multiply(q),
+                                  tsSec.multiply(rK),
+                                  trSec.multiply(sK),
+                                  // here, we use the fact q is a positive int (not a long!)
+                                  // hence rSec * rK < q² does not overflow
+                                  new TimeOffset(0L, (attoSeconds + rSec * rK) / q));
         } else {
             // already NaN, +∞ or -∞, unchanged as q > 0
             return this;
@@ -607,14 +608,14 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     /** Negate the instance.
      * @return new instance corresponding to opposite time
      */
-    public SplitTime negate() {
+    public TimeOffset negate() {
         // handle special cases
         if (attoSeconds < 0) {
             // gather all special cases in one big check to avoid rare multiple tests
             return isNaN() ? this : (seconds < 0 ? POSITIVE_INFINITY : NEGATIVE_INFINITY);
         } else {
             // the negative number of attoseconds will be normalized back to positive by the constructor
-            return new SplitTime(-seconds, -attoSeconds);
+            return new TimeOffset(-seconds, -attoSeconds);
         }
     }
 
@@ -705,14 +706,14 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
     /** Parse a string to produce an accurate split time.
      * <p>
      * This method is more accurate than parsing the string as a double and then
-     * calling {@link SplitTime#SplitTime(double)} because it reads the sub-second
+     * calling {@link TimeOffset#TimeOffset(double)} because it reads the sub-second
      * part in decimal, hence avoiding problems like for example 0.1 not being an
      * exact IEEE754 number.
      * </p>
      * @param s string to parse
      * @return parsed split time
      */
-    public static SplitTime parse(final String s) {
+    public static TimeOffset parse(final String s) {
 
         // decompose the string
         // we use neither Long.parseLong nor Integer.parseInt because we want to avoid
@@ -794,11 +795,11 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         if (length == 0 || index < length) {
             // decomposition failed, either it is a special case or an unparsable string
             if (s.equals("-∞")) {
-                return SplitTime.NEGATIVE_INFINITY;
+                return TimeOffset.NEGATIVE_INFINITY;
             } else if (s.equals("+∞")) {
-                return SplitTime.POSITIVE_INFINITY;
+                return TimeOffset.POSITIVE_INFINITY;
             } else if (s.equalsIgnoreCase("NaN")) {
-                return SplitTime.NaN;
+                return TimeOffset.NaN;
             } else {
                 throw new OrekitException(OrekitMessages.CANNOT_PARSE_DATA, s);
             }
@@ -834,11 +835,11 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             // the part after separator must be split into seconds and attoseconds
             if (exponent >= MULTIPLIERS.length) {
                 if (beforeSeparator == 0L && afterSeparator == 0L) {
-                    return SplitTime.ZERO;
+                    return TimeOffset.ZERO;
                 } else if (significandSign < 0) {
-                    return SplitTime.NEGATIVE_INFINITY;
+                    return TimeOffset.NEGATIVE_INFINITY;
                 } else {
-                    return SplitTime.POSITIVE_INFINITY;
+                    return TimeOffset.POSITIVE_INFINITY;
                 }
             } else {
                 final long secondsMultiplier = MULTIPLIERS[exponent];
@@ -855,7 +856,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
             }
         }
 
-        return new SplitTime(significandSign * seconds, significandSign * attoseconds);
+        return new TimeOffset(significandSign * seconds, significandSign * attoseconds);
 
     }
 
@@ -869,7 +870,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
      * to reference date would result in a date being before, simultaneous, or after
      * the date obtained by applying the other time to the same reference date.
      */
-    public int compareTo(final SplitTime other) {
+    public int compareTo(final TimeOffset other) {
         if (isFinite()) {
             if (other.isFinite()) {
                 return seconds == other.seconds ?
@@ -903,8 +904,8 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         if (o == null || o.getClass() != this.getClass()) {
             return false;
         }
-        final SplitTime splitTime = (SplitTime) o;
-        return seconds == splitTime.seconds && attoSeconds == splitTime.attoSeconds;
+        final TimeOffset timeOffset = (TimeOffset) o;
+        return seconds == timeOffset.seconds && attoSeconds == timeOffset.attoSeconds;
     }
 
     /** {@inheritDoc} */
@@ -946,7 +947,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         /** Add one term.
          * @param term term to add
          */
-        public void add(final SplitTime term) {
+        public void add(final TimeOffset term) {
             if (term.isFinite()) {
                 // regular addition
                 seconds     += term.seconds;
@@ -968,7 +969,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
         /** Normalize current running sum.
          * @return normalized value
          */
-        public SplitTime normalize() {
+        public TimeOffset normalize() {
 
             // after normalization, we will have the equivalent of one entry processed
             countDown = COUNT_DOWN_MAX - 1;
@@ -990,7 +991,7 @@ public class SplitTime implements Comparable<SplitTime>, Serializable {
                 return POSITIVE_INFINITY;
             } else {
                 // this is a regular time
-                final SplitTime regular = new SplitTime(seconds, attoSeconds);
+                final TimeOffset regular = new TimeOffset(seconds, attoSeconds);
                 seconds     = regular.seconds;
                 attoSeconds = regular.attoSeconds;
                 return regular;

@@ -31,7 +31,7 @@ public class IRNSSScale extends ConstantOffsetTimeScale {
     /** Package private constructor for the factory.
      */
     IRNSSScale() {
-        super("IRNSS", new SplitTime(-19L, 0L));
+        super("IRNSS", new TimeOffset(-19L, 0L));
     }
 
 }

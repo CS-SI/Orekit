@@ -35,7 +35,7 @@ import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -565,7 +565,7 @@ public class SpacecraftState
      * @since 13.0
      */
     @Override
-    public SpacecraftState shiftedBy(final SplitTime dt) {
+    public SpacecraftState shiftedBy(final TimeOffset dt) {
         if (isOrbitDefined()) {
             return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
                                        mass, shiftAdditional(dt.toDouble()), additionalDot);

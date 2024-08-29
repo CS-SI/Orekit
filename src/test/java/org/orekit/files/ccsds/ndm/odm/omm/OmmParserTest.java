@@ -51,7 +51,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -98,7 +98,7 @@ public class OmmParserTest {
 
         // Check Mean Keplerian elements data block;
         KeplerianElements kep = file.getData().getKeplerianElementsBlock();
-        Assertions.assertEquals(new AbsoluteDate(2007, 3, 5, 10, 34, new SplitTime(41L, 426400000000000000L),
+        Assertions.assertEquals(new AbsoluteDate(2007, 3, 5, 10, 34, new TimeOffset(41L, 426400000000000000L),
                                              TimeScalesFactory.getUTC()),
                             file.getDate());
         Assertions.assertEquals(1.00273272 * FastMath.PI / 43200.0, kep.getMeanMotion(), 1e-10);

@@ -204,8 +204,8 @@ public class TAIUTCDatFilesLoader extends AbstractSelfFeedingLoader
 
                         final double mjdRef = Double.parseDouble(matcher.group(6));
                         offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef),
-                                                    SplitTime.parse(matcher.group(5)),
-                                                    (int) (SplitTime.parse(matcher.group(7)).getAttoSeconds() / SLOPE_FACTOR)));
+                                                    TimeOffset.parse(matcher.group(5)),
+                                                    (int) (TimeOffset.parse(matcher.group(7)).getAttoSeconds() / SLOPE_FACTOR)));
 
                     }
                 }

@@ -30,7 +30,7 @@ public class BDTScale extends ConstantOffsetTimeScale {
     /** Package private constructor for the factory.
      */
     BDTScale() {
-        super("BDT", new SplitTime(-33L, 0L));
+        super("BDT", new TimeOffset(-33L, 0L));
     }
 
 }

@@ -45,10 +45,10 @@ public class UT1ScaleTest {
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate dateA = new AbsoluteDate(2005, 12, 30, 23, 59,  0.0, utc);
         AbsoluteDate dateB = new AbsoluteDate(2006,  1,  2,  0,  1,  0.0, utc);
-        SplitTime deltaAUT1 = ut1.offsetFromTAI(dateA);
-        SplitTime deltaAUTC = utc.offsetFromTAI(dateA);
-        SplitTime deltaBUT1 = ut1.offsetFromTAI(dateB);
-        SplitTime deltaBUTC = utc.offsetFromTAI(dateB);
+        TimeOffset deltaAUT1 = ut1.offsetFromTAI(dateA);
+        TimeOffset deltaAUTC = utc.offsetFromTAI(dateA);
+        TimeOffset deltaBUT1 = ut1.offsetFromTAI(dateB);
+        TimeOffset deltaBUTC = utc.offsetFromTAI(dateB);
 
         // there is a leap second between the two dates
         Assertions.assertEquals(deltaAUTC.toDouble() - 1.0, deltaBUTC.toDouble(), 1.0e-15);

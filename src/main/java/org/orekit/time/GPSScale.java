@@ -31,7 +31,7 @@ public class GPSScale extends ConstantOffsetTimeScale {
     /** Package private constructor for the factory.
      */
     GPSScale() {
-        super("GPS", new SplitTime(-19L, 0L));
+        super("GPS", new TimeOffset(-19L, 0L));
     }
 
 }

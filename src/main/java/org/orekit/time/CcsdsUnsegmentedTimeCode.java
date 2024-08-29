@@ -48,7 +48,7 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
     /** Time part.
      * @since 13.0
      */
-    private final SplitTime time;
+    private final TimeOffset time;
 
     /** Create an instance CCSDS Day Unegmented Time Code (CDS).
      * <p>
@@ -127,7 +127,7 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
                            SUB_SCALE_DEN[i - coarseTimeLength];
         }
 
-        time = new SplitTime(seconds, attoSeconds);
+        time = new TimeOffset(seconds, attoSeconds);
 
     }
 
@@ -142,7 +142,7 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
      * @return time part
      * @since 13.0
      */
-    public SplitTime getTime() {
+    public TimeOffset getTime() {
         return time;
     }
 

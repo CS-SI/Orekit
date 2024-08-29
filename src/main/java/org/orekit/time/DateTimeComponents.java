@@ -72,7 +72,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public DateTimeComponents(final int year, final int month, final int day,
                               final int hour, final int minute, final double second)
         throws IllegalArgumentException {
-        this(year, month, day, hour, minute, new SplitTime(second));
+        this(year, month, day, hour, minute, new TimeOffset(second));
     }
 
     /** Build an instance from raw level components.
@@ -88,7 +88,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @since 13.0
      */
     public DateTimeComponents(final int year, final int month, final int day,
-                              final int hour, final int minute, final SplitTime second)
+                              final int hour, final int minute, final TimeOffset second)
         throws IllegalArgumentException {
         this.date = new DateComponents(year, month, day);
         this.time = new TimeComponents(hour, minute, second);
@@ -108,7 +108,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
     public DateTimeComponents(final int year, final Month month, final int day,
                               final int hour, final int minute, final double second)
         throws IllegalArgumentException {
-        this(year, month, day, hour, minute, new SplitTime(second));
+        this(year, month, day, hour, minute, new TimeOffset(second));
     }
 
     /** Build an instance from raw level components.
@@ -124,7 +124,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @since 13.0
      */
     public DateTimeComponents(final int year, final Month month, final int day,
-                              final int hour, final int minute, final SplitTime second)
+                              final int hour, final int minute, final TimeOffset second)
         throws IllegalArgumentException {
         this.date = new DateComponents(year, month, day);
         this.time = new TimeComponents(hour, minute, second);
@@ -166,7 +166,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @see #offsetFrom(DateTimeComponents)
      */
     public DateTimeComponents(final DateTimeComponents reference, final double offset) {
-        this(reference, new SplitTime(offset));
+        this(reference, new TimeOffset(offset));
     }
 
     /** Build an instance from a seconds offset with respect to another one.
@@ -175,11 +175,11 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @see #offsetFrom(DateTimeComponents)
      * @since 13.0
      */
-    public DateTimeComponents(final DateTimeComponents reference, final SplitTime offset) {
+    public DateTimeComponents(final DateTimeComponents reference, final TimeOffset offset) {
 
         // extract linear data from reference date/time
         int    day     = reference.getDate().getJ2000Day();
-        SplitTime seconds = reference.getTime().getSplitSecondsInLocalDay();
+        TimeOffset seconds = reference.getTime().getSplitSecondsInLocalDay();
 
         // apply offset
         seconds = seconds.add(offset);
@@ -187,7 +187,7 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
         // fix range
         final int dayShift = (int) FastMath.floor(seconds.toDouble() / Constants.JULIAN_DAY);
         if (dayShift != 0) {
-            seconds = seconds.subtract(new SplitTime(dayShift * SplitTime.DAY.getSeconds(), 0L));
+            seconds = seconds.subtract(new TimeOffset(dayShift * TimeOffset.DAY.getSeconds(), 0L));
         }
         day     += dayShift;
         final TimeComponents tmpTime = new TimeComponents(seconds);
@@ -211,16 +211,16 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
 
         // extract linear data from reference date/time
         int       day     = reference.getDate().getJ2000Day();
-        SplitTime seconds = reference.getTime().getSplitSecondsInLocalDay();
+        TimeOffset seconds = reference.getTime().getSplitSecondsInLocalDay();
 
         // apply offset
-        seconds = seconds.add(new SplitTime(offset, timeUnit));
+        seconds = seconds.add(new TimeOffset(offset, timeUnit));
 
         // fix range
-        final long dayShift = seconds.getSeconds() / SplitTime.DAY.getSeconds() +
+        final long dayShift = seconds.getSeconds() / TimeOffset.DAY.getSeconds() +
                               (seconds.getSeconds() < 0L ? -1L : 0L);
         if (dayShift != 0) {
-            seconds = seconds.subtract(new SplitTime(dayShift, SplitTime.DAY));
+            seconds = seconds.subtract(new TimeOffset(dayShift, TimeOffset.DAY));
             day    += dayShift;
         }
         final TimeComponents tmpTime = new TimeComponents(seconds);
@@ -259,11 +259,11 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      * @param dateTime dateTime to subtract from the instance
      * @return offset in seconds between the two instants
      * (positive if the instance is posterior to the argument)
-     * @see #DateTimeComponents(DateTimeComponents, SplitTime)
+     * @see #DateTimeComponents(DateTimeComponents, TimeOffset)
      */
     public double offsetFrom(final DateTimeComponents dateTime) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final SplitTime timeOffset = time.getSplitSecondsInUTCDay().
+        final TimeOffset timeOffset = time.getSplitSecondsInUTCDay().
                                      subtract(dateTime.time.getSplitSecondsInUTCDay());
         return Constants.JULIAN_DAY * dateOffset + timeOffset.toDouble();
     }
@@ -278,9 +278,9 @@ public class DateTimeComponents implements Serializable, Comparable<DateTimeComp
      */
     public long offsetFrom(final DateTimeComponents dateTime, final TimeUnit timeUnit) {
         final int dateOffset = date.getJ2000Day() - dateTime.date.getJ2000Day();
-        final SplitTime timeOffset = time.getSplitSecondsInUTCDay().
+        final TimeOffset timeOffset = time.getSplitSecondsInUTCDay().
                                      subtract(dateTime.time.getSplitSecondsInUTCDay());
-        return SplitTime.DAY.getRoundedTime(timeUnit) * dateOffset + timeOffset.getRoundedTime(timeUnit);
+        return TimeOffset.DAY.getRoundedTime(timeUnit) * dateOffset + timeOffset.getRoundedTime(timeUnit);
     }
 
     /** Get the date component.

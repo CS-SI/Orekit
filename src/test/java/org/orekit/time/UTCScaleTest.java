@@ -171,14 +171,14 @@ public class UTCScaleTest {
             final AbsoluteDate end = offset.getValidityStart();
             AbsoluteDate d = start.shiftedBy(end.durationFrom(start) / 2.0);
             int excess = utc.minuteDuration(d) - 60;
-            SplitTime leap = offset.getLeap();
+            TimeOffset leap = offset.getLeap();
             // verify
             Assertions.assertTrue(leap.toDouble() <= excess, "at MJD" + offset.getMJD() + ": " + leap + " <= " + excess);
             Assertions.assertTrue(leap.toDouble() > (excess - 1));
             // before the leap starts but still in the same minute
             d = start.shiftedBy(-30);
             int newExcess = utc.minuteDuration(d) - 60;
-            SplitTime newLeap = offset.getLeap();
+            TimeOffset newLeap = offset.getLeap();
             // verify
             Assertions.assertTrue(newLeap.toDouble() <= newExcess, "at MJD" + offset.getMJD() + ": " + newLeap + " <= " + newExcess);
             Assertions.assertTrue(leap.toDouble() > (excess - 1));
@@ -420,7 +420,7 @@ public class UTCScaleTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(utc);
 
-        Assertions.assertEquals(2172, bos.size());
+        Assertions.assertEquals(2174, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

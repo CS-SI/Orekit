@@ -67,7 +67,7 @@ public class TCGScaleTest {
     @Test
     public void testReference() {
         DateComponents referenceDate = new DateComponents(1977, 1, 1);
-        TimeComponents thirtyTwo     = new TimeComponents(0, 0, new SplitTime(32L, 184000000000000000L));
+        TimeComponents thirtyTwo     = new TimeComponents(0, 0, new TimeOffset(32L, 184000000000000000L));
         AbsoluteDate   ttRef         = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTT());
         AbsoluteDate   tcgRef        = new AbsoluteDate(referenceDate, thirtyTwo, TimeScalesFactory.getTCG());
         AbsoluteDate   taiRef        = new AbsoluteDate(referenceDate, TimeComponents.H00, TimeScalesFactory.getTAI());
@@ -83,7 +83,7 @@ public class TCGScaleTest {
     public void testSofa() {
         TimeScale tt  = TimeScalesFactory.getTT();
         AbsoluteDate date = new AbsoluteDate(2006, 1, 15, 21, 25, 10.5000096, tt);
-        SplitTime delta = TimeScalesFactory.getTCG().offsetFromTAI(date).subtract(tt.offsetFromTAI(date));
+        TimeOffset delta = TimeScalesFactory.getTCG().offsetFromTAI(date).subtract(tt.offsetFromTAI(date));
         Assertions.assertEquals(Constants.JULIAN_DAY * (0.8924900312508587113 -  0.892482639), delta.toDouble(), 5.0e-10);
     }
 

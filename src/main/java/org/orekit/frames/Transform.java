@@ -29,7 +29,7 @@ import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeShiftable;
 import org.orekit.utils.AngularCoordinates;
@@ -322,11 +322,11 @@ public class Transform implements
 
     /** {@inheritDoc} */
     public Transform shiftedBy(final double dt) {
-        return shiftedBy(new SplitTime(dt));
+        return shiftedBy(new TimeOffset(dt));
     }
 
     /** {@inheritDoc} */
-    public Transform shiftedBy(final SplitTime dt) {
+    public Transform shiftedBy(final TimeOffset dt) {
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
 
@@ -721,7 +721,7 @@ public class Transform implements
 
         /** {@inheritDoc} */
         @Override
-        public Transform shiftedBy(final SplitTime dt) {
+        public Transform shiftedBy(final TimeOffset dt) {
             return this;
         }
 

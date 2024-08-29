@@ -24,7 +24,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
@@ -122,7 +122,7 @@ public class Attitude
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
-    public Attitude shiftedBy(final SplitTime dt) {
+    public Attitude shiftedBy(final TimeOffset dt) {
         return new Attitude(referenceFrame, orientation.shiftedBy(dt));
     }
 

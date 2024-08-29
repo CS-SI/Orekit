@@ -44,7 +44,7 @@ import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -297,7 +297,7 @@ public class OcmParserTest {
 
         Assertions.assertEquals("JAXA", file.getHeader().getOriginator());
 
-        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND),
+        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getUTC());
         Assertions.assertEquals(t0, file.getMetadata().getEpochT0());
         Assertions.assertEquals(TimeSystem.UTC, file.getMetadata().getTimeSystem());
@@ -422,7 +422,7 @@ public class OcmParserTest {
         Assertions.assertEquals("km/s", orb.getMetadata().getTrajUnits().get(4).getName());
         Assertions.assertEquals("km/s", orb.getMetadata().getTrajUnits().get(5).getName());
         Assertions.assertEquals(1, orb.getTrajectoryStates().size());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new SplitTime(25L, 117200000000000000L), ts),
+        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(25L, 117200000000000000L), ts),
                                 orb.getTrajectoryStates().get(0).getDate());
         Assertions.assertEquals( 2854533.0, orb.getTrajectoryStates().get(0).getElements()[0], 1.0e-10);
         Assertions.assertEquals(-2916187.0, orb.getTrajectoryStates().get(0).getElements()[1], 1.0e-10);
@@ -652,7 +652,7 @@ public class OcmParserTest {
         Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, utc),
                             file.getHeader().getCreationDate());
 
-        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND), utc);
+        final AbsoluteDate t0 = new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND), utc);
         Assertions.assertEquals(t0, file.getMetadata().getEpochT0());
         Assertions.assertEquals("UTC", file.getMetadata().getTimeSystem().name());
 
@@ -874,7 +874,7 @@ public class OcmParserTest {
         Assertions.assertEquals("This file is a dummy example with inconsistent data", file.getHeader().getComments().get(0));
         Assertions.assertEquals("it is used to exercise all possible keys in Key-Value Notation", file.getHeader().getComments().get(1));
         Assertions.assertEquals("dummy-classification",                file.getHeader().getClassification());
-        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, new SplitTime(31L, 576000000000000000L), TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 10, 29, new TimeOffset(31L, 576000000000000000L), TimeScalesFactory.getUTC()),
                                 file.getHeader().getCreationDate());
         Assertions.assertEquals("JPL",                                 file.getHeader().getOriginator());
         Assertions.assertEquals("ABC-12_34",                           file.getHeader().getMessageId());
@@ -927,11 +927,11 @@ public class OcmParserTest {
         Assertions.assertEquals(28800.0, file.getMetadata().getSclkOffsetAtEpoch(), 1.0e-10);
         Assertions.assertEquals(2.5,     file.getMetadata().getSclkSecPerSISec(), 1.0e-15);
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 29,
-                                                 new SplitTime(31, SplitTime.SECOND, 576, SplitTime.MILLISECOND),
+                                                 new TimeOffset(31, TimeOffset.SECOND, 576, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getMetadata().getPreviousMessageEpoch());
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23, 11, 29,
-                                                 new SplitTime(31, SplitTime.SECOND, 576, SplitTime.MILLISECOND),
+                                                 new TimeOffset(31, TimeOffset.SECOND, 576, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                                 file.getMetadata().getNextMessageEpoch());
         Assertions.assertEquals(new AbsoluteDate(2019, 7, 23,  9, 30,  0.0, TimeScalesFactory.getUTC()),

@@ -33,7 +33,7 @@ public interface TimeShiftable<T extends TimeShiftable<T>> {
      * @return a new instance, shifted with respect to instance (which is not changed)
      * @since 13.0
      */
-    default T shiftedBy(SplitTime dt) {
+    default T shiftedBy(TimeOffset dt) {
         return shiftedBy(dt.toDouble());
     }
 

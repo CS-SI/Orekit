@@ -39,7 +39,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
@@ -123,7 +123,7 @@ public class LofOffsetPointing extends GroundPointing {
         Transform centralRefToBody = null;
         for (int i = -1; i < 2; ++i) {
 
-            final AbsoluteDate shifted = date.shiftedBy(new SplitTime(i * 100, SplitTime.MILLISECOND));
+            final AbsoluteDate shifted = date.shiftedBy(new TimeOffset(i * 100, TimeOffset.MILLISECOND));
 
             // transform from specified reference frame to spacecraft frame
             final StaticTransform refToSc = StaticTransform.of(shifted, pvProv.getPosition(shifted, frame).negate(),
@@ -181,7 +181,7 @@ public class LofOffsetPointing extends GroundPointing {
         FieldTransform<T> centralRefToBody = null;
         for (int i = -1; i < 2; ++i) {
 
-            final FieldAbsoluteDate<T> shifted = date.shiftedBy(new SplitTime(i * 100, SplitTime.MILLISECOND));
+            final FieldAbsoluteDate<T> shifted = date.shiftedBy(new TimeOffset(i * 100, TimeOffset.MILLISECOND));
 
             // transform from specified reference frame to spacecraft frame
             final FieldStaticTransform<T> refToSc = FieldStaticTransform.of(shifted,

@@ -29,7 +29,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -1126,12 +1126,12 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit shiftedBy(final double dt) {
-        return shiftedBy(new SplitTime(dt));
+        return shiftedBy(new TimeOffset(dt));
     }
 
     /** {@inheritDoc} */
     @Override
-    public KeplerianOrbit shiftedBy(final SplitTime dt) {
+    public KeplerianOrbit shiftedBy(final TimeOffset dt) {
 
         final double dtS = dt.toDouble();
 
@@ -1760,14 +1760,14 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
                                           d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
                                           positionAngleType, positionAngleType,
                                           frame,
-                                          new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                          new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                           d[0]);
             } else {
                 // we don't have derivatives
                 return new KeplerianOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
                                           positionAngleType, positionAngleType,
                                           frame,
-                                          new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                          new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                           d[0]);
             }
         }

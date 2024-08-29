@@ -71,7 +71,7 @@ public class GMSTScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
 
         // julian seconds since reference date
         final double ts = date.durationFrom(referenceDate);
@@ -83,7 +83,7 @@ public class GMSTScale implements TimeScale {
         final double gmst0h = C0 + tc * (C1 + tc * (C2 + tc * C3));
 
         // offset with respect to TAI
-        final SplitTime offset = new SplitTime(gmst0h).add(ut1.offsetFromTAI(date));
+        final TimeOffset offset = new TimeOffset(gmst0h).add(ut1.offsetFromTAI(date));
 
         // normalize offset between -43200 and +43200 seconds
         long clipped = offset.getSeconds() < 0L ?
@@ -92,7 +92,7 @@ public class GMSTScale implements TimeScale {
         if (clipped == HALF_DAY && offset.getAttoSeconds() > 0L) {
             clipped -= FULL_DAY;
         }
-        return new SplitTime(clipped, offset.getAttoSeconds());
+        return new TimeOffset(clipped, offset.getAttoSeconds());
 
     }
 

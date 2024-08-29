@@ -33,7 +33,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 
 /** Unit tests for {@link WaypointPVBuilder}. */
 public class WaypointPVBuilderTest {
@@ -127,7 +127,7 @@ public class WaypointPVBuilderTest {
 
         // check invalid after
         try {
-            pvProv.getPVCoordinates(date3.shiftedBy(new SplitTime(2, SplitTime.ATTOSECOND)), body.getBodyFrame());
+            pvProv.getPVCoordinates(date3.shiftedBy(new TimeOffset(2, TimeOffset.ATTOSECOND)), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
         } catch (final OrekitException ex) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
@@ -193,7 +193,7 @@ public class WaypointPVBuilderTest {
 
         // check invalid after
         try {
-            pvProv.getPVCoordinates(date3.shiftedBy(new SplitTime(2, SplitTime.ATTOSECOND)), body.getBodyFrame());
+            pvProv.getPVCoordinates(date3.shiftedBy(new TimeOffset(2, TimeOffset.ATTOSECOND)), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
         } catch (final OrekitException ex) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
@@ -250,7 +250,7 @@ public class WaypointPVBuilderTest {
 
         // check invalid after
         try {
-            pvProv.getPVCoordinates(date3.shiftedBy(new SplitTime(2, SplitTime.ATTOSECOND)), body.getBodyFrame());
+            pvProv.getPVCoordinates(date3.shiftedBy(new TimeOffset(2, TimeOffset.ATTOSECOND)), body.getBodyFrame());
             Assertions.fail("expected exception, but none was thrown.");
         } catch (final OrekitException ex) {
             Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());

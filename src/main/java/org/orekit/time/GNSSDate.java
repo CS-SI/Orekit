@@ -54,13 +54,13 @@ public class GNSSDate implements Serializable, TimeStamped {
     /** Reference date for ensuring continuity across GNSS week rollover.
      * @since 9.3.1
      */
-    private static AtomicReference<DateComponents> rolloverReference = new AtomicReference<>(null);
+    private static final AtomicReference<DateComponents> rolloverReference = new AtomicReference<>(null);
 
     /** Week number since the GNSS reference epoch. */
     private final int weekNumber;
 
     /** Number of seconds since week start. */
-    private final SplitTime secondsInWeek;
+    private final TimeOffset secondsInWeek;
 
     /** Satellite system to consider. */
     private final SatelliteSystem system;
@@ -92,7 +92,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      */
     @DefaultDataContext
     public GNSSDate(final int weekNumber, final double secondsInWeek, final SatelliteSystem system) {
-        this(weekNumber, new SplitTime(secondsInWeek), system, DataContext.getDefault().getTimeScales());
+        this(weekNumber, new TimeOffset(secondsInWeek), system, DataContext.getDefault().getTimeScales());
     }
 
     /** Build an instance corresponding to a GNSS date.
@@ -118,7 +118,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @since 13.0
      */
     @DefaultDataContext
-    public GNSSDate(final int weekNumber, final SplitTime secondsInWeek, final SatelliteSystem system) {
+    public GNSSDate(final int weekNumber, final TimeOffset secondsInWeek, final SatelliteSystem system) {
         this(weekNumber, secondsInWeek, system, DataContext.getDefault().getTimeScales());
     }
 
@@ -147,7 +147,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      */
     public GNSSDate(final int weekNumber, final double secondsInWeek,
                     final SatelliteSystem system, final TimeScales timeScales) {
-        this(weekNumber, new SplitTime(secondsInWeek), system, timeScales);
+        this(weekNumber, new TimeOffset(secondsInWeek), system, timeScales);
     }
 
     /**
@@ -173,12 +173,12 @@ public class GNSSDate implements Serializable, TimeStamped {
      *                      scale for the given {@code system}.
      * @since 13.0
      */
-    public GNSSDate(final int weekNumber, final SplitTime secondsInWeek,
+    public GNSSDate(final int weekNumber, final TimeOffset secondsInWeek,
                     final SatelliteSystem system, final TimeScales timeScales) {
 
-        final int day = (int) (secondsInWeek.getSeconds() / SplitTime.DAY.getSeconds());
-        final SplitTime secondsInDay = new SplitTime(secondsInWeek.getSeconds() % SplitTime.DAY.getSeconds(),
-                                                     secondsInWeek.getAttoSeconds());
+        final int day = (int) (secondsInWeek.getSeconds() / TimeOffset.DAY.getSeconds());
+        final TimeOffset secondsInDay = new TimeOffset(secondsInWeek.getSeconds() % TimeOffset.DAY.getSeconds(),
+                                                       secondsInWeek.getAttoSeconds());
 
         int w = weekNumber;
         DateComponents dc = new DateComponents(getWeekReferenceDateComponents(system), weekNumber * 7 + day);
@@ -231,7 +231,7 @@ public class GNSSDate implements Serializable, TimeStamped {
     public GNSSDate(final int weekNumber, final double secondsInWeek,
                     final SatelliteSystem system, final DateComponents reference,
                     final TimeScales timeScales) {
-        this(weekNumber, new SplitTime(secondsInWeek), system, reference, timeScales);
+        this(weekNumber, new TimeOffset(secondsInWeek), system, reference, timeScales);
     }
 
     /**
@@ -250,13 +250,13 @@ public class GNSSDate implements Serializable, TimeStamped {
      *                      scale for the given {@code system}.
      * @since 13.0
      */
-    public GNSSDate(final int weekNumber, final SplitTime secondsInWeek,
+    public GNSSDate(final int weekNumber, final TimeOffset secondsInWeek,
                     final SatelliteSystem system, final DateComponents reference,
                     final TimeScales timeScales) {
 
-        final int day = (int) (secondsInWeek.getSeconds() / SplitTime.DAY.getSeconds());
-        final SplitTime secondsInDay = new SplitTime(secondsInWeek.getSeconds() % SplitTime.DAY.getSeconds(),
-                                                     secondsInWeek.getAttoSeconds());
+        final int day = (int) (secondsInWeek.getSeconds() / TimeOffset.DAY.getSeconds());
+        final TimeOffset secondsInDay = new TimeOffset(secondsInWeek.getSeconds() % TimeOffset.DAY.getSeconds(),
+                                                       secondsInWeek.getAttoSeconds());
 
         int w = weekNumber;
         DateComponents dc = new DateComponents(getWeekReferenceDateComponents(system), weekNumber * 7 + day);
@@ -310,7 +310,7 @@ public class GNSSDate implements Serializable, TimeStamped {
         final AbsoluteDate epoch = getWeekReferenceAbsoluteDate(system, timeScales);
         this.weekNumber  = (int) FastMath.floor(date.durationFrom(epoch) / WEEK_S);
         final AbsoluteDate weekStart = new AbsoluteDate(epoch, WEEK_S * weekNumber);
-        this.secondsInWeek = date.splitDurationFrom(weekStart);
+        this.secondsInWeek = date.accurateDurationFrom(weekStart);
         this.date          = date;
 
     }
@@ -376,7 +376,7 @@ public class GNSSDate implements Serializable, TimeStamped {
      * @return number of seconds since week start
      * @since 13.0
      */
-    public SplitTime getSplitSecondsInWeek() {
+    public TimeOffset getSplitSecondsInWeek() {
         return secondsInWeek;
     }
 
@@ -489,7 +489,7 @@ public class GNSSDate implements Serializable, TimeStamped {
          * @return replacement {@link GNSSDate}
          */
         private Object readResolve() {
-            return new GNSSDate(weekNumber, new SplitTime(secondsInWeek, attoseconds), system);
+            return new GNSSDate(weekNumber, new TimeOffset(secondsInWeek, attoseconds), system);
         }
 
     }

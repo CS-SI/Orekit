@@ -30,7 +30,7 @@ public class TAIScale extends ConstantOffsetTimeScale {
     /** Package private constructor for the factory.
      */
     TAIScale() {
-        super("TAI", SplitTime.ZERO);
+        super("TAI", TimeOffset.ZERO);
     }
 
 }

@@ -56,7 +56,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -97,20 +97,20 @@ public class AEMParserTest {
         Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
         Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
         Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, new SplitTime(7, SplitTime.SECOND,
-                                                                                     255500, SplitTime.MICROSECOND),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, new TimeOffset(7, TimeOffset.SECOND,
+                                                                                      255500, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, new SplitTime(2, SplitTime.SECOND,
-                                                                                    555500, SplitTime.MICROSECOND),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, new TimeOffset(2, TimeOffset.SECOND,
+                                                                                     555500, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 22, 8, new SplitTime(2, SplitTime.SECOND,
-                                                                                    555500, SplitTime.MICROSECOND),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 22, 8, new TimeOffset(2, TimeOffset.SECOND,
+                                                                                     555500, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 18, new SplitTime(2, SplitTime.SECOND,
-                                                                                    555500, SplitTime.MICROSECOND),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 18, new TimeOffset(2, TimeOffset.SECOND,
+                                                                                     555500, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStopTime());
         Assertions.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
@@ -125,24 +125,24 @@ public class AEMParserTest {
         Assertions.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
         Assertions.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 21, 29,
-                                                                                    new SplitTime(7, SplitTime.SECOND,
-                                                                                                  255500, SplitTime.MICROSECOND),
+                                                                                    new TimeOffset(7, TimeOffset.SECOND,
+                                                                                                   255500, TimeOffset.MICROSECOND),
                                                                                     TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.68427, 0.56748, 0.03146, 0.45689, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment0.getData().getAngularCoordinates().get(0), 1.0e-5);
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8,
-                                                                                    new SplitTime(3, SplitTime.SECOND,
-                                                                                                  555500, SplitTime.MICROSECOND),
+                                                                                    new TimeOffset(3, TimeOffset.SECOND,
+                                                                                                   555500, TimeOffset.MICROSECOND),
                                                                                     TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.74533, 0.42319, -0.45697, 0.23784, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment0.getData().getAngularCoordinates().get(1), 1.0e-5);
         verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8,
-                                                                                    new SplitTime(4, SplitTime.SECOND,
-                                                                                                  555500, SplitTime.MICROSECOND),
+                                                                                    new TimeOffset(4, TimeOffset.SECOND,
+                                                                                                   555500, TimeOffset.MICROSECOND),
                                                                                     TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.45652, -0.84532, 0.26974, -0.06532, false),
                                                                    Vector3D.ZERO,
@@ -163,13 +163,13 @@ public class AEMParserTest {
         Assertions.assertEquals("A",                        segment1.getMetadata().getLaunchPiece());
         Assertions.assertFalse(segment1.getMetadata().getHasCreatableBody());
         Assertions.assertNull(segment1.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, new SplitTime(555500, SplitTime.MICROSECOND), TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, new SplitTime(555500, SplitTime.MICROSECOND), TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStopTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, new SplitTime(555500, SplitTime.MICROSECOND), TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getUseableStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, new SplitTime(555500, SplitTime.MICROSECOND), TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getUseableStopTime());
         Assertions.assertFalse(segment1.getMetadata().isFirst());
         Assertions.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
@@ -180,21 +180,22 @@ public class AEMParserTest {
         Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
         Assertions.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
         Assertions.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, new SplitTime(555500, SplitTime.MICROSECOND),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, new TimeOffset(555500, TimeOffset.MICROSECOND),
                                                                                     TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment1.getData().getAngularCoordinates().get(0), 1.0e-5);
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, new SplitTime(5, SplitTime.SECOND,
-                                                                                                                        555500,SplitTime.MICROSECOND),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, new TimeOffset(5, TimeOffset.SECOND,
+                                                                                                                         555500,
+                                                                                                                         TimeOffset.MICROSECOND),
                                                                                     TimeScalesFactory.getUTC()),
                                                                    new Rotation(-0.16767, 0.87451, -0.43475, 0.13458, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment1.getData().getAngularCoordinates().get(1), 1.0e-5);
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, new SplitTime(10, SplitTime.SECOND,
-                                                                                                                        555500, SplitTime.MICROSECOND),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, new TimeOffset(10, TimeOffset.SECOND,
+                                                                                                                         555500, TimeOffset.MICROSECOND),
                                                                                     TimeScalesFactory.getUTC()),
                                                                    new Rotation(-0.71418, 0.03125, -0.65874, 0.23458, false),
                                                                    Vector3D.ZERO,

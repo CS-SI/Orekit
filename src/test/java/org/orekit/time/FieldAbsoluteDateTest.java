@@ -1353,8 +1353,8 @@ public class FieldAbsoluteDateTest {
         TimeScale tai = TimeScalesFactory.getTAI();
         TimeScale utc = TimeScalesFactory.getUTC();
         FieldAbsoluteDate<T> date0 = new FieldAbsoluteDate<>(field, DateComponents.J2000_EPOCH, TimeComponents.H12, tai);
-        FieldAbsoluteDate<T> ref = date0.shiftedBy(new SplitTime(496891466L, 732011406663332300L));
-        FieldAbsoluteDate<T> date = ref.shiftedBy(new SplitTime(597L, 900970042626200000L).negate().multiply(33));
+        FieldAbsoluteDate<T> ref = date0.shiftedBy(new TimeOffset(496891466L, 732011406663332300L));
+        FieldAbsoluteDate<T> date = ref.shiftedBy(new TimeOffset(597L, 900970042626200000L).negate().multiply(33));
         DateTimeComponents dtc = date.getComponents(utc);
         Assertions.assertEquals(                 2015, dtc.getDate().getYear());
         Assertions.assertEquals(                    9, dtc.getDate().getMonth());
@@ -1366,7 +1366,7 @@ public class FieldAbsoluteDateTest {
         Assertions.assertEquals("2015-09-30T07:54:59.9999999999987323",
                             date.toString(utc));
         FieldAbsoluteDate<T> beforeMidnight = new FieldAbsoluteDate<>(field, 2008, 2, 29, 23, 59,
-                                                                      new SplitTime(59L, 999400000000000000L), utc);
+                                                                      new TimeOffset(59L, 999400000000000000L), utc);
         FieldAbsoluteDate<T> stillBeforeMidnight = beforeMidnight.shiftedBy(2.0e-4);
         Assertions.assertEquals(59.9994, beforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
         Assertions.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);

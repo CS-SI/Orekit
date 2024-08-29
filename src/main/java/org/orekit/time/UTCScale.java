@@ -132,23 +132,23 @@ public class UTCScale implements TimeScale {
             final OffsetModel    o      = offsetModels.get(i);
             final DateComponents date   = o.getStart();
             final int            mjdRef = o.getMJDRef();
-            final SplitTime      offset = o.getOffset();
+            final TimeOffset offset = o.getOffset();
             final int            slope  = o.getSlope();
 
             // start of the leap
-            final SplitTime previousOffset = (previous == null) ?
-                                             SplitTime.ZERO :
-                                             previous.getOffset(date, TimeComponents.H00);
+            final TimeOffset previousOffset = (previous == null) ?
+                                              TimeOffset.ZERO :
+                                              previous.getOffset(date, TimeComponents.H00);
             final AbsoluteDate leapStart   = new AbsoluteDate(date, tai).shiftedBy(previousOffset);
 
             // end of the leap
             final long         dt          = (date.getMJD() - mjdRef) * SEC_PER_DAY;
-            final SplitTime    drift       = SplitTime.NANOSECOND.multiply(slope * FastMath.abs(dt));
-            final SplitTime    startOffset = dt < 0 ? offset.subtract(drift) : offset.add(drift);
+            final TimeOffset drift       = TimeOffset.NANOSECOND.multiply(slope * FastMath.abs(dt));
+            final TimeOffset startOffset = dt < 0 ? offset.subtract(drift) : offset.add(drift);
             final AbsoluteDate leapEnd     = new AbsoluteDate(date, tai).shiftedBy(startOffset);
 
             // leap computed at leap start and in UTC scale
-            final SplitTime leap           = leapEnd.splitDurationFrom(leapStart).
+            final TimeOffset leap           = leapEnd.accurateDurationFrom(leapStart).
                                              multiply(1000000000).
                                              divide(1000000000 + slope);
 
@@ -183,11 +183,11 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetFromTAI(final AbsoluteDate date) {
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
         if (offsetIndex < 0) {
             // the date is before the first known leap
-            return SplitTime.ZERO;
+            return TimeOffset.ZERO;
         } else {
             return offsets[offsetIndex].getOffset(date).negate();
         }
@@ -207,8 +207,8 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime offsetToTAI(final DateComponents date,
-                                 final TimeComponents time) {
+    public TimeOffset offsetToTAI(final DateComponents date,
+                                  final TimeComponents time) {
 
         // take offset from local time into account, but ignoring seconds,
         // so when we parse an hour like 23:59:60.5 during leap seconds introduction,
@@ -221,7 +221,7 @@ public class UTCScale implements TimeScale {
         final UTCTAIOffset offset = findOffset(mjd);
         if (offset == null) {
             // the date is before the first known leap
-            return SplitTime.ZERO;
+            return TimeOffset.ZERO;
         } else {
             return offset.getOffset(date, time);
         }
@@ -305,11 +305,11 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public SplitTime getLeap(final AbsoluteDate date) {
+    public TimeOffset getLeap(final AbsoluteDate date) {
         final int offsetIndex = findOffsetIndex(date);
         if (offsetIndex < 0) {
             // the date is before the first known leap
-            return SplitTime.ZERO;
+            return TimeOffset.ZERO;
         } else {
             return offsets[offsetIndex].getLeap();
         }
@@ -386,8 +386,8 @@ public class UTCScale implements TimeScale {
                                     final int mjdRef, final String offset, final String slope) {
         return new OffsetModel(new DateComponents(year, month, day),
                                mjdRef,
-                               SplitTime.parse(offset),
-                               (int) (SplitTime.parse(slope).getAttoSeconds()  / SLOPE_FACTOR));
+                               TimeOffset.parse(offset),
+                               (int) (TimeOffset.parse(slope).getAttoSeconds()  / SLOPE_FACTOR));
     }
 
     /** Replace the instance with a data transfer object for serialization.

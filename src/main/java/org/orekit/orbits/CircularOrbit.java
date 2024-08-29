@@ -28,7 +28,7 @@ import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -1111,12 +1111,12 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public CircularOrbit shiftedBy(final double dt) {
-        return shiftedBy(new SplitTime(dt));
+        return shiftedBy(new TimeOffset(dt));
     }
 
     /** {@inheritDoc} */
     @Override
-    public CircularOrbit shiftedBy(final SplitTime dt) {
+    public CircularOrbit shiftedBy(final TimeOffset dt) {
 
         final double dtS = dt.toDouble();
 
@@ -1521,7 +1521,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                 case 22 : // mu + orbit + derivatives + Cartesian
                     return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
                                              d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
-                                             new TimeStampedPVCoordinates(new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                             new TimeStampedPVCoordinates(new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                                                           new Vector3D(d[13], d[14], d[15]),
                                                                           new Vector3D(d[16], d[17], d[18]),
                                                                           new Vector3D(d[19], d[20], d[21])),
@@ -1530,7 +1530,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                 case 16 : // mu + orbit + Cartesian
                     return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
                                              Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
-                                             new TimeStampedPVCoordinates(new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                             new TimeStampedPVCoordinates(new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                                                           new Vector3D(d[ 7], d[ 8], d[ 9]),
                                                                           new Vector3D(d[10], d[11], d[12]),
                                                                           new Vector3D(d[13], d[14], d[15])),
@@ -1540,12 +1540,12 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
                     return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
                                              d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
                                              positionAngleType, positionAngleType,
-                                             frame, new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                             frame, new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                              d[0]);
                 default : // mu + orbit
                     return new CircularOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
                                              positionAngleType, positionAngleType,
-                                             frame, new AbsoluteDate(new SplitTime(seconds, attoseconds)),
+                                             frame, new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
                                              d[0]);
 
             }

@@ -28,7 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
@@ -219,7 +219,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * @return a new state, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
-    public TimeStampedPVCoordinates shiftedBy(final SplitTime dt) {
+    public TimeStampedPVCoordinates shiftedBy(final TimeOffset dt) {
         final PVCoordinates spv = super.shiftedBy(dt);
         return new TimeStampedPVCoordinates(date.shiftedBy(dt),
                                             spv.getPosition(), spv.getVelocity(), spv.getAcceleration());

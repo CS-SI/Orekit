@@ -933,7 +933,7 @@ public class AbsoluteDateTest {
                             1.0e-15);
 
         // April 1, 2006, in UTC
-        final SplitTime offset = new SplitTime(1143849600L, 0L);
+        final TimeOffset offset = new TimeOffset(1143849600L, 0L);
         final AbsoluteDate ad = new AbsoluteDate(epoch, offset, TimeScalesFactory.getUTC());
         Assertions.assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
 
@@ -972,8 +972,8 @@ public class AbsoluteDateTest {
         TimeScale tai = TimeScalesFactory.getTAI();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date0 = new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, tai);
-        AbsoluteDate ref = date0.shiftedBy(new SplitTime(496891466L, 732011406663332300L));
-        AbsoluteDate date = ref.shiftedBy(new SplitTime(597L, 900970042626200000L).negate().multiply(33));
+        AbsoluteDate ref = date0.shiftedBy(new TimeOffset(496891466L, 732011406663332300L));
+        AbsoluteDate date = ref.shiftedBy(new TimeOffset(597L, 900970042626200000L).negate().multiply(33));
         DateTimeComponents dtc = date.getComponents(utc);
         Assertions.assertEquals(                2015,  dtc.getDate().getYear());
         Assertions.assertEquals(                   9,  dtc.getDate().getMonth());
@@ -983,8 +983,8 @@ public class AbsoluteDateTest {
         Assertions.assertEquals(                  59L, dtc.getTime().getSplitSecond().getSeconds());
         Assertions.assertEquals(  999999999998732300L, dtc.getTime().getSplitSecond().getAttoSeconds());
         Assertions.assertEquals("2015-09-30T07:54:59.9999999999987323", date.toString(utc));
-        AbsoluteDate beforeMidnight = new AbsoluteDate(2008, 2, 29, 23, 59, new SplitTime(59L, 999400000000000000L), utc);
-        AbsoluteDate stillBeforeMidnight = beforeMidnight.shiftedBy(new SplitTime(0L, 200000000000000L));
+        AbsoluteDate beforeMidnight = new AbsoluteDate(2008, 2, 29, 23, 59, new TimeOffset(59L, 999400000000000000L), utc);
+        AbsoluteDate stillBeforeMidnight = beforeMidnight.shiftedBy(new TimeOffset(0L, 200000000000000L));
         Assertions.assertEquals(59.9994, beforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
         Assertions.assertEquals(59.9996, stillBeforeMidnight.getComponents(utc).getTime().getSecond(), 1.0e-15);
         Assertions.assertEquals("2008-02-29T23:59:59.9994", beforeMidnight.toString(utc));
@@ -1186,8 +1186,8 @@ public class AbsoluteDateTest {
         check(date, "2009-01-01T00:00:00Z");
         check(date.shiftedBy(1), "2009-01-01T00:00:01Z");
         // test digits and rounding
-        check(date.shiftedBy(new SplitTime(12L, 345678912345678900L)), "2009-01-01T00:00:12.3456789123456789Z");
-        check(date.shiftedBy(new SplitTime(0L, 12345678912345678L)), "2009-01-01T00:00:00.012345678912345678Z");
+        check(date.shiftedBy(new TimeOffset(12L, 345678912345678900L)), "2009-01-01T00:00:12.3456789123456789Z");
+        check(date.shiftedBy(new TimeOffset(0L, 12345678912345678L)), "2009-01-01T00:00:00.012345678912345678Z");
         // test min and max values
         check(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00Z");
         check(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:00:59.999999999999999889Z");
@@ -1251,18 +1251,18 @@ public class AbsoluteDateTest {
         //check(d3.shiftedBy(FastMath.nextDown(1.422818)), "1960-12-31T23:59:61.422818Z");
 
         // test proleptic
-        check(new AbsoluteDate(123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        check(new AbsoluteDate(123, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
               "0123-04-05T06:07:08.9Z");
 
         // there is no way to produce valid RFC3339 for these cases
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
-        check(new AbsoluteDate(-123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        check(new AbsoluteDate(-123, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
               "-123-04-05T06:07:08.9Z");
-        check(new AbsoluteDate(-1230, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        check(new AbsoluteDate(-1230, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
               "-1230-04-05T06:07:08.9Z");
         // test far future
-        check(new AbsoluteDate(12300, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        check(new AbsoluteDate(12300, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
               "12300-04-05T06:07:08.9Z");
         // test infinity
         check(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999Z");
@@ -1301,8 +1301,8 @@ public class AbsoluteDateTest {
         checkToString(date, "2009-01-01T00:00:00.000");
         checkToString(date.shiftedBy(1), "2009-01-01T00:00:01.000");
         // test digits and rounding
-        checkToString(date.shiftedBy(new SplitTime(12L, 345678912345678900L)), "2009-01-01T00:00:12.3456789123456789");
-        checkToString(date.shiftedBy(new SplitTime(0L, 12345678912345678L)), "2009-01-01T00:00:00.012345678912345678");
+        checkToString(date.shiftedBy(new TimeOffset(12L, 345678912345678900L)), "2009-01-01T00:00:12.3456789123456789");
+        checkToString(date.shiftedBy(new TimeOffset(0L, 12345678912345678L)), "2009-01-01T00:00:00.012345678912345678");
         // test min and max values
         checkToString(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00.000");
         // Orekit 13.0 is accurate to attosecond
@@ -1374,18 +1374,18 @@ public class AbsoluteDateTest {
         //checkToString(d3.shiftedBy(FastMath.nextDown(1.422818)), "1960-12-31T23:59:61.423");
 
         // test proleptic
-        checkToString(new AbsoluteDate(123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        checkToString(new AbsoluteDate(123, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
                       "0123-04-05T06:07:08.900");
 
         // there is no way to produce valid RFC3339 for these cases
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
-        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
                       "-0123-04-05T06:07:08.900");
-        checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
                       "-1230-04-05T06:07:08.900");
         // test far future
-        checkToString(new AbsoluteDate(12300, 4, 5, 6, 7, new SplitTime(8, SplitTime.SECOND, 900, SplitTime.MILLISECOND), utc),
+        checkToString(new AbsoluteDate(12300, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
                       "12300-04-05T06:07:08.900");
         // test infinity
         checkToString(AbsoluteDate.FUTURE_INFINITY, "5881610-07-11T23:59:59.999");
@@ -1510,8 +1510,8 @@ public class AbsoluteDateTest {
         Assertions.assertNotEquals(date7, date8);
 
         // Check inequality is as expected
-        final AbsoluteDate date9 = new AbsoluteDate(new SplitTime(Double.POSITIVE_INFINITY));
-        final AbsoluteDate date10 = new AbsoluteDate(new SplitTime(Double.POSITIVE_INFINITY));
+        final AbsoluteDate date9 = new AbsoluteDate(new TimeOffset(Double.POSITIVE_INFINITY));
+        final AbsoluteDate date10 = new AbsoluteDate(new TimeOffset(Double.POSITIVE_INFINITY));
         Assertions.assertEquals(date9, date10);
     }
 
@@ -1662,6 +1662,12 @@ public class AbsoluteDateTest {
 
     @Test
     public void testGetJulianDates() {
+        System.out.println(Long.toHexString(Double.doubleToRawLongBits(32.184))+ " " +
+                               Long.toHexString(Double.doubleToRawLongBits(FastMath.scalb(32.184, 47)))+ " " +
+                               FastMath.scalb(32.184, 47));
+        System.out.println(Long.toHexString(Double.doubleToRawLongBits(0.184))+ " " +
+                               Long.toHexString(Double.doubleToRawLongBits(FastMath.scalb(0.184, 55)))+ " " +
+                               FastMath.scalb(0.184, 55));
         // GIVEN a reference date
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -1691,7 +1697,7 @@ public class AbsoluteDateTest {
     public void testLargeLeapSecond() {
         // this corresponds to issue 707
         Assertions.assertEquals(new AbsoluteDate(1961, 1, 1, utc).
-                                shiftedBy(new SplitTime(22818, SplitTime.MICROSECOND).negate()),
+                                shiftedBy(new TimeOffset(22818, TimeOffset.MICROSECOND).negate()),
                                 new AbsoluteDate("1960-12-31T23:59:61.4", utc));
     }
 

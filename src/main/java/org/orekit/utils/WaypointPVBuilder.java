@@ -29,7 +29,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 
 /** Builder class, enabling incremental building of an {@link PVCoordinatesProvider}
  * instance using waypoints defined on an ellipsoid.
@@ -185,7 +185,7 @@ public class WaypointPVBuilder {
                                    new ConstantPVCoordinatesProvider(previousEntry.getValue(), body),
                                    true);
         // add the final provider after the final waypoint
-        builder.addPVProviderAfter(previousEntry.getKey().shiftedBy(SplitTime.ATTOSECOND),
+        builder.addPVProviderAfter(previousEntry.getKey().shiftedBy(TimeOffset.ATTOSECOND),
                                    createFinal(previousEntry.getValue()),
                                    true);
 

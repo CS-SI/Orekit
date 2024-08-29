@@ -97,13 +97,13 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
         while (i < timeField.length) {
             subMilli = subMilli * 256 + toUnsigned(timeField[i++]);
         }
-        final SplitTime splitTime =
-            new SplitTime(seconds, SplitTime.SECOND,
-                          milli, SplitTime.MILLISECOND,
-                          subMilli, subMillisecondLength == 2 ? SplitTime.MICROSECOND : SplitTime.PICOSECOND);
+        final TimeOffset timeOffset =
+            new TimeOffset(seconds, TimeOffset.SECOND,
+                           milli, TimeOffset.MILLISECOND,
+                           subMilli, subMillisecondLength == 2 ? TimeOffset.MICROSECOND : TimeOffset.PICOSECOND);
 
         this.date = new DateComponents(epoch, day);
-        this.time = new TimeComponents(splitTime);
+        this.time = new TimeComponents(timeOffset);
 
     }
 
@@ -160,7 +160,7 @@ class CcsdsSegmentedTimeCode extends AbstractCcsdsTimeCode {
             attoSecondMultiplier /= 100L;
         }
 
-        this.time = new TimeComponents(new SplitTime(secondInDay, sub * attoSecondMultiplier));
+        this.time = new TimeComponents(new TimeOffset(secondInDay, sub * attoSecondMultiplier));
 
     }
 

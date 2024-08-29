@@ -45,7 +45,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.SplitTime;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -102,7 +102,7 @@ public class OpmParserTest {
 
         // Check State Vector data Block;
         Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28,
-                                                 new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND),
+                                                 new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getUTC()),
                             file.getDate());
         checkPVEntry(new PVCoordinates(new Vector3D(6503514.000, 1239647.000, -717490.000),
@@ -217,7 +217,7 @@ public class OpmParserTest {
         stateManeuverComment0.add("Non-impulsive, thrust direction fixed in inertial frame");
         Assertions.assertEquals(stateManeuverComment0, file.getManeuver(0).getComments());
         Assertions.assertEquals(new AbsoluteDate(2000, 6, 3, 9, 0,
-                                                 new SplitTime(34, SplitTime.SECOND, 100, SplitTime.MILLISECOND),
+                                                 new TimeOffset(34, TimeOffset.SECOND, 100, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getUTC()),
                             file.getManeuvers().get(0).getEpochIgnition());
         Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
@@ -331,7 +331,7 @@ public class OpmParserTest {
         stateManeuverComment0.add("Non-impulsive, thrust direction fixed in inertial frame");
         Assertions.assertEquals(stateManeuverComment0, file.getManeuver(0).getComments());
         Assertions.assertEquals(new AbsoluteDate(2000, 6, 3, 9, 0,
-                                                 new SplitTime(34, SplitTime.SECOND, 100, SplitTime.MILLISECOND),
+                                                 new TimeOffset(34, TimeOffset.SECOND, 100, TimeOffset.MILLISECOND),
                                                  TimeScalesFactory.getGPS()),
                             file.getManeuvers().get(0).getEpochIgnition());
         Assertions.assertEquals(132.6, file.getManeuver(0).getDuration(), 1e-10);
@@ -386,7 +386,7 @@ public class OpmParserTest {
         Assertions.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
         Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
         Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28,
-                                                 new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND),
+                                                 new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
@@ -483,7 +483,7 @@ public class OpmParserTest {
     private void validateOPM3XML(final Opm file) {
         Assertions.assertEquals("OPM 201113719185", file.getHeader().getMessageId());
         Assertions.assertEquals(CelestialBodyFrame.TOD, file.getMetadata().getReferenceFrame().asCelestialBodyFrame());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND),
+        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
@@ -537,7 +537,7 @@ public class OpmParserTest {
         OpmParser parser = new ParserBuilder().withMu(Constants.EIGEN5C_EARTH_MU).withDefaultMass(1000.0).buildOpmParser();
         final Opm file = parser.parseMessage(source);
         Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28,
-                                                 new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND),
+                                                 new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
         try {
@@ -647,7 +647,7 @@ public class OpmParserTest {
 
     private void validate6(final Opm file) {
         Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28,
-                                                 new SplitTime(15, SplitTime.SECOND, 117200, SplitTime.MICROSECOND),
+                                                 new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                                  TimeScalesFactory.getGMST(IERSConventions.IERS_2010, false)),
                             file.getMetadata().getFrameEpoch());
         Assertions.assertEquals(1, file.getMetadata().getComments().size());
