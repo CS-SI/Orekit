@@ -26,7 +26,7 @@
         </action>
         <action dev="luc" type="add" issue="1454">
             Revamped dates handling to avoid rounding errors, improve accuracy
-            and improve robustness.
+            up to attoseconds and improve robustness.
         </action>
         <action dev="luc" type="add" issue="1498">
             Allow roundtrip write/read for Rinex observation files with non-standard

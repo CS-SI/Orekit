@@ -18,8 +18,8 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -176,9 +176,7 @@ public class UTCScale implements TimeScale {
      *         earliest to latest
      */
     public List<UTCTAIOffset> getUTCTAIOffsets() {
-        final List<UTCTAIOffset> offsetList = new ArrayList<>(offsets.length);
-        Collections.addAll(offsetList, offsets);
-        return offsetList;
+        return Arrays.asList(offsets);
     }
 
     /** {@inheritDoc} */
