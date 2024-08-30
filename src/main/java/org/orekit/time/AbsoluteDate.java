@@ -1040,7 +1040,7 @@ public class AbsoluteDate
      */
     public Date toDate(final TimeScale timeScale) {
         final TimeOffset time = add(timeScale.offsetFromTAI(this));
-        return new Date(FastMath.round((time.toDouble() + 10957.5 * 86400.0) * 1000));
+        return new Date(FastMath.round((time.toDouble() + 10957.5 * Constants.JULIAN_DAY) * 1000));
     }
 
     /**

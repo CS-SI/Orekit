@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  * @see FieldAbsoluteDate
- * @since 13.1
+ * @since 13.0
  */
 public class TimeOffset
     implements Comparable<TimeOffset>, Serializable {
@@ -159,7 +159,7 @@ public class TimeOffset
      * Build a time by adding several times.
      * @param times times to add
      */
-    public TimeOffset(final TimeOffset...times) {
+    public TimeOffset(final TimeOffset... times) {
         final RunningSum runningSum = new RunningSum();
         for (final TimeOffset time : times) {
             runningSum.add(time);
@@ -863,7 +863,7 @@ public class TimeOffset
     /** Compare the instance with another one.
      * <p>
      * Not that in order to be consistent with {@code Double#compareTo(Double)},
-     * NaN is considered equal to itself and greater the positive infinity.
+     * NaN is considered equal to itself and greater than positive infinity.
      * </p>
      * @param other other time to compare the instance to
      * @return a negative integer, zero, or a positive integer if applying this time
