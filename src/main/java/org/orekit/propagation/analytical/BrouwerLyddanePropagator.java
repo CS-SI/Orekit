@@ -763,8 +763,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         while (i++ < maxIterations) {
 
             // recompute the osculating parameters from the current mean parameters
-            // and convert from keplerian to equinoctial
-            final EquinoctialOrbit parameters = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(current.propagateParameters(current.mean.getDate()));
+            final KeplerianOrbit parameters = current.propagateParameters(current.mean.getDate());
 
             // adapted parameters residuals
             final double deltaA  = equinoctial.getA() - parameters.getA();

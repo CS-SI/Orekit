@@ -32,9 +32,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.orbits.FieldEquinoctialOrbit;
+import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -80,18 +81,16 @@ import org.orekit.utils.ParameterDriver;
  * @see "Phipps Jr, Warren E. Parallelization of the Navy Space Surveillance Center
  *       (NAVSPASUR) Satellite Model. NAVAL POSTGRADUATE SCHOOL MONTEREY CA, 1992."
  *
+ * @see "Solomon, Daniel, THE NAVSPASUR Satellite Motion Model,
+ *       Naval Research Laboratory, August 8, 1991."
+ *
  * @author Melina Vanel
  * @author Bryan Cazabonne
+ * @author Pascal Parraud
  * @since 11.1
  * @param <T> type of the field elements
  */
 public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
-
-    /** Default convergence threshold for mean parameters conversion. */
-    private static final double EPSILON_DEFAULT = 1.0e-13;
-
-    /** Default value for maxIterations. */
-    private static final int MAX_ITERATIONS_DEFAULT = 200;
 
     /** Parameters scaling factor.
      * <p>
@@ -466,7 +465,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                          final PropagationType initialType,
                                          final double M2) {
         this(initialOrbit, attitudeProv, mass, referenceRadius, mu,
-             c20, c30, c40, c50, initialType, M2, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+             c20, c30, c40, c50, initialType, M2,
+             BrouwerLyddanePropagator.EPSILON_DEFAULT,
+             BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -522,11 +523,11 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
 
         // compute mean parameters if needed
         resetInitialState(new FieldSpacecraftState<>(initialOrbit,
-                                                 attitudeProv.getAttitude(initialOrbit,
-                                                                          initialOrbit.getDate(),
-                                                                          initialOrbit.getFrame()),
-                                                 mass),
-                                                 initialType, epsilon, maxIterations);
+                                                     attitudeProv.getAttitude(initialOrbit,
+                                                                              initialOrbit.getDate(),
+                                                                              initialOrbit.getFrame()),
+                                                     mass),
+                                                     initialType, epsilon, maxIterations);
 
     }
 
@@ -557,7 +558,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
                                                                                               final UnnormalizedSphericalHarmonicsProvider provider,
                                                                                               final UnnormalizedSphericalHarmonics harmonics,
                                                                                               final double M2Value) {
-        return computeMeanOrbit(osculating, provider, harmonics, M2Value, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+        return computeMeanOrbit(osculating, provider, harmonics, M2Value,
+                                BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                                BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
     }
 
     /** Conversion from osculating to mean orbit.
@@ -629,10 +632,15 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @since 11.2
      */
     public static <T extends CalculusFieldElement<T>> FieldKeplerianOrbit<T> computeMeanOrbit(final FieldOrbit<T> osculating,
-                                                                                             final double referenceRadius, final double mu,
-                                                                                             final double c20, final double c30, final double c40,
-                                                                                             final double c50, final double M2Value,
-                                                                                             final double epsilon, final int maxIterations) {
+                                                                                              final double referenceRadius,
+                                                                                              final double mu,
+                                                                                              final double c20,
+                                                                                              final double c30,
+                                                                                              final double c40,
+                                                                                              final double c50,
+                                                                                              final double M2Value,
+                                                                                              final double epsilon,
+                                                                                              final int maxIterations) {
         final FieldBrouwerLyddanePropagator<T> propagator =
                         new FieldBrouwerLyddanePropagator<>(osculating,
                                                             FrameAlignedProvider.of(osculating.getFrame()),
@@ -659,7 +667,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
      * @param stateType mean Brouwer-Lyddane orbit or osculating orbit
      */
     public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
-        resetInitialState(state, stateType, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+        resetInitialState(state, stateType,
+                          BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                          BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
     }
 
     /** Reset the propagator initial state.
@@ -682,7 +692,9 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     /** {@inheritDoc} */
     @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
-        resetIntermediateState(state, forward, EPSILON_DEFAULT, MAX_ITERATIONS_DEFAULT);
+        resetIntermediateState(state, forward,
+                               BrouwerLyddanePropagator.EPSILON_DEFAULT,
+                               BrouwerLyddanePropagator.MAX_ITERATIONS_DEFAULT);
     }
 
     /** Reset an intermediate state.
@@ -716,56 +728,78 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
     private FieldBLModel<T> computeMeanParameters(final FieldKeplerianOrbit<T> osculating, final T mass,
                                                   final double epsilon, final int maxIterations) {
 
+        // damping factor
+        final double damping = BrouwerLyddanePropagator.DAMPING_DEFAULT;
+
         // sanity check
         if (osculating.getA().getReal() < referenceRadius) {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE,
                                            osculating.getA());
         }
 
-        final Field<T> field = mass.getField();
-        final T one = field.getOne();
+        final Field<T> field = osculating.getDate().getField();
         final T zero = field.getZero();
+        final T pi   = zero.getPi();
         // rough initialization of the mean parameters
         FieldBLModel<T> current = new FieldBLModel<>(osculating, mass, referenceRadius, mu, ck0);
 
+        // Convert osculating from keplerian to equinoctial
+        final FieldEquinoctialOrbit<T> equinoctial =
+                        (FieldEquinoctialOrbit<T>) OrbitType.EQUINOCTIAL.convertType(osculating);
+        T sma = equinoctial.getA();
+        T ex  = equinoctial.getEquinoctialEx();
+        T ey  = equinoctial.getEquinoctialEy();
+        T hx  = equinoctial.getHx();
+        T hy  = equinoctial.getHy();
+        T lv  = equinoctial.getLv();
+
         // threshold for each parameter
-        final T thresholdA      = current.mean.getA().abs().add(1.0).multiply(epsilon);
-        final T thresholdE      = current.mean.getE().add(1.0).multiply(epsilon);
-        final T thresholdAngles = one.getPi().multiply(epsilon);
+        final T thresholdA  = current.mean.getA().abs().add(1.0).multiply(epsilon);
+        final T thresholdE  = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
+        final T thresholdH  = FastMath.hypot(ex, ey).add(1).multiply(epsilon);
+        final T thresholdLv = pi.multiply(epsilon);
 
         int i = 0;
         while (i++ < maxIterations) {
 
             // recompute the osculating parameters from the current mean parameters
-            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(), getParameters(mass.getField(), current.mean.getDate()));
+            final FieldKeplerianOrbit<T> parameters = current.propagateParameters(current.mean.getDate(),
+                                                                                  getParameters(mass.getField(),
+                                                                                                current.mean.getDate()));
 
             // adapted parameters residuals
-            final T deltaA     = osculating.getA()  .subtract(parameters.getA());
-            final T deltaE     = osculating.getE()  .subtract(parameters.getE());
-            final T deltaI     = osculating.getI()  .subtract(parameters.getI());
-            final T deltaOmega = MathUtils.normalizeAngle(osculating.getPerigeeArgument().subtract(parameters.getPerigeeArgument()), zero);
-            final T deltaRAAN  = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode().subtract(parameters.getRightAscensionOfAscendingNode()), zero);
-            final T deltaAnom  = MathUtils.normalizeAngle(osculating.getMeanAnomaly().subtract(parameters.getMeanAnomaly()), zero);
+            final T deltaA  = equinoctial.getA().subtract(parameters.getA());
+            final T deltaEx = equinoctial.getEquinoctialEx().subtract(parameters.getEquinoctialEx());
+            final T deltaEy = equinoctial.getEquinoctialEy().subtract(parameters.getEquinoctialEy());
+            final T deltaHx = equinoctial.getHx().subtract(parameters.getHx());
+            final T deltaHy = equinoctial.getHy().subtract(parameters.getHy());
+            final T deltaLv = MathUtils.normalizeAngle(equinoctial.getLv().subtract(parameters.getLv()), zero);
 
+            // update state
+            sma = sma.add(deltaA.multiply(damping));
+            ex  = ex.add(deltaEx.multiply(damping));
+            ey  = ey.add(deltaEy.multiply(damping));
+            hx  = hx.add(deltaHx.multiply(damping));
+            hy  = hy.add(deltaHy.multiply(damping));
+            lv  = lv.add(deltaLv.multiply(damping));
+
+            // Update mean orbit
+            final FieldEquinoctialOrbit<T> meanEquinoctial =
+                            new FieldEquinoctialOrbit<>(sma, ex, ey, hx, hy, lv, PositionAngleType.TRUE,
+                                                        equinoctial.getFrame(), equinoctial.getDate(),
+                                                        equinoctial.getMu());
+            final FieldKeplerianOrbit<T> meanKeplerian =
+                            (FieldKeplerianOrbit<T>) OrbitType.KEPLERIAN.convertType(meanEquinoctial);
 
             // update mean parameters
-            current = new FieldBLModel<>(new FieldKeplerianOrbit<>(current.mean.getA()            .add(deltaA),
-                                                     FastMath.max(current.mean.getE().add(deltaE), zero),
-                                                     current.mean.getI()                            .add(deltaI),
-                                                     current.mean.getPerigeeArgument()              .add(deltaOmega),
-                                                     current.mean.getRightAscensionOfAscendingNode().add(deltaRAAN),
-                                                     current.mean.getMeanAnomaly()                  .add(deltaAnom),
-                                                     PositionAngleType.MEAN, PositionAngleType.MEAN,
-                                                     current.mean.getFrame(),
-                                                     current.mean.getDate(), mu),
-                                  mass, referenceRadius, mu, ck0);
+            current = new FieldBLModel<>(meanKeplerian, mass, referenceRadius, mu, ck0);
             // check convergence
-            if (FastMath.abs(deltaA.getReal())     < thresholdA.getReal() &&
-                FastMath.abs(deltaE.getReal())     < thresholdE.getReal() &&
-                FastMath.abs(deltaI.getReal())     < thresholdAngles.getReal() &&
-                FastMath.abs(deltaOmega.getReal()) < thresholdAngles.getReal() &&
-                FastMath.abs(deltaRAAN.getReal())  < thresholdAngles.getReal() &&
-                FastMath.abs(deltaAnom.getReal())  < thresholdAngles.getReal()) {
+            if (FastMath.abs(deltaA.getReal())  < thresholdA.getReal() &&
+                FastMath.abs(deltaEx.getReal()) < thresholdE.getReal() &&
+                FastMath.abs(deltaEy.getReal()) < thresholdE.getReal() &&
+                FastMath.abs(deltaHx.getReal()) < thresholdH.getReal() &&
+                FastMath.abs(deltaHy.getReal()) < thresholdH.getReal() &&
+                FastMath.abs(deltaLv.getReal()) < thresholdLv.getReal()) {
                 return current;
             }
         }
@@ -903,12 +937,12 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
          * @param ck0 un-normalized zonal coefficients
          */
         FieldBLModel(final FieldKeplerianOrbit<T> mean, final T mass,
-                final double referenceRadius, final T mu, final double[] ck0) {
+                     final double referenceRadius, final T mu, final double[] ck0) {
 
             this.mean = mean;
             this.mass = mass;
             this.mu   = mu;
-            final T one  = mass.getField().getOne();
+            final T one = mass.getField().getOne();
 
             final T app = mean.getA();
             xnotDot = mu.divide(app).sqrt().divide(app);
