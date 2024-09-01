@@ -828,6 +828,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = nicio transformare unscented configurată
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = valoarea nu este strict pozitivă: {0}
 
+# value is not strictly positive: {0}
+NOT_POSITIVE = valoarea nu este pozitivă: {0}
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = transformarea de la {0} la {1} nu este implementată
 
@@ -896,3 +899,6 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
 
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = <MISSING TRANSLATION>
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = <MISSING TRANSLATION>

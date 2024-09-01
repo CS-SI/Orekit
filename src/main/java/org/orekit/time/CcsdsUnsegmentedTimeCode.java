@@ -28,14 +28,27 @@ import org.orekit.errors.OrekitMessages;
  */
 class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
 
+    /** Numerator of scale of the sub-second part (10¹⁸/256ⁿ).
+     * @since 13.0
+     */
+    private static final long[] SUB_SCALE_NUM = new long[] {
+        3906250000000000L, 15258789062500L, 3814697265625L, 3814697265625L, 3814697265625L, 3814697265625L, 3814697265625L
+    };
+
+    /** Denominator of scale of the sub-second part (10¹⁸/256ⁿ).
+     * @since 13.0
+     */
+    private static final long[] SUB_SCALE_DEN = new long[] {
+        1L, 1L, 64L, 16384L, 4194304L, 1073741824L, 274877906944L
+    };
+
     /** Epoch part. */
     private final T epoch;
 
-    /** Seconds part. */
-    private final long seconds;
-
-    /** Sub-second part. */
-    private final double subSecond;
+    /** Time part.
+     * @since 13.0
+     */
+    private final TimeOffset time;
 
     /** Create an instance CCSDS Day Unegmented Time Code (CDS).
      * <p>
@@ -59,9 +72,10 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
      * @param timeField          byte array containing the time code
      * @param agencyDefinedEpoch reference epoch, ignored if the preamble field specifies
      *                           the {@link DateComponents#CCSDS_EPOCH CCSDS reference epoch} is used
-     *                           (and hence may be null in this case)
+     *                           (and hence may be null in this case, but then {@code ccsdsEpoch} must be non-null)
      * @param ccsdsEpoch         reference epoch, ignored if the preamble field specifies
-     *                           the agency epoch is used.
+     *                           the agency epoch is used (and hence may be null in this case,
+     *                           but then {@code agencyDefinedEpoch} must be non-null).
      */
     CcsdsUnsegmentedTimeCode(final byte preambleField1,
                              final byte preambleField2,
@@ -102,17 +116,18 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
                                       timeField.length, coarseTimeLength + fineTimeLength);
         }
 
-        long s = 0L;
+        long seconds = 0L;
         for (int i = 0; i < coarseTimeLength; ++i) {
-            s = s * 256 + toUnsigned(timeField[i]);
+            seconds = seconds * 256L + toUnsigned(timeField[i]);
         }
-        seconds = s;
 
-        double sub = 0;
-        for (int i = timeField.length - 1; i >= coarseTimeLength; --i) {
-            sub = (sub + toUnsigned(timeField[i])) / 256;
+        long attoSeconds = 0L;
+        for (int i = coarseTimeLength; i < timeField.length; ++i) {
+            attoSeconds += (toUnsigned(timeField[i]) * SUB_SCALE_NUM[i - coarseTimeLength]) /
+                           SUB_SCALE_DEN[i - coarseTimeLength];
         }
-        subSecond = sub;
+
+        time = new TimeOffset(seconds, attoSeconds);
 
     }
 
@@ -123,18 +138,12 @@ class CcsdsUnsegmentedTimeCode<T> extends AbstractCcsdsTimeCode {
         return epoch;
     }
 
-    /** Get the seconds part.
-     * @return seconds part
+    /** Get the time part.
+     * @return time part
+     * @since 13.0
      */
-    public long getSeconds() {
-        return seconds;
-    }
-
-    /** Get the sub-second part.
-     * @return sub-second part
-     */
-    public double getSubSecond() {
-        return subSecond;
+    public TimeOffset getTime() {
+        return time;
     }
 
 }

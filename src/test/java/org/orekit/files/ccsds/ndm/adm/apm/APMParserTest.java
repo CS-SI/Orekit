@@ -49,6 +49,7 @@ import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
@@ -114,7 +115,7 @@ public class APMParserTest {
         Assertions.assertEquals("1", file.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, file.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
         Assertions.assertTrue(file.getData().getQuaternionBlock().getEndpoints().isA2b());
-        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
+        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             file.getData().getEpoch());
         Assertions.assertEquals(0.25678, file.getData().getQuaternionBlock().getQuaternion().getQ0(),    QUATERNION_PRECISION);
@@ -123,13 +124,13 @@ public class APMParserTest {
         Assertions.assertEquals(0.40949, file.getData().getQuaternionBlock().getQuaternion().getQ3(),    QUATERNION_PRECISION);
         Assertions.assertFalse(file.getData().getQuaternionBlock().hasRates());
         Assertions.assertTrue(Double.isNaN(file.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
-        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
+        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             file.getAttitude(null, null).getDate());
         Assertions.assertEquals(0.0, file.getAttitude(null, null).getSpin().getNorm(), 1.0e-15);
 
         Attitude attitude = file.getAttitude(null, null);
-        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             attitude.getDate());
         Assertions.assertEquals("ITRF-1997/CIO/2010-based ITRF simple EOP", attitude.getReferenceFrame().getName());
         Assertions.assertEquals(2 * FastMath.atan(FastMath.sqrt(0.00005 * 0.00005 + 0.87543 * 0.87543 + 0.40949 * 0.40949) / 0.25678),
@@ -211,7 +212,7 @@ public class APMParserTest {
         Assertions.assertEquals("UTC",         segment.getMetadata().getTimeSystem().name());
 
         // Check general comments
-        ArrayList<String> generalComment = new ArrayList<String>();
+        ArrayList<String> generalComment = new ArrayList<>();
         generalComment.add("GEOCENTRIC, CARTESIAN, EARTH FIXED");
         generalComment.add("OBJECT ID: 2004-003");
         generalComment.add("$ITIM = 2004 JAN 14 22:26:18.400000, original launch time 14:36");
@@ -226,7 +227,7 @@ public class APMParserTest {
                             segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getBaseEquipment());
         Assertions.assertEquals("A", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
-        Assertions.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
+        Assertions.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getEpoch());
 
@@ -238,7 +239,7 @@ public class APMParserTest {
         Assertions.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
 
         // Check data block: EULER
-        ArrayList<String> eulerComment = new ArrayList<String>();
+        ArrayList<String> eulerComment = new ArrayList<>();
         eulerComment.add("Attitude specified as Euler elements");
         Assertions.assertEquals(eulerComment,    segment.getData().getEulerBlock().getComments());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getEulerBlock().getEndpoints().getFrameA().asCelestialBodyFrame());
@@ -256,7 +257,7 @@ public class APMParserTest {
         Assertions.assertEquals(  0.03214, FastMath.toDegrees(segment.getData().getEulerBlock().getRotationRates()[2]),  ANGLE_PRECISION);
 
         // Check data block: SPACECRAFT PARAMETERS
-        ArrayList<String> spacecraftComment = new ArrayList<String>();
+        ArrayList<String> spacecraftComment = new ArrayList<>();
         spacecraftComment.add("Spacecraft Parameters");
         Assertions.assertEquals(spacecraftComment, segment.getData().getInertiaBlock().getComments());
         Assertions.assertEquals(6080.0,            segment.getData().getInertiaBlock().getInertiaMatrix().getEntry(0, 0), SPACECRAFT_PRECISION);
@@ -267,7 +268,7 @@ public class APMParserTest {
         Assertions.assertEquals(-90.7,             segment.getData().getInertiaBlock().getInertiaMatrix().getEntry(1, 2), SPACECRAFT_PRECISION);
 
         // Check data block: MANEUVER
-        ArrayList<String> maneuverComment = new ArrayList<String>();
+        ArrayList<String> maneuverComment = new ArrayList<>();
         maneuverComment.add("Data follows for 1 planned maneuver.");
         maneuverComment.add("First attitude maneuver for: MARS SPIRIT");
         maneuverComment.add("Impulsive, torque direction fixed in body frame");
@@ -335,7 +336,7 @@ public class APMParserTest {
         Assertions.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
         Assertions.assertFalse(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
-        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
+        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getEpoch());
         Assertions.assertEquals(0.25678, segment.getData().getQuaternionBlock().getQuaternion().getQ0(),    QUATERNION_PRECISION);
@@ -346,7 +347,7 @@ public class APMParserTest {
         Assertions.assertTrue(Double.isNaN(segment.getData().getQuaternionBlock().getQuaternionDot().getQ1()));
 
         // Check data block: SPIN
-        ArrayList<String> spinComment = new ArrayList<String>();
+        ArrayList<String> spinComment = new ArrayList<>();
         spinComment.add("SPIN Parameters");
         Assertions.assertEquals(spinComment, segment.getData().getSpinStabilizedBlock().getComments());
         Assertions.assertEquals(SpacecraftBodyFrame.BaseEquipment.SC_BODY,
@@ -412,7 +413,7 @@ public class APMParserTest {
         Assertions.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
         Assertions.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
-        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172,
+        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getEpoch());
         Assertions.assertEquals(0.25678, segment.getData().getQuaternionBlock().getQuaternion().getQ0(),    QUATERNION_PRECISION);
@@ -423,7 +424,7 @@ public class APMParserTest {
         Assertions.assertEquals(0.00001, segment.getData().getQuaternionBlock().getQuaternionDot().getQ1(), QUATERNION_PRECISION);
         Assertions.assertEquals(0.07543, segment.getData().getQuaternionBlock().getQuaternionDot().getQ2(), QUATERNION_PRECISION);
         Assertions.assertEquals(0.00949, segment.getData().getQuaternionBlock().getQuaternionDot().getQ3(), QUATERNION_PRECISION);
-        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(2003, 9, 30, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                                 segment.getData().getAttitude(null, null).getDate());
         Assertions.assertEquals(8.63363e-2, segment.getData().getAttitude(null, null).getSpin().getNorm(), 1.0e-7);
 
@@ -478,7 +479,7 @@ public class APMParserTest {
         Assertions.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
         Assertions.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
-        Assertions.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
+        Assertions.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getEpoch());
         Assertions.assertEquals(0.47832, segment.getData().getQuaternionBlock().getQuaternion().getQ0(), QUATERNION_PRECISION);
@@ -550,7 +551,7 @@ public class APMParserTest {
         Assertions.assertEquals("1", segment.getData().getQuaternionBlock().getEndpoints().getFrameA().asSpacecraftBodyFrame().getLabel());
         Assertions.assertEquals(CelestialBodyFrame.ITRF1997, segment.getData().getQuaternionBlock().getEndpoints().getFrameB().asCelestialBodyFrame());
         Assertions.assertTrue(segment.getData().getQuaternionBlock().getEndpoints().isA2b());
-        Assertions.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, 15.1172,
+        Assertions.assertEquals(new AbsoluteDate(2004, 2, 14, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND),
                                              TimeScalesFactory.getUTC()),
                             segment.getData().getEpoch());
         Assertions.assertEquals(0.47832, segment.getData().getQuaternionBlock().getQuaternion().getQ0(), QUATERNION_PRECISION);
@@ -1226,7 +1227,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingTwoSpacecraftFrames() throws URISyntaxException {
+    public void testMissingTwoSpacecraftFrames() {
         final String name = "/ccsds/adm/apm/APM-two-spacecraft-frames.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1242,7 +1243,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testNoSpacecraftFrames() throws URISyntaxException {
+    public void testNoSpacecraftFrames() {
         final String name = "/ccsds/adm/apm/APM-no-spacecraft-frames.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1258,7 +1259,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingFrame() throws URISyntaxException {
+    public void testMissingFrame() {
         final String name = "/ccsds/adm/apm/APM-missing-frame.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1274,7 +1275,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingQuaternionComponent() throws URISyntaxException {
+    public void testMissingQuaternionComponent() {
         final String name = "/ccsds/adm/apm/APM-missing-quaternion-component.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1290,7 +1291,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testWrongKeyword() throws URISyntaxException {
+    public void testWrongKeyword() {
         final String name = "/ccsds/adm/apm/APM-wrong-keyword.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1307,7 +1308,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testWrongEulerSequence() throws URISyntaxException {
+    public void testWrongEulerSequence() {
         final String name = "/ccsds/adm/apm/APM-wrong-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1325,7 +1326,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testMissingEulerSequence() throws URISyntaxException {
+    public void testMissingEulerSequence() {
         final String name = "/ccsds/adm/apm/APM-missing-Euler-sequence.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1341,7 +1342,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testRepeatedEulerAngle() throws URISyntaxException {
+    public void testRepeatedEulerAngle() {
         final String name = "/ccsds/adm/apm/APM-repeated-Euler-angle.txt";
         try {
             final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -1357,7 +1358,7 @@ public class APMParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/apm/spurious-metadata.xml";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {

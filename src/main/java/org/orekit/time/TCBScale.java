@@ -29,7 +29,7 @@ import org.hipparchus.CalculusFieldElement;
 public class TCBScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20240720L;
 
     /** LG rate. */
     private static final double LB_RATE = 1.550519768e-8;
@@ -56,13 +56,13 @@ public class TCBScale implements TimeScale {
      */
     TCBScale(final TDBScale tdb, final TimeScale tai) {
         this.tdb = tdb;
-        referenceDate = new AbsoluteDate(1977, 01, 01, tai);
+        referenceDate = new AbsoluteDate(1977, 1, 1, tai);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return tdb.offsetFromTAI(date) + LB_RATE * date.durationFrom(referenceDate);
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
+        return tdb.offsetFromTAI(date).add(new TimeOffset(LB_RATE * date.durationFrom(referenceDate)));
     }
 
     /** {@inheritDoc} */

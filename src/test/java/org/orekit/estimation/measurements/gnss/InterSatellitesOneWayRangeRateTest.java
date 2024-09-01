@@ -127,7 +127,7 @@ public class InterSatellitesOneWayRangeRateTest {
             System.out.println("\nTest Range Rate Parameter Derivatives - Finite Differences Comparison\n");
         }
         // Run test
-        double refErrorsMedian = 2.2e-16;
+        double refErrorsMedian = 2.6e-15;
         double refErrorsMean   = 1.2e-7;
         double refErrorsMax    = 2.9e-6;
         this.genericTestParameterDerivatives(printResults,

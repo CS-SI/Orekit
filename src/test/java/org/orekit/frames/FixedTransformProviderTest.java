@@ -56,8 +56,7 @@ public class FixedTransformProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(fixed);
 
-        Assertions.assertTrue(bos.size() >  990);
-        Assertions.assertTrue(bos.size() < 1010);
+        Assertions.assertEquals(1050, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

@@ -22,20 +22,21 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 
 /** Unit tests for {@link AggregatedPVCoordinatesProvider}. */
 public class AggregatedPVCoordinatesProviderTest {
     
-    private PVCoordinatesProvider pv1 = Mockito.mock(PVCoordinatesProvider.class);
+    private final PVCoordinatesProvider pv1 = Mockito.mock(PVCoordinatesProvider.class);
     
-    private PVCoordinatesProvider pv2 = Mockito.mock(PVCoordinatesProvider.class);
+    private final PVCoordinatesProvider pv2 = Mockito.mock(PVCoordinatesProvider.class);
     
-    private PVCoordinatesProvider pv3 = Mockito.mock(PVCoordinatesProvider.class);
+    private final PVCoordinatesProvider pv3 = Mockito.mock(PVCoordinatesProvider.class);
     
-    private TimeStampedPVCoordinates pv = Mockito.mock(TimeStampedPVCoordinates.class);
+    private final TimeStampedPVCoordinates pv = Mockito.mock(TimeStampedPVCoordinates.class);
     private AbsoluteDate date1;
     private AbsoluteDate date2;
     private AbsoluteDate date3;
@@ -54,7 +55,7 @@ public class AggregatedPVCoordinatesProviderTest {
 
     @Test
     public void invalidPVProvider() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertThrows(OrekitException.class, () -> {
             final PVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.InvalidPVProvider();
             pvProv.getPVCoordinates(date1, FramesFactory.getGCRF());
         });
@@ -112,12 +113,8 @@ public class AggregatedPVCoordinatesProviderTest {
         try {
             pvProv.getPVCoordinates(date1.shiftedBy(-1.), FramesFactory.getGCRF());
             Assertions.fail("expected exception not thrown");
-        }
-        catch (final OrekitIllegalArgumentException ex) {
-            // this exception is expected
-        }
-        catch (final Exception ex) {
-            throw ex;
+        } catch (final OrekitException ex) {
+            Assertions.assertEquals(OrekitMessages.OUT_OF_RANGE_DATE, ex.getSpecifier());
         }
 
         Assertions.assertEquals(date1, pvProv.getMinDate());
@@ -131,7 +128,7 @@ public class AggregatedPVCoordinatesProviderTest {
 
     @Test
     public void invalidBefore() {
-        Assertions.assertThrows(OrekitIllegalArgumentException.class, () -> {
+        Assertions.assertThrows(OrekitException.class, () -> {
             final PVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.Builder()
                     .addPVProviderAfter(date1, pv1, false)
                     .addPVProviderAfter(date2, pv2, false)
@@ -144,7 +141,7 @@ public class AggregatedPVCoordinatesProviderTest {
 
     @Test
     public void invalidAfter() {
-        Assertions.assertThrows(OrekitIllegalArgumentException.class, () -> {
+        Assertions.assertThrows(OrekitException.class, () -> {
             final PVCoordinatesProvider pvProv = new AggregatedPVCoordinatesProvider.Builder()
                     .addPVProviderAfter(date1, pv1, false)
                     .addPVProviderAfter(date2, pv2, false)

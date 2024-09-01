@@ -32,6 +32,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -539,7 +540,23 @@ public abstract class Orbit
      * @param dt time shift in seconds
      * @return a new orbit, shifted with respect to the instance (which is immutable)
      */
+    @Override
     public abstract Orbit shiftedBy(double dt);
+
+    /** Get a time-shifted orbit.
+     * <p>
+     * The orbit can be slightly shifted to close dates. The shifting model is a
+     * Keplerian one if no derivatives are available in the orbit, or Keplerian
+     * plus quadratic effect of the non-Keplerian acceleration if derivatives are
+     * available. Shifting is <em>not</em> intended as a replacement for proper
+     * orbit propagation but should be sufficient for small time shifts or coarse
+     * accuracy.
+     * </p>
+     * @param dt time shift
+     * @return a new orbit, shifted with respect to the instance (which is immutable)
+     */
+    @Override
+    public abstract Orbit shiftedBy(TimeOffset dt);
 
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>

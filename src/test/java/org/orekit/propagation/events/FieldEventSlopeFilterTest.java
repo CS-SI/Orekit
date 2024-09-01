@@ -48,8 +48,8 @@ public class FieldEventSlopeFilterTest {
     private FieldPropagator<Binary64>       propagator;
     private OneAxisEllipsoid earth;
 
-    private double sunRadius = 696000000.;
-    private double earthRadius = 6400000.;
+    private final double sunRadius = 696000000.;
+    private final double earthRadius = 6400000.;
 
     @Test
     public void testEnums() {

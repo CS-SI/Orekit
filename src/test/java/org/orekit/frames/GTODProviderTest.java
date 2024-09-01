@@ -68,8 +68,8 @@ public class GTODProviderTest {
                              { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
                              { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN }
                          }));
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
-                                           new TimeComponents(07, 51, 28.386009),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 4, 6),
+                                           new TimeComponents(7, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
         // PEF iau76
@@ -128,7 +128,7 @@ public class GTODProviderTest {
                              { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
                          }));
-        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
+        AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 6, 1),
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
@@ -181,7 +181,7 @@ public class GTODProviderTest {
                              { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
                          }));
         FieldAbsoluteDate<Binary64> t0 = new FieldAbsoluteDate<>(Binary64Field.getInstance(),
-                                                                  new DateComponents(2004, 06, 01),
+                                                                  new DateComponents(2004, 6, 1),
                                                                   TimeComponents.H00,
                                                                   TimeScalesFactory.getUTC());
 
@@ -225,8 +225,7 @@ public class GTODProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(provider);
 
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
+        Assertions.assertEquals(342851, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

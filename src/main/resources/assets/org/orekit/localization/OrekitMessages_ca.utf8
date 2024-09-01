@@ -828,6 +828,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = cap transformació unscented configurada
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = el valor {0} no és estrictament positiu
 
+# value is not positive: {0}
+NOT_POSITIVE = el valor {0} no és positiu
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = la transformació de {0} a {1} no s''ha implementat
 
@@ -896,3 +899,6 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
 
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = <MISSING TRANSLATION>
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = <MISSING TRANSLATION>

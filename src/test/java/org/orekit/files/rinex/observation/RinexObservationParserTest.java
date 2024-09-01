@@ -45,6 +45,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ClockOffset;
 import org.orekit.time.ConstantOffsetTimeScale;
 import org.orekit.time.SampledClockModel;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
@@ -209,7 +210,8 @@ public class RinexObservationParserTest {
                                                                    (system, timeScales) -> {
                                                                        Assertions.assertEquals(SatelliteSystem.USER_DEFINED_K, system);
                                                                        found.set(true);
-                                                                       return new ConstantOffsetTimeScale(system.name(), 45);
+                                                                       return new ConstantOffsetTimeScale(system.name(),
+                                                                                                          new TimeOffset(45, TimeOffset.SECOND));
                                                                    },
                                                                    TimeScalesFactory.getTimeScales()).
                                         parse(dataSource);

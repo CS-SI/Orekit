@@ -87,7 +87,7 @@ class ProfileThrustPropulsionModelTest {
         final AttitudeProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(alpha, delta),
                                                                            Vector3D.PLUS_I));
 
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 1, 1),
                                                        new TimeComponents(23, 30, 00.000),
                                                        TimeScalesFactory.getUTC());
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
@@ -97,38 +97,38 @@ class ProfileThrustPropulsionModelTest {
         final SpacecraftState initialState =
             new SpacecraftState(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame()), mass);
 
-        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
-                                                       new TimeComponents(04, 15, 34.080),
+        final AbsoluteDate fireDate = new AbsoluteDate(new DateComponents(2004, 1, 2),
+                                                       new TimeComponents(4, 15, 34.080),
                                                        TimeScalesFactory.getUTC());
 
         final TimeSpanMap<PolynomialThrustSegment> profile = new TimeSpanMap<>(null);
         // ramp up from 0N to 420N in rampDuration
         final AbsoluteDate t0 = fireDate;
         profile.addValidAfter(new PolynomialThrustSegment(t0,
-                                                          new PolynomialFunction(new double[] { 0.0, f / rampDuration }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(0.0, f / rampDuration),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t0, false);
         // constant thrust at 420N for duration - 2 * ramp duration
         final AbsoluteDate t1 = fireDate.shiftedBy(rampDuration);
         profile.addValidAfter(new PolynomialThrustSegment(t1,
-                                                          new PolynomialFunction(new double[] { f }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(f),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t1, false);
         // ramp down from 420N to 0N in rampDuration
         final AbsoluteDate t2 = fireDate.shiftedBy(duration - rampDuration);
         profile.addValidAfter(new PolynomialThrustSegment(t2,
-                                                          new PolynomialFunction(new double[] { f, -f / rampDuration }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(f, -f / rampDuration),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t2, false);
         // null thrust after duration
         final AbsoluteDate t3 = fireDate.shiftedBy(duration);
         profile.addValidAfter(new PolynomialThrustSegment(t3,
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t3, false);
         final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
@@ -142,7 +142,7 @@ class ProfileThrustPropulsionModelTest {
         final Maneuver maneuver = new Maneuver(null, new DateBasedManeuverTriggers(fireDate, duration), propulsionModel);
 
         double[][] tolerance = NumericalPropagator.tolerances(1.0e-6, initOrbit, initOrbit.getType());
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1000, tolerance[0], tolerance[1]);
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(1.0e-6, rampDuration, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(0.1);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(initOrbit.getType());
@@ -176,7 +176,7 @@ class ProfileThrustPropulsionModelTest {
                                                                            Vector3D.PLUS_I));
 
         final FieldAbsoluteDate<T> initDate = new FieldAbsoluteDate<>(field,
-                                                                      new DateComponents(2004, 01, 01),
+                                                                      new DateComponents(2004, 1, 1),
                                                                       new TimeComponents(23, 30, 00.000),
                                                                       TimeScalesFactory.getUTC());
         final PositionAngleType positionAngleType = PositionAngleType.TRUE;
@@ -188,38 +188,38 @@ class ProfileThrustPropulsionModelTest {
             new FieldSpacecraftState<>(initOrbit, law.getAttitude(initOrbit, initOrbit.getDate(), initOrbit.getFrame()), mass);
 
         final FieldAbsoluteDate<T> fireDate = new FieldAbsoluteDate<>(field,
-                                                                      new DateComponents(2004, 01, 02),
-                                                                      new TimeComponents(04, 15, 34.080),
+                                                                      new DateComponents(2004, 1, 2),
+                                                                      new TimeComponents(4, 15, 34.080),
                                                                       TimeScalesFactory.getUTC());
 
         final TimeSpanMap<PolynomialThrustSegment> profile = new TimeSpanMap<>(null);
         // ramp up from 0N to 420N in rampDuration
         final AbsoluteDate t0 = fireDate.toAbsoluteDate();
         profile.addValidAfter(new PolynomialThrustSegment(t0,
-                                                          new PolynomialFunction(new double[] { 0.0, f / rampDuration }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(0.0, f / rampDuration),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t0, false);
         // constant thrust at 420N for duration - 2 * ramp duration
         final AbsoluteDate t1 = fireDate.shiftedBy(rampDuration).toAbsoluteDate();
         profile.addValidAfter(new PolynomialThrustSegment(t1,
-                                                          new PolynomialFunction(new double[] { f }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(f),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t1, false);
         // ramp down from 420N to 0N in rampDuration
         final AbsoluteDate t2 = fireDate.shiftedBy(duration - rampDuration).toAbsoluteDate();
         profile.addValidAfter(new PolynomialThrustSegment(t2,
-                                                          new PolynomialFunction(new double[] { f, -f / rampDuration }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(f, -f / rampDuration),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t2, false);
         // null thrust after duration
         final AbsoluteDate t3 = fireDate.shiftedBy(duration).toAbsoluteDate();
         profile.addValidAfter(new PolynomialThrustSegment(t3,
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 }),
-                                                          new PolynomialFunction(new double[] { 0.0 })),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0),
+                                                          new PolynomialFunction(0.0)),
                               t3, false);
         final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
@@ -234,7 +234,7 @@ class ProfileThrustPropulsionModelTest {
 
         double[][] tolerance = FieldNumericalPropagator.tolerances(zero.newInstance(1.0e-6), initOrbit, initOrbit.getType());
         AdaptiveStepsizeFieldIntegrator<T> integrator =
-            new DormandPrince853FieldIntegrator<T>(field, 1.0e-6, 1000, tolerance[0], tolerance[1]);
+            new DormandPrince853FieldIntegrator<>(field, 1.0e-6, rampDuration, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(0.1);
         final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(initOrbit.getType());

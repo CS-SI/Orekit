@@ -23,13 +23,13 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -1126,10 +1126,18 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit shiftedBy(final double dt) {
+        return shiftedBy(new TimeOffset(dt));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public KeplerianOrbit shiftedBy(final TimeOffset dt) {
+
+        final double dtS = dt.toDouble();
 
         // use Keplerian-only motion
         final KeplerianOrbit keplerianShifted = new KeplerianOrbit(a, e, i, pa, raan,
-                getMeanAnomaly() + getKeplerianMeanMotion() * dt, PositionAngleType.MEAN,
+                getMeanAnomaly() + getKeplerianMeanMotion() * dtS, PositionAngleType.MEAN,
                 cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
 
         if (hasDerivatives()) {
@@ -1140,11 +1148,11 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final Vector3D fixedP   = new Vector3D(1, keplerianShifted.partialPV.getPosition(),
-                    0.5 * dt * dt, nonKeplerianAcceleration);
+                    0.5 * dtS * dtS, nonKeplerianAcceleration);
             final double   fixedR2 = fixedP.getNormSq();
             final double   fixedR  = FastMath.sqrt(fixedR2);
             final Vector3D fixedV  = new Vector3D(1, keplerianShifted.partialPV.getVelocity(),
-                    dt, nonKeplerianAcceleration);
+                    dtS, nonKeplerianAcceleration);
             final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), keplerianShifted.partialPV.getPosition(),
                     1, nonKeplerianAcceleration);
 
@@ -1692,7 +1700,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20231217L;
+        private static final long serialVersionUID = 20240721L;
+
+        /** Seconds. */
+        private final long seconds;
+
+        /** Attoseconds. */
+        private final long attoseconds;
 
         /** Double values. */
         private final double[] d;
@@ -1708,19 +1722,16 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
          */
         private DTO(final KeplerianOrbit orbit) {
 
-            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
             this.positionAngleType = orbit.cachedPositionAngleType;
 
             // decompose date
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
-            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
+            this.seconds     = orbit.getDate().getSeconds();
+            this.attoseconds = orbit.getDate().getAttoSeconds();
 
             if (orbit.hasDerivatives()) {
                 // we have derivatives
                 this.d = new double[] {
-                    epoch, offset, orbit.getMu(),
+                    orbit.getMu(),
                     orbit.a, orbit.e, orbit.i,
                     orbit.pa, orbit.raan, orbit.cachedAnomaly,
                     orbit.aDot, orbit.eDot, orbit.iDot,
@@ -1729,7 +1740,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
             } else {
                 // we don't have derivatives
                 this.d = new double[] {
-                    epoch, offset, orbit.getMu(),
+                    orbit.getMu(),
                     orbit.a, orbit.e, orbit.i,
                     orbit.pa, orbit.raan, orbit.cachedAnomaly
                 };
@@ -1743,19 +1754,21 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
          * @return replacement {@link KeplerianOrbit}
          */
         private Object readResolve() {
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            if (d.length >= 15) {
+            if (d.length >= 13) {
                 // we have derivatives
-                return new KeplerianOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
-                        d[ 9], d[10], d[11], d[12], d[13], d[14],
-                        positionAngleType, positionAngleType,
-                        frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]), d[2]);
+                return new KeplerianOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                          d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
+                                          positionAngleType, positionAngleType,
+                                          frame,
+                                          new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
+                                          d[0]);
             } else {
                 // we don't have derivatives
-                return new KeplerianOrbit(d[3], d[4], d[5], d[6], d[7], d[8],
-                        positionAngleType, positionAngleType,
-                        frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]), d[2]);
+                return new KeplerianOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                          positionAngleType, positionAngleType,
+                                          frame,
+                                          new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
+                                          d[0]);
             }
         }
 

@@ -50,6 +50,7 @@ import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -123,7 +124,7 @@ public class EventDetectorTest {
 
         private AbsoluteDate triggerDate;
         private boolean outOfOrderCallDetected;
-        private double stepSize;
+        private final double stepSize;
 
         public OutOfOrderChecker(final double stepSize) {
             triggerDate = null;
@@ -151,10 +152,6 @@ public class EventDetectorTest {
 
         public boolean outOfOrderCallDetected() {
             return outOfOrderCallDetected;
-        }
-
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
 
     }
@@ -262,19 +259,17 @@ public class EventDetectorTest {
         }
 
         public double g(final SpacecraftState s) {
-            PVCoordinates pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
-            PVCoordinates pv2     = s.getPVCoordinates();
-            Vector3D deltaP       = pv1.getPosition().subtract(pv2.getPosition());
-            Vector3D deltaV       = pv1.getVelocity().subtract(pv2.getVelocity());
-            double radialVelocity = Vector3D.dotProduct(deltaP.normalize(), deltaV);
-            return radialVelocity;
+            PVCoordinates pv1 = provider.getPVCoordinates(s.getDate(), s.getFrame());
+            PVCoordinates pv2 = s.getPVCoordinates();
+            Vector3D deltaP   = pv1.getPosition().subtract(pv2.getPosition());
+            Vector3D deltaV   = pv1.getVelocity().subtract(pv2.getVelocity());
+            return Vector3D.dotProduct(deltaP.normalize(), deltaV);
         }
 
         protected CloseApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                                final int newMaxIter,
                                                final EventHandler newHandler) {
-            return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                             provider);
+            return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, provider);
         }
 
     }
@@ -367,13 +362,13 @@ public class EventDetectorTest {
                                                  eme2000, initialDate, Constants.WGS84_EARTH_MU);
         Propagator propagator = new KeplerianPropagator(orbit);
         double base  = 3600.0;
-        double noise = FastMath.scalb(base, -60);
+        TimeOffset noise = new TimeOffset(4, TimeOffset.ATTOSECOND);
         // introduce some numerical noise by using two separate shifts
-        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(2 * noise);
-        AbsoluteDate eventTime = finalTime.shiftedBy(-noise);
-        propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise / 2));
+        AbsoluteDate finalTime = initialDate.shiftedBy(base).shiftedBy(new TimeOffset(2, noise));
+        AbsoluteDate eventTime = finalTime.shiftedBy(noise.negate());
+        propagator.addEventDetector(new DateDetector(eventTime).withMaxCheck(base).withThreshold(noise.toDouble() / 2));
         SpacecraftState finalState = propagator.propagate(finalTime);
-        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise);
+        Assertions.assertEquals(0.0, finalState.getDate().durationFrom(eventTime), noise.toDouble());
 
     }
 
@@ -427,9 +422,7 @@ public class EventDetectorTest {
         // to check they are called in consistent order
         final ScheduleChecker checker = new ScheduleChecker(initialDate.shiftedBy(start),
                                                             initialDate.shiftedBy(stop));
-        propagator.setStepHandler((interpolator) -> {
-            checker.callDate(interpolator.getCurrentState().getDate());
-        });
+        propagator.setStepHandler((interpolator) -> checker.callDate(interpolator.getCurrentState().getDate()));
 
         for (int i = 0; i < 10; ++i) {
             propagator.addEventDetector(new DateDetector(initialDate.shiftedBy(0.0625 * (i + 1))).

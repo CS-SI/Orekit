@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -202,6 +203,11 @@ class OrbitTest {
 
         @Override
         public Orbit shiftedBy(double dt) {
+            return new TestOrbit(a);
+        }
+
+        @Override
+        public Orbit shiftedBy(TimeOffset dt) {
             return new TestOrbit(a);
         }
 

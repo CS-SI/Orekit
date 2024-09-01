@@ -19,7 +19,6 @@ package org.orekit.files.ccsds.ndm.adm.acm;
 import java.io.ByteArrayInputStream;
 import java.io.CharArrayWriter;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -43,6 +42,7 @@ import org.orekit.files.ccsds.utils.generation.XmlGenerator;
 import org.orekit.files.ccsds.utils.lexical.KvnLexicalAnalyzer;
 import org.orekit.files.ccsds.utils.lexical.XmlLexicalAnalyzer;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
@@ -54,7 +54,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testNonExistentKvnFile() throws URISyntaxException {
+    public void testNonExistentKvnFile() {
         final String realName = "/ccsds/adm/acm/ACMExample01.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -68,7 +68,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testNonExistentXmlFile() throws URISyntaxException {
+    public void testNonExistentXmlFile() {
         final String realName = "/ccsds/adm/acm/ACMExample01.txt";
         final String wrongName = realName + "xxxxx";
         final DataSource source = new DataSource(wrongName, () -> getClass().getResourceAsStream(wrongName));
@@ -82,7 +82,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testIncompatibleKeys() throws URISyntaxException {
+    public void testIncompatibleKeys() {
         final String name = "/ccsds/adm/acm/incompatible-keys.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -96,7 +96,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testSensorIndexAlreadyUsed() throws URISyntaxException {
+    public void testSensorIndexAlreadyUsed() {
         final String name = "/ccsds/adm/acm/sensor-index-already-used.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -109,7 +109,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testMissingSensorIndex() throws URISyntaxException {
+    public void testMissingSensorIndex() {
         final String name = "/ccsds/adm/acm/missing-sensor-index.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -122,7 +122,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testWrongStdDevNumber() throws URISyntaxException {
+    public void testWrongStdDevNumber() {
         final String name = "/ccsds/adm/acm/wrong-stddev-number.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -136,7 +136,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/acm/spurious-metadata.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -150,7 +150,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testMissingTargetMomentum() throws URISyntaxException {
+    public void testMissingTargetMomentum() {
         final String name = "/ccsds/adm/acm/missing-target-momentum.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -163,7 +163,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testMissingCenterOfPressure() throws URISyntaxException {
+    public void testMissingCenterOfPressure() {
         final String name = "/ccsds/adm/acm/missing-center-of-pressure.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -184,7 +184,7 @@ public class AcmParserTest {
         // Check Header Block;
         Assertions.assertEquals(2.0, acm.getHeader().getFormatVersion(), 1.0e-10);
         Assertions.assertEquals("unrestricted", acm.getHeader().getClassification());
-        Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", acm.getHeader().getOriginator());
         Assertions.assertEquals("A7015Z4", acm.getHeader().getMessageId());
@@ -196,7 +196,7 @@ public class AcmParserTest {
         Assertions.assertEquals(52,            acm.getMetadata().getLaunchNumber());
         Assertions.assertEquals("A",           acm.getMetadata().getLaunchPiece());
         Assertions.assertEquals("UTC",         acm.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                                 acm.getMetadata().getEpochT0());        
 
         // attitude data
@@ -335,7 +335,7 @@ public class AcmParserTest {
 
         // Check Header Block;
         Assertions.assertEquals(2.0, acm.getHeader().getFormatVersion(), 1.0e-10);
-       Assertions.assertEquals(new AbsoluteDate(1998, 11, 06, 9, 23, 57, TimeScalesFactory.getUTC()),
+       Assertions.assertEquals(new AbsoluteDate(1998, 11, 6, 9, 23, 57, TimeScalesFactory.getUTC()),
                                 acm.getHeader().getCreationDate());
         Assertions.assertEquals("JAXA", acm.getHeader().getOriginator());
         Assertions.assertEquals("A7015Z6", acm.getHeader().getMessageId());
@@ -344,7 +344,7 @@ public class AcmParserTest {
         Assertions.assertEquals("TEST_SAT",    acm.getMetadata().getObjectName());
         Assertions.assertNull(acm.getMetadata().getInternationalDesignator());
         Assertions.assertEquals("TAI",         acm.getMetadata().getTimeSystem().name());
-        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, 15.1172, TimeScalesFactory.getTAI()),
+        Assertions.assertEquals(new AbsoluteDate(1998, 12, 18, 14, 28, new TimeOffset(15, TimeOffset.SECOND, 117200, TimeOffset.MICROSECOND), TimeScalesFactory.getTAI()),
                                 acm.getMetadata().getEpochT0());  
         Assertions.assertEquals(36.0,          acm.getMetadata().getTaimutcT0(), 1.0e-15);
 
@@ -441,7 +441,7 @@ public class AcmParserTest {
 
     private void validateAcm05(Acm acm) {
 
-        final AbsoluteDate t0 = new AbsoluteDate(2016, 3, 15, 0, 00, 0.0, TimeScalesFactory.getUTC());
+        final AbsoluteDate t0 = new AbsoluteDate(2016, 3, 15, 0, 0, 0.0, TimeScalesFactory.getUTC());
 
         // Check Header Block;
         Assertions.assertEquals(2.0, acm.getHeader().getFormatVersion(), 1.0e-10);
@@ -919,7 +919,7 @@ public class AcmParserTest {
     }
 
     @Test
-    public void testWriteACM05() throws URISyntaxException, IOException {
+    public void testWriteACM05() throws IOException {
         final String name = "/ccsds/adm/acm/ACMExample05.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         AcmParser parser = new ParserBuilder().buildAcmParser();

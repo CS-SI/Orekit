@@ -863,6 +863,9 @@ public enum OrekitMessages implements Localizable {
     /** NOT_STRICTLY_POSITIVE. */
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
 
+    /** NOT_POSITIVE. */
+    NOT_POSITIVE("value is not positive: {0}"),
+
     /** UNSUPPORTED_TRANSFORM. */
     UNSUPPORTED_TRANSFORM("transform from {0} to {1} is not implemented"),
 
@@ -933,7 +936,10 @@ public enum OrekitMessages implements Localizable {
     PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned"),
 
     /** FIELD_TOO_LONG. */
-    FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters");
+    FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters"),
+
+    /** CANNOT_PARSE_DATA. */
+    CANNOT_PARSE_DATA("cannot parse data {0}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

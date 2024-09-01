@@ -71,7 +71,7 @@ class VEISProvider implements TransformProvider {
 
         // offset from FIFTIES epoch (UT1 scale)
         final double dtai = date.durationFrom(vstReference);
-        final double dutc = timeScales.getUTC().offsetFromTAI(date);
+        final double dutc = timeScales.getUTC().offsetFromTAI(date).toDouble();
         final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
 
         final double tut1 = dtai + dutc + dut1;
@@ -97,7 +97,7 @@ class VEISProvider implements TransformProvider {
 
         // offset from FIFTIES epoch (UT1 scale)
         final T dtai = date.durationFrom(vstReference);
-        final double dutc = timeScales.getUTC().offsetFromTAI(date.toAbsoluteDate());
+        final double dutc = timeScales.getUTC().offsetFromTAI(date.toAbsoluteDate()).toDouble();
         final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
 
         final T tut1 = dtai.add(dutc + dut1);

@@ -828,6 +828,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = aucune transformation unscented configurée
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
 
+# value is not positive: {0}
+NOT_POSITIVE = la valeur {0} n''est pas positive
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = la transformation de {0} vers {1} n'est pas implémentée
 
@@ -896,3 +899,7 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = Le constructor de propagateur ne peut pas êt
 
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = le champ « {0} » est trop long, la longueur maximale est de {1} caractères
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}
+

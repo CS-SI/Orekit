@@ -281,8 +281,7 @@ public class CartesianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 270);
-        Assertions.assertTrue(bos.size() < 320);
+        Assertions.assertEquals(332, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -321,8 +320,7 @@ public class CartesianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertTrue(bos.size() > 320);
-        Assertions.assertTrue(bos.size() < 370);
+        Assertions.assertEquals(356, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -531,34 +529,34 @@ public class CartesianOrbitTest {
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         final CartesianOrbit orbit = new CartesianOrbit(pv, frame, mu);
 
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getA),
                             orbit.getADot(),
                             4.3e-8);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getEquinoctialEx),
                             orbit.getEquinoctialExDot(),
                             2.1e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getEquinoctialEy),
                             orbit.getEquinoctialEyDot(),
                             5.3e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getHx),
                             orbit.getHxDot(),
                             4.4e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getHy),
                             orbit.getHyDot(),
                             8.0e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getLv),
                             orbit.getLvDot(),
                             1.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getLE),
                             orbit.getLEDot(),
                             7.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getLM),
                             orbit.getLMDot(),
                             8.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getE),
                             orbit.getEDot(),
                             7.0e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, CartesianOrbit::getI),
                             orbit.getIDot(),
                             5.7e-16);
 
@@ -568,11 +566,8 @@ public class CartesianOrbitTest {
     double differentiate(TimeStampedPVCoordinates pv, Frame frame, double mu, S picker) {
         final DSFactory factory = new DSFactory(1, 1);
         FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(8, 0.1);
-        UnivariateDifferentiableFunction diff = differentiator.differentiate(new UnivariateFunction() {
-            public double value(double dt) {
-                return picker.apply(new CartesianOrbit(pv.shiftedBy(dt), frame, mu));
-            }
-        });
+        UnivariateDifferentiableFunction diff = differentiator.differentiate(
+            (UnivariateFunction) dt -> picker.apply(new CartesianOrbit(pv.shiftedBy(dt), frame, mu)));
         return diff.value(factory.variable(0, 0.0)).getPartialDerivative(1);
     }
 

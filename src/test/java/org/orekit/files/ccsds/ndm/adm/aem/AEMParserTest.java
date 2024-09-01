@@ -16,7 +16,6 @@
  */
 package org.orekit.files.ccsds.ndm.adm.aem;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +56,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularDerivativesFilter;
@@ -73,7 +73,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM01() throws IOException {
+    public void testParseAEM01() {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
@@ -97,13 +97,21 @@ public class AEMParserTest {
         Assertions.assertEquals("A",                    segment0.getMetadata().getLaunchPiece());
         Assertions.assertFalse(segment0.getMetadata().getHasCreatableBody());
         Assertions.assertNull(segment0.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 21, 29, new TimeOffset(7, TimeOffset.SECOND,
+                                                                                      255500, TimeOffset.MICROSECOND),
+                                                 TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, 2.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 28, new TimeOffset(2, TimeOffset.SECOND,
+                                                                                     555500, TimeOffset.MICROSECOND),
+                                                 TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getStopTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 22, 8, 2.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 28, 22, 8, new TimeOffset(2, TimeOffset.SECOND,
+                                                                                     555500, TimeOffset.MICROSECOND),
+                                                 TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 18, 2.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 11, 30, 1, 18, new TimeOffset(2, TimeOffset.SECOND,
+                                                                                     555500, TimeOffset.MICROSECOND),
+                                                 TimeScalesFactory.getUTC()),
                             segment0.getMetadata().getUseableStopTime());
         Assertions.assertEquals("HERMITE", segment0.getMetadata().getInterpolationMethod());
         Assertions.assertEquals(7,         segment0.getMetadata().getInterpolationDegree());
@@ -116,22 +124,31 @@ public class AEMParserTest {
         Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
         Assertions.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
         Assertions.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 21, 29, 7.2555, TimeScalesFactory.getUTC()),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 21, 29,
+                                                                                    new TimeOffset(7, TimeOffset.SECOND,
+                                                                                                   255500, TimeOffset.MICROSECOND),
+                                                                                    TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.68427, 0.56748, 0.03146, 0.45689, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment0.getData().getAngularCoordinates().get(0), 1.0e-5);
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8, 3.5555, TimeScalesFactory.getUTC()),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8,
+                                                                                    new TimeOffset(3, TimeOffset.SECOND,
+                                                                                                   555500, TimeOffset.MICROSECOND),
+                                                                                    TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.74533, 0.42319, -0.45697, 0.23784, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment0.getData().getAngularCoordinates().get(1), 1.0e-5);
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8, 4.5555, TimeScalesFactory.getUTC()),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 11, 28, 22, 8,
+                                                                                    new TimeOffset(4, TimeOffset.SECOND,
+                                                                                                   555500, TimeOffset.MICROSECOND),
+                                                                                    TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.45652, -0.84532, 0.26974, -0.06532, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment0.getData().getAngularCoordinates().get(2), 1.0e-5);
-        ArrayList<String> ephemeridesDataLinesComment = new ArrayList<String>();
+        ArrayList<String> ephemeridesDataLinesComment = new ArrayList<>();
         ephemeridesDataLinesComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         ephemeridesDataLinesComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         ephemeridesDataLinesComment.add("attitudes is 0.1 degrees per axis.");
@@ -146,13 +163,13 @@ public class AEMParserTest {
         Assertions.assertEquals("A",                        segment1.getMetadata().getLaunchPiece());
         Assertions.assertFalse(segment1.getMetadata().getHasCreatableBody());
         Assertions.assertNull(segment1.getMetadata().getCenter().getBody());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 5, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 28, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getStopTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 10, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getUseableStartTime());
-        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, 0.5555, TimeScalesFactory.getUTC()),
+        Assertions.assertEquals(new AbsoluteDate(1996, 12, 28, 21, 23, new TimeOffset(555500, TimeOffset.MICROSECOND), TimeScalesFactory.getUTC()),
                             segment1.getMetadata().getUseableStopTime());
         Assertions.assertFalse(segment1.getMetadata().isFirst());
         Assertions.assertEquals("EME2000",       segment0.getMetadata().getEndpoints().getFrameA().getName());
@@ -163,28 +180,34 @@ public class AEMParserTest {
         Assertions.assertTrue(segment0.getMetadata().getEndpoints().isA2b());
         Assertions.assertEquals(AttitudeType.QUATERNION, segment1.getMetadata().getAttitudeType());
         Assertions.assertEquals(AngularDerivativesFilter.USE_R, segment0.getMetadata().getAttitudeType().getAngularDerivativesFilter());
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, 0.5555, TimeScalesFactory.getUTC()),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 5, new TimeOffset(555500, TimeOffset.MICROSECOND),
+                                                                                    TimeScalesFactory.getUTC()),
                                                                    new Rotation(0.72501, -0.64585, 0.018542, -0.23854, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment1.getData().getAngularCoordinates().get(0), 1.0e-5);
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, 5.5555, TimeScalesFactory.getUTC()),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, new TimeOffset(5, TimeOffset.SECOND,
+                                                                                                                         555500,
+                                                                                                                         TimeOffset.MICROSECOND),
+                                                                                    TimeScalesFactory.getUTC()),
                                                                    new Rotation(-0.16767, 0.87451, -0.43475, 0.13458, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment1.getData().getAngularCoordinates().get(1), 1.0e-5);
-        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, 10.5555, TimeScalesFactory.getUTC()),
+        verifyAngularCoordinates(new TimeStampedAngularCoordinates(new AbsoluteDate(1996, 12, 18, 12, 10, new TimeOffset(10, TimeOffset.SECOND,
+                                                                                                                         555500, TimeOffset.MICROSECOND),
+                                                                                    TimeScalesFactory.getUTC()),
                                                                    new Rotation(-0.71418, 0.03125, -0.65874, 0.23458, false),
                                                                    Vector3D.ZERO,
                                                                    Vector3D.ZERO),
                                  segment1.getData().getAngularCoordinates().get(2), 1.0e-5);
-        ArrayList<String> ephemeridesDataLinesComment2 = new ArrayList<String>();
+        ArrayList<String> ephemeridesDataLinesComment2 = new ArrayList<>();
         ephemeridesDataLinesComment2.add("This block begins after trajectory correction maneuver TCM-3.");
         Assertions.assertEquals(ephemeridesDataLinesComment2, segment1.getMetadata().getComments());
     }
 
     @Test
-    public void testParseAEM02() throws URISyntaxException {
+    public void testParseAEM02() {
         final String name = "/ccsds/adm/aem/AEMExample02.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         AemParser parser = new ParserBuilder().
@@ -194,10 +217,10 @@ public class AEMParserTest {
 
         final Aem file = parser.parse(source); // using generic API here
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("comment");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
@@ -211,7 +234,8 @@ public class AEMParserTest {
         Assertions.assertEquals(1, blocks.size());
         Assertions.assertEquals(IERSConventions.IERS_2010, parser.getConventions());
         Assertions.assertTrue(parser.isSimpleEOP());
-        Assertions.assertEquals(0.0, parser.getMissionReferenceDate().durationFrom(new AbsoluteDate(1996, 12, 17, 0, 0, 0.0, TimeScalesFactory.getUTC())), 1.0e-5);
+        Assertions.assertEquals(0.0, parser.getMissionReferenceDate().durationFrom(new AbsoluteDate(1996, 12, 17, 0, 0, 0.0,
+                                                                                                    TimeScalesFactory.getUTC())), 1.0e-5);
         Assertions.assertEquals(DataContext.getDefault(), parser.getDataContext());
         Assertions.assertEquals((new AbsoluteDate("1996-12-17T00:00:00.000",
                                               TimeScalesFactory.getUTC())),
@@ -219,14 +243,14 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseKvnAEM03() throws URISyntaxException {
+    public void testParseKvnAEM03() {
         final String ex = "/ccsds/adm/aem/AEMExample03.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         validateAEM03(new ParserBuilder().buildAemParser().parseMessage(source));
     }
 
     @Test
-    public void testParseXmlAEM03() throws URISyntaxException {
+    public void testParseXmlAEM03() {
         final String ex = "/ccsds/adm/aem/AEMExample03.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -278,7 +302,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM04() throws URISyntaxException {
+    public void testParseAEM04() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final String ex = "/ccsds/adm/aem/AEMExample04.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -330,16 +354,16 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM05() throws URISyntaxException {
+    public void testParseAEM05() {
         final String ex = "/ccsds/adm/aem/AEMExample05.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("comment");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
@@ -375,7 +399,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM06a() throws URISyntaxException {
+    public void testParseAEM06a() {
         final String ex = "/ccsds/adm/aem/AEMExample06a.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -388,7 +412,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM06b() throws URISyntaxException {
+    public void testParseAEM06b() {
         final String ex = "/ccsds/adm/aem/AEMExample06b.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
@@ -401,16 +425,16 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM07() throws URISyntaxException {
+    public void testParseAEM07() {
         final String ex = "/ccsds/adm/aem/AEMExample07.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("comment");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("This file was produced by M.R. Somebody, MSOO NAV/JPL, 2002 OCT 04.");
         metadataComment.add("It is to be used for attitude reconstruction only. The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
@@ -466,16 +490,16 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM11() throws URISyntaxException {
+    public void testParseAEM11() {
         final String ex = "/ccsds/adm/aem/AEMExample11.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final AemParser parser  = new ParserBuilder().buildAemParser();
         final Aem file = parser.parseMessage(source);
         final Segment<AemMetadata, AemData> segment0 = file.getSegments().get(0);
-        final List<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<>();
         headerComment.add("This example shows an AEM with a rotation");
         Assertions.assertEquals(headerComment, file.getHeader().getComments());
-        final List<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<>();
         metadataComment.add("The relative accuracy of these");
         metadataComment.add("attitudes is 0.1 degrees per axis.");
         Assertions.assertEquals(metadataComment, segment0.getMetadata().getComments());
@@ -518,7 +542,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM13() throws URISyntaxException {
+    public void testParseAEM13() {
         final TimeScale tai = TimeScalesFactory.getTAI();
         final String ex = "/ccsds/adm/aem/AEMExample13.xml";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -584,7 +608,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testParseAEM14() throws URISyntaxException {
+    public void testParseAEM14() {
         final TimeScale tai = TimeScalesFactory.getTAI();
         final String ex = "/ccsds/adm/aem/AEMExample14.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -665,7 +689,7 @@ public class AEMParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
             Assertions.assertEquals(AemMetadataKey.ATTITUDE_DIR, oe.getParts()[0]);
-            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
+            Assertions.assertEquals(2.0, (Double) oe.getParts()[1], 1.0e-15);
         }
     }
 
@@ -679,7 +703,7 @@ public class AEMParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.CCSDS_KEYWORD_NOT_ALLOWED_IN_VERSION, oe.getSpecifier());
             Assertions.assertEquals(AemMetadataKey.QUATERNION_TYPE, oe.getParts()[0]);
-            Assertions.assertEquals(2.0, ((Double) oe.getParts()[1]).doubleValue(), 1.0e-15);
+            Assertions.assertEquals(2.0, (Double) oe.getParts()[1], 1.0e-15);
         }
     }
 
@@ -712,8 +736,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testWrongKeyword()
-        throws URISyntaxException {
+    public void testWrongKeyword() {
         // simple test for AEM file, contains a wrong keyword in the metadata.
         final String name = "/ccsds/adm/aem/AEM-wrong-keyword.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -743,8 +766,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testKeywordWithinEphemeris()
-        throws URISyntaxException {
+    public void testKeywordWithinEphemeris() {
         // simple test for AEM file, contains p/v entries and other mandatory data.
         final String name = "/ccsds/adm/aem/AEM-keyword-within-ephemeris.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -759,7 +781,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testWrongRotationSequence() throws URISyntaxException {
+    public void testWrongRotationSequence() {
         // simple test for AEM file, contains a wrong keyword in the metadata.
         final String name = "/ccsds/adm/aem/AEM-inconsistent-rotation-sequence.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
@@ -775,7 +797,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testSpuriousMetaDataSection() throws URISyntaxException {
+    public void testSpuriousMetaDataSection() {
         final String name = "/ccsds/adm/aem/spurious-metadata.txt";
         final DataSource source = new DataSource(name, () -> getClass().getResourceAsStream(name));
         try {
@@ -789,7 +811,7 @@ public class AEMParserTest {
     }
 
     @Test
-    public void testMissingConvention() throws URISyntaxException {
+    public void testMissingConvention() {
         final String ex = "/ccsds/adm/aem/AEMExample01.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
         final Aem file = new ParserBuilder().buildAemParser().parseMessage(source);
@@ -820,8 +842,7 @@ public class AEMParserTest {
      * (the parsed one or the default if there is none)
      */
     @Test
-    public void testDefaultInterpolationDegree()
-        throws URISyntaxException {
+    public void testDefaultInterpolationDegree() {
 
         final String name = "/ccsds/adm/aem/AEMExample01.txt";
         ParserBuilder builder = new ParserBuilder();
