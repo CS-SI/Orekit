@@ -17,7 +17,6 @@
 package org.orekit.time;
 
 import org.hipparchus.exception.LocalizedCoreFormats;
-import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -90,10 +89,10 @@ public class TimeOffset
     /** Indicator for NaN time (bits pattern arbitrarily selected to avoid hashcode collisions). */
     private static final long NAN_INDICATOR      = -0XFFL;
 
-    /** Indicator for positive infinite time(bits pattern arbitrarily selected to avoid hashcode collisions). */
+    /** Indicator for positive infinite time (bits pattern arbitrarily selected to avoid hashcode collisions). */
     private static final long POSITIVE_INFINITY_INDICATOR = -0XFF00L;
 
-    /** Indicator for negative infinite time(bits pattern arbitrarily selected to avoid hashcode collisions). */
+    /** Indicator for negative infinite time (bits pattern arbitrarily selected to avoid hashcode collisions). */
     private static final long NEGATIVE_INFINITY_INDICATOR = -0XFF0000L;
 
     /** Milliseconds in one second. */
@@ -179,33 +178,15 @@ public class TimeOffset
      * @param attoSeconds attoseconds part
      */
     public TimeOffset(final long seconds, final long attoSeconds) {
-        long normalizedSeconds;
-        long normalizedAttoSeconds;
-        try {
-            final long qAtto = attoSeconds / ATTOS_IN_SECOND;
-            final long rAtto = attoSeconds - qAtto * ATTOS_IN_SECOND;
-            if (rAtto < 0L) {
-                normalizedSeconds     = seconds + qAtto - 1L;
-                normalizedAttoSeconds = ATTOS_IN_SECOND + rAtto;
-            } else {
-                normalizedSeconds     = seconds + qAtto;
-                normalizedAttoSeconds = rAtto;
-            }
-        } catch (MathRuntimeException mre) {
-            // there was an overflow
-            if (seconds < 0L) {
-                normalizedSeconds     = Long.MIN_VALUE;
-                normalizedAttoSeconds = NEGATIVE_INFINITY_INDICATOR;
-            } else {
-                normalizedSeconds     = Long.MAX_VALUE;
-                normalizedAttoSeconds = POSITIVE_INFINITY_INDICATOR;
-            }
+        final long qAtto = attoSeconds / ATTOS_IN_SECOND;
+        final long rAtto = attoSeconds - qAtto * ATTOS_IN_SECOND;
+        if (rAtto < 0L) {
+            this.seconds     = seconds + qAtto - 1L;
+            this.attoSeconds = ATTOS_IN_SECOND + rAtto;
+        } else {
+            this.seconds     = seconds + qAtto;
+            this.attoSeconds = rAtto;
         }
-
-        // store normalized values
-        this.seconds     = normalizedSeconds;
-        this.attoSeconds = normalizedAttoSeconds;
-
     }
 
     /**
@@ -706,9 +687,9 @@ public class TimeOffset
     /** Parse a string to produce an accurate split time.
      * <p>
      * This method is more accurate than parsing the string as a double and then
-     * calling {@link TimeOffset#TimeOffset(double)} because it reads the sub-second
-     * part in decimal, hence avoiding problems like for example 0.1 not being an
-     * exact IEEE754 number.
+     * calling {@link TimeOffset#TimeOffset(double)} because it reads the before
+     * separator and after separator parts in decimal, hence avoiding problems like
+     * for example 0.1 not being an exact IEEE754 number.
      * </p>
      * @param s string to parse
      * @return parsed split time
