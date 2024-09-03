@@ -20,7 +20,12 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="12.1.3" date="TBD" description="TBD">
+    <release version="12.1.3" date="04/09/2024"
+             description="Version 12.1.3 is a patch release of Orekit.
+             It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements
+             and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,
+             numerical noises in covariance transformation and parsing of RINEX and CCSDS files.
+             Version 12.1.3 also include Checkstyle fixes.">
       <action dev="luc" type="fix" issue="643">
         Removed non thread-safe use of DecimalFormat.
       </action>
