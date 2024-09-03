@@ -107,8 +107,6 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 new ClassicalRungeKuttaIntegrationSettings(10.));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
-        final double toleranceMassAdjoint = 1e-10;
-        shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         shooting.setScalePositionDefects(1.);
         shooting.setScaleVelocityDefects(1.);
         final double mass = 1e3;
@@ -124,7 +122,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 tolerancePosition);
         Assertions.assertEquals(0., expectedPV.getVelocity().subtract(actualPV.getVelocity()).getNorm(),
                 toleranceVelocity);
-        compareToAbsolutePV(mass, guess, propagationSettings, boundaryOrbits, conditionChecker, toleranceMassAdjoint,
+        compareToAbsolutePV(mass, guess, propagationSettings, boundaryOrbits, conditionChecker, 0.,
                 output);
     }
 
@@ -215,10 +213,51 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 boundaryOrbits, conditionChecker);
         final double[] unboundedEnergyAdjoint = output.getInitialState().getAdditionalState(cartesianCost.getAdjointName());
         double[] guessBoundedEnergy = unboundedEnergyAdjoint.clone();
-        for (int i = 0; i < unboundedEnergyAdjoint.length; i++) {
-            guessBoundedEnergy[i] = unboundedEnergyAdjoint[i] / thrustBound;
-        }
         final ShootingBoundaryOutput outputBoundedEnergy = shootingBoundedEnergy.solve(mass, guessBoundedEnergy);
+        Assertions.assertTrue(outputBoundedEnergy.isConverged());
         Assertions.assertEquals(0, outputBoundedEnergy.getIterationCount());
+    }
+
+    @Test
+    void testSolveRegression() {
+        // GIVEN
+        final double massFlowRateFactor = 2e-6;
+        final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", massFlowRateFactor);
+        final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(cartesianCost);
+        final double toleranceMassAdjoint = 1e-10;
+        shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
+        final double mass = 1.;
+        final double[] guess = {-1.3440754763650783E-6, -6.346307866897998E-6, -4.25736594074492E-6,
+                -4.54324936872417E-4, -0.0020329894350755227, -8.358161689612435E-4, 0.};
+        // WHEN
+        final ShootingBoundaryOutput output = shooting.solve(mass, guess);
+        // THEN
+        Assertions.assertTrue(output.isConverged());
+        final double[] initialAdjoint = output.getInitialState().getAdditionalState(cartesianCost.getAdjointName());
+        final double[] expectedAdjoint = new double[] {-1.3432883741256684E-6, -6.343244627959342E-6, -4.2552646864846415E-6,
+                -4.540374638007354E-4, -0.002031906384904598, -8.355018662664441E-4, -1.0320210230861449};
+        final double tolerance = 1e-8;
+        for (int i = 0; i < expectedAdjoint.length; i++) {
+            Assertions.assertEquals(expectedAdjoint[i], initialAdjoint[i], tolerance);
+        }
+        Assertions.assertNotEquals(1., output.getTerminalState().getMass());
+    }
+
+    private static NewtonFixedBoundaryCartesianSingleShooting getShootingMethod(final CartesianCost cartesianCost) {
+        final double tolerancePosition = 1e-0;
+        final double toleranceVelocity = 1e-4;
+        final CartesianBoundaryConditionChecker conditionChecker = new NormBasedCartesianConditionChecker(10,
+                tolerancePosition, toleranceVelocity);
+        final Orbit initialOrbit = createInitialOrbit();
+        final double timeOfFlight = initialOrbit.getKeplerianPeriod() * 5;
+        final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
+        final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
+        final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, cartesianCost,
+                new ClassicalRungeKuttaIntegrationSettings(100.));
+        final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
+                boundaryOrbits, conditionChecker);
+        shooting.setScalePositionDefects(1e3);
+        shooting.setScaleVelocityDefects(1.);
+        return shooting;
     }
 }

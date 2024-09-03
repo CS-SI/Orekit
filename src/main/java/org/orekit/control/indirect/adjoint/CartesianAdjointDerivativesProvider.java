@@ -134,6 +134,11 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
             hamiltonian += adjointEquationTerm.getHamiltonianContribution(date, adjointVariables, adjointVariables,
                     propagationFrame);
         }
+        if (adjointVariables.length != 6) {
+            final double mass = state.getMass();
+            final double thrustAccelerationNorm = getCost().getThrustAccelerationVector(adjointVariables, mass).getNorm();
+            hamiltonian -= getCost().getMassFlowRateFactor() * adjointVariables[6] * thrustAccelerationNorm * mass;
+        }
         hamiltonian += getCost().getHamiltonianContribution(adjointVariables, state.getMass());
         return hamiltonian;
     }
