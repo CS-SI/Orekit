@@ -16,6 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.ODEStateAndDerivative;
@@ -28,7 +36,6 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -58,14 +65,6 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -278,17 +277,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public void setInitialState(final SpacecraftState initialState,
                                 final PropagationType stateType) {
-        switch (stateType) {
-            case MEAN:
-                initialIsOsculating = false;
-                break;
-            case OSCULATING:
-                initialIsOsculating = true;
-                break;
-            default:
-                throw new OrekitInternalError(null);
-        }
-        resetInitialState(initialState);
+        resetInitialState(initialState, stateType);
     }
 
     /** Reset the initial state.
@@ -303,6 +292,20 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             setMu(state.getMu());
         }
         super.setStartDate(state.getDate());
+    }
+
+    /** {@inheritDoc}.
+     *
+     * <p>Change parameter {@link #initialIsOsculating()} accordingly
+     * @since 12.1.3
+     */
+    @Override
+    public void resetInitialState(final SpacecraftState state, final PropagationType stateType) {
+        // Reset initial state
+        resetInitialState(state);
+
+        // Change state of initial osculating, if needed
+        initialIsOsculating = stateType == PropagationType.OSCULATING;
     }
 
     /** Set the selected short periodic coefficients that must be stored as additional states.
