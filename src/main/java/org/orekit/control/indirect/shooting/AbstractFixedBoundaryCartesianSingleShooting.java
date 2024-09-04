@@ -266,6 +266,9 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
                 }
             }
             initialAdjoint = updateAdjoint(initialAdjoint, fieldTerminalState);
+            if (Double.isNaN(initialAdjoint[0])) {
+                return computeCandidateSolution(initialState, iterationCount);
+            }
             iterationCount++;
             maximumIterationCount = getConditionChecker().getMaximumIterationCount();
         }
