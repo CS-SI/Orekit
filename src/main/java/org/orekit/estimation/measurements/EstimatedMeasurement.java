@@ -60,6 +60,18 @@ public class EstimatedMeasurement<T extends ObservedMeasurement<T>> extends Esti
         this.parametersDerivatives = new IdentityHashMap<ParameterDriver, TimeSpanMap<double[]>>();
     }
 
+    /** Constructor from measurement base.
+     * @param estimatedMeasurementBase estimated measurement base
+     * @since 12.1.3
+     */
+    public EstimatedMeasurement(final EstimatedMeasurementBase<T> estimatedMeasurementBase) {
+        this(estimatedMeasurementBase.getObservedMeasurement(), estimatedMeasurementBase.getIteration(),
+            estimatedMeasurementBase.getCount(), estimatedMeasurementBase.getStates(),
+            estimatedMeasurementBase.getParticipants());
+        this.setEstimatedValue(estimatedMeasurementBase.getEstimatedValue());
+        this.setStatus(estimatedMeasurementBase.getStatus());
+    }
+
     /** Get state size.
      * <p>
      * Warning, the {@link #setStateDerivatives(int, double[][])}

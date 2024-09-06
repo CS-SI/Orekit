@@ -17,14 +17,14 @@
 package org.orekit.errors;
 
 
-import org.hipparchus.exception.UTF8Control;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.ResourceBundle;
+
+import org.hipparchus.exception.UTF8Control;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class OrekitMessagesTest {
 
@@ -32,7 +32,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assertions.assertEquals(298, OrekitMessages.values().length);
+        Assertions.assertEquals(299, OrekitMessages.values().length);
     }
 
     @Test

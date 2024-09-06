@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -119,10 +120,11 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                                                                      final SpacecraftState[] states) {
 
         // coordinates of both satellites
+        final Frame           frame = states[0].getFrame();
         final SpacecraftState local = states[0];
-        final TimeStampedPVCoordinates pvaL = local.getPVCoordinates();
+        final TimeStampedPVCoordinates pvaL = local.getPVCoordinates(frame);
         final SpacecraftState remote = states[1];
-        final TimeStampedPVCoordinates pvaR = remote.getPVCoordinates();
+        final TimeStampedPVCoordinates pvaR = remote.getPVCoordinates(frame);
 
         // compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
@@ -134,7 +136,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         final TimeStampedPVCoordinates s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate, local.getFrame());
+        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate, frame);
 
         // Transit state
         final double delta      = getDate().durationFrom(remote.getDate());
@@ -152,15 +154,15 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             final double tauU = signalTimeOfFlight(pvaL,
                                                    transitState.getPosition(),
                                                    transitState.getDate(),
-                                                   local.getFrame());
+                                                   frame);
             estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
                                                            local.shiftedBy(deltaMTauD),
                                                            remote.shiftedBy(deltaMTauD)
                                                        }, new TimeStampedPVCoordinates[] {
-                                                           local.shiftedBy(delta - tauD - tauU).getPVCoordinates(),
-                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
-                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                           local.shiftedBy(delta - tauD - tauU).getPVCoordinates(frame),
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(frame),
+                                                           local.shiftedBy(delta).getPVCoordinates(frame)
                                                        });
 
             // Range value
@@ -173,8 +175,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                            local.shiftedBy(deltaMTauD),
                                                            remote.shiftedBy(deltaMTauD)
                                                        }, new TimeStampedPVCoordinates[] {
-                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(),
-                                                           local.shiftedBy(delta).getPVCoordinates()
+                                                           remote.shiftedBy(delta - tauD).getPVCoordinates(frame),
+                                                           local.shiftedBy(delta).getPVCoordinates(frame)
                                                        });
 
             // Clock offsets
@@ -195,6 +197,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
     protected EstimatedMeasurement<InterSatellitesRange> theoreticalEvaluation(final int iteration,
                                                                                final int evaluation,
                                                                                final SpacecraftState[] states) {
+
+        final Frame frame = states[0].getFrame();
 
         // Range derivatives are computed with respect to spacecraft states in inertial frame
         // ----------------------
@@ -222,7 +226,10 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final SpacecraftState local = states[0];
         final TimeStampedFieldPVCoordinates<Gradient> pvaL = getCoordinates(local, 0, nbParams);
         final SpacecraftState remote = states[1];
-        final TimeStampedFieldPVCoordinates<Gradient> pvaR = getCoordinates(remote, 6, nbParams);
+        final TimeStampedFieldPVCoordinates<Gradient> pvaR = states[1].
+                                                             getFrame().
+                                                             getTransformTo(frame, states[1].getDate()).
+                                                             transformPVCoordinates(getCoordinates(remote, 6, nbParams));
 
         // compute propagation times
         // (if state has already been set up to pre-compensate propagation delay,
@@ -236,7 +243,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
         final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(),
-                                                 arrivalDate, local.getFrame());
+                                                 arrivalDate, frame);
 
         // Transit state
         final double              delta      = getDate().durationFrom(remote.getDate());
@@ -254,15 +261,15 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             final Gradient tauU = signalTimeOfFlight(pvaL,
                                                      transitStateDS.getPosition(),
                                                      transitStateDS.getDate(),
-                                                     local.getFrame());
+                                                     frame);
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        local.shiftedBy(deltaMTauD.getValue()),
                                                        remote.shiftedBy(deltaMTauD.getValue())
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       local.shiftedBy(delta - tauD.getValue() - tauU.getValue()).getPVCoordinates(),
-                                                       remote.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
-                                                       local.shiftedBy(delta).getPVCoordinates()
+                                                       local.shiftedBy(delta - tauD.getValue() - tauU.getValue()).getPVCoordinates(frame),
+                                                       remote.shiftedBy(delta - tauD.getValue()).getPVCoordinates(frame),
+                                                       local.shiftedBy(delta).getPVCoordinates(frame)
                                                    });
 
             // Range value
@@ -275,7 +282,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
                                                        local.shiftedBy(deltaMTauD.getValue()),
                                                        remote.shiftedBy(deltaMTauD.getValue())
                                                    }, new TimeStampedPVCoordinates[] {
-                                                       remote.shiftedBy(delta - tauD.getValue()).getPVCoordinates(),
+                                                       remote.shiftedBy(delta - tauD.getValue()).getPVCoordinates(frame),
                                                        local.shiftedBy(delta).getPVCoordinates()
                                                    });
 

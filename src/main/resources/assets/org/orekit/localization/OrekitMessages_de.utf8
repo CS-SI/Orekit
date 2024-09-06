@@ -893,3 +893,7 @@ INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
 
 # Propagator builder cannot be cloned
 PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
+
+# field "{0}" is too long, maximum length is {1} characters
+FIELD_TOO_LONG = <MISSING TRANSLATION>
+

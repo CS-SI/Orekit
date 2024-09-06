@@ -1328,10 +1328,10 @@ public class AbsoluteDateTest {
         // test proleptic
         checkToString(new AbsoluteDate(123, 4, 5, 6, 7, 8.9, utc), "0123-04-05T06:07:08.900");
 
-        // there is not way to produce valid RFC3339 for these cases
+        // there is no way to produce valid RFC3339 for these cases
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
-        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-0123-04-05T06:07:08.900");
+        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-123-04-05T06:07:08.900");
         checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, 8.9, utc), "-1230-04-05T06:07:08.900");
         // test far future
         checkToString(new AbsoluteDate(12300, 4, 5, 6, 7, 8.9, utc), "12300-04-05T06:07:08.900");

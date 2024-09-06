@@ -16,6 +16,13 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
@@ -29,13 +36,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /** Class defining the process model dynamics to use with a {@link KalmanEstimator}.
  * @author Romain Gerbaud
@@ -473,6 +473,11 @@ class KalmanEstimationCommon implements KalmanEstimation {
         return propagators;
     }
 
+    /** Get the normalized process noise matrix.
+     *
+     * @param stateDimension state dimension
+     * @return the normalized process noise matrix
+     */
     protected RealMatrix getNormalizedProcessNoise(final int stateDimension) {
         final RealMatrix physicalProcessNoise = MatrixUtils.createRealMatrix(stateDimension, stateDimension);
         for (int k = 0; k < covarianceMatricesProviders.size(); ++k) {
@@ -519,67 +524,116 @@ class KalmanEstimationCommon implements KalmanEstimation {
         return KalmanEstimatorUtil.normalizeCovarianceMatrix(physicalProcessNoise, scale);
     }
 
-
+    /** Getter for the orbitsStartColumns.
+     * @return the orbitsStartColumns
+     */
     protected int[] getOrbitsStartColumns() {
         return orbitsStartColumns;
     }
 
+    /** Getter for the propagationParameterColumns.
+     * @return the propagationParameterColumns
+     */
     protected Map<String, Integer> getPropagationParameterColumns() {
         return propagationParameterColumns;
     }
 
+    /** Getter for the measurementParameterColumns.
+     * @return the measurementParameterColumns
+     */
     protected Map<String, Integer> getMeasurementParameterColumns() {
         return measurementParameterColumns;
     }
 
+    /** Getter for the estimatedPropagationParameters.
+     * @return the estimatedPropagationParameters
+     */
     protected ParameterDriversList[] getEstimatedPropagationParametersArray() {
         return estimatedPropagationParameters;
     }
 
+    /** Getter for the estimatedOrbitalParameters.
+     * @return the estimatedOrbitalParameters
+     */
     protected ParameterDriversList[] getEstimatedOrbitalParametersArray() {
         return estimatedOrbitalParameters;
     }
 
+    /** Getter for the covarianceIndirection.
+     * @return the covarianceIndirection
+     */
     protected int[][] getCovarianceIndirection() {
         return covarianceIndirection;
     }
 
+    /** Getter for the scale.
+     * @return the scale
+     */
     protected double[] getScale() {
         return scale;
     }
 
+    /** Getter for the correctedEstimate.
+     * @return the correctedEstimate
+     */
     protected ProcessEstimate getCorrectedEstimate() {
         return correctedEstimate;
     }
 
+    /** Setter for the correctedEstimate.
+     * @param correctedEstimate the correctedEstimate
+     */
     protected void setCorrectedEstimate(final ProcessEstimate correctedEstimate) {
         this.correctedEstimate = correctedEstimate;
     }
 
+    /** Getter for the referenceDate.
+     * @return the referenceDate
+     */
     protected AbsoluteDate getReferenceDate() {
         return referenceDate;
     }
 
+    /** Increment current measurement number. */
     protected void incrementCurrentMeasurementNumber() {
         currentMeasurementNumber += 1;
     }
 
+    /** Setter for the currentDate.
+     * @param currentDate the currentDate
+     */
     public void setCurrentDate(final AbsoluteDate currentDate) {
         this.currentDate = currentDate;
     }
 
+    /** Set correctedSpacecraftState at index.
+     *
+     * @param correctedSpacecraftState corrected S/C state o set
+     * @param index index where to set in the array
+     */
     protected void setCorrectedSpacecraftState(final SpacecraftState correctedSpacecraftState, final int index) {
         this.correctedSpacecraftStates[index] = correctedSpacecraftState;
     }
 
+    /** Set predictedSpacecraftState at index.
+     *
+     * @param predictedSpacecraftState predicted S/C state o set
+     * @param index index where to set in the array
+     */
     protected void setPredictedSpacecraftState(final SpacecraftState predictedSpacecraftState, final int index) {
         this.predictedSpacecraftStates[index] = predictedSpacecraftState;
     }
 
+    /** Setter for the predictedMeasurement.
+     * @param predictedMeasurement the predictedMeasurement
+     */
     protected void setPredictedMeasurement(final EstimatedMeasurement<?> predictedMeasurement) {
         this.predictedMeasurement = predictedMeasurement;
     }
 
+    /** Setter for the correctedMeasurement.
+     * @param correctedMeasurement the correctedMeasurement
+     */
     protected void setCorrectedMeasurement(final EstimatedMeasurement<?> correctedMeasurement) {
         this.correctedMeasurement = correctedMeasurement;
     }
