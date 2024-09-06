@@ -16,18 +16,30 @@
  */
 package org.orekit.propagation.integration;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.FieldEquinoctialOrbit;
+import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.Constants;
 
 class FieldAbstractIntegratedPropagatorTest {
 
@@ -49,6 +61,53 @@ class FieldAbstractIntegratedPropagatorTest {
         // THEN
         final boolean actualResetAtEnd = testAbstractIntegratedPropagator.getResetAtEnd();
         Assertions.assertEquals(expectedResetAtEnd, actualResetAtEnd);
+    }
+    
+    /** Test issue 1461.
+     * <p>Test for the new generic method AbstractIntegratedPropagator.reset(SpacecraftState, PropagationType)
+     */
+    @Test
+    void testIssue1461() {
+        doTestIssue1461(Binary64Field.getInstance());
+    }
+    
+    /** Method for running test for issue 1461. */
+    private <T extends CalculusFieldElement<T>> void doTestIssue1461(Field<T> field) {
+        // GIVEN
+        
+        final T zero = field.getZero();
+        // GEO orbit
+        final FieldOrbit<T> startOrbit = new FieldEquinoctialOrbit<>(field,
+                        new EquinoctialOrbit(42165765.0, 0.0, 0.0, 0.0, 0.0, 0.0, PositionAngleType.TRUE,
+                                             FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                             Constants.IERS2010_EARTH_MU));
+
+        // Init numerical propagator
+        final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(startOrbit);
+        final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field,
+                        new ClassicalRungeKuttaFieldIntegrator<T>(field, zero.newInstance(300.)));
+        propagator.setInitialState(state);
+
+        // WHEN
+        propagator.resetInitialState(state, PropagationType.OSCULATING);
+        final FieldSpacecraftState<T> oscState = propagator.getInitialState();
+        
+        propagator.resetInitialState(state, PropagationType.MEAN);
+        final FieldSpacecraftState<T> meanState = propagator.getInitialState();
+
+        // THEN
+        
+        // Check that all three states are identical
+        final double dpOsc = oscState.getPosition().distance(state.getPosition()).getReal();
+        final double dvOsc = oscState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity()).getReal();
+        
+        final double dpMean = meanState.getPosition().distance(state.getPosition()).getReal();
+        final double dvMean = meanState.getPVCoordinates().getVelocity().distance(state.getPVCoordinates().getVelocity()).getReal();
+        
+        Assertions.assertEquals(0., dpOsc, 0.);
+        Assertions.assertEquals(0., dvOsc, 0.);
+        Assertions.assertEquals(0., dpMean, 0.);
+        Assertions.assertEquals(0., dvMean, 0.);
     }
 
     private static class TestFieldAbstractIntegratedPropagator extends FieldAbstractIntegratedPropagator<Complex> {

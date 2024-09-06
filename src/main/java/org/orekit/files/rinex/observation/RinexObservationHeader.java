@@ -706,8 +706,10 @@ public class RinexObservationHeader extends RinexBaseHeader {
      * @param scaleFactorCorrection scale factor correction
      */
     public void addScaleFactorCorrection(final SatelliteSystem satelliteSystem, final ScaleFactorCorrection scaleFactorCorrection) {
-        final List<ScaleFactorCorrection> sfc = scaleFactorCorrections.computeIfAbsent(satelliteSystem,
-                                                                                       k -> new ArrayList<>());
+        final List<ScaleFactorCorrection> sfc;
+        synchronized (scaleFactorCorrections) {
+            sfc = scaleFactorCorrections.computeIfAbsent(satelliteSystem, k -> new ArrayList<>());
+        }
         sfc.add(scaleFactorCorrection);
     }
 
@@ -759,7 +761,10 @@ public class RinexObservationHeader extends RinexBaseHeader {
      * @since 12.0
      */
     public void setNbObsPerSatellite(final SatInSystem sat, final ObservationType type, final int nbObs) {
-        final Map<ObservationType, Integer> satNbObs = nbObsPerSat.computeIfAbsent(sat, k -> new HashMap<>());
+        final Map<ObservationType, Integer> satNbObs;
+        synchronized (nbObsPerSat) {
+            satNbObs = nbObsPerSat.computeIfAbsent(sat, k -> new HashMap<>());
+        }
         satNbObs.put(type, nbObs);
     }
 

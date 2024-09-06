@@ -32,8 +32,10 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOF;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -43,6 +45,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StateCovarianceTest {
 
@@ -82,11 +87,11 @@ public class StateCovarianceTest {
         final AbsoluteDate initialDate          = new AbsoluteDate();
         final Frame        initialInertialFrame = FramesFactory.getGCRF();
     	final StateCovariance stateCovariance = new StateCovariance(getValladoInitialCovarianceMatrix(), initialDate, initialInertialFrame, OrbitType.CARTESIAN, PositionAngleType.MEAN);
-    	Assertions.assertEquals(OrbitType.CARTESIAN, stateCovariance.getOrbitType());
-    	Assertions.assertEquals(PositionAngleType.MEAN, stateCovariance.getPositionAngleType());
-    	Assertions.assertEquals(initialInertialFrame, stateCovariance.getFrame());
+    	assertEquals(OrbitType.CARTESIAN, stateCovariance.getOrbitType());
+    	assertEquals(PositionAngleType.MEAN, stateCovariance.getPositionAngleType());
+    	assertEquals(initialInertialFrame, stateCovariance.getFrame());
     	Assertions.assertNull(stateCovariance.getLOF());
-    	Assertions.assertEquals(initialDate, stateCovariance.getDate());
+    	assertEquals(initialDate, stateCovariance.getDate());
     }
 
     public void setUp() {
@@ -120,11 +125,11 @@ public class StateCovarianceTest {
         for (int row = 0; row < reference.getRowDimension(); row++) {
             for (int column = 0; column < reference.getColumnDimension(); column++) {
                 if (reference.getEntry(row, column) == 0) {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
                                             threshold);
                 }
                 else {
-                    Assertions.assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
+                    assertEquals(reference.getEntry(row, column), computed.getEntry(row, column),
                                             FastMath.abs(threshold * reference.getEntry(row, column)));
                 }
             }
@@ -961,8 +966,75 @@ public class StateCovarianceTest {
         Assertions.assertDoesNotThrow(() -> propagator.propagate(initialDate.shiftedBy(1)));
 
         // Assert that propagated covariance is in the same LOF as the initial covariance
-        Assertions.assertEquals(LOFType.QSW, propagatedCovariance.getLOF());
+        assertEquals(LOFType.QSW, propagatedCovariance.getLOF());
 
+    }
+
+    @Test
+    void testIssue1485CartesianOrbitTypeAndNullAngleType() {
+        // GIVEN
+        final AbsoluteDate      date           = AbsoluteDate.ARBITRARY_EPOCH;
+        final RealMatrix        expectedMatrix = MatrixUtils.createRealIdentityMatrix(6);
+        final PositionAngleType anomalyType    = PositionAngleType.MEAN;
+        final Frame             inFrame        = FramesFactory.getEME2000();
+        final Frame             outFrame       = FramesFactory.getGCRF();
+        final double            mu             = Constants.EGM96_EARTH_MU;
+
+        final KeplerianOrbit orbit = new KeplerianOrbit(1e7, 0.01, 1., 2., 3., 4., anomalyType, inFrame, date, mu);
+
+        final StateCovariance originalCovariance =
+                new StateCovariance(expectedMatrix, date, inFrame, OrbitType.CARTESIAN, null);
+
+        // WHEN & THEN
+        assertDoesNotThrow(()-> originalCovariance.changeCovarianceFrame(orbit, outFrame));
+
+        // THEN
+        final StateCovariance convertedCovariance = originalCovariance.changeCovarianceFrame(orbit, outFrame);
+        assertEquals(originalCovariance.getMatrix().getNorm1(), convertedCovariance.getMatrix().getNorm1(), 1e-15);
+    }
+
+    @Test
+    void testIssue1485SameLOF() {
+        // GIVEN
+        final LOF lof = LOFType.TNW;
+
+        // WHEN & THEN
+        doTestIssue1485SameFrameDefinition(lof);
+    }
+
+    @Test
+    void testIssue1485SameFrame() {
+        // GIVEN
+        final Frame eme2000 = FramesFactory.getEME2000();
+
+        // WHEN & THEN
+        doTestIssue1485SameFrameDefinition(eme2000);
+    }
+
+    <T> void doTestIssue1485SameFrameDefinition(T frameOrLOF) {
+        // GIVEN
+        final AbsoluteDate      date           = AbsoluteDate.ARBITRARY_EPOCH;
+        final RealMatrix        expectedMatrix = MatrixUtils.createRealIdentityMatrix(6);
+        final PositionAngleType anomalyType    = PositionAngleType.MEAN;
+        final Frame             frame          = FramesFactory.getEME2000();
+        final double            mu             = Constants.EGM96_EARTH_MU;
+
+        final KeplerianOrbit orbit = new KeplerianOrbit(1e7, 0.01, 1., 2., 3., 4., anomalyType, frame, date, mu);
+
+        // WHEN
+        final StateCovariance originalCovariance;
+        final StateCovariance covariance;
+        if (frameOrLOF instanceof LOF) {
+            originalCovariance = new StateCovariance(expectedMatrix, date, (LOF) frameOrLOF);
+            covariance         = originalCovariance.changeCovarianceFrame(orbit, (LOF) frameOrLOF);
+        } else {
+            originalCovariance = new StateCovariance(expectedMatrix, date, (Frame) frameOrLOF, orbit.getType(), anomalyType);
+            covariance         = originalCovariance.changeCovarianceFrame(orbit, (Frame) frameOrLOF);
+        }
+
+        // THEN
+        final RealMatrix actualMatrix = covariance.getMatrix();
+        assertEquals(0., actualMatrix.subtract(expectedMatrix).getNorm1());
     }
 
     private NumericalPropagator buildDefaultPropagator(final SpacecraftState state,
@@ -991,3 +1063,4 @@ public class StateCovarianceTest {
     }
 
 }
+

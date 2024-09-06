@@ -66,7 +66,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * @param count evaluations counter
      * @param states states of the spacecrafts
      * @param participants coordinates of the participants in signal travel order
-     * in inertial frame
+     * in inertial frame of first state
      */
     public EstimatedMeasurementBase(final T observedMeasurement,
                                     final int iteration, final int count,
@@ -124,7 +124,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * spacecraft for two-way range measurement).
      * </p>
      * @return coordinates of the measurements participants in signal travel order
-     * in inertial frame
+     * in inertial frame of first state
      */
     public TimeStampedPVCoordinates[] getParticipants() {
         return participants.clone();

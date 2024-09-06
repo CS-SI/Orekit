@@ -336,11 +336,7 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
         final EstimatedMeasurementBase<T> estimatedMeasurementBase = observedMeasurement.
                 estimateWithoutDerivatives(measurementNumber, measurementNumber,
                 KalmanEstimatorUtil.filterRelevant(observedMeasurement, spacecraftStates));
-        final EstimatedMeasurement<T> estimatedMeasurement = new EstimatedMeasurement<>(estimatedMeasurementBase.getObservedMeasurement(),
-                estimatedMeasurementBase.getIteration(), estimatedMeasurementBase.getCount(),
-                estimatedMeasurementBase.getStates(), estimatedMeasurementBase.getParticipants());
-        estimatedMeasurement.setEstimatedValue(estimatedMeasurementBase.getEstimatedValue());
-        return estimatedMeasurement;
+        return new EstimatedMeasurement<>(estimatedMeasurementBase);
     }
 
     /** Update parameter drivers with a normalised state, adjusting state according to the driver limits.

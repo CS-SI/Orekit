@@ -266,8 +266,8 @@ public class NeQuickModelTest {
 
         // Date
         final FieldAbsoluteDate<T> date =
-                        new FieldAbsoluteDate<T>(field,
-                                                 new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
+                        new FieldAbsoluteDate<>(field,
+                                                new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(-31.80)),
@@ -278,6 +278,52 @@ public class NeQuickModelTest {
                                                                     zero.newInstance(20100697.90));
         T stec = model.stec(date, recP, satP);
         Assertions.assertEquals(6.839, stec.getReal(), 0.001);
+
+    }
+
+    @Test
+    public void testZenith() {
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(medium);
+
+        // Date
+        final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
+
+        // Geodetic points
+        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(51.678), FastMath.toRadians(-9.448), 0.0);
+        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(51.678), FastMath.toRadians(-9.448), 600000.0);
+        double stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(26.346, stec, 0.001);
+
+    }
+
+    @Test
+    public void testFieldZenith() {
+        doTestFieldZenith(Binary64Field.getInstance());
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestFieldZenith(final Field<T> field) {
+
+        final T zero = field.getZero();
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(medium);
+
+        // Date
+        final FieldAbsoluteDate<T> date =
+                new FieldAbsoluteDate<>(field,
+                                        new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
+
+        // Geodetic points
+        final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(51.678)),
+                                                                    FastMath.toRadians(zero.newInstance(-9.448)),
+                                                                    zero.newInstance(0.0));
+        final FieldGeodeticPoint<T> satP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(51.678)),
+                                                                    FastMath.toRadians(zero.newInstance(-9.448)),
+                                                                    zero.newInstance(600000.0));
+        T stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(26.346, stec.getReal(), 0.001);
 
     }
 
