@@ -319,7 +319,7 @@ public class AuxiliaryElements {
 
     /** Get direction cosine α for central body.
      * @return α
-     * @deprecated since 12.1, use {@link DSSTGravityContext#getAlpha()} instead
+     * @deprecated since 12.2, use {@link DSSTGravityContext#getAlpha()} instead
      */
     public double getAlpha() {
         return f.getZ();
@@ -327,7 +327,7 @@ public class AuxiliaryElements {
 
     /** Get direction cosine β for central body.
      * @return β
-     * @deprecated since 12.1, use {@link DSSTGravityContext#getBeta()} instead
+     * @deprecated since 12.2, use {@link DSSTGravityContext#getBeta()} instead
      */
     public double getBeta() {
         return g.getZ();
@@ -335,7 +335,7 @@ public class AuxiliaryElements {
 
     /** Get direction cosine γ for central body.
      * @return γ
-     * @deprecated since 12.1, use {@link DSSTGravityContext#getGamma()} instead
+     * @deprecated since 12.2, use {@link DSSTGravityContext#getGamma()} instead
      */
     public double getGamma() {
         return w.getZ();

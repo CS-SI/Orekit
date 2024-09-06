@@ -330,7 +330,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 
     /** Get direction cosine α for central body.
      * @return α
-     * @deprecated since 12.1, use {@link FieldDSSTGravityContext#getAlpha()} instead
+     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getAlpha()} instead
      */
     public T getAlpha() {
         return (T) f.getZ();
@@ -338,7 +338,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 
     /** Get direction cosine β for central body.
      * @return β
-     * @deprecated since 12.1, use {@link FieldDSSTGravityContext#getBeta()} instead
+     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getBeta()} instead
      */
     public T getBeta() {
         return (T) g.getZ();
@@ -346,7 +346,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
 
     /** Get direction cosine γ for central body.
      * @return γ
-     * @deprecated since 12.1, use {@link FieldDSSTGravityContext#getGamma()} instead
+     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getGamma()} instead
      */
     public T getGamma() {
         return (T) w.getZ();
