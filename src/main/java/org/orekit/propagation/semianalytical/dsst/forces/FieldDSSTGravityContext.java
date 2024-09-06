@@ -33,7 +33,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElemen
  * </p>
  * @author Bryan Cazabonne
  * @author Maxime Journot
- * @since 12.1.3
+ * @since 12.2
  */
 public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
 
@@ -48,7 +48,6 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
 
     // Common factors from equinoctial coefficients
     /** 2 * a / A . */
-    // FIXME: zonal = -
     private final T ax2oA;
 
     /** 1 / (A * B) . */
@@ -61,7 +60,6 @@ public class FieldDSSTGravityContext<T extends CalculusFieldElement<T>> extends 
     private final T BoABpo;
 
     /** C / (2 * A * B) . */
-    // FIXME: - zonal
     private final T Co2AB;
 
     /** μ / a . */

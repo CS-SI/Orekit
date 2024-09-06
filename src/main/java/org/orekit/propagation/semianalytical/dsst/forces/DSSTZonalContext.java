@@ -57,13 +57,27 @@ public class DSSTZonalContext extends DSSTGravityContext {
     private double BB;
 
     /**
+     * Constructor with central body frame equals orbit frame.
+     *
+     * @param auxiliaryElements auxiliary elements related to the current orbit
+     * @param provider          provider for spherical harmonics
+     * @param parameters        values of the force model parameters
+     * @deprecated since 12.2 and issue 1104, should be removed in 13.0
+     */
+    DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
+                     final UnnormalizedSphericalHarmonicsProvider provider,
+                     final double[] parameters) {
+        this(auxiliaryElements, auxiliaryElements.getFrame(), provider, parameters);
+    }
+
+    /**
      * Constructor with central body frame potentially different than orbit frame.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
      * @param centralBodyFrame  rotating body frame
      * @param provider          provider for spherical harmonics
      * @param parameters        values of the force model parameters
-     * @since 12.1
+     * @since 12.2
      */
     DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
                      final Frame centralBodyFrame,

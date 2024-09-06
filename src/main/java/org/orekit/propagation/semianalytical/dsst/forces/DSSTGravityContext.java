@@ -31,7 +31,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * </p>
  * @author Bryan Cazabonne
  * @author Maxime Journot
- * @since 12.1.3
+ * @since 12.2
  */
 public class DSSTGravityContext extends ForceModelContext {
 
@@ -46,7 +46,6 @@ public class DSSTGravityContext extends ForceModelContext {
 
     // Common factors from equinoctial coefficients
     /** 2 * a / A . */
-    // FIXME: zonal = -
     private final double ax2oA;
 
     /** 1 / (A * B) . */
@@ -59,7 +58,6 @@ public class DSSTGravityContext extends ForceModelContext {
     private final double BoABpo;
 
     /** C / (2 * A * B) . */
-    // FIXME: - zonal
     private final double Co2AB;
 
     /** μ / a . */
