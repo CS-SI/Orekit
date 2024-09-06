@@ -125,7 +125,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
     /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
      * @return &Chi;
-     * @deprecated since 12.1.3. Use getChi() instead
+     * @deprecated since 12.2 Use getChi() instead
      */
     public T getX() {
         return getChi();
@@ -133,7 +133,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
     /** Get &Chi;².
      * @return &Chi;².
-     * @deprecated since 12.1.3. Use getChi2() instead
+     * @deprecated since 12.2 Use getChi2() instead
      */
     public T getXX() {
         return getChi2();
@@ -148,7 +148,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
     /** Get &Chi;³.
      * @return &Chi;³
-     * @deprecated since 12.1.3. Use getChi3() instead
+     * @deprecated since 12.2 Use getChi3() instead
      */
     public T getXXX() {
         return getChi3();
@@ -156,7 +156,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
     /** Get m2aoA = -2 * a / A.
      * @return m2aoA
-     * @deprecated since 12.1.3. Use -getAx2oA()() instead
+     * @deprecated since 12.2 Use -getAx2oA()() instead
      */
     public T getM2aoA() {
         return getAx2oA().negate();
@@ -164,7 +164,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
 
     /** Get mCo2AB = -C / 2AB.
      * @return mCo2AB
-     * @deprecated since 12.1.3. Use -getCo2AB()() instead
+     * @deprecated since 12.2 Use -getCo2AB()() instead
      */
     public T getMCo2AB() {
         return getCo2AB().negate();

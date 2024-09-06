@@ -126,7 +126,7 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
 
     /** Get μ / a .
      * @return moa
-     * @deprecated since 12.1.3. Use getMuoa() instead
+     * @deprecated since 12.2 Use getMuoa() instead
      */
     public T getMoa() {
         return getMuoa();
