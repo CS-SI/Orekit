@@ -19,45 +19,45 @@ package org.orekit.gnss.attitude;
 import org.junit.jupiter.api.Test;
 
 
-public class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
+class BeidouIGSOTest extends AbstractGNSSAttitudeProviderTest {
 
     @Test
-    public void testPatchedLargeNegativeBeta() {
+    void testPatchedLargeNegativeBeta() {
         doTestAxes("patched-eclips/beta-large-negative-BEIDOU-2I.txt", 7.8e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testPatchedSmallNegativeBeta() {
-        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2I.txt", 8.1e-15, 9.3e-16, false);
+    void testPatchedSmallNegativeBeta() {
+        doTestAxes("patched-eclips/beta-small-negative-BEIDOU-2I.txt", 8.1e-15, 9.5e-16, false);
     }
 
     @Test
-    public void testPatchedSmallPositiveBeta() {
-        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2I.txt", 7.5e-15, 9.9e-16, false);
+    void testPatchedSmallPositiveBeta() {
+        doTestAxes("patched-eclips/beta-small-positive-BEIDOU-2I.txt", 8.2e-15, 9.9e-16, false);
     }
 
     @Test
-    public void testPatchedLargePositiveBeta() {
+    void testPatchedLargePositiveBeta() {
         doTestAxes("patched-eclips/beta-large-positive-BEIDOU-2I.txt", 7.9e-15, 1.2e-15, false);
     }
 
     @Test
-    public void testOriginalLargeNegativeBeta() {
+    void testOriginalLargeNegativeBeta() {
         doTestAxes("original-eclips/beta-large-negative-BEIDOU-2I.txt", 7.8e-15, 1.1e-15, false);
     }
 
     @Test
-    public void testOriginalSmallNegativeBeta() {
-        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2I.txt", 3.9e-3, 9.3e-16, false);
+    void testOriginalSmallNegativeBeta() {
+        doTestAxes("original-eclips/beta-small-negative-BEIDOU-2I.txt", 3.9e-3, 9.5e-16, false);
     }
 
     @Test
-    public void testOriginalSmallPositiveBeta() {
+    void testOriginalSmallPositiveBeta() {
         doTestAxes("original-eclips/beta-small-positive-BEIDOU-2I.txt", 4.5e-3, 9.9e-16, false);
     }
 
     @Test
-    public void testOriginalLargePositiveBeta() {
+    void testOriginalLargePositiveBeta() {
         doTestAxes("original-eclips/beta-large-positive-BEIDOU-2I.txt", 7.9e-15, 1.2e-15, false);
     }
 

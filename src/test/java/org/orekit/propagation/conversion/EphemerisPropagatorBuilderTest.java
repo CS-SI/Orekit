@@ -17,13 +17,12 @@
 
 package org.orekit.propagation.conversion;
 
-import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.orekit.TestUtils;
+import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -38,7 +37,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.assertPropagatorBuilderIsACopy;
 
 /**
  * Unit tests for {@link EphemerisPropagatorBuilder}.
@@ -46,6 +51,46 @@ import java.util.List;
  * @author Vincent Cucchietti
  */
 public class EphemerisPropagatorBuilderTest {
+
+    @Test
+    @DisplayName("Test issue 1316 : Regression in EphemerisPropagatorBuilder API")
+    void testIssue1316() {
+        // GIVEN
+        final int    interpolationPoints     = 3;
+        final double extrapolationThresholds = 0.007;
+
+        // Create mock attitude provider
+        final AttitudeProvider mockAttitudeProvider = mock(AttitudeProvider.class);
+
+        // Get default orbit
+        final Orbit defaultOrbit = TestUtils.getDefaultOrbit(new AbsoluteDate());
+
+        // Create fake list of states
+        final SpacecraftState mockState1 = mock(SpacecraftState.class);
+        when(mockState1.getFrame()).thenReturn(defaultOrbit.getFrame());
+        when(mockState1.getOrbit()).thenReturn(defaultOrbit);
+        final SpacecraftState mockState2 = mock(SpacecraftState.class);
+        final SpacecraftState mockState3 = mock(SpacecraftState.class);
+
+        final List<SpacecraftState> fakeStates = Arrays.asList(mockState1, mockState2, mockState3);
+
+        // WHEN
+        final EphemerisPropagatorBuilder builder = new EphemerisPropagatorBuilder(fakeStates,
+                                                                                  interpolationPoints,
+                                                                                  extrapolationThresholds,
+                                                                                  mockAttitudeProvider);
+
+        // THEN
+        // Assert initial orbit
+        assertEquals(defaultOrbit.getFrame(), builder.getFrame());
+        assertEquals(defaultOrbit.getType(),  builder.getOrbitType());
+        assertEquals(defaultOrbit.getDate(),  builder.getInitialOrbitDate());
+        assertEquals(defaultOrbit.getMu(),  builder.getMu());
+
+        // Assert attitude provider
+        assertEquals(mockAttitudeProvider,  builder.getAttitudeProvider());
+    }
+
     @Test
     @DisplayName("Test buildPropagator method")
     void should_create_expected_propagator() {
@@ -71,9 +116,9 @@ public class EphemerisPropagatorBuilderTest {
         // Then
         final Ephemeris expectedPropagator = new Ephemeris(states, stateInterpolator);
 
-        Assertions.assertEquals(expectedPropagator.getFrame(), builtPropagator.getFrame());
-        Assertions.assertEquals(expectedPropagator.getMinDate(), builtPropagator.getMinDate());
-        Assertions.assertEquals(expectedPropagator.getMaxDate(), builtPropagator.getMaxDate());
+        assertEquals(expectedPropagator.getFrame(), builtPropagator.getFrame());
+        assertEquals(expectedPropagator.getMinDate(), builtPropagator.getMinDate());
+        assertEquals(expectedPropagator.getMaxDate(), builtPropagator.getMaxDate());
 
         Assertions.assertArrayEquals(expectedPropagator.getManagedAdditionalStates(),
                                      builtPropagator.getManagedAdditionalStates());
@@ -82,7 +127,7 @@ public class EphemerisPropagatorBuilderTest {
     }
 
     @Test
-    @DisplayName("Test copy method")
+    @SuppressWarnings("deprecation")
     void testCopyMethod() {
 
         // Given
@@ -91,18 +136,48 @@ public class EphemerisPropagatorBuilderTest {
                 new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
         final List<SpacecraftState> states = new ArrayList<>();
-        states.add(new SpacecraftState(orbit));
-        states.add(new SpacecraftState(orbit));
+        double end = Constants.JULIAN_DAY;
+        for (double dt = 0; dt <= end; dt += 3600.0) {
+            AbsoluteDate shiftedEpoch = orbit.getDate().shiftedBy(dt);
+            states.add(new SpacecraftState(orbit.shiftedBy(dt), Utils.defaultLaw().getAttitude(orbit, shiftedEpoch, orbit.getFrame())));
+        }
 
-        final Frame                             frame             = FramesFactory.getGCRF();
-        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(frame);
-        final AttitudeProvider                  attitudeProvider  = Mockito.mock(AttitudeProvider.class);
+        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(orbit.getFrame());
+        final AttitudeProvider                  attitudeProvider  =  Utils.defaultLaw();
 
         final EphemerisPropagatorBuilder builder =
                 new EphemerisPropagatorBuilder(states, stateInterpolator, attitudeProvider);
 
         // When
         final EphemerisPropagatorBuilder copyBuilder = builder.copy();
+
+        // Then
+        assertPropagatorBuilderIsACopy(builder, copyBuilder);
+    }
+
+    @Test
+    void testClone() {
+
+        // Given
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
+                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+        final List<SpacecraftState> states = new ArrayList<>();
+        double end = Constants.JULIAN_DAY;
+        for (double dt = 0; dt <= end; dt += 3600.0) {
+            AbsoluteDate shiftedEpoch = orbit.getDate().shiftedBy(dt);
+            states.add(new SpacecraftState(orbit.shiftedBy(dt), Utils.defaultLaw().getAttitude(orbit, shiftedEpoch, orbit.getFrame())));
+        }
+
+        final TimeInterpolator<SpacecraftState> stateInterpolator = new SpacecraftStateInterpolator(orbit.getFrame());
+        final AttitudeProvider                  attitudeProvider  =  Utils.defaultLaw();
+
+        final EphemerisPropagatorBuilder builder =
+                new EphemerisPropagatorBuilder(states, stateInterpolator, attitudeProvider);
+
+        // When
+        final EphemerisPropagatorBuilder copyBuilder = (EphemerisPropagatorBuilder) builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);

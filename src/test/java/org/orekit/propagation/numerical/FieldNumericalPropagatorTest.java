@@ -28,6 +28,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -66,12 +68,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
-import org.orekit.orbits.FieldCartesianOrbit;
-import org.orekit.orbits.FieldEquinoctialOrbit;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldAdditionalStateProvider;
 import org.orekit.propagation.FieldBoundedPropagator;
 import org.orekit.propagation.FieldEphemerisGenerator;
@@ -88,9 +85,7 @@ import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
-import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
-import org.orekit.propagation.integration.FieldCombinedDerivatives;
+import org.orekit.propagation.integration.*;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -1789,6 +1784,72 @@ public class FieldNumericalPropagatorTest {
         final String actualName = fieldNumericalPropagator.getIntegratorName();
         // THEN
         Assertions.assertEquals(expectedName, actualName);
+    }
+
+    @Test
+    void testIssue1395() {
+        // GIVEN
+        final ComplexField complexField = ComplexField.getInstance();
+        final FieldOrbit<Complex> initialOrbit = createEllipticOrbit(complexField);
+        final ClassicalRungeKuttaFieldIntegrator<Complex> rungeKuttaIntegrator = new ClassicalRungeKuttaFieldIntegrator<>(complexField,
+                complexField.getZero().newInstance(10.));
+        final FieldNumericalPropagator<Complex> numericalPropagator = new FieldNumericalPropagator<>(complexField,
+                rungeKuttaIntegrator);
+        final FieldSpacecraftState<Complex> state = new FieldSpacecraftState<>(initialOrbit);
+        final String name = "test";
+        numericalPropagator.setInitialState(state.addAdditionalState(name, Complex.ZERO));
+        numericalPropagator.addAdditionalDerivativesProvider(mockDerivativeProvider(name));
+        numericalPropagator.addForceModel(createForceModelBasedOnAdditionalState(name));
+        // WHEN & THEN
+        final FieldAbsoluteDate<Complex> epoch = initialOrbit.getDate();
+        final FieldSpacecraftState<Complex> propagateState = Assertions.assertDoesNotThrow(() ->
+                numericalPropagator.propagate(epoch.shiftedBy(10.)));
+        Assertions.assertNotEquals(epoch, propagateState.getDate());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static FieldAdditionalDerivativesProvider<Complex> mockDerivativeProvider(final String name) {
+        final FieldAdditionalDerivativesProvider<Complex> mockedProvider = Mockito.mock(FieldAdditionalDerivativesProvider.class);
+        final int dimension = 1;
+        Mockito.when(mockedProvider.getDimension()).thenReturn(dimension);
+        Mockito.when(mockedProvider.getName()).thenReturn(name);
+        final Complex[] yDot = new Complex[dimension];
+        yDot[0] = Complex.ZERO;
+        final FieldCombinedDerivatives<Complex> combinedDerivatives = new FieldCombinedDerivatives<>(yDot, null);
+        Mockito.when(mockedProvider.combinedDerivatives(Mockito.any(FieldSpacecraftState.class)))
+                .thenReturn(combinedDerivatives);
+        return mockedProvider;
+    }
+
+    private static ForceModel createForceModelBasedOnAdditionalState(final String name) {
+        return new ForceModel() {
+
+            @Override
+            public void init(SpacecraftState initialState, AbsoluteDate target) {
+                ForceModel.super.init(initialState, target);
+                initialState.getAdditionalState(name);
+            }
+
+            @Override
+            public boolean dependsOnPositionOnly() {
+                return false;
+            }
+
+            @Override
+            public Vector3D acceleration(SpacecraftState s, double[] parameters) {
+                return null; // not used
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(FieldSpacecraftState<T> s, T[] parameters) {
+                return FieldVector3D.getZero(s.getDate().getField());
+            }
+
+            @Override
+            public List<ParameterDriver> getParametersDrivers() {
+                return new ArrayList<>();
+            }
+        };
     }
 
     private static <T extends CalculusFieldElement<T>> void doTestShift(final FieldCartesianOrbit<T> orbit, final OrbitType orbitType,

@@ -68,6 +68,7 @@ public class FieldIntelsatElevenElementsPropagatorTest {
         double referenceLatitude170Hours = 0.0257;
         double tolerance = 0.0001;
         propagator.propagateInEcef(ELEMENTS.getEpoch().shiftedBy(170 * 3600.0));
+        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
         Assertions.assertEquals(referenceLongitude170Hours, propagator.getEastLongitudeDegrees().getValue().getReal(), tolerance);
         Assertions.assertEquals(referenceLatitude170Hours, propagator.getGeocentricLatitudeDegrees().getValue().getReal(), tolerance);
     }
@@ -79,6 +80,7 @@ public class FieldIntelsatElevenElementsPropagatorTest {
                                                                                                                  FramesFactory.getITRF(IERSConventions.IERS_2010, false));
         KeplerianOrbit orbit = ((FieldKeplerianOrbit<Binary64>) OrbitType.KEPLERIAN.convertType(
                 propagator.propagateOrbit(ELEMENTS.getEpoch(), propagator.getParameters(ELEMENTS.getEpoch().getField())))).toOrbit();
+        Assertions.assertNotNull(propagator.getIntelsatElevenElements());
         Assertions.assertEquals(302.0355, propagator.getEastLongitudeDegrees().getValue().getReal(), 0.0001);
         Assertions.assertEquals(0.0378, propagator.getGeocentricLatitudeDegrees().getValue().getReal(), 0.0001);
         Assertions.assertEquals(-1.529465e-6, propagator.getEastLongitudeDegrees().getFirstDerivative().getReal(), 1.0e-12);

@@ -126,14 +126,8 @@ public class LofOffsetPointing extends GroundPointing {
             final AbsoluteDate shifted = date.shiftedBy(i * h);
 
             // transform from specified reference frame to spacecraft frame
-            final StaticTransform refToSc = StaticTransform.compose(
-                    shifted,
-                    StaticTransform.of(
-                            shifted,
-                            pvProv.getPosition(shifted, frame).negate()),
-                    StaticTransform.of(
-                            shifted,
-                            attitudeLaw.getAttitudeRotation(pvProv, shifted, frame)));
+            final StaticTransform refToSc = StaticTransform.of(shifted, pvProv.getPosition(shifted, frame).negate(),
+                attitudeLaw.getAttitudeRotation(pvProv, shifted, frame));
 
             // transform from specified reference frame to body frame
             final StaticTransform refToBody;
@@ -162,6 +156,22 @@ public class LofOffsetPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     @Override
+    protected Vector3D getTargetPosition(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+
+        // transform from specified reference frame to spacecraft frame
+        final StaticTransform refToSc = StaticTransform.of(date, pvProv.getPosition(date, frame).negate(),
+            attitudeLaw.getAttitudeRotation(pvProv, date, frame));
+
+        // transform from specified reference frame to body frame
+        final StaticTransform refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), date);
+        final Vector3D targetBody = losIntersectionWithBody(StaticTransform.compose(date, refToSc.getInverse(), refToBody)).getPosition();
+
+        // convert back to caller specified frame
+        return refToBody.getInverse().transformPosition(targetBody);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
                                                                                             final FieldAbsoluteDate<T> date,
                                                                                             final Frame frame) {
@@ -175,14 +185,8 @@ public class LofOffsetPointing extends GroundPointing {
             final FieldAbsoluteDate<T> shifted = date.shiftedBy(i * h);
 
             // transform from specified reference frame to spacecraft frame
-            final FieldStaticTransform<T> refToSc = FieldStaticTransform.compose(
-                    shifted,
-                    FieldStaticTransform.of(
-                            shifted,
-                            pvProv.getPVCoordinates(shifted, frame).getPosition().negate()),
-                    FieldStaticTransform.of(
-                            shifted,
-                            attitudeLaw.getAttitudeRotation(pvProv, shifted, frame)));
+            final FieldStaticTransform<T> refToSc = FieldStaticTransform.of(shifted,
+                pvProv.getPVCoordinates(shifted, frame).getPosition().negate(), attitudeLaw.getAttitudeRotation(pvProv, shifted, frame));
 
             // transform from specified reference frame to body frame
             final FieldStaticTransform<T> refToBody;
@@ -207,6 +211,24 @@ public class LofOffsetPointing extends GroundPointing {
         // convert back to caller specified frame
         return centralRefToBody.getInverse().transformPVCoordinates(targetBody);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getTargetPosition(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                     final FieldAbsoluteDate<T> date,
+                                                                                     final Frame frame) {
+
+        // transform from specified reference frame to spacecraft frame
+        final FieldStaticTransform<T> refToSc = FieldStaticTransform.of(date, pvProv.getPosition(date, frame).negate(),
+                attitudeLaw.getAttitudeRotation(pvProv, date, frame));
+
+        // transform from specified reference frame to body frame
+        final FieldStaticTransform<T> refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), date);
+        final FieldVector3D<T> targetBody = losIntersectionWithBody(FieldStaticTransform.compose(date, refToSc.getInverse(), refToBody)).getPosition();
+
+        // convert back to caller specified frame
+        return refToBody.getInverse().transformPosition(targetBody);
     }
 
     /** Compute line of sight intersection with body.

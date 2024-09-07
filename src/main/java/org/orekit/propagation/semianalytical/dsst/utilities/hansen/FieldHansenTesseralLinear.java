@@ -303,7 +303,7 @@ public class FieldHansenTesseralLinear <T extends CalculusFieldElement<T>> {
             final T coef       = zero.subtract(mnm1 + 1.5);
             final T derivative = coef.multiply(chi2).multiply(value).
                             add(FastMath.pow(chi2, -mnm1 - 1).multiply(serie.getPartialDerivative(0)).divide(chi));
-            return new FieldGradient<>(value, derivative);
+            return new FieldGradient<T>(value, derivative);
         }
 
         /** Generate the serie expansion in e².

@@ -122,8 +122,8 @@
             <ul>
               <li>central attraction</li>
               <li>gravity models including time-dependent like trends and pulsations (automatic
-                reading of ICGEM (new Eigen models), SHM (old Eigen models), EGM and GRGS gravity
-                field files formats, even compressed)</li>
+                reading of ICGEM (new Eigen models), SHM (old Eigen models), EGM,
+                SHA (GRGM1200B and GRGM1200L) and GRGS gravity field files formats, even compressed)</li>
               <li>atmospheric drag</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses (multiple oblate spheroids occulting bodies,
@@ -217,6 +217,8 @@
               <li>impulse maneuvers occurrence</li>
               <li>geomagnetic intensity</li>
   	          <li>extremum approach for TCA (Time of Closest Approach) computing</li>
+              <li>beta angle</li>
+              <li>relative distance with another object</li>
             </ul>
           </li>
           <li>possibility of slightly shifting events in time (for example to switch from solar
@@ -240,6 +242,7 @@
                 yaw compensation, yaw-steering)</li>
               <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
               <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
+              <li>attitude aligned with one target and constrained by another target</li>
               <li>tabulated attitudes, either respective to inertial frame or respective to Local
                 Orbital Frames</li>
               <li>specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF),
@@ -365,8 +368,8 @@
           <li>loading and writing of RINEX observation files (version 2, 3, and 4)</li>
           <li>loading of RINEX navigation files (version 2, 3, and 4)</li>
           <li>support for Hatanaka compact RINEX format</li>
-          <li>loading of SINEX file (can load station positions, eccentricities, EOPs, and
-            Differential Code Biases)</li>
+          <li>loading of SINEX file (can load station positions, velocities, eccentricities,
+            Post-Seismic Deformation models, EOPs, and Differential Code Biases)</li>
           <li>loading of RINEX clock files (version 2 and version 3)</li>
           <li>parsing of IGS SSR messages for all constellations (version 1)</li>
           <li>parsing of RTCM messages (both ephemeris and correction messages)</li>
@@ -378,7 +381,7 @@
       </li>
       <li>Orbit file handling
         <ul>
-          <li>loading and writing of SP3 orbit files (from versions a to d)</li>
+          <li>loading and writing of SP3 orbit files (from versions a to d, including extension to a few inertial frames)</li>
           <li>splicing and interpolation of SP3 files</li>
           <li>loading and writing of CCSDS Orbit Data Messages (both OPM, OEM, OMM, OCM types are
             supported, in both KVN and XML formats, standalone or in combined NDM)</li>

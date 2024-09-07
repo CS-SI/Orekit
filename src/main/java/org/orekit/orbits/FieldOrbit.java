@@ -64,6 +64,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @since 9.0
+ * @see Orbit
  * @param <T> type of the field elements
  */
 public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
@@ -153,32 +154,32 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * use {@code mu} and the position to compute the acceleration, including
      * {@link #shiftedBy(CalculusFieldElement)} and {@link #getPVCoordinates(FieldAbsoluteDate, Frame)}.
      *
-     * @param FieldPVCoordinates the position and velocity in the inertial frame
+     * @param fieldPVCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> FieldPVCoordinates, final Frame frame, final T mu)
+    protected FieldOrbit(final TimeStampedFieldPVCoordinates<T> fieldPVCoordinates, final Frame frame, final T mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
         this.field = mu.getField();
         this.zero = this.field.getZero();
         this.one = this.field.getOne();
-        this.date = FieldPVCoordinates.getDate();
+        this.date = fieldPVCoordinates.getDate();
         this.mu = mu;
-        if (FieldPVCoordinates.getAcceleration().getNormSq().getReal() == 0.0) {
+        if (fieldPVCoordinates.getAcceleration().getNormSq().getReal() == 0.0) {
             // the acceleration was not provided,
             // compute it from Newtonian attraction
-            final T r2 = FieldPVCoordinates.getPosition().getNormSq();
+            final T r2 = fieldPVCoordinates.getPosition().getNormSq();
             final T r3 = r2.multiply(r2.sqrt());
-            this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(FieldPVCoordinates.getDate(),
-                                                                     FieldPVCoordinates.getPosition(),
-                                                                     FieldPVCoordinates.getVelocity(),
-                                                                     new FieldVector3D<>(r3.reciprocal().multiply(mu.negate()), FieldPVCoordinates.getPosition()));
+            this.pvCoordinates = new TimeStampedFieldPVCoordinates<>(fieldPVCoordinates.getDate(),
+                                                                     fieldPVCoordinates.getPosition(),
+                                                                     fieldPVCoordinates.getVelocity(),
+                                                                     new FieldVector3D<>(r3.reciprocal().multiply(mu.negate()), fieldPVCoordinates.getPosition()));
         } else {
-            this.pvCoordinates = FieldPVCoordinates;
+            this.pvCoordinates = fieldPVCoordinates;
         }
         this.frame = frame;
     }
@@ -279,11 +280,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract T getEquinoctialEx();
 
-    /** Get the first component of the equinoctial eccentricity vector.
+    /** Get the first component of the equinoctial eccentricity vector derivative.
      * <p>
      * If the orbit was created without derivatives, the value returned is null.
      * </p>
-     * @return first component of the equinoctial eccentricity vector
+     * @return first component of the equinoctial eccentricity vector derivative
      */
     public abstract T getEquinoctialExDot();
 
@@ -292,11 +293,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract T getEquinoctialEy();
 
-    /** Get the second component of the equinoctial eccentricity vector.
+    /** Get the second component of the equinoctial eccentricity vector derivative.
      * <p>
      * If the orbit was created without derivatives, the value returned is null.
      * </p>
-     * @return second component of the equinoctial eccentricity vector
+     * @return second component of the equinoctial eccentricity vector derivative
      */
     public abstract T getEquinoctialEyDot();
 
@@ -473,6 +474,12 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     public TimeStampedFieldPVCoordinates<T> getPVCoordinates(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldVector3D<T> getPosition(final FieldAbsoluteDate<T> otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
     }
 
     /** Get the position in a specified frame.

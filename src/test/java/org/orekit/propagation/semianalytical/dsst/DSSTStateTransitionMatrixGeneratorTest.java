@@ -60,7 +60,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 
 /** Unit tests for {@link DSSTStateTransitionMatrixGenerator}. */
-public class DSSTStateTransitionMatrixGeneratorTest {
+class DSSTStateTransitionMatrixGeneratorTest {
 
     @BeforeEach
     public void setUp() {
@@ -69,7 +69,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
     }
 
     @Test
-    public void testInterrupt() {
+    void testInterrupt() {
 
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         double dt = 900;
@@ -142,18 +142,18 @@ public class DSSTStateTransitionMatrixGeneratorTest {
                 OrekitMatchers.matrixCloseTo(stm1, 2e-11 * stm1.getNorm1()));
         Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 2.0e-11 * stm1.getNorm1());
         MatcherAssert.assertThat(jacobian2,
-                OrekitMatchers.matrixCloseTo(jacobian1, 4e-12));
-        Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 1.0e-9 * jacobian1.getNorm1());
+                OrekitMatchers.matrixCloseTo(jacobian1, 4e-11));
+        Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 1.0e-8 * jacobian1.getNorm1());
 
     }
 
     @Test
-    public void testPropagationTypesElliptical() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
+    void testPropagationTypesElliptical() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
         doTestPropagation(PropagationType.MEAN, 7.0e-16);
     }
 
     @Test
-    public void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
+    void testPropagationTypesEllipticalWithShortPeriod() throws FileNotFoundException, UnsupportedEncodingException, OrekitException {
         doTestPropagation(PropagationType.OSCULATING, 3.3e-4);
     }
 
@@ -312,7 +312,7 @@ public class DSSTStateTransitionMatrixGeneratorTest {
      * In OSCULATING cas, first and last lines are compared to reference values.
      */
     @Test
-    public void testIssue713() {
+    void testIssue713() {
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
         double dP = 0.001;

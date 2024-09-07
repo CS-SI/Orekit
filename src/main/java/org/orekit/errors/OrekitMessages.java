@@ -16,12 +16,12 @@
  */
 package org.orekit.errors;
 
-import org.hipparchus.exception.Localizable;
-import org.hipparchus.exception.UTF8Control;
-
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
+import org.hipparchus.exception.Localizable;
+import org.hipparchus.exception.UTF8Control;
 
 /**
  * Enumeration for localized messages formats.
@@ -282,6 +282,9 @@ public enum OrekitMessages implements Localizable {
     /** EVENT_DATE_TOO_CLOSE. */
     EVENT_DATE_TOO_CLOSE("target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added"),
 
+    /** WRONG_COORDINATES_FOR_ADJOINT_EQUATION. */
+    WRONG_COORDINATES_FOR_ADJOINT_EQUATION("trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates"),
+
     /** UNABLE_TO_READ_JPL_HEADER. */
     UNABLE_TO_READ_JPL_HEADER("unable to read header record from JPL ephemerides binary file {0}"),
 
@@ -482,6 +485,11 @@ public enum OrekitMessages implements Localizable {
 
     /** SP3_INCOMPATIBLE_SATELLITE_MEDATADA. */
     SP3_INCOMPATIBLE_SATELLITE_MEDATADA("cannot splice sp3 files with incompatible satellite metadata for satellite {0}"),
+
+    /** FRAME_NOT_ALLOWED.
+     * @since 12.1
+     */
+    FRAME_NOT_ALLOWED("frame {0} not allowed here"),
 
     /** STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM. */
     STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM("STK coordinate system \"{0}\" is invalid or not yet supported"),
@@ -919,7 +927,16 @@ public enum OrekitMessages implements Localizable {
     WRONG_EOP_INTERPOLATION_DEGREE("EOP interpolation degree must be of the form 4k-1, got {0}"),
 
     /** WALKER_INCONSISTENT_PLANES. */
-    WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation");
+    WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation"),
+
+    /** INFINITE_NRMSISE00_DENSITY. */
+    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model"),
+
+    /** FIELD_TOO_LONG. */
+    FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters"),
+
+    /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
+    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

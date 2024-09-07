@@ -17,7 +17,7 @@
 package org.orekit.estimation.measurements.gnss;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
@@ -59,7 +59,7 @@ public class AmbiguityDriver extends ParameterDriver {
         // with respect to common frequency F0 (10.23 MHz)
         super(String.format(Locale.US, "%s-%s-%s-%.2f",
                             PREFIX, emitter, receiver,
-                            Constants.SPEED_OF_LIGHT / (wavelength * 1.0e6 * Frequency.F0)),
+                            Constants.SPEED_OF_LIGHT / (wavelength * GnssSignal.F0)),
               0.0, AMBIGUITY_SCALE, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         this.emitter    = emitter;
         this.receiver   = receiver;

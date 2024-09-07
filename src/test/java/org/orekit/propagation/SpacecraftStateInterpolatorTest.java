@@ -147,10 +147,10 @@ class SpacecraftStateInterpolatorTest {
                 new SpacecraftStateInterpolator(interpolationPoints1, intertialFrame, intertialFrame);
 
         final SpacecraftStateInterpolator interpolator2 =
-                new SpacecraftStateInterpolator(interpolationPoints2, intertialFrame, intertialFrame);
+                new SpacecraftStateInterpolator(interpolationPoints2, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, intertialFrame, intertialFrame);
 
         final SpacecraftStateInterpolator interpolator3 =
-                new SpacecraftStateInterpolator(interpolationPoints3, intertialFrame, intertialFrame);
+                new SpacecraftStateInterpolator(interpolationPoints3, SpacecraftStateInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC, intertialFrame);
 
         // When & Then
         checkInterpolationError(interpolationPoints1, 106.46533, 0.40709287, 169847806.33e-9, 0.0, 450 * 450, 450 * 450,

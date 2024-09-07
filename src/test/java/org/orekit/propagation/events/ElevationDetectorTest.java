@@ -41,10 +41,13 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.propagation.events.intervals.ElevationDetectionAdaptableIntervalFactory;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -108,7 +111,7 @@ public class ElevationDetectorTest {
 
     private static class Checking implements EventHandler, OrekitFixedStepHandler {
 
-        private TopocentricFrame topo;
+        private final TopocentricFrame topo;
         private boolean visible;
 
         public Checking(final TopocentricFrame topo) {
@@ -135,10 +138,6 @@ public class ElevationDetectorTest {
             } else {
                 Assertions.assertTrue(range > 2.02e6);
             }
-        }
-
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
         }
 
     }
@@ -235,7 +234,7 @@ public class ElevationDetectorTest {
     public void testIssue136() {
 
         //  Initial state definition : date, orbit
-        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
         Orbit initialOrbit = new KeplerianOrbit(6828137.005, 7.322641382145889e-10, 1.6967079057368113,
                                                 0.0, 1.658054062748353,
@@ -521,6 +520,34 @@ public class ElevationDetectorTest {
         AbsoluteDate d3 = events.get(3).getDate();
         Assertions.assertTrue(d3.durationFrom(d2) > 0.3 * threshold);
         Assertions.assertTrue(d3.durationFrom(d2) < threshold);
+
+    }
+
+    @Test
+    public void testIssue1407() {
+        final TLE tle = new TLE("1 25544U 98067A   03042.38687590  .00035128  00000-0  41387-3 0  9990",
+                                "2 25544 051.6337 292.0267 0005644 135.6869 224.5096 15.60691825241426");
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                            Constants.WGS84_EARTH_FLATTENING,
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        final TopocentricFrame topo = new TopocentricFrame(earth,
+                                                           new GeodeticPoint(FastMath.toRadians(38.832772),
+                                                                             FastMath.toRadians(-104.74755),
+                                                                             1839.0),
+                                                           "Colorado Springs");
+        final AdaptableInterval maxCheck = ElevationDetectionAdaptableIntervalFactory.
+            getAdaptableInterval(topo,
+                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH,
+                                 60.0);
+        final ElevationDetector detector = new ElevationDetector(maxCheck, 1.0e-3, topo).
+                                           withConstantElevation(FastMath.toRadians(10.0)).
+                                           withHandler(new ContinueOnEvent());
+
+        final EventsLogger logger = new EventsLogger();
+        final Propagator propagator = TLEPropagator.selectExtrapolator(tle);
+        propagator.addEventDetector(logger.monitorDetector(detector));
+        propagator.propagate(tle.getDate().shiftedBy(Constants.JULIAN_DAY));
+        Assertions.assertEquals(8, logger.getLoggedEvents().size());
 
     }
 

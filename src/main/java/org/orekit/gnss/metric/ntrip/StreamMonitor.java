@@ -180,13 +180,7 @@ public class StreamMonitor extends AbstractEncodedMessage implements Runnable {
         synchronized (observers) {
 
             // register the observer
-            List<MessageObserver> list = observers.get(typeCode);
-            if (list == null) {
-                // create a new list the first time we register an observer for a message
-                list =  new ArrayList<>();
-                observers.put(typeCode, list);
-            }
-            list.add(observer);
+            observers.computeIfAbsent(typeCode, tc -> new ArrayList<>()).add(observer);
 
             // if we already have a message of the proper type
             // immediately notify the new observer about it

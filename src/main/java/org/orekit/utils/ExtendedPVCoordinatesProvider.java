@@ -18,7 +18,6 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
@@ -28,16 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 9.2
  * @author Luc Maisonobe
  */
-public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
-
-    /** Convert to a {@link FieldPVCoordinatesProvider} with a specific type.
-     * @param <T> the type of the field elements
-     * @param field field for the argument and value
-     * @return converted function
-     */
-    default <T extends CalculusFieldElement<T>> FieldPVCoordinatesProvider<T> toFieldPVCoordinatesProvider(Field<T> field) {
-        return this::getPVCoordinates;
-    }
+public interface ExtendedPVCoordinatesProvider extends ExtendedPositionProvider {
 
     /** Get the position of the body in the selected frame.
      * @param date current date
@@ -56,6 +46,7 @@ public interface ExtendedPVCoordinatesProvider extends PVCoordinatesProvider {
      * @param <T> type for the field elements
      * @return time-stamped position/velocity of the body (m and m/s)
      */
+    @Override
     <T extends CalculusFieldElement<T>>TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date,
                                                                                          Frame frame);
 

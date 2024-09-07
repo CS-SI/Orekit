@@ -16,12 +16,15 @@
  */
 package org.orekit.files.sinex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.displacement.PsdCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -55,12 +58,17 @@ public class Station {
     private ReferenceSystem eccRefSystem;
 
     /** TimeSpanMap of site antenna eccentricities. */
-    private TimeSpanMap<Vector3D> eccentricitiesTimeSpanMap;
+    private final TimeSpanMap<Vector3D> eccentricitiesTimeSpanMap;
 
     /** Antenna type.
      * @since 12.0
      */
-    private TimeSpanMap<String> antennaTypesMap;
+    private final TimeSpanMap<String> antennaTypesMap;
+
+    /** Post-Seismic Deformation.
+     * @since 12.0
+     */
+    private final TimeSpanMap<List<PsdCorrection>> psdMap;
 
     /** Station position. */
     private Vector3D position;
@@ -77,6 +85,7 @@ public class Station {
     public Station() {
         this.eccentricitiesTimeSpanMap = new TimeSpanMap<>(null);
         this.antennaTypesMap           = new TimeSpanMap<>(null);
+        this.psdMap                    = new TimeSpanMap<>(null);
         this.position                  = Vector3D.ZERO;
         this.velocity                  = Vector3D.ZERO;
     }
@@ -214,6 +223,41 @@ public class Station {
      */
     public void addStationEccentricitiesValidAfter(final Vector3D entry, final AbsoluteDate earliestValidityDate) {
         eccentricitiesTimeSpanMap.addValidAfter(entry, earliestValidityDate, false);
+    }
+
+    /** Get the TimeSpanMap of Post-Seismic Deformation.
+     * @return the TimeSpanMap of Post-Seismic Deformation
+     * @since 12.1
+     */
+    public TimeSpanMap<List<PsdCorrection>> getPsdTimeSpanMap() {
+        return psdMap;
+    }
+
+    /** Add a Post-Seismic Deformation entry valid after a limit date.<br>
+     * Using {@code addPsdCorrectionValidAfter(entry, t)} will make {@code entry}
+     * valid in [t, +∞[ (note the closed bracket).
+     * @param entry Post-Seismic Deformation entry
+     * @param earliestValidityDate date after which the entry is valid
+     * (must be different from <b>all</b> dates already used for transitions)
+     * @since 12.1
+     */
+    public void addPsdCorrectionValidAfter(final PsdCorrection entry, final AbsoluteDate earliestValidityDate) {
+
+        // get the list of corrections active just after earthquake date
+        List<PsdCorrection> corrections = psdMap.get(earliestValidityDate.shiftedBy(1.0e-3));
+
+        if (corrections == null ||
+            earliestValidityDate.durationFrom(corrections.get(0).getEarthquakeDate()) > 1.0e-3) {
+            // either this is the first earthquake we consider or
+            // this earthquake is after another one already considered
+            // we need to create a new list of corrections for this new earthquake
+            corrections = new ArrayList<>();
+            psdMap.addValidAfter(corrections, earliestValidityDate, false);
+        }
+
+        // add the entry to the current list
+        corrections.add(entry);
+
     }
 
     /**

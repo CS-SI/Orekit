@@ -351,8 +351,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                final AbsoluteDate date) {
 
         // Transform given point from given frame to topocentric frame
-        final Transform t = frame.getTransformTo(this, date);
-        final PVCoordinates extPVTopo = t.transformPVCoordinates(extPV);
+        final KinematicTransform t = frame.getKinematicTransformTo(this, date);
+        final PVCoordinates extPVTopo = t.transformOnlyPV(extPV);
 
         // Compute range rate (doppler) : relative rate along the line of sight
         return Vector3D.dotProduct(extPVTopo.getPosition(), extPVTopo.getVelocity()) /
@@ -372,8 +372,8 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
                                                               final FieldAbsoluteDate<T> date) {
 
         // Transform given point from given frame to topocentric frame
-        final FieldTransform<T> t = frame.getTransformTo(this, date);
-        final FieldPVCoordinates<T> extPVTopo = t.transformPVCoordinates(extPV);
+        final FieldKinematicTransform<T> t = frame.getKinematicTransformTo(this, date);
+        final FieldPVCoordinates<T> extPVTopo = t.transformOnlyPV(extPV);
 
         // Compute range rate (doppler) : relative rate along the line of sight
         return FieldVector3D.dotProduct(extPVTopo.getPosition(), extPVTopo.getVelocity()).divide(

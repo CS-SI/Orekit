@@ -22,14 +22,13 @@ import org.hipparchus.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.frames.LOF;
-import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.CartesianDerivativesFilter;
 
 /** This class is the representation of a covariance matrix at a given date.
  * <p>
@@ -143,6 +142,31 @@ public class StateCovariance implements TimeStamped {
         }
     }
 
+    /**
+     * Checks if input/output orbit and angle types are identical.
+     *
+     * @param inOrbitType input orbit type
+     * @param inAngleType input angle type
+     * @param outOrbitType output orbit type
+     * @param outAngleType output angle type
+     * @return flag defining if input/output orbit and angle types are identical
+     */
+    public static boolean inputAndOutputAreIdentical(final OrbitType inOrbitType, final PositionAngleType inAngleType,
+                                                     final OrbitType outOrbitType, final PositionAngleType outAngleType) {
+        return inOrbitType == outOrbitType && inAngleType == outAngleType;
+    }
+
+    /**
+     * Checks if input and output orbit types are both {@code OrbitType.CARTESIAN}.
+     *
+     * @param inOrbitType input orbit type
+     * @param outOrbitType output orbit type
+     * @return flag defining if input and output orbit types are both {@code OrbitType.CARTESIAN}
+     */
+    public static boolean inputAndOutputOrbitTypesAreCartesian(final OrbitType inOrbitType, final OrbitType outOrbitType) {
+        return inOrbitType == OrbitType.CARTESIAN && outOrbitType == OrbitType.CARTESIAN;
+    }
+
     /** {@inheritDoc}. */
     @Override
     public AbsoluteDate getDate() {
@@ -215,7 +239,7 @@ public class StateCovariance implements TimeStamped {
                                                 final PositionAngleType outAngleType) {
 
         // Handle case where the covariance is already expressed in the output type
-        if (outOrbitType == orbitType && (outAngleType == angleType || outOrbitType == OrbitType.CARTESIAN)) {
+        if (outOrbitType == orbitType && (outOrbitType == OrbitType.CARTESIAN || outAngleType == angleType)) {
             if (lof == null) {
                 return new StateCovariance(orbitalCovariance, epoch, frame, orbitType, angleType);
             }
@@ -261,6 +285,11 @@ public class StateCovariance implements TimeStamped {
         // Verify current covariance frame
         if (lof != null) {
 
+            // Check specific case where output covariance will be the same
+            if (lofOut == lof) {
+                return new StateCovariance(orbitalCovariance, epoch, lof);
+            }
+
             // Change the covariance local orbital frame
             return changeFrameAndCreate(orbit, epoch, lof, lofOut, orbitalCovariance);
 
@@ -295,6 +324,11 @@ public class StateCovariance implements TimeStamped {
             return changeFrameAndCreate(orbit, epoch, lof, frameOut, orbitalCovariance);
 
         } else {
+
+            // Check specific case where output covariance will be the same
+            if (frame == frameOut) {
+                return new StateCovariance(orbitalCovariance, epoch, frame, orbitType, angleType);
+            }
 
             // Change covariance frame
             return changeFrameAndCreate(orbit, epoch, frame, frameOut, orbitalCovariance, orbitType, angleType);
@@ -393,11 +427,18 @@ public class StateCovariance implements TimeStamped {
      * @param inputCov input covariance
      * @return the covariance expressed in the target orbit type with the target position angle
      */
-    private static StateCovariance changeTypeAndCreate(final Orbit orbit, final AbsoluteDate date,
+    private static StateCovariance changeTypeAndCreate(final Orbit orbit,
+                                                       final AbsoluteDate date,
                                                        final Frame covFrame,
                                                        final OrbitType inOrbitType, final PositionAngleType inAngleType,
                                                        final OrbitType outOrbitType, final PositionAngleType outAngleType,
                                                        final RealMatrix inputCov) {
+
+        // Check if type change is really necessary, if not then return input covariance
+        if (inputAndOutputOrbitTypesAreCartesian(inOrbitType, outOrbitType) ||
+            inputAndOutputAreIdentical(inOrbitType, inAngleType, outOrbitType, outAngleType)) {
+            return new StateCovariance(inputCov, date, covFrame, inOrbitType, inAngleType);
+        }
 
         // Notations:
         // I: Input orbit type
@@ -630,7 +671,7 @@ public class StateCovariance implements TimeStamped {
                                                         final PositionAngleType covAngleType) {
 
         // Get the transform from the covariance frame to the output frame
-        final Transform inToOut = frameIn.getTransformTo(frameOut, orbit.getDate());
+        final KinematicTransform inToOut = frameIn.getKinematicTransformTo(frameOut, orbit.getDate());
 
         // Matrix to perform the covariance transformation
         final RealMatrix j = getJacobian(inToOut);
@@ -686,13 +727,8 @@ public class StateCovariance implements TimeStamped {
      * @param transform input transformation
      * @return the matrix to perform the covariance frame transformation
      */
-    private static RealMatrix getJacobian(final Transform transform) {
-        // Get the Jacobian of the transform
-        final double[][] jacobian = new double[STATE_DIMENSION][STATE_DIMENSION];
-        transform.getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
-        // Return
-        return new Array2DRowRealMatrix(jacobian, false);
-
+    private static RealMatrix getJacobian(final KinematicTransform transform) {
+        return MatrixUtils.createRealMatrix(transform.getPVJacobian());
     }
 
     /**

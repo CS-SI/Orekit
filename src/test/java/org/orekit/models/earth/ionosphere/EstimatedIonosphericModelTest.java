@@ -71,7 +71,7 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
         // Delay
         final double delay = model.pathDelay(0.5 * FastMath.PI,
-                                             Frequency.G01.getMHzFrequency() * 1.0e6,
+                                             Frequency.G01.getFrequency(),
                                              model.getParameters(new AbsoluteDate()));
         // Verify
         Assertions.assertEquals(0.162, delay, 0.001);
@@ -90,7 +90,7 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 1.0);
         // Delay
         final T delay = model.pathDelay(zero.add(0.5 * FastMath.PI),
-                                        Frequency.G01.getMHzFrequency() * 1.0e6,
+                                        Frequency.G01.getFrequency(),
                                         model.getParameters(field));
         // Verify
         Assertions.assertEquals(0.162, delay.getReal(), 0.001);
@@ -106,7 +106,7 @@ public class EstimatedIonosphericModelTest {
         // the pamater driver has no validity period, so only 1 values estimated over
         // the all period, that is why getParameters is called with no argument
         double delayMeters = model.pathDelay(FastMath.toRadians(elevation),
-                                             Frequency.G01.getMHzFrequency() * 1.0e6,
+                                             Frequency.G01.getFrequency(),
                                              model.getParameters());
 
         Assertions.assertTrue(Precision.compareTo(delayMeters, 12., 1.0e-6) < 0);
@@ -125,7 +125,7 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         T zero = field.getZero();
         T delayMeters = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
-                                             Frequency.G01.getMHzFrequency() * 1.0e6,
+                                             Frequency.G01.getFrequency(),
                                              model.getParameters(field));
 
         Assertions.assertTrue(Precision.compareTo(delayMeters.getReal(), 12., 1.0e-6) < 0);
@@ -135,7 +135,7 @@ public class EstimatedIonosphericModelTest {
     @Test
     public void testZeroDelay() {
         // Frequency
-        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        final double frequency = Frequency.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -172,7 +172,7 @@ public class EstimatedIonosphericModelTest {
     private <T extends CalculusFieldElement<T>> void doTestFieldZeroDelay(final Field<T> field) {
         final T zero = field.getZero();
         // Frequency
-        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        final double frequency = Frequency.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -213,11 +213,11 @@ public class EstimatedIonosphericModelTest {
         final EstimatedIonosphericModel model = new EstimatedIonosphericModel(mapping, 50.0);
         T zero = field.getZero();
         T delayMetersF = model.pathDelay(zero.add(FastMath.toRadians(elevation)),
-                                             Frequency.G01.getMHzFrequency() * 1.0e6,
+                                             Frequency.G01.getFrequency(),
                                              model.getParameters(field));
 
         double delayMetersR = model.pathDelay(FastMath.toRadians(elevation),
-                                             Frequency.G01.getMHzFrequency() * 1.0e6,
+                                             Frequency.G01.getFrequency(),
                                              model.getParameters());
 
         Assertions.assertEquals(delayMetersR, delayMetersF.getReal(), 1.0e-15);
@@ -227,7 +227,7 @@ public class EstimatedIonosphericModelTest {
     public void testDelayStateDerivatives() {
 
         // Frequency
-        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        final double frequency = Frequency.G01.getFrequency();
 
         // Geodetic point
         final double height       = 0.0;
@@ -379,7 +379,7 @@ public class EstimatedIonosphericModelTest {
     public void testParametersDerivatives() {
 
         // Frequency
-        final double frequency = Frequency.G01.getMHzFrequency() * 1.0e6;
+        final double frequency = Frequency.G01.getFrequency();
 
         // Geodetic point
         final double latitude     = FastMath.toRadians(45.0);

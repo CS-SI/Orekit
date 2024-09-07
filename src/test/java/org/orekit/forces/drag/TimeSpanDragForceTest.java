@@ -71,7 +71,7 @@ import org.orekit.utils.TimeSpanMap;
 
 import java.util.List;
 
-public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
+class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
     /** UTC time scale. */
     private TimeScale utc;
@@ -87,7 +87,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
             final FieldVector3D<DerivativeStructure> velocity = state.getPVCoordinates().getVelocity();
-            java.lang.reflect.Field atmosphereField = TimeSpanDragForce.class.getDeclaredField("atmosphere");
+            java.lang.reflect.Field atmosphereField = AbstractDragForceModel.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
             java.lang.reflect.Field spacecraftField = DragForce.class.getDeclaredField("spacecraft");
@@ -151,7 +151,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
             final FieldVector3D<Gradient> velocity = state.getPVCoordinates().getVelocity();
-            java.lang.reflect.Field atmosphereField = TimeSpanDragForce.class.getDeclaredField("atmosphere");
+            java.lang.reflect.Field atmosphereField = AbstractDragForceModel.class.getDeclaredField("atmosphere");
             atmosphereField.setAccessible(true);
             Atmosphere atmosphere = (Atmosphere) atmosphereField.get(forceModel);
             java.lang.reflect.Field spacecraftField = DragForce.class.getDeclaredField("spacecraft");
@@ -203,13 +203,10 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * on an IsotropicDrag-based (ie. spherical) TimeSpanDragForce model.
      */
     @Test
-    public void testGetParameterDriversSphere() {
+    void testGetParameterDriversSphere() {
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(),
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // A date
         AbsoluteDate date = new AbsoluteDate("2000-01-01T00:00:00.000", TimeScalesFactory.getUTC());
@@ -318,7 +315,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      *  to test that the different parameters' derivatives are computed correctly.
      */
     @Test
-    public void testParameterDerivativeSphere() {
+    void testParameterDerivativeSphere() {
 
         // Low Earth orbit definition (about 360km altitude)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -331,10 +328,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(),
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // Constant area for the different tests
         final double dragArea = 2.5;
@@ -387,7 +381,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      *  to test that the different parameters' derivatives are computed correctly.
      */
     @Test
-    public void testParameterDerivativeSphereGradient() {
+    void testParameterDerivativeSphereGradient() {
 
         // Low Earth orbit definition (about 360km altitude)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -400,10 +394,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
                                                        Constants.EIGEN5C_EARTH_MU));
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(),
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // Constant area for the different tests
         final double dragArea = 2.5;
@@ -452,7 +443,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
     /** Test state Jacobian computation. */
     @Test
-    public void testStateJacobianSphere()
+    void testStateJacobianSphere()
         {
 
         // Initialization
@@ -471,10 +462,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(CelestialBodyFactory.getSun(),
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // Time span drag force model init
         double dragArea = 2.;
@@ -528,14 +516,11 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * Here only the drag coefficient is modeled.
      */
     @Test
-    public void testGetParameterDriversBoxOnlyDrag() {
+    void testGetParameterDriversBoxOnlyDrag() {
 
         // Atmosphere
         final CelestialBody sun = CelestialBodyFactory.getSun();
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // A date
         AbsoluteDate date = new AbsoluteDate("2000-01-01T00:00:00.000", TimeScalesFactory.getUTC());
@@ -627,14 +612,11 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * Here both drag and lift coefficients are modeled.
      */
     @Test
-    public void testGetParameterDriversBox() {
+    void testGetParameterDriversBox() {
 
         // Atmosphere
         final CelestialBody sun = CelestialBodyFactory.getSun();
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // A date
         AbsoluteDate date = new AbsoluteDate("2000-01-01T00:00:00.000", TimeScalesFactory.getUTC());
@@ -732,7 +714,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      *  to test that the different parameters' derivatives are computed correctly.
      */
     @Test
-    public void testParametersDerivativesBox() {
+    void testParametersDerivativesBox() {
 
         // Low Earth orbit definition (about 360km altitude)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -746,10 +728,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Atmosphere
         final CelestialBody sun = CelestialBodyFactory.getSun();
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.;
@@ -807,7 +786,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      *  to test that the different parameters' derivatives are computed correctly.
      */
     @Test
-    public void testParametersDerivativesBoxGradient() {
+    void testParametersDerivativesBoxGradient() {
 
         // Low Earth orbit definition (about 360km altitude)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -821,10 +800,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Atmosphere
         final CelestialBody sun = CelestialBodyFactory.getSun();
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // Initialize force model (first coef is valid at all epochs)
         final double dragCd  = 1.;
@@ -880,7 +856,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * and method {@link #accelerationDerivatives}
      */
     @Test
-    public void testJacobianBoxVs80Implementation()
+    void testJacobianBoxVs80Implementation()
         {
 
         // initialization
@@ -896,11 +872,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         CelestialBody sun = CelestialBodyFactory.getSun();
 
         // Atmosphere
-        final Atmosphere atmosphere =
-                        new HarrisPriester(sun,
-                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
         // Time span drag force model initialization
         double dragCd0 = 1.;
         double dragCl0 = 0.1;
@@ -951,7 +923,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * and method {@link #accelerationDerivatives}
      */
     @Test
-    public void testJacobianBoxVs80ImplementationGradient()
+    void testJacobianBoxVs80ImplementationGradient()
         {
 
         // initialization
@@ -968,11 +940,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         AttitudeProvider defaultLaw = Utils.defaultLaw();
 
         // Atmosphere
-        final Atmosphere atmosphere =
-                        new HarrisPriester(sun,
-                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
         // Time span drag force model initialization
         double dragCd0 = 1.;
         double dragCl0 = 0.1;
@@ -1023,7 +991,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * This time the differentiation is made using built-in numerical differentiation method.
      */
     @Test
-    public void testJacobianBoxVsFiniteDifferences()
+    void testJacobianBoxVsFiniteDifferences()
         {
 
         // initialization
@@ -1040,11 +1008,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         AttitudeProvider defaultLaw = Utils.defaultLaw();
 
         // Atmosphere
-        final Atmosphere atmosphere =
-                        new HarrisPriester(sun,
-                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // Time span drag force model initialization
         double dragCd0 = 1.;
@@ -1089,7 +1053,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
      * This time the differentiation is made using built-in numerical differentiation method.
      */
     @Test
-    public void testJacobianBoxVsFiniteDifferencesGradient()
+    void testJacobianBoxVsFiniteDifferencesGradient()
         {
 
         // initialization
@@ -1106,11 +1070,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         AttitudeProvider defaultLaw = Utils.defaultLaw();
 
         // Atmosphere
-        final Atmosphere atmosphere =
-                        new HarrisPriester(sun,
-                                           new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
 
         // Time span drag force model initialization
         double dragCd0 = 1.;
@@ -1134,26 +1094,27 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
 
         // Check state derivatives inside first box model
         Orbit orbit = refOrbit.shiftedBy(0.);
+        final double dP = 1.;
         SpacecraftState state = new SpacecraftState(orbit,
                                                     defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, 1.0, 5.0e-6, false);
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, dP, 5.0e-6, false);
 
         // Check state derivatives inside 2nd box model
         orbit = refOrbit.shiftedBy(1.1 * dt);
         state = new SpacecraftState(orbit,
                                     defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, 1.0, 5.0e-6, false);
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, dP, 5.0e-6, false);
 
         // Check state derivatives inside 3rd box model
         orbit = refOrbit.shiftedBy(-1.1 * dt);
         state = new SpacecraftState(orbit,
                                     defaultLaw.getAttitude(orbit, orbit.getDate(), orbit.getFrame()));
-        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, 1.0, 6.0e-6, false);
+        checkStateJacobianVsFiniteDifferencesGradient(state, forceModel, defaultLaw, dP, 6.0e-6, false);
     }
 
     /** Test state Jacobian computation. */
     @Test
-    public void testGlobalStateJacobianBox()
+    void testGlobalStateJacobianBox()
         {
 
         // Initialization
@@ -1171,10 +1132,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         CelestialBody sun = CelestialBodyFactory.getSun();
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
         // Time span drag force model init
         double dragCd0 = 1.;
         double dragCl0 = 0.1;
@@ -1285,10 +1243,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         CelestialBody sun = CelestialBodyFactory.getSun();
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
         // Time span drag force model init
         double dragCd0 = 1.;
         double dragCl0 = 0.1;
@@ -1393,10 +1348,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         CelestialBody sun = CelestialBodyFactory.getSun();
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
         // Time span drag force model init
         double dragCd0 = 1.;
         double dragCl0 = 0.1;
@@ -1499,10 +1451,7 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         CelestialBody sun = CelestialBodyFactory.getSun();
 
         // Atmosphere
-        final Atmosphere atmosphere = new HarrisPriester(sun,
-                                                         new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                              Constants.WGS84_EARTH_FLATTENING,
-                                                                              FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
+        final Atmosphere atmosphere = getAtmosphere();
         // Time span drag force model init
         double dragCd0 = 1.;
         double dragCl0 = 0.1;
@@ -1534,6 +1483,13 @@ public class TimeSpanDragForceTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getX() - finPVC_R.getPosition().getX()) < FastMath.abs(finPVC_R.getPosition().getX()) * 1e-11);
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getY() - finPVC_R.getPosition().getY()) < FastMath.abs(finPVC_R.getPosition().getY()) * 1e-11);
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
+    }
+
+    private Atmosphere getAtmosphere() {
+        return new HarrisPriester(CelestialBodyFactory.getSun(),
+                new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                        Constants.WGS84_EARTH_FLATTENING,
+                        FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
     }
 
     @BeforeEach

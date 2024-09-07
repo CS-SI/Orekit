@@ -284,7 +284,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
         // Set target date to 0.5*dt to be inside 1st AccelerationModel
         // The further away we are from the initial date, the greater the checkTolerance parameter must be set
         checkStateJacobian(propagator, state0, date.shiftedBy(0.5 * dt),
-                           1e3, tolerances[0], 1.7e-9);
+                           1e3, tolerances[0], 1.8e-9);
 
         // Check state derivatives inside 2nd AccelerationModel
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,

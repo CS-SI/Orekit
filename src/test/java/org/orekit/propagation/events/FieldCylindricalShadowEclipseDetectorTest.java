@@ -14,6 +14,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
+import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.*;
@@ -26,12 +27,28 @@ class FieldCylindricalShadowEclipseDetectorTest {
     }
 
     @Test
+    @Deprecated
+    void testConstructor() {
+        // GIVEN
+        final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final FieldEventDetectionSettings<Complex> fieldSettings = new FieldEventDetectionSettings<>(ComplexField.getInstance(),
+                settings);
+        // WHEN
+        final FieldCylindricalShadowEclipseDetector<Complex> detector = new FieldCylindricalShadowEclipseDetector<>(Mockito.mock(ExtendedPositionProvider.class),
+                Complex.ONE, fieldSettings.getMaxCheckInterval(), fieldSettings.getThreshold(), fieldSettings.getMaxIterationCount(),
+                Mockito.mock(FieldEventHandler.class));
+        // THEN
+        Assertions.assertEquals(fieldSettings.getMaxIterationCount(), detector.getDetectionSettings().getMaxIterationCount());
+        Assertions.assertEquals(fieldSettings.getThreshold(), detector.getDetectionSettings().getThreshold());
+    }
+
+    @Test
     void testCreate() {
         // GIVEN
         final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final FieldCylindricalShadowEclipseDetector<Complex> eclipseDetector = new FieldCylindricalShadowEclipseDetector<>(sun,
                 getComplexEarthRadius(), new FieldContinueOnEvent<>());
-        final FieldAdaptableInterval<Complex> adaptableInterval = state -> 1;
+        final FieldAdaptableInterval<Complex> adaptableInterval = FieldAdaptableInterval.of(1.);
         final Complex expectedThreshold = new Complex(0.1);
         final int expectedMaxIter = 10;
         // WHEN

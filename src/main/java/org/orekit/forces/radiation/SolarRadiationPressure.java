@@ -333,7 +333,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
 
         @SuppressWarnings("unchecked")
         final OccultationEngine.FieldOccultationAngles<T>[] angles =
-        (OccultationEngine.FieldOccultationAngles<T>[]) Array.newInstance(OccultationEngine.FieldOccultationAngles.class, n);
+            (OccultationEngine.FieldOccultationAngles<T>[]) Array.newInstance(OccultationEngine.FieldOccultationAngles.class, n);
         for (int i = 0; i < n; ++i) {
             angles[i] = occultingBodies.get(i).angles(state);
         }

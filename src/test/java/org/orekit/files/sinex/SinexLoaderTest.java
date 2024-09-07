@@ -24,15 +24,18 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.sinex.Station.ReferenceSystem;
+import org.orekit.models.earth.displacement.PsdCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeSpanMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
 public class SinexLoaderTest {
 
@@ -171,7 +174,7 @@ public class SinexLoaderTest {
         Assertions.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2021-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, refStation7237.distance(station7237.getEccentricities(new AbsoluteDate("2999-12-06T17:30:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, station7237.getEccentricitiesTimeSpanMap().getFirstTransition().getDate().durationFrom(new AbsoluteDate("1988-01-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
-        Assertions.assertTrue(station7237.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
+        Assertions.assertSame(station7237.getEccentricitiesTimeSpanMap().getLastTransition().getDate(), AbsoluteDate.FUTURE_INFINITY);
 
         // Verify station 7090
         final Station station7090 = loader.getStation("7090");
@@ -205,7 +208,7 @@ public class SinexLoaderTest {
         Assertions.assertEquals(0.0, refStation7090.distance(station7090.getEccentricities(new AbsoluteDate("2999-07-05T07:50:00.000", TimeScalesFactory.getUTC()))), 1.0e-15);
         Assertions.assertEquals(0.0, station7090.getEccentricitiesTimeSpanMap().getFirstTransition().getDate().durationFrom(new AbsoluteDate("1979-07-01T00:00:00.000", TimeScalesFactory.getUTC())), 1.0e-15);
 
-        Assertions.assertTrue(station7090.getEccentricitiesTimeSpanMap().getLastTransition().getDate() == AbsoluteDate.FUTURE_INFINITY);
+        Assertions.assertSame(station7090.getEccentricitiesTimeSpanMap().getLastTransition().getDate(), AbsoluteDate.FUTURE_INFINITY);
 
         // Verify station 7092
         final Station station7092 = loader.getStation("7092");
@@ -303,6 +306,65 @@ public class SinexLoaderTest {
             Assertions.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assertions.assertEquals(52, ((Integer) oe.getParts()[0]).intValue());
         }
+    }
+
+    @Test
+    public void testPostSeismicDeformation() {
+        SinexLoader loader = new SinexLoader("ITRF2020-psd-gnss.snx");
+
+        // 2010-02-27 06:34:16 https://earthquake.usgs.gov/earthquakes/eventpage/official20100227063411530_30/executive
+        final AbsoluteDate date2010 = new AbsoluteDate(2010, 2, 27, 6, 34, 16.0, TimeScalesFactory.getUTC());
+        final TimeSpanMap<List<PsdCorrection>> psdAntuco = loader.getStation("ANTC").getPsdTimeSpanMap();
+        Assertions.assertEquals(2, psdAntuco.getSpansNumber());
+        final List<PsdCorrection> corr2010 = psdAntuco.getFirstNonNullSpan().getData();
+        Assertions.assertEquals(5, corr2010.size());
+        Assertions.assertEquals(0, corr2010.get(0).getEarthquakeDate().durationFrom(date2010));
+        Assertions.assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(0).getEvolution());
+        Assertions.assertEquals(PsdCorrection.Axis.EAST, corr2010.get(0).getAxis());
+        Assertions.assertEquals(-1.28699198121674e-01, corr2010.get(0).getAmplitude(), 1.0e-14);
+        Assertions.assertEquals(8.08455225832410e-01, corr2010.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        Assertions.assertEquals(0, corr2010.get(1).getEarthquakeDate().durationFrom(date2010));
+        Assertions.assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(1).getEvolution());
+        Assertions.assertEquals(PsdCorrection.Axis.EAST, corr2010.get(1).getAxis());
+        Assertions.assertEquals(-3.56937459818481e-02, corr2010.get(1).getAmplitude(), 1.0e-14);
+        Assertions.assertEquals(3.53677247694474e-03, corr2010.get(1).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        Assertions.assertEquals(0, corr2010.get(2).getEarthquakeDate().durationFrom(date2010));
+        Assertions.assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(2).getEvolution());
+        Assertions.assertEquals(PsdCorrection.Axis.NORTH, corr2010.get(2).getAxis());
+        Assertions.assertEquals(8.76938710916818e-02, corr2010.get(2).getAmplitude(), 1.0e-14);
+        Assertions.assertEquals(6.74719810025941e+00, corr2010.get(2).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        Assertions.assertEquals(0, corr2010.get(3).getEarthquakeDate().durationFrom(date2010));
+        Assertions.assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(3).getEvolution());
+        Assertions.assertEquals(PsdCorrection.Axis.NORTH, corr2010.get(3).getAxis());
+        Assertions.assertEquals(1.23511869822841e-02, corr2010.get(3).getAmplitude(), 1.0e-14);
+        Assertions.assertEquals(1.72868196121241e-02, corr2010.get(3).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        Assertions.assertEquals(0, corr2010.get(4).getEarthquakeDate().durationFrom(date2010));
+        Assertions.assertEquals(PsdCorrection.TimeEvolution.LOG, corr2010.get(4).getEvolution());
+        Assertions.assertEquals(PsdCorrection.Axis.UP, corr2010.get(4).getAxis());
+        Assertions.assertEquals(5.50435552310340e-02, corr2010.get(4).getAmplitude(), 1.0e-14);
+        Assertions.assertEquals(4.70992312239571e-01, corr2010.get(4).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+
+        // 2013-08-30T16:25:03 https://earthquake.usgs.gov/earthquakes/eventpage/usb000jdt7/executive
+        // 2016-03-12T18:06:44 https://earthquake.usgs.gov/earthquakes/eventpage/at00o3xubc/executive
+        final AbsoluteDate date2013 = new AbsoluteDate(2013, 8, 30, 16, 25,  3.0, TimeScalesFactory.getUTC());
+        final AbsoluteDate date2016 = new AbsoluteDate(2016, 3, 12, 18,  6, 44.0, TimeScalesFactory.getUTC());
+        final TimeSpanMap<List<PsdCorrection>> psdAtkaIsland = loader.getStation("AB01").getPsdTimeSpanMap();
+        Assertions.assertEquals(3, psdAtkaIsland.getSpansNumber());
+        final List<PsdCorrection> corr2013 = psdAtkaIsland.getFirstNonNullSpan().getData();
+        Assertions.assertEquals(1, corr2013.size());
+        Assertions.assertEquals(0, corr2013.get(0).getEarthquakeDate().durationFrom(date2013));
+        Assertions.assertEquals(PsdCorrection.TimeEvolution.EXP, corr2013.get(0).getEvolution());
+        Assertions.assertEquals(PsdCorrection.Axis.NORTH, corr2013.get(0).getAxis());
+        Assertions.assertEquals(-1.16779196624443e-02, corr2013.get(0).getAmplitude(), 1.0e-14);
+        Assertions.assertEquals(5.02510982822891e-01, corr2013.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+        final List<PsdCorrection> corr2016 = psdAtkaIsland.getFirstNonNullSpan().next().getData();
+        Assertions.assertEquals(1, corr2016.size());
+        Assertions.assertEquals(0, corr2016.get(0).getEarthquakeDate().durationFrom(date2016));
+        Assertions.assertEquals(PsdCorrection.TimeEvolution.EXP, corr2016.get(0).getEvolution());
+        Assertions.assertEquals(PsdCorrection.Axis.NORTH, corr2016.get(0).getAxis());
+        Assertions.assertEquals(-1.31981162574364e-02, corr2016.get(0).getAmplitude(), 1.0e-14);
+        Assertions.assertEquals(1.02131561331021e+00, corr2016.get(0).getRelaxationTime() / Constants.JULIAN_YEAR, 1.0e-14);
+
     }
 
     private void checkStation(final Station station, final int startYear, final int startDay, final double secInStartDay,

@@ -18,9 +18,10 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.orekit.Utils;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -34,8 +35,13 @@ import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.as
 
 public class EcksteinHechlerPropagatorBuilderTest {
 
+    @BeforeEach
+    public void initialize() {
+        Utils.setDataRoot("potential");
+    }
+
     @Test
-    @DisplayName("Test copy method")
+    @SuppressWarnings("deprecation")
     void testCopyMethod() {
 
         // Given
@@ -44,18 +50,35 @@ public class EcksteinHechlerPropagatorBuilderTest {
                 new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
 
-        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider =
-                Mockito.mock(UnnormalizedSphericalHarmonicsProvider.class);
-        Mockito.when(harmonicsProvider.getMu()).thenReturn(Constants.EIGEN5C_EARTH_MU);
-
-        final PositionAngleType positionAngleType = null;
-        final double        positionScale = 10;
+        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(6, 0);
 
         final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit, harmonicsProvider,
-                positionAngleType, positionScale);
+                PositionAngleType.MEAN, 10.0);
 
         // When
         final EcksteinHechlerPropagatorBuilder copyBuilder = builder.copy();
+
+        // Then
+        assertPropagatorBuilderIsACopy(builder, copyBuilder);
+
+    }
+
+    @Test
+    void testClone() {
+
+        // Given
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                new Vector3D(10, 7668.6, 3)), FramesFactory.getGCRF(),
+                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+
+        final UnnormalizedSphericalHarmonicsProvider harmonicsProvider = GravityFieldFactory.getUnnormalizedProvider(6, 0);
+
+        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(orbit, harmonicsProvider,
+                PositionAngleType.MEAN, 10.0);
+
+        // When
+        final AbstractPropagatorBuilder copyBuilder = builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);

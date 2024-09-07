@@ -94,7 +94,7 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
-        this(s -> 2 * estimateNodesTimeSeparation(orbit) / 3, threshold,
+        this(AdaptableInterval.of(2 * estimateNodesTimeSeparation(orbit) / 3), threshold,
              DEFAULT_MAX_ITER, new StopOnIncreasing(),
              frame);
     }

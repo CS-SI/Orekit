@@ -139,6 +139,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
     /** Create a copy of a DSSTPropagatorBuilder object.
      * @return Copied version of the DSSTPropagatorBuilder
      */
+    @Deprecated
     public DSSTPropagatorBuilder copy() {
         final DSSTPropagatorBuilder copyBuilder =
                         new DSSTPropagatorBuilder(createInitialOrbit(),

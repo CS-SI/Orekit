@@ -16,10 +16,10 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.util.Precision;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.hipparchus.util.Precision;
 
 /** Cache for {@link AmbiguityDriver}.
  * @author Luc Maisonobe
@@ -56,13 +56,9 @@ public class AmbiguityCache {
      */
     public AmbiguityDriver getAmbiguity(final String emitter, final String receiver, final double wavelength) {
         final Key key = new Key(emitter, receiver, wavelength);
-        AmbiguityDriver driver = cache.get(key);
-        if (driver == null) {
-            // we need to create and cache a new parameter driver
-            driver = new AmbiguityDriver(emitter, receiver, wavelength);
-            cache.put(key, driver);
+        synchronized (cache) {
+            return cache.computeIfAbsent(key, k -> new AmbiguityDriver(emitter, receiver, wavelength));
         }
-        return driver;
     }
 
     /** Key for the map. */

@@ -20,15 +20,12 @@ import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.as
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.*;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -45,6 +42,7 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTZonal;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -62,6 +60,7 @@ public class DSSTPropagatorBuilderTest {
     private double minStep;
     private double maxStep;
     private double dP;
+    private double dV;
     private double[][] tolerance;
 
     private AbsoluteDate initDate;
@@ -73,14 +72,14 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIntegrators01() {
 
-        ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP, dV);
         doTestBuildPropagator(abBuilder);
     }
 
     @Test
     public void testIntegrators02() {
 
-        ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
+        ODEIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP, dV);
         doTestBuildPropagator(amBuilder);
     }
 
@@ -130,14 +129,14 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testIntegrators08() {
 
-        ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP, dV);
         doTestBuildPropagator(gbsBuilder);
     }
 
     @Test
     public void testIntegrators09() {
 
-        ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
+        ODEIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP, dV);
         doTestBuildPropagator(hh54Builder);
     }
 
@@ -160,27 +159,46 @@ public class DSSTPropagatorBuilderTest {
     }
 
     @Test
-    @DisplayName("Test copy method")
+    @SuppressWarnings("deprecation")
     void testCopyMethod() {
 
         // Given
-        final ODEIntegratorBuilder integratorBuilder = Mockito.mock(ODEIntegratorBuilder.class);
+        final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(3600.0);
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(
                 new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
                 new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
                                                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
 
-        final double               positionScale     = 1;
-        final PropagationType      propagationType   = PropagationType.OSCULATING;
-        final PropagationType      stateType         = PropagationType.OSCULATING;
-
         final DSSTPropagatorBuilder builder =
-                new DSSTPropagatorBuilder(orbit, integratorBuilder, positionScale, propagationType, stateType);
+                new DSSTPropagatorBuilder(orbit, integratorBuilder, 1.0, PropagationType.OSCULATING, PropagationType.OSCULATING);
 
-        builder.addForceModel(Mockito.mock(DSSTForceModel.class));
+        builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
 
         // When
         final DSSTPropagatorBuilder copyBuilder = builder.copy();
+
+        // Then
+        assertDSSTPropagatorBuilderIsACopy(builder, copyBuilder);
+
+    }
+
+    @Test
+    void testClone() {
+
+        // Given
+        final ODEIntegratorBuilder integratorBuilder = new ClassicalRungeKuttaIntegratorBuilder(3600.0);
+        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
+                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
+                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+
+        final DSSTPropagatorBuilder builder =
+                new DSSTPropagatorBuilder(orbit, integratorBuilder, 1.0, PropagationType.OSCULATING, PropagationType.OSCULATING);
+
+        builder.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
+
+        // When
+        final DSSTPropagatorBuilder copyBuilder = (DSSTPropagatorBuilder) builder.clone();
 
         // Then
         assertDSSTPropagatorBuilderIsACopy(builder, copyBuilder);
@@ -191,11 +209,17 @@ public class DSSTPropagatorBuilderTest {
                                                     final DSSTPropagatorBuilder actual) {
         assertPropagatorBuilderIsACopy(expected, actual);
 
-        Assertions.assertEquals(expected.getIntegratorBuilder(), actual.getIntegratorBuilder());
+        Assertions.assertEquals(expected.getIntegratorBuilder().getClass(), actual.getIntegratorBuilder().getClass());
         Assertions.assertEquals(expected.getPropagationType(), actual.getPropagationType());
         Assertions.assertEquals(expected.getStateType(), actual.getStateType());
         Assertions.assertEquals(expected.getMass(), actual.getMass());
-        Assertions.assertEquals(expected.getAllForceModels(), actual.getAllForceModels());
+        final List<DSSTForceModel> expectedForceModelList = expected.getAllForceModels();
+        final List<DSSTForceModel> actualForceModelList   = actual.getAllForceModels();
+        Assertions.assertEquals(expectedForceModelList.size(), actualForceModelList.size());
+        for (int i = 0; i < expectedForceModelList.size(); i++) {
+            Assertions.assertEquals(expectedForceModelList.get(i).getClass(), actualForceModelList.get(i).getClass());
+        }
+
     }
 
     private void doTestBuildPropagator(final ODEIntegratorBuilder foiBuilder) {
@@ -308,7 +332,7 @@ public class DSSTPropagatorBuilderTest {
     @Test
     public void testDeselectOrbitals() {
         // Integrator builder
-        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        final ODEIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP, dV);
         // Propagator builder
         final DSSTPropagatorBuilder builder = new DSSTPropagatorBuilder(orbit,
                                                                   dp54Builder,
@@ -327,11 +351,12 @@ public class DSSTPropagatorBuilderTest {
     @BeforeEach
     public void setUp() throws IOException, ParseException {
 
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:potential");
 
         minStep = 1.0;
         maxStep = 600.0;
         dP      = 10.0;
+        dV      = 0.0001;
 
         final Frame earthFrame = FramesFactory.getEME2000();
         initDate = new AbsoluteDate(2003, 07, 01, 0, 0, 00.000, TimeScalesFactory.getUTC());

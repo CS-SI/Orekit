@@ -1,0 +1,13 @@
+As all other sibling gravity fields resource folders for test purposes, only ONE file in
+this directory must match the default pattern for the format as defined in the class
+org.orekit.forces.gravity.potential.GravityFieldFactory. All other files names must NOT
+match the default pattern.
+
+This ensures that when we specify only the directory name in the data roots (i.e.
+potential/egm-format, or potential/grgs-format, or potential/icgem-format, or
+potential/shm-format), then we know for sure which file will be selected by the default
+configuration.
+
+Loading the other files (the ones which do not match the default pattern) is done in test
+files by explicitly setting a reader with the specific non-default name and adding the
+reader to the factory by calling GravityFieldFactory.addPotentialCoefficientsReader.

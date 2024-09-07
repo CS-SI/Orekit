@@ -18,6 +18,7 @@ package org.orekit.propagation;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.FieldElement;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.BlockFieldMatrix;
 import org.hipparchus.linear.FieldMatrix;
@@ -37,15 +38,22 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOF;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+
+import java.util.Arrays;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class FieldStateCovarianceTest {
 
@@ -1066,6 +1074,105 @@ class FieldStateCovarianceTest {
         // Assert position angle type
         Assertions.assertEquals(positionAngleType, stateCovariance.getPositionAngleType());
 
+    }
+
+    @Test
+    public void testIssue1485CartesianOrbitTypeAndNullAngleType() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestIssue1485CartesianOrbitTypeAndNullAngleType(field);
+    }
+
+    <T extends CalculusFieldElement<T>> void doTestIssue1485CartesianOrbitTypeAndNullAngleType(final Field<T> field) {
+        // GIVEN
+        final T                    one            = field.getOne();
+        final FieldAbsoluteDate<T> date           = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldMatrix<T>       expectedMatrix = MatrixUtils.createFieldIdentityMatrix(field, 6);
+        final PositionAngleType    anomalyType    = PositionAngleType.MEAN;
+        final Frame                inFrame        = FramesFactory.getEME2000();
+        final Frame                outFrame       = FramesFactory.getGCRF();
+        final double               mu             = Constants.EGM96_EARTH_MU;
+
+        final FieldKeplerianOrbit<T> orbit =
+                new FieldKeplerianOrbit<>(one.multiply(1e7), one.multiply(0.01), one.multiply(1.), one.multiply(2.),
+                                          one.multiply(3.), one.multiply(4.), anomalyType, inFrame, date, one.multiply(mu));
+
+        final FieldStateCovariance<T> originalCovariance =
+                new FieldStateCovariance<>(expectedMatrix, date, inFrame, OrbitType.CARTESIAN, null);
+
+        // WHEN & THEN
+        assertDoesNotThrow(() -> originalCovariance.changeCovarianceFrame(orbit, outFrame));
+
+        // THEN
+        final FieldStateCovariance<T> convertedCovariance = originalCovariance.changeCovarianceFrame(orbit, outFrame);
+        assertEquals(getNorm1(originalCovariance.getMatrix()), getNorm1(convertedCovariance.getMatrix()));
+    }
+
+    @Test
+    void testIssue1485SameLOF() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final LOF             lof   = LOFType.TNW;
+
+        // WHEN & THEN
+        doTestIssue1485SameFrameDefinition(field, lof);
+    }
+
+    @Test
+    void testIssue1485SameFrame() {
+        // GIVEN
+        final Field<Binary64> field   = Binary64Field.getInstance();
+        final Frame           eme2000 = FramesFactory.getEME2000();
+
+        // WHEN & THEN
+        doTestIssue1485SameFrameDefinition(field, eme2000);
+    }
+
+    <T, I extends CalculusFieldElement<I>> void doTestIssue1485SameFrameDefinition(Field<I> field, T frameOrLOF) {
+        // GIVEN
+        final I                    one            = field.getOne();
+        final FieldAbsoluteDate<I> date           = new FieldAbsoluteDate<>(field, AbsoluteDate.ARBITRARY_EPOCH);
+        final FieldMatrix<I>       expectedMatrix = MatrixUtils.createFieldIdentityMatrix(field, 6);
+        final PositionAngleType    anomalyType    = PositionAngleType.MEAN;
+        final Frame                frame          = FramesFactory.getEME2000();
+        final double               mu             = Constants.EGM96_EARTH_MU;
+        final FieldKeplerianOrbit<I> orbit =
+                new FieldKeplerianOrbit<>(one.multiply(1e7), one.multiply(0.01), one.multiply(1.), one.multiply(2.),
+                                          one.multiply(3.), one.multiply(4.), anomalyType, frame, date, one.multiply(mu));
+        // WHEN
+        final FieldStateCovariance<I> originalCovariance;
+        final FieldStateCovariance<I> covariance;
+        if (frameOrLOF instanceof LOF) {
+            originalCovariance = new FieldStateCovariance<>(expectedMatrix, date, (LOF) frameOrLOF);
+            covariance         = originalCovariance.changeCovarianceFrame(orbit, (LOF) frameOrLOF);
+        } else {
+            originalCovariance =
+                    new FieldStateCovariance<>(expectedMatrix, date, (Frame) frameOrLOF, orbit.getType(), anomalyType);
+            covariance         = originalCovariance.changeCovarianceFrame(orbit, (Frame) frameOrLOF);
+        }
+
+        // THEN
+        final FieldMatrix<I> actualMatrix = covariance.getMatrix();
+        Assertions.assertEquals(0, getNorm1(actualMatrix.subtract(expectedMatrix)));
+    }
+
+    /**
+     * Compute L1 norm of given field matrix
+     *
+     * @param fieldMatrix field matrix
+     * @param <I> type of field element
+     * @return real L1 norm
+     */
+    private <I extends CalculusFieldElement<I>> double getNorm1(final FieldMatrix<I> fieldMatrix) {
+
+        return Arrays.stream(
+                             Arrays.stream(fieldMatrix.getData())
+                                   .flatMap(Arrays::stream)
+                                   .mapToDouble(FieldElement::getReal)
+                                   .toArray())
+                     .sum();
     }
 
 }

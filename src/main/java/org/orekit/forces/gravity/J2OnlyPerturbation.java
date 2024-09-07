@@ -170,46 +170,73 @@ public class J2OnlyPerturbation implements ForceModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D acceleration(final SpacecraftState state, final double[] parameters) {
-        final Vector3D positionInJ2Frame = state.getPosition(frame);
+        final AbsoluteDate date = state.getDate();
+        final StaticTransform fromPropagationToJ2Frame = state.getFrame().getStaticTransformTo(frame, date);
+        final Vector3D positionInJ2Frame = fromPropagationToJ2Frame.transformPosition(state.getPosition());
+        final double j2 = j2OverTime.value(date);
+        final Vector3D accelerationInJ2Frame = computeAccelerationInJ2Frame(positionInJ2Frame, mu, rEq, j2);
+        final StaticTransform fromJ2FrameToPropagationOne = fromPropagationToJ2Frame.getStaticInverse();
+        return fromJ2FrameToPropagationOne.transformVector(accelerationInJ2Frame);
+    }
+
+    /**
+     * Compute acceleration in J2 frame.
+     * @param positionInJ2Frame position in J2 frame@
+     * @param mu gravitational parameter
+     * @param rEq equatorial radius
+     * @param j2 J2 coefficient
+     * @return acceleration in J2 frame
+     */
+    public static Vector3D computeAccelerationInJ2Frame(final Vector3D positionInJ2Frame, final double mu,
+                                                        final double rEq, final double j2) {
         final double squaredRadius = positionInJ2Frame.getNormSq();
         final double squaredZ = positionInJ2Frame.getZ() * positionInJ2Frame.getZ();
         final double ratioTimesFive = 5. * squaredZ / squaredRadius;
         final double ratioTimesFiveMinusOne = ratioTimesFive - 1.;
-        final double accelerationX = positionInJ2Frame.getX() * ratioTimesFiveMinusOne;
-        final double accelerationY = positionInJ2Frame.getY() * ratioTimesFiveMinusOne;
-        final double accelerationZ = positionInJ2Frame.getZ() * (ratioTimesFive - 3);
-        final Vector3D accelerationInJ2Frame = new Vector3D(accelerationX, accelerationY, accelerationZ);
-        final AbsoluteDate date = state.getDate();
-        final StaticTransform fromJ2FrameToPropagationOne = frame.getTransformTo(state.getFrame(), date);
-        final Vector3D transformedAcceleration = fromJ2FrameToPropagationOne.transformVector(accelerationInJ2Frame);
-        final double j2 = j2OverTime.value(date);
+        final double componentX = positionInJ2Frame.getX() * ratioTimesFiveMinusOne;
+        final double componentY = positionInJ2Frame.getY() * ratioTimesFiveMinusOne;
+        final double componentZ = positionInJ2Frame.getZ() * (ratioTimesFive - 3);
         final double squaredRadiiRatio = rEq * rEq / squaredRadius;
         final double cubedRadius = squaredRadius * FastMath.sqrt(squaredRadius);
         final double factor = 3 * j2 * mu * squaredRadiiRatio / (2 * cubedRadius);
-        return transformedAcceleration.scalarMultiply(factor);
+        return new Vector3D(componentX, componentY, componentZ).scalarMultiply(factor);
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
                                                                              final T[] parameters) {
-        final FieldVector3D<T> positionInJ2Frame = state.getPosition(frame);
+        final FieldAbsoluteDate<T> date = state.getDate();
+        final FieldStaticTransform<T> fromPropagationToJ2Frame = state.getFrame().getStaticTransformTo(frame, date);
+        final FieldVector3D<T> positionInJ2Frame = fromPropagationToJ2Frame.transformPosition(state.getPosition());
+        final FieldVector3D<T> accelerationInJ2Frame = computeAccelerationInJ2Frame(positionInJ2Frame, mu, rEq,
+                j2OverTime.value(date));
+        final FieldStaticTransform<T> fromJ2FrameToPropagation = fromPropagationToJ2Frame.getStaticInverse();
+        return fromJ2FrameToPropagation.transformVector(accelerationInJ2Frame);
+    }
+
+    /**
+     * Compute acceleration in J2 frame. Field version.
+     * @param positionInJ2Frame position in J2 frame@
+     * @param mu gravitational parameter
+     * @param rEq equatorial radius
+     * @param j2 J2 coefficient
+     * @param <T> field type
+     * @return acceleration in J2 frame
+     */
+    public static <T extends CalculusFieldElement<T>> FieldVector3D<T> computeAccelerationInJ2Frame(final FieldVector3D<T> positionInJ2Frame,
+                                                                                                    final double mu, final double rEq, final T j2) {
         final T squaredRadius = positionInJ2Frame.getNormSq();
         final T squaredZ = positionInJ2Frame.getZ().square();
         final T ratioTimesFive = squaredZ.multiply(5.).divide(squaredRadius);
         final T ratioTimesFiveMinusOne = ratioTimesFive.subtract(1.);
-        final T accelerationX = positionInJ2Frame.getX().multiply(ratioTimesFiveMinusOne);
-        final T accelerationY = positionInJ2Frame.getY().multiply(ratioTimesFiveMinusOne);
-        final T accelerationZ = positionInJ2Frame.getZ().multiply(ratioTimesFive.subtract(3.));
-        final FieldVector3D<T> accelerationInJ2Frame = new FieldVector3D<>(accelerationX, accelerationY, accelerationZ);
-        final FieldAbsoluteDate<T> date = state.getDate();
-        final FieldStaticTransform<T> fromJ2FrameToPropagationOne = frame.getTransformTo(state.getFrame(), date);
-        final FieldVector3D<T> transformedAcceleration = fromJ2FrameToPropagationOne.transformVector(accelerationInJ2Frame);
-        final T j2 = j2OverTime.value(date);
+        final T componentX = positionInJ2Frame.getX().multiply(ratioTimesFiveMinusOne);
+        final T componentY = positionInJ2Frame.getY().multiply(ratioTimesFiveMinusOne);
+        final T componentZ = positionInJ2Frame.getZ().multiply(ratioTimesFive.subtract(3.));
         final T squaredRadiiRatio = squaredRadius.reciprocal().multiply(rEq * rEq);
         final T cubedRadius = squaredRadius.multiply(FastMath.sqrt(squaredRadius));
         final T factor = j2.multiply(mu).multiply(3.).multiply(squaredRadiiRatio).divide(cubedRadius.multiply(2));
-        return transformedAcceleration.scalarMultiply(factor);
+        return new FieldVector3D<>(componentX, componentY, componentZ).scalarMultiply(factor);
     }
 
     /** {@inheritDoc} */

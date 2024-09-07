@@ -41,7 +41,7 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
     private final PositionAngleType angleType;
 
     /** Attitude provider. */
-    private final AttitudeProvider attitudeProvider;
+    private AttitudeProvider attitudeProvider;
 
     /** Central attraction coefficient. */
     private final T mu;
@@ -119,6 +119,14 @@ public abstract class FieldStateMapper<T extends CalculusFieldElement<T>> {
      */
     public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
+    }
+
+    /**
+     * Setter for the attitude provider.
+     * @param attitudeProvider new attitude provider
+     */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+        this.attitudeProvider = attitudeProvider;
     }
 
     /** Map the raw double time offset to a date.

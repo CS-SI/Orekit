@@ -39,9 +39,7 @@ import org.orekit.time.TimeStamped;
  * example an orbit count that changes at ascending nodes (in which case the
  * entry would be an {@link Integer}), or a visibility status between several
  * objects (in which case the entry would be a {@link Boolean}) or a drag
- * coefficient that is expected to be estimated daily or three-hourly (this is
- * how {@link org.orekit.forces.drag.TimeSpanDragForce TimeSpanDragForce} is
- * implemented).
+ * coefficient that is expected to be estimated daily or three-hourly.
  * </p>
  * <p>
  * Time span maps are built progressively. At first, they contain one

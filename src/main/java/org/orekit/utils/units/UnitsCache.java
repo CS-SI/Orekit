@@ -46,17 +46,13 @@ public class UnitsCache {
      */
     public Unit getUnits(final String specification) {
 
-        if (specification == null) {
+        if (specification == null || specification.isEmpty()) {
             return Unit.NONE;
         }
 
-        Unit cached = cache.get(specification);
-        if (cached == null) {
-            cached = Unit.parse(specification);
-            cache.put(specification, cached);
+        synchronized (cache) {
+            return cache.computeIfAbsent(specification, s -> Unit.parse(specification));
         }
-
-        return cached;
 
     }
 

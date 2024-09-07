@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -26,20 +28,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.DSFactory;
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
-import org.hipparchus.analysis.differentiation.FDSFactory;
-import org.hipparchus.analysis.differentiation.FieldDerivativeStructure;
-import org.hipparchus.analysis.differentiation.FieldGradient;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.analysis.differentiation.SparseGradient;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative2Field;
+import org.hipparchus.analysis.differentiation.*;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.complex.FieldComplex;
@@ -166,6 +155,12 @@ public class FieldAbsoluteDateTest {
     public void testInstantAccuracy() {
         doTestInstantAccuracy(Binary64Field.getInstance());
     }
+
+    @Test
+    public void testToInstant() {
+        doTestToInstant(Binary64Field.getInstance());
+    }
+
 
     @Test
     public void testUtcGpsOffset() {
@@ -510,6 +505,11 @@ public class FieldAbsoluteDateTest {
         doTestShiftedByWithTimeUnit(Binary64Field.getInstance());
     }
 
+    @Test
+    public void testToStringWithoutUtcOffset() {
+        doTestToStringWithoutUtcOffset(Binary64Field.getInstance());
+    }
+
 
     private <T extends CalculusFieldElement<T>> void doTestStandardEpoch(final Field<T> field) {
 
@@ -761,11 +761,30 @@ public class FieldAbsoluteDateTest {
     private <T extends CalculusFieldElement<T>> void doTest1970Instant(final Field<T> field) {
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, utc).toString());
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.EPOCH, (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new FieldAbsoluteDate<>(field, Instant.ofEpochMilli(0l), (UTCScale) utc).toString());
     }
 
     private <T extends CalculusFieldElement<T>> void doTestInstantAccuracy(final Field<T> field) {
         Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), utc).toString());
         Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), utc).toString());
+        Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(87400, 123456789), (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new FieldAbsoluteDate<>(field, Instant.ofEpochSecond(519000, 123456789), (UTCScale) utc).toString());
+    }
+
+    public <T extends CalculusFieldElement<T>> void doTestToInstant(final Field<T> field) {
+        Assertions.assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant());
+        Assertions.assertEquals(Instant.ofEpochSecond(0), new FieldAbsoluteDate<>(field, "1970-01-01T00:00:00.000Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
+        Instant expectedInstant = Instant.ofEpochSecond(519000, 123456789);
+        Assertions.assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant());
+        Assertions.assertEquals(expectedInstant, new FieldAbsoluteDate<>(field, "1970-01-07T00:10:00.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
+        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+            new FieldAbsoluteDate(field,"2024-05-15T09:32:36.123456789Z", utc).toInstant());
+        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+            new FieldAbsoluteDate(field, "2024-05-15T09:32:36.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
     }
 
     private <T extends CalculusFieldElement<T>> void doTestUtcGpsOffset(final Field<T> field) {
@@ -1627,6 +1646,56 @@ public class FieldAbsoluteDateTest {
         }
     }
 
+    public <T extends CalculusFieldElement<T>> void doTestToStringWithoutUtcOffset(final Field<T> field) {
+        // setup
+        FieldAbsoluteDate<T> date = new FieldAbsoluteDate<T>(field,2009, 1, 1, utc);
+        double one = FastMath.nextDown(1.0);
+        double zeroUlp = FastMath.nextUp(0.0);
+        double oneUlp = FastMath.ulp(1.0);
+        //double sixty = FastMath.nextDown(60.0);
+        double sixtyUlp = FastMath.ulp(60.0);
+
+        // action
+        // test midnight
+        checkToStringNoOffset(date, "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(1), "2009-01-01T00:00:01.000");
+        // test digits and rounding
+        checkToStringNoOffset(date.shiftedBy(12.3456789123456789), "2009-01-01T00:00:12.346");
+        checkToStringNoOffset(date.shiftedBy(0.0123456789123456789), "2009-01-01T00:00:00.012");
+        // test min and max values
+        checkToStringNoOffset(date.shiftedBy(zeroUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(59.0).shiftedBy(one), "2009-01-01T00:01:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(86399).shiftedBy(one), "2009-01-02T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(oneUlp), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(one), "2009-01-01T00:00:01.000");
+        checkToStringNoOffset(date.shiftedBy(-zeroUlp), "2009-01-01T00:00:00.000");
+        // test leap
+        // Orekit 10.1 throw OIAE, 10.2 rounds up
+        checkToStringNoOffset(date.shiftedBy(-oneUlp), "2009-01-01T00:00:00.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(one), "2009-01-01T00:00:00.000");
+        checkToStringNoOffset(date.shiftedBy(-0.5), "2008-12-31T23:59:60.500");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-zeroUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-oneUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-2), "2008-12-31T23:59:59.000");
+        // Orekit 10.1 rounds up
+        checkToStringNoOffset(date.shiftedBy(-1).shiftedBy(-sixtyUlp), "2008-12-31T23:59:60.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(zeroUlp), "2008-12-31T23:59:00.000");
+        checkToStringNoOffset(date.shiftedBy(-61).shiftedBy(oneUlp), "2008-12-31T23:59:00.000");
+    }
+
+
+    private <T extends CalculusFieldElement<T>> void checkToStringNoOffset(final FieldAbsoluteDate<T> d, final String s) {
+        MatcherAssert.assertThat(d.toStringWithoutUtcOffset(utc, 3), CoreMatchers.is(s));
+        MatcherAssert.assertThat(
+            d.getComponents(utc).toStringWithoutUtcOffset(utc.minuteDuration(d), 3),
+            CoreMatchers.is(s));
+    }
+
     private <T extends CalculusFieldElement<T>> void check(FieldAbsoluteDate<T> date,
                        int year, int month, int day, int hour, int minute, double second,
                        double roundTripUlps, final int secondUlps, final double absTol) {
@@ -1685,4 +1754,85 @@ public class FieldAbsoluteDateTest {
         }
     }
 
+    @Test
+    public void doTestGetJulianDatesWithBinar64() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+
+        // WHEN & THEN
+        doTestGetJulianDates(field);
+    }
+
+    public <T extends CalculusFieldElement<T>> void doTestGetJulianDates(Field<T> field) {
+        // GIVEN a reference date
+        final T one = field.getOne();
+        final TimeScale utc = TimeScalesFactory.getUTC();
+
+        FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2024, 7, 4, 13, 0, 0, utc);
+        FieldAbsoluteDate<T> referenceFromJDMethod =
+                FieldAbsoluteDate.createJDDate(2460496, one.multiply(0.0416667 * Constants.JULIAN_DAY), utc);
+        FieldAbsoluteDate<T> referenceFromMJDMethod =
+                FieldAbsoluteDate.createMJDDate(60495, one.multiply(0.54166670 * Constants.JULIAN_DAY), utc);
+
+        // WHEN converting it to Julian Date or Modified Julian Date
+        T mjdDateDefaultData = reference.getMJD();
+        T jdDateDefaultData  = reference.getJD();
+        T mjdDate = reference.getMJD(utc);
+        T jdDate  = reference.getJD(utc);
+
+        // THEN
+        // source : Time/Date Converter - HEASARC - NASA
+        Assertions.assertEquals(2460496.0416667, jdDateDefaultData.getReal(), 1.0e-6);
+        Assertions.assertEquals(60495.54166670, mjdDateDefaultData.getReal(), 1.0e-6);
+        Assertions.assertEquals(jdDate, jdDateDefaultData);
+        Assertions.assertEquals(mjdDate, mjdDateDefaultData);
+
+        // Assert that static method are correct when creating date from JD or MJD
+        Assertions.assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
+        Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
+    }
+
+    @Test
+    void testGetJD() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(),
+                date).shiftedBy(new UnivariateDerivative1(0., 1));
+        // WHEN
+        final UnivariateDerivative1 jdField = fieldDate.getJD();
+        // THEN
+        final double shift = 10.;
+        final FieldAbsoluteDate<UnivariateDerivative1> shiftedDate = fieldDate.shiftedBy(shift);
+        final double expectedJdDerivative = (shiftedDate.getJD().getReal() - jdField.getReal()) / shift;
+        Assertions.assertEquals(expectedJdDerivative, jdField.getFirstDerivative(), 1e-10);
+    }
+
+    @Test
+    void testGetMJD() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate = new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(),
+                date).shiftedBy(new UnivariateDerivative1(0., 1));
+        // WHEN
+        final UnivariateDerivative1 mjdField = fieldDate.getMJD();
+        // THEN
+        final double shift = 10.;
+        final FieldAbsoluteDate<UnivariateDerivative1> shiftedDate = fieldDate.shiftedBy(shift);
+        final double expectedMjdDerivative = (shiftedDate.getMJD().getReal() - mjdField.getReal()) / shift;
+        Assertions.assertEquals(expectedMjdDerivative, mjdField.getFirstDerivative(), 1e-10);
+    }
+
+    @Test
+    void testToFUD2Field() {
+        // GIVEN
+        final Field<Binary64> field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        // WHEN
+        final FieldAbsoluteDate<FieldUnivariateDerivative2<Binary64>> ud2Date = date.toFUD2Field();
+        // THEN
+        Assertions.assertEquals(date.toAbsoluteDate(), ud2Date.toAbsoluteDate());
+        final FieldUnivariateDerivative2<Binary64> shift = ud2Date.durationFrom(date.toAbsoluteDate());
+        Assertions.assertEquals(field.getOne(), shift.getFirstDerivative());
+        Assertions.assertEquals(field.getZero(), shift.getSecondDerivative());
+    }
 }

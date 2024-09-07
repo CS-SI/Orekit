@@ -241,31 +241,31 @@ public abstract class Orbit
      */
     public abstract double getADot();
 
-    /** Get the first component of the equinoctial eccentricity vector derivative.
-     * @return first component of the equinoctial eccentricity vector derivative
+    /** Get the first component of the equinoctial eccentricity vector.
+     * @return first component of the equinoctial eccentricity vector
      */
     public abstract double getEquinoctialEx();
 
-    /** Get the first component of the equinoctial eccentricity vector.
+    /** Get the first component of the equinoctial eccentricity vector derivative.
      * <p>
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
-     * @return first component of the equinoctial eccentricity vector
+     * @return first component of the equinoctial eccentricity vector derivative
      * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEquinoctialExDot();
 
-    /** Get the second component of the equinoctial eccentricity vector derivative.
-     * @return second component of the equinoctial eccentricity vector derivative
+    /** Get the second component of the equinoctial eccentricity vector.
+     * @return second component of the equinoctial eccentricity vector
      */
     public abstract double getEquinoctialEy();
 
-    /** Get the second component of the equinoctial eccentricity vector.
+    /** Get the second component of the equinoctial eccentricity vector derivative.
      * <p>
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
-     * @return second component of the equinoctial eccentricity vector
+     * @return second component of the equinoctial eccentricity vector derivative
      * @see #hasDerivatives()
      * @since 9.0
      */
@@ -461,6 +461,12 @@ public abstract class Orbit
     /** {@inheritDoc} */
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getPosition(final AbsoluteDate otherDate, final Frame otherFrame) {
+        return shiftedBy(otherDate.durationFrom(getDate())).getPosition(otherFrame);
     }
 
     /** Get the position in a specified frame.

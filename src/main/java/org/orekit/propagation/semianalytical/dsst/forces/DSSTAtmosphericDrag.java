@@ -51,14 +51,16 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     /** Threshold for the choice of the Gauss quadrature order. */
     private static final double GAUSS_THRESHOLD = 6.0e-10;
 
-    /** Upper limit for atmospheric drag (m) . */
-    private static final double ATMOSPHERE_ALTITUDE_MAX = 1000000.;
+    /** Default upper limit for atmospheric drag (m) . */
+    private static final double DEFAULT_MAX_ATMOSPHERE_ALTITUDE = 1000000.;
 
     /** Atmospheric drag force model. */
     private final DragForce drag;
 
-    /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
-    private final double     rbar;
+    /** Critical distance from the center of the central body for
+     * entering/leaving the atmosphere, i.e. upper limit of atmosphere.
+     */
+    private double rbar;
 
     /** Simple constructor with custom force.
      * @param force atmospheric drag force model
@@ -68,7 +70,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         //Call to the constructor from superclass using the numerical drag model as ForceModel
         super("DSST-drag-", GAUSS_THRESHOLD, force, mu);
         this.drag = force;
-        this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
+        this.rbar = DEFAULT_MAX_ATMOSPHERE_ALTITUDE + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
     }
 
     /** Simple constructor assuming spherical spacecraft.
@@ -109,6 +111,16 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      */
     public double getRbar() {
         return rbar;
+    }
+
+    /** Set the critical distance from the center of the central body at which
+     * the atmosphere is considered to end, i.e. beyond this distance
+     * atmospheric drag is not considered.
+     *
+     *  @param rbar the critical distance from the center of the central body (m)
+     */
+    public void setRbar(final double rbar) {
+        this.rbar = rbar;
     }
 
     /** {@inheritDoc} */

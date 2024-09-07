@@ -18,6 +18,9 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -418,15 +421,39 @@ public class AbsoluteDate
     }
 
     /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
+     *
+     * @deprecated Use {@link AbsoluteDate#AbsoluteDate(Instant, UTCScale)} or {@link AbsoluteDate#AbsoluteDate(Instant)} instead
      * @param instant instant in the time scale
      * @param timeScale time scale
      * @since 12.0
      */
+    @Deprecated
     public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH,
                                 (int) (instant.getEpochSecond() / 86400L)),
              instantToTimeComponents(instant),
              timeScale);
+    }
+
+    /** Build an instance from an {@link Instant instant} in utc time scale.
+     * @param instant instant in the time scale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public AbsoluteDate(final Instant instant) {
+        this(instant, TimeScalesFactory.getUTC());
+    }
+
+    /** Build an instance from an {@link Instant instant} in the {@link UTCScale time scale}.
+     * @param instant instant in the time scale
+     * @param utcScale utc time scale
+     * @since 12.1
+     */
+    public AbsoluteDate(final Instant instant, final UTCScale utcScale) {
+        this(new DateComponents(DateComponents.JAVA_EPOCH,
+                (int) (instant.getEpochSecond() / 86400l)),
+            instantToTimeComponents(instant),
+            utcScale);
     }
 
     /** Build an instance from an elapsed duration since to another instant.
@@ -1013,6 +1040,36 @@ public class AbsoluteDate
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public Instant toInstant() {
+        return toInstant(TimeScalesFactory.getTimeScales());
+    }
+
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @param timeScales the timescales to use
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    public Instant toInstant(final TimeScales timeScales) {
+        final UTCScale utc = timeScales.getUTC();
+        final String stringWithoutUtcOffset = toStringWithoutUtcOffset(utc, 9);
+
+        final LocalDateTime localDateTime = LocalDateTime.parse(stringWithoutUtcOffset, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return localDateTime.toInstant(ZoneOffset.UTC);
+    }
+
     /** Split the instance into date/time components.
      * @param timeScale time scale to use
      * @return date/time components
@@ -1479,4 +1536,53 @@ public class AbsoluteDate
                 .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
     }
 
+    /**
+     * Return the given date as a Modified Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     *
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getMJD() {
+        return this.getJD() - DateComponents.JD_TO_MJD;
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     *
+     * @since 12.2
+     */
+    public double getMJD(final TimeScale ts) {
+        return this.getJD(ts) - DateComponents.JD_TO_MJD;
+    }
+
+    /**
+     * Return the given date as a Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Julian Date.
+     *
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public double getJD() {
+        return getJD(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return the given date as a Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     *
+     * @return double representation of the given date as Julian Date.
+     *
+     * @since 12.2
+     */
+    public double getJD(final TimeScale ts) {
+        return this.getComponents(ts).offsetFrom(DateTimeComponents.JULIAN_EPOCH) / Constants.JULIAN_DAY;
+    }
 }

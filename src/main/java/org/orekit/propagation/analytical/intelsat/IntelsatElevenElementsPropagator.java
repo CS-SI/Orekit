@@ -298,4 +298,14 @@ public class IntelsatElevenElementsPropagator extends AbstractAnalyticalPropagat
     public Frame getFrame() {
         return inertialFrame;
     }
+
+    /**
+     * Get the Intelsat's 11 elements used by the propagator.
+     *
+     * @return the Intelsat's 11 elements used by the propagator
+     */
+    public IntelsatElevenElements getIntelsatElevenElements() {
+        return elements;
+    }
+
 }

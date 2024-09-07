@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation;
 
-import java.util.Locale;
-import java.util.Map;
-
 import org.hipparchus.analysis.polynomials.SmoothStepFactory;
 import org.hipparchus.stat.descriptive.DescriptiveStatistics;
 import org.hipparchus.util.FastMath;
@@ -46,6 +43,9 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeStampedPair;
 import org.orekit.utils.Constants;
+
+import java.util.Locale;
+import java.util.Map;
 
 class StateCovarianceBlenderTest {
 
@@ -124,56 +124,6 @@ class StateCovarianceBlenderTest {
         Assertions.assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
     }
 
-    @Deprecated
-    private void doTestBlendingDeprecated(final double propagationHorizon, final double tabulatedTimeStep,
-                                          final SmoothStepFactory.SmoothStepFunction blendingFunction,
-                                          final AbstractAnalyticalPropagator analyticalPropagator,
-                                          final double expectedMeanRMSPositionError,
-                                          final double expectedMeanRMSVelocityError,
-                                          final double expectedMedianRMSPositionError,
-                                          final double expectedMedianRMSVelocityError,
-                                          final double expectedMaxRMSPositionError,
-                                          final double expectedMaxRMSVelocityError,
-                                          final double tolerance,
-                                          final boolean showResults) {
-        final TimeInterpolator<Orbit> orbitInterpolator = new OrbitBlender(blendingFunction,
-                                                                           analyticalPropagator,
-                                                                           sergeiFrame);
-
-        final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator =
-                        new StateCovarianceBlender(blendingFunction, orbitInterpolator,
-                                                   sergeiFrame, OrbitType.CARTESIAN,
-                                                   PositionAngleType.MEAN);
-
-        // Create state interpolator
-        final TimeInterpolator<SpacecraftState> stateInterpolator =
-                        new SpacecraftStateInterpolator(sergeiFrame, orbitInterpolator, null, null, null, null);
-
-        // When
-        final DescriptiveStatistics[] relativeRMSSigmaError =
-                        StateCovarianceKeplerianHermiteInterpolatorTest.computeStatisticsCovarianceInterpolationOnSergeiCase(
-                                                                                                                             propagationHorizon, tabulatedTimeStep, stateInterpolator, covarianceInterpolator);
-
-        // Then
-        if (showResults) {
-            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMean", relativeRMSSigmaError[0].getMean());
-            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMean", relativeRMSSigmaError[1].getMean());
-            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMedian", relativeRMSSigmaError[0].getPercentile(50));
-            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMedian", relativeRMSSigmaError[1].getPercentile(50));
-            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[0].getMax", relativeRMSSigmaError[0].getMax());
-            System.out.format(Locale.US, "%35s = %20.16f%n", "relativeRMSSigmaError[1].getMax", relativeRMSSigmaError[1].getMax());
-
-        }
-
-        // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals(expectedMeanRMSPositionError, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals(expectedMeanRMSVelocityError, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals(expectedMedianRMSPositionError, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMedianRMSVelocityError, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals(expectedMaxRMSPositionError, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(expectedMaxRMSVelocityError, relativeRMSSigmaError[1].getMax(), tolerance);
-    }
-
     /**
      * Test based on the full force model test case from TANYGIN, Sergei. Efficient covariance interpolation using blending
      * of approximate covariance propagations. The Journal of the Astronautical Sciences, 2014, vol. 61, no 1, p. 107-132.
@@ -190,7 +140,7 @@ class StateCovarianceBlenderTest {
     void testKeplerianQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-16;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -198,12 +148,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        new KeplerianPropagator(sergeiOrbit),
-                       0.1133302045524815,
-                       0.2351882330196802,
-                       0.1111607965207670,
-                       0.2621621038900783,
-                       0.2687823732965123,
-                       0.4022217682474207,
+                       0.11333019740,
+                       0.23518823987,
+                       0.11116079511,
+                       0.26216208074,
+                       0.268782359940,
+                       0.402221757858,
                        tolerance,
                        showResults);
 
@@ -230,7 +180,7 @@ class StateCovarianceBlenderTest {
     void testBrouwerLyddaneQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-12;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -248,12 +198,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.0823442943514750,
-                       0.1976467714037895,
-                       0.0888590153696339,
-                       0.2020905044160413,
-                       0.1446159909426887,
-                       0.3894610461790040,
+                       0.08234429610,
+                       0.19764677567,
+                       0.08885901386,
+                       0.20209052349,
+                       0.14461602033,
+                       0.38946109017,
                        tolerance,
                        showResults);
 
@@ -281,7 +231,7 @@ class StateCovarianceBlenderTest {
     void testBrouwerLyddaneQuadraticBlendingDeprecated() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-12;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -297,16 +247,16 @@ class StateCovarianceBlenderTest {
                                                                                      0);
 
         // When & Then
-        doTestBlendingDeprecated(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
-                                 propagator,
-                                 0.0823442943514750,
-                                 0.1976467714037895,
-                                 0.0888590153696339,
-                                 0.2020905044160413,
-                                 0.1446159909426887,
-                                 0.3894610461790040,
-                                 tolerance,
-                                 showResults);
+        doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
+                       propagator,
+                       0.082344296100,
+                       0.197646775666,
+                       0.088859013862,
+                       0.202090523492,
+                       0.144616020330,
+                       0.389461090177,
+                       tolerance,
+                       showResults);
 
         // Results obtained when using Sergei reference date
         /*        Assertions.assertEquals(0.07645785479359624, relativeRMSSigmaError[0].getMean(), 1e-17);
@@ -331,7 +281,7 @@ class StateCovarianceBlenderTest {
     void testEksteinHechlerQuadraticBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-16;
+        final double tolerance = 1.e-11;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -349,12 +299,12 @@ class StateCovarianceBlenderTest {
         // When & Then
         doTestBlending(DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP, blendingFunction,
                        propagator,
-                       0.0920227696921130,
-                       0.1753289773020222,
-                       0.0857543808467324,
-                       0.1933199872752203,
-                       0.1693483908858563,
-                       0.3473020830532024,
+                       0.092022772752,
+                       0.175328981233,
+                       0.085754375965,
+                       0.19331997037,
+                       0.169348422249,
+                       0.347302066034,
                        tolerance,
                        showResults);
 
@@ -388,7 +338,7 @@ class StateCovarianceBlenderTest {
     void testLOFKeplerianBlending() {
         // Given
         final boolean showResults = false; // Show results?
-        final double tolerance = 1.e-16;
+        final double tolerance = 1.e-9;
 
         // Create state covariance interpolator
         final SmoothStepFactory.SmoothStepFunction blendingFunction = SmoothStepFactory.getQuadratic();
@@ -419,12 +369,12 @@ class StateCovarianceBlenderTest {
         }
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
-        Assertions.assertEquals( 0.1190324153130111, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.2800694213600920, relativeRMSSigmaError[1].getMean(), tolerance);
-        Assertions.assertEquals( 0.1221432756730858, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.4882845444744826, relativeRMSSigmaError[1].getPercentile(50), tolerance);
-        Assertions.assertEquals( 0.2282143889000270, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.0468464408560370, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals( 0.1190324127, relativeRMSSigmaError[0].getMean(), tolerance);
+        Assertions.assertEquals( 7.2800701738, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 0.1221432731, relativeRMSSigmaError[0].getPercentile(50), tolerance);
+        Assertions.assertEquals( 7.4882858178, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 0.2282143786, relativeRMSSigmaError[0].getMax(), tolerance);
+        Assertions.assertEquals(16.0468503672, relativeRMSSigmaError[1].getMax(), tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());

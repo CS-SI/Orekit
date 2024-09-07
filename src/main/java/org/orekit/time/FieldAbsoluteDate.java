@@ -17,6 +17,9 @@
 package org.orekit.time;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -25,6 +28,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.analysis.differentiation.Derivative;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -344,6 +349,29 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
              timeScale);
     }
 
+    /** Build an instance from an {@link Instant instant} in utc time scale.
+     * @param field field utilized as default
+     * @param instant instant in the utc timescale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public FieldAbsoluteDate(final Field<T> field, final Instant instant) {
+        this(field, instant, TimeScalesFactory.getUTC());
+    }
+
+    /** Build an instance from an {@link Instant instant} in the {@link UTCScale time scale}.
+     * @param field field utilized as default
+     * @param instant instant in the time scale
+     * @param utcScale utc time scale
+     * @since 12.1
+     */
+    public FieldAbsoluteDate(final Field<T> field, final Instant instant, final UTCScale utcScale) {
+        this(field, new DateComponents(DateComponents.JAVA_EPOCH,
+                (int) (instant.getEpochSecond() / 86400l)),
+            instantToTimeComponents(instant),
+            utcScale);
+    }
+
     /** Build an instance from an elapsed duration since to another instant.
      * <p>It is important to note that the elapsed duration is <em>not</em>
      * the difference between two readings on a time scale.
@@ -489,6 +517,20 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
             this.epoch = epoch + deltaEpoch;
             offset = newOffset;
         }
+    }
+
+    /**
+     * Creates Field date with offset as univariate derivative of second order, with a unit linear coefficient in time.
+     * @return univariate derivative 2 date
+     * @since 12.2
+     */
+    public FieldAbsoluteDate<FieldUnivariateDerivative2<T>> toFUD2Field() {
+        final FieldUnivariateDerivative2Field<T> fud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field);
+        final AbsoluteDate date = toAbsoluteDate();
+        final T fieldShift = durationFrom(date);
+        final FieldUnivariateDerivative2<T> fud2Shift = new FieldUnivariateDerivative2<>(fieldShift, field.getOne(),
+                field.getZero());
+        return new FieldAbsoluteDate<>(fud2Field, date).shiftedBy(fud2Shift);
     }
 
     /** Extract time components from an instant within the day.
@@ -1259,6 +1301,36 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return new Date(FastMath.round((time + 10957.5 * 86400.0) * 1000));
     }
 
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    @DefaultDataContext
+    public Instant toInstant() {
+        return toInstant(TimeScalesFactory.getTimeScales());
+    }
+
+    /**
+     * Convert the instance to a Java {@link java.time.Instant Instant}.
+     * Nanosecond precision is preserved during this conversion
+     *
+     * @param timeScales the timescales to use
+     * @return a {@link java.time.Instant Instant} instance representing the location
+     * of the instant in the utc time scale
+     * @since 12.1
+     */
+    public Instant toInstant(final TimeScales timeScales) {
+        final UTCScale utc = timeScales.getUTC();
+        final String stringWithoutUtcOffset = toStringWithoutUtcOffset(utc, 9);
+
+        final LocalDateTime localDateTime = LocalDateTime.parse(stringWithoutUtcOffset, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        return localDateTime.toInstant(ZoneOffset.UTC);
+    }
+
     /** Split the instance into date/time components.
      * @param timeScale time scale to use
      * @return date/time components
@@ -1636,6 +1708,29 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         return getComponents(timeZone, utc).toString(minuteDuration);
     }
 
+    /**
+     * Return a string representation of this date-time, rounded to the given precision.
+     *
+     * <p>The format used is ISO8601 without the UTC offset.</p>
+     *
+     *
+     * @param timeScale      to use to compute components.
+     * @param fractionDigits the number of digits to include after the decimal point in
+     *                       the string representation of the seconds. The date and time
+     *                       is first rounded as necessary. {@code fractionDigits} must be
+     *                       greater than or equal to {@code 0}.
+     * @return string representation of this date, time, and UTC offset
+     * @see #toString(TimeScale)
+     * @see DateTimeComponents#toString(int, int)
+     * @see DateTimeComponents#toStringWithoutUtcOffset(int, int)
+     * @since 12.2
+     */
+    public String toStringWithoutUtcOffset(final TimeScale timeScale,
+        final int fractionDigits) {
+        return this.getComponents(timeScale)
+            .toStringWithoutUtcOffset(timeScale.minuteDuration(this), fractionDigits);
+    }
+
     /** Get a time-shifted date.
      * <p>
      * Calling this method is equivalent to call <code>new FieldAbsoluteDate(this, dt)</code>.
@@ -1686,6 +1781,54 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public boolean hasZeroField() {
         return (offset instanceof Derivative<?> || offset instanceof Complex) && offset.subtract(offset.getReal()).isZero();
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public T getMJD() {
+        return this.getMJD(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     * @return double representation of the given date as Modified Julian Date.
+     * @since 12.2
+     */
+    public T getMJD(final TimeScale ts) {
+        final AbsoluteDate absoluteDate = toAbsoluteDate();
+        final T shift = durationFrom(absoluteDate).divide(Constants.JULIAN_DAY);
+        return shift.add(absoluteDate.getMJD(ts));
+    }
+
+    /**
+     * Return the given date as a Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Julian Date.
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public T getJD() {
+        return getJD(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return the given date as a Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     * @return double representation of the given date as Julian Date.
+     * @since 12.2
+     */
+    public T getJD(final TimeScale ts) {
+        final AbsoluteDate absoluteDate = toAbsoluteDate();
+        final T shift = durationFrom(absoluteDate).divide(Constants.JULIAN_DAY);
+        return shift.add(absoluteDate.getJD(ts));
     }
 }
 

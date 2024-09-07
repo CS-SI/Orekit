@@ -31,7 +31,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservationParser;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
@@ -214,25 +214,25 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex2IonoFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 23732467.5026, 3772223175.669, 0.0, 4658 * Frequency.F0, 2, 2);
+                     CombinationType.IONO_FREE, 23732467.5026, 3772223175.669, 0.0, 4658 * GnssSignal.F0, 2, 2);
     }
 
     @Test
     public void testRinex2WideLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getWideLaneCombination(system),
-                     CombinationType.WIDE_LANE, 23732453.7100, 27534453.519, 0.0, 34 * Frequency.F0, 2, 2);
+                     CombinationType.WIDE_LANE, 23732453.7100, 27534453.519, 0.0, 34 * GnssSignal.F0, 2, 2);
     }
 
     @Test
     public void testRinex2NarrowLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getNarrowLaneCombination(system),
-                     CombinationType.NARROW_LANE, 23732481.2951, 221895659.955, 0.0, 274 * Frequency.F0, 2, 2);
+                     CombinationType.NARROW_LANE, 23732481.2951, 221895659.955, 0.0, 274 * GnssSignal.F0, 2, 2);
     }
 
     @Test
     public void testRinex2MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 3801972.2239, 34 * Frequency.F0, 1, 2);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, 3801972.2239, 34 * GnssSignal.F0, 1, 2);
     }
 
     @Test
@@ -257,7 +257,13 @@ public class MeasurementCombinationFactoryTest {
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L2/P2
         Assertions.assertEquals(expectedL2P2,       data.get(0).getValue(),                eps);
-        Assertions.assertEquals(120 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
+
+        // test deprecated method
+        Assertions.assertEquals(120 * GnssSignal.F0 / AbstractDualFrequencyCombination.MHZ_TO_HZ,
+                                data.get(0).getCombinedMHzFrequency(),
+                                eps);
+
     }
 
     @Test
@@ -269,25 +275,25 @@ public class MeasurementCombinationFactoryTest {
     @Test
     public void testRinex3IonoFree() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getIonosphereFreeCombination(system),
-                     CombinationType.IONO_FREE, 22399214.1934, 179620369.206, 0.0, 235 * Frequency.F0, 2, 3);
+                     CombinationType.IONO_FREE, 22399214.1934, 179620369.206, 0.0, 235 * GnssSignal.F0, 2, 3);
     }
 
     @Test
     public void testRinex3WideLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getWideLaneCombination(system),
-                     CombinationType.WIDE_LANE, 22399239.8790, 3821708.096, 0.0, 5 * Frequency.F0, 2, 3);
+                     CombinationType.WIDE_LANE, 22399239.8790, 3821708.096, 0.0, 5 * GnssSignal.F0, 2, 3);
     }
 
     @Test
     public void testRinex3NarrowLane() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getNarrowLaneCombination(system),
-                    CombinationType.NARROW_LANE, 22399188.5078, 179620457.900, 0.0, 235 * Frequency.F0, 2, 3);
+                    CombinationType.NARROW_LANE, 22399188.5078, 179620457.900, 0.0, 235 * GnssSignal.F0, 2, 3);
     }
 
     @Test
     public void testRinex3MelbourneWubbena() {
         doTestRinexDualFrequency(MeasurementCombinationFactory.getMelbourneWubbenaCombination(system),
-                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, -18577480.4117, 5 * Frequency.F0, 1, 3);
+                     CombinationType.MELBOURNE_WUBBENA, 0.0, 0.0, -18577480.4117, 5 * GnssSignal.F0, 1, 3);
     }
 
     @Test
@@ -313,17 +319,17 @@ public class MeasurementCombinationFactoryTest {
         // Verify the combined observation data
         final List<CombinedObservationData> data = combinedDataSet.getObservationData();
         // L1C/C1C
-        Assertions.assertEquals(expected1C,         data.get(0).getValue(),                eps);
-        Assertions.assertEquals(154 * Frequency.F0, data.get(0).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected1C,          data.get(0).getValue(),                eps);
+        Assertions.assertEquals(154 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
         // L2W/C2W
-        Assertions.assertEquals(expected2W,         data.get(1).getValue(),                eps);
-        Assertions.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected2W,          data.get(1).getValue(),                eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedFrequency(), eps);
         // L2X/C2X
-        Assertions.assertEquals(expected2X,         data.get(2).getValue(),                eps);
-        Assertions.assertEquals(120 * Frequency.F0, data.get(1).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected2X,          data.get(2).getValue(),                eps);
+        Assertions.assertEquals(120 * GnssSignal.F0, data.get(1).getCombinedFrequency(), eps);
         // L5X/C5X
-        Assertions.assertEquals(expected5X,         data.get(3).getValue(),                eps);
-        Assertions.assertEquals(115 * Frequency.F0, data.get(3).getCombinedMHzFrequency(), eps);
+        Assertions.assertEquals(expected5X,          data.get(3).getValue(),                eps);
+        Assertions.assertEquals(115 * GnssSignal.F0, data.get(3).getCombinedFrequency(), eps);
     }
 
     /**
@@ -351,19 +357,19 @@ public class MeasurementCombinationFactoryTest {
             if (cod.getMeasurementType() == MeasurementType.CARRIER_PHASE) {
 
                 Assertions.assertEquals(expectedPhaseValue, cod.getValue(),                eps);
-                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedFrequency(), eps);
                 Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.PSEUDO_RANGE) {
 
                 Assertions.assertEquals(expectedRangeValue, cod.getValue(),                eps);
-                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedFrequency(), eps);
                 Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             } else if (cod.getMeasurementType() == MeasurementType.COMBINED_RANGE_PHASE) {
 
                 Assertions.assertEquals(expectedRangePhase, cod.getValue(),                eps);
-                Assertions.assertEquals(expectedFrequency,  cod.getCombinedMHzFrequency(), eps);
+                Assertions.assertEquals(expectedFrequency,  cod.getCombinedFrequency(), eps);
                 Assertions.assertEquals(expectedType,       cod.getCombinationType());
 
             }
@@ -399,7 +405,7 @@ public class MeasurementCombinationFactoryTest {
         final CombinedObservationData   combined = ionoFree.combine(obs1, obs2);
 
         // Combine data
-        final double wavelength         = Constants.SPEED_OF_LIGHT / (combined.getCombinedMHzFrequency() * 1.0e6);
+        final double wavelength         = Constants.SPEED_OF_LIGHT / combined.getCombinedFrequency();
         final double combineValueMeters = combined.getValue() * wavelength;
 
         // Verify

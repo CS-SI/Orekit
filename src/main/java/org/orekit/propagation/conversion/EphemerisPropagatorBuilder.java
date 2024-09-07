@@ -26,6 +26,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.StateCovariance;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.TimeInterpolator;
@@ -34,7 +35,6 @@ import org.orekit.utils.ParameterDriversList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Builder for Ephemeris propagator.
@@ -52,13 +52,13 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
     private final List<SpacecraftState> states;
 
     /** List of covariances. **/
-    private final Optional<List<StateCovariance>> covariances;
+    private final List<StateCovariance> covariances;
 
     /** Spacecraft state interpolator. */
     private final TimeInterpolator<SpacecraftState> stateInterpolator;
 
     /** State covariance interpolator. */
-    private final Optional<TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>>> covarianceInterpolator;
+    private final TimeInterpolator<TimeStampedPair<Orbit, StateCovariance>> covarianceInterpolator;
 
     /** Attitude provider. */
     private final AttitudeProvider provider;
@@ -88,6 +88,24 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final TimeInterpolator<SpacecraftState> stateInterpolator,
                                       final AttitudeProvider attitudeProvider) {
         this(states, stateInterpolator, new ArrayList<>(), null, attitudeProvider);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param states list of spacecraft states
+     * @param interpolationPoints number of interpolation points
+     * @param extrapolationThreshold extrapolation threshold beyond which the propagation will fail
+     * @param attitudeProvider attitude law to use
+     */
+    public EphemerisPropagatorBuilder(final List<SpacecraftState> states,
+                                      final int interpolationPoints,
+                                      final double extrapolationThreshold,
+                                      final AttitudeProvider attitudeProvider) {
+        this(states,
+             new SpacecraftStateInterpolator(interpolationPoints, extrapolationThreshold,
+                                             states.get(0).getFrame(), states.get(0).getFrame()),
+             attitudeProvider);
     }
 
     /**
@@ -134,24 +152,23 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
 
         this.states                 = states;
         this.stateInterpolator      = stateInterpolator;
-        this.covariances            = Optional.ofNullable(covariances);
-        this.covarianceInterpolator = Optional.ofNullable(covarianceInterpolator);
+        this.covariances            = covariances == null ? new ArrayList<>() : covariances;
+        this.covarianceInterpolator = covarianceInterpolator;
         this.provider               = attitudeProvider;
     }
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public EphemerisPropagatorBuilder copy() {
-        return new EphemerisPropagatorBuilder(states, stateInterpolator,
-                                              covariances.orElse(null), covarianceInterpolator.orElse(null),
-                                              provider);
+        return new EphemerisPropagatorBuilder(states, stateInterpolator, covariances, covarianceInterpolator, provider);
     }
 
     /** {@inheritDoc}. */
     @Override
     public Propagator buildPropagator(final double[] normalizedParameters) {
-        if (covariances.isPresent() && covarianceInterpolator.isPresent()) {
-            return new Ephemeris(states, stateInterpolator, covariances.get(), covarianceInterpolator.get(), provider);
+        if (!covariances.isEmpty() && covarianceInterpolator != null) {
+            return new Ephemeris(states, stateInterpolator, covariances, covarianceInterpolator, provider);
         }
         return new Ephemeris(states, stateInterpolator, provider);
 

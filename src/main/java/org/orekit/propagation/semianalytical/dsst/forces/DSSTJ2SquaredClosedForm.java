@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.MathArrays;
@@ -30,6 +27,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Second order J2-squared force model.
@@ -137,8 +137,7 @@ public class DSSTJ2SquaredClosedForm implements DSSTForceModel {
     public List<ShortPeriodTerms> initializeShortPeriodTerms(final AuxiliaryElements auxiliaryElements,
                                                              final PropagationType type,
                                                              final double[] parameters) {
-        // Currently, there is no short periods for J2-squared closed-form
-        return Collections.emptyList();
+        return j2SquaredModel.initializeShortPeriodTerms(auxiliaryElements, type, parameters);
     }
 
     /** {@inheritDoc}. */
@@ -146,8 +145,7 @@ public class DSSTJ2SquaredClosedForm implements DSSTForceModel {
     public <T extends CalculusFieldElement<T>> List<FieldShortPeriodTerms<T>> initializeShortPeriodTerms(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                                          final PropagationType type,
                                                                                                          final T[] parameters) {
-        // Currently, there is no short periods for J2-squared closed-form
-        return Collections.emptyList();
+        return j2SquaredModel.initializeShortPeriodTerms(auxiliaryElements, type, parameters);
     }
 
     /** {@inheritDoc}. */
@@ -165,14 +163,14 @@ public class DSSTJ2SquaredClosedForm implements DSSTForceModel {
     /** {@inheritDoc}. */
     @Override
     public void updateShortPeriodTerms(final double[] parameters, final SpacecraftState... meanStates) {
-        // Currently, there is no short periods for J2-squared closed-form
+        j2SquaredModel.updateShortPeriodTerms(parameters, meanStates);
     }
 
     /** {@inheritDoc}. */
     @Override
     @SuppressWarnings("unchecked")
     public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(final T[] parameters, final FieldSpacecraftState<T>... meanStates) {
-        // Currently, there is no short periods for J2-squared closed-form
+        j2SquaredModel.updateShortPeriodTerms(parameters, meanStates);
     }
 
 }

@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -309,12 +310,31 @@ public class AbsoluteDateTest {
     public void test1970Instant() {
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.EPOCH, utc).toString());
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.ofEpochMilli(0l), utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.EPOCH, (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.ofEpochMilli(0l), (UTCScale) utc).toString());
     }
 
     @Test
     public void testInstantAccuracy() {
         Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new AbsoluteDate(Instant.ofEpochSecond(87400, 123456789), utc).toString());
         Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new AbsoluteDate(Instant.ofEpochSecond(519000, 123456789), utc).toString());
+        Assertions.assertEquals("1970-01-02T00:16:40.123456789Z", new AbsoluteDate(Instant.ofEpochSecond(87400, 123456789), (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-07T00:10:00.123456789Z", new AbsoluteDate(Instant.ofEpochSecond(519000, 123456789), (UTCScale) utc).toString());
+    }
+
+    @Test
+    public void testToInstant() {
+        Assertions.assertEquals(Instant.ofEpochSecond(0), new AbsoluteDate("1970-01-01T00:00:00.000Z", utc).toInstant());
+        Assertions.assertEquals(Instant.ofEpochSecond(0), new AbsoluteDate("1970-01-01T00:00:00.000Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
+        Instant expectedInstant = Instant.ofEpochSecond(519000, 123456789);
+        Assertions.assertEquals(expectedInstant, new AbsoluteDate("1970-01-07T00:10:00.123456789Z", utc).toInstant());
+        Assertions.assertEquals(expectedInstant, new AbsoluteDate("1970-01-07T00:10:00.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
+
+        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+            new AbsoluteDate("2024-05-15T09:32:36.123456789Z", utc).toInstant());
+        Assertions.assertEquals(OffsetDateTime.parse("2024-05-15T09:32:36.123456789Z", DateTimeFormatter.ISO_DATE_TIME).toInstant(),
+            new AbsoluteDate("2024-05-15T09:32:36.123456789Z", utc).toInstant(TimeScalesFactory.getTimeScales()));
     }
 
     @Test
@@ -1308,10 +1328,10 @@ public class AbsoluteDateTest {
         // test proleptic
         checkToString(new AbsoluteDate(123, 4, 5, 6, 7, 8.9, utc), "0123-04-05T06:07:08.900");
 
-        // there is not way to produce valid RFC3339 for these cases
+        // there is no way to produce valid RFC3339 for these cases
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
-        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-0123-04-05T06:07:08.900");
+        checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, 8.9, utc), "-123-04-05T06:07:08.900");
         checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, 8.9, utc), "-1230-04-05T06:07:08.900");
         // test far future
         checkToString(new AbsoluteDate(12300, 4, 5, 6, 7, 8.9, utc), "12300-04-05T06:07:08.900");
@@ -1604,6 +1624,34 @@ public class AbsoluteDateTest {
         }
     }
 
+    @Test
+    public void testGetJulianDates() {
+        // GIVEN a reference date
+        final TimeScale utc = TimeScalesFactory.getUTC();
+
+        AbsoluteDate reference              = new AbsoluteDate(2024, 7, 4, 13, 0, 0, utc);
+        AbsoluteDate referenceFromJDMethod  = AbsoluteDate.createJDDate(2460496, .0416667 * Constants.JULIAN_DAY, utc);
+        AbsoluteDate referenceFromMJDMethod = AbsoluteDate.createMJDDate(60495, 0.54166670 * Constants.JULIAN_DAY, utc);
+
+        // WHEN converting it to Julian Date or Modified Julian Date
+        double mjdDateDefaultData = reference.getMJD();
+        double jdDateDefaultData  = reference.getJD();
+        double mjdDate            = reference.getMJD(utc);
+        double jdDate             = reference.getJD(utc);
+
+        // THEN
+        // source : Time/Date Converter - HEASARC - NASA
+        Assertions.assertEquals(2460496.0416667, jdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(60495.54166670, mjdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(jdDate, jdDateDefaultData, 1.0e-6);
+        Assertions.assertEquals(mjdDateDefaultData, mjdDate);
+
+        // Assert that static method are correct when creating date from JD or MJD
+        Assertions.assertTrue(reference.isCloseTo(referenceFromJDMethod, 1e-2));
+        Assertions.assertTrue(reference.isCloseTo(referenceFromMJDMethod, 1e-2));
+    }
+
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
@@ -1632,5 +1680,4 @@ public class AbsoluteDateTest {
             return date;
         }
     }
-
 }

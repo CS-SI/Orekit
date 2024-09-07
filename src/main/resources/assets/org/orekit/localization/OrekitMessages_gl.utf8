@@ -247,6 +247,9 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial non especific
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
 EVENT_DATE_TOO_CLOSE =  <MISSING TRANSLATION>
 
+# trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION = <MISSING TRANSLATION>
+
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = imposible de ler o encabezado do ficheiro de efemérides do JPL {0}
 
@@ -408,6 +411,9 @@ SP3_INCOMPATIBLE_FILE_METADATA = <MISSING TRANSLATION>
 
 # cannot splice sp3 files with incompatible satellite metadata for satellite {0}
 SP3_INCOMPATIBLE_SATELLITE_MEDATADA = <MISSING TRANSLATION>
+
+# frame {0} not allowed here
+FRAME_NOT_ALLOWED = <MISSING TRANSLATION>
 
 # STK coordinate system "{0}" is invalid or not yet supported
 STK_INVALID_OR_UNSUPPORTED_COORDINATE_SYSTEM = <MISSING TRANSLATION>
@@ -881,3 +887,12 @@ WRONG_EOP_INTERPOLATION_DEGREE = <MISSING TRANSLATION>
 
 # number of planes {0} is inconsistent with number of satellites {1} in Walker constellation
 WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
+
+# Infinite value appears during computation of atmospheric density in NRLMSISE00 model
+INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
+
+# Propagator builder cannot be cloned
+PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
+
+# field "{0}" is too long, maximum length is {1} characters
+FIELD_TOO_LONG = <MISSING TRANSLATION>

@@ -28,6 +28,7 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
@@ -155,6 +156,11 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
     /** boolean to ignore or not the creation of a NewtonianAttraction. */
     private boolean ignoreCentralAttraction = false;
+
+    /**
+     * boolean to know if a full attitude (with rates) is needed when computing derivatives for the ODE.
+     */
+    private boolean needFullAttitudeForDerivatives = true;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -388,6 +394,14 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
+    protected AttitudeProvider initializeAttitudeProviderForDerivatives() {
+        final AttitudeProvider attitudeProvider = getAttitudeProvider();
+        return needFullAttitudeForDerivatives ? attitudeProvider :
+            AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
+    }
+
+    /** {@inheritDoc} */
     protected FieldStateMapper<T> createMapper(final FieldAbsoluteDate<T> referenceDate, final T mu,
                                        final OrbitType orbitType, final PositionAngleType positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
@@ -516,6 +530,8 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         /** {@inheritDoc} */
         @Override
         public void init(final FieldSpacecraftState<T> initialState, final FieldAbsoluteDate<T> target) {
+            needFullAttitudeForDerivatives = forceModels.stream().anyMatch(ForceModel::dependsOnAttitudeRate);
+
             forceModels.forEach(fm -> fm.init(initialState, target));
 
             final int numberOfForces = forceModels.size();

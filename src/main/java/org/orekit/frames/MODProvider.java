@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
@@ -94,17 +94,17 @@ class MODProvider implements TransformProvider {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(final FieldAbsoluteDate<T> date) {
 
         // compute the precession angles phiA, omegaA, chiA
         final T[] angles = precessionFunction.value(date);
 
-        @SuppressWarnings("unchecked")
-        FieldRotation<T> fR4 = (FieldRotation<T>) fieldR4.get(date.getField());
-        if (fR4 == null) {
-            fR4 = new FieldRotation<>(date.getField(), r4);
-            fieldR4.put(date.getField(), fR4);
+        final FieldRotation<T> fR4;
+        synchronized (fieldR4) {
+            fR4 = (FieldRotation<T>) fieldR4.computeIfAbsent(date.getField(),
+                                                             f -> new FieldRotation<>((Field<T>) f, r4));
         }
 
         // complete precession
