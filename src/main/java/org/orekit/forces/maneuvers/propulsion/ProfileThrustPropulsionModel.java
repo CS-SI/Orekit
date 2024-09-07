@@ -26,7 +26,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -35,6 +34,8 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.utils.Constants;
@@ -154,7 +155,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
                                       withMaxCheck(0.5 * shortest).
                                       withMinGap(0.5 * shortest).
                                       withThreshold(DATATION_ACCURACY).
-                                      withHandler((state, det, increasing) -> Action.RESET_DERIVATIVES);
+                                      withHandler(new ResetDerivativesOnEvent());
         for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
              transition != null;
              transition = transition.next()) {
@@ -178,7 +179,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
                                               withMaxCheck(0.5 * shortest).
                                               withMinGap(0.5 * shortest).
                                               withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
-                                              withHandler((state, det, increasing) -> Action.RESET_DERIVATIVES);
+                                              withHandler(new FieldResetDerivativesOnEvent<>());
         for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
              transition != null;
              transition = transition.next()) {

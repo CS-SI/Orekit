@@ -46,4 +46,20 @@ public abstract class AbstractLimitedVariableStepFieldIntegratorBuilder<T extend
         super(minStep, maxStep, dP);
         this.nSteps = nSteps;
     }
+
+    /**
+     * Constructor with expected velocity error.
+     *
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param dP position error (m)
+     * @param dV velocity error (m/s)
+     * @param nSteps number of steps
+     * @since 12.2
+     */
+    AbstractLimitedVariableStepFieldIntegratorBuilder(final int nSteps, final double minStep,
+                                                      final double maxStep, final double dP, final double dV) {
+        super(minStep, maxStep, dP, dV);
+        this.nSteps = nSteps;
+    }
 }

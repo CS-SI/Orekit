@@ -1381,7 +1381,7 @@ public class AbsoluteDateTest {
         // I would rather print something useful than throw an exception
         // so these cases don't check for a correct answer, just an informative one
         checkToString(new AbsoluteDate(-123, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
-                      "-0123-04-05T06:07:08.900");
+                      "-123-04-05T06:07:08.900");
         checkToString(new AbsoluteDate(-1230, 4, 5, 6, 7, new TimeOffset(8, TimeOffset.SECOND, 900, TimeOffset.MILLISECOND), utc),
                       "-1230-04-05T06:07:08.900");
         // test far future

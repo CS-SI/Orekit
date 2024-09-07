@@ -14,43 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.control.indirect.adjoint.cost;
+package org.orekit.control.indirect.shooting.propagation;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-
-import java.util.stream.Stream;
+import org.orekit.propagation.conversion.ClassicalRungeKuttaFieldIntegratorBuilder;
+import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
 
 /**
- * Abstract class for unbounded energy cost with Cartesian coordinates.
- * Unbounded qualifies the control vector, whose norm is not constrained. Under such assumption, there is no expected discontinuities in the adjoint dynamics.
+ * Integration settings using the classical Runge-Kutta 4 scheme.
+ *
  * @author Romain Serra
- * @see AbstractCartesianEnergy
  * @since 12.2
+ * @see org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator
  */
-public abstract class AbstractUnboundedCartesianEnergy extends AbstractCartesianEnergy {
+public class ClassicalRungeKuttaIntegrationSettings implements ShootingIntegrationSettings {
+
+    /** Step-size for integrator builders. */
+    private final double step;
 
     /**
      * Constructor.
-     * @param name name
-     * @param massFlowRateFactor mass flow rate factor
+     * @param step step-size for integrator builder
      */
-    protected AbstractUnboundedCartesianEnergy(final String name,
-                                               final double massFlowRateFactor) {
-        super(name, massFlowRateFactor);
+    public ClassicalRungeKuttaIntegrationSettings(final double step) {
+        this.step = step;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventDetectors() {
-        return Stream.empty();
+    public ClassicalRungeKuttaIntegratorBuilder getIntegratorBuilder() {
+        return new ClassicalRungeKuttaIntegratorBuilder(step);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.empty();
+    public <T extends CalculusFieldElement<T>> ClassicalRungeKuttaFieldIntegratorBuilder<T> getFieldIntegratorBuilder(final Field<T> field) {
+        return new ClassicalRungeKuttaFieldIntegratorBuilder<>(field.getZero().newInstance(step));
     }
 }

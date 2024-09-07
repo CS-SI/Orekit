@@ -79,20 +79,59 @@
       </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
-      <action dev="serrof" type="add" issue="1482">
+      <action dev="serrof" type="add" issue="1516">
+        Add scales for defect in indirect shooting.
+      </action>
+      <action dev="serrof" type="update" issue="1512">
+        Make easier implementation of user-defined adjoint.
+      </action>
+      <action dev="serrof" type="add" issue="1511">
+        Add (Field)ResetDerivativesOnEvent.
+      </action>
+      <action dev="serrof" type="add" issue="1510">
+        Add adaptive step integration for indirect shooting.
+      </action>
+      <action dev="serrof" type="update" issue="1508">
+        Use (Field)EventDetectionSettings in cylindrical shadow.
+      </action>
+      <action dev="serrof" type="add" issue="1506">
+        Add toGeodeticPoint in FieldGeodeticPoint.
+      </action>
+      <action dev="serrof" type="update" issue="1505">
+        Pass propagation frame as argument when evaluating adjoint contribution.
+      </action>
+      <action dev="serrof" type="add" issue="1500">
+        Add evaluation of Hamiltonian in adjoint dynamics.
+      </action>
+      <action dev="serrof" type="add" issue="1493">
+        Add direct access to lighting ratio from state in AbstractLightFluxModel.
+      </action>
+      <action dev="serrof" type="add" issue="1483">
+        Add constructor with dV error in adaptive step integrator builder.
+      </action>
+       <action dev="serrof" type="add" issue="1482">
         Add adjoint dynamics for single absolute attraction.
       </action>
       <action dev="serrof" type="add" issue="1481">
         Add non-orbit build in (Field)IntegratorBuilder.
       </action>
+      <action dev="serrof" type="add" issue="1479">
+        Add (Field)EventDetectionSettings class.
+      </action>
       <action dev="luc" type="fix" issue="1478">
         Added AlignedAndConstrained attitude mode.
+      </action>
+      <action dev="serrof" type="add" issue="1477">
+        Add adjoint dynamics for inertial force.
       </action>
       <action dev="luc" type="fix" issue="1475">
         Added getOneLetterCode and getTwoLettersCode to TimeSystem.
       </action>
       <action dev="luc" type="fix" issue="1473">
         Protected AmbiguityCache against concurrent modifications.
+      </action>
+      <action dev="serrof" type="add" issue="1472">
+        Add indirect single shooting method for fixed time fixed boundaries with Cartesian coordinates.
       </action>
       <action dev="serrof" type="add" issue="1471">
         Add bounded energy cost for Cartesian adjoint dynamics.
@@ -106,7 +145,10 @@
       <action dev="serrof" type="add" issue="1466">
         Add unbounded energy cost for Cartesian adjoint dynamics.
       </action>
-      <action dev="serrof" type="add" issue="1457">
+      <action dev="serrof" type="add" issue="1464">
+        Add analytical solar ephemerides.
+      </action>
+       <action dev="serrof" type="add" issue="1457">
         Add indirect control package with Cartesian adjoint dynamics for Keplerian motion.
       </action>
       <action dev="bryan" type="update" issue="1378">
@@ -115,11 +157,28 @@
       <action dev="bryan" type="update" issue="1390">
         J2-squared model can now implement their own short period model.
       </action>
+      <action dev="vincent" type="add" issue="1387">
+        Added getter for switches in AttitudesSequence.
+      </action>
       <action dev="rafa" type="add" issue="1368">
         Added a parser for gravity models in SHA format.
       </action>
+      <action dev="serrof" type="add" issue="1349">
+        Add more overrides of getAttitudeRotation.
+      </action>
     </release>
-    <release version="12.1.3" date="TBD" description="TBD">
+    <release version="12.1.3" date="04/09/2024"
+             description="Version 12.1.3 is a patch release of Orekit.
+             It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements
+             and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,
+             numerical noises in covariance transformation and parsing of RINEX and CCSDS files.
+             Version 12.1.3 also include Checkstyle fixes.">
+      <action dev="luc" type="fix" issue="643">
+        Removed non thread-safe use of DecimalFormat.
+      </action>
+      <action dev="serrof" type="fix" issue="1501">
+        Pass Status in UKF theoretical measurement.
+      </action>
       <action dev="luc" type="fix" issue="1499">
         Fixed mixed up frames in inter-satellites measurements.
       </action>

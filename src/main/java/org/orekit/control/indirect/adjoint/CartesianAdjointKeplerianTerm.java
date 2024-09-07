@@ -17,6 +17,9 @@
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -30,34 +33,42 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class CartesianAdjointKeplerianTerm extends AbstractCartesianAdjointNewtonianTerm {
 
-    /** Central body gravitational constant. */
-    private final double mu;
-
     /**
      * Constructor.
-     * @param mu central body gravitational parameter.
+     * @param mu central body gravitational parameter
      */
     public CartesianAdjointKeplerianTerm(final double mu) {
-        this.mu = mu;
-    }
-
-    /**
-     * Getter for central body gravitational parameter.
-     * @return gravitational parameter
-     */
-    public double getMu() {
-        return mu;
+        super(mu);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables, final double[] adjointVariables) {
-        return getNewtonianVelocityAdjointContribution(mu, stateVariables, adjointVariables);
+    public double[] getPositionAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
+                                                   final double[] adjointVariables, final Frame frame) {
+        return getNewtonianVelocityAdjointContribution(stateVariables, adjointVariables);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(final FieldAbsoluteDate<T> date, final T[] stateVariables, final T[] adjointVariables) {
-        return getFieldNewtonianVelocityAdjointContribution(mu, stateVariables, adjointVariables);
+    public <T extends CalculusFieldElement<T>> T[] getPositionAdjointFieldContribution(final FieldAbsoluteDate<T> date,
+                                                                                       final T[] stateVariables,
+                                                                                       final T[] adjointVariables,
+                                                                                       final Frame frame) {
+        return getFieldNewtonianVelocityAdjointContribution(stateVariables, adjointVariables);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected Vector3D getAcceleration(final AbsoluteDate date, final double[] stateVariables,
+                                       final Frame frame) {
+        return getNewtonianAcceleration(stateVariables);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldAcceleration(final FieldAbsoluteDate<T> date,
+                                                                                        final T[] stateVariables,
+                                                                                        final Frame frame) {
+        return getFieldNewtonianAcceleration(stateVariables);
     }
 }

@@ -25,6 +25,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.analysis.differentiation.Derivative;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
@@ -449,6 +451,18 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
         this(reference.fieldOffset.getField(),
              new DateTimeComponents(reference.getComponents(timeScale), apparentOffset),
              timeScale);
+    }
+
+    /** Creates Field date with offset as univariate derivative of second order, with a unit linear coefficient in time.
+     * @return univariate derivative 2 date
+     * @since 12.2
+     */
+    public FieldAbsoluteDate<FieldUnivariateDerivative2<T>> toFUD2Field() {
+        final FieldUnivariateDerivative2Field<T> fud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(fieldOffset.getField());
+        final FieldUnivariateDerivative2<T> fud2Shift = new FieldUnivariateDerivative2<>(fieldOffset,
+                                                                                         fieldOffset.getField().getOne(),
+                                                                                         fieldOffset.getField().getZero());
+        return new FieldAbsoluteDate<>(fud2Field, date).shiftedBy(fud2Shift);
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
@@ -1594,8 +1608,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 12.2
      */
     @DefaultDataContext
-    public double getMJD() {
-        return date.getMJD();
+    public T getMJD() {
+        return this.getMJD(TimeScalesFactory.getUTC());
     }
 
     /**
@@ -1605,8 +1619,9 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return double representation of the given date as Modified Julian Date.
      * @since 12.2
      */
-    public double getMJD(final TimeScale ts) {
-        return date.getMJD(ts);
+    public T getMJD(final TimeScale ts) {
+        final T shift = fieldOffset.divide(Constants.JULIAN_DAY);
+        return shift.add(date.getMJD(ts));
     }
 
     /**
@@ -1616,8 +1631,8 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @since 12.2
      */
     @DefaultDataContext
-    public double getJD() {
-        return date.getJD();
+    public T getJD() {
+        return getJD(TimeScalesFactory.getUTC());
     }
 
     /**
@@ -1627,8 +1642,9 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * @return double representation of the given date as Julian Date.
      * @since 12.2
      */
-    public double getJD(final TimeScale ts) {
-        return date.getJD(ts);
+    public T getJD(final TimeScale ts) {
+        final T shift = fieldOffset.divide(Constants.JULIAN_DAY);
+        return shift.add(date.getJD(ts));
     }
 
 }

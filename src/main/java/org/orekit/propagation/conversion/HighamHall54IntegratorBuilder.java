@@ -26,18 +26,9 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class HighamHall54IntegratorBuilder implements ODEIntegratorBuilder {
+public class HighamHall54IntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
 
-    /** Minimum step size (s). */
-    private final double minStep;
-
-    /** Maximum step size (s). */
-    private final double maxStep;
-
-    /** Minimum step size (s). */
-    private final double dP;
-
-    /** Build a new instance.
+    /** Build a new instance. Should only use this constructor with {@link Orbit}.
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
@@ -45,14 +36,28 @@ public class HighamHall54IntegratorBuilder implements ODEIntegratorBuilder {
      * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public HighamHall54IntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        this.minStep = minStep;
-        this.maxStep = maxStep;
-        this.dP      = dP;
+        super(minStep, maxStep, dP);
+    }
+
+    /** Build a new instance.
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param dP position error (m)
+     * @param dV velocity error (m/s)
+     *
+     * @since 12.2
+     * @see HighamHall54Integrator
+     * @see NumericalPropagator#tolerances(double, double, Orbit, OrbitType)
+     */
+    public HighamHall54IntegratorBuilder(final double minStep, final double maxStep, final double dP,
+                                         final double dV) {
+        super(minStep, maxStep, dP, dV);
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        final double[][] tol = getTolerances(orbit, orbitType);
         return new HighamHall54Integrator(minStep, maxStep, tol[0], tol[1]);
     }
 

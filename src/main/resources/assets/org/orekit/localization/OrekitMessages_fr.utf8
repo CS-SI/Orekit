@@ -902,4 +902,3 @@ FIELD_TOO_LONG = le champ « {0} » est trop long, la longueur maximale est de {
 
 # cannot parse data {0}
 CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}
-

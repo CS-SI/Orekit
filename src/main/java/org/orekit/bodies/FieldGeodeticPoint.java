@@ -204,6 +204,15 @@ public class FieldGeodeticPoint<T extends CalculusFieldElement<T>> {
         return west;
     }
 
+    /**
+     * Get non-Field equivalent.
+     * @return geodetic point
+     * @since 12.2
+     */
+    public GeodeticPoint toGeodeticPoint() {
+        return new GeodeticPoint(latitude.getReal(), longitude.getReal(), altitude.getReal());
+    }
+
     @Override
     public boolean equals(final Object object) {
         if (object instanceof FieldGeodeticPoint<?>) {

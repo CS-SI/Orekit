@@ -22,6 +22,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
@@ -70,19 +71,19 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         final T[] adjointVariables = state.getAdditionalState(getName());
         final int adjointDimension = getDimension();
         final T[] additionalDerivatives = MathArrays.buildArray(mass.getField(), adjointDimension);
-        final T[] cartesianVariablesAndMass = MathArrays.buildArray(mass.getField(), 7);
-        final FieldPVCoordinates<T> pvCoordinates = state.getPVCoordinates();
-        System.arraycopy(pvCoordinates.getPosition().toArray(), 0, cartesianVariablesAndMass, 0, 3);
-        System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, cartesianVariablesAndMass, 3, 3);
-        cartesianVariablesAndMass[6] = mass;
+        final T[] cartesianVariablesAndMass = formCartesianAndMassVector(state);
 
         // mass flow rate and control acceleration
         final T[] mainDerivativesIncrements = MathArrays.buildArray(mass.getField(), 7);
-        final FieldVector3D<T> thrustVector = getCost().getThrustVector(adjointVariables, mass);
-        mainDerivativesIncrements[3] = thrustVector.getX().divide(mass);
-        mainDerivativesIncrements[4] = thrustVector.getY().divide(mass);
-        mainDerivativesIncrements[5] = thrustVector.getZ().divide(mass);
-        mainDerivativesIncrements[6] = mass.newInstance(-getCost().getMassFlowRateFactor());
+        final FieldVector3D<T> thrustAccelerationVector = getCost().getFieldThrustAccelerationVector(adjointVariables, mass);
+        mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
+        mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
+        mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
+        final T thrustAccelerationNorm = thrustAccelerationVector.getNorm();
+        if (thrustAccelerationVector.getNorm().getReal() != 0.) {
+            final T thrustForceMagnitude = thrustAccelerationNorm.multiply(mass);
+            mainDerivativesIncrements[6] = thrustForceMagnitude.multiply(-getCost().getMassFlowRateFactor());
+        }
 
         // Cartesian position adjoint
         additionalDerivatives[3] = adjointVariables[0].negate();
@@ -91,16 +92,60 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
 
         // Cartesian velocity adjoint
         final FieldAbsoluteDate<T> date = state.getDate();
+        final Frame propagationFrame = state.getFrame();
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final T[] contribution = equationTerm.getVelocityAdjointContribution(date, cartesianVariablesAndMass, adjointVariables);
-            additionalDerivatives[0] = additionalDerivatives[0].add(contribution[0]);
-            additionalDerivatives[1] = additionalDerivatives[1].add(contribution[1]);
-            additionalDerivatives[2] = additionalDerivatives[2].add(contribution[2]);
+            final T[] contribution = equationTerm.getFieldRatesContribution(date, cartesianVariablesAndMass, adjointVariables,
+                    propagationFrame);
+            for (int i = 0; i < contribution.length; i++) {
+                additionalDerivatives[i] = additionalDerivatives[i].add(contribution[i]);
+            }
         }
 
         // other
-        getCost().updateAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
+        getCost().updateFieldAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
 
         return new FieldCombinedDerivatives<>(additionalDerivatives, mainDerivativesIncrements);
+    }
+
+    /**
+     * Gather Cartesian variables and mass in same vector.
+     * @param state propagation state
+     * @return Cartesian variables and mass
+     */
+    private T[] formCartesianAndMassVector(final FieldSpacecraftState<T> state) {
+        final T mass = state.getMass();
+        final T[] cartesianVariablesAndMass = MathArrays.buildArray(mass.getField(), 7);
+        final FieldPVCoordinates<T> pvCoordinates = state.getPVCoordinates();
+        System.arraycopy(pvCoordinates.getPosition().toArray(), 0, cartesianVariablesAndMass, 0, 3);
+        System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, cartesianVariablesAndMass, 3, 3);
+        cartesianVariablesAndMass[6] = mass;
+        return cartesianVariablesAndMass;
+    }
+
+    /**
+     * Evaluate the Hamiltonian from Pontryagin's Maximum Principle.
+     * @param state state assumed to hold the adjoint variables
+     * @return Hamiltonian
+     */
+    public T evaluateHamiltonian(final FieldSpacecraftState<T> state) {
+        final T[] cartesianAndMassVector = formCartesianAndMassVector(state);
+        final T[] adjointVariables = state.getAdditionalState(getName());
+        T hamiltonian = adjointVariables[0].multiply(cartesianAndMassVector[3]).add(adjointVariables[1].multiply(cartesianAndMassVector[4]))
+                .add(adjointVariables[2].multiply(cartesianAndMassVector[5]));
+        final FieldAbsoluteDate<T> date = state.getDate();
+        final Frame propagationFrame = state.getFrame();
+        for (final CartesianAdjointEquationTerm adjointEquationTerm : adjointEquationTerms) {
+            final T contribution = adjointEquationTerm.getFieldHamiltonianContribution(date, cartesianAndMassVector,
+                adjointVariables, propagationFrame);
+            hamiltonian = hamiltonian.add(contribution);
+        }
+        if (adjointVariables.length != 6) {
+            final T mass = state.getMass();
+            final T thrustAccelerationNorm = getCost().getFieldThrustAccelerationVector(adjointVariables, mass).getNorm();
+            final T thrustForceNorm = thrustAccelerationNorm.multiply(mass);
+            hamiltonian = hamiltonian.subtract(adjointVariables[6].multiply(getCost().getMassFlowRateFactor()).multiply(thrustForceNorm));
+        }
+        hamiltonian = hamiltonian.add(getCost().getFieldHamiltonianContribution(adjointVariables, state.getMass()));
+        return hamiltonian;
     }
 }

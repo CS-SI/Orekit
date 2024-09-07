@@ -31,6 +31,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -472,6 +473,24 @@ public class EventDetectorTest {
             ++calls;
         }
 
+    }
+
+    @Test
+    void testGetDetectionSettings() {
+        // GIVEN
+        final EventDetector mockedDetector = Mockito.mock(EventDetector.class);
+        final AdaptableInterval mockedInterval = Mockito.mock(AdaptableInterval.class);
+        final EventDetectionSettings settings = new EventDetectionSettings(mockedInterval, 10, 19);
+        Mockito.when(mockedDetector.getThreshold()).thenReturn(settings.getThreshold());
+        Mockito.when(mockedDetector.getMaxIterationCount()).thenReturn(settings.getMaxIterationCount());
+        Mockito.when(mockedDetector.getMaxCheckInterval()).thenReturn(mockedInterval);
+        Mockito.when(mockedDetector.getDetectionSettings()).thenCallRealMethod();
+        // WHEN
+        final EventDetectionSettings actualSettings = mockedDetector.getDetectionSettings();
+        // THEN
+        Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
+        Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
+        Assertions.assertEquals(settings.getThreshold(), actualSettings.getThreshold());
     }
 
     @BeforeEach

@@ -112,4 +112,12 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
      */
     FieldEventHandler<T> getHandler();
 
+    /**
+     * Getter for the settings.
+     * @return detection settings
+     * @since 12.2
+     */
+    default FieldEventDetectionSettings<T> getDetectionSettings() {
+        return new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount());
+    }
 }

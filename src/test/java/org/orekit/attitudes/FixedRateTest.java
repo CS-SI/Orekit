@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -31,11 +32,7 @@ import org.orekit.Utils;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.FieldKeplerianOrbit;
-import org.orekit.orbits.FieldOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
@@ -278,6 +275,43 @@ public class FixedRateTest {
                                                                           h.multiply(2));
         Assertions.assertEquals(0.0, spin0.subtract(reference).getNorm().getReal(), 1.0e-14);
 
+    }
+
+    @Test
+    void testGetAttitudeRotation() {
+        // GIVEN
+        final PVCoordinates pv =
+                new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
+                        new Vector3D(0, 0, 3680.853673522056));
+        final Orbit orbit = new CartesianOrbit(pv, FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, 3.986004415e14);
+        final Attitude attitude = new Attitude(orbit.getDate().shiftedBy(-100.), FramesFactory.getEME2000(),
+                new Rotation(0.48, 0.64, 0.36, 0.48, false),
+                Vector3D.ZERO, Vector3D.ZERO);
+        final FixedRate fixedRate = new FixedRate(attitude);
+        // WHEN
+        final Rotation actualRotation = fixedRate.getAttitudeRotation(orbit, orbit.getDate(), orbit.getFrame());
+        // THEN
+        final Rotation expectedRotation = fixedRate.getAttitude(orbit, orbit.getDate(), orbit.getFrame()).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation), 2e-7);
+    }
+
+    @Test
+    void testFieldGetAttitudeRotation() {
+        // GIVEN
+        final PVCoordinates pv =
+                new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
+                        new Vector3D(0, 0, 3680.853673522056));
+        final Orbit orbit = new CartesianOrbit(pv, FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, 3.986004415e14);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
+        final Attitude attitude = new Attitude(orbit.getDate().shiftedBy(-100.), FramesFactory.getEME2000(),
+                new Rotation(0.48, 0.64, 0.36, 0.48, false),
+                Vector3D.ZERO, Vector3D.ZERO);
+        final FixedRate fixedRate = new FixedRate(attitude);
+        // WHEN
+        final FieldRotation<Binary64> actualRotation = fixedRate.getAttitudeRotation(fieldOrbit, fieldOrbit.getDate(), orbit.getFrame());
+        // THEN
+        final FieldRotation<Binary64> expectedRotation = fixedRate.getAttitude(fieldOrbit, fieldOrbit.getDate(), orbit.getFrame()).getRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()), 2e-7);
     }
 
     @BeforeEach

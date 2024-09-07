@@ -24,9 +24,11 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FieldTransform;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
@@ -61,10 +63,10 @@ public class GroundPointTarget implements TargetProvider
 
     /** {@inheritDoc} */
     @Override
-    public FieldVector3D<UnivariateDerivative2> getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                                                                   final OneAxisEllipsoid earth,
-                                                                   final TimeStampedPVCoordinates pv,
-                                                                   final Frame frame) {
+    public FieldVector3D<UnivariateDerivative2> getDerivative2TargetDirection(final ExtendedPositionProvider sun,
+                                                                              final OneAxisEllipsoid earth,
+                                                                              final TimeStampedPVCoordinates pv,
+                                                                              final Frame frame) {
         final Transform earthToInert = earth.getFrame().getTransformTo(frame, pv.getDate());
         return new PVCoordinates(pv, earthToInert.transformPVCoordinates(location)).
                toUnivariateDerivative2Vector().
@@ -73,11 +75,18 @@ public class GroundPointTarget implements TargetProvider
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>>
-        getTargetDirection(final ExtendedPVCoordinatesProvider sun,
-                           final OneAxisEllipsoid earth,
-                           final TimeStampedFieldPVCoordinates<T> pv,
-                           final Frame frame) {
+    public Vector3D getTargetDirection(final ExtendedPositionProvider sun, final OneAxisEllipsoid earth,
+                                            final TimeStampedPVCoordinates pv, final Frame frame) {
+        final StaticTransform earthToInert = earth.getFrame().getStaticTransformTo(frame, pv.getDate());
+        return earthToInert.transformPosition(location.getPosition()).subtract(pv.getPosition()).normalize();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>> getDerivative2TargetDirection(final ExtendedPositionProvider sun,
+                                                                                                                          final OneAxisEllipsoid earth,
+                                                                                                                          final TimeStampedFieldPVCoordinates<T> pv,
+                                                                                                                          final Frame frame) {
         final Field<T> field = pv.getDate().getField();
 
         // get the target location for specified field
@@ -99,4 +108,13 @@ public class GroundPointTarget implements TargetProvider
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getTargetDirection(final ExtendedPositionProvider sun,
+                                                                                   final OneAxisEllipsoid earth,
+                                                                                   final TimeStampedFieldPVCoordinates<T> pv,
+                                                                                   final Frame frame) {
+        final FieldStaticTransform<T> earthToInert = earth.getFrame().getStaticTransformTo(frame, pv.getDate());
+        return earthToInert.transformPosition(location.getPosition()).subtract(pv.getPosition()).normalize();
+    }
 }

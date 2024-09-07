@@ -16,10 +16,10 @@
  */
 package org.orekit.estimation.measurements.gnss;
 
-import org.hipparchus.util.Precision;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.hipparchus.util.Precision;
 
 /** Cache for {@link AmbiguityDriver}.
  * @author Luc Maisonobe

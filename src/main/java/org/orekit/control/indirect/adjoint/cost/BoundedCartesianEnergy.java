@@ -18,32 +18,25 @@ package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
 /**
  * Class for bounded energy cost with Cartesian coordinates.
- * Here, the control vector is chosen as the acceleration (given by thrusting) divided by the maximum thrust magnitude and expressed in the propagation frame.
- * It is constrained in Euclidean norm by the reciprocal of the current mass.
+ * Here, the control vector is chosen as the thrust force divided by the maximum thrust magnitude and expressed in the propagation frame.
+ * It has a unit Euclidean norm.
  * @author Romain Serra
  * @see UnboundedCartesianEnergyNeglectingMass
  * @since 12.2
  */
-public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
+public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
 
     /** Maximum value of thrust force Euclidean norm. */
     private final double maximumThrustMagnitude;
@@ -53,225 +46,71 @@ public class BoundedCartesianEnergy extends AbstractCartesianEnergy {
      * @param name name
      * @param massFlowRateFactor mass flow rate factor
      * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param eventDetectionSettings singularity event detection settings
      */
     public BoundedCartesianEnergy(final String name, final double massFlowRateFactor,
-                                  final double maximumThrustMagnitude) {
-        super(name, massFlowRateFactor);
+                                  final double maximumThrustMagnitude,
+                                  final EventDetectionSettings eventDetectionSettings) {
+        super(name, massFlowRateFactor, eventDetectionSettings);
         this.maximumThrustMagnitude = FastMath.abs(maximumThrustMagnitude);
     }
 
+    /**
+     * Constructor.
+     * @param name name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param maximumThrustMagnitude maximum thrust magnitude
+     */
+    public BoundedCartesianEnergy(final String name, final double massFlowRateFactor,
+                                  final double maximumThrustMagnitude) {
+        this(name, massFlowRateFactor, maximumThrustMagnitude, EventDetectionSettings.getDefaultEventDetectionSettings());
+    }
+
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector(final double[] adjointVariables, final double mass) {
-        return getThrustDirection(adjointVariables).scalarMultiply(getThrustNorm(adjointVariables, mass));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass) {
-        return getThrustDirection(adjointVariables).scalarMultiply(getThrustNorm(adjointVariables, mass));
-    }
-
-    /**
-     * Computes the direction of thrust.
-     * @param adjointVariables adjoint vector
-     * @return thrust direction
-     */
-    private Vector3D getThrustDirection(final double[] adjointVariables) {
-        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).normalize();
-    }
-
-    /**
-     * Computes the direction of thrust.
-     * @param adjointVariables adjoint vector
-     * @param <T> field type
-     * @return thrust direction
-     */
-    private <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustDirection(final T[] adjointVariables) {
-        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).normalize();
-    }
-
-    /**
-     * Computes the Euclidean norm of the thrust force.
-     * @param adjointVariables adjoint vector
-     * @param mass mass
-     *
-     * @return norm of thrust force
-     */
-    private double getThrustNorm(final double[] adjointVariables, final double mass) {
-        final double unboundedCase = (getAdjointVelocityNorm(adjointVariables) - getMassFlowRateFactor() * mass * adjointVariables[6]) * mass;
-        if (unboundedCase > 1.) {
+    protected double getThrustForceNorm(final double[] adjointVariables, final double mass) {
+        final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
+        final double factor = adjointVelocityNorm / mass - getMassFlowRateFactor() * adjointVariables[6];
+        if (factor > maximumThrustMagnitude) {
             return maximumThrustMagnitude;
         } else {
-            return unboundedCase * maximumThrustMagnitude;
+            return FastMath.max(0., factor);
         }
     }
 
-    /**
-     * Computes the Euclidean norm of the thrust force.
-     * @param adjointVariables adjoint vector
-     * @param mass mass
-     * @param <T> field type
-     * @return norm of thrust force
-     */
-    private <T extends CalculusFieldElement<T>> T getThrustNorm(final T[] adjointVariables, final T mass) {
-        final T unboundedCase = (getAdjointVelocityNorm(adjointVariables).subtract(mass.multiply(getMassFlowRateFactor()).multiply(adjointVariables[6]))).multiply(mass);
-        if (unboundedCase.getReal() > 1.) {
-            return unboundedCase.getField().getZero().newInstance(maximumThrustMagnitude);
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> T getFieldThrustForceNorm(final T[] adjointVariables,
+                                                                            final T mass) {
+        final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
+        final T factor = adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        final double factorReal = factor.getReal();
+        final T zero = mass.getField().getZero();
+        if (factorReal > maximumThrustMagnitude) {
+            return zero.newInstance(maximumThrustMagnitude);
+        } else if (factorReal < 0.) {
+            return zero;
         } else {
-            return unboundedCase.multiply(maximumThrustMagnitude);
+            return factor;
         }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
-                                         final double[] adjointDerivatives) {
-        final double thrustNorm = getThrustNorm(adjointVariables, mass);
-        adjointDerivatives[6] = -getMassFlowRateFactor() * adjointVariables[6] * thrustNorm / mass;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T mass,
-                                                                             final T[] adjointDerivatives) {
-        final T thrustNorm = getThrustNorm(adjointVariables, mass);
-        adjointDerivatives[6] = adjointVariables[6].multiply(-getMassFlowRateFactor()).multiply(thrustNorm).divide(mass);
     }
 
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        final UnboundedCartesianEnergy unboundedCartesianEnergyForEvent = new UnboundedCartesianEnergy(getAdjointName(), getMassFlowRateFactor());
-        return Stream.of(new EnergyCostAdjointSingularityDetector(unboundedCartesianEnergyForEvent, maximumThrustMagnitude));
+        final EventDetectionSettings detectionSettings = getEventDetectionSettings();
+        return Stream.of(new SingularityDetector(detectionSettings, new ResetDerivativesOnEvent(), 0.),
+            new SingularityDetector(detectionSettings, new ResetDerivativesOnEvent(), maximumThrustMagnitude));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        final UnboundedCartesianEnergy unboundedCartesianEnergyForEvent = new UnboundedCartesianEnergy(getAdjointName(), getMassFlowRateFactor());
-        final T maximumThrustMagnitudeForEvent = field.getZero().newInstance(maximumThrustMagnitude);
-        return Stream.of(new FieldEnergyCostAdjointSingularityDetector<>(unboundedCartesianEnergyForEvent,
-            maximumThrustMagnitudeForEvent));
+        final FieldEventDetectionSettings<T> detectionSettings = new FieldEventDetectionSettings<>(field, getEventDetectionSettings());
+        final T zero = field.getZero();
+        final T maximumThrustMagnitudeForEvent = zero.newInstance(maximumThrustMagnitude);
+        return Stream.of(new FieldSingularityDetector<>(detectionSettings, new FieldResetDerivativesOnEvent<>(), zero),
+            new FieldSingularityDetector<>(detectionSettings, new FieldResetDerivativesOnEvent<>(), maximumThrustMagnitudeForEvent));
     }
 
-    /**
-     * Event detector for singularities in adjoint dynamics, when the thrust norm reaches its maximum value.
-     */
-    static class EnergyCostAdjointSingularityDetector extends AbstractDetector<EnergyCostAdjointSingularityDetector> {
-
-        /**
-         * Unbounded energy cost used internally.
-         */
-        private final UnboundedCartesianEnergy unboundedCartesianEnergy;
-
-        /** Maximum value of thrust force Euclidean norm. */
-        private final double maximumThrustMagnitudeForDetector;
-
-        /**
-         * Private Constructor with all detection settings.
-         * @param unboundedCartesianEnergy unbounded Cartesian energy
-         * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
-         * @param adaptableInterval adaptable interval
-         * @param threshold threshold for detection
-         * @param maxIter maximum number of iterations for detection
-         * @param eventHandler event handler on detection
-         */
-        private EnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
-                                                     final double maximumThrustMagnitudeForDetector,
-                                                     final AdaptableInterval adaptableInterval, final double threshold,
-                                                     final int maxIter, final EventHandler eventHandler) {
-            super(adaptableInterval, threshold, maxIter, eventHandler);
-            this.unboundedCartesianEnergy = unboundedCartesianEnergy;
-            this.maximumThrustMagnitudeForDetector = maximumThrustMagnitudeForDetector;
-        }
-
-        /**
-         * Constructor with default detection settings.
-         * @param unboundedCartesianEnergy unbounded energy cost
-         * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
-         */
-        EnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
-                                             final double maximumThrustMagnitudeForDetector) {
-            this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK), AbstractDetector.DEFAULT_THRESHOLD,
-                AbstractDetector.DEFAULT_MAX_ITER, (state, detector, isIncreasing) -> Action.RESET_DERIVATIVES);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double g(final SpacecraftState s) {
-            final double[] adjointVariables = s.getAdditionalState(unboundedCartesianEnergy.getAdjointName());
-            final Vector3D unboundedThrustVector = unboundedCartesianEnergy.getThrustVector(adjointVariables, s.getMass());
-            return unboundedThrustVector.getNorm() / maximumThrustMagnitudeForDetector - 1.;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected EnergyCostAdjointSingularityDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                              final int newMaxIter, final EventHandler newHandler) {
-            return new EnergyCostAdjointSingularityDetector(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector,
-                    newMaxCheck, newThreshold, newMaxIter, newHandler);
-        }
-    }
-
-    /**
-     * Field event detector for singularities in adjoint dynamics, when the thrust norm reaches its maximum value.
-     */
-    static class FieldEnergyCostAdjointSingularityDetector<T extends CalculusFieldElement<T>> extends FieldAbstractDetector<FieldEnergyCostAdjointSingularityDetector<T>, T> {
-
-        /**
-         * Unbounded energy cost used internally.
-         */
-        private final UnboundedCartesianEnergy unboundedCartesianEnergy;
-
-        /** Maximum value of thrust force Euclidean norm. */
-        private final T maximumThrustMagnitudeForDetector;
-
-        /**
-         * Private Constructor with all detection settings.
-         * @param unboundedCartesianEnergy unbounded Cartesian energy
-         * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
-         * @param adaptableInterval adaptable interval
-         * @param threshold threshold for detection
-         * @param maxIter maximum number of iterations for detection
-         * @param eventHandler event handler on detection
-         */
-        private FieldEnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
-                                                          final T maximumThrustMagnitudeForDetector,
-                                                          final FieldAdaptableInterval<T> adaptableInterval, final T threshold,
-                                                          final int maxIter, final FieldEventHandler<T> eventHandler) {
-            super(adaptableInterval, threshold, maxIter, eventHandler);
-            this.unboundedCartesianEnergy = unboundedCartesianEnergy;
-            this.maximumThrustMagnitudeForDetector = maximumThrustMagnitudeForDetector;
-        }
-
-        /**
-         * Constructor with default detection settings.
-         * @param unboundedCartesianEnergy unbounded energy cost
-         * @param maximumThrustMagnitudeForDetector maximum value of thrust force Euclidean norm
-         */
-        FieldEnergyCostAdjointSingularityDetector(final UnboundedCartesianEnergy unboundedCartesianEnergy,
-                                                  final T maximumThrustMagnitudeForDetector) {
-            this(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector, FieldAdaptableInterval.of(FieldAbstractDetector.DEFAULT_MAXCHECK),
-                maximumThrustMagnitudeForDetector.getField().getZero().newInstance(FieldAbstractDetector.DEFAULT_THRESHOLD), FieldAbstractDetector.DEFAULT_MAX_ITER,
-                (state, detector, isIncreasing) -> Action.RESET_DERIVATIVES);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public T g(final FieldSpacecraftState<T> s) {
-            final T[] adjointVariables = s.getAdditionalState(unboundedCartesianEnergy.getAdjointName());
-            final FieldVector3D<T> unboundedThrustVector = unboundedCartesianEnergy.getThrustVector(adjointVariables, s.getMass());
-            return unboundedThrustVector.getNorm().divide(maximumThrustMagnitudeForDetector).subtract(1.);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected FieldEnergyCostAdjointSingularityDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
-                                                                      final T newThreshold, final int newMaxIter,
-                                                                      final FieldEventHandler<T> newHandler) {
-            return new FieldEnergyCostAdjointSingularityDetector<>(unboundedCartesianEnergy, maximumThrustMagnitudeForDetector,
-                    newMaxCheck, newThreshold, newMaxIter, newHandler);
-        }
-    }
 }

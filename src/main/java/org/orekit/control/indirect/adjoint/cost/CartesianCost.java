@@ -52,21 +52,21 @@ public interface CartesianCost extends EventDetectorsProvider {
     double getMassFlowRateFactor();
 
     /**
-     * Computes the thrust vector in propagation frame from the adjoint variables and the mass.
+     * Computes the thrust acceleration vector in propagation frame from the adjoint variables and the mass.
      * @param adjointVariables adjoint vector
      * @param mass mass
      * @return thrust vector
      */
-    Vector3D getThrustVector(double[] adjointVariables, double mass);
+    Vector3D getThrustAccelerationVector(double[] adjointVariables, double mass);
 
     /**
-     * Computes the thrust vector in propagation frame from the adjoint variables and the mass.
+     * Computes the thrust acceleration vector in propagation frame from the adjoint variables and the mass.
      * @param adjointVariables adjoint vector
      * @param mass mass
      * @param <T> field type
      * @return thrust vector
      */
-    <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(T[] adjointVariables, T mass);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(T[] adjointVariables, T mass);
 
     /**
      * Update the adjoint derivatives if necessary.
@@ -85,6 +85,22 @@ public interface CartesianCost extends EventDetectorsProvider {
      * @param mass               mass
      * @param adjointDerivatives derivatives to update
      */
-    <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives);
+    <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives);
 
+    /**
+     * Computes the Hamiltonian contribution of the cost function.
+     * @param adjointVariables adjoint vector
+     * @param mass mass
+     * @return contribution to Hamiltonian
+     */
+    double getHamiltonianContribution(double[] adjointVariables, double mass);
+
+    /**
+     * Computes the Hamiltonian contribution of the cost function.
+     * @param adjointVariables adjoint vector
+     * @param mass mass
+     * @param <T> field type
+     * @return contribution to Hamiltonian
+     */
+    <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(T[] adjointVariables, T mass);
 }

@@ -17,8 +17,13 @@
 package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+
+import java.util.stream.Stream;
 
 /**
  * Class for unbounded energy cost with Cartesian coordinates neglecting the mass consumption.
@@ -26,10 +31,9 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
  * Here, the control vector is chosen as the acceleration given by thrusting, expressed in the propagation frame.
  * This leads to the optimal thrust force being equal to the adjoint velocity vector times the mass.
  * @author Romain Serra
- * @see AbstractUnboundedCartesianEnergy
  * @since 12.2
  */
-public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCartesianEnergy {
+public class UnboundedCartesianEnergyNeglectingMass extends AbstractCartesianEnergy {
 
     /**
      * Constructor.
@@ -53,23 +57,52 @@ public class UnboundedCartesianEnergyNeglectingMass extends AbstractUnboundedCar
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector(final double[] adjointVariables, final double mass) {
-        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
+    public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
+        return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]);
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final T[] adjointVariables, final T mass) {
-        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]).scalarMultiply(mass);
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(final T[] adjointVariables,
+                                                                                                 final T mass) {
+        return new FieldVector3D<>(adjointVariables[3], adjointVariables[4], adjointVariables[5]);
     }
 
     @Override
-    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass, final double[] adjointDerivatives) {
+    public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
+                                         final double[] adjointDerivatives) {
         // nothing to do
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> void updateAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
+    public <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass,
+                                                                                  final T[] adjointDerivatives) {
         // nothing to do
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
+        final Vector3D thrustAcceleration = getThrustAccelerationVector(adjointVariables, mass);
+        return -thrustAcceleration.getNormSq() / 2.;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(final T[] adjointVariables, final T mass) {
+        final FieldVector3D<T> thrustAcceleration = getFieldThrustAccelerationVector(adjointVariables, mass);
+        return thrustAcceleration.getNormSq().multiply(-1. / 2.);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return Stream.empty();
     }
 }

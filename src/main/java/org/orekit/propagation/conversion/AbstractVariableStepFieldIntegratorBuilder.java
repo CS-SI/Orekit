@@ -17,10 +17,9 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.numerical.NumericalPropagator;
 
 /**
  * Abstract class for integrator builder using variable step size.
@@ -41,22 +40,50 @@ public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends Calcu
 
     /** Position error (m). */
     protected final double dP;
+
+    /** Velocity error (m/s). */
+    protected final double dV;
     // CHECKSTYLE: resume VisibilityModifier check
 
     /**
-     * Constructor.
+     * Constructor. Should only use this constructor with {@link Orbit}.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      */
     AbstractVariableStepFieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
+        this(minStep, maxStep, dP, Double.NaN);
+    }
+
+    /**
+     * Constructor with expected velocity error.
+     *
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param dP position error (m)
+     * @param dV velocity error (m/s)
+     * @since 12.2
+     */
+    AbstractVariableStepFieldIntegratorBuilder(final double minStep, final double maxStep, final double dP,
+                                               final double dV) {
         this.minStep = minStep;
         this.maxStep = maxStep;
         this.dP      = dP;
+        this.dV      = dV;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public abstract AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType);
+    /**
+     * Computes tolerances.
+     * @param orbit initial orbit
+     * @param orbitType orbit type for integration
+     * @return integrator tolerances
+     */
+    protected double[][] getTolerances(final Orbit orbit, final OrbitType orbitType) {
+        if (Double.isNaN(dV)) {
+            return NumericalPropagator.tolerances(dP, orbit, orbitType);
+        } else {
+            return NumericalPropagator.tolerances(dP, dV, orbit, orbitType);
+        }
+    }
 }

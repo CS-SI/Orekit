@@ -36,66 +36,88 @@ import org.orekit.utils.ExtendedPositionProvider;
  */
 public class CartesianAdjointSingleBodyTerm extends AbstractCartesianAdjointNewtonianTerm {
 
-    /** Body gravitational constant. */
-    private final double mu;
-
     /** Extended position provider for the body. */
     private final ExtendedPositionProvider bodyPositionProvider;
-
-    /** Propagation frame. */
-    private final Frame propagationFrame;
 
     /**
      * Constructor.
      * @param mu body gravitational parameter.
      * @param bodyPositionProvider body position provider
-     * @param propagationFrame propagation frame
      */
-    public CartesianAdjointSingleBodyTerm(final double mu, final ExtendedPositionProvider bodyPositionProvider,
-                                          final Frame propagationFrame) {
-        this.mu = mu;
+    public CartesianAdjointSingleBodyTerm(final double mu, final ExtendedPositionProvider bodyPositionProvider) {
+        super(mu);
         this.bodyPositionProvider = bodyPositionProvider;
-        this.propagationFrame = propagationFrame;
-    }
-
-    /**
-     * Getter for body gravitational parameter.
-     * @return gravitational parameter
-     */
-    public double getMu() {
-        return mu;
-    }
-
-    /**
-     * Getter for the propagation frame (where the equations of motion are integrated).
-     * @return propagation frame
-     */
-    public Frame getPropagationFrame() {
-        return propagationFrame;
     }
 
     /** {@inheritDoc} */
     @Override
-    public double[] getVelocityAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
-                                                   final double[] adjointVariables) {
-        final Vector3D bodyPosition = bodyPositionProvider.getPosition(date, propagationFrame);
+    public double[] getPositionAdjointContribution(final AbsoluteDate date, final double[] stateVariables,
+                                                   final double[] adjointVariables, final Frame frame) {
+        return getNewtonianVelocityAdjointContribution(formRelativePosition(date, stateVariables, frame),
+            adjointVariables);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> T[] getPositionAdjointFieldContribution(final FieldAbsoluteDate<T> date,
+                                                                                       final T[] stateVariables,
+                                                                                       final T[] adjointVariables,
+                                                                                       final Frame frame) {
+        return getFieldNewtonianVelocityAdjointContribution(formFieldRelativePosition(date, stateVariables, frame),
+            adjointVariables);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getAcceleration(final AbsoluteDate date, final double[] stateVariables,
+                                    final Frame frame) {
+        final double[] relativePosition = formRelativePosition(date, stateVariables, frame);
+        return getNewtonianAcceleration(relativePosition);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldAcceleration(final FieldAbsoluteDate<T> date,
+                                                                                     final T[] stateVariables,
+                                                                                     final Frame frame) {
+        final T[] relativePosition = formFieldRelativePosition(date, stateVariables, frame);
+        return getFieldNewtonianAcceleration(relativePosition);
+    }
+
+    /**
+     * Form relative position vector w.r.t. body.
+     * @param date date
+     * @param stateVariables Cartesian variables
+     * @param frame frame where Cartesian coordinates apply
+     * @return relative position vector as array
+     */
+    private double[] formRelativePosition(final AbsoluteDate date, final double[] stateVariables, final Frame frame) {
+        final Vector3D bodyPosition = bodyPositionProvider.getPosition(date, frame);
         final double x = stateVariables[0] - bodyPosition.getX();
         final double y = stateVariables[1] - bodyPosition.getY();
         final double z = stateVariables[2] - bodyPosition.getZ();
-        return getNewtonianVelocityAdjointContribution(mu, new double[] { x, y, z}, adjointVariables);
+        return new double[] { x, y, z };
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T[] getVelocityAdjointContribution(final FieldAbsoluteDate<T> date, final T[] stateVariables, final T[] adjointVariables) {
-        final FieldVector3D<T> bodyPosition = bodyPositionProvider.getPosition(date, propagationFrame);
+    /**
+     * Form relative position vector w.r.t. body.
+     * @param date date
+     * @param stateVariables Cartesian variables
+     * @param frame frame where Cartesian coordinates apply
+     * @param <T> field type
+     * @return relative position vector as array
+     */
+    private <T extends CalculusFieldElement<T>> T[] formFieldRelativePosition(final FieldAbsoluteDate<T> date,
+                                                                              final T[] stateVariables,
+                                                                              final Frame frame) {
+        final FieldVector3D<T> bodyPosition = bodyPositionProvider.getPosition(date, frame);
         final T x = stateVariables[0].subtract(bodyPosition.getX());
         final T y = stateVariables[1].subtract(bodyPosition.getY());
         final T z = stateVariables[2].subtract(bodyPosition.getZ());
-        final T[] relativePosition = MathArrays.buildArray(adjointVariables[0].getField(), 3);
+        final T[] relativePosition = MathArrays.buildArray(date.getField(), 3);
         relativePosition[0] = x;
         relativePosition[1] = y;
         relativePosition[2] = z;
-        return getFieldNewtonianVelocityAdjointContribution(mu, relativePosition, adjointVariables);
+        return relativePosition;
     }
 }

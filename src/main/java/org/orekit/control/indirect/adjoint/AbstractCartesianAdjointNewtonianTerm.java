@@ -17,6 +17,8 @@
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 
@@ -27,19 +29,26 @@ import org.hipparchus.util.MathArrays;
  * @see CartesianAdjointEquationTerm
  * @since 12.2
  */
-public abstract class AbstractCartesianAdjointNewtonianTerm implements CartesianAdjointEquationTerm {
+public abstract class AbstractCartesianAdjointNewtonianTerm extends AbstractCartesianAdjointGravitationalTerm {
 
     /** Minus three. */
     private static final double MINUS_THREE = -3;
 
     /**
+     * Constructor.
+     * @param mu body gravitational parameter
+     */
+    protected AbstractCartesianAdjointNewtonianTerm(final double mu) {
+        super(mu);
+    }
+
+    /**
      * Computes the generic term of a Newtonian attraction (central or not).
-     * @param mu gravitational constant
      * @param relativePosition relative position w.r.t. the body
      * @param adjointVariables adjoint variables
      * @return contribution to velocity adjoint derivatives
      */
-    protected double[] getNewtonianVelocityAdjointContribution(final double mu, final double[] relativePosition,
+    protected double[] getNewtonianVelocityAdjointContribution(final double[] relativePosition,
                                                                final double[] adjointVariables) {
         final double[] contribution = new double[3];
         final double x = relativePosition[0];
@@ -50,7 +59,7 @@ public abstract class AbstractCartesianAdjointNewtonianTerm implements Cartesian
         final double z2 = z * z;
         final double r2 = x2 + y2 + z2;
         final double r = FastMath.sqrt(r2);
-        final double factor = mu / (r2 * r2 * r);
+        final double factor = getMu() / (r2 * r2 * r);
         final double xy = x * y;
         final double xz = x * z;
         final double yz = y * z;
@@ -65,13 +74,12 @@ public abstract class AbstractCartesianAdjointNewtonianTerm implements Cartesian
 
     /**
      * Computes the generic term of a Newtonian attraction (central or not).
-     * @param mu gravitational constant
      * @param relativePosition relative position w.r.t. the body
      * @param adjointVariables adjoint variables
      * @param <T> field type
      * @return contribution to velocity adjoint derivatives
      */
-    protected  <T extends CalculusFieldElement<T>> T[] getFieldNewtonianVelocityAdjointContribution(final double mu, final T[] relativePosition,
+    protected <T extends CalculusFieldElement<T>> T[] getFieldNewtonianVelocityAdjointContribution(final T[] relativePosition,
                                                                                                     final T[] adjointVariables) {
         final T[] contribution = MathArrays.buildArray(adjointVariables[0].getField(), 3);
         final T x = relativePosition[0];
@@ -82,7 +90,7 @@ public abstract class AbstractCartesianAdjointNewtonianTerm implements Cartesian
         final T z2 = z.multiply(z);
         final T r2 = x2.add(y2).add(z2);
         final T r = r2.sqrt();
-        final T factor = (r2.multiply(r2).multiply(r)).reciprocal().multiply(mu);
+        final T factor = (r2.multiply(r2).multiply(r)).reciprocal().multiply(getMu());
         final T xy = x.multiply(y);
         final T xz = x.multiply(z);
         final T yz = y.multiply(z);
@@ -99,5 +107,30 @@ public abstract class AbstractCartesianAdjointNewtonianTerm implements Cartesian
                 add((yz.multiply(MINUS_THREE)).multiply(pvy)).
                 add((z2.multiply(MINUS_THREE).add(r2)).multiply(pvz))).multiply(factor);
         return contribution;
+    }
+
+    /**
+     * Compute the Newtonian acceleration.
+     * @param position position vector as array
+     * @return Newtonian acceleration vector
+     */
+    protected Vector3D getNewtonianAcceleration(final double[] position) {
+        final Vector3D positionVector = new Vector3D(position[0], position[1], position[2]);
+        final double squaredRadius = positionVector.getNormSq();
+        final double factor = -getMu() / (squaredRadius * FastMath.sqrt(squaredRadius));
+        return positionVector.scalarMultiply(factor);
+    }
+
+    /**
+     * Compute the Newtonian acceleration.
+     * @param position position vector as array
+     * @param <T> field type
+     * @return Newtonian acceleration vector
+     */
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldNewtonianAcceleration(final T[] position) {
+        final FieldVector3D<T> positionVector = new FieldVector3D<>(position[0], position[1], position[2]);
+        final T squaredRadius = positionVector.getNormSq();
+        final T factor = (squaredRadius.multiply(FastMath.sqrt(squaredRadius))).reciprocal().multiply(-getMu());
+        return positionVector.scalarMultiply(factor);
     }
 }

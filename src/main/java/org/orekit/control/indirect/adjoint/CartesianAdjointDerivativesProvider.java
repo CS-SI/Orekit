@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
@@ -70,38 +71,75 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         final double[] adjointVariables = state.getAdditionalState(getName());
         final int adjointDimension = getDimension();
         final double[] additionalDerivatives = new double[adjointDimension];
-        final double[] cartesianVariablesAndMass = new double[7];
-        final PVCoordinates pvCoordinates = state.getPVCoordinates();
-        System.arraycopy(pvCoordinates.getPosition().toArray(), 0, cartesianVariablesAndMass, 0, 3);
-        System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, cartesianVariablesAndMass, 3, 3);
+        final double[] cartesianVariablesAndMass = formCartesianAndMassVector(state);
         final double mass = state.getMass();
-        cartesianVariablesAndMass[6] = mass;
 
         // mass flow rate and control acceleration
         final double[] mainDerivativesIncrements = new double[7];
-        final Vector3D thrustVector = getCost().getThrustVector(adjointVariables, mass);
-        mainDerivativesIncrements[3] = thrustVector.getX() / mass;
-        mainDerivativesIncrements[4] = thrustVector.getY() / mass;
-        mainDerivativesIncrements[5] = thrustVector.getZ() / mass;
-        mainDerivativesIncrements[6] = -getCost().getMassFlowRateFactor();
+        final Vector3D thrustAccelerationVector = getCost().getThrustAccelerationVector(adjointVariables, mass);
+        mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
+        mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
+        mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
+        mainDerivativesIncrements[6] = -getCost().getMassFlowRateFactor() * thrustAccelerationVector.getNorm() * mass;
 
         // Cartesian position adjoint
         additionalDerivatives[3] = -adjointVariables[0];
         additionalDerivatives[4] = -adjointVariables[1];
         additionalDerivatives[5] = -adjointVariables[2];
 
-        // Cartesian velocity adjoint
+        // update position and velocity adjoint derivatives
         final AbsoluteDate date = state.getDate();
+        final Frame propagationFrame = state.getFrame();
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
-            final double[] contribution = equationTerm.getVelocityAdjointContribution(date, cartesianVariablesAndMass, adjointVariables);
-            additionalDerivatives[0] += contribution[0];
-            additionalDerivatives[1] += contribution[1];
-            additionalDerivatives[2] += contribution[2];
+            final double[] contribution = equationTerm.getRatesContribution(date, cartesianVariablesAndMass, adjointVariables,
+                    propagationFrame);
+            for (int i = 0; i < contribution.length; i++) {
+                additionalDerivatives[i] += contribution[i];
+            }
         }
 
         // other
         getCost().updateAdjointDerivatives(adjointVariables, mass, additionalDerivatives);
 
         return new CombinedDerivatives(additionalDerivatives, mainDerivativesIncrements);
+    }
+
+    /**
+     * Gather Cartesian variables and mass in same vector.
+     * @param state propagation state
+     * @return Cartesian variables and mass
+     */
+    private double[] formCartesianAndMassVector(final SpacecraftState state) {
+        final double[] cartesianVariablesAndMass = new double[7];
+        final PVCoordinates pvCoordinates = state.getPVCoordinates();
+        System.arraycopy(pvCoordinates.getPosition().toArray(), 0, cartesianVariablesAndMass, 0, 3);
+        System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, cartesianVariablesAndMass, 3, 3);
+        final double mass = state.getMass();
+        cartesianVariablesAndMass[6] = mass;
+        return cartesianVariablesAndMass;
+    }
+
+    /**
+     * Evaluate the Hamiltonian from Pontryagin's Maximum Principle.
+     * @param state state assumed to hold the adjoint variables
+     * @return Hamiltonian
+     */
+    public double evaluateHamiltonian(final SpacecraftState state) {
+        final double[] cartesianAndMassVector = formCartesianAndMassVector(state);
+        final double[] adjointVariables = state.getAdditionalState(getName());
+        double hamiltonian = adjointVariables[0] * cartesianAndMassVector[3] + adjointVariables[1] * cartesianAndMassVector[4] + adjointVariables[2] * cartesianAndMassVector[5];
+        final AbsoluteDate date = state.getDate();
+        final Frame propagationFrame = state.getFrame();
+        for (final CartesianAdjointEquationTerm adjointEquationTerm : adjointEquationTerms) {
+            hamiltonian += adjointEquationTerm.getHamiltonianContribution(date, adjointVariables, adjointVariables,
+                    propagationFrame);
+        }
+        if (adjointVariables.length != 6) {
+            final double mass = state.getMass();
+            final double thrustAccelerationNorm = getCost().getThrustAccelerationVector(adjointVariables, mass).getNorm();
+            hamiltonian -= getCost().getMassFlowRateFactor() * adjointVariables[6] * thrustAccelerationNorm * mass;
+        }
+        hamiltonian += getCost().getHamiltonianContribution(adjointVariables, state.getMass());
+        return hamiltonian;
     }
 }
