@@ -20,9 +20,6 @@ import org.hipparchus.exception.Localizable;
 
 import java.util.Locale;
 
-import org.hipparchus.exception.Localizable;
-import org.hipparchus.exception.UTF8Control;
-
 /**
  * Enumeration for localized messages formats.
  * <p>
