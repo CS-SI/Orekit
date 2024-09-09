@@ -85,12 +85,12 @@ public class DSSTGravityContext extends ForceModelContext {
      * Constructor.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param centralBodyFixedFrame  rotating body frame
+     * @param bodyFixedFrame  rotating body frame
      * @param provider   provider for spherical harmonics
      * @param parameters values of the force model parameters
      */
     DSSTGravityContext(final AuxiliaryElements auxiliaryElements,
-                       final Frame centralBodyFixedFrame,
+                       final Frame bodyFixedFrame,
                        final UnnormalizedSphericalHarmonicsProvider provider,
                        final double[] parameters) {
 
@@ -131,10 +131,10 @@ public class DSSTGravityContext extends ForceModelContext {
         this.roa = provider.getAe() / a;
 
         // If (centralBodyFrame == null), then centralBodyFrame = orbit frame (see DSSTZonal constructors for more on this).
-        final Frame internalCentralBodyFrame = centralBodyFixedFrame == null ? auxiliaryElements.getFrame() : centralBodyFixedFrame;
+        final Frame internalBodyFixedFrame = bodyFixedFrame == null ? auxiliaryElements.getFrame() : bodyFixedFrame;
 
         // Transform from body-fixed frame (typically ITRF) to inertial frame
-        this.bodyFixedToInertialTransform = internalCentralBodyFrame.
+        this.bodyFixedToInertialTransform = internalBodyFixedFrame.
                         getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
 
         final Vector3D zB = bodyFixedToInertialTransform.transformVector(Vector3D.PLUS_K);

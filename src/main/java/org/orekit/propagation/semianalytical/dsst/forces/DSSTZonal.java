@@ -160,6 +160,11 @@ public class DSSTZonal implements DSSTForceModel {
      *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
      * </ul>
      * @param bodyFixedFrame rotating body frame
+     * <p>If set, this frame will be used to compute the Earth pole direction and the zonal contribution.
+     * If not, the inertial frame from the propagator will be used.<br>
+     * Ideally this frame should be always set to ITRF.
+     * However, using TOD is advised since it's generally a good trade-off between performance and precision.
+     *
      * @param provider provider for spherical harmonics
      * @since 12.1
      */
@@ -168,11 +173,11 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /**
-     * Constructor with centralBodyFrame = orbit frame, and default reference values.
+     * Constructor with bodyFixedFrame = orbit frame, and default reference values.
      * <p>
-     * Added for retro-compatibility with anterior versions for initialization.
+     * Kept for compatibility with anterior versions.
      * <p>
-     * Setting centralBodyFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
+     * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
      * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
      * <p>
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
@@ -195,6 +200,11 @@ public class DSSTZonal implements DSSTForceModel {
 
     /** Constructor.
      * @param bodyFixedFrame rotating body frame
+     * <p>If set, this frame will be used to compute the Earth pole direction and the zonal contribution.
+     * If not, the inertial frame from the propagator will be used.<br>
+     * Ideally this frame should be always set to ITRF.
+     * However, using TOD is advised since it's a good trade-off between performance and precision.
+     *
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
      * (must be between 2 and {@code provider.getMaxDegree()})
@@ -241,11 +251,11 @@ public class DSSTZonal implements DSSTForceModel {
     }
 
     /**
-     * Constructor with centralBodyFrame = orbit frame.
+     * Constructor with bodyFixedFrame = orbit frame.
      * <p>
      * Added for retro-compatibility with anterior versions for initialization.
      * <p>
-     * Setting centralBodyFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
+     * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
      * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
      * <p>
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>

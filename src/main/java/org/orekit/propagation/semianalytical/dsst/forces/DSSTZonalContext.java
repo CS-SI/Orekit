@@ -74,17 +74,17 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * Constructor with central body frame potentially different than orbit frame.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param centralBodyFrame  rotating body frame
+     * @param bodyFixedFrame    rotating body frame
      * @param provider          provider for spherical harmonics
      * @param parameters        values of the force model parameters
      * @since 12.2
      */
     DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
-                     final Frame centralBodyFrame,
+                     final Frame bodyFixedFrame,
                      final UnnormalizedSphericalHarmonicsProvider provider,
                      final double[] parameters) {
 
-        super(auxiliaryElements, centralBodyFrame, provider, parameters);
+        super(auxiliaryElements, bodyFixedFrame, provider, parameters);
 
         // Chi3
         final double chi = getChi();
