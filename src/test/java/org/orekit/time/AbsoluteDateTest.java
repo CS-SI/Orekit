@@ -1649,12 +1649,7 @@ public class AbsoluteDateTest {
 
     @Test
     public void testGetJulianDates() {
-        System.out.println(Long.toHexString(Double.doubleToRawLongBits(32.184))+ " " +
-                               Long.toHexString(Double.doubleToRawLongBits(FastMath.scalb(32.184, 47)))+ " " +
-                               FastMath.scalb(32.184, 47));
-        System.out.println(Long.toHexString(Double.doubleToRawLongBits(0.184))+ " " +
-                               Long.toHexString(Double.doubleToRawLongBits(FastMath.scalb(0.184, 55)))+ " " +
-                               FastMath.scalb(0.184, 55));
+
         // GIVEN a reference date
         final TimeScale utc = TimeScalesFactory.getUTC();
 
