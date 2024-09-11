@@ -173,7 +173,7 @@ class CartesianAdjointDerivativesProviderTest {
 
         @Override
         public double[] getRatesContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame) {
-            return new double[] { 1., 10., 100. };
+            return new double[] { 1., 10., 100., 0., 0., 0. };
         }
 
         @Override
