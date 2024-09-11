@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1526">
+        Fixed position accuracy in spliced SP3 files.
+      </action>
       <action dev="serrof" type="add" issue="1516">
         Add scales for defect in indirect shooting.
       </action>

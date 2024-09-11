@@ -1348,6 +1348,10 @@ public class SP3ParserTest {
             Assertions.assertEquals("Z00", oe.getParts()[0]);
         }
 
+        Assertions.assertEquals(5,
+                                SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, SP3Utils.POS_VEL_BASE_ACCURACY,
+                                                       spliced.getHeader().getAccuracy("R23")));
+
     }
 
     private SP3 splice(final String name1, final String name2) {
