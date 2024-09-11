@@ -240,7 +240,7 @@ public class SP3 implements EphemerisFile<SP3Coordinate, SP3Segment> {
         // in order to be conservative, we keep the worst accuracy from all SP3 files for this satellite
         for (int i = 0; i < commonSats.size(); ++i) {
             final String sat = commonSats.get(i);
-            double accuracy = Double.POSITIVE_INFINITY;
+            double accuracy = 0;
             for (final SP3 current : sorted) {
                 accuracy = FastMath.max(accuracy, current.header.getAccuracy(sat));
             }
