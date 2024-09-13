@@ -40,8 +40,7 @@ import org.orekit.utils.TrackingCoordinates;
  * Estimates the path delay imposed to
  * electro-magnetic signals by the troposphere according to the formula:
  * \[
- * \delta = \frac{0.002277}{\cos z (1 - 0.00266\cos 2\varphi - 0.00028 h})}
- * \left[P+(\frac{1255}{T}+0.005)e - B(h) \tan^2 z\right]
+ * \delta = \frac{0.002277}{\cos z} \left[P+(\frac{1255}{T}+0.005)e - B(h) \tan^2 z\right]
  * \]
  * with the following input data provided to the model:
  * <ul>
