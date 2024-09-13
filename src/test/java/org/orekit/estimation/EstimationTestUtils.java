@@ -491,7 +491,8 @@ public class EstimationTestUtils {
             new ElevationDetector(topo).
                 withThreshold(AbstractDetector.DEFAULT_THRESHOLD).
                 withMaxCheck(ElevationDetectionAdaptableIntervalFactory.getAdaptableInterval(topo,
-                                                                                             ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH,
+                                                                                             ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH_INF,
+                                                                                             ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH_SUP,
                                                                                              10.0)).
                 withConstantElevation(minElevation);
         return detector;

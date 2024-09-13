@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1528">
+            Added elevationSwitchSup to ElevationDetectionAdaptableIntervalFactory.
+        </action>
         <action dev="luc" type="add" issue="707">
             Properly parse dates during the 1961 leap that was 1.422818s long.
         </action>
