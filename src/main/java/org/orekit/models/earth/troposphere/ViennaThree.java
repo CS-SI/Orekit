@@ -84,7 +84,7 @@ public class ViennaThree extends AbstractVienna {
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
         final int order  = 12;
-        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.cos(0.5 * FastMath.PI - point.getLatitude()));
+        final LegendrePolynomials p = new LegendrePolynomials(degree, order, FastMath.sin(point.getLatitude()));
 
         // Compute trigonometric functions of longitude
         final SinCos[] sc = new SinCos[13];
@@ -185,7 +185,7 @@ public class ViennaThree extends AbstractVienna {
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
         final int order  = 12;
-        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.cos(point.getLatitude().negate().add(zero.getPi().multiply(0.5))));
+        final FieldLegendrePolynomials<T> p = new FieldLegendrePolynomials<>(degree, order, FastMath.sin(point.getLatitude()));
 
         // Compute trigonometric functions of longitude
         final FieldSinCos<T>[] sc = new FieldSinCos[13];
