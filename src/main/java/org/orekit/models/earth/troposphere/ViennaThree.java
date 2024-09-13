@@ -91,7 +91,7 @@ public class ViennaThree extends AbstractVienna {
         sc[0] = FastMath.sinCos(0.0);
         sc[1] = FastMath.sinCos(point.getLongitude());
         for (int m = 2; m < sc.length; m++) {
-          sc[m] = SinCos.sum(sc[1], sc[m - 1]);
+            sc[m] = SinCos.sum(sc[1], sc[m - 1]);
         }
 
         // Compute coefficients bh, bw, ch and cw with spherical harmonics
@@ -192,7 +192,7 @@ public class ViennaThree extends AbstractVienna {
         sc[0] = FastMath.sinCos(point.getLongitude().getField().getZero());
         sc[1] = FastMath.sinCos(point.getLongitude());
         for (int m = 2; m < sc.length; m++) {
-          sc[m] = FieldSinCos.sum(sc[1], sc[m - 1]);
+            sc[m] = FieldSinCos.sum(sc[1], sc[m - 1]);
         }
 
         // Compute coefficients bh, bw, ch and cw with spherical harmonics
