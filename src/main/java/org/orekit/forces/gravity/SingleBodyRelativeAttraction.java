@@ -45,7 +45,7 @@ public class SingleBodyRelativeAttraction extends AbstractBodyAttraction {
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         // compute bodies separation vectors and squared norm
-        final PVCoordinates bodyPV   = getBody().getPVCoordinates(s.getDate(), s.getFrame());
+        final PVCoordinates bodyPV   = getBodyPVCoordinates(s.getDate(), s.getFrame());
         final Vector3D satToBody     = bodyPV.getPosition().subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
@@ -61,7 +61,7 @@ public class SingleBodyRelativeAttraction extends AbstractBodyAttraction {
                                                                          final T[] parameters) {
 
         // compute bodies separation vectors and squared norm
-        final FieldPVCoordinates<T> bodyPV = getBody().getPVCoordinates(s.getDate(), s.getFrame());
+        final FieldPVCoordinates<T> bodyPV = getBodyPVCoordinates(s.getDate(), s.getFrame());
         final FieldVector3D<T> satToBody   = bodyPV.getPosition().subtract(s.getPosition());
         final T                r2Sat       = satToBody.getNormSq();
 

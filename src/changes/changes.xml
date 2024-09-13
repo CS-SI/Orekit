@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1530">
+        Deprecate getBody in AbstractBodyAttraction.
+      </action>
       <action dev="luc" type="fix" issue="1526">
         Fixed position accuracy in spliced SP3 files.
       </action>

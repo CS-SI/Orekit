@@ -72,7 +72,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractBodyAttraction {
     public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
 
         // compute bodies separation vectors and squared norm
-        final Vector3D bodyPosition = getBody().getPosition(s.getDate(), s.getFrame());
+        final Vector3D bodyPosition = getBodyPosition(s.getDate(), s.getFrame());
         final Vector3D satToBody     = bodyPosition.subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
 
@@ -86,7 +86,7 @@ public class SingleBodyAbsoluteAttraction extends AbstractBodyAttraction {
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
                                                                              final T[] parameters) {
          // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
+        final FieldVector3D<T> centralToBody = getBodyPosition(s.getDate(), s.getFrame());
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();
 
