@@ -36,6 +36,9 @@
       <action dev="serrof" type="add" issue="1510">
         Add adaptive step integration for indirect shooting.
       </action>
+      <action dev="serrof" type="update" issue="1509">
+        Add Cartesian covariance conversions.
+      </action>
       <action dev="serrof" type="update" issue="1508">
         Use (Field)EventDetectionSettings in cylindrical shadow.
       </action>
