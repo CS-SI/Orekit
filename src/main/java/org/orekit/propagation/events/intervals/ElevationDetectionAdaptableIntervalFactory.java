@@ -33,8 +33,15 @@ import org.orekit.propagation.events.AdaptableInterval;
  */
 public class ElevationDetectionAdaptableIntervalFactory {
 
-    /** Default elevation abovde which interval should be switched to fine interval (-5°). */
-    public static final double DEFAULT_ELEVATION_SWITCH = FastMath.toRadians(-5.0);
+    /** Default elevation above which interval should be switched to fine interval (-5°).
+     * @since 13.0
+     */
+    public static final double DEFAULT_ELEVATION_SWITCH_INF = FastMath.toRadians(-5.0);
+
+    /** Default elevation below which interval should be switched to fine interval (+15°).
+     * @since 13.0
+     */
+    public static final double DEFAULT_ELEVATION_SWITCH_SUP = FastMath.toRadians(15.0);
 
     /**
      * Private constructor.
@@ -47,18 +54,23 @@ public class ElevationDetectionAdaptableIntervalFactory {
      * Method providing a candidate {@link AdaptableInterval} for arbitrary elevation detection with forward propagation.
      * It uses a Keplerian, eccentric approximation.
      * @param topo topocentric frame centered at ground interest point
-     * @param elevationSwitch elevation above which interval will switch to {@code fineCheckInterval}
-     *                        (typically {@link #DEFAULT_ELEVATION_SWITCH} which is -5°)
-     * @param fineCheckInterval check interval to use when elevation is above {@code elevationSwitch}
+     * @param elevationSwitchInf elevation above which interval will switch to {@code fineCheckInterval}
+     *                        (typically {@link #DEFAULT_ELEVATION_SWITCH_INF} which is -5°)
+     * @param elevationSwitchSup elevation below which interval will switch to {@code fineCheckInterval}
+     *                        (typically {@link #DEFAULT_ELEVATION_SWITCH_SUP} which is +15°)
+     * @param fineCheckInterval check interval to use when elevation is
+     *                          between {@code elevationSwitchInf} and {@code elevationSwitchSup}
      * @return adaptable interval for detection of elevation with respect to {@code topo}
+     * @since 13.0
      */
     public static AdaptableInterval getAdaptableInterval(final TopocentricFrame topo,
-                                                         final double elevationSwitch,
+                                                         final double elevationSwitchInf,
+                                                         final double elevationSwitchSup,
                                                          final double fineCheckInterval) {
         return state -> {
             final double elevation = topo.getElevation(state.getPosition(), state.getFrame(), state.getDate());
-            if (elevation <= elevationSwitch) {
-                // we are far from visibility, estimate some large interval with huge margins
+            if (elevation <= elevationSwitchInf || elevation >= elevationSwitchSup) {
+                // we are far from visibility switch, estimate some large interval with huge margins
 
                 // rotation rate of the topocentric frame
                 final Transform topoToInertial = topo.getTransformTo(state.getFrame(), state.getDate());
@@ -73,10 +85,15 @@ public class ElevationDetectionAdaptableIntervalFactory {
                 // upper boundary of elevation rate
                 final double maxElevationRate = topoAngularVelocity + rateP;
 
-                return FastMath.max(fineCheckInterval, (elevationSwitch - elevation) / maxElevationRate);
+                // angular distance to the closest switch
+                final double deltaElevationSwitch = elevation <= elevationSwitchInf ?
+                                                    elevationSwitchInf - elevation :
+                                                    elevation - elevationSwitchSup;
+
+                return FastMath.max(fineCheckInterval, deltaElevationSwitch / maxElevationRate);
 
             } else {
-                // we are close to visibility, switch to fine check interval
+                // we are close to visibility change, switch to fine check interval
                 return fineCheckInterval;
             }
         };

@@ -537,7 +537,8 @@ public class ElevationDetectorTest {
                                                            "Colorado Springs");
         final AdaptableInterval maxCheck = ElevationDetectionAdaptableIntervalFactory.
             getAdaptableInterval(topo,
-                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH,
+                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH_INF,
+                                 ElevationDetectionAdaptableIntervalFactory.DEFAULT_ELEVATION_SWITCH_SUP,
                                  60.0);
         final ElevationDetector detector = new ElevationDetector(maxCheck, 1.0e-3, topo).
                                            withConstantElevation(FastMath.toRadians(10.0)).
