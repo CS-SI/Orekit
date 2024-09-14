@@ -75,6 +75,9 @@
       <action dev="serrof" type="add" issue="1477">
         Add adjoint dynamics for inertial force.
       </action>
+      <action dev="serrof" type="add" issue="1476">
+        Add adjoint dynamics for third body force.
+      </action>
       <action dev="luc" type="fix" issue="1475">
         Added getOneLetterCode and getTwoLettersCode to TimeSystem.
       </action>
