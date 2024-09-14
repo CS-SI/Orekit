@@ -332,6 +332,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
      * @return α
      * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getAlpha()} instead
      */
+    @Deprecated
     public T getAlpha() {
         return (T) f.getZ();
     }
@@ -340,6 +341,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
      * @return β
      * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getBeta()} instead
      */
+    @Deprecated
     public T getBeta() {
         return (T) g.getZ();
     }
@@ -348,6 +350,7 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
      * @return γ
      * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getGamma()} instead
      */
+    @Deprecated
     public T getGamma() {
         return (T) w.getZ();
     }

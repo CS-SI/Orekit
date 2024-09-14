@@ -117,8 +117,9 @@ public class DSSTTesseralContext extends DSSTGravityContext {
     /**
      * Get μ / a .
      * @return moa
-     * @deprecated since 12.2 Use getMuoa() instead
+     *@deprecated since 12.2 Use getMuoa() instead
      */
+    @Deprecated
     public double getMoa() {
         return getMuoa();
     }

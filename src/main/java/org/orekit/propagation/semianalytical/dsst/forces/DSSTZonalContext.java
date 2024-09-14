@@ -64,6 +64,7 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * @param parameters        values of the force model parameters
      * @deprecated since 12.2 and issue 1104, should be removed in 13.0
      */
+    @Deprecated
     DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
                      final UnnormalizedSphericalHarmonicsProvider provider,
                      final double[] parameters) {
@@ -119,6 +120,7 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * @return &Chi;
      * @deprecated since 12.2 Use getChi() instead
      */
+    @Deprecated
     public double getX() {
         return getChi();
     }
@@ -127,6 +129,7 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * @return &Chi;².
      * @deprecated since 12.2 Use getChi2() instead
      */
+    @Deprecated
     public double getXX() {
         return getChi2();
     }
@@ -142,6 +145,7 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * @return &Chi;³
      * @deprecated since 12.2 Use getChi3() instead
      */
+    @Deprecated
     public double getXXX() {
         return getChi3();
     }
@@ -150,6 +154,7 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * @return m2aoA
      * @deprecated since 12.2 Use -getAx2oA()() instead
      */
+    @Deprecated
     public double getM2aoA() {
         return -getAx2oA();
     }
@@ -158,6 +163,7 @@ public class DSSTZonalContext extends DSSTGravityContext {
      * @return mCo2AB
      * @deprecated since 12.2 Use -getCo2AB()() instead
      */
+    @Deprecated
     public double getMCo2AB() {
         return -getCo2AB();
     }

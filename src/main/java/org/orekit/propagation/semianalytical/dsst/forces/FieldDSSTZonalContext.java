@@ -69,6 +69,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * to selected the right value for state date or by getting the parameters for a specific date
      * @deprecated since 12.2 and issue 1104, should be removed in 13.0
      */
+    @Deprecated
     FieldDSSTZonalContext(final FieldAuxiliaryElements<T> auxiliaryElements,
                           final UnnormalizedSphericalHarmonicsProvider provider,
                           final T[] parameters) {
@@ -127,6 +128,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * @return &Chi;
      * @deprecated since 12.2 Use getChi() instead
      */
+    @Deprecated
     public T getX() {
         return getChi();
     }
@@ -135,6 +137,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * @return &Chi;².
      * @deprecated since 12.2 Use getChi2() instead
      */
+    @Deprecated
     public T getXX() {
         return getChi2();
     }
@@ -142,6 +145,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
     /** Getter for the &Chi;³.
      * @return the &Chi;³
      */
+    @Deprecated
     public T getChi3() {
         return chi3;
     }
@@ -150,6 +154,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * @return &Chi;³
      * @deprecated since 12.2 Use getChi3() instead
      */
+    @Deprecated
     public T getXXX() {
         return getChi3();
     }
@@ -158,6 +163,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * @return m2aoA
      * @deprecated since 12.2 Use -getAx2oA()() instead
      */
+    @Deprecated
     public T getM2aoA() {
         return getAx2oA().negate();
     }
@@ -166,6 +172,7 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
      * @return mCo2AB
      * @deprecated since 12.2 Use -getCo2AB()() instead
      */
+    @Deprecated
     public T getMCo2AB() {
         return getCo2AB().negate();
     }

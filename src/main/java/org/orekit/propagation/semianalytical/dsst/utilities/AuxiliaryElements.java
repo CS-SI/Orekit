@@ -321,6 +321,7 @@ public class AuxiliaryElements {
      * @return α
      * @deprecated since 12.2, use {@link DSSTGravityContext#getAlpha()} instead
      */
+    @Deprecated
     public double getAlpha() {
         return f.getZ();
     }
@@ -329,6 +330,7 @@ public class AuxiliaryElements {
      * @return β
      * @deprecated since 12.2, use {@link DSSTGravityContext#getBeta()} instead
      */
+    @Deprecated
     public double getBeta() {
         return g.getZ();
     }
@@ -337,6 +339,7 @@ public class AuxiliaryElements {
      * @return γ
      * @deprecated since 12.2, use {@link DSSTGravityContext#getGamma()} instead
      */
+    @Deprecated
     public double getGamma() {
         return w.getZ();
     }
