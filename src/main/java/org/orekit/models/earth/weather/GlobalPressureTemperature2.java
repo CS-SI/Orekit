@@ -18,8 +18,10 @@ package org.orekit.models.earth.weather;
 
 import java.io.IOException;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.data.DataSource;
-import org.orekit.time.TimeScale;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** The Global Pressure and Temperature 2 (GPT2) model.
  * @author Luc Maisonobe
@@ -31,18 +33,29 @@ public class GlobalPressureTemperature2 extends AbstractGlobalPressureTemperatur
      * Constructor with source of GPT2 auxiliary data given by user.
      *
      * @param source grid data source (files with extra columns like GPT2w or GPT3 can be used here)
-     * @param utc UTC time scale.
      * @exception IOException if grid data cannot be read
      */
-    public GlobalPressureTemperature2(final DataSource source, final TimeScale utc)
+    public GlobalPressureTemperature2(final DataSource source)
         throws IOException {
-        super(source, utc,
+        super(source,
               SeasonalModelType.PRESSURE,
               SeasonalModelType.TEMPERATURE,
               SeasonalModelType.QV,
               SeasonalModelType.DT,
               SeasonalModelType.AH,
               SeasonalModelType.AW);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected double deltaRef(final AbsoluteDate date) {
+        return date.durationFrom(AbsoluteDate.J2000_EPOCH);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> T deltaRef(final FieldAbsoluteDate<T> date) {
+        return date.durationFrom(FieldAbsoluteDate.getJ2000Epoch(date.getField()));
     }
 
 }

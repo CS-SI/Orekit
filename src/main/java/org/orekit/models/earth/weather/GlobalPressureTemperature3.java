@@ -18,7 +18,10 @@ package org.orekit.models.earth.weather;
 
 import java.io.IOException;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.data.DataSource;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 
 /** The Global Pressure and Temperature 3 (GPT3) model.
@@ -30,6 +33,9 @@ import org.orekit.time.TimeScale;
  */
 public class GlobalPressureTemperature3 extends AbstractGlobalPressureTemperature {
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
     /**
      * Constructor with source of GPT3 auxiliary data given by user.
      *
@@ -39,7 +45,7 @@ public class GlobalPressureTemperature3 extends AbstractGlobalPressureTemperatur
      */
     public GlobalPressureTemperature3(final DataSource source, final TimeScale utc)
         throws IOException {
-        super(source, utc,
+        super(source,
               SeasonalModelType.PRESSURE,
               SeasonalModelType.TEMPERATURE,
               SeasonalModelType.QV,
@@ -52,6 +58,25 @@ public class GlobalPressureTemperature3 extends AbstractGlobalPressureTemperatur
               SeasonalModelType.GE_H,
               SeasonalModelType.GN_W,
               SeasonalModelType.GE_W);
+
+        this.utc = utc;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected double deltaRef(final AbsoluteDate date) {
+        final AbsoluteDate reference =
+            new AbsoluteDate(date.getComponents(utc).getDate().getYear() - 1, 12, 31, utc);
+        return date.durationFrom(reference);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>> T deltaRef(final FieldAbsoluteDate<T> date) {
+        final FieldAbsoluteDate<T> reference =
+            new FieldAbsoluteDate<>(date.getField(), date.getComponents(utc).getDate().getYear() - 1, 12, 31, utc);
+        return date.durationFrom(reference);
     }
 
 }
