@@ -26,7 +26,7 @@ import java.util.Map;
  * @author Luc Maisonobe
  * @since 12.1
  */
-enum SeasonalModelType {
+public enum SeasonalModelType {
 
     /** Pressure model. */
     PRESSURE("p"),
@@ -89,12 +89,10 @@ enum SeasonalModelType {
 
     /** Parse a field to get the type.
      * @param field field to parse
-     * @param lineNumber line number
-     * @param name file name
      * @return the type corresponding to the field
      * @exception IllegalArgumentException if the field does not correspond to a type
      */
-    public static SeasonalModelType parseType(final String field, final int lineNumber, final String name) {
+    public static SeasonalModelType parseType(final String field) {
         return LABELS_MAP.get(field);
     }
 
