@@ -707,16 +707,31 @@ public class Transform implements
             super(AbsoluteDate.ARBITRARY_EPOCH, PVCoordinates.ZERO, AngularCoordinates.IDENTITY);
         }
 
+        @Override
+        public StaticTransform staticShiftedBy(final double dt) {
+            return toStaticTransform();
+        }
+
         /** {@inheritDoc} */
         @Override
         public Transform shiftedBy(final double dt) {
             return this;
         }
 
+        @Override
+        public StaticTransform getStaticInverse() {
+            return toStaticTransform();
+        }
+
         /** {@inheritDoc} */
         @Override
         public Transform getInverse() {
             return this;
+        }
+
+        @Override
+        public StaticTransform toStaticTransform() {
+            return StaticTransform.getIdentity();
         }
 
         /** {@inheritDoc} */
@@ -741,6 +756,16 @@ public class Transform implements
         @Override
         public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
             return pv;
+        }
+
+        @Override
+        public PVCoordinates transformOnlyPV(final PVCoordinates pv) {
+            return new PVCoordinates(pv.getPosition(), pv.getVelocity());
+        }
+
+        @Override
+        public TimeStampedPVCoordinates transformOnlyPV(final TimeStampedPVCoordinates pv) {
+            return new TimeStampedPVCoordinates(pv.getDate(), pv.getPosition(), pv.getVelocity());
         }
 
         @Override

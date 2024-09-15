@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="update" issue="1536">
+        Override methods in (Field) static transform identity.
+      </action>
       <action dev="serrof" type="update" issue="1530">
         Deprecate getBody in AbstractBodyAttraction.
       </action>

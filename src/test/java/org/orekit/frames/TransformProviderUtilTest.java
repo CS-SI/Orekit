@@ -157,6 +157,28 @@ public class TransformProviderUtilTest {
     }
 
     @Test
+    void testStaticIdentity() {
+        // GIVEN
+
+        // WHEN
+        final StaticTransform staticTransform = TransformProviderUtils.IDENTITY_PROVIDER.getStaticTransform(Mockito.mock(AbsoluteDate.class));
+        // THEN
+        Assertions.assertEquals(Rotation.IDENTITY, staticTransform.getRotation());
+        Assertions.assertEquals(Vector3D.ZERO, staticTransform.getTranslation());
+    }
+
+    @Test
+    void testFieldStaticIdentity() {
+        // GIVEN
+        final FieldAbsoluteDate<Complex> fieldDate = new FieldAbsoluteDate<>(ComplexField.getInstance(), AbsoluteDate.BEIDOU_EPOCH);
+        // WHEN
+        final FieldStaticTransform<Complex> staticTransform = TransformProviderUtils.IDENTITY_PROVIDER.getStaticTransform(fieldDate);
+        // THEN
+        Assertions.assertEquals(0., Rotation.distance(Rotation.IDENTITY, staticTransform.getRotation().toRotation()));
+        Assertions.assertEquals(Vector3D.ZERO, staticTransform.getTranslation().toVector3D());
+    }
+
+    @Test
     public void testIdentity() {
         RandomGenerator random = new Well19937a(0x87c3a5c51fb0235el);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
