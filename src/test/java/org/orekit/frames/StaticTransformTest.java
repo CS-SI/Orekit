@@ -19,10 +19,9 @@ package org.orekit.frames;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.hipparchus.geometry.euclidean.threed.Line;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
+import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -110,4 +109,23 @@ public class StaticTransformTest {
                 actualInverseStaticTransform.getRotation()));
     }
 
+    @Test
+    void testGetIdentity() {
+        // GIVEN
+        final StaticTransform identity = StaticTransform.getIdentity();
+        final Vector3D vector3D = new Vector3D(1, 2, 3);
+        final FieldVector3D<Complex> fieldVector3D = new FieldVector3D<>(ComplexField.getInstance(), vector3D);
+        // WHEN & THEN
+        Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH, identity.getDate());
+        Assertions.assertEquals(identity.transformVector(vector3D), identity.getRotation().applyTo(vector3D));
+        Assertions.assertEquals(identity.transformPosition(vector3D),
+                identity.getRotation().applyTo(vector3D).add(identity.getTranslation()));
+        Assertions.assertEquals(identity.transformVector(vector3D), identity.getRotation().applyTo(vector3D));
+        Assertions.assertEquals(identity.transformVector(fieldVector3D).toVector3D(),
+                identity.getRotation().applyTo(fieldVector3D.toVector3D()));
+        Assertions.assertEquals(identity.transformPosition(fieldVector3D).toVector3D(),
+                identity.getTranslation().add(identity.getRotation().applyTo(fieldVector3D.toVector3D())));
+        Assertions.assertEquals(identity, identity.getStaticInverse());
+        Assertions.assertEquals(identity, identity.getInverse());
+    }
 }

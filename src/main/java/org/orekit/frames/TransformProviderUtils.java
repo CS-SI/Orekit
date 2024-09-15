@@ -47,6 +47,12 @@ public class TransformProviderUtils {
             return Transform.IDENTITY;
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public StaticTransform getStaticTransform(final AbsoluteDate date) {
+            return StaticTransform.getIdentity();
+        }
+
         /** {@inheritDoc}
          * <p>
          * Always returns {@link FieldTransform#getIdentity(org.hipparchus.Field)}
@@ -57,6 +63,11 @@ public class TransformProviderUtils {
             return FieldTransform.getIdentity(date.getField());
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+            return FieldStaticTransform.getIdentity(date.getField());
+        }
     };
 
     /** Private constructor.

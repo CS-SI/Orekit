@@ -31,6 +31,7 @@ import org.hipparchus.linear.FieldMatrix;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.random.RandomGenerator;
 import org.hipparchus.random.Well19937a;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -39,19 +40,101 @@ import org.junit.jupiter.api.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
-import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.CartesianDerivativesFilter;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinatesHermiteInterpolator;
+import org.orekit.utils.*;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FieldTransformTest {
+
+    @Test
+    void testIdentityTransformVector() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldTransform<Binary64> identity = FieldTransform.getIdentity(field);
+        final Vector3D vector3D = new Vector3D(1, 2, 3);
+        final FieldVector3D<Binary64> fieldVector3D = new FieldVector3D<>(field, vector3D);
+        // WHEN
+        final FieldVector3D<Binary64> transformed = identity.transformVector(vector3D);
+        // THEN
+        Assertions.assertEquals(fieldVector3D, transformed);
+        Assertions.assertEquals(identity.transformVector(vector3D), transformed);
+        Assertions.assertEquals(identity.transformVector(fieldVector3D), transformed);
+        Assertions.assertEquals(identity.transformPosition(vector3D), transformed);
+        Assertions.assertEquals(identity.transformPosition(fieldVector3D), transformed);
+    }
+
+    @Test
+    void testIdentityTransformOnlyPV() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldTransform<Binary64> identity = FieldTransform.getIdentity(field);
+        final Vector3D position = new Vector3D(1, 2, 3);
+        final Vector3D velocity = Vector3D.MINUS_K;
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        final FieldPVCoordinates<Binary64> fieldPVCoordinates = new FieldPVCoordinates<>(field, pvCoordinates);
+        // WHEN
+        final FieldPVCoordinates<Binary64> transformed = identity.transformOnlyPV(fieldPVCoordinates);
+        // THEN
+        Assertions.assertEquals(position, transformed.getPosition().toVector3D());
+        Assertions.assertEquals(velocity, transformed.getVelocity().toVector3D());
+        Assertions.assertEquals(FieldVector3D.getZero(field), transformed.getAcceleration());
+        Assertions.assertEquals(identity.transformPVCoordinates(fieldPVCoordinates).getPosition(),
+                transformed.getPosition());
+        Assertions.assertEquals(identity.transformPVCoordinates(fieldPVCoordinates).getVelocity(),
+                transformed.getVelocity());
+        final TimeStampedFieldPVCoordinates<Binary64> timeStampedFieldPVCoordinates = new TimeStampedFieldPVCoordinates<>(identity.getFieldDate(),
+                fieldPVCoordinates);
+        Assertions.assertEquals(identity.transformPVCoordinates(timeStampedFieldPVCoordinates).getPosition(),
+                transformed.getPosition());
+        Assertions.assertEquals(identity.transformPVCoordinates(timeStampedFieldPVCoordinates).getVelocity(),
+                transformed.getVelocity());
+    }
+
+    @Test
+    void testIdentityShiftedBy() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldTransform<Binary64> identity = FieldTransform.getIdentity(field);
+        // WHEN
+        final FieldTransform<Binary64> shiftedIdentity = identity.shiftedBy(1.);
+        // THEN
+        Assertions.assertEquals(identity, shiftedIdentity);
+    }
+
+    @Test
+    void testIdentityStaticShiftedBy() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldTransform<Binary64> identity = FieldTransform.getIdentity(field);
+        // WHEN
+        final FieldStaticTransform<Binary64> shiftedIdentity = identity.staticShiftedBy(Binary64.ONE);
+        // THEN
+        Assertions.assertEquals(FieldStaticTransform.getIdentity(field).getClass(), shiftedIdentity.getClass());
+    }
+
+    @Test
+    void testIdentityGetStaticInverse() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldTransform<Binary64> identity = FieldTransform.getIdentity(field);
+        // WHEN
+        final FieldStaticTransform<Binary64> staticInverse = identity.getStaticInverse();
+        // THEN
+        Assertions.assertEquals(identity.toStaticTransform().getClass(), staticInverse.getClass());
+    }
+
+    @Test
+    void testIdentityFreeze() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldTransform<Binary64> identity = FieldTransform.getIdentity(field);
+        // WHEN
+        final FieldTransform<Binary64> frozen = identity.freeze();
+        // THEN
+        Assertions.assertEquals(identity, frozen);
+    }
 
     @Test
     public void testIdentityTranslation() {
