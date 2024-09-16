@@ -48,17 +48,15 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      * @return identity transform.
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getIdentity(final Field<T> field) {
-        final FieldVector3D<T> zeroVector = FieldVector3D.getZero(field);
-        final FieldRotation<T> identity = FieldRotation.getIdentity(field);
         return new FieldStaticTransform<T>() {
             @Override
             public FieldVector3D<T> getTranslation() {
-                return zeroVector;
+                return  FieldVector3D.getZero(field);
             }
 
             @Override
             public FieldRotation<T> getRotation() {
-                return identity;
+                return FieldRotation.getIdentity(field);
             }
 
             @Override

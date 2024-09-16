@@ -24,6 +24,9 @@
       <action dev="serrof" type="update" issue="1536">
         Override methods in (Field) static transform identity.
       </action>
+      <action dev="serrof" type="update" issue="1533">
+        Override more methods in (Field) transform identity.
+      </action>
       <action dev="serrof" type="update" issue="1530">
         Deprecate getBody in AbstractBodyAttraction.
       </action>

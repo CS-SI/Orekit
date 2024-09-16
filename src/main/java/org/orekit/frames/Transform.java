@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -744,6 +745,16 @@ public class Transform implements
         @Override
         public Vector3D transformVector(final Vector3D vector) {
             return vector;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+            return transformVector(position);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+            return new FieldVector3D<>(vector.getX(), vector.getY(), vector.getZ());
         }
 
         /** {@inheritDoc} */

@@ -961,6 +961,16 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
         }
 
         @Override
+        public TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedPVCoordinates pv) {
+            return new TimeStampedFieldPVCoordinates<>(field, pv);
+        }
+
+        @Override
+        public TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
+            return pv;
+        }
+
+        @Override
         public FieldPVCoordinates<T> transformOnlyPV(final FieldPVCoordinates<T> pv) {
             return new FieldPVCoordinates<>(pv.getPosition(), pv.getVelocity());
         }
