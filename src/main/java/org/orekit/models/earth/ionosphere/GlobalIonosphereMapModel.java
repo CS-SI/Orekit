@@ -121,11 +121,8 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class GlobalIonosphereMapModel implements IonosphericModel {
 
-    /** Pattern for delimiting regular expressions. */
-    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
-
     /** Map of interpolable TEC. */
-    private TimeSpanMap<TECMapPair> tecMap;
+    private final TimeSpanMap<TECMapPair> tecMap;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -545,10 +542,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                                     if (!line.endsWith("LAT/LON1/LON2/DLON/H") &&
                                         !line.endsWith(END) &&
                                         !line.endsWith(EPOCH)) {
-                                        line = line.trim();
-                                        final String[] readLine = SEPARATOR.split(line);
-                                        for (final String s : readLine) {
-                                            values.add(Double.parseDouble(s));
+                                        for (int fieldStart = 0; fieldStart < line.length(); fieldStart += 5) {
+                                            values.add((double) Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
                                         }
                                     }
                                 }
@@ -558,10 +553,8 @@ public class GlobalIonosphereMapModel implements IonosphericModel {
                         if (inTEC) {
                             // Here, we are parsing the last line of TEC data for a given latitude
                             // The size of this line is lower than 60.
-                            line = line.trim();
-                            final String[] readLine = SEPARATOR.split(line);
-                            for (final String s : readLine) {
-                                values.add(Double.parseDouble(s));
+                            for (int fieldStart = 0; fieldStart < line.length(); fieldStart += 5) {
+                                values.add((double) Integer.parseInt(line.substring(fieldStart, fieldStart + 5).trim()));
                             }
                         }
                     }
