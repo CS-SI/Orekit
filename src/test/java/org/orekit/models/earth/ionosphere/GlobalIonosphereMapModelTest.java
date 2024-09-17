@@ -422,7 +422,7 @@ public class GlobalIonosphereMapModelTest {
     @Test
     /**
      * The goal of this test is to verify if an OrekitException is thrown when latitude or longitude
-     * bondaries are not present in the header section of the Global Ionosphere Map.
+     * boundaries are not present in the header section of the Global Ionosphere Map.
      */
     public void testIssue621() {
         final String fileName  = "missing-lat-lon-header-gpsg0150.19i";
@@ -434,6 +434,11 @@ public class GlobalIonosphereMapModelTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
         }
+    }
+
+    @Test
+    public void testJammedFields() {
+        Assertions.assertNotNull(new GlobalIonosphereMapModel("jammed-fields.14i"));
     }
 
     @Test
