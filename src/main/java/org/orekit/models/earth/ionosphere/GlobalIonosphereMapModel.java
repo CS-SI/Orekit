@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
