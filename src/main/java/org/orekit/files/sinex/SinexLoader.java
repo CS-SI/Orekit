@@ -208,8 +208,8 @@ public class SinexLoader implements EopHistoryLoader {
     private static final Pattern PATTERN_SPACE = Pattern.compile("\\s+");
 
     /** Pattern to check beginning of SINEX files.*/
-    private static final Pattern PATTERN_BEGIN = Pattern.compile("%=(?:SNX|BIA) \\d\\.\\d\\d ..." +
-                                                                 " (\\d{2,4}:\\d{3}:\\d{5}) ..." +
+    private static final Pattern PATTERN_BEGIN = Pattern.compile("%=(?:SNX|BIA) \\d\\.\\d\\d .+" +
+                                                                 " (\\d{2,4}:\\d{3}:\\d{5}) .+" +
                                                                  " (\\d{2,4}:\\d{3}:\\d{5}) (\\d{2,4}:\\d{3}:\\d{5})" +
                                                                  " . .*");
 
