@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1487">
+        Additional protection for zenith line-of-sight in NeQuick-G model.
+      </action>
       <action dev="serrof" type="update" issue="1536">
         Override methods in (Field) static transform identity.
       </action>
