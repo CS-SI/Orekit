@@ -48,7 +48,7 @@ public class Dcb {
      * Ensemble of DCBCode object, identifiable by observation code pairs,
      * each containing the corresponding TimeSpanMap of biases (DCB).
      */
-    private final HashMap<Pair<ObservationType, ObservationType>, DcbCode> dcbCodeMap;
+    private final HashMap<Pair<ObservationType, ObservationType>, TimeSpanMap<Double>> dcbCodeMap;
 
     /** Mapper from string to observation type.
      * @since 13.0
@@ -74,31 +74,6 @@ public class Dcb {
         this.typeBuilder     = typeBuilder;
     }
 
-    // Class to store the TimeSpanMap per DCB Observation Code set
-    private static class DcbCode {
-
-        /** TimeSpanMap containing the DCB bias values. */
-        private final TimeSpanMap<Double> dcbMap;
-
-        /**
-         * Simple constructor.
-         */
-        DcbCode() {
-            this.dcbMap = new TimeSpanMap<>(null);
-        }
-
-        /**
-         * Getter for the TimeSpanMap of DCB values.
-         *
-         * @return a time span map containing DCB values, for the observation code pair
-         * corresponding to this DCBCode object
-         */
-        public TimeSpanMap<Double> getDcbTimeMap() {
-            return dcbMap;
-        }
-
-    }
-
     /**
      * Add the content of a DCB line to the DCBSatellite object.
      * <p>
@@ -122,10 +97,10 @@ public class Dcb {
         // If not present add a new DCBCode to the map, identified by the Observation Pair.
         // Then add the bias value and validity period.
         if (observationSets.add(observationPair)) {
-            dcbCodeMap.put(observationPair, new DcbCode());
+            dcbCodeMap.put(observationPair, new TimeSpanMap<>(null));
         }
 
-        dcbCodeMap.get(observationPair).getDcbTimeMap().addValidBetween(biasValue, spanBegin, spanEnd);
+        dcbCodeMap.get(observationPair).addValidBetween(biasValue, spanBegin, spanEnd);
     }
 
     /**
@@ -216,8 +191,7 @@ public class Dcb {
      * @return the time span map for a given observation code pair
      */
     private TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs1, final ObservationType obs2) {
-        return dcbCodeMap.get(new Pair<>(obs1, obs2)).getDcbTimeMap();
+        return dcbCodeMap.get(new Pair<>(obs1, obs2));
     }
 
 }
-
