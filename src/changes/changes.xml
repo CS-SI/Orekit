@@ -91,6 +91,18 @@
       </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1487">
+        Additional protection for zenith line-of-sight in NeQuick-G model.
+      </action>
+      <action dev="serrof" type="update" issue="1536">
+        Override methods in (Field) static transform identity.
+      </action>
+      <action dev="serrof" type="update" issue="1533">
+        Override more methods in (Field) transform identity.
+      </action>
+      <action dev="serrof" type="update" issue="1530">
+        Deprecate getBody in AbstractBodyAttraction.
+      </action>
       <action dev="luc" type="fix" issue="1526">
         Fixed position accuracy in spliced SP3 files.
       </action>
@@ -105,6 +117,9 @@
       </action>
       <action dev="serrof" type="add" issue="1510">
         Add adaptive step integration for indirect shooting.
+      </action>
+      <action dev="serrof" type="update" issue="1509">
+        Add Cartesian covariance conversions.
       </action>
       <action dev="serrof" type="update" issue="1508">
         Use (Field)EventDetectionSettings in cylindrical shadow.
@@ -138,6 +153,9 @@
       </action>
       <action dev="serrof" type="add" issue="1477">
         Add adjoint dynamics for inertial force.
+      </action>
+      <action dev="serrof" type="add" issue="1476">
+        Add adjoint dynamics for third body force.
       </action>
       <action dev="luc" type="fix" issue="1475">
         Added getOneLetterCode and getTwoLettersCode to TimeSystem.

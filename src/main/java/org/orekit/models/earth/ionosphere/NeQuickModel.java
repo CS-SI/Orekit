@@ -1013,8 +1013,10 @@ public class NeQuickModel implements IonosphericModel {
             final SinCos scLon21  = FastMath.sinCos(lon2 - lon1);
 
             // Zenith angle computation (Eq. 153 to 155)
-            final double cosD = scLatRec.sin() * scLatSat.sin() +
-                                scLatRec.cos() * scLatSat.cos() * scLon21.cos();
+            // with added protection against numerical noise near zenith observation
+            final double cosD = FastMath.min(1.0,
+                                             scLatRec.sin() * scLatSat.sin() +
+                                             scLatRec.cos() * scLatSat.cos() * scLon21.cos());
             final double sinD = FastMath.sqrt(1.0 - cosD * cosD);
             final double z    = FastMath.atan2(sinD, cosD - (r1 / r2));
             final SinCos scZ  = FastMath.sinCos(z);

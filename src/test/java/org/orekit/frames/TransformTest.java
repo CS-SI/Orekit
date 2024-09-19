@@ -18,6 +18,8 @@ package org.orekit.frames;
 
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
+import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
@@ -54,6 +56,101 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TransformTest {
+
+    @Test
+    void testIdentityTransformVector() {
+        // GIVEN
+        final Transform identity = Transform.IDENTITY;
+        final Vector3D vector3D = new Vector3D(1, 2, 3);
+        final FieldVector3D<Complex> fieldVector3D = new FieldVector3D<>(ComplexField.getInstance(), vector3D);
+        // WHEN
+        final FieldVector3D<Complex> transformed = identity.transformVector(fieldVector3D);
+        // THEN
+        Assertions.assertEquals(vector3D, transformed.toVector3D());
+        Assertions.assertEquals(identity.transformVector(vector3D), transformed.toVector3D());
+        Assertions.assertEquals(identity.transformPosition(vector3D), transformed.toVector3D());
+        Assertions.assertEquals(identity.transformPosition(fieldVector3D), transformed);
+    }
+
+    @Test
+    void testIdentityTransformPVCoordinates() {
+        // GIVEN
+        final Transform identity = Transform.IDENTITY;
+        final Vector3D position = new Vector3D(1, 2, 3);
+        final Vector3D velocity = Vector3D.MINUS_K;
+        final PVCoordinates pv = new PVCoordinates(position, velocity);
+        // WHEN
+        final PVCoordinates transformed = identity.transformPVCoordinates(pv);
+        // THEN
+        Assertions.assertEquals(position, transformed.getPosition());
+        Assertions.assertEquals(velocity, transformed.getVelocity());
+        Assertions.assertEquals(Vector3D.ZERO, transformed.getAcceleration());
+        final TimeStampedPVCoordinates timeStampedPVCoordinates = new TimeStampedPVCoordinates(identity.getDate(), position, velocity);
+        Assertions.assertEquals(transformed.getPosition(), identity.transformPVCoordinates(timeStampedPVCoordinates).getPosition());
+        Assertions.assertEquals(transformed.getVelocity(), identity.transformPVCoordinates(timeStampedPVCoordinates).getVelocity());
+        Assertions.assertEquals(transformed.getPosition(), identity.transformOnlyPV(timeStampedPVCoordinates).getPosition());
+        Assertions.assertEquals(transformed.getVelocity(), identity.transformOnlyPV(timeStampedPVCoordinates).getVelocity());
+    }
+
+    @Test
+    void testIdentityTransformOnlyPV() {
+        // GIVEN
+        final Transform identity = Transform.IDENTITY;
+        final Vector3D position = new Vector3D(1, 2, 3);
+        final Vector3D velocity = Vector3D.MINUS_K;
+        final PVCoordinates pv = new PVCoordinates(position, velocity);
+        // WHEN
+        final PVCoordinates transformed = identity.transformOnlyPV(pv);
+        // THEN
+        Assertions.assertEquals(position, transformed.getPosition());
+        Assertions.assertEquals(velocity, transformed.getVelocity());
+        Assertions.assertEquals(Vector3D.ZERO, transformed.getAcceleration());
+        Assertions.assertEquals(transformed.getPosition(), identity.transformPVCoordinates(pv).getPosition());
+        Assertions.assertEquals(transformed.getVelocity(), identity.transformPVCoordinates(pv).getVelocity());
+        final TimeStampedPVCoordinates timeStampedPVCoordinates = new TimeStampedPVCoordinates(identity.getDate(), position, velocity);
+        Assertions.assertEquals(transformed.getPosition(), identity.transformOnlyPV(timeStampedPVCoordinates).getPosition());
+        Assertions.assertEquals(transformed.getVelocity(), identity.transformOnlyPV(timeStampedPVCoordinates).getVelocity());
+    }
+
+    @Test
+    void testIdentityShiftedBy() {
+        // GIVEN
+        final Transform identity = Transform.IDENTITY;
+        // WHEN
+        final Transform shiftedIdentity = identity.shiftedBy(1.);
+        // THEN
+        Assertions.assertEquals(identity, shiftedIdentity);
+    }
+
+    @Test
+    void testIdentityStaticShiftedBy() {
+        // GIVEN
+        final Transform identity = Transform.IDENTITY;
+        // WHEN
+        final StaticTransform shiftedIdentity = identity.staticShiftedBy(1.);
+        // THEN
+        Assertions.assertEquals(StaticTransform.getIdentity().getClass(), shiftedIdentity.getClass());
+    }
+
+    @Test
+    void testIdentityGetStaticInverse() {
+        // GIVEN
+        final Transform identity = Transform.IDENTITY;
+        // WHEN
+        final StaticTransform staticInverse = identity.getStaticInverse();
+        // THEN
+        Assertions.assertEquals(identity.toStaticTransform().getClass(), staticInverse.getClass());
+    }
+
+    @Test
+    void testIdentityFreeze() {
+        // GIVEN
+        final Transform identity = Transform.IDENTITY;
+        // WHEN
+        final Transform frozen = identity.freeze();
+        // THEN
+        Assertions.assertEquals(identity, frozen);
+    }
 
     @Test
     public void testIdentityTranslation() {

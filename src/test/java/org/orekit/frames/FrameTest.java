@@ -25,6 +25,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
@@ -284,6 +285,29 @@ public class FrameTest {
         Assertions.assertEquals(transform.getCartesian().getVelocity(), kinematicTransform.getVelocity());
         Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), kinematicTransform.getRotation()));
         Assertions.assertEquals(transform.getRotationRate(), kinematicTransform.getRotationRate());
+    }
+
+    @Test
+    void testGetStaticTransformIdentity() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        Mockito.when(mockedFrame.getStaticTransformTo(mockedFrame, date)).thenCallRealMethod();
+        // WHEN
+        final StaticTransform staticTransform = mockedFrame.getStaticTransformTo(mockedFrame, date);
+        // THEN
+        Assertions.assertEquals(staticTransform, staticTransform.getStaticInverse());
+    }
+
+    @Test
+    void testGetStaticTransformIdentityField() {
+        // GIVEN
+        final FieldAbsoluteDate<Complex> fieldDate = FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance());
+        final Frame frame = FramesFactory.getGCRF();
+        // WHEN
+        final FieldStaticTransform<Complex> staticTransform = frame.getStaticTransformTo(frame, fieldDate);
+        // THEN
+        Assertions.assertEquals(staticTransform.getClass(), staticTransform.getStaticInverse().getClass());
     }
 
     @Test

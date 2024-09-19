@@ -48,7 +48,7 @@ public class ThirdBodyAttraction extends AbstractBodyAttraction {
         final double gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final Vector3D centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
+        final Vector3D centralToBody = getBodyPosition(s.getDate(), s.getFrame());
         final double r2Central       = centralToBody.getNormSq();
         final Vector3D satToBody     = centralToBody.subtract(s.getPosition());
         final double r2Sat           = satToBody.getNormSq();
@@ -67,7 +67,7 @@ public class ThirdBodyAttraction extends AbstractBodyAttraction {
         final T gm = parameters[0];
 
         // compute bodies separation vectors and squared norm
-        final FieldVector3D<T> centralToBody = getBody().getPosition(s.getDate(), s.getFrame());
+        final FieldVector3D<T> centralToBody = getBodyPosition(s.getDate(), s.getFrame());
         final T                r2Central     = centralToBody.getNormSq();
         final FieldVector3D<T> satToBody     = centralToBody.subtract(s.getPosition());
         final T                r2Sat         = satToBody.getNormSq();

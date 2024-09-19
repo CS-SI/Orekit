@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -713,10 +714,20 @@ public class Transform implements
             super(AbsoluteDate.ARBITRARY_EPOCH, PVCoordinates.ZERO, AngularCoordinates.IDENTITY);
         }
 
+        @Override
+        public StaticTransform staticShiftedBy(final double dt) {
+            return toStaticTransform();
+        }
+
         /** {@inheritDoc} */
         @Override
         public Transform shiftedBy(final double dt) {
             return this;
+        }
+
+        @Override
+        public StaticTransform getStaticInverse() {
+            return toStaticTransform();
         }
 
         /** {@inheritDoc} */
@@ -731,6 +742,11 @@ public class Transform implements
             return this;
         }
 
+        @Override
+        public StaticTransform toStaticTransform() {
+            return StaticTransform.getIdentity();
+        }
+
         /** {@inheritDoc} */
         @Override
         public Vector3D transformPosition(final Vector3D position) {
@@ -743,6 +759,16 @@ public class Transform implements
             return vector;
         }
 
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+            return transformVector(position);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+            return new FieldVector3D<>(vector.getX(), vector.getY(), vector.getZ());
+        }
+
         /** {@inheritDoc} */
         @Override
         public Line transformLine(final Line line) {
@@ -753,6 +779,16 @@ public class Transform implements
         @Override
         public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
             return pv;
+        }
+
+        @Override
+        public PVCoordinates transformOnlyPV(final PVCoordinates pv) {
+            return new PVCoordinates(pv.getPosition(), pv.getVelocity());
+        }
+
+        @Override
+        public TimeStampedPVCoordinates transformOnlyPV(final TimeStampedPVCoordinates pv) {
+            return new TimeStampedPVCoordinates(pv.getDate(), pv.getPosition(), pv.getVelocity());
         }
 
         @Override
