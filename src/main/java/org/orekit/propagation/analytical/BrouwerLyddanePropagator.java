@@ -744,17 +744,16 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // rough initialization of the mean parameters
         BLModel current = new BLModel(osculating, mass, referenceRadius, mu, ck0);
 
-        // Convert osculating from keplerian to equinoctial
-        final EquinoctialOrbit equinoctial = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(osculating);
-        double sma = equinoctial.getA();
-        double ex  = equinoctial.getEquinoctialEx();
-        double ey  = equinoctial.getEquinoctialEy();
-        double hx  = equinoctial.getHx();
-        double hy  = equinoctial.getHy();
-        double lv  = equinoctial.getLv();
+        // Get equinoctial parameters
+        double sma = osculating.getA();
+        double ex  = osculating.getEquinoctialEx();
+        double ey  = osculating.getEquinoctialEy();
+        double hx  = osculating.getHx();
+        double hy  = osculating.getHy();
+        double lv  = osculating.getLv();
 
         // threshold for each parameter
-        final double thresholdA  = epsilon * (1 + FastMath.abs(equinoctial.getA()));
+        final double thresholdA  = epsilon * (1 + FastMath.abs(osculating.getA()));
         final double thresholdE  = epsilon * (1 + FastMath.hypot(ex, ey));
         final double thresholdH  = epsilon * (1 + FastMath.hypot(hx, hy));
         final double thresholdLv = epsilon * FastMath.PI;
@@ -766,12 +765,12 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final KeplerianOrbit parameters = current.propagateParameters(current.mean.getDate());
 
             // adapted parameters residuals
-            final double deltaA  = equinoctial.getA() - parameters.getA();
-            final double deltaEx = equinoctial.getEquinoctialEx() - parameters.getEquinoctialEx();
-            final double deltaEy = equinoctial.getEquinoctialEy() - parameters.getEquinoctialEy();
-            final double deltaHx = equinoctial.getHx() - parameters.getHx();
-            final double deltaHy = equinoctial.getHy() - parameters.getHy();
-            final double deltaLv = MathUtils.normalizeAngle(equinoctial.getLv() - parameters.getLv(), 0.0);
+            final double deltaA  = osculating.getA() - parameters.getA();
+            final double deltaEx = osculating.getEquinoctialEx() - parameters.getEquinoctialEx();
+            final double deltaEy = osculating.getEquinoctialEy() - parameters.getEquinoctialEy();
+            final double deltaHx = osculating.getHx() - parameters.getHx();
+            final double deltaHy = osculating.getHy() - parameters.getHy();
+            final double deltaLv = MathUtils.normalizeAngle(osculating.getLv() - parameters.getLv(), 0.0);
 
             // update state
             sma += damping * deltaA;
@@ -784,9 +783,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             // Update mean orbit
             final EquinoctialOrbit mean = new EquinoctialOrbit(sma, ex, ey, hx, hy, lv,
                                                                PositionAngleType.TRUE,
-                                                               equinoctial.getFrame(),
-                                                               equinoctial.getDate(),
-                                                               equinoctial.getMu());
+                                                               osculating.getFrame(),
+                                                               osculating.getDate(),
+                                                               osculating.getMu());
             final KeplerianOrbit meanOrb = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(mean);
 
             // update mean parameters
@@ -925,11 +924,11 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // CHECKSTYLE: stop JavadocVariable check
 
         // Storage for speed-up
+        private final double yp2;
         private final double ci;
         private final double si;
-        private final double ci2X3M1;
         private final double oneMci2;
-        private final double yp2;
+        private final double ci2X3M1;
 
         // Long periodic corrections factors
         private final double vle1;
@@ -973,12 +972,12 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final double epp2 = epp * epp;
 
             // η
-            n  = FastMath.sqrt(1. - epp2);
-            n2 = n * n;
+            n2 = 1. - epp2;
+            n  = FastMath.sqrt(n2);
             n3 = n2 * n;
             t8 = n + 1. / (1. + n);
 
-            // mean semimajor axis a"
+            // mean semi-major axis a"
             final double app = mean.getA();
 
             // mean mean motion
@@ -986,10 +985,10 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
             // ae/a"
             final double q = referenceRadius / app;
-            double ql = q * q;
-            double nl = n2 * n2;
 
             // γ2'
+            double ql = q * q;
+            double nl = n2 * n2;
             yp2 = -0.5 * ck0[2] * ql / nl;
             final double yp22 = yp2 * yp2;
 
@@ -1011,13 +1010,11 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             // mean inclination I" sin & cos
             final SinCos sci = FastMath.sinCos(mean.getI());
             si = sci.sin();
-            final double si2 = si * si;
             ci = sci.cos();
             final double ci2 = ci * ci;
-            ci2X3M1 = 3.0 * ci2 - 1.0;
             oneMci2 = 1.0 - ci2;
-            // singular term in I" (1 - 5 * cos(I")^2) replaced by T2 function
-            final double t2 = T2(ci);
+            ci2X3M1 = 3.0 * ci2 - 1.0;
+            final double ci2X5M1 = 5.0 * ci2 - 1.0;
 
             // secular corrections
             // true anomaly
@@ -1027,7 +1024,7 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                                           ci2 * (105.0 + n * (144.0 + 25.0 * n))))) +
                   0.9375 * yp4 * n * epp2 * (3.0 - ci2 * (30.0 - 35.0 * ci2));
             // perigee argument
-            dsg = -1.5 * yp2 / t2 +
+            dsg = 1.5 * yp2 * ci2X5M1 +
                   0.09375 * yp22 * (-35.0 + n * (24.0 + 25.0 * n) +
                                     ci2 * (90.0 - n * (192.0 + 126.0 * n) +
                                            ci2 * (385.0 + n * (360.0 + 45.0 * n)))) +
@@ -1035,8 +1032,8 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                                            ci2 * (385.0 - 189.0 * n2)));
             // right ascension of ascending node
             dsh = (-3.0 * yp2 +
-                   0.375 * yp22 * (-5.0 + n * (12.0 + 9.0 * n) +
-                                   ci2 * (-35.0 - n * (36.0 + 5.0 * n))) +
+                   0.375 * yp22 * (-5.0 + n * (12.0 + 9.0 * n) -
+                                   ci2 * (35.0 + n * (36.0 + 5.0 * n))) +
                    1.25 * yp4 * (5.0 - 3.0 * n2) * (3.0 - 7.0 * ci2)) * ci;
 
             // secular rates of change due to drag
@@ -1045,57 +1042,68 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             aRate = coef * app;
             eRate = coef * epp * n2;
 
+            // singular term 1/(1 - 5 * cos²(I")) replaced by T2 function
+            final double t2 = T2(ci);
+
             // factors for long periodic corrections
+            final double fs12 = yp3 / yp2;
+            final double fs13 = 10. * yp4 / (3. * yp2);
+            final double fs14 = yp5 / yp2;
+
             final double ci2Xt2 = ci2 * t2;
-            final double cA =  1. - ci2 * (11. +  40. * ci2Xt2);
-            final double cB =  1. - ci2 * ( 3. +   8. * ci2Xt2);
-            final double cC =  1. - ci2 * ( 9. +  24. * ci2Xt2);
-            final double cD =  1. - ci2 * ( 5. +  16. * ci2Xt2);
-            final double cE =  1. - ci2 * (33. + 200. * ci2Xt2);
+            final double cA = 1. - ci2 * (11. +  40. * ci2Xt2);
+            final double cB = 1. - ci2 * ( 3. +   8. * ci2Xt2);
+            final double cC = 1. - ci2 * ( 9. +  24. * ci2Xt2);
+            final double cD = 1. - ci2 * ( 5. +  16. * ci2Xt2);
+            final double cE = 1. - ci2 * (33. + 200. * ci2Xt2);
+            final double cF = 1. - ci2 * ( 9. +  40. * ci2Xt2);
 
-            final double ck = ci2Xt2 * (16. + 40 * ci2Xt2);
-            final double cF = 11. + 5. * ck;
-            final double cG =  3. +      ck;
-            final double cH =  5. + 2. * ck;
+            final double p5p   = 1. + ci2Xt2 * (8. + 20 * ci2Xt2);
+            final double p5p2  = 1. +  2. * p5p;
+            final double p5p4  = 1. +  4. * p5p;
+            final double p5p10 = 1. + 10. * p5p;
 
-            final double eppn2   =  epp * n2;
-            final double eppsi   =  epp * si;
-            final double eppci   =  epp * ci;
-            final double e2X3P4  =  4. + 3. * epp2;
-            final double ciO1Pci =  ci / (1. + ci);
-            final double ciX1Mci =  ci * (1. - ci);
+            final double e2X3P4  = 4. + 3. * epp2;
+            final double ciO1Pci = ci / (1. + ci);
 
-            final double vlei1 = 0.125 * yp2 * cA - 5. * yp4 * cB / (12. * yp2);
-            final double vlei2 = (yp3 + 5. * yp5 * e2X3P4 * cC / 16.) / (4. * yp2);
-            final double vlei3 = -35. * yp5 * epp2 * cD / (384. * yp2);
+            final double q1 = 0.125 * (yp2 * cA - fs13 * cB);
+            final double q2 = 0.125 * epp2 * ci * (yp2 * p5p10 - fs13 * p5p2);
+            final double q5 = 0.25 * (fs12 + 0.3125 * e2X3P4 * fs14 * cC);
+            final double p2 = 0.46875 * p5p2 * epp * ci * si * e2X3P4 * fs14;
+            final double p3 = 0.15625 * epp * si * fs14 * cC;
+            final double kf = 35. / 1152.;
+            final double p4 = kf * epp * fs14 * cD;
+            final double p5 = 2. * kf * epp * epp2 * ci * si * fs14 * p5p4;
 
-            vle1 = eppn2 * vlei1;
-            vle2 = n2 * si * vlei2;
-            vle3 = n2 * si * vlei3;
+            vle1 = epp * n2 * q1;
+            vle2 = n2 * si * q5;
+            vle3 = -3.0 * epp * n2 * si * p4;
 
-            vli1 =   -epp * vlei1 / si;
-            vli2 = -eppci * vlei2;
-            vli3 =  eppci * vlei3;
+            vli1 = -epp * q1 / si;
+            vli2 = -epp * ci * q5;
+            vli3 = -3.0 * epp2 * ci * p4;
 
-            vll2 = vle2 + 15. * yp5 * eppn2 * eppsi * cC / (32. * yp2);
+            vll2 = vle2 + 3.0 * epp * n2 * p3;
 
-            vlh1I = eppci * eppsi * (-0.125 * yp2 * cF + 5. * yp4 * cG / (12. * yp2));
-            vlh2I = eppci * (yp3 + yp5 * e2X3P4 * (0.3125 * cC + 1.875 * si2 * cG)) / (4. * yp2);
-            vlh3I = -35. * yp5 * epp2 * eppci * (0.5 * cD + si2 * cH) / (576. * yp2);
+            vlh1I = -si * q2;
+            vlh2I =  epp * ci * q5 + si * p2;
+            vlh3I = -epp2 * ci * p4 - si * p5;
 
-            vls1 = 0.125 * (n3 - 1.) * (yp2 * cA - 10. * yp4 * cB / (3. * yp2)) +
-                   0.125 * epp * eppci * (yp2 * cF - yp3 * cG) +
-                   25. * eppci * eppci * ci2Xt2 * ci2Xt2 * (yp2 - 0.2 * yp5) -
-                   0.0625 * epp2 * (yp2 * cE - yp3 * cC);
-            vls2 = eppsi * ((t8 + ciO1Pci) * (yp3 + 0.3125 * yp5 * e2X3P4 * cC) +
-                            5. * yp5 * (0.125 * (3. * (epp2 - n3) + 11.) * cC +
-                                        0.375 * ciX1Mci * e2X3P4 * cG)) / (4. * yp2);
-            vls3 = eppsi * 35. * yp5 * (0.5 * (3. * n2 - 3. - epp2 * (2. + ciO1Pci)) * cD -
-                                        epp2 * ciX1Mci * cH) / (576. * yp2);
+            vls1 = (n3 - 1.0) * q1 -
+                   q2 +
+                   25.0 * epp2 * ci2 * ci2Xt2 * ci2Xt2 * (yp2 - 0.2 * fs13) -
+                   0.0625 * epp2 * (yp2 * cE - fs13 * cF);
+
+            vls2 = epp * si * (t8 + ciO1Pci) * q5 +
+                   (11.0 + 3.0 * (epp2 - n3)) * p3 +
+                   (1.0 - ci) * p2;
+
+            vls3 = si * p4 * (3.0 * (n3 - 1.0) - epp2 * (2.0 + ciO1Pci)) -
+                   (1.0 - ci) * p5;
         }
 
         /**
-         * Gets true anomaly from mean anomaly.
+         * Get true anomaly from mean anomaly.
          * @param lM the mean anomaly (rad)
          * @param ecc the eccentricity
          * @return the true anomaly (rad)
@@ -1147,7 +1155,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
             // Return (Eq. 2.47)
             return BETA * x * sum * product;
-
         }
 
         /** Extrapolate an orbit up to a specific target date.
@@ -1194,7 +1201,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
             // Long period corrections
             //------------------------
-
             final FieldSinCos<UnivariateDerivative1> scgpp = gpp.sinCos();
             final UnivariateDerivative1 cgpp  = scgpp.cos();
             final UnivariateDerivative1 sgpp  = scgpp.sin();

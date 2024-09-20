@@ -184,14 +184,14 @@ public class BrouwerLyddanePropagatorTest {
 
         // position, velocity and semi-major axis match almost perfectly
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPosition(),
-                                              finalOrbit.getPosition()),
-                            1.0e-8);
+                                Vector3D.distance(initialOrbit.getPosition(),
+                                                  finalOrbit.getPosition()),
+                                2.4e-8);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
-                                              finalOrbit.getPVCoordinates().getVelocity()),
-                            5.5e-12);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 1.9e-9);
+                                Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
+                                                  finalOrbit.getPVCoordinates().getVelocity()),
+                                1.9e-11);
+        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 9.4e-10);
 
     }
 
@@ -214,12 +214,12 @@ public class BrouwerLyddanePropagatorTest {
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPosition(),
                                               finalOrbit.getPosition()),
-                            1.1e-7);
+                            1.3e-7);
         Assertions.assertEquals(0.0,
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
-                            8.3e-11);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 4.7e-9);
+                            9.0e-11);
+        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 1.9e-9);
     }
 
 
@@ -348,7 +348,7 @@ public class BrouwerLyddanePropagatorTest {
         SpacecraftState BLFinalState = BLextrapolator.propagate(initDate.shiftedBy(timeshift));
         final KeplerianOrbit BLOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(BLFinalState.getOrbit());
 
-        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.18);
+        Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.175);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 3.2e-6);
         Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 6.9e-8);
         Assertions.assertEquals(MathUtils.normalizeAngle(NumOrbit.getPerigeeArgument(), FastMath.PI),
@@ -408,8 +408,7 @@ public class BrouwerLyddanePropagatorTest {
         // Force model
         final ForceModel holmesFeatherstone =
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
-        final ForceModel drag =
-                        new DragForce(atmosphere, new IsotropicDrag(1.0, 1.0));
+        final ForceModel drag = new DragForce(atmosphere, new IsotropicDrag(1.0, 1.0));
         NumPropagator.addForceModel(holmesFeatherstone);
         NumPropagator.addForceModel(drag);
 
@@ -693,14 +692,14 @@ public class BrouwerLyddanePropagatorTest {
         // Asserts
         // -------
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPosition(),
-                                              finalOrbit.getPosition()),
-                            1.4e-8);
+                                Vector3D.distance(initialOrbit.getPosition(),
+                                                  finalOrbit.getPosition()),
+                                1.5e-8);
         Assertions.assertEquals(0.0,
-                            Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
-                                              finalOrbit.getPVCoordinates().getVelocity()),
-                            2.5e-12);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 1.2e-8);
+                                Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
+                                                  finalOrbit.getPVCoordinates().getVelocity()),
+                                2.7e-12);
+        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 7.5e-9);
     }
 
     @Test
