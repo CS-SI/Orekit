@@ -551,7 +551,7 @@ public class SinexLoader implements EopHistoryLoader {
                     ++lineNumber;
                     // For now, only few keys are supported
                     // They represent the minimum set of parameters that are interesting to consider in a SINEX file
-                    // Other keys can be added depending user needs
+                    // Other keys can be added depending on user needs
 
                     // The first line is parsed in order to get the creation, start and end dates of the file
                     if (lineNumber == 1) {
