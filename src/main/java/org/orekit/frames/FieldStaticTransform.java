@@ -41,13 +41,59 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
 
     /**
      * Get the identity static transform.
+     * Override methods for speed.
      *
      * @param <T> type of the elements
      * @param field field used by default
      * @return identity transform.
      */
     static <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getIdentity(final Field<T> field) {
-        return FieldTransform.getIdentity(field);
+        return new FieldStaticTransform<T>() {
+            @Override
+            public FieldVector3D<T> getTranslation() {
+                return  FieldVector3D.getZero(field);
+            }
+
+            @Override
+            public FieldRotation<T> getRotation() {
+                return FieldRotation.getIdentity(field);
+            }
+
+            @Override
+            public FieldStaticTransform<T> getStaticInverse() {
+                return getInverse();
+            }
+
+            @Override
+            public FieldStaticTransform<T> getInverse() {
+                return this;
+            }
+
+            @Override
+            public AbsoluteDate getDate() {
+                return AbsoluteDate.ARBITRARY_EPOCH;
+            }
+
+            @Override
+            public FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+                return new FieldVector3D<>(vector.getX(), vector.getY(), vector.getZ());
+            }
+
+            @Override
+            public FieldVector3D<T> transformVector(final Vector3D vector) {
+                return new FieldVector3D<>(field, vector);
+            }
+
+            @Override
+            public FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+                return transformVector(position);
+            }
+
+            @Override
+            public FieldVector3D<T> transformPosition(final Vector3D position) {
+                return transformVector(position);
+            }
+        };
     }
 
     /**

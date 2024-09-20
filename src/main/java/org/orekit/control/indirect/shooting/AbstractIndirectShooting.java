@@ -30,6 +30,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -95,8 +97,9 @@ public abstract class AbstractIndirectShooting {
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }
-        propagator.addAdditionalDerivativesProvider(propagationSettings.getAdjointDynamicsProvider()
-            .buildAdditionalDerivativesProvider());
+        final AdditionalDerivativesProvider derivativesProvider = propagationSettings.getAdjointDynamicsProvider()
+                .buildAdditionalDerivativesProvider();
+        propagator.addAdditionalDerivativesProvider(derivativesProvider);
         return propagator;
     }
 
@@ -140,8 +143,9 @@ public abstract class AbstractIndirectShooting {
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }
-        propagator.addAdditionalDerivativesProvider(propagationSettings.getAdjointDynamicsProvider()
-            .buildFieldAdditionalDerivativesProvider(field));
+        final FieldAdditionalDerivativesProvider<Gradient> derivativesProvider = propagationSettings.getAdjointDynamicsProvider()
+            .buildFieldAdditionalDerivativesProvider(field);
+        propagator.addAdditionalDerivativesProvider(derivativesProvider);
         return propagator;
     }
 

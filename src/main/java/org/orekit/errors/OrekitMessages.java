@@ -16,12 +16,12 @@
  */
 package org.orekit.errors;
 
-import org.hipparchus.exception.Localizable;
-import org.hipparchus.exception.UTF8Control;
-
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
+import org.hipparchus.exception.Localizable;
+import org.hipparchus.exception.UTF8Control;
 
 /**
  * Enumeration for localized messages formats.
@@ -931,6 +931,9 @@ public enum OrekitMessages implements Localizable {
 
     /** INFINITE_NRMSISE00_DENSITY. */
     INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model"),
+
+    /** FIELD_TOO_LONG. */
+    FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters"),
 
     /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
     PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned");

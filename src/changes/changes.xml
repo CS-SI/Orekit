@@ -21,6 +21,21 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="update" issue="1487">
+        Additional protection for zenith line-of-sight in NeQuick-G model.
+      </action>
+      <action dev="serrof" type="update" issue="1536">
+        Override methods in (Field) static transform identity.
+      </action>
+      <action dev="serrof" type="update" issue="1533">
+        Override more methods in (Field) transform identity.
+      </action>
+      <action dev="serrof" type="update" issue="1530">
+        Deprecate getBody in AbstractBodyAttraction.
+      </action>
+      <action dev="luc" type="fix" issue="1526">
+        Fixed position accuracy in spliced SP3 files.
+      </action>
       <action dev="serrof" type="add" issue="1516">
         Add scales for defect in indirect shooting.
       </action>
@@ -32,6 +47,9 @@
       </action>
       <action dev="serrof" type="add" issue="1510">
         Add adaptive step integration for indirect shooting.
+      </action>
+      <action dev="serrof" type="update" issue="1509">
+        Add Cartesian covariance conversions.
       </action>
       <action dev="serrof" type="update" issue="1508">
         Use (Field)EventDetectionSettings in cylindrical shadow.
@@ -65,6 +83,9 @@
       </action>
       <action dev="serrof" type="add" issue="1477">
         Add adjoint dynamics for inertial force.
+      </action>
+      <action dev="serrof" type="add" issue="1476">
+        Add adjoint dynamics for third body force.
       </action>
       <action dev="luc" type="fix" issue="1475">
         Added getOneLetterCode and getTwoLettersCode to TimeSystem.
@@ -107,6 +128,49 @@
       </action>
       <action dev="serrof" type="add" issue="1349">
         Add more overrides of getAttitudeRotation.
+      </action>
+    </release>
+    <release version="12.1.3" date="04/09/2024"
+             description="Version 12.1.3 is a patch release of Orekit.
+             It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements
+             and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,
+             numerical noises in covariance transformation and parsing of RINEX and CCSDS files.
+             Version 12.1.3 also include Checkstyle fixes.">
+      <action dev="luc" type="fix" issue="643">
+        Removed non thread-safe use of DecimalFormat.
+      </action>
+      <action dev="serrof" type="fix" issue="1501">
+        Pass Status in UKF theoretical measurement.
+      </action>
+      <action dev="luc" type="fix" issue="1499">
+        Fixed mixed up frames in inter-satellites measurements.
+      </action>
+      <action dev="luc" type="fix" issue="1489">
+        Protected several maps against concurrent modifications.
+      </action>
+      <action dev="luc" type="fix" issue="1487">
+        Fixed NeQuick ionospheric model for perfect zenith observation.
+      </action>
+      <action dev="vincent" type="fix" issue="1485">
+        Fixed introduced noises when changing covariance frame with identical frame.
+      </action>
+      <action dev="luc" type="fix" issue="1480">
+        Fixed wrong agency name length in Rinex observation writer.
+      </action>
+      <action dev="luc" type="fix" issue="1448">
+        Greatly reduced computation time of NeQuick ionospheric model.
+      </action>
+      <action dev="luc" type="fix" issue="1475">
+        Added getOneLetterCode and getTwoLettersCode to TimeSystem.
+      </action>
+      <action dev="luc" type="fix" issue="1473">
+        Protected AmbiguityCache against concurrent modifications.
+      </action>
+      <action dev="maxime" type="fix" issue="1467">
+        Fixed checkstyle error in SolarRadiationPressure.
+      </action>
+      <action dev="maxime" type="fix" issue="1461">
+        Fixed update of initial state's prop type after a propagation in DSST.
       </action>
     </release>
     <release version="12.1.2" date="13/07/2024"

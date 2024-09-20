@@ -17,7 +17,6 @@
 package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
 import org.hipparchus.util.SinCos;
 import org.orekit.time.DateComponents;
 import org.orekit.time.DateTimeComponents;
@@ -74,15 +73,16 @@ class NeQuickParameters {
     /**
      * Build a new instance.
      * @param dateTime current date time components
-     * @param f2 F2 coefficients used by the F2 layer
-     * @param fm3 Fm3 coefficients used by the F2 layer
+     * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
+     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
      * @param alpha effective ionisation level coefficients
      * @param modipGrip modip grid
      */
-    NeQuickParameters(final DateTimeComponents dateTime, final double[][][] f2,
-                      final double[][][] fm3, final double latitude, final double longitude,
+    NeQuickParameters(final DateTimeComponents dateTime,
+                      final double[] flattenF2, final double[] flattenFm3,
+                      final double latitude, final double longitude,
                       final double[] alpha, final double[][] modipGrip) {
 
         // MODIP in degrees
@@ -99,23 +99,6 @@ class NeQuickParameters {
         // Effective solar zenith angle in radians
         final double xeff = computeEffectiveSolarAngle(date.getMonth(), hours, latitude, longitude);
 
-        // Coefficients for F2 layer parameters
-        // Compute the array of interpolated coefficients for foF2 (Eq. 44)
-        final double[][] af2 = new double[76][13];
-        for (int j = 0; j < 76; j++) {
-            for (int k = 0; k < 13; k++ ) {
-                af2[j][k] = f2[0][j][k] * (1.0 - (azr * 0.01)) + f2[1][j][k] * (azr * 0.01);
-            }
-        }
-
-        // Compute the array of interpolated coefficients for M(3000)F2 (Eq. 46)
-        final  double[][] am3 = new double[49][9];
-        for (int j = 0; j < 49; j++) {
-            for (int k = 0; k < 9; k++ ) {
-                am3[j][k] = fm3[0][j][k] * (1.0 - (azr * 0.01)) + fm3[1][j][k] * (azr * 0.01);
-            }
-        }
-
         // E layer maximum density height in km (Eq. 78)
         this.hmE = 120.0;
         // E layer critical frequency in MHz
@@ -126,12 +109,14 @@ class NeQuickParameters {
         // Time argument (Eq. 49)
         final double t = FastMath.toRadians(15 * hours) - FastMath.PI;
         // Compute Fourier time series for foF2 and M(3000)F2
-        final double[] cf2 = computeCF2(af2, t);
-        final double[] cm3 = computeCm3(am3, t);
+        final double[] scT = sinCos(t, 6);
+        final double[] cf2 = computeCF2(flattenF2, azr, scT);
+        final double[] cm3 = computeCm3(flattenFm3, azr, scT);
         // F2 layer critical frequency in MHz
-        final double foF2 = computefoF2(modip, cf2, latitude, longitude);
+        final double[] scL = sinCos(longitude, 8);
+        final double foF2 = computefoF2(modip, cf2, latitude, scL);
         // Maximum Usable Frequency factor
-        final double mF2  = computeMF2(modip, cm3, latitude, longitude);
+        final double mF2  = computeMF2(modip, cm3, latitude, scL);
         // F2 layer maximum density in 10^11 m-3
         this.nmF2 = 0.124 * foF2 * foF2;
         // F2 layer maximum density height in km
@@ -309,9 +294,8 @@ class NeQuickParameters {
         final double y  = b - bF;
 
         // MODIP (Ref Eq. 16)
-        final double modip = interpolate(z1, z2, z3, z4, y);
+        return interpolate(z1, z2, z3, z4, y);
 
-        return modip;
     }
 
     /**
@@ -404,8 +388,8 @@ class NeQuickParameters {
         final double seasp = seas * ((ee - 1.0) / (ee + 1.0));
         // Critical frequency (Eq. 35)
         final double coef = 1.112 - 0.019 * seasp;
-        final double foE = FastMath.sqrt(coef * coef * sqAz * FastMath.pow(FastMath.cos(xeff), 0.6) + 0.49);
-        return foE;
+        return FastMath.sqrt(coef * coef * sqAz * FastMath.pow(FastMath.cos(xeff), 0.6) + 0.49);
+
     }
 
     /**
@@ -429,46 +413,96 @@ class NeQuickParameters {
         // hmF2 Eq. 80
         final double mF2Sq = mF2 * mF2;
         final double temp  = FastMath.sqrt((0.0196 * mF2Sq + 1) / (1.2967 * mF2Sq - 1.0));
-        final double height  = ((1490.0 * mF2 * temp) / (mF2 + deltaM)) - 176.0;
-        return height;
+        return ((1490.0 * mF2 * temp) / (mF2 + deltaM)) - 176.0;
+
+    }
+
+    /** Compute sines and cosines.
+     * @param a argument
+     * @param n number of terms
+     * @return sin(a), cos(a), sin(2a), cos(2a) … sin(n a), cos(n a) array
+     * @since 12.1.3
+     */
+    private double[] sinCos(final double a, final int n) {
+
+        final SinCos sc0 = FastMath.sinCos(a);
+        SinCos sci = sc0;
+        final double[] sc = new double[2 * n];
+        int isc = 0;
+        sc[isc++] = sci.sin();
+        sc[isc++] = sci.cos();
+        for (int i = 1; i < n; i++) {
+            sci = SinCos.sum(sc0, sci);
+            sc[isc++] = sci.sin();
+            sc[isc++] = sci.cos();
+        }
+
+        return sc;
+
     }
 
     /**
      * Computes cf2 coefficients.
-     * @param af2 interpolated coefficients for foF2
-     * @param t time argument
+     * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
+     * @param azr effective sunspot number (Eq. 19)
+     * @param scT sines/cosines array of time argument
      * @return the cf2 coefficients array
      */
-    private double[] computeCF2(final double[][] af2, final double t) {
-        // Eq. 50
+    private double[] computeCF2(final double[] flattenF2, final double azr, final double[] scT) {
+
+        // interpolation coefficients for effective spot number
+        final double azr01 = azr * 0.01;
+        final double omazr01 = 1 - azr01;
+
+        // Eq. 44 and Eq. 50 merged into one loop
         final double[] cf2 = new double[76];
+        int index = 0;
         for (int i = 0; i < cf2.length; i++) {
-            double sum = 0.0;
-            for (int k = 0; k < 6; k++) {
-                final SinCos sc = FastMath.sinCos((k + 1) * t);
-                sum += af2[i][2 * k + 1] * sc.sin() + af2[i][2 * (k + 1)] * sc.cos();
-            }
-            cf2[i] = af2[i][0] + sum;
+            cf2[i] = omazr01 * flattenF2[index     ] + azr01 * flattenF2[index +  1] +
+                    (omazr01 * flattenF2[index +  2] + azr01 * flattenF2[index +  3]) * scT[ 0] +
+                    (omazr01 * flattenF2[index +  4] + azr01 * flattenF2[index +  5]) * scT[ 1] +
+                    (omazr01 * flattenF2[index +  6] + azr01 * flattenF2[index +  7]) * scT[ 2] +
+                    (omazr01 * flattenF2[index +  8] + azr01 * flattenF2[index +  9]) * scT[ 3] +
+                    (omazr01 * flattenF2[index + 10] + azr01 * flattenF2[index + 11]) * scT[ 4] +
+                    (omazr01 * flattenF2[index + 12] + azr01 * flattenF2[index + 13]) * scT[ 5] +
+                    (omazr01 * flattenF2[index + 14] + azr01 * flattenF2[index + 15]) * scT[ 6] +
+                    (omazr01 * flattenF2[index + 16] + azr01 * flattenF2[index + 17]) * scT[ 7] +
+                    (omazr01 * flattenF2[index + 18] + azr01 * flattenF2[index + 19]) * scT[ 8] +
+                    (omazr01 * flattenF2[index + 20] + azr01 * flattenF2[index + 21]) * scT[ 9] +
+                    (omazr01 * flattenF2[index + 22] + azr01 * flattenF2[index + 23]) * scT[10] +
+                    (omazr01 * flattenF2[index + 24] + azr01 * flattenF2[index + 25]) * scT[11];
+            index += 26;
         }
         return cf2;
     }
 
     /**
      * Computes Cm3 coefficients.
-     * @param am3 interpolated coefficients for foF2
-     * @param t time argument
+     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
+     * @param azr effective sunspot number (Eq. 19)
+     * @param scT sines/cosines array of time argument
      * @return the Cm3 coefficients array
      */
-    private double[] computeCm3(final double[][] am3, final double t) {
-        // Eq. 51
+    private double[] computeCm3(final double[] flattenFm3, final double azr, final double[] scT) {
+
+        // interpolation coefficients for effective spot number
+        final double azr01 = azr * 0.01;
+        final double omazr01 = 1 - azr01;
+
+        // Eq. 44 and Eq. 51 merged into one loop
         final double[] cm3 = new double[49];
+        int index = 0;
         for (int i = 0; i < cm3.length; i++) {
-            double sum = 0.0;
-            for (int k = 0; k < 4; k++) {
-                final SinCos sc = FastMath.sinCos((k + 1) * t);
-                sum += am3[i][2 * k + 1] * sc.sin() + am3[i][2 * (k + 1)] * sc.cos();
-            }
-            cm3[i] = am3[i][0] + sum;
+            cm3[i] = omazr01 * flattenFm3[index     ] + azr01 * flattenFm3[index +  1] +
+                    (omazr01 * flattenFm3[index +  2] + azr01 * flattenFm3[index +  3]) * scT[ 0] +
+                    (omazr01 * flattenFm3[index +  4] + azr01 * flattenFm3[index +  5]) * scT[ 1] +
+                    (omazr01 * flattenFm3[index +  6] + azr01 * flattenFm3[index +  7]) * scT[ 2] +
+                    (omazr01 * flattenFm3[index +  8] + azr01 * flattenFm3[index +  9]) * scT[ 3] +
+                    (omazr01 * flattenFm3[index + 10] + azr01 * flattenFm3[index + 11]) * scT[ 4] +
+                    (omazr01 * flattenFm3[index + 12] + azr01 * flattenFm3[index + 13]) * scT[ 5] +
+                    (omazr01 * flattenFm3[index + 14] + azr01 * flattenFm3[index + 15]) * scT[ 6] +
+                    (omazr01 * flattenFm3[index + 16] + azr01 * flattenFm3[index + 17]) * scT[ 7];
+            index += 18;
         }
         return cm3;
     }
@@ -478,20 +512,18 @@ class NeQuickParameters {
      * @param modip modified DIP latitude, in degrees
      * @param cf2 Fourier time series for foF2
      * @param latitude latitude in radians
-     * @param longitude longitude in radians
+     * @param scL sines/cosines array of longitude argument
      * @return the F2 layer critical frequency, MHz
      */
     private double computefoF2(final double modip, final double[] cf2,
-                               final double latitude, final double longitude) {
+                               final double latitude, final double[] scL) {
 
         // Legendre grades (Eq. 63)
         final int[] q = new int[] {
             12, 12, 9, 5, 2, 1, 1, 1, 1
         };
 
-        // Array for geographic terms
-        final double[] g = new double[cf2.length];
-        g[0] = 1.0;
+        double frequency = cf2[0];
 
         // MODIP coefficients Eq. 57
         final double sinMODIP = FastMath.sin(FastMath.toRadians(modip));
@@ -499,30 +531,25 @@ class NeQuickParameters {
         m[0] = 1.0;
         for (int i = 1; i < q[0]; i++) {
             m[i] = sinMODIP * m[i - 1];
-            g[i] = m[i];
-        }
-
-        // Latitude coefficients (Eq. 58)
-        final double cosLat = FastMath.cos(latitude);
-        final double[] p = new double[8];
-        p[0] = cosLat;
-        for (int n = 2; n < 9; n++) {
-            p[n - 1] = cosLat * p[n - 2];
+            frequency += m[i] * cf2[i];
         }
 
         // latitude and longitude terms
         int index = 12;
+        final double cosLat1 = FastMath.cos(latitude);
+        double cosLatI = cosLat1;
         for (int i = 1; i < q.length; i++) {
-            final SinCos sc = FastMath.sinCos(i * longitude);
+            final double c = cosLatI * scL[2 * i - 1];
+            final double s = cosLatI * scL[2 * i - 2];
             for (int j = 0; j < q[i]; j++) {
-                g[index++] = m[j] * p[i - 1] * sc.cos();
-                g[index++] = m[j] * p[i - 1] * sc.sin();
+                frequency += m[j] * c * cf2[index++];
+                frequency += m[j] * s * cf2[index++];
             }
+            cosLatI *= cosLat1; // Eq. 58
         }
 
-        // Compute foF2 by linear combination
-        final double frequency = MathArrays.linearCombination(cf2, g);
         return frequency;
+
     }
 
     /**
@@ -530,20 +557,18 @@ class NeQuickParameters {
      * @param modip modified DIP latitude, in degrees
      * @param cm3 Fourier time series for M(3000)F2
      * @param latitude latitude in radians
-     * @param longitude longitude in radians
+     * @param scL sines/cosines array of longitude argument
      * @return the Maximum Usable Frequency factor
      */
     private double computeMF2(final double modip, final double[] cm3,
-                              final double latitude, final double longitude) {
+                              final double latitude, final double[] scL) {
 
         // Legendre grades (Eq. 71)
         final int[] r = new int[] {
             7, 8, 6, 3, 2, 1, 1
         };
 
-        // Array for geographic terms
-        final double[] g = new double[cm3.length];
-        g[0] = 1.0;
+        double m3000 = cm3[0];
 
         // MODIP coefficients Eq. 57
         final double sinMODIP = FastMath.sin(FastMath.toRadians(modip));
@@ -552,31 +577,26 @@ class NeQuickParameters {
         for (int i = 1; i < 12; i++) {
             m[i] = sinMODIP * m[i - 1];
             if (i < 7) {
-                g[i] = m[i];
+                m3000 += m[i] * cm3[i];
             }
-        }
-
-        // Latitude coefficients (Eq. 58)
-        final double cosLat = FastMath.cos(latitude);
-        final double[] p = new double[8];
-        p[0] = cosLat;
-        for (int n = 2; n < 9; n++) {
-            p[n - 1] = cosLat * p[n - 2];
         }
 
         // latitude and longitude terms
         int index = 7;
+        final double cosLat1 = FastMath.cos(latitude);
+        double cosLatI = cosLat1;
         for (int i = 1; i < r.length; i++) {
-            final SinCos sc = FastMath.sinCos(i * longitude);
+            final double c = cosLatI * scL[2 * i - 1];
+            final double s = cosLatI * scL[2 * i - 2];
             for (int j = 0; j < r[i]; j++) {
-                g[index++] = m[j] * p[i - 1] * sc.cos();
-                g[index++] = m[j] * p[i - 1] * sc.sin();
+                m3000 += m[j] * c * cm3[index++];
+                m3000 += m[j] * s * cm3[index++];
             }
+            cosLatI *= cosLat1; // Eq. 58
         }
 
-        // Compute m3000 by linear combination
-        final double m3000 = MathArrays.linearCombination(g, cm3);
         return m3000;
+
     }
 
     /**
@@ -674,8 +694,8 @@ class NeQuickParameters {
         final double v = (0.041163 * x - 0.183981) * x + 1.424472;
 
         // Topside thickness parameter (Eq. 106)
-        final double h = hA / v;
-        return h;
+        return hA / v;
+
     }
 
     /**
@@ -725,9 +745,8 @@ class NeQuickParameters {
         final double a1 = 9.0 * g2 - g4;
         final double a2 = g3 - g1;
         final double a3 = g4 - g2;
-        final double zx = 0.0625 * (a0 + delta * (a1 + delta * (a2 + delta * a3)));
+        return 0.0625 * (a0 + delta * (a1 + delta * (a2 + delta * a3)));
 
-        return zx;
     }
 
     /**
@@ -765,8 +784,8 @@ class NeQuickParameters {
                         final double z, final double w) {
         final double ex  = clipExp((w - y) / z);
         final double opex = 1.0 + ex;
-        final double epst = x * ex / (opex * opex);
-        return epst;
+        return x * ex / (opex * opex);
+
     }
 
 }

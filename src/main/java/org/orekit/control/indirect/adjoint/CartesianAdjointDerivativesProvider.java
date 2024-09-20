@@ -17,6 +17,7 @@
 package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.FastMath;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -93,7 +94,7 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
             final double[] contribution = equationTerm.getRatesContribution(date, cartesianVariablesAndMass, adjointVariables,
                     propagationFrame);
-            for (int i = 0; i < contribution.length; i++) {
+            for (int i = 0; i < FastMath.min(adjointDimension, contribution.length); i++) {
                 additionalDerivatives[i] += contribution[i];
             }
         }
@@ -133,6 +134,11 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
         for (final CartesianAdjointEquationTerm adjointEquationTerm : adjointEquationTerms) {
             hamiltonian += adjointEquationTerm.getHamiltonianContribution(date, adjointVariables, adjointVariables,
                     propagationFrame);
+        }
+        if (adjointVariables.length != 6) {
+            final double mass = state.getMass();
+            final double thrustAccelerationNorm = getCost().getThrustAccelerationVector(adjointVariables, mass).getNorm();
+            hamiltonian -= getCost().getMassFlowRateFactor() * adjointVariables[6] * thrustAccelerationNorm * mass;
         }
         hamiltonian += getCost().getHamiltonianContribution(adjointVariables, state.getMass());
         return hamiltonian;

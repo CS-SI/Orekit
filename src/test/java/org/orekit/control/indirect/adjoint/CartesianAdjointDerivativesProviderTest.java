@@ -21,6 +21,8 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.control.indirect.adjoint.cost.TestCost;
@@ -98,12 +100,19 @@ class CartesianAdjointDerivativesProviderTest {
         Assertions.assertEquals(expectedCost, actualCost);
     }
 
-    @Test
-    void testEvaluateHamiltonian() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testEvaluateHamiltonian(final boolean withMassAdjoint) {
         // GIVEN
         final CartesianCost cost = new TestCost();
-        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost);
-        final SpacecraftState state = getState(derivativesProvider.getName());
+        final SpacecraftState state = getState(cost.getAdjointName(), withMassAdjoint);
+        final CartesianAdjointEquationTerm mockedTerm = Mockito.mock(CartesianAdjointEquationTerm.class);
+        final double[] cartesian = new double[6];
+        OrbitType.CARTESIAN.mapOrbitToArray(state.getOrbit(), null, cartesian, null);
+        Mockito.when(mockedTerm.getHamiltonianContribution(state.getDate(), cartesian,
+                        state.getAdditionalState(cost.getAdjointName()), state.getFrame())).thenReturn(0.);
+        final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost,
+                mockedTerm);
         // WHEN
         final double hamiltonian = derivativesProvider.evaluateHamiltonian(state);
         // THEN
@@ -116,7 +125,7 @@ class CartesianAdjointDerivativesProviderTest {
         // GIVEN
         final CartesianCost cost = new TestCost();
         final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost);
-        final SpacecraftState state = getState(derivativesProvider.getName());
+        final SpacecraftState state = getState(derivativesProvider.getName(), false);
         // WHEN
         final CombinedDerivatives combinedDerivatives = derivativesProvider.combinedDerivatives(state);
         // THEN
@@ -136,7 +145,7 @@ class CartesianAdjointDerivativesProviderTest {
         final CartesianCost cost = new TestCost();
         final CartesianAdjointEquationTerm equationTerm = new TestAdjointTerm();
         final CartesianAdjointDerivativesProvider derivativesProvider = new CartesianAdjointDerivativesProvider(cost, equationTerm);
-        final SpacecraftState state = getState(derivativesProvider.getName());
+        final SpacecraftState state = getState(derivativesProvider.getName(), false);
         // WHEN
         final CombinedDerivatives combinedDerivatives = derivativesProvider.combinedDerivatives(state);
         // THEN
@@ -149,18 +158,22 @@ class CartesianAdjointDerivativesProviderTest {
         Assertions.assertEquals(-1, adjointDerivatives[5]);
     }
 
-    private static SpacecraftState getState(final String name) {
+    private static SpacecraftState getState(final String name, final boolean withMassAdjoint) {
         final Orbit orbit = new CartesianOrbit(new PVCoordinates(Vector3D.MINUS_I, Vector3D.PLUS_K),
                 FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, 1.);
         final SpacecraftState stateWithoutAdditional = new SpacecraftState(orbit);
-        return stateWithoutAdditional.addAdditionalState(name, 1., 1., 1., 1., 1., 1.);
+        final double[] adjoint = withMassAdjoint ? new double[7] : new double[6];
+        for (int i = 0; i < 6; i++) {
+            adjoint[i] = 1;
+        }
+        return stateWithoutAdditional.addAdditionalState(name, adjoint);
     }
 
     private static class TestAdjointTerm implements CartesianAdjointEquationTerm {
 
         @Override
         public double[] getRatesContribution(AbsoluteDate date, double[] stateVariables, double[] adjointVariables, Frame frame) {
-            return new double[] { 1., 10., 100. };
+            return new double[] { 1., 10., 100., 0., 0., 0. };
         }
 
         @Override

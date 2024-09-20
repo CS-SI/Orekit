@@ -18,14 +18,13 @@ package org.orekit.control.indirect.adjoint.cost;
 
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 
 /**
  * Abstract class for energy cost with Cartesian coordinates.
  * An energy cost is proportional to the integral over time of the Euclidean norm of the control vector, often scaled with 1/2.
  * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
+ *
  * @author Romain Serra
  * @see CartesianCost
  * @since 12.2
@@ -78,21 +77,7 @@ public abstract class AbstractCartesianEnergy implements CartesianCost {
      * @param <T> field type
      * @return norm of adjoint velocity
      */
-    protected <T extends CalculusFieldElement<T>> T getAdjointVelocityNorm(final T[] adjointVariables) {
+    protected <T extends CalculusFieldElement<T>> T getFieldAdjointVelocityNorm(final T[] adjointVariables) {
         return FastMath.sqrt(adjointVariables[3].square().add(adjointVariables[4].square()).add(adjointVariables[5].square()));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
-        final Vector3D thrustAcceleration = getThrustAccelerationVector(adjointVariables, mass);
-        return -thrustAcceleration.getNormSq() / 2.;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(final T[] adjointVariables, final T mass) {
-        final FieldVector3D<T> thrustAcceleration = getFieldThrustAccelerationVector(adjointVariables, mass);
-        return thrustAcceleration.getNormSq().multiply(-1. / 2.);
     }
 }

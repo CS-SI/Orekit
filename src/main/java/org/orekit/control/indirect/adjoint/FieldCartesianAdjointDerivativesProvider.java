@@ -18,6 +18,7 @@ package org.orekit.control.indirect.adjoint;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 import org.orekit.errors.OrekitException;
@@ -79,8 +80,11 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         mainDerivativesIncrements[3] = thrustAccelerationVector.getX();
         mainDerivativesIncrements[4] = thrustAccelerationVector.getY();
         mainDerivativesIncrements[5] = thrustAccelerationVector.getZ();
-        final T thrustForceMagnitude = thrustAccelerationVector.getNorm().multiply(mass);
-        mainDerivativesIncrements[6] = thrustForceMagnitude.multiply(-getCost().getMassFlowRateFactor());
+        final T thrustAccelerationNorm = thrustAccelerationVector.getNorm();
+        if (thrustAccelerationVector.getNorm().getReal() != 0.) {
+            final T thrustForceMagnitude = thrustAccelerationNorm.multiply(mass);
+            mainDerivativesIncrements[6] = thrustForceMagnitude.multiply(-getCost().getMassFlowRateFactor());
+        }
 
         // Cartesian position adjoint
         additionalDerivatives[3] = adjointVariables[0].negate();
@@ -93,7 +97,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         for (final CartesianAdjointEquationTerm equationTerm: adjointEquationTerms) {
             final T[] contribution = equationTerm.getFieldRatesContribution(date, cartesianVariablesAndMass, adjointVariables,
                     propagationFrame);
-            for (int i = 0; i < contribution.length; i++) {
+            for (int i = 0; i < FastMath.min(adjointDimension, contribution.length); i++) {
                 additionalDerivatives[i] = additionalDerivatives[i].add(contribution[i]);
             }
         }
@@ -135,6 +139,12 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
             final T contribution = adjointEquationTerm.getFieldHamiltonianContribution(date, cartesianAndMassVector,
                 adjointVariables, propagationFrame);
             hamiltonian = hamiltonian.add(contribution);
+        }
+        if (adjointVariables.length != 6) {
+            final T mass = state.getMass();
+            final T thrustAccelerationNorm = getCost().getFieldThrustAccelerationVector(adjointVariables, mass).getNorm();
+            final T thrustForceNorm = thrustAccelerationNorm.multiply(mass);
+            hamiltonian = hamiltonian.subtract(adjointVariables[6].multiply(getCost().getMassFlowRateFactor()).multiply(thrustForceNorm));
         }
         hamiltonian = hamiltonian.add(getCost().getFieldHamiltonianContribution(adjointVariables, state.getMass()));
         return hamiltonian;

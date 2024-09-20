@@ -16,11 +16,8 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -29,40 +26,22 @@ import org.mockito.Mockito;
 class AbstractCartesianEnergyTest {
 
     @Test
-    void testGetHamiltonianContribution() {
+    void testGetFieldAdjointVelocityNorm() {
         // GIVEN
-        final AbstractCartesianEnergy mockedEnergy = Mockito.mock(AbstractCartesianEnergy.class);
-        final Vector3D vector = new Vector3D(1.0, 2.0, 3.0);
-        final double mass = 1.;
-        final double[] adjoint = new double[6];
-        Mockito.when(mockedEnergy.getThrustAccelerationVector(adjoint, mass)).thenReturn(vector);
-        Mockito.when(mockedEnergy.getHamiltonianContribution(adjoint, mass)).thenCallRealMethod();
-        // WHEN
-        final double contribution = mockedEnergy.getHamiltonianContribution(adjoint, mass);
-        // THEN
-        Assertions.assertEquals(-vector.getNormSq() * 0.5, contribution);
-    }
-
-    @Test
-    void testGetFieldHamiltonianContribution() {
-        // GIVEN
-        final AbstractCartesianEnergy mockedEnergy = Mockito.mock(AbstractCartesianEnergy.class);
-        final Vector3D vector = new Vector3D(1.0, 2.0, 3.0);
-        final Field<Complex> field = ComplexField.getInstance();
-        final FieldVector3D<Complex> fieldVector3D = new FieldVector3D<>(field, vector);
-        final Complex[] fieldAdjoint = MathArrays.buildArray(field, 6);
-        final Complex fieldMass = Complex.ONE;
-        final double mass = fieldMass.getReal();
+        final Complex[] fieldAdjoint = MathArrays.buildArray(ComplexField.getInstance(), 6);
+        for (int i = 0; i < fieldAdjoint.length; i++) {
+            fieldAdjoint[i] = Complex.ONE.multiply(i);
+        }
         final double[] adjoint = new double[fieldAdjoint.length];
-        Mockito.when(mockedEnergy.getFieldThrustAccelerationVector(fieldAdjoint, fieldMass)).thenReturn(fieldVector3D);
-        Mockito.when(mockedEnergy.getThrustAccelerationVector(adjoint, mass)).thenReturn(vector);
-        Mockito.when(mockedEnergy.getFieldHamiltonianContribution(fieldAdjoint, fieldMass)).thenCallRealMethod();
-        Mockito.when(mockedEnergy.getHamiltonianContribution(adjoint, mass)).thenCallRealMethod();
+        for (int i = 0; i < fieldAdjoint.length; i++) {
+            adjoint[i] = fieldAdjoint[i].getReal();
+        }
+        final AbstractCartesianEnergy cartesianEnergy = Mockito.mock(AbstractCartesianEnergy.class);
+        Mockito.when(cartesianEnergy.getFieldAdjointVelocityNorm(fieldAdjoint)).thenCallRealMethod();
+        Mockito.when(cartesianEnergy.getAdjointVelocityNorm(adjoint)).thenCallRealMethod();
         // WHEN
-        final Complex fieldContribution = mockedEnergy.getFieldHamiltonianContribution(fieldAdjoint, fieldMass);
+        final Complex fieldNorm = cartesianEnergy.getFieldAdjointVelocityNorm(fieldAdjoint);
         // THEN
-        final double contribution = mockedEnergy.getHamiltonianContribution(adjoint, mass);
-        Assertions.assertEquals(contribution, fieldContribution.getReal());
+        Assertions.assertEquals(cartesianEnergy.getAdjointVelocityNorm(adjoint), fieldNorm.getReal());
     }
-
 }
