@@ -53,6 +53,9 @@
         <action dev="luc" type="add" issue="1495">
             Allow computation of angular wind-up without modifying a measurement.
         </action>
+        <action dev="serrof" type="add" issue="1484">
+          Add toODEIntegratorBuilder in FieldODEIntegratorBuilder.
+        </action>
         <action dev="luc" type="add" issue="1468">
             Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
             added signalTimeOfFlightAdjustableReceiver.
