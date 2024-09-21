@@ -24,6 +24,7 @@ import org.orekit.bodies.CelestialBodies;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /** Body attraction force model computed as absolute acceleration towards a body.
  * <p>
@@ -59,12 +60,23 @@ import org.orekit.propagation.SpacecraftState;
 public class SingleBodyAbsoluteAttraction extends AbstractBodyAttraction {
 
     /** Simple constructor.
+     * @param positionProvider extended position provider for the body to consider
+     * @param name name of the body
+     * @param mu body gravitational constant
+     * @since 13.0
+     */
+    public SingleBodyAbsoluteAttraction(final ExtendedPositionProvider positionProvider,
+                                        final String name, final double mu) {
+        super(positionProvider, name, mu);
+    }
+
+    /** Constructor.
      * @param body the body to consider
      * (ex: {@link CelestialBodies#getSun()} or
      * {@link CelestialBodies#getMoon()})
      */
     public SingleBodyAbsoluteAttraction(final CelestialBody body) {
-        super(body);
+        this(body, body.getName(), body.getGM());
     }
 
     /** {@inheritDoc} */
