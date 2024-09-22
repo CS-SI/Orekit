@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.EulerFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -61,7 +60,13 @@ public class EulerFieldIntegratorBuilder<T extends CalculusFieldElement<T>> exte
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public EulerFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
         return new EulerFieldIntegrator<>(field, getFieldStep(field));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EulerIntegratorBuilder toODEIntegratorBuilder() {
+        return new EulerIntegratorBuilder(getStep());
     }
 }

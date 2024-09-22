@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -71,8 +70,14 @@ public class AdamsMoultonFieldIntegratorBuilder<T extends CalculusFieldElement<T
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public AdamsMoultonFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
         final double[][] tol = getTolerances(orbit, orbitType);
         return new AdamsMoultonFieldIntegrator<>(field, nSteps, minStep, maxStep, tol[0], tol[1]);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AdamsMoultonIntegratorBuilder toODEIntegratorBuilder() {
+        return new AdamsMoultonIntegratorBuilder(nSteps, minStep, maxStep, dP, dV);
     }
 }

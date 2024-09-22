@@ -33,4 +33,14 @@ class DormandPrince54FieldIntegratorBuilderTest {
         Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
     }
 
+    @Test
+    void testToODEIntegratorBuilder() {
+        // GIVEN
+        final DormandPrince54FieldIntegratorBuilder<Complex> fieldIntegratorBuilder = new DormandPrince54FieldIntegratorBuilder<>(1., 10., 0.1, 0.001);
+        // WHEN
+        final DormandPrince54IntegratorBuilder integratorBuilder = fieldIntegratorBuilder.toODEIntegratorBuilder();
+        // THEN
+        Assertions.assertNotNull(integratorBuilder);
+    }
+
 }

@@ -18,6 +18,7 @@ package org.orekit.control.indirect.shooting.propagation;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.util.Binary64Field;
 import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 
@@ -36,7 +37,9 @@ public interface ShootingIntegrationSettings {
      * Returns an ODE integrator builder.
      * @return builder
      */
-    ODEIntegratorBuilder getIntegratorBuilder();
+    default ODEIntegratorBuilder getIntegratorBuilder() {
+        return getFieldIntegratorBuilder(Binary64Field.getInstance()).toODEIntegratorBuilder();
+    }
 
     /**
      * Returns a Field ODE integrator builder.
