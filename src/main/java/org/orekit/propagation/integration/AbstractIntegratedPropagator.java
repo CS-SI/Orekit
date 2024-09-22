@@ -329,7 +329,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public Collection<EventDetector> getEventsDetectors() {
+    public Collection<EventDetector> getEventDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 

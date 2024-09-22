@@ -753,10 +753,10 @@ public class FieldEcksteinHechlerPropagatorTest {
 
         Assertions.assertEquals(0, pv.getPosition().getZ().getReal(), 1.0e-6);
         Assertions.assertTrue(pv.getVelocity().getZ().getReal() > 0);
-        Collection<FieldEventDetector<T>> detectors = propagator.getEventsDetectors();
+        Collection<FieldEventDetector<T>> detectors = propagator.getEventDetectors();
         Assertions.assertEquals(1, detectors.size());
         propagator.clearEventsDetectors();
-        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventDetectors().size());
     }
 
     @Test

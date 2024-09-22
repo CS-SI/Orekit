@@ -91,7 +91,10 @@
         <action dev="luc" type="update" issue="1350">
           Allow measurement generation feature to return estimated measurements,
           with fully populated states.
-      </action>
+        </action>
+        <action dev="serrof" type="update" issue="1270">
+          Rename getEventsDetectors as getEventDetectors in (Field)Propagator.
+        </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
       <action dev="luc" type="update" issue="1487">

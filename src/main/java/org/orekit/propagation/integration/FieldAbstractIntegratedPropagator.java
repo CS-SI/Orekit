@@ -339,7 +339,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     }
 
     /** {@inheritDoc} */
-    public Collection<FieldEventDetector<T>> getEventsDetectors() {
+    public Collection<FieldEventDetector<T>> getEventDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 
