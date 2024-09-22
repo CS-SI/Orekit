@@ -62,11 +62,10 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
 import org.orekit.utils.units.Unit;
 
-/**
- * Loader for Solution INdependent EXchange (SINEX) files.
+/** Parser for Solution INdependent EXchange (SINEX) files.
  * <p>
- * The loader can be used to load several data types contained in Sinex files.
- * The current supported data are: station coordinates, site eccentricities, EOP, and Difference Code Bias (DCB).
+ * The parser can be used to load several data types contained in Sinex files.
+ * The current supported data are: station coordinates, site eccentricities, EOP, and Difference Code Bias (DSB).
  * Several instances of Sinex loader must be created in order to parse different data types.
  * </p>
  * <p>
@@ -231,19 +230,19 @@ public class SinexLoader implements EopHistoryLoader {
     private final Map<String, Station> stations;
 
     /**
-     * DCB data.
+     * DSB data.
      * Key: Site code
      */
-    private final Map<String, DcbStation> dcbStations;
+    private final Map<String, DsbStation> dcbStations;
 
     /**
-     * DCB data.
+     * DSB data.
      * Key: Satellite PRN
      */
-    private final Map<String, DcbSatellite> dcbSatellites;
+    private final Map<String, DsbSatellite> dcbSatellites;
 
-    /** DCB description. */
-    private final DcbDescription dcbDescription;
+    /** DSB description. */
+    private final BiasDescription biasDescription;
 
     /** Data set. */
     private final Map<AbsoluteDate, SinexEopEntry> eop;
@@ -283,8 +282,8 @@ public class SinexLoader implements EopHistoryLoader {
         // Common data
         this.scales         = scales;
         this.creationDate   = AbsoluteDate.FUTURE_INFINITY;
-        // DCB parameters
-        this.dcbDescription = new DcbDescription();
+        // DSB parameters
+        this.biasDescription = new BiasDescription();
         this.dcbStations    = new HashMap<>();
         this.dcbSatellites  = new HashMap<>();
         // EOP parameters
@@ -331,10 +330,10 @@ public class SinexLoader implements EopHistoryLoader {
             // EOP data
             this.itrfVersionEop = ITRFVersion.ITRF_2014;
             this.eop            = new HashMap<>();
-            // DCB data
+            // DSB data
             this.dcbStations    = new HashMap<>();
             this.dcbSatellites  = new HashMap<>();
-            this.dcbDescription = new DcbDescription();
+            this.biasDescription = new BiasDescription();
             // Station data
             this.stations       = new HashMap<>();
 
@@ -430,22 +429,22 @@ public class SinexLoader implements EopHistoryLoader {
     }
 
     /**
-     * Get the DCB data for a given station.
+     * Get the DSB data for a given station.
      * @param siteCode site code
-     * @return DCB data for the station
+     * @return DSB data for the station
      * @since 12.0
      */
-    public DcbStation getDcbStation(final String siteCode) {
+    public DsbStation getDcbStation(final String siteCode) {
         return dcbStations.get(siteCode);
     }
 
     /**
-     * Get the DCB data for a given satellite identified by its PRN.
+     * Get the DSB data for a given satellite identified by its PRN.
      * @param prn the satellite PRN (e.g. "G01" for GPS 01)
-     * @return the DCB data for the satellite
+     * @return the DSB data for the satellite
      * @since 12.0
      */
-    public DcbSatellite getDcbSatellite(final String prn) {
+    public DsbSatellite getDcbSatellite(final String prn) {
         return dcbSatellites.get(prn);
     }
 
@@ -541,7 +540,7 @@ public class SinexLoader implements EopHistoryLoader {
 
 
             // According to Sinex standard, the epochs are given in UTC scale.
-            // Except for DCB files for which a TIME_SYSTEM key is present.
+            // Except for DSB files for which a TIME_SYSTEM key is present.
             TimeScale scale    = scales.getUTC();
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
@@ -860,32 +859,32 @@ public class SinexLoader implements EopHistoryLoader {
                                             }
                                         }
                                     } else if (inDcbDesc) {
-                                        // Determining the data type for the DCBDescription object
+                                        // Determining the data type for the DSBDescription object
                                         final String[] splitLine = PATTERN_SPACE.split(line.trim());
                                         final String dataType = splitLine[0];
                                         final String data = splitLine[1];
                                         switch (dataType) {
                                             case "OBSERVATION_SAMPLING":
-                                                dcbDescription.setObservationSampling(Integer.parseInt(data));
+                                                biasDescription.setObservationSampling(Integer.parseInt(data));
                                                 break;
                                             case "PARAMETER_SPACING":
-                                                dcbDescription.setParameterSpacing(Integer.parseInt(data));
+                                                biasDescription.setParameterSpacing(Integer.parseInt(data));
                                                 break;
                                             case "DETERMINATION_METHOD":
-                                                dcbDescription.setDeterminationMethod(data);
+                                                biasDescription.setDeterminationMethod(data);
                                                 break;
                                             case "BIAS_MODE":
-                                                dcbDescription.setBiasMode(data);
+                                                biasDescription.setBiasMode(data);
                                                 break;
                                             case "TIME_SYSTEM":
                                                 if ("UTC".equals(data)) {
-                                                    dcbDescription.setTimeSystem(TimeSystem.UTC);
+                                                    biasDescription.setTimeSystem(TimeSystem.UTC);
                                                 } else if ("TAI".equals(data)) {
-                                                    dcbDescription.setTimeSystem(TimeSystem.TAI);
+                                                    biasDescription.setTimeSystem(TimeSystem.TAI);
                                                 } else {
-                                                    dcbDescription.setTimeSystem(TimeSystem.parseOneLetterCode(data));
+                                                    biasDescription.setTimeSystem(TimeSystem.parseOneLetterCode(data));
                                                 }
-                                                scale = dcbDescription.getTimeSystem().getTimeScale(scales);
+                                                scale = biasDescription.getTimeSystem().getTimeScale(scales);
                                                 // A time scale has been parsed, update start, end, and creation dates
                                                 // to take into account the time scale
                                                 startDate    = stringEpochToAbsoluteDate(startDateString,    true,  scale);
@@ -897,7 +896,7 @@ public class SinexLoader implements EopHistoryLoader {
                                         }
                                     } else if (inDcbSol) {
 
-                                        // Parsing the data present in a DCB file solution line.
+                                        // Parsing the data present in a DSB file solution line.
                                         // Most fields are used in the files provided by CDDIS.
                                         // Station is empty for satellite measurements.
                                         // The separator between columns is composed of spaces.
@@ -915,31 +914,29 @@ public class SinexLoader implements EopHistoryLoader {
 
                                         // Verifying if present
                                         if (siteCode.isEmpty()) {
-                                            DcbSatellite dcbSatellite = getDcbSatellite(satellitePrn);
-                                            if (dcbSatellite == null) {
-                                                dcbSatellite = new DcbSatellite(satellitePrn);
-                                                dcbSatellite.setDescription(dcbDescription);
+                                            DsbSatellite dsbSatellite = getDcbSatellite(satellitePrn);
+                                            if (dsbSatellite == null) {
+                                                dsbSatellite = new DsbSatellite(satellitePrn);
                                             }
-                                            final Dcb dcb = dcbSatellite.getDcbData();
-                                            // Add the data to the DCB object.
-                                            dcb.addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
+                                            final Dsb dsb = dsbSatellite.getDcbData();
+                                            // Add the data to the DSB object.
+                                            dsb.addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
                                             // Adding the object to the HashMap if not present.
-                                            addDcbSatellite(dcbSatellite, satellitePrn);
+                                            addDcbSatellite(dsbSatellite, satellitePrn);
                                         } else {
-                                            DcbStation dcbStation = getDcbStation(siteCode);
-                                            if (dcbStation == null) {
-                                                dcbStation = new DcbStation(siteCode);
-                                                dcbStation.setDescription(dcbDescription);
+                                            DsbStation dsbStation = getDcbStation(siteCode);
+                                            if (dsbStation == null) {
+                                                dsbStation = new DsbStation(siteCode);
                                             }
                                             final SatelliteSystem satSystem = SatelliteSystem.parseSatelliteSystem(satellitePrn);
-                                            // Add the data to the DCB object.
-                                            final Dcb dcb = dcbStation.getDcbData(satSystem);
-                                            if (dcb == null) {
-                                                dcbStation.addDcb(satSystem, new Dcb());
+                                            // Add the data to the DSB object.
+                                            final Dsb dsb = dsbStation.getDcbData(satSystem);
+                                            if (dsb == null) {
+                                                dsbStation.addDcb(satSystem, new Dsb());
                                             }
-                                            dcbStation.getDcbData(satSystem).addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
+                                            dsbStation.getDcbData(satSystem).addDcbLine(obs1, obs2, beginDate, finalDate, valueDcb);
                                             // Adding the object to the HashMap if not present.
-                                            addDcbStation(dcbStation, siteCode);
+                                            addDcbStation(dsbStation, siteCode);
                                         }
 
                                     } else {
@@ -1115,23 +1112,23 @@ public class SinexLoader implements EopHistoryLoader {
     }
 
     /**
-     * Add a new entry to the map of stations DCB.
-     * @param dcb DCB entry
+     * Add a new entry to the map of stations DSB.
+     * @param dcb DSB entry
      * @param siteCode site code
      * @since 12.0
      */
-    private void addDcbStation(final DcbStation dcb, final String siteCode) {
-        // Check if the DCB for the current station already exists
+    private void addDcbStation(final DsbStation dcb, final String siteCode) {
+        // Check if the DSB for the current station already exists
         dcbStations.putIfAbsent(siteCode, dcb);
     }
 
     /**
-     * Add a new entry to the map of satellites DCB.
-     * @param dcb DCB entry
+     * Add a new entry to the map of satellites DSB.
+     * @param dcb DSB entry
      * @param prn satellite PRN (e.g. "G01" for GPS 01)
      * @since 12.0
      */
-    private void addDcbSatellite(final DcbSatellite dcb, final String prn) {
+    private void addDcbSatellite(final DsbSatellite dcb, final String prn) {
         dcbSatellites.putIfAbsent(prn, dcb);
     }
 

@@ -22,9 +22,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.ITRFVersion;
+import org.orekit.frames.LazyLoadedFrames;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
@@ -40,31 +42,30 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-public class SinexLoaderEopTest {
+public class SinexParserEopTest {
 
     private TimeScale utc;
 
     @BeforeEach
     public void setUp() {
         // Sets the root of data to read
-        Utils.setDataRoot("gnss:sinex");
+        Utils.setDataRoot("gnss");
         // Setup utc for defining dates
         utc = TimeScalesFactory.getUTC();
     }
 
     @Test
-    // Check the behaviour for a simpl Sinex file containing EOP data
+    // Check the behaviour for a simple Sinex file containing EOP data
     public void testSmallIGSSinexEopFile() {
 
         // Setting up the Sinex Loader
-        SinexLoader loader = new SinexLoader("cod20842-small.snx");
-        loader.setITRFVersion(2014);
+        Sinex sinex = load("/sinex/cod20842-small.snx");
 
         // Extracting the data parsed in the Sinex loader to fill the history set
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        loader.fillHistory(converter, history);
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
         AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (350));
@@ -72,7 +73,6 @@ public class SinexLoaderEopTest {
 
         // Check size of set
         Assertions.assertEquals(4, history.size());
-        Assertions.assertEquals(4, loader.getParsedEop().size());
 
         // Test if the values are correctly extracted
         EOPEntry firstEntry = history.first();
@@ -117,14 +117,13 @@ public class SinexLoaderEopTest {
     public void testSmallSinexEopSynth1File() {
 
         // Setting up the Sinex loader
-        SinexLoader loader = new SinexLoader("cod20842-small-synthEOP.snx");
-        loader.setITRFVersion(2014);
+        Sinex sinex = load("/sinex/cod20842-small-synthEOP.snx");
 
         // Extracting the data parsed in the Sinex loader to fill the history set
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        loader.fillHistory(converter, history);
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
@@ -165,14 +164,13 @@ public class SinexLoaderEopTest {
     // Case NUT_X, NUT_Y != null, NUT_LN, NUT_OB != null
     public void testSmallSinexEopSynth2File() {
         // Setting up the Sinex loader
-        SinexLoader loader = new SinexLoader("cod20842-small-synthEOP2.snx");
-        loader.setITRFVersion(2014);
+        Sinex sinex = load("/sinex/cod20842-small-synthEOP2.snx");
 
         // Extracting the data parsed in the Sinex loader to fill the history set
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        loader.fillHistory(converter, history);
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         // Setting up the date
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43185);
@@ -188,7 +186,8 @@ public class SinexLoaderEopTest {
         Assertions.assertEquals(unitConvRad.convert(-1.10122731910265E+03), firstEntry.getDdPsi(), 1e-15);
         Assertions.assertEquals(unitConvRad.convert(-4.00387630903350E+03), firstEntry.getDdEps(), 1e-15);
 
-        DataContext.getDefault().getFrames().addEOPHistoryLoader(IERSConventions.IERS_2010, loader);
+        DataContext.getDefault().getFrames().addEOPHistoryLoader(IERSConventions.IERS_2010,
+                                                                 sinex.getEopLoader(ITRFVersion.ITRF_2014));
         EOPHistory eopHistory =DataContext.getDefault().getFrames().getEOPHistory(IERSConventions.IERS_2010, true);
 
         Assertions.assertEquals(unitConvRad.convert(7.68783442726072E+01), eopHistory.getPoleCorrection(date.shiftedBy(10)).getXp(), 1e-15);
@@ -206,14 +205,12 @@ public class SinexLoaderEopTest {
     public void testSmallSinexEopSynth3File() {
 
         // Setting up the Sinex loader
-        SinexLoader loader = new SinexLoader("cod20842-small-synthEOP3.snx");
-        loader.setITRFVersion(2014);
+        Sinex sinex = load("/sinex/cod20842-small-synthEOP3.snx");
 
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-
-        loader.fillHistory(converter, history);
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * (351 - 1)).shiftedBy(43185);
@@ -236,14 +233,12 @@ public class SinexLoaderEopTest {
     // Test the number of EOP entries and epochs
     public void testEpochsInFile() {
         // Setting up the Sinex loader
-        SinexLoader loader = new SinexLoader("cod_ifCloseEnd.snx");
-        loader.setITRFVersion(2014);
-        Assertions.assertEquals(ITRFVersion.ITRF_2014, loader.getITRFVersion());
+        Sinex sinex = load("/sinex/cod_ifCloseEnd.snx");
 
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-        loader.fillHistory(converter, history);
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         AbsoluteDate dateStart = new AbsoluteDate(new DateComponents(2019, 1, 1), utc).shiftedBy(Constants.JULIAN_DAY * 350);
         AbsoluteDate dateStartPlusOne = dateStart.shiftedBy(+1.0);
@@ -262,20 +257,15 @@ public class SinexLoaderEopTest {
     }
 
     @Test
-    // Check the behaviour of the SinexLoader when given a regex leading to multiple files to parse, with consistent dates for EOP entries.
+    // Check the behaviour of the SinexLoader when given several sources, with consistent dates for EOP entries.
     public void testSmallSinexEopSynthMultiFile() {
 
-        String supportedNames = "^(cod_test.+)";
-
-        SinexLoader loader = new SinexLoader(supportedNames);
-        loader.setITRFVersion(2014);
-        Assertions.assertEquals(ITRFVersion.ITRF_2014, loader.getITRFVersion());
+        Sinex sinex = load("/sinex/cod_test_1.snx", "/sinex/cod_test_2.snx", "/sinex/cod_test_3.snx");
 
         IERSConventions.NutationCorrectionConverter converter =
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
-        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
-
-        loader.fillHistory(converter, history);
+        SortedSet<EOPEntry> history = new TreeSet<>(new ChronologicalComparator());
+        sinex.getEopLoader(ITRFVersion.ITRF_2014).fillHistory(converter, history);
 
         final UnitsConverter unitConvRad = new UnitsConverter(Unit.parse("mas"), Unit.RADIAN);
 
@@ -295,23 +285,15 @@ public class SinexLoaderEopTest {
     // We suppose the dates are not overlapping, and are consistent with the header of each file.
     public void testSmallSinexEopSynthMultiLoader() {
 
-        // Setting the loaders
-        String sinex1 = "cod_test_1.snx";
-        String sinex2 = "cod_test_2.snx";
-        String sinex3 = "cod_test_3.snx";
-
-        SinexLoader loader1 = new SinexLoader(sinex1);
-        SinexLoader loader2 = new SinexLoader(sinex2);
-        SinexLoader loader3 = new SinexLoader(sinex3);
-
-        loader1.setITRFVersion(2014);
-        loader2.setITRFVersion(2014);
-        loader3.setITRFVersion(2014);
+        Sinex sinex1 = load("/sinex/cod_test_1.snx");
+        Sinex sinex2 = load("/sinex/cod_test_2.snx");
+        Sinex sinex3 = load("/sinex/cod_test_3.snx");
 
         // Setting the DataContext to extract the EOP data from the 3 SinexLoader objects
-        DataContext.getDefault().getFrames().addEOPHistoryLoader(IERSConventions.IERS_2010, loader1);
-        DataContext.getDefault().getFrames().addEOPHistoryLoader(IERSConventions.IERS_2010, loader2);
-        DataContext.getDefault().getFrames().addEOPHistoryLoader(IERSConventions.IERS_2010, loader3);
+        final LazyLoadedFrames frames = DataContext.getDefault().getFrames();
+        frames.addEOPHistoryLoader(IERSConventions.IERS_2010, sinex1.getEopLoader(ITRFVersion.ITRF_2014));
+        frames.addEOPHistoryLoader(IERSConventions.IERS_2010, sinex2.getEopLoader(ITRFVersion.ITRF_2014));
+        frames.addEOPHistoryLoader(IERSConventions.IERS_2010, sinex3.getEopLoader(ITRFVersion.ITRF_2014));
 
         // Generate the EOPHistory
         EOPHistory eopHistory  = DataContext.getDefault().getFrames().getEOPHistory(IERSConventions.IERS_2010, true);
@@ -404,6 +386,15 @@ public class SinexLoaderEopTest {
         Assertions.assertEquals(unitConvRad.convert(-3.10122731910265E+03), eopHistory.getNonRotatinOriginNutationCorrection(endDate)[0], 1e-15);
         Assertions.assertEquals(unitConvRad.convert(-6.00387630903350E+03), eopHistory.getNonRotatinOriginNutationCorrection(endDate)[1], 1e-15);
 
+    }
+
+    private Sinex load(final String... names) {
+        final DataSource[] sources = new DataSource[names.length];
+        for (int i = 0 ; i < names.length ; i++) {
+            final String name = names[i];
+            sources[i] = new DataSource(name, () -> SinexParserEopTest.class.getResourceAsStream(name));
+        }
+        return new SinexParser(TimeScalesFactory.getTimeScales()).parse(sources);
     }
 
 }

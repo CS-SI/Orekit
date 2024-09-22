@@ -28,25 +28,25 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
 /**
- * Class to store DCB Solution data parsed in the SinexLoader.
+ * Class to store DSB Solution data parsed in the SinexLoader.
  * <p>
- * This class is made to handle both station and satellite DCB data.
+ * This class is made to handle both station and satellite DSB data.
  * Bias values are stored in TimeSpanMaps associated with a given pair
  * of observation codes. Those TimeSpanMaps are stored in a Map, which
  * associate a pair of observation code (as a HashSet of ObservationType)
- * to a TimeSpanMap,  encapsulated in a DCBCode object.
+ * to a TimeSpanMap,  encapsulated in a DSBCode object.
  * </p>
  * @author Louis Aucouturier
  * @since 12.0
  */
-public class Dcb {
+public class Dsb {
 
     /** Ensemble of observation code pairs available for the satellite. */
     private final HashSet<Pair<ObservationType, ObservationType>> observationSets;
 
     /**
-     * Ensemble of DCBCode object, identifiable by observation code pairs,
-     * each containing the corresponding TimeSpanMap of biases (DCB).
+     * Ensemble of DSBCode object, identifiable by observation code pairs,
+     * each containing the corresponding TimeSpanMap of biases (DSB).
      */
     private final HashMap<Pair<ObservationType, ObservationType>, TimeSpanMap<Double>> dcbCodeMap;
 
@@ -60,7 +60,7 @@ public class Dcb {
      * This constructor just recognizes {@link PredefinedObservationType}.
      * </p>
      */
-    public Dcb() {
+    public Dsb() {
         this(PredefinedObservationType::valueOf);
     }
 
@@ -68,23 +68,23 @@ public class Dcb {
      * @param typeBuilder mapper from string to observation type
      * @since 13.0
      */
-    public Dcb(final Function<? super String, ? extends ObservationType> typeBuilder) {
+    public Dsb(final Function<? super String, ? extends ObservationType> typeBuilder) {
         this.observationSets = new HashSet<>();
         this.dcbCodeMap      = new HashMap<>();
         this.typeBuilder     = typeBuilder;
     }
 
     /**
-     * Add the content of a DCB line to the DCBSatellite object.
+     * Add the content of a DSB line to the DSBSatellite object.
      * <p>
      * The method check the presence of a Code pair in a map, and add
      * values to the corresponding TimeSpanMap.
      * </p>
-     * @param obs1 String corresponding to the first code used for the DCB computation
-     * @param obs2 String corresponding to the second code used for the DCB computation
+     * @param obs1 String corresponding to the first code used for the DSB computation
+     * @param obs2 String corresponding to the second code used for the DSB computation
      * @param spanBegin Absolute Date corresponding to the beginning of the validity span for this bias value
      * @param spanEnd Absolute Date corresponding to the end of the validity span for this bias value
-     * @param biasValue DCB bias value expressed in S.I. units
+     * @param biasValue DSB bias value expressed in S.I. units
      */
     public void addDcbLine(final String obs1, final String obs2,
                            final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
@@ -94,7 +94,7 @@ public class Dcb {
         final Pair<ObservationType, ObservationType> observationPair =
             new Pair<>(typeBuilder.apply(obs1), typeBuilder.apply(obs2));
 
-        // If not present add a new DCBCode to the map, identified by the Observation Pair.
+        // If not present add a new DSBCode to the map, identified by the Observation Pair.
         // Then add the bias value and validity period.
         if (observationSets.add(observationPair)) {
             dcbCodeMap.put(observationPair, new TimeSpanMap<>(null));
@@ -107,10 +107,10 @@ public class Dcb {
      * Get the value of the Differential Code Bias for a given observation pair
      * and a at a given date.
      *
-     * @param obs1 string corresponding to the first code used for the DCB computation
-     * @param obs2 string corresponding to the second code used for the DCB computation
-     * @param date date at which to obtain the DCB
-     * @return the value of the DCB in S.I. units
+     * @param obs1 string corresponding to the first code used for the DSB computation
+     * @param obs2 string corresponding to the second code used for the DSB computation
+     * @param date date at which to obtain the DSB
+     * @return the value of the DSB in S.I. units
      */
     public double getDcb(final String obs1, final String obs2, final AbsoluteDate date) {
         return getDcb(typeBuilder.apply(obs1), typeBuilder.apply(obs2), date);
@@ -122,8 +122,8 @@ public class Dcb {
      *
      * @param obs1 first observation type
      * @param obs2 second observation type
-     * @param date date at which to obtain the DCB
-     * @return the value of the DCB in S.I. units
+     * @param date date at which to obtain the DSB
+     * @return the value of the DSB in S.I. units
      */
     public double getDcb(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
         return getTimeSpanMap(obs1, obs2).get(date);
@@ -141,8 +141,8 @@ public class Dcb {
     /**
      * Get the minimum valid date for a given observation pair.
      *
-     * @param obs1 sString corresponding to the first code used for the DCB computation
-     * @param obs2 string corresponding to the second code used for the DCB computation
+     * @param obs1 sString corresponding to the first code used for the DSB computation
+     * @param obs2 string corresponding to the second code used for the DSB computation
      * @return minimum valid date for the observation pair
      */
     public AbsoluteDate getMinimumValidDateForObservationPair(final String obs1, final String obs2) {
@@ -163,8 +163,8 @@ public class Dcb {
     /**
      * Get the maximum valid date for a given observation pair.
      *
-     * @param obs1 string corresponding to the first code used for the DCB computation
-     * @param obs2 string corresponding to the second code used for the DCB computation
+     * @param obs1 string corresponding to the first code used for the DSB computation
+     * @param obs2 string corresponding to the second code used for the DSB computation
      * @return maximum valid date for the observation pair
      */
     public AbsoluteDate getMaximumValidDateForObservationPair(final String obs1, final String obs2) {

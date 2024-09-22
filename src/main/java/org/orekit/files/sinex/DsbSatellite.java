@@ -20,16 +20,16 @@ package org.orekit.files.sinex;
 import org.orekit.gnss.SatelliteSystem;
 
 /**
- * Class based on DCB, used to store the data parsed in {@link SinexLoader}
+ * Class based on DSB, used to store the data parsed in {@link SinexLoader}
  * for Differential Code Biases computed for satellites.
  * <p>
  * Satellites and stations have differentiated classes as stations might have multiple satellite systems.
- * The data are stored in a single DCB object.
+ * The data are stored in a single DSB object.
  * </p>
  * @author Louis Aucouturier
  * @since 12.0
  */
-public class DcbSatellite {
+public class DsbSatellite {
 
     /** Satellite PRN identifier.
      * <p>
@@ -37,57 +37,27 @@ public class DcbSatellite {
      * a satellite system stored in the PRN, as done in the Sinex file.
      * </p>
      */
-    private String prn;
+    private final String prn;
 
-    /** DCB description container. */
-    private DcbDescription description;
+    /** DSB solution data. */
+    private final Dsb dsb;
 
-    /** DCB solution data. */
-    private Dcb dcb;
-
-    /**
-     * Constructor for the DCBSatellite class.
-     *
+    /** Constructor for the DSBSatellite class.
      * @param prn satellite PRN identifier
      */
-    public DcbSatellite(final String prn) {
-        this.prn         = prn;
-        this.description = null;
-        this.dcb         = new Dcb();
+    public DsbSatellite(final String prn) {
+        this.prn = prn;
+        this.dsb = new Dsb();
     }
 
-    /**
-     * Get the data contained in "DCB/DESCRIPTION" block of the Sinex file.
-     * <p>
-     * This block gives important parameters from the analysis and defines
-     * the fields in the block ’BIAS/SOLUTION’
-     * </p>
-     * @return the "DCB/DESCRIPTION" parameters.
+    /** Get the DSB data for the current satellite.
+     * @return the DSB data for the current satellite
      */
-    public DcbDescription getDescription() {
-        return description;
+    public Dsb getDcbData() {
+        return dsb;
     }
 
-    /**
-     * Set the data contained in "DCB/DESCRIPTION" block of the Sinex file.
-     *
-     * @param description the "DCB/DESCRIPTION" parameters to set
-     */
-    public void setDescription(final DcbDescription description) {
-        this.description = description;
-    }
-
-    /**
-     * Get the DCB data for the current satellite.
-     *
-     * @return the DCB data for the current satellite
-     */
-    public Dcb getDcbData() {
-        return dcb;
-    }
-
-    /**
-     * Return the satellite PRN, as a String.
+    /** Return the satellite PRN, as a String.
      * <p>
      * Example of satellite PRN: "G01"
      * </p>
@@ -97,12 +67,11 @@ public class DcbSatellite {
         return prn;
     }
 
-    /**
-     * Get the satellite sytem corresponding to the satellite.
+    /** Get the satellite sytem corresponding to the satellite.
      * <p>
      * Satellite system is extracted from the first letter of the PRN.
      * </p>
-     * @return the satellite from which the DCB are extracted.
+     * @return the satellite from which the DSB are extracted.
      */
     public SatelliteSystem getSatelliteSytem() {
         return SatelliteSystem.parseSatelliteSystem(prn);

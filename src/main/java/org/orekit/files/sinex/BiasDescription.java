@@ -19,8 +19,7 @@ package org.orekit.files.sinex;
 
 import org.orekit.gnss.TimeSystem;
 
-/**
- * Class to store the DCB description parameters.
+/** Class to store the bias description parameters.
  * <p>
  * This class gives important parameters from the analysis and defines the fields in the block ’BIAS/SOLUTION’
  * of the loaded Sinex file.
@@ -28,7 +27,7 @@ import org.orekit.gnss.TimeSystem;
  * @author Louis Aucouturier
  * @since 12.0
  */
-public class DcbDescription {
+public class BiasDescription {
 
     /** Determination mode used to generate the bias results. */
     private String determinationMethod;
@@ -46,14 +45,13 @@ public class DcbDescription {
     private int parameterSpacing;
 
     /** Simple constructor. */
-    public DcbDescription() {
+    public BiasDescription() {
         this.determinationMethod = "";
         this.observationSampling = -1;
         this.parameterSpacing    = -1;
     }
 
-    /**
-     * Get the determination mode used to generate the bias results.
+    /** Get the determination mode used to generate the bias results.
      * <p>
      * This value is optional. If the value is not present in the file, the method returns an empty string.
      * </p>
@@ -63,8 +61,7 @@ public class DcbDescription {
         return determinationMethod;
     }
 
-    /**
-     * Get the bias mode
+    /** Get the bias mode.
      * <p>
      * The bias mode describes how the included GNSS bias values have to be interpreted and applied.
      * </p>
@@ -74,17 +71,14 @@ public class DcbDescription {
         return biasMode;
     }
 
-    /**
-     * Get the time system for DCB data.
-     *
+    /** Get the time system for DSB data.
      * @return the time system
      */
     public final TimeSystem getTimeSystem() {
         return timeSystem;
     }
 
-    /**
-     * Get the observation sampling interval used for data analysis.
+    /** Get the observation sampling interval used for data analysis.
      * <p>
      * This value is optional. If the value is not present in the file, the method returns -1.
      * </p>
@@ -94,8 +88,7 @@ public class DcbDescription {
         return observationSampling;
     }
 
-    /**
-     * Get the parameter spacing interval between the bias value.
+    /** Get the parameter spacing interval between the bias value.
      * <p>
      * This value is optional. If the value is not present in the file, the method returns -1.
      * </p>
@@ -105,45 +98,35 @@ public class DcbDescription {
         return parameterSpacing;
     }
 
-    /**
-     * Set the determination mode used to generate the bias results.
-     *
+    /** Set the determination mode used to generate the bias results.
      * @param determinationMethod the determination method to set
      */
     public void setDeterminationMethod(final String determinationMethod) {
         this.determinationMethod = determinationMethod;
     }
 
-    /**
-     * Set the bias mode.
-     *
+    /** Set the bias mode.
      * @param biasMode the bias mode to set
      */
     public void setBiasMode(final String biasMode) {
         this.biasMode = biasMode;
     }
 
-    /**
-     * Set the time system used for DCB data.
-     *
+    /** Set the time system used for DSB data.
      * @param timeSystem the time system to set
      */
     public void setTimeSystem(final TimeSystem timeSystem) {
         this.timeSystem = timeSystem;
     }
 
-    /**
-     * Set the observation sampling interval used for data analysis.
-     *
+    /** Set the observation sampling interval used for data analysis.
      * @param observationSampling the observation sampling to set in seconds
      */
     public void setObservationSampling(final int observationSampling) {
         this.observationSampling = observationSampling;
     }
 
-    /**
-     * Set the parameter spacing interval between the bias value.
-     *
+    /** Set the parameter spacing interval between the bias value.
      * @param parameterSpacing the parameter spacing to set in seconds
      */
     public void setParameterSpacing(final int parameterSpacing) {

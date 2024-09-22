@@ -226,4 +226,31 @@ public class SinexEopEntry implements TimeStamped {
 
     }
 
+    /** Copy an EOP entry to another epoch.
+     * <p>
+     * Only the data epoch is updated.
+     * </p>
+     * @param date new epoch
+     * @return a new entry with changed epoch
+     */
+     SinexEopEntry toNewEpoch(final AbsoluteDate date) {
+
+        // Initialize
+        final SinexEopEntry newEntry = new SinexEopEntry(date);
+
+        // Fill
+        newEntry.setLod(getLod());
+        newEntry.setUt1MinusUtc(getUt1MinusUtc());
+        newEntry.setxPo(getXPo());
+        newEntry.setyPo(getYPo());
+        newEntry.setNutX(getNutX());
+        newEntry.setNutY(getNutY());
+        newEntry.setNutLn(getNutLn());
+        newEntry.setNutOb(getNutOb());
+
+        // Return
+        return newEntry;
+
+    }
+
 }
