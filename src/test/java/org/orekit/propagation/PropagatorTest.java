@@ -121,7 +121,7 @@ class PropagatorTest {
         }
 
         @Override
-        public Collection<EventDetector> getEventsDetectors() {
+        public Collection<EventDetector> getEventDetectors() {
             return null;
         }
 

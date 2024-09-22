@@ -134,7 +134,7 @@ class FieldPropagatorTest {
         }
 
         @Override
-        public Collection<FieldEventDetector<Complex>> getEventsDetectors() {
+        public Collection<FieldEventDetector<Complex>> getEventDetectors() {
             return null;
         }
 

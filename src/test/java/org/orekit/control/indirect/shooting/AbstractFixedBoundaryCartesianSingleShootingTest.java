@@ -88,9 +88,9 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
         final FieldNumericalPropagator<Gradient> fieldPropagator = testShooting.buildFieldPropagator(fieldState);
         // THEN
         final NumericalPropagator propagator = testShooting.buildPropagator(state);
-        final int actualSize = fieldPropagator.getEventsDetectors().size();
+        final int actualSize = fieldPropagator.getEventDetectors().size();
         Assertions.assertNotEquals(0, actualSize);
-        Assertions.assertEquals(propagator.getEventsDetectors().size(), actualSize);
+        Assertions.assertEquals(propagator.getEventDetectors().size(), actualSize);
     }
 
     @SuppressWarnings("unchecked")

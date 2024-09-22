@@ -625,10 +625,10 @@ public class EcksteinHechlerPropagatorTest {
         Assertions.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         Assertions.assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
         Assertions.assertTrue(pv.getVelocity().getZ() > 0);
-        Collection<EventDetector> detectors = propagator.getEventsDetectors();
+        Collection<EventDetector> detectors = propagator.getEventDetectors();
         Assertions.assertEquals(1, detectors.size());
         propagator.clearEventsDetectors();
-        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventDetectors().size());
     }
 
     @Test
