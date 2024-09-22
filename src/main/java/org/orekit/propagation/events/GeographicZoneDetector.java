@@ -102,7 +102,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
                                      final SphericalPolygonsSet zone,
                                      final EnclosingBall<Sphere2D, S2Point> cap,
                                      final double margin) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.body   = body;
         this.zone   = zone;
         this.cap    = cap;

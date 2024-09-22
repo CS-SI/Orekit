@@ -25,6 +25,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.AdaptableInterval;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -150,7 +151,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
                               final int maxIter, final EventHandler handler,
                               final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
                               final double isp, final Control3DVectorCostType control3DVectorCostType) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.attitudeOverride = attitudeOverride;
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;

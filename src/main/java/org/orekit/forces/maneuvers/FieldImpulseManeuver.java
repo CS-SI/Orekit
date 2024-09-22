@@ -26,6 +26,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
@@ -116,8 +117,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      */
     public FieldImpulseManeuver(final D trigger, final AttitudeProvider attitudeOverride,
                                 final FieldVector3D<T> deltaVSat, final T isp) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(), trigger.getMaxIterationCount(),
-                new Handler<>(), trigger, attitudeOverride, deltaVSat, isp,
+        this(trigger.getDetectionSettings(), new Handler<>(), trigger, attitudeOverride, deltaVSat, isp,
                 Control3DVectorCostType.TWO_NORM);
     }
 
@@ -131,8 +131,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
     public FieldImpulseManeuver(final D trigger, final AttitudeProvider attitudeOverride,
                                 final FieldVector3D<T> deltaVSat, final T isp,
                                 final Control3DVectorCostType control3DVectorCostType) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(), trigger.getMaxIterationCount(),
-                new Handler<>(), trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
+        this(trigger.getDetectionSettings(), new Handler<>(), trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
     }
 
     /** Private constructor with full parameters.
@@ -141,9 +140,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param eventHandler event handler to call at event occurrences
      * @param trigger triggering event
      * @param attitudeOverride the attitude provider to use for the maneuver
@@ -151,11 +148,11 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
      * @param isp engine specific impulse (s)
      * @param control3DVectorCostType increment's norm for mass consumption
      */
-    private FieldImpulseManeuver(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
+    private FieldImpulseManeuver(final FieldEventDetectionSettings<T> detectionSettings,
                                  final FieldEventHandler<T> eventHandler, final D trigger,
                                  final AttitudeProvider attitudeOverride, final FieldVector3D<T> deltaVSat,
                                  final T isp, final Control3DVectorCostType control3DVectorCostType) {
-        super(maxCheck, threshold, maxIter, eventHandler);
+        super(detectionSettings, eventHandler);
         this.trigger = trigger;
         this.deltaVSat = deltaVSat;
         this.isp = isp;
@@ -169,7 +166,7 @@ public class FieldImpulseManeuver<D extends FieldEventDetector<T>, T extends Cal
     protected FieldImpulseManeuver<D, T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                 final int newMaxIter,
                                                 final FieldEventHandler<T> fieldEventHandler) {
-        return new FieldImpulseManeuver<>(newMaxCheck, newThreshold, newMaxIter, fieldEventHandler,
+        return new FieldImpulseManeuver<>(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), fieldEventHandler,
                 trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
     }
 

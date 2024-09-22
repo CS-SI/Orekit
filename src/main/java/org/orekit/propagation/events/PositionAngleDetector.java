@@ -118,7 +118,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
                                     final double angle)
         throws OrekitIllegalArgumentException {
 
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
 
         this.orbitType        = orbitType;
         this.positionAngleType = positionAngleType;
@@ -177,6 +177,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     }
 
     /** {@inheritDoc} */
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
         offsetEstimators = new TimeSpanMap<>(new OffsetEstimator(s0.getOrbit(), +1.0));

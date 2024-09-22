@@ -106,7 +106,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
         final OneAxisEllipsoid body,
         final double longitude) {
 
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
 
         this.body = body;
         this.longitude = longitude;
@@ -116,7 +116,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
             new FieldContinueOnEvent<>());
         final FieldEnablingPredicate<T> predicate =
             (state, detector, g) -> FastMath.abs(g).getReal() < 0.5 * FastMath.PI;
-        this.filtering = new FieldEventEnablingPredicateFilter<T>(raw, predicate);
+        this.filtering = new FieldEventEnablingPredicateFilter<>(raw, predicate);
 
     }
 
@@ -154,6 +154,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     /**
     * {@inheritDoc}
     */
+    @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         filtering.init(s0, t);
     }
@@ -201,7 +202,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
             final TT threshold,
             final int maxIter,
             final FieldEventHandler<TT> handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         }
 
         /**

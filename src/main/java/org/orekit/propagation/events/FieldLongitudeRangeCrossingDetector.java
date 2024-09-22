@@ -119,7 +119,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
                                                   final OneAxisEllipsoid body,
                                                   final double fromLongitude,
                                                   final double toLongitude) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.body = body;
         this.fromLongitude = ensureLongitudePositiveContinuity(fromLongitude);
         this.toLongitude = ensureLongitudePositiveContinuity(toLongitude);
@@ -134,7 +134,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
                                                             final T newThreshold,
                                                             final int newMaxIter,
                                                             final FieldEventHandler<T> newHandler) {
-        return new FieldLongitudeRangeCrossingDetector<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+        return new FieldLongitudeRangeCrossingDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
             body, fromLongitude, toLongitude);
     }
 

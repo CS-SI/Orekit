@@ -33,13 +33,13 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     implements FieldEventDetector<T> {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = 600;
+    public static final double DEFAULT_MAXCHECK = FieldEventDetectionSettings.DEFAULT_MAXCHECK;
 
     /** Default convergence threshold (s). */
-    public static final double DEFAULT_THRESHOLD = 1.e-6;
+    public static final double DEFAULT_THRESHOLD = FieldEventDetectionSettings.DEFAULT_THRESHOLD;
 
     /** Default maximum number of iterations in the event time search. */
-    public static final int DEFAULT_MAX_ITER = 100;
+    public static final int DEFAULT_MAX_ITER = FieldEventDetectionSettings.DEFAULT_MAX_ITER;
 
     /** Detection settings. */
     private final FieldEventDetectionSettings<T> eventDetectionSettings;
@@ -55,7 +55,9 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
+     * @deprecated as of 12.2
      */
+    @Deprecated
     protected FieldAbstractDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                     final FieldEventHandler<T> handler) {
         this(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
@@ -137,7 +139,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 12.0
      */
     public D withMaxCheck(final FieldAdaptableInterval<T> newMaxCheck) {
-        return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
+        return create(new FieldEventDetectionSettings<>(newMaxCheck, getThreshold(), getMaxIterationCount()), getHandler());
     }
 
     /**
@@ -150,7 +152,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withMaxIter(final int newMaxIter) {
-        return create(getMaxCheckInterval(), getThreshold(), newMaxIter,  getHandler());
+        return create(new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), newMaxIter), getHandler());
     }
 
     /**
@@ -163,7 +165,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withThreshold(final T newThreshold) {
-        return create(getMaxCheckInterval(), newThreshold, getMaxIterationCount(),  getHandler());
+        return create(new FieldEventDetectionSettings<>(getMaxCheckInterval(), newThreshold, getMaxIterationCount()), getHandler());
     }
 
     /**
@@ -176,8 +178,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 12.2
      */
     public D withDetectionSettings(final FieldEventDetectionSettings<T> newSettings) {
-        return create(newSettings.getMaxCheckInterval(), newSettings.getThreshold(), newSettings.getMaxIterationCount(),
-            getHandler());
+        return create(newSettings, getHandler());
     }
 
     /**
@@ -190,7 +191,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @since 6.1
      */
     public D withHandler(final FieldEventHandler<T> newHandler) {
-        return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
+        return create(getDetectionSettings(), newHandler);
     }
 
     /** {@inheritDoc} */
@@ -204,9 +205,22 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
      * @param newMaxIter maximum number of iterations in the event time search
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
+     * @deprecated as of 12.2
      */
+    @Deprecated
     protected abstract D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold,
                                 int newMaxIter, FieldEventHandler<T> newHandler);
+
+    /** Build a new instance.
+     * @param detectionSettings detection settings
+     * @param newHandler event handler to call at event occurrences
+     * @return a new instance of the appropriate sub-type
+     * @since 12.2
+     */
+    protected D create(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> newHandler) {
+        return create(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+            detectionSettings.getMaxIterationCount(), newHandler);
+    }
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward
