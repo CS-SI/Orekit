@@ -17,20 +17,22 @@
 package org.orekit.propagation.events;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 
 class AdaptableIntervalTest {
 
-    @Test
-    void testOf() {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testOf(final boolean isForward) {
         // GIVEN
         final double expectedValue = 1.;
         // WHEN
         final AdaptableInterval adaptableInterval = AdaptableInterval.of(expectedValue);
         // THEN
-        final double actualValue = adaptableInterval.currentInterval(Mockito.mock(SpacecraftState.class));
+        final double actualValue = adaptableInterval.currentInterval(Mockito.mock(SpacecraftState.class), isForward);
         Assertions.assertEquals(expectedValue, actualValue);
     }
 

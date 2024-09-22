@@ -156,7 +156,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertIntervalDetector(field, firingIntervalDetector);
-        final FieldAdaptableInterval<S>   maxCheck  = s -> firingIntervalDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
+        final FieldAdaptableInterval<S>   maxCheck  = (s, isForward) -> firingIntervalDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
         return converted.
                withMaxCheck(maxCheck).
                withThreshold(field.getZero().newInstance(firingIntervalDetector.getThreshold())).

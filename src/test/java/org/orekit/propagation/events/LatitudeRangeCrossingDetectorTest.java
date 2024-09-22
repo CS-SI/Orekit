@@ -52,7 +52,7 @@ public class LatitudeRangeCrossingDetectorTest {
                     FastMath.toRadians(50.0), FastMath.toRadians(60.0)).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(50.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
         Assertions.assertEquals(60.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);
@@ -118,7 +118,7 @@ public class LatitudeRangeCrossingDetectorTest {
                     FastMath.toRadians(82.0),  FastMath.toRadians(87.0)).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(82.0, FastMath.toDegrees(d.getFromLatitude()), 1.0e-14);
         Assertions.assertEquals(87.0, FastMath.toDegrees(d.getToLatitude()), 1.0e-14);

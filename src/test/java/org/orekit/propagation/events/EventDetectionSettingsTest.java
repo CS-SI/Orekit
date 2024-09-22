@@ -33,6 +33,6 @@ class EventDetectionSettingsTest {
         Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAX_ITER, defaultSettings.getMaxIterationCount());
         Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_THRESHOLD, defaultSettings.getThreshold());
         Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAXCHECK, defaultSettings.getMaxCheckInterval()
-                .currentInterval(Mockito.mock(SpacecraftState.class)));
+                .currentInterval(Mockito.mock(SpacecraftState.class), true));
     }
 }

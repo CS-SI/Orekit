@@ -37,9 +37,9 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         // GIVEN
         final Orbit initialOrbit = createOrbit(1.);
         final AdaptableInterval forwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getForwardApsideDetectionAdaptableInterval();
+                .getApsideDetectionAdaptableInterval();
         // WHEN
-        final double value = forwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit));
+        final double value = forwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit), true);
         // THEN
         Assertions.assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
     }
@@ -49,9 +49,9 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         // GIVEN
         final Orbit initialOrbit = createOrbit(1.);
         final AdaptableInterval backwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getBackwardApsideDetectionAdaptableInterval();
+                .getApsideDetectionAdaptableInterval();
         // WHEN
-        final double value = backwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit));
+        final double value = backwardAdaptableInterval.currentInterval(new SpacecraftState(initialOrbit), true);
         // THEN
         Assertions.assertTrue(value <= initialOrbit.getKeplerianPeriod() / 2);
     }
@@ -62,7 +62,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(1.);
         final EventSlopeFilter<ApsideDetector> periapsisDetector = createPeriapsisDetector(initialOrbit);
         final AdaptableInterval forwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getForwardPeriapsisDetectionAdaptableInterval();
+                .getPeriapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter forwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 forwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
@@ -83,7 +83,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(6.);
         final EventSlopeFilter<ApsideDetector> periapsisDetector = createPeriapsisDetector(initialOrbit);
         final AdaptableInterval backwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getBackwardPeriapsisDetectionAdaptableInterval();
+                .getPeriapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter backwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 backwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
@@ -104,7 +104,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(4.);
         final EventSlopeFilter<ApsideDetector> apoapsisDetector = createApoapsisDetector(initialOrbit);
         final AdaptableInterval forwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getForwardApoapsisDetectionAdaptableInterval();
+                .getApoapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter forwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 forwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
@@ -125,7 +125,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         final Orbit initialOrbit = createOrbit(3.);
         final EventSlopeFilter<ApsideDetector> apoapsisDetector = createApoapsisDetector(initialOrbit);
         final AdaptableInterval backwardAdaptableInterval = ApsideDetectionAdaptableIntervalFactory
-                .getBackwardApoapsisDetectionAdaptableInterval();
+                .getApoapsisDetectionAdaptableInterval();
         final AdaptableIntervalWithCounter backwardAdaptableIntervalWithCounter = new AdaptableIntervalWithCounter(
                 backwardAdaptableInterval);
         final Propagator propagator = createPropagatorWithDetector(initialOrbit,
@@ -159,7 +159,7 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
     }
 
     private AdaptableInterval getConstantAdaptableInterval() {
-        return state -> state.getOrbit().getKeplerianPeriod() / 3.;
+        return (state, isForward) -> state.getOrbit().getKeplerianPeriod() / 3.;
     }
 
     private Orbit createOrbit(final double meanAnomaly) {
@@ -187,9 +187,9 @@ class ApsideDetectionAdaptableIntervalFactoryTest {
         }
 
         @Override
-        public double currentInterval(SpacecraftState state) {
+        public double currentInterval(SpacecraftState state, boolean isForward) {
             count++;
-            return interval.currentInterval(state);
+            return interval.currentInterval(state, isForward);
         }
     }
 

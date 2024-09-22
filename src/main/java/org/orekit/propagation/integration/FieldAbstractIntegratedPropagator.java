@@ -969,7 +969,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public FieldAdaptableInterval<T> getMaxCheckInterval() {
-            return (state, isForward) -> detector.getMaxCheckInterval().currentInterval(convert(state));
+            return (state, isForward) -> detector.getMaxCheckInterval().currentInterval(convert(state), isForward);
         }
 
         /** {@inheritDoc} */
