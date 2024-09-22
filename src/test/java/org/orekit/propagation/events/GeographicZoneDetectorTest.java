@@ -54,7 +54,7 @@ public class GeographicZoneDetectorTest {
                 new GeographicZoneDetector(20.0, 1.e-3, earth, buildFrance(), FastMath.toRadians(0.5)).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(20.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(20.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-3, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(0.5, FastMath.toDegrees(d.getMargin()), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());

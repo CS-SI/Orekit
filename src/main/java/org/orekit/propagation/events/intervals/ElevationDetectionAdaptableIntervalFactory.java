@@ -67,7 +67,7 @@ public class ElevationDetectionAdaptableIntervalFactory {
                                                          final double elevationSwitchInf,
                                                          final double elevationSwitchSup,
                                                          final double fineCheckInterval) {
-        return state -> {
+        return (state, isForward) -> {
             final double elevation = topo.getElevation(state.getPosition(), state.getFrame(), state.getDate());
             if (elevation <= elevationSwitchInf || elevation >= elevationSwitchSup) {
                 // we are far from visibility switch, estimate some large interval with huge margins

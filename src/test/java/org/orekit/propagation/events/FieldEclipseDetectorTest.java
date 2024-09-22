@@ -116,7 +116,7 @@ public class FieldEclipseDetectorTest {
                                     withThreshold(zero.newInstance(1e-3)).
                                     withHandler(new FieldStopOnDecreasing<T>()).
                                     withUmbra();
-        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
         Assertions.assertEquals(0.0, e.getMargin().getReal(), 1.0e-15);
@@ -187,7 +187,7 @@ public class FieldEclipseDetectorTest {
                                     withHandler(new FieldStopOnDecreasing<T>()).
                                     withMaxIter(12).
                                     withMargin(zero.newInstance(0.001));
-        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);

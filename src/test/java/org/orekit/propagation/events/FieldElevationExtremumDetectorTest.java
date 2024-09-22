@@ -60,7 +60,7 @@ public class FieldElevationExtremumDetectorTest {
         final FieldEventSlopeFilter<FieldElevationExtremumDetector<Binary64>, Binary64> maxElevationDetector =
                 new FieldEventSlopeFilter<>(raw, FilterType.TRIGGER_ONLY_DECREASING_EVENTS);
 
-        Assertions.assertEquals(60.0, raw.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, raw.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, raw.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, raw.getMaxIterationCount());
         Assertions.assertEquals("test", raw.getTopocentricFrame().getName());
