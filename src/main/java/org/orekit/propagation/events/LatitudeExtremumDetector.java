@@ -71,7 +71,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
     protected LatitudeExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
                                        final int maxIter, final EventHandler handler,
                                        final OneAxisEllipsoid body) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.body = body;
     }
 

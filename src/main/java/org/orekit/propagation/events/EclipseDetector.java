@@ -83,7 +83,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 12.0
      */
     public EclipseDetector(final OccultationEngine occultationEngine) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+        this(new EventDetectionSettings(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER),
              new StopOnIncreasing(),
              occultationEngine, 0.0, true);
     }
@@ -102,11 +102,31 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param margin to apply to eclipse angle (rad)
      * @param totalEclipse umbra (true) or penumbra (false) detection flag
      * @since 12.0
+     * @deprecated as of 12.2
      */
+    @Deprecated
     protected EclipseDetector(final AdaptableInterval maxCheck, final double threshold,
                               final int maxIter, final EventHandler handler,
                               final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
-        super(maxCheck, threshold, maxIter, handler);
+        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, occultationEngine, margin, totalEclipse);
+    }
+
+    /** Protected constructor with full parameters.
+     * <p>
+     * This constructor is not public as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param detectionSettings detection settings
+     * @param handler event handler to call at event occurrences
+     * @param occultationEngine occultation engine
+     * @param margin to apply to eclipse angle (rad)
+     * @param totalEclipse umbra (true) or penumbra (false) detection flag
+     * @since 12.2
+     */
+    protected EclipseDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
+                              final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
+        super(detectionSettings, handler);
         this.occultationEngine = occultationEngine;
         this.margin            = margin;
         this.totalEclipse      = totalEclipse;
@@ -130,8 +150,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 6.1
      */
     public EclipseDetector withUmbra() {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occultationEngine, margin, true);
+        return new EclipseDetector(getDetectionSettings(), getHandler(), occultationEngine, margin, true);
     }
 
     /**
@@ -144,8 +163,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 6.1
      */
     public EclipseDetector withPenumbra() {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occultationEngine, margin, false);
+        return new EclipseDetector(getDetectionSettings(), getHandler(), occultationEngine, margin, false);
     }
 
     /**
@@ -159,8 +177,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 12.0
      */
     public EclipseDetector withMargin(final double newMargin) {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                   occultationEngine, newMargin, totalEclipse);
+        return new EclipseDetector(getDetectionSettings(), getHandler(), occultationEngine, newMargin, totalEclipse);
     }
 
     /** Get the angular margin used for eclipse detection.

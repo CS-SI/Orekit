@@ -90,7 +90,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
     protected FieldElevationExtremumDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                              final int maxIter, final FieldEventHandler<T> handler,
                                              final TopocentricFrame topo) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.topo = topo;
     }
 

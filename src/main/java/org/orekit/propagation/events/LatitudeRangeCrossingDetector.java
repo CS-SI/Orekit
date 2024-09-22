@@ -88,7 +88,7 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
     protected LatitudeRangeCrossingDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                             final EventHandler handler,
                                             final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.body     = body;
         this.fromLatitude = fromLatitude;
         this.toLatitude = toLatitude;

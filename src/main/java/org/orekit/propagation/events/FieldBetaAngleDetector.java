@@ -95,7 +95,7 @@ public class FieldBetaAngleDetector<T extends CalculusFieldElement<T>> extends F
                              final int maxIter, final FieldEventHandler<T> handler,
                              final T betaAngleThreshold, final FieldPVCoordinatesProvider<T> celestialBodyProvider,
                              final Frame inertialFrame) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.betaAngleThreshold = betaAngleThreshold;
         this.celestialBodyProvider = celestialBodyProvider;
         this.inertialFrame = inertialFrame;

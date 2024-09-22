@@ -76,7 +76,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
             final int maxIter,
             final FieldEventHandler<T> handler,
             final Function<FieldSpacecraftState<T>, T> function) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.function = function;
     }
 

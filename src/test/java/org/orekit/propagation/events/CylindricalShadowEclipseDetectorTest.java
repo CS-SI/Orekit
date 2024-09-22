@@ -45,8 +45,8 @@ class CylindricalShadowEclipseDetectorTest {
         final double expectedThreshold = 0.1;
         final int expectedMaxIter = 10;
         // WHEN
-        final CylindricalShadowEclipseDetector detector = eclipseDetector.create(adaptableInterval, expectedThreshold,
-                expectedMaxIter, eclipseDetector.getHandler());
+        final CylindricalShadowEclipseDetector detector = eclipseDetector.create(new EventDetectionSettings(adaptableInterval, expectedThreshold,
+                expectedMaxIter), eclipseDetector.getHandler());
         // THEN
         Assertions.assertEquals(expectedMaxIter, detector.getMaxIterationCount());
         Assertions.assertEquals(expectedThreshold, detector.getThreshold());

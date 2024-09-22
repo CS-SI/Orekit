@@ -163,7 +163,7 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
     protected FieldExtremumApproachDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                             final FieldEventHandler<T> handler,
                                             final FieldPVCoordinatesProvider<T> secondaryPVProvider) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.secondaryPVProvider = secondaryPVProvider;
     }
 

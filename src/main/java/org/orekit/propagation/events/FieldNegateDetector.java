@@ -68,7 +68,7 @@ public class FieldNegateDetector<T extends CalculusFieldElement<T>>  extends Fie
                                   final int newMaxIter,
                                   final FieldEventHandler<T> newHandler,
                                   final FieldEventDetector<T> original) {
-        super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        super(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
         this.original = original;
     }
 

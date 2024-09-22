@@ -105,7 +105,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
                                   final EventHandler handler,
                                   final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                   final VisibilityTrigger trigger, final FieldOfView fov) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.targetPVProvider = pvTarget;
         this.radiusTarget     = radiusTarget;
         this.trigger          = trigger;

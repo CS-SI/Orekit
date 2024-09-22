@@ -167,7 +167,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
                                     final int maxIter, final EventHandler handler,
                                     final double limit, final FieldModel model, final OneAxisEllipsoid body,
                                     final boolean atSeaLevel, final DataContext dataContext) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.limit       = limit;
         this.model       = model;
         this.body        = body;
@@ -184,6 +184,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     }
 
     /** {@inheritDoc} */
+    @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         super.init(s0, t);
         final TimeScale utc = dataContext.getTimeScales().getUTC();
