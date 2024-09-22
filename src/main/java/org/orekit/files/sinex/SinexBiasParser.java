@@ -79,8 +79,8 @@ public class SinexBiasParser extends AbstractSinexParser<SinexBias, SinexBiasPar
 
     /** {@inheritDoc} */
     @Override
-    protected SinexBiasParseInfo buildParseInfo(final TimeScales timeScales) {
-        SinexBiasParseInfo parseInfo = new SinexBiasParseInfo(timeScales);
+    protected SinexBiasParseInfo buildParseInfo() {
+        final SinexBiasParseInfo parseInfo = new SinexBiasParseInfo(getTimeScales());
         parseInfo.setTimeScale(getTimeScales().getUTC());
         return parseInfo;
     }

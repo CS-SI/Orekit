@@ -226,23 +226,23 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
     }
 
     /** Set correction amplitude.
-     * @param amplitude correction amplitude
+     * @param correctionAmplitude correction amplitude
      * @param station station
      * @param epoch   coordinates epoch
      */
-    void setAmplitude(final double amplitude, final Station station, final AbsoluteDate epoch) {
-        this.amplitude = amplitude;
+    void setAmplitude(final double correctionAmplitude, final Station station, final AbsoluteDate epoch) {
+        this.amplitude = correctionAmplitude;
         finalizePsdCorrectionIfComplete(station, epoch);
     }
 
     /** Set correction relaxation time.
-     * @param relaxationTime relaxation time
+     * @param correctionRelaxationTime correction relaxation time
      * @param station station
      * @param epoch   coordinates epoch
      */
-    void setRelaxationTime(final double relaxationTime,
+    void setRelaxationTime(final double correctionRelaxationTime,
                            final Station station, final AbsoluteDate epoch) {
-        this.relaxationTime = relaxationTime;
+        this.relaxationTime = correctionRelaxationTime;
         finalizePsdCorrectionIfComplete(station, epoch);
     }
 

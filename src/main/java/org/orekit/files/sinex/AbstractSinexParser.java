@@ -52,7 +52,7 @@ public abstract class AbstractSinexParser<T extends AbstractSinex, P extends Par
     public T parse(final DataSource... sources) {
 
         // placeholders for parsed data
-        final P parseInfo = buildParseInfo(timeScales);
+        final P parseInfo = buildParseInfo();
 
         for (final DataSource source : sources) {
 
@@ -108,10 +108,9 @@ public abstract class AbstractSinexParser<T extends AbstractSinex, P extends Par
     protected abstract LineParser<P> firstLineParser();
 
     /** Build the container for parsing info.
-     * @param timeScales time scales
      * @return container for parsing info
      */
-    protected abstract P buildParseInfo(final TimeScales timeScales);
+    protected abstract P buildParseInfo();
 
     /** Get the time scales.
      * @return time scales

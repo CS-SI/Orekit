@@ -83,11 +83,11 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     }
 
     /** Start parsing of a new data source.
-     * @param name name of the new data source
+     * @param newName name of the new data source
      */
-    void newSource(final String name) {
+    void newSource(final String newName) {
         // initialize parsing
-        this.name = name;
+        this.name = newName;
         this.line = null;
         this.lineNumber = 0;
     }
@@ -128,11 +128,11 @@ public abstract class ParseInfo<T extends AbstractSinex> {
     }
 
     /** Set creation date.
-     * @param creationDateString creation date
+     * @param dateString creation date
      */
-    protected void setCreationDate(final String creationDateString) {
-        this.creationDateString = creationDateString;
-        this.creationDate = stringEpochToAbsoluteDate(creationDateString, false);
+    protected void setCreationDate(final String dateString) {
+        this.creationDateString = dateString;
+        this.creationDate       = stringEpochToAbsoluteDate(creationDateString, false);
     }
 
     /** Get creation date.

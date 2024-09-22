@@ -55,6 +55,7 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     }
 
     /** Get satellite DSB.
+     * @param prn satellite PRN
      * @return satellite DSB
      */
     DsbSatellite getSatelliteDcb(final String prn) {
@@ -62,6 +63,7 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     }
 
     /** Get station DSB.
+     * @param siteCode station site code
      * @return station DSB
      */
     DsbStation getStationDcb(final String siteCode) {

@@ -28,7 +28,7 @@ import java.util.function.Predicate;
  */
 enum SingleLineBlockPredicate implements Predicate<SinexParseInfo> {
 
-    /** Predicate for SITE/ID block content */
+    /** Predicate for SITE/ID block content. */
     SITE_ID {
         /** {@inheritDoc} */
         @Override

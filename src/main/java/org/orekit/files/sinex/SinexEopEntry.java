@@ -233,7 +233,7 @@ public class SinexEopEntry implements TimeStamped {
      * @param date new epoch
      * @return a new entry with changed epoch
      */
-     SinexEopEntry toNewEpoch(final AbsoluteDate date) {
+    SinexEopEntry toNewEpoch(final AbsoluteDate date) {
 
         // Initialize
         final SinexEopEntry newEntry = new SinexEopEntry(date);
