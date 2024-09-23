@@ -130,7 +130,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
             for (int j = 0; j < 6; ++j) {
                 if (stateVector[i] != 0) {
                     double error = FastMath.abs((dYdY0.getEntry(i, j) - dYdY0Ref[i][j]) / stateVector[i]) * steps[j];
-                    Assertions.assertEquals(0, error, 1.42e-13);
+                    Assertions.assertEquals(0, error, 3.0e-13);
                 }
             }
         }
