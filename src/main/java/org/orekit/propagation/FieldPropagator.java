@@ -189,7 +189,7 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Add an event detector.
      * @param detector event detector to add
      * @see #clearEventsDetectors()
-     * @see #getEventsDetectors()
+     * @see #getEventDetectors()
      * @param <D> class type for the generic version
      */
     <D extends FieldEventDetector<T>> void addEventDetector(D detector);
@@ -199,11 +199,11 @@ public interface FieldPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @see #addEventDetector(FieldEventDetector)
      * @see #clearEventsDetectors()
      */
-    Collection<FieldEventDetector<T>> getEventsDetectors();
+    Collection<FieldEventDetector<T>> getEventDetectors();
 
     /** Remove all events detectors.
      * @see #addEventDetector(FieldEventDetector)
-     * @see #getEventsDetectors()
+     * @see #getEventDetectors()
      */
     void clearEventsDetectors();
 

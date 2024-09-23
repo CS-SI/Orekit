@@ -14,25 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.propagation.conversion;
 
+import org.hipparchus.complex.Complex;
+import org.hipparchus.ode.nonstiff.MidpointIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.orekit.propagation.SpacecraftState;
 
-class EventDetectionSettingsTest {
+class MidpointFieldIntegratorBuilderTest {
 
     @Test
-    void testGetDefaultEventDetectionSettings() {
+    void testToODEIntegratorBuilder() {
         // GIVEN
-
+        final MidpointFieldIntegratorBuilder<Complex> fieldIntegratorBuilder = new MidpointFieldIntegratorBuilder<>(Complex.ONE);
         // WHEN
-        final EventDetectionSettings defaultSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final MidpointIntegratorBuilder integratorBuilder = fieldIntegratorBuilder.toODEIntegratorBuilder();
         // THEN
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAX_ITER, defaultSettings.getMaxIterationCount());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_THRESHOLD, defaultSettings.getThreshold());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAXCHECK, defaultSettings.getMaxCheckInterval()
-                .currentInterval(Mockito.mock(SpacecraftState.class), true));
+        final MidpointIntegrator integrator = (MidpointIntegrator) integratorBuilder.buildIntegrator(null, null);
+        Assertions.assertEquals(fieldIntegratorBuilder.getStep(), integrator.getDefaultStep());
     }
 }

@@ -42,98 +42,67 @@ public class ApsideDetectionAdaptableIntervalFactory {
     }
 
     /**
-     * Method providing a candidate {@link AdaptableInterval} for arbitrary apside detection with forward propagation.
+     * Method providing a candidate {@link AdaptableInterval} for arbitrary apside detection.
      * It uses a Keplerian, eccentric approximation.
-     * @return adaptable interval for forward apside detection
+     * @return adaptable interval for apside detection
      */
-    public static AdaptableInterval getForwardApsideDetectionAdaptableInterval() {
-        return state -> {
+    public static AdaptableInterval getApsideDetectionAdaptableInterval() {
+        return (state, isForward) -> {
             final Orbit orbit = state.getOrbit();
             final KeplerianOrbit keplerianOrbit = convertOrbitIntoKeplerianOne(orbit);
             final double meanMotion = keplerianOrbit.getKeplerianMeanMotion();
             final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-            final double durationToNextPeriapsis = computeKeplerianDurationToNextPeriapsis(meanAnomaly, meanMotion);
-            final double durationToNextApoapsis = computeKeplerianDurationToNextApoapsis(meanAnomaly, meanMotion);
-            return FastMath.min(durationToNextPeriapsis, durationToNextApoapsis);
+            if (isForward) {
+                final double durationToNextPeriapsis = computeKeplerianDurationToNextPeriapsis(meanAnomaly, meanMotion);
+                final double durationToNextApoapsis = computeKeplerianDurationToNextApoapsis(meanAnomaly, meanMotion);
+                return FastMath.min(durationToNextPeriapsis, durationToNextApoapsis);
+            }
+            else {
+                final double durationFromPreviousPeriapsis = computeKeplerianDurationFromPreviousPeriapsis(meanAnomaly,
+                        meanMotion);
+                final double durationFromPreviousApoapsis = computeKeplerianDurationFromPreviousApoapsis(meanAnomaly,
+                        meanMotion);
+                return FastMath.min(durationFromPreviousApoapsis, durationFromPreviousPeriapsis);
+            }
         };
     }
 
     /**
-     * Method providing a candidate {@link AdaptableInterval} for arbitrary apside detection with backward propagation.
+     * Method providing a candidate {@link AdaptableInterval} for periapsis detection.
      * It uses a Keplerian, eccentric approximation.
-     * @return adaptable interval for backward apside detection
+     * @return adaptable interval for periaspsis detection
      */
-    public static AdaptableInterval getBackwardApsideDetectionAdaptableInterval() {
-        return state -> {
+    public static AdaptableInterval getPeriapsisDetectionAdaptableInterval() {
+        return (state, isForward) -> {
             final Orbit orbit = state.getOrbit();
             final KeplerianOrbit keplerianOrbit = convertOrbitIntoKeplerianOne(orbit);
             final double meanMotion = keplerianOrbit.getKeplerianMeanMotion();
             final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-            final double durationFromPreviousPeriapsis = computeKeplerianDurationFromPreviousPeriapsis(meanAnomaly,
-                    meanMotion);
-            final double durationFromPreviousApoapsis = computeKeplerianDurationFromPreviousApoapsis(meanAnomaly,
-                    meanMotion);
-            return FastMath.min(durationFromPreviousApoapsis, durationFromPreviousPeriapsis);
+            if (isForward) {
+                return computeKeplerianDurationToNextPeriapsis(meanAnomaly, meanMotion);
+            } else {
+                return computeKeplerianDurationFromPreviousPeriapsis(meanAnomaly, meanMotion);
+            }
         };
     }
 
     /**
-     * Method providing a candidate {@link AdaptableInterval} for periapsis detection with forward propagation.
+     * Method providing a candidate {@link AdaptableInterval} for apoapsis detection.
      * It uses a Keplerian, eccentric approximation.
-     * @return adaptable interval for forward periaspsis detection
+     * @return adaptable interval for apoapsis detection
      */
-    public static AdaptableInterval getForwardPeriapsisDetectionAdaptableInterval() {
-        return state -> {
+    public static AdaptableInterval getApoapsisDetectionAdaptableInterval() {
+        return (state, isForward) -> {
             final Orbit orbit = state.getOrbit();
             final KeplerianOrbit keplerianOrbit = convertOrbitIntoKeplerianOne(orbit);
             final double meanMotion = keplerianOrbit.getKeplerianMeanMotion();
             final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-            return computeKeplerianDurationToNextPeriapsis(meanAnomaly, meanMotion);
-        };
-    }
-
-    /**
-     * Method providing a candidate {@link AdaptableInterval} for periapsis detection with backward propagation.
-     * It uses a Keplerian, eccentric approximation.
-     * @return adaptable interval for backward periaspsis detection
-     */
-    public static AdaptableInterval getBackwardPeriapsisDetectionAdaptableInterval() {
-        return state -> {
-            final Orbit orbit = state.getOrbit();
-            final KeplerianOrbit keplerianOrbit = convertOrbitIntoKeplerianOne(orbit);
-            final double meanMotion = keplerianOrbit.getKeplerianMeanMotion();
-            final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-            return computeKeplerianDurationFromPreviousPeriapsis(meanAnomaly, meanMotion);
-        };
-    }
-
-    /**
-     * Method providing a candidate {@link AdaptableInterval} for apoapsis detection with forward propagation.
-     * It uses a Keplerian, eccentric approximation.
-     * @return adaptable interval for forward apoapsis detection
-     */
-    public static AdaptableInterval getForwardApoapsisDetectionAdaptableInterval() {
-        return state -> {
-            final Orbit orbit = state.getOrbit();
-            final KeplerianOrbit keplerianOrbit = convertOrbitIntoKeplerianOne(orbit);
-            final double meanMotion = keplerianOrbit.getKeplerianMeanMotion();
-            final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-            return computeKeplerianDurationToNextApoapsis(meanAnomaly, meanMotion);
-        };
-    }
-
-    /**
-     * Method providing a candidate {@link AdaptableInterval} for apoapsis detection with backward propagation.
-     * It uses a Keplerian, eccentric approximation.
-     * @return adaptable interval for backward apoapsis detection
-     */
-    public static AdaptableInterval getBackwardApoapsisDetectionAdaptableInterval() {
-        return state -> {
-            final Orbit orbit = state.getOrbit();
-            final KeplerianOrbit keplerianOrbit = convertOrbitIntoKeplerianOne(orbit);
-            final double meanMotion = keplerianOrbit.getKeplerianMeanMotion();
-            final double meanAnomaly = keplerianOrbit.getMeanAnomaly();
-            return computeKeplerianDurationFromPreviousApoapsis(meanAnomaly, meanMotion);
+            if (isForward) {
+                return computeKeplerianDurationToNextApoapsis(meanAnomaly, meanMotion);
+            }
+            else {
+                return computeKeplerianDurationFromPreviousApoapsis(meanAnomaly, meanMotion);
+            }
         };
     }
 

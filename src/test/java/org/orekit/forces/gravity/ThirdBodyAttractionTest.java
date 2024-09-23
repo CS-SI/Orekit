@@ -76,7 +76,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         try {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<DerivativeStructure> position = state.getPVCoordinates().getPosition();
-            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("body");
+            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("positionProvider");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.
@@ -108,7 +108,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         try {
             final AbsoluteDate                       date     = state.getDate().toAbsoluteDate();
             final FieldVector3D<Gradient> position = state.getPVCoordinates().getPosition();
-            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("body");
+            java.lang.reflect.Field bodyField = AbstractBodyAttraction.class.getDeclaredField("positionProvider");
             bodyField.setAccessible(true);
             CelestialBody body = (CelestialBody) bodyField.get(forceModel);
             double gm = forceModel.

@@ -19,7 +19,6 @@ package org.orekit.control.indirect.shooting.propagation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.conversion.ClassicalRungeKuttaFieldIntegratorBuilder;
-import org.orekit.propagation.conversion.ClassicalRungeKuttaIntegratorBuilder;
 
 /**
  * Integration settings using the classical Runge-Kutta 4 scheme.
@@ -39,12 +38,6 @@ public class ClassicalRungeKuttaIntegrationSettings implements ShootingIntegrati
      */
     public ClassicalRungeKuttaIntegrationSettings(final double step) {
         this.step = step;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public ClassicalRungeKuttaIntegratorBuilder getIntegratorBuilder() {
-        return new ClassicalRungeKuttaIntegratorBuilder(step);
     }
 
     /** {@inheritDoc} */

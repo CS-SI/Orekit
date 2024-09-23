@@ -19,7 +19,6 @@ package org.orekit.control.indirect.shooting.propagation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.conversion.DormandPrince54FieldIntegratorBuilder;
-import org.orekit.propagation.conversion.DormandPrince54IntegratorBuilder;
 
 /**
  * Integration settings using the Dormand-Prince 5(4) scheme.
@@ -55,12 +54,6 @@ public class DormandPrince54IntegrationSettings implements ShootingIntegrationSe
         this.maxStep = maxStep;
         this.dP = dP;
         this.dV = dV;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public DormandPrince54IntegratorBuilder getIntegratorBuilder() {
-        return new DormandPrince54IntegratorBuilder(minStep, maxStep, dP, dV);
     }
 
     /** {@inheritDoc} */

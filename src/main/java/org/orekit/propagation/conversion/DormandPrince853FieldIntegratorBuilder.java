@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -68,8 +67,14 @@ public class DormandPrince853FieldIntegratorBuilder<T extends CalculusFieldEleme
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public DormandPrince853FieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
         final double[][] tol = getTolerances(orbit, orbitType);
         return new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public DormandPrince853IntegratorBuilder toODEIntegratorBuilder() {
+        return new DormandPrince853IntegratorBuilder(minStep, maxStep, dP, dV);
     }
 }

@@ -51,7 +51,7 @@ class ApsideDetectorTest {
                                  withThreshold(1.0e-12).
                                  withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(600.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
 
@@ -77,7 +77,7 @@ class ApsideDetectorTest {
 
     @Test
     void testAnomalyAwareMaxCheck() {
-        doTestMaxcheck(ApsideDetectionAdaptableIntervalFactory.getForwardApsideDetectionAdaptableInterval(), 726);
+        doTestMaxcheck(ApsideDetectionAdaptableIntervalFactory.getApsideDetectionAdaptableInterval(), 726);
     }
 
     private void doTestMaxcheck(final AdaptableInterval maxCheck, int expectedCalls) {

@@ -53,7 +53,7 @@ public class LatitudeExtremumDetectorTest {
                 withThreshold(1.e-6).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
         Assertions.assertSame(earth, d.getBody());
