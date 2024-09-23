@@ -28,12 +28,14 @@ import org.orekit.Utils;
 import org.orekit.data.DataSource;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.PredefinedObservationType;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
 
 
 public class SinexBiasParserTest {
@@ -45,31 +47,31 @@ public class SinexBiasParserTest {
     }
 
     @Test
-    public void testFirstLineDCB() {
-        // Verify the parsing of the first line for the Sinex loader in the DCB file case.
-        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DCB_default_description.BSX");
+    public void testFirstLineDsb() {
+        // Verify the parsing of the first line for the Sinex parser in the DSB file case.
+        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DSB_default_description.BSX");
         AbsoluteDate creationDate = sinexBias.getCreationDate();
-        AbsoluteDate refCreationDate = new AbsoluteDate(new DateComponents(2022, 1, 1), TimeScalesFactory.getGPS()).
-                shiftedBy(Constants.JULIAN_DAY * (11 - 1)).
-                shiftedBy(58414);
+        AbsoluteDate refCreationDate = new AbsoluteDate(new DateComponents(2022, 11),
+                                                        new TimeComponents(58414),
+                                                        TimeScalesFactory.getGPS());
         Assertions.assertEquals(creationDate, refCreationDate);
     }
 
     @Test
-    public void testFirstLineDCBInUtc() {
-        // Verify the parsing of the first line for the Sinex loader in the DCB file case.
-        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DCB_UTC.BSX");
+    public void testFirstLineDsbInUtc() {
+        // Verify the parsing of the first line for the Sinex parser in the DSB file case.
+        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DSB_UTC.BSX");
         AbsoluteDate creationDate = sinexBias.getCreationDate();
-        AbsoluteDate refCreationDate = new AbsoluteDate(new DateComponents(2022, 1, 1), TimeScalesFactory.getUTC()).
-                shiftedBy(Constants.JULIAN_DAY * (11 - 1)).
-                shiftedBy(58414);
+        AbsoluteDate refCreationDate = new AbsoluteDate(new DateComponents(2022, 11),
+                                                        new TimeComponents(58414),
+                                                        TimeScalesFactory.getUTC());
         Assertions.assertEquals(creationDate, refCreationDate);
     }
 
     @Test
-    public void testDCBDescriptionSat() {
-        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        // DCB Description test
+    public void testDsbDescriptionSat() {
+        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DSB_trunc_sat.BSX");
+        // DSB Description test
         BiasDescription dcbDesc = sinexBias.getDescription();
         TimeSystem timeSystem = dcbDesc.getTimeSystem();
         String biasMode = dcbDesc.getBiasMode();
@@ -84,9 +86,9 @@ public class SinexBiasParserTest {
     }
     
     @Test
-    public void testDCBDescriptionStation() {
-        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        // DCB Description test
+    public void testDsbDescriptionStation() {
+        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DSB_trunc_sat.BSX");
+        // DSB Description test
         BiasDescription dcbDesc = sinexBias.getDescription();
         TimeSystem timeSystem = dcbDesc.getTimeSystem();
         String biasMode = dcbDesc.getBiasMode();
@@ -101,13 +103,15 @@ public class SinexBiasParserTest {
     }
     
     @Test
-    public void testDCBfile() {
-        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
-        DsbSatellite DCBSat = sinexBias.getDsbSatellite("G01");
-        Dsb DsbTest = DCBSat.getDsbData();
+    public void testDsbfile() {
+        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DSB_trunc_sat.BSX");
+        SatelliteDifferentialSignalBias satDsb = sinexBias.getSatellitesDsb().get(new SatInSystem("G01"));
+        DifferentialSignalBias dsb = satDsb.getDsb();
+        Assertions.assertTrue(sinexBias.getSatellitesOsb().isEmpty());
+        Assertions.assertTrue(sinexBias.getStationsOsb().isEmpty());
         
         // Observation Pair test
-        HashSet<Pair<ObservationType, ObservationType>> ObsPairs = DsbTest.getAvailableObservationPairs();
+        HashSet<Pair<ObservationType, ObservationType>> ObsPairs = dsb.getAvailableObservationPairs();
         
         // Defining the observation pair present in the truncated file.
         Pair<ObservationType, ObservationType> OP1 = new Pair<>(PredefinedObservationType.C1C, PredefinedObservationType.C1W);
@@ -129,79 +133,63 @@ public class SinexBiasParserTest {
         ObservationType Obs2 = PredefinedObservationType.C1W;
         
         // Minimum Date test
-        int year = 2021;
-        int day = 274;
-        int secInDay = 0;
+        AbsoluteDate refFirstDate = new AbsoluteDate(new DateComponents(2021, 274),
+                                                     TimeComponents.H00,
+                                                     TimeScalesFactory.getGPS());
+        AbsoluteDate firstDate =  dsb.getMinimumValidDateForObservationPair(Obs1, Obs2);
         
-        AbsoluteDate refFirstDate = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
-                shiftedBy(Constants.JULIAN_DAY * (day - 1)).
-                shiftedBy(secInDay);
-        AbsoluteDate firstDate =  DsbTest.getMinimumValidDateForObservationPair(Obs1, Obs2);
-        
-        Assertions.assertEquals(firstDate, refFirstDate);
+        Assertions.assertEquals(refFirstDate, firstDate);
         
         // Max Date Test
-        year = 2021;
-        day = 283;
-        secInDay = 0;
+        AbsoluteDate refLastDate = new AbsoluteDate(new DateComponents(2021, 283),
+                                                    TimeComponents.H00,
+                                                    TimeScalesFactory.getGPS());
+        AbsoluteDate lastDate =  dsb.getMaximumValidDateForObservationPair(Obs1, Obs2);
         
-        AbsoluteDate refLastDate = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
-                shiftedBy(Constants.JULIAN_DAY * (day - 1)).
-                shiftedBy(secInDay);
-        AbsoluteDate lastDate =  DsbTest.getMaximumValidDateForObservationPair(Obs1, Obs2);
-        
-        Assertions.assertEquals(lastDate, refLastDate);
+        Assertions.assertEquals(refLastDate, lastDate);
         
         // Value test for Satellites
-        year = 2021;
-        day = 280;
-        secInDay = 43200;
+        AbsoluteDate refDate = new AbsoluteDate(new DateComponents(2021, 280),
+                                                new TimeComponents(43200),
+                                                TimeScalesFactory.getGPS());
         
-        AbsoluteDate refDate = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
-                shiftedBy(Constants.JULIAN_DAY * (day - 1)).
-                shiftedBy(secInDay);
+        double valueDsb = dsb.getBias(Obs1, Obs2, refDate);
+        double valueDsbReal = -1.0697e-9;
         
-        double valueDcb = DsbTest.getDsb(Obs1, Obs2, refDate);
-        double valueDcbReal = -1.0697e-9;
-        
-        Assertions.assertEquals(valueDcbReal, valueDcb, 1e-13);
+        Assertions.assertEquals(valueDsbReal, valueDsb, 1e-13);
         
         // Value Test for a Station
-        DsbStation DsbStation = sinexBias.getDsbStation("ALIC");
-        Dsb DsbTestStation = DsbStation.getDsbData(SatelliteSystem.parseSatelliteSystem("R"));
+        StationDifferentialSignalBias StationDifferentialSignalBias = sinexBias.getStationsDsb().get("ALIC");
+        DifferentialSignalBias differentialSignalBiasTestStation = StationDifferentialSignalBias.getDsb(SatelliteSystem.parseSatelliteSystem("R"));
 
-        year = 2021;
-        day = 300;
-        secInDay = 43200;
+        AbsoluteDate refDateStation = new AbsoluteDate(new DateComponents(2021, 300),
+                                                       new TimeComponents(43200),
+                                                       TimeScalesFactory.getGPS());
         
-        AbsoluteDate refDateStation = new AbsoluteDate(new DateComponents(year, 1, 1), TimeScalesFactory.getGPS()).
-                shiftedBy(Constants.JULIAN_DAY * (day - 1)).
-                shiftedBy(secInDay);
-        
-        double valueDcbStation = DsbTestStation.getDsb(PredefinedObservationType.C1C,
+        double valueDsbStation = differentialSignalBiasTestStation.getBias(PredefinedObservationType.C1C,
                                                        PredefinedObservationType.C1P,
                                                        refDateStation);
-        double valueDcbRealStation = -0.6458e-9;
+        double valueDsbRealStation = -0.6458e-9;
         
-        Assertions.assertEquals(valueDcbRealStation, valueDcbStation, 1e-13);
+        Assertions.assertEquals(valueDsbRealStation, valueDsbStation, 1e-13);
         
                 
         // Test getSatelliteSystem
-        Assertions.assertEquals(DCBSat.getSatelliteSytem(), SatelliteSystem.GPS);
+        Assertions.assertEquals(satDsb.getSatellite().getSystem(), SatelliteSystem.GPS);
         
         // Test getPRN
-        Assertions.assertEquals("G01", DCBSat.getPRN());
+        Assertions.assertEquals(1, satDsb.getSatellite().getPRN());
         
     }
-    
+
     @Test
-    public void testDCBFileStation() {
-        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
+    public void testDsbFileStation() {
+        SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DSB_trunc_sat.BSX");
         String stationIdRef = "AGGO";
-        DsbStation DCBTest = sinexBias.getDsbStation(stationIdRef);
+        StationDifferentialSignalBias DSBTest = sinexBias.getStationsDsb().get(stationIdRef);
          
         // Test getStationId : Station Case
-        Assertions.assertEquals(stationIdRef, DCBTest.getSiteCode());
+        Assertions.assertEquals(stationIdRef, DSBTest.getSiteCode());
          
         //Test getAvailableSystems
         final SatelliteSystem sat1 = SatelliteSystem.parseSatelliteSystem("G");
@@ -210,8 +198,52 @@ public class SinexBiasParserTest {
         setSystemRef.add(sat1);
         setSystemRef.add(sat2);
         
-        final Iterable<SatelliteSystem> setSystem = DCBTest.getAvailableSatelliteSystems();
+        final Iterable<SatelliteSystem> setSystem = DSBTest.getAvailableSatelliteSystems();
         Assertions.assertEquals(setSystemRef, setSystem);
+    }
+
+    @Test
+    public void testOsbfile() {
+        SinexBias sinexBias = load("/sinex/code.bia");
+        SatelliteObservableSpecificSignalBias satOsb = sinexBias.getSatellitesOsb().get(new SatInSystem("E08"));
+        ObservableSpecificSignalBias osb = satOsb.getOsb();
+        Assertions.assertTrue(sinexBias.getSatellitesDsb().isEmpty());
+        Assertions.assertTrue(sinexBias.getStationsDsb().isEmpty());
+
+        final TimeSystem ts = sinexBias.getDescription().getTimeSystem();
+        Assertions.assertEquals(TimeSystem.GPS, ts);
+        final TimeScale timeScale = ts.getTimeScale(TimeScalesFactory.getTimeScales());
+
+        // Observations test
+        HashSet<ObservationType> types = osb.getAvailableObservations();
+        Assertions.assertEquals(4, types.size());
+        Assertions.assertTrue(types.contains(PredefinedObservationType.C1C));
+        Assertions.assertTrue(types.contains(PredefinedObservationType.C1X));
+        Assertions.assertTrue(types.contains(PredefinedObservationType.C5Q));
+        Assertions.assertTrue(types.contains(PredefinedObservationType.C5X));
+
+        // Minimum Date test
+        AbsoluteDate refFirstDate = new AbsoluteDate(new DateComponents(2024, 237),
+                                                     TimeComponents.H00,
+                                                     timeScale);
+        AbsoluteDate firstDate =  osb.getMinimumValidDateForObservation(PredefinedObservationType.C5X);
+        Assertions.assertEquals(refFirstDate, firstDate);
+
+        // Max Date Test
+        AbsoluteDate refLastDate = new AbsoluteDate(new DateComponents(2024, 267),
+                                                    TimeComponents.H00,
+                                                    timeScale);
+        AbsoluteDate lastDate =  osb.getMaximumValidDateForObservation(PredefinedObservationType.C5X);
+        Assertions.assertEquals(refLastDate, lastDate);
+
+        double valueOsb = osb.getBias(PredefinedObservationType.C5X,
+                                      new AbsoluteDate(new DateComponents(2024, 250),
+                                                       TimeComponents.H00,
+                                                       timeScale));
+        double valueOsbReal = -6.7298e-9;
+
+        Assertions.assertEquals(valueOsbReal, valueOsb, 1e-13);
+
     }
 
     private SinexBias load(final String name) {

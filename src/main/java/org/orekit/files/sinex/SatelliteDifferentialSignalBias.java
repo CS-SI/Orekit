@@ -17,7 +17,7 @@
 
 package org.orekit.files.sinex;
 
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.SatInSystem;
 
 /**
  * Class based on DSB, used to store the data parsed in {@link SinexBiasParser}
@@ -29,52 +29,34 @@ import org.orekit.gnss.SatelliteSystem;
  * @author Louis Aucouturier
  * @since 12.0
  */
-public class DsbSatellite {
+public class SatelliteDifferentialSignalBias {
 
-    /** Satellite PRN identifier.
-     * <p>
-     * Satellite PRN and station id are present in order to allow stations to be associated with
-     * a satellite system stored in the PRN, as done in the Sinex file.
-     * </p>
-     */
-    private final String prn;
+    /** Satellite identifier. */
+    private final SatInSystem satellite;
 
     /** DSB solution data. */
-    private final Dsb dsb;
+    private final DifferentialSignalBias dsb;
 
     /** Constructor for the DSBSatellite class.
-     * @param prn satellite PRN identifier
+     * @param satellite satellite identifier
      */
-    public DsbSatellite(final String prn) {
-        this.prn = prn;
-        this.dsb = new Dsb();
+    public SatelliteDifferentialSignalBias(final SatInSystem satellite) {
+        this.satellite = satellite;
+        this.dsb       = new DifferentialSignalBias();
+    }
+
+    /** Return the satellite identifier.
+     * @return the satellite identifier
+     */
+    public SatInSystem getSatellite() {
+        return satellite;
     }
 
     /** Get the DSB data for the current satellite.
      * @return the DSB data for the current satellite
      */
-    public Dsb getDsbData() {
+    public DifferentialSignalBias getDsb() {
         return dsb;
-    }
-
-    /** Return the satellite PRN, as a String.
-     * <p>
-     * Example of satellite PRN: "G01"
-     * </p>
-     * @return the satellite PRN
-     */
-    public String getPRN() {
-        return prn;
-    }
-
-    /** Get the satellite sytem corresponding to the satellite.
-     * <p>
-     * Satellite system is extracted from the first letter of the PRN.
-     * </p>
-     * @return the satellite from which the DSB are extracted.
-     */
-    public SatelliteSystem getSatelliteSytem() {
-        return SatelliteSystem.parseSatelliteSystem(prn);
     }
 
 }

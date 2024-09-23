@@ -16,6 +16,7 @@
  */
 package org.orekit.files.sinex;
 
+import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
 
@@ -33,10 +34,16 @@ public class SinexBias extends AbstractSinex {
     private final BiasDescription description;
 
     /** DSB data. */
-    private final Map<String, DsbStation> dcbStations;
+    private final Map<String, StationDifferentialSignalBias> stationsDsb;
 
     /** DSB data. */
-    private final Map<String, DsbSatellite> dcbSatellites;
+    private final Map<SatInSystem, SatelliteDifferentialSignalBias> satellitesDsb;
+
+    /** OSB data. */
+    private final Map<String, StationObservableSpecificSignalBias> stationsOsb;
+
+    /** OSB data. */
+    private final Map<SatInSystem, SatelliteObservableSpecificSignalBias> satellitesOsb;
 
     /** Simple constructor.
      * @param timeScales time scales
@@ -44,17 +51,24 @@ public class SinexBias extends AbstractSinex {
      * @param startDate start time of the data used in the Sinex solution
      * @param endDate end time of the data used in the Sinex solution
      * @param description bias description
-     * @param dcbStations DSB data for stations
-     * @param dcbSatellites DSB data for satellites
+     * @param stationsDsb DSB data for stations
+     * @param satellitesDsb DSB data for satellites
+     * @param stationsOsb OSB data for stations
+     * @param satellitesOsb OSB data for satellites
      */
     public SinexBias(final TimeScales timeScales, final AbsoluteDate creationDate,
                      final AbsoluteDate startDate, final AbsoluteDate endDate,
                      final BiasDescription description,
-                     final Map<String, DsbStation> dcbStations, final Map<String, DsbSatellite> dcbSatellites) {
+                     final Map<String, StationDifferentialSignalBias> stationsDsb,
+                     final Map<SatInSystem, SatelliteDifferentialSignalBias> satellitesDsb,
+                     final Map<String, StationObservableSpecificSignalBias> stationsOsb,
+                     final Map<SatInSystem, SatelliteObservableSpecificSignalBias> satellitesOsb) {
         super(timeScales, creationDate, startDate, endDate);
         this.description   = description;
-        this.dcbStations   = dcbStations;
-        this.dcbSatellites = dcbSatellites;
+        this.stationsDsb   = stationsDsb;
+        this.satellitesDsb = satellitesDsb;
+        this.stationsOsb   = stationsOsb;
+        this.satellitesOsb = satellitesOsb;
     }
 
     /** Get the bias description.
@@ -64,20 +78,32 @@ public class SinexBias extends AbstractSinex {
         return description;
     }
 
-    /** Get the DSB data for a given station.
-     * @param siteCode site code
-     * @return DSB data for the station
+    /** Get the DSB data for stations.
+     * @return DSB data for stations, indexed by station site code
      */
-    public DsbStation getDsbStation(final String siteCode) {
-        return dcbStations.get(siteCode);
+    public Map<String, StationDifferentialSignalBias> getStationsDsb() {
+        return stationsDsb;
     }
 
-    /** Get the DSB data for a given satellite identified by its PRN.
-     * @param prn the satellite PRN (e.g. "G01" for GPS 01)
-     * @return the DSB data for the satellite
+    /** Get the DSB data for satellites.
+     * @return DSB data for satellites
      */
-    public DsbSatellite getDsbSatellite(final String prn) {
-        return dcbSatellites.get(prn);
+    public Map<SatInSystem, SatelliteDifferentialSignalBias> getSatellitesDsb() {
+        return satellitesDsb;
+    }
+
+    /** Get the OSB data for stations.
+     * @return OSB data for stations, indexed by station site code
+     */
+    public Map<String, StationObservableSpecificSignalBias> getStationsOsb() {
+        return stationsOsb;
+    }
+
+    /** Get the OSB data for satellites.
+     * @return OSB data for satellites
+     */
+    public Map<SatInSystem, SatelliteObservableSpecificSignalBias> getSatellitesOsb() {
+        return satellitesOsb;
     }
 
 }

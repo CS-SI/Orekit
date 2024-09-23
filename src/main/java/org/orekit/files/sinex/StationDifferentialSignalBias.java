@@ -17,34 +17,29 @@
 
 package org.orekit.files.sinex;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 import org.orekit.gnss.SatelliteSystem;
 
-/**
- * Class based on DSB, used to store the data parsed in {@link SinexBiasParser}
- * for Differential Signal Biases computed for stations.
- * <p>
- * Satellites and stations have differentiated classes as stations might have multiple satellite systems.
- * The data are stored in a Map of DSB, identified by the {@link SatelliteSystem}
- * </p>
+/** Container for {@link DifferentialSignalBias Differential Signal Biases} associated to one station.
  * @author Louis Aucouturier
  * @since 12.0
  */
-public class DsbStation {
+public class StationDifferentialSignalBias {
 
     /** Site code. */
     private final String siteCode;
 
     /** Map containing DSB objects as a function of the satellite system. */
-    private final HashMap<SatelliteSystem, Dsb> dsbMap;
+    private final HashMap<SatelliteSystem, DifferentialSignalBias> dsbMap;
 
     /** Simple constructor.
      * @param siteCode the site code (station identifier)
      */
-    public DsbStation(final String siteCode) {
+    public StationDifferentialSignalBias(final String siteCode) {
         this.siteCode = siteCode;
-        this.dsbMap = new HashMap<>();
+        this.dsbMap   = new HashMap<>();
     }
 
     /** Get the site code (station identifier).
@@ -58,14 +53,14 @@ public class DsbStation {
      * @param satelliteSystem satellite system
      * @return the DSB data corresponding to the satellite system
      */
-    public Dsb getDsbData(final SatelliteSystem satelliteSystem) {
-        return dsbMap.computeIfAbsent(satelliteSystem, s -> new Dsb());
+    public DifferentialSignalBias getDsb(final SatelliteSystem satelliteSystem) {
+        return dsbMap.computeIfAbsent(satelliteSystem, s -> new DifferentialSignalBias());
     }
 
     /** Get the satellite systems available for the station.
      * @return a Set containing all SatelliteSystems available for DSB computation.
      */
-    public Iterable<SatelliteSystem> getAvailableSatelliteSystems() {
+    public Collection<SatelliteSystem> getAvailableSatelliteSystems() {
         return dsbMap.keySet();
     }
 

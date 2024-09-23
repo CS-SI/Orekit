@@ -25,8 +25,8 @@ import org.orekit.gnss.ObservationType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
-/**
- * Class to store DSB Solution data parsed in the SinexBiasParser.
+/** Container for differential signal bias for a single link endpoint
+ * (either emitter or receiver).
  * <p>
  * This class is made to handle both station and satellite DSB data.
  * Bias values are stored in TimeSpanMaps associated with a given pair
@@ -36,7 +36,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Louis Aucouturier
  * @since 12.0
  */
-public class Dsb {
+public class DifferentialSignalBias {
 
     /** Set of observation type pairs available for the satellite. */
     private final HashSet<Pair<ObservationType, ObservationType>> observationSets;
@@ -48,7 +48,7 @@ public class Dsb {
 
     /** Simple constructor.
      */
-    public Dsb() {
+    public DifferentialSignalBias() {
         this.observationSets = new HashSet<>();
         this.biases          = new HashMap<>();
     }
@@ -56,8 +56,8 @@ public class Dsb {
     /** Add a bias.
      * @param obs1 first observation used for the DSB computation
      * @param obs2 second observation used for the DSB computation
-     * @param spanBegin Absolute Date corresponding to the beginning of the validity span for this bias value
-     * @param spanEnd Absolute Date corresponding to the end of the validity span for this bias value
+     * @param spanBegin beginning of the validity span for this bias value
+     * @param spanEnd end of the validity span for this bias value
      * @param biasValue DSB bias value expressed in S.I. units
      */
     public void addBias(final ObservationType obs1, final ObservationType obs2,
@@ -77,30 +77,24 @@ public class Dsb {
 
     }
 
-    /**
-     * Get the value of the Differential Signal Bias for a given observation pair at a given date.
-     *
+    /** Get the value of the Differential Signal Bias for a given observation pair at a given date.
      * @param obs1 first observation type
      * @param obs2 second observation type
      * @param date date at which to obtain the DSB
      * @return the value of the DSB in S.I. units
      */
-    public double getDsb(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
+    public double getBias(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
         return getTimeSpanMap(obs1, obs2).get(date);
     }
 
-    /**
-     * Get all available observation type pairs for the satellite.
-     *
+    /** Get all available observation type pairs for the satellite.
      * @return observation type pairs obtained.
      */
     public HashSet<Pair<ObservationType, ObservationType>> getAvailableObservationPairs() {
         return observationSets;
     }
 
-    /**
-     * Get the minimum valid date for a given observation pair.
-     *
+    /** Get the minimum valid date for a given observation pair.
      * @param obs1 first observation type
      * @param obs2 second observation type
      * @return minimum valid date for the observation pair
@@ -109,9 +103,7 @@ public class Dsb {
         return getTimeSpanMap(obs1, obs2).getFirstTransition().getDate();
     }
 
-    /**
-     * Get the maximum valid date for a given observation pair.
-     *
+    /** Get the maximum valid date for a given observation pair.
      * @param obs1 first observation type
      * @param obs2 second observation type
      * @return maximum valid date for the observation pair
@@ -120,8 +112,7 @@ public class Dsb {
         return getTimeSpanMap(obs1, obs2).getLastTransition().getDate();
     }
 
-    /**
-     * Return the TimeSpanMap object for a given observation type pair,
+    /** Get the TimeSpanMap object for a given observation type pair,
      * for further operation on the object directly.
      *
      * @param obs1 first observation type

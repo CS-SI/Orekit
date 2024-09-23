@@ -17,7 +17,7 @@
 package org.orekit.files.sinex;
 
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
 
 import java.util.function.Predicate;
@@ -33,19 +33,18 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
         /** {@inheritDoc} */
         @Override
         protected void store(final SinexBiasParseInfo parseInfo,
-                             final String svn, final String prn, final String siteCode,
+                             final String svn, final SatInSystem satId, final String siteCode,
                              final ObservationType obs1, final ObservationType obs2,
-                             final AbsoluteDate beginDate, final AbsoluteDate finalDate,
+                             final AbsoluteDate start, final AbsoluteDate end,
                              final double bias) {
             if (siteCode.isEmpty()) {
                 // this is a satellite bias
-                final DsbSatellite dcb = parseInfo.getSatelliteDcb(prn);
-                dcb.getDsbData().addBias(obs1, obs2, beginDate, finalDate, bias);
+                final SatelliteDifferentialSignalBias dsb = parseInfo.getSatelliteDsb(satId);
+                dsb.getDsb().addBias(obs1, obs2, start, end, bias);
             } else {
                 // this is a station bias
-                final DsbStation      dcb       = parseInfo.getStationDcb(siteCode);
-                final SatelliteSystem satSystem = SatelliteSystem.parseSatelliteSystem(prn);
-                dcb.getDsbData(satSystem).addBias(obs1, obs2, beginDate, finalDate, bias);
+                final StationDifferentialSignalBias dsb = parseInfo.getStationDsb(siteCode);
+                dsb.getDsb(satId.getSystem()).addBias(obs1, obs2, start, end, bias);
             }
         }
     },
@@ -55,11 +54,19 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
         /** {@inheritDoc} */
         @Override
         protected void store(final SinexBiasParseInfo parseInfo,
-                             final String svn, final String prn, final String siteCode,
+                             final String svn, final SatInSystem satId, final String siteCode,
                              final ObservationType obs1, final ObservationType obs2,
-                             final AbsoluteDate beginDate, final AbsoluteDate finalDate,
+                             final AbsoluteDate start, final AbsoluteDate end,
                              final double bias) {
-            // TODO
+            if (siteCode.isEmpty()) {
+                // this is a satellite bias
+                final SatelliteObservableSpecificSignalBias osb = parseInfo.getSatelliteOsb(satId);
+                osb.getOsb().addBias(obs1, start, end, bias);
+            } else {
+                // this is a station bias
+                final StationObservableSpecificSignalBias osb = parseInfo.getStationOsb(siteCode);
+                osb.getOsb(satId.getSystem()).addBias(obs1, start, end, bias);
+            }
         }
     };
 
@@ -68,12 +75,16 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
     public boolean test(final SinexBiasParseInfo parseInfo) {
         if (name().equals(parseInfo.parseString(1, 3))) {
             // this is the data type we are concerned with
-            store(parseInfo,
-                  parseInfo.parseString(6, 4), parseInfo.parseString(11, 3), parseInfo.parseString(15, 9),
-                  parseInfo.parseObservationType(25, 4), parseInfo.parseObservationType(30, 4),
-                  parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(35, 14), true),
-                  parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(50, 14), false),
-                  parseInfo.parseDoubleWithUnit(65, 4, 70, 21));
+            final String          svn      = parseInfo.parseString(6, 4);
+            final SatInSystem     satId    = new SatInSystem(parseInfo.parseString(11, 3));
+            final String          siteCode = parseInfo.parseString(15, 9);
+            final ObservationType obs1     = parseInfo.parseObservationType(25, 4);
+            final ObservationType obs2     = parseInfo.parseObservationType(30, 4);
+            final AbsoluteDate    start    = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(35, 14),
+                                                                          true);
+            final AbsoluteDate    end      = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(50, 14), false);
+            final double          bias     = parseInfo.parseDoubleWithUnit(65, 4, 70, 21);
+            store(parseInfo, svn, satId, siteCode, obs1, obs2, start, end, bias);
             return true;
         } else {
             // it is a data type for another predicate
@@ -84,18 +95,18 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
     /** Store parsed fields.
      * @param parseInfo container for parse info
      * @param svn satellite SVN
-     * @param prn satellite PRN
+     * @param satId satellite identifier
      * @param siteCode station site code
      * @param obs1 code of first observable
      * @param obs2 code of second observable
-     * @param beginDate validity begin date
-     * @param finalDate validity end date
+     * @param start validity start date
+     * @param end validity end date
      * @param bias estimated bias
      */
     protected abstract void store(SinexBiasParseInfo parseInfo,
-                                  String svn, String prn, String siteCode,
+                                  String svn, SatInSystem satId, String siteCode,
                                   ObservationType obs1, ObservationType obs2,
-                                  AbsoluteDate beginDate, AbsoluteDate finalDate,
+                                  AbsoluteDate start, AbsoluteDate end,
                                   double bias);
 
 }

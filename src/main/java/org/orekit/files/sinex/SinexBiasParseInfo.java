@@ -17,6 +17,7 @@
 package org.orekit.files.sinex;
 
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.TimeScales;
 
@@ -37,10 +38,16 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     private final BiasDescription description;
 
     /** DSB data. */
-    private final Map<String, DsbStation> stations;
+    private final Map<String, StationDifferentialSignalBias> stationsDsb;
 
     /** DSB data. */
-    private final Map<String, DsbSatellite> satellites;
+    private final Map<SatInSystem, SatelliteDifferentialSignalBias> satellitesDsb;
+
+    /** OSB data. */
+    private final Map<String, StationObservableSpecificSignalBias> stationsOsb;
+
+    /** OSB data. */
+    private final Map<SatInSystem, SatelliteObservableSpecificSignalBias> satellitesOsb;
 
     /** Simple constructor.
      * @param timeScales time scales
@@ -49,10 +56,12 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     SinexBiasParseInfo(final TimeScales timeScales,
                        final Function<? super String, ? extends ObservationType> typeBuilder) {
         super(timeScales);
-        this.description = new BiasDescription();
-        this.stations    = new HashMap<>();
-        this.satellites  = new HashMap<>();
-        this.typeBuilder = typeBuilder;
+        this.description   = new BiasDescription();
+        this.stationsDsb   = new HashMap<>();
+        this.satellitesDsb = new HashMap<>();
+        this.stationsOsb   = new HashMap<>();
+        this.satellitesOsb = new HashMap<>();
+        this.typeBuilder   = typeBuilder;
     }
 
     /** Get description.
@@ -63,19 +72,35 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     }
 
     /** Get satellite DSB.
-     * @param prn satellite PRN
+     * @param satellite satellite identifier
      * @return satellite DSB
      */
-    DsbSatellite getSatelliteDcb(final String prn) {
-        return satellites.computeIfAbsent(prn, DsbSatellite::new);
+    SatelliteDifferentialSignalBias getSatelliteDsb(final SatInSystem satellite) {
+        return satellitesDsb.computeIfAbsent(satellite, SatelliteDifferentialSignalBias::new);
     }
 
     /** Get station DSB.
      * @param siteCode station site code
      * @return station DSB
      */
-    DsbStation getStationDcb(final String siteCode) {
-        return stations.computeIfAbsent(siteCode, DsbStation::new);
+    StationDifferentialSignalBias getStationDsb(final String siteCode) {
+        return stationsDsb.computeIfAbsent(siteCode, StationDifferentialSignalBias::new);
+    }
+
+    /** Get satellite OSB.
+     * @param satellite satellite identifier
+     * @return satellite OSB
+     */
+    SatelliteObservableSpecificSignalBias getSatelliteOsb(final SatInSystem satellite) {
+        return satellitesOsb.computeIfAbsent(satellite, SatelliteObservableSpecificSignalBias::new);
+    }
+
+    /** Get station OSB.
+     * @param siteCode station site code
+     * @return station OSB
+     */
+    StationObservableSpecificSignalBias getStationOsb(final String siteCode) {
+        return stationsOsb.computeIfAbsent(siteCode, StationObservableSpecificSignalBias::new);
     }
 
     /** Set time system.
@@ -89,17 +114,18 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     /** Extract an observation type from current line.
      * @param start  start index of the string
      * @param length length of the string
-     * @return parsed observation type
+     * @return parsed observation type (null if field is empty)
      */
     protected ObservationType parseObservationType(final int start, final int length) {
-        return typeBuilder.apply(parseString(start, length));
+        final String type = parseString(start, length);
+        return type.isEmpty() ? null : typeBuilder.apply(type);
     }
 
     /** {@inheritDoc} */
     @Override
     protected SinexBias build() {
         return new SinexBias(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(),
-                             description, stations, satellites);
+                             description, stationsDsb, satellitesDsb, stationsOsb, satellitesOsb);
     }
 
 }
