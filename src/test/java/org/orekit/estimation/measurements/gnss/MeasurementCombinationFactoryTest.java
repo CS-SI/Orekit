@@ -122,8 +122,7 @@ public class MeasurementCombinationFactoryTest {
     private void doTestEmptyDataSet(final MeasurementCombination combination) {
         // Build empty observation data set
         final ObservationDataSet emptyDataSet = new ObservationDataSet(new SatInSystem(dataSetRinex2.getSatellite().getSystem(),
-                                                                                       dataSetRinex2.getSatellite()
-                                                                                        .getPRN()),
+                                                                                       dataSetRinex2.getSatellite().getPRN()),
                                                                        dataSetRinex2.getDate(), 0,
                                                                        dataSetRinex2.getRcvrClkOffset(),
                                                                        new ArrayList<>());

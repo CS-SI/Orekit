@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="update">
+          Allow building SatInSystem directly for Rinex-formatted string.
+        </action>
         <action dev="luc" type="fix" issue="1535">
             Fixed parsing of slightly non-conformant SINEX-bias files.
         </action>
