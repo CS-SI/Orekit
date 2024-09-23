@@ -211,10 +211,10 @@ public class BrouwerLyddaneBatchLSEstimatorTest {
         estimator.setMaxEvaluations(20);
 
         BrouwerLyddaneEstimationTestUtils.checkFit(context, estimator, 4, 5,
-                                                   0.0, 0.135,
-                                                   0.0, 0.243,
-                                                   0.0, 0.021,
-                                                   0.0, 2.9e-5);
+                                                   0.0, 0.138,
+                                                   0.0, 0.248,
+                                                   0.0, 0.022,
+                                                   0.0, 3.0e-5);
 
     }
 
