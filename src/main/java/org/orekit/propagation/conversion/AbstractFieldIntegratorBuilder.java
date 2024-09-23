@@ -38,7 +38,7 @@ public abstract class AbstractFieldIntegratorBuilder<T extends CalculusFieldElem
      * </p>
      * @since 12.0
      */
-    public AbstractFieldIntegratorBuilder() {
+    protected AbstractFieldIntegratorBuilder() {
         // nothing to do
     }
 

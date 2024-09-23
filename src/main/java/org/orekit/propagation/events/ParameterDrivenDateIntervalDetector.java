@@ -97,7 +97,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      */
     public ParameterDrivenDateIntervalDetector(final String prefix,
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(s -> FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
+        this((s, isForward) -> FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
              THRESHOLD, DEFAULT_MAX_ITER,
              new StopOnDecreasing(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),

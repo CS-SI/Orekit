@@ -14,25 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.propagation.conversion;
 
+import org.hipparchus.complex.Complex;
+import org.hipparchus.ode.nonstiff.LutherIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.orekit.propagation.SpacecraftState;
 
-class EventDetectionSettingsTest {
+class LutherFieldIntegratorBuilderTest {
 
     @Test
-    void testGetDefaultEventDetectionSettings() {
+    void testToODEIntegratorBuilder() {
         // GIVEN
-
+        final LutherFieldIntegratorBuilder<Complex> fieldIntegratorBuilder = new LutherFieldIntegratorBuilder<>(Complex.ONE);
         // WHEN
-        final EventDetectionSettings defaultSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final LutherIntegratorBuilder integratorBuilder = fieldIntegratorBuilder.toODEIntegratorBuilder();
         // THEN
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAX_ITER, defaultSettings.getMaxIterationCount());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_THRESHOLD, defaultSettings.getThreshold());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAXCHECK, defaultSettings.getMaxCheckInterval()
-                .currentInterval(Mockito.mock(SpacecraftState.class), true));
+        final LutherIntegrator integrator = (LutherIntegrator) integratorBuilder.buildIntegrator(null, null);
+        Assertions.assertEquals(fieldIntegratorBuilder.getStep(), integrator.getDefaultStep());
     }
 }

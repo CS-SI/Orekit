@@ -44,18 +44,6 @@ class AbstractBodyAttractionTest {
         Assertions.assertTrue(actualDependsOnPositionOnly);
     }
 
-    @Deprecated
-    @Test
-    void TestGetBody() {
-        // GIVEN
-        final CelestialBody mockedBody = Mockito.mock(CelestialBody.class);
-        final TestBodyAttraction testBodyAttraction = new TestBodyAttraction(mockedBody);
-        // WHEN
-        final CelestialBody actualName = testBodyAttraction.getBody();
-        // THEN
-        Assertions.assertEquals(mockedBody, actualName);
-    }
-
     @Test
     void TestGetBodyName() {
         // GIVEN
@@ -117,7 +105,7 @@ class AbstractBodyAttractionTest {
     private static class TestBodyAttraction extends AbstractBodyAttraction {
 
         protected TestBodyAttraction(CelestialBody body) {
-            super(body);
+            super(body, body.getName(), body.getGM());
         }
 
         @Override

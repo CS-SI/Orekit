@@ -239,7 +239,7 @@ public class EventDetectorTest {
                 new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008912.4039522274, -3155453.3125615157, -5044297.6484738905),
                                                                                new Vector3D(-5012.5883854112530, 1920.6332221785074, -5172.2177085540500)),
                                                              eme2000, initialDate, Constants.WGS84_EARTH_MU));
-        k2.addEventDetector(new CloseApproachDetector(s -> 2015.243454166727, 0.0001, 100,
+        k2.addEventDetector(new CloseApproachDetector((s, isForward) -> 2015.243454166727, 0.0001, 100,
                                                       new ContinueOnEvent(),
                                                       k1));
         k2.addEventDetector(new DateDetector(interruptDate).

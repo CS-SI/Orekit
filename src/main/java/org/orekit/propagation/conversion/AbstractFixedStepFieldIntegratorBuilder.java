@@ -32,7 +32,7 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
         extends AbstractFieldIntegratorBuilder<T> {
 
     /** Step size (s). */
-    private double step;
+    private final double step;
 
     /** Step size (s). */
     private T fieldStep;
@@ -58,9 +58,7 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      * @param step step size (s)
      */
     AbstractFixedStepFieldIntegratorBuilder(final T step) {
-        // Check that given step size is strictly positive
-        checkStep(step.getReal());
-
+        this(step.getReal());
         this.fieldStep = step;
     }
 
@@ -84,5 +82,14 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      */
     protected T getFieldStep(final Field<T> field) {
         return fieldStep != null ? fieldStep : field.getZero().newInstance(step);
+    }
+
+
+    /**
+     * Getter for the step size (s).
+     * @return step size
+     */
+    protected double getStep() {
+        return step;
     }
 }

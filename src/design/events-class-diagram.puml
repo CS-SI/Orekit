@@ -31,7 +31,7 @@
 
     interface Propagator {
       +void addEventDetector(EventDetector detector)
-      +Collection<EventDetector> getEventsDetectors()
+      +Collection<EventDetector> getEventDetectors()
       +void clearEventsDetectors()
     }
 

@@ -88,7 +88,7 @@ public class NegateDetectorTest {
         NegateDetector actual = detector.withMaxCheck(100);
 
         //verify
-        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null), CoreMatchers.is(100.0));
+        MatcherAssert.assertThat(actual.getMaxCheckInterval().currentInterval(null, true), CoreMatchers.is(100.0));
         Assertions.assertTrue(actual.getOriginal() == a);
     }
 }

@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.propagation.conversion;
 
+import org.hipparchus.complex.Complex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.orekit.propagation.SpacecraftState;
 
-class EventDetectionSettingsTest {
+class HighamHall54FieldIntegratorBuilderTest {
 
     @Test
-    void testGetDefaultEventDetectionSettings() {
+    void testToODEIntegratorBuilder() {
         // GIVEN
-
+        final HighamHall54FieldIntegratorBuilder<Complex> fieldIntegratorBuilder = new HighamHall54FieldIntegratorBuilder<>(1., 10., 0.1, 0.001);
         // WHEN
-        final EventDetectionSettings defaultSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final HighamHall54IntegratorBuilder integratorBuilder = fieldIntegratorBuilder.toODEIntegratorBuilder();
         // THEN
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAX_ITER, defaultSettings.getMaxIterationCount());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_THRESHOLD, defaultSettings.getThreshold());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAXCHECK, defaultSettings.getMaxCheckInterval()
-                .currentInterval(Mockito.mock(SpacecraftState.class), true));
+        Assertions.assertNotNull(integratorBuilder);
     }
+
 }

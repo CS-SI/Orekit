@@ -111,7 +111,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
     /** {@inheritDoc} */
     @Override
-    public Collection<FieldEventDetector<T>> getEventsDetectors() {
+    public Collection<FieldEventDetector<T>> getEventDetectors() {
         final List<FieldEventDetector<T>> list = new ArrayList<>();
         for (final FieldEventState<?, T> state : eventsStates) {
             list.add(state.getEventDetector());

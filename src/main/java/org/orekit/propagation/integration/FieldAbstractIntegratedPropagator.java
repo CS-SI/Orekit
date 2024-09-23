@@ -339,7 +339,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     }
 
     /** {@inheritDoc} */
-    public Collection<FieldEventDetector<T>> getEventsDetectors() {
+    public Collection<FieldEventDetector<T>> getEventDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 
@@ -969,7 +969,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         /** {@inheritDoc} */
         @Override
         public FieldAdaptableInterval<T> getMaxCheckInterval() {
-            return s -> detector.getMaxCheckInterval().currentInterval(convert(s));
+            return (state, isForward) -> detector.getMaxCheckInterval().currentInterval(convert(state), isForward);
         }
 
         /** {@inheritDoc} */
@@ -1259,7 +1259,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
      * If propagator-specific event handlers and step handlers are added to
      * the integrator in the try block, they will be removed automatically
      * when leaving the block, so the integrator only keep its own handlers
-     * between calls to {@link AbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
+     * between calls to {@link FieldAbstractIntegratedPropagator#propagate(FieldAbsoluteDate, FieldAbsoluteDate).
      * </p>
      * @param <T> the type of the field elements
      * @since 11.0

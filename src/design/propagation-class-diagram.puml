@@ -72,7 +72,7 @@
         +SpacecraftState getInitialState()
         +void resetInitialState(SpacecraftState state)
         +void addEventDetector(EventDetector detector)
-        +Collection<EventDetector> getEventsDetectors()
+        +Collection<EventDetector> getEventDetectors()
         +void clearEventsDetectors()
         +AttitudeProvider getAttitudeProvider()
         +void setAttitudeProvider(AttitudeProvider attitudeProvider)

@@ -14,25 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.events;
+package org.orekit.propagation.conversion;
 
+import org.hipparchus.complex.Complex;
+import org.hipparchus.ode.nonstiff.EulerIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.orekit.propagation.SpacecraftState;
 
-class EventDetectionSettingsTest {
+class EulerFieldIntegratorBuilderTest {
 
     @Test
-    void testGetDefaultEventDetectionSettings() {
+    void testToODEIntegratorBuilder() {
         // GIVEN
-
+        final EulerFieldIntegratorBuilder<Complex> fieldIntegratorBuilder = new EulerFieldIntegratorBuilder<>(Complex.ONE);
         // WHEN
-        final EventDetectionSettings defaultSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final EulerIntegratorBuilder integratorBuilder = fieldIntegratorBuilder.toODEIntegratorBuilder();
         // THEN
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAX_ITER, defaultSettings.getMaxIterationCount());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_THRESHOLD, defaultSettings.getThreshold());
-        Assertions.assertEquals(FieldEventDetectionSettings.DEFAULT_MAXCHECK, defaultSettings.getMaxCheckInterval()
-                .currentInterval(Mockito.mock(SpacecraftState.class), true));
+        final EulerIntegrator integrator = (EulerIntegrator) integratorBuilder.buildIntegrator(null, null);
+        Assertions.assertEquals(fieldIntegratorBuilder.getStep(), integrator.getDefaultStep());
     }
 }

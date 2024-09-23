@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.GillFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -61,7 +60,13 @@ public class GillFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public GillFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
         return new GillFieldIntegrator<>(field, getFieldStep(field));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public GillIntegratorBuilder toODEIntegratorBuilder() {
+        return new GillIntegratorBuilder(getStep());
     }
 }
