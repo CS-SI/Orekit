@@ -33,6 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -86,8 +87,12 @@ import org.orekit.utils.TimeSpanMap.Span;
  * @see "Phipps Jr, Warren E. Parallelization of the Navy Space Surveillance Center
  *       (NAVSPASUR) Satellite Model. NAVAL POSTGRADUATE SCHOOL MONTEREY CA, 1992."
  *
+ * @see "Solomon, Daniel, THE NAVSPASUR Satellite Motion Model,
+ *       Naval Research Laboratory, August 8, 1991."
+ *
  * @author Melina Vanel
  * @author Bryan Cazabonne
+ * @author Pascal Parraud
  * @since 11.1
  */
 public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator implements ParameterDriversProvider {
@@ -99,10 +104,13 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
     public static final double M2 = 0.0;
 
     /** Default convergence threshold for mean parameters conversion. */
-    private static final double EPSILON_DEFAULT = 1.0e-13;
+    public static final double EPSILON_DEFAULT = 1.0e-13;
 
     /** Default value for maxIterations. */
-    private static final int MAX_ITERATIONS_DEFAULT = 200;
+    public static final int MAX_ITERATIONS_DEFAULT = 200;
+
+    /** Default value for damping. */
+    public static final double DAMPING_DEFAULT = 1.0;
 
     /** Parameters scaling factor.
      * <p>
@@ -114,6 +122,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
     /** Beta constant used by T2 function. */
     private static final double BETA = FastMath.scalb(100, -11);
+
+    /** Max value for the eccentricity. */
+    private static final double MAX_ECC = 0.999999;
 
     /** Initial Brouwer-Lyddane model. */
     private BLModel initialModel;
@@ -710,8 +721,8 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         stateChanged(state);
     }
 
-    /** Compute mean parameters according to the Brouwer-Lyddane analytical model computation
-     * in order to do the propagation.
+    /** Compute mean parameters according to the Brouwer-Lyddane analytical model,
+     * using an intermediate equinoctial orbit to avoid singularities.
      * @param osculating osculating orbit
      * @param mass constant mass
      * @param epsilon convergence threshold for mean parameters conversion
@@ -720,6 +731,9 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
      */
     private BLModel computeMeanParameters(final KeplerianOrbit osculating, final double mass,
                                           final double epsilon, final int maxIterations) {
+
+        // damping factor
+        final double damping = DAMPING_DEFAULT;
 
         // sanity check
         if (osculating.getA() < referenceRadius) {
@@ -730,10 +744,19 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         // rough initialization of the mean parameters
         BLModel current = new BLModel(osculating, mass, referenceRadius, mu, ck0);
 
+        // Get equinoctial parameters
+        double sma = osculating.getA();
+        double ex  = osculating.getEquinoctialEx();
+        double ey  = osculating.getEquinoctialEy();
+        double hx  = osculating.getHx();
+        double hy  = osculating.getHy();
+        double lv  = osculating.getLv();
+
         // threshold for each parameter
-        final double thresholdA      = epsilon * (1 + FastMath.abs(current.mean.getA()));
-        final double thresholdE      = epsilon * (1 + current.mean.getE());
-        final double thresholdAngles = epsilon * FastMath.PI;
+        final double thresholdA  = epsilon * (1 + FastMath.abs(osculating.getA()));
+        final double thresholdE  = epsilon * (1 + FastMath.hypot(ex, ey));
+        final double thresholdH  = epsilon * (1 + FastMath.hypot(hx, hy));
+        final double thresholdLv = epsilon * FastMath.PI;
 
         int i = 0;
         while (i++ < maxIterations) {
@@ -742,38 +765,39 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final KeplerianOrbit parameters = current.propagateParameters(current.mean.getDate());
 
             // adapted parameters residuals
-            final double deltaA     = osculating.getA() - parameters.getA();
-            final double deltaE     = osculating.getE() - parameters.getE();
-            final double deltaI     = osculating.getI() - parameters.getI();
-            final double deltaOmega = MathUtils.normalizeAngle(osculating.getPerigeeArgument() -
-                                                               parameters.getPerigeeArgument(),
-                                                               0.0);
-            final double deltaRAAN  = MathUtils.normalizeAngle(osculating.getRightAscensionOfAscendingNode() -
-                                                               parameters.getRightAscensionOfAscendingNode(),
-                                                               0.0);
-            final double deltaAnom = MathUtils.normalizeAngle(osculating.getMeanAnomaly() -
-                                                              parameters.getMeanAnomaly(),
-                                                              0.0);
+            final double deltaA  = osculating.getA() - parameters.getA();
+            final double deltaEx = osculating.getEquinoctialEx() - parameters.getEquinoctialEx();
+            final double deltaEy = osculating.getEquinoctialEy() - parameters.getEquinoctialEy();
+            final double deltaHx = osculating.getHx() - parameters.getHx();
+            final double deltaHy = osculating.getHy() - parameters.getHy();
+            final double deltaLv = MathUtils.normalizeAngle(osculating.getLv() - parameters.getLv(), 0.0);
 
+            // update state
+            sma += damping * deltaA;
+            ex  += damping * deltaEx;
+            ey  += damping * deltaEy;
+            hx  += damping * deltaHx;
+            hy  += damping * deltaHy;
+            lv  += damping * deltaLv;
+
+            // Update mean orbit
+            final EquinoctialOrbit mean = new EquinoctialOrbit(sma, ex, ey, hx, hy, lv,
+                                                               PositionAngleType.TRUE,
+                                                               osculating.getFrame(),
+                                                               osculating.getDate(),
+                                                               osculating.getMu());
+            final KeplerianOrbit meanOrb = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(mean);
 
             // update mean parameters
-            current = new BLModel(new KeplerianOrbit(current.mean.getA() + deltaA,
-                                                     FastMath.max(current.mean.getE() + deltaE, 0.0),
-                                                     current.mean.getI() + deltaI,
-                                                     current.mean.getPerigeeArgument() + deltaOmega,
-                                                     current.mean.getRightAscensionOfAscendingNode() + deltaRAAN,
-                                                     current.mean.getMeanAnomaly() + deltaAnom,
-                                                     PositionAngleType.MEAN, PositionAngleType.MEAN,
-                                                     current.mean.getFrame(),
-                                                     current.mean.getDate(), mu),
-                                  mass, referenceRadius, mu, ck0);
+            current = new BLModel(meanOrb, mass, referenceRadius, mu, ck0);
+
             // check convergence
-            if (FastMath.abs(deltaA)     < thresholdA &&
-                FastMath.abs(deltaE)     < thresholdE &&
-                FastMath.abs(deltaI)     < thresholdAngles &&
-                FastMath.abs(deltaOmega) < thresholdAngles &&
-                FastMath.abs(deltaRAAN)  < thresholdAngles &&
-                FastMath.abs(deltaAnom)  < thresholdAngles) {
+            if (FastMath.abs(deltaA)  < thresholdA &&
+                FastMath.abs(deltaEx) < thresholdE &&
+                FastMath.abs(deltaEy) < thresholdE &&
+                FastMath.abs(deltaHx) < thresholdH &&
+                FastMath.abs(deltaHy) < thresholdH &&
+                FastMath.abs(deltaLv) < thresholdLv) {
                 return current;
             }
         }
@@ -865,95 +889,61 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
     /** Local class for Brouwer-Lyddane model. */
     private class BLModel {
 
-        /** Mean orbit. */
-        private final KeplerianOrbit mean;
-
         /** Constant mass. */
         private final double mass;
 
+        /** Brouwer-Lyddane mean orbit. */
+        private final KeplerianOrbit mean;
+
+        // Preprocessed values
+
+        /** Mean mean motion: n0 = √(μ/a")/a". */
+        private final double n0;
+
+        /** η = √(1 - e"²). */
+        private final double n;
+        /** η². */
+        private final double n2;
+        /** η³. */
+        private final double n3;
+        /** η + 1 / (1 + η). */
+        private final double t8;
+
+        /** Secular correction for mean anomaly l: &delta;<sub>s</sub>l. */
+        private final double dsl;
+        /** Secular correction for perigee argument g: &delta;<sub>s</sub>g. */
+        private final double dsg;
+        /** Secular correction for raan h: &delta;<sub>s</sub>h. */
+        private final double dsh;
+
+        /** Secular rate of change of semi-major axis due to drag. */
+        private final double aRate;
+        /** Secular rate of change of eccentricity due to drag. */
+        private final double eRate;
+
         // CHECKSTYLE: stop JavadocVariable check
 
-        // preprocessed values
+        // Storage for speed-up
+        private final double yp2;
+        private final double ci;
+        private final double si;
+        private final double oneMci2;
+        private final double ci2X3M1;
 
-        // Constant for secular terms l'', g'', h''
-        // l standing for mean anomaly, g for perigee argument and h for raan
-        private final double xnotDot;
-        private final double n;
-        private final double lt;
-        private final double gt;
-        private final double ht;
-
-
-        // Long period terms
-        private final double dei3sg;
-        private final double de2sg;
-        private final double deisg;
-        private final double de;
-
-
-        private final double dlgs2g;
-        private final double dlgc3g;
-        private final double dlgcg;
-
-
-        private final double dh2sgcg;
-        private final double dhsgcg;
-        private final double dhcg;
-
-
-        // Short period terms
-        private final double aC;
-        private final double aCbis;
-        private final double ac2g2f;
-
-
-        private final double eC;
-        private final double ecf;
-        private final double e2cf;
-        private final double e3cf;
-        private final double ec2f2g;
-        private final double ecfc2f2g;
-        private final double e2cfc2f2g;
-        private final double e3cfc2f2g;
-        private final double ec2gf;
-        private final double ec2g3f;
-
-
-        private final double ide;
-        private final double isfs2f2g;
-        private final double icfc2f2g;
-        private final double ic2f2g;
-
-
-        private final double glf;
-        private final double gll;
-        private final double glsf;
-        private final double glosf;
-        private final double gls2f2g;
-        private final double gls2gf;
-        private final double glos2gf;
-        private final double gls2g3f;
-        private final double glos2g3f;
-
-
-        private final double hf;
-        private final double hl;
-        private final double hsf;
-        private final double hcfs2g2f;
-        private final double hs2g2f;
-        private final double hsfc2g2f;
-
-
-        private final double edls2g;
-        private final double edlcg;
-        private final double edlc3g;
-        private final double edlsf;
-        private final double edls2gf;
-        private final double edls2g3f;
-
-        // Drag terms
-        private final double aRate;
-        private final double eRate;
+        // Long periodic corrections factors
+        private final double vle1;
+        private final double vle2;
+        private final double vle3;
+        private final double vli1;
+        private final double vli2;
+        private final double vli3;
+        private final double vll2;
+        private final double vlh1I;
+        private final double vlh2I;
+        private final double vlh3I;
+        private final double vls1;
+        private final double vls2;
+        private final double vls3;
 
         // CHECKSTYLE: resume JavadocVariable check
 
@@ -967,200 +957,170 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         BLModel(final KeplerianOrbit mean, final double mass,
                 final double referenceRadius, final double mu, final double[] ck0) {
 
-            this.mean = mean;
             this.mass = mass;
 
-            final double app = mean.getA();
-            xnotDot = FastMath.sqrt(mu / app) / app;
+            // mean orbit
+            this.mean = mean;
 
-            // preliminary processing
-            final double q = referenceRadius / app;
-            double ql = q * q;
-            final double y2 = -0.5 * ck0[2] * ql;
-
-            n = FastMath.sqrt(1 - mean.getE() * mean.getE());
-            final double n2 = n * n;
-            final double n3 = n2 * n;
-            final double n4 = n2 * n2;
-            final double n6 = n4 * n2;
-            final double n8 = n4 * n4;
-            final double n10 = n8 * n2;
-
-            final double yp2 = y2 / n4;
-            ql *= q;
-            final double yp3 = ck0[3] * ql / n6;
-            ql *= q;
-            final double yp4 = 0.375 * ck0[4] * ql / n8;
-            ql *= q;
-            final double yp5 = ck0[5] * ql / n10;
-
-
-            final SinCos sc    = FastMath.sinCos(mean.getI());
-            final double sinI1 = sc.sin();
-            final double sinI2 = sinI1 * sinI1;
-            final double cosI1 = sc.cos();
-            final double cosI2 = cosI1 * cosI1;
-            final double cosI3 = cosI2 * cosI1;
-            final double cosI4 = cosI2 * cosI2;
-            final double cosI6 = cosI4 * cosI2;
-            final double C5c2 = 1.0 / T2(cosI1);
-            final double C3c2 = 3.0 * cosI2 - 1.0;
-
+            // mean eccentricity e"
             final double epp = mean.getE();
-            final double epp2 = epp * epp;
-            final double epp3 = epp2 * epp;
-            final double epp4 = epp2 * epp2;
-
             if (epp >= 1) {
                 // Only for elliptical (e < 1) orbits
                 throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL,
-                                          mean.getE());
+                                          epp);
             }
+            final double epp2 = epp * epp;
 
-            // secular multiplicative
-            lt = 1 +
-                    1.5 * yp2 * n * C3c2 +
-                    0.09375 * yp2 * yp2 * n * (-15.0 + 16.0 * n + 25.0 * n2 + (30.0 - 96.0 * n - 90.0 * n2) * cosI2 + (105.0 + 144.0 * n + 25.0 * n2) * cosI4) +
-                    0.9375 * yp4 * n * epp2 * (3.0 - 30.0 * cosI2 + 35.0 * cosI4);
+            // η
+            n2 = 1. - epp2;
+            n  = FastMath.sqrt(n2);
+            n3 = n2 * n;
+            t8 = n + 1. / (1. + n);
 
-            gt = -1.5 * yp2 * C5c2 +
-                    0.09375 * yp2 * yp2 * (-35.0 + 24.0 * n + 25.0 * n2 + (90.0 - 192.0 * n - 126.0 * n2) * cosI2 + (385.0 + 360.0 * n + 45.0 * n2) * cosI4) +
-                    0.3125 * yp4 * (21.0 - 9.0 * n2 + (-270.0 + 126.0 * n2) * cosI2 + (385.0 - 189.0 * n2) * cosI4 );
+            // mean semi-major axis a"
+            final double app = mean.getA();
 
-            ht = -3.0 * yp2 * cosI1 +
-                    0.375 * yp2 * yp2 * ((-5.0 + 12.0 * n + 9.0 * n2) * cosI1 + (-35.0 - 36.0 * n - 5.0 * n2) * cosI3) +
-                    1.25 * yp4 * (5.0 - 3.0 * n2) * cosI1 * (3.0 - 7.0 * cosI2);
+            // mean mean motion
+            n0 = FastMath.sqrt(mu / app) / app;
 
-            final double cA = 1.0 - 11.0 * cosI2 - 40.0 * cosI4 / C5c2;
-            final double cB = 1.0 - 3.0 * cosI2 - 8.0 * cosI4 / C5c2;
-            final double cC = 1.0 - 9.0 * cosI2 - 24.0 * cosI4 / C5c2;
-            final double cD = 1.0 - 5.0 * cosI2 - 16.0 * cosI4 / C5c2;
+            // ae/a"
+            final double q = referenceRadius / app;
 
-            final double qyp2_4 = 3.0 * yp2 * yp2 * cA -
-                                  10.0 * yp4 * cB;
-            final double qyp52 = epp3 * cosI1 * (0.5 * cD / sinI1 +
-                                 sinI1 * (5.0 + 32.0 * cosI2 / C5c2 + 80.0 * cosI4 / C5c2 / C5c2));
-            final double qyp22 = 2.0 + epp2 - 11.0 * (2.0 + 3.0 * epp2) * cosI2 -
-                                 40.0 * (2.0 + 5.0 * epp2) * cosI4 / C5c2 -
-                                 400.0 * epp2 * cosI6 / C5c2 / C5c2;
-            final double qyp42 = ( qyp22 + 4.0 * (2.0 + epp2 - (2.0 + 3.0 * epp2) * cosI2) ) / 5.0;
-            final double qyp52bis = epp * cosI1 * sinI1 *
-                                    (4.0 + 3.0 * epp2) *
-                                    (3.0 + 16.0 * cosI2 / C5c2 + 40.0 * cosI4 / C5c2 / C5c2);
+            // γ2'
+            double ql = q * q;
+            double nl = n2 * n2;
+            yp2 = -0.5 * ck0[2] * ql / nl;
+            final double yp22 = yp2 * yp2;
 
-            // long periodic multiplicative
-            dei3sg =  35.0 / 96.0 * yp5 / yp2 * epp2 * n2 * cD * sinI1;
-            de2sg = -1.0 / 12.0 * epp * n2 / yp2 * qyp2_4;
-            deisg = ( -35.0 / 128.0 * yp5 / yp2 * epp2 * n2 * cD +
-                    1.0 / 4.0 * n2 / yp2 * (yp3 + 5.0 / 16.0 * yp5 * (4.0 + 3.0 * epp2) * cC)) * sinI1;
-            de = epp2 * n2 / 24.0 / yp2 * qyp2_4;
+            // γ3'
+            ql *= q;
+            nl *= n2;
+            final double yp3 = ck0[3] * ql / nl;
 
-            final double qyp52quotient = epp * (-32.0 + 81.0 * epp4) / (4.0 + 3.0 * epp2 + n * (4.0 + 9.0 * epp2));
-            dlgs2g = 1.0 / 48.0 / yp2 * (-3.0 * yp2 * yp2 * qyp22 +
-                     10.0 * yp4 * qyp42 ) +
-                     n3 / yp2 * qyp2_4 / 24.0;
-            dlgc3g = 35.0 / 384.0 * yp5 / yp2 * n3 * epp * cD * sinI1 +
-                     35.0 / 1152.0 * yp5 / yp2 * (2.0 * qyp52 * cosI1 - epp * cD * sinI1 * (3.0 + 2.0 * epp2));
-            dlgcg = -yp3 * epp * cosI2 / ( 4.0 * yp2 * sinI1) +
-                    0.078125 * yp5 / yp2 * (-epp * cosI2 / sinI1 * (4.0 + 3.0 * epp2) + epp2 * sinI1 * (26.0 + 9.0 * epp2)) * cC -
-                    0.46875 * yp5 / yp2 * qyp52bis * cosI1 +
-                    0.25 * yp3 / yp2 * sinI1 * epp / (1.0 + n3) * (3.0 - epp2 * (3.0 - epp2)) +
-                    0.078125 * yp5 / yp2 * n2 * cC * qyp52quotient * sinI1;
+            // γ4'
+            ql *= q;
+            nl *= n2;
+            final double yp4 = 0.375 * ck0[4] * ql / nl;
 
+            // γ5'
+            ql *= q;
+            nl *= n2;
+            final double yp5 = ck0[5] * ql / nl;
 
-            final double qyp24 = 3.0 * yp2 * yp2 * (11.0 + 80.0 * cosI2 / sinI1 + 200.0 * cosI4 / sinI2) -
-                                 10.0 * yp4 * (3.0 + 16.0 * cosI2 / sinI1 + 40.0 * cosI4 / sinI2);
-            dh2sgcg = 35.0 / 144.0 * yp5 / yp2 * qyp52;
-            dhsgcg = -epp2 * cosI1 / (12.0 * yp2) * qyp24;
-            dhcg = -35.0 / 576.0 * yp5 / yp2 * qyp52 +
-                   epp * cosI1 / (4.0 * yp2 * sinI1) * (yp3 + 0.3125 * yp5 * (4.0 + 3.0 * epp2) * cC) +
-                   1.875 / (4.0 * yp2) * yp5 * qyp52bis;
+            // mean inclination I" sin & cos
+            final SinCos sci = FastMath.sinCos(mean.getI());
+            si = sci.sin();
+            ci = sci.cos();
+            final double ci2 = ci * ci;
+            oneMci2 = 1.0 - ci2;
+            ci2X3M1 = 3.0 * ci2 - 1.0;
+            final double ci2X5M1 = 5.0 * ci2 - 1.0;
 
-            // short periodic multiplicative
-            aC = -yp2 * C3c2 * app / n3;
-            aCbis = y2 * app * C3c2;
-            ac2g2f = y2 * app * 3.0 * sinI2;
+            // secular corrections
+            // true anomaly
+            dsl = 1.5 * yp2 * n * (ci2X3M1 +
+                                   0.0625 * yp2 * (-15.0 + n * (16.0 + 25.0 * n) +
+                                                   ci2 * (30.0 - n * (96.0 + 90.0 * n) +
+                                                          ci2 * (105.0 + n * (144.0 + 25.0 * n))))) +
+                  0.9375 * yp4 * n * epp2 * (3.0 - ci2 * (30.0 - 35.0 * ci2));
+            // perigee argument
+            dsg = 1.5 * yp2 * ci2X5M1 +
+                  0.09375 * yp22 * (-35.0 + n * (24.0 + 25.0 * n) +
+                                    ci2 * (90.0 - n * (192.0 + 126.0 * n) +
+                                           ci2 * (385.0 + n * (360.0 + 45.0 * n)))) +
+                  0.3125 * yp4 * (21.0 - 9.0 * n2 + ci2 * (-270.0 + 126.0 * n2 +
+                                                           ci2 * (385.0 - 189.0 * n2)));
+            // right ascension of ascending node
+            dsh = (-3.0 * yp2 +
+                   0.375 * yp22 * (-5.0 + n * (12.0 + 9.0 * n) -
+                                   ci2 * (35.0 + n * (36.0 + 5.0 * n))) +
+                   1.25 * yp4 * (5.0 - 3.0 * n2) * (3.0 - 7.0 * ci2)) * ci;
 
-            double qe = 0.5 * n2 * y2 * C3c2 / n6;
-            eC = qe * epp / (1.0 + n3) * (3.0 - epp2 * (3.0 - epp2));
-            ecf = 3.0 * qe;
-            e2cf = 3.0 * epp * qe;
-            e3cf = epp2 * qe;
-            qe = 0.5 * n2 * y2 * 3.0 * (1.0 - cosI2) / n6;
-            ec2f2g = qe * epp;
-            ecfc2f2g = 3.0 * qe;
-            e2cfc2f2g = 3.0 * epp * qe;
-            e3cfc2f2g = epp2 * qe;
-            qe = -0.5 * yp2 * n2 * (1.0 - cosI2);
-            ec2gf = 3.0 * qe;
-            ec2g3f = qe;
-
-            double qi = epp * yp2 * cosI1 * sinI1;
-            ide = -epp * cosI1 / (n2 * sinI1);
-            isfs2f2g = qi;
-            icfc2f2g = 2.0 * qi;
-            qi = yp2 * cosI1 * sinI1;
-            ic2f2g = 1.5 * qi;
-
-            double qgl1 = 0.25 * yp2;
-            double qgl2 = 0.25 * yp2 * epp * n2 / (1.0 + n);
-            glf = qgl1 * -6.0 * C5c2;
-            gll = qgl1 * 6.0 * C5c2;
-            glsf = qgl1 * -6.0 * C5c2 * epp +
-                   qgl2 * 2.0 * C3c2;
-            glosf = qgl2 * 2.0 * C3c2;
-            qgl1 = qgl1 * (3.0 - 5.0 * cosI2);
-            qgl2 = qgl2 * 3.0 * (1.0 - cosI2);
-            gls2f2g = 3.0 * qgl1;
-            gls2gf = 3.0 * epp * qgl1 +
-                     qgl2;
-            glos2gf = -1.0 * qgl2;
-            gls2g3f = qgl1 * epp +
-                      1.0 / 3.0 * qgl2;
-            glos2g3f = qgl2;
-
-            final double qh = 3.0 * yp2 * cosI1;
-            hf = -qh;
-            hl = qh;
-            hsf = -epp * qh;
-            hcfs2g2f = 2.0 * epp * yp2 * cosI1;
-            hs2g2f = 1.5 * yp2 * cosI1;
-            hsfc2g2f = -epp * yp2 * cosI1;
-
-            final double qedl = -0.25 * yp2 * n3;
-            edls2g = 1.0 / 24.0 * epp * n3 / yp2 * qyp2_4;
-            edlcg = -0.25 * yp3 / yp2 * n3 * sinI1 -
-                    0.078125 * yp5 / yp2 * n3 * sinI1 * (4.0 + 9.0 * epp2) * cC;
-            edlc3g = 35.0 / 384.0 * yp5 / yp2 * n3 * epp2 * cD * sinI1;
-            edlsf = 2.0 * qedl * C3c2;
-            edls2gf = 3.0 * qedl * (1.0 - cosI2);
-            edls2g3f = 1.0 / 3.0 * qedl;
-
-            // secular rates of the mean semi-major axis and eccentricity
+            // secular rates of change due to drag
             // Eq. 2.41 and Eq. 2.45 of Phipps' 1992 thesis
-            aRate = -4.0 * app / (3.0 * xnotDot);
-            eRate = -4.0 * epp * n * n / (3.0 * xnotDot);
+            final double coef = -4.0 / (3.0 * n0 * (1 + dsl));
+            aRate = coef * app;
+            eRate = coef * epp * n2;
 
+            // singular term 1/(1 - 5 * cos²(I")) replaced by T2 function
+            final double t2 = T2(ci);
+
+            // factors for long periodic corrections
+            final double fs12 = yp3 / yp2;
+            final double fs13 = 10. * yp4 / (3. * yp2);
+            final double fs14 = yp5 / yp2;
+
+            final double ci2Xt2 = ci2 * t2;
+            final double cA = 1. - ci2 * (11. +  40. * ci2Xt2);
+            final double cB = 1. - ci2 * ( 3. +   8. * ci2Xt2);
+            final double cC = 1. - ci2 * ( 9. +  24. * ci2Xt2);
+            final double cD = 1. - ci2 * ( 5. +  16. * ci2Xt2);
+            final double cE = 1. - ci2 * (33. + 200. * ci2Xt2);
+            final double cF = 1. - ci2 * ( 9. +  40. * ci2Xt2);
+
+            final double p5p   = 1. + ci2Xt2 * (8. + 20 * ci2Xt2);
+            final double p5p2  = 1. +  2. * p5p;
+            final double p5p4  = 1. +  4. * p5p;
+            final double p5p10 = 1. + 10. * p5p;
+
+            final double e2X3P4  = 4. + 3. * epp2;
+            final double ciO1Pci = ci / (1. + ci);
+
+            final double q1 = 0.125 * (yp2 * cA - fs13 * cB);
+            final double q2 = 0.125 * epp2 * ci * (yp2 * p5p10 - fs13 * p5p2);
+            final double q5 = 0.25 * (fs12 + 0.3125 * e2X3P4 * fs14 * cC);
+            final double p2 = 0.46875 * p5p2 * epp * ci * si * e2X3P4 * fs14;
+            final double p3 = 0.15625 * epp * si * fs14 * cC;
+            final double kf = 35. / 1152.;
+            final double p4 = kf * epp * fs14 * cD;
+            final double p5 = 2. * kf * epp * epp2 * ci * si * fs14 * p5p4;
+
+            vle1 = epp * n2 * q1;
+            vle2 = n2 * si * q5;
+            vle3 = -3.0 * epp * n2 * si * p4;
+
+            vli1 = -epp * q1 / si;
+            vli2 = -epp * ci * q5;
+            vli3 = -3.0 * epp2 * ci * p4;
+
+            vll2 = vle2 + 3.0 * epp * n2 * p3;
+
+            vlh1I = -si * q2;
+            vlh2I =  epp * ci * q5 + si * p2;
+            vlh3I = -epp2 * ci * p4 - si * p5;
+
+            vls1 = (n3 - 1.0) * q1 -
+                   q2 +
+                   25.0 * epp2 * ci2 * ci2Xt2 * ci2Xt2 * (yp2 - 0.2 * fs13) -
+                   0.0625 * epp2 * (yp2 * cE - fs13 * cF);
+
+            vls2 = epp * si * (t8 + ciO1Pci) * q5 +
+                   (11.0 + 3.0 * (epp2 - n3)) * p3 +
+                   (1.0 - ci) * p2;
+
+            vls3 = si * p4 * (3.0 * (n3 - 1.0) - epp2 * (2.0 + ciO1Pci)) -
+                   (1.0 - ci) * p5;
         }
 
         /**
-         * Gets eccentric anomaly from mean anomaly.
-         * @param mk the mean anomaly (rad)
-         * @return the eccentric anomaly (rad)
+         * Get true anomaly from mean anomaly.
+         * @param lM the mean anomaly (rad)
+         * @param ecc the eccentricity
+         * @return the true anomaly (rad)
          */
-        private UnivariateDerivative1 getEccentricAnomaly(final UnivariateDerivative1 mk) {
+        private UnivariateDerivative1 getTrueAnomaly(final UnivariateDerivative1 lM,
+                                                     final UnivariateDerivative1 ecc) {
             // reduce M to [-PI PI] interval
-            final UnivariateDerivative1 reducedM = new UnivariateDerivative1(MathUtils.normalizeAngle(mk.getValue(), 0.0),
-                                                                             mk.getFirstDerivative());
+            final double reducedM = MathUtils.normalizeAngle(lM.getValue(), 0.);
 
-            final UnivariateDerivative1 meanE = new UnivariateDerivative1(mean.getE(), 0.);
-            UnivariateDerivative1 ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(meanE, mk);
+            // compute the true anomaly
+            UnivariateDerivative1 lV = FieldKeplerianAnomalyUtility.ellipticMeanToTrue(ecc, lM);
 
             // expand the result back to original range
-            ek = ek.add(mk.getValue() - reducedM.getValue());
+            lV = lV.add(lM.getValue() - reducedM);
 
-            // Returns the eccentric anomaly
-            return ek;
+            // Returns the true anomaly
+            return lV;
         }
 
         /**
@@ -1168,16 +1128,16 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
          * critical inclination (i = 63.4°).
          * <p>
          * This method, based on Warren Phipps's 1992 thesis (Eq. 2.47 and 2.48),
-         * approximate the factor (1.0 - 5.0 * cos²(inc))^-1 (causing the singularity)
+         * approximate the factor (1.0 - 5.0 * cos²(i))<sup>-1</sup> (causing the singularity)
          * by a function, named T2 in the thesis.
          * </p>
-         * @param cosInc cosine of the mean inclination
-         * @return an approximation of (1.0 - 5.0 * cos²(inc))^-1 term
+         * @param cosI cosine of the mean inclination
+         * @return an approximation of (1.0 - 5.0 * cos²(i))<sup>-1</sup> term
          */
-        private double T2(final double cosInc) {
+        private double T2(final double cosI) {
 
-            // X = (1.0 - 5.0 * cos²(inc))
-            final double x  = 1.0 - 5.0 * cosInc * cosInc;
+            // X = 1.0 - 5.0 * cos²(i)
+            final double x  = 1.0 - 5.0 * cosI * cosI;
             final double x2 = x * x;
 
             // Eq. 2.48
@@ -1195,7 +1155,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
 
             // Return (Eq. 2.47)
             return BETA * x * sum * product;
-
         }
 
         /** Extrapolate an orbit up to a specific target date.
@@ -1208,154 +1167,224 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
             final double m2 = M2Driver.getValue();
 
             // Keplerian evolution
-            final UnivariateDerivative1 dt = new UnivariateDerivative1(date.durationFrom(mean.getDate()), 1.0);
-            final UnivariateDerivative1 xnot = dt.multiply(xnotDot);
+            final UnivariateDerivative1 dt  = new UnivariateDerivative1(date.durationFrom(mean.getDate()), 1.0);
+            final UnivariateDerivative1 not = dt.multiply(n0);
 
-            //____________________________________
-            // secular effects
-
-            // mean mean anomaly (with drag Eq. 2.38 of Phipps' 1992 thesis)
             final UnivariateDerivative1 dtM2  = dt.multiply(m2);
             final UnivariateDerivative1 dt2M2 = dt.multiply(dtM2);
-            final UnivariateDerivative1 lpp = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getMeanAnomaly() + lt * xnot.getValue() + dt2M2.getValue(), 0),
-                                                                      lt * xnotDot + 2.0 * dtM2.getValue());
-            // mean argument of perigee
-            final UnivariateDerivative1 gpp = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getPerigeeArgument() + gt * xnot.getValue(), 0),
-                                                                      gt * xnotDot);
-            // mean longitude of ascending node
-            final UnivariateDerivative1 hpp = new UnivariateDerivative1(MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode() + ht * xnot.getValue(), 0),
-                                                                      ht * xnotDot);
 
-            // ________________________________________________
-            // secular rates of the mean semi-major axis and eccentricity
+            // Secular corrections
+            // -------------------
 
-            // semi-major axis
-            final UnivariateDerivative1 appDrag = dt.multiply(aRate * m2);
+            // semi-major axis (with drag Eq. 2.41 of Phipps' 1992 thesis)
+            final UnivariateDerivative1 app = dtM2.multiply(aRate).add(mean.getA());
 
-            // eccentricity
-            final UnivariateDerivative1 eppDrag = dt.multiply(eRate * m2);
+            // eccentricity  (with drag Eq. 2.45 of Phipps' 1992 thesis) reduced to [0, 1[
+            final UnivariateDerivative1 tmp = dtM2.multiply(eRate).add(mean.getE());
+            final UnivariateDerivative1 epp = tmp.withValue(FastMath.max(0., FastMath.min(tmp.getValue(), MAX_ECC)));
 
-            //____________________________________
-            // Long periodical terms
-            final FieldSinCos<UnivariateDerivative1> sinCosCg1 = gpp.sinCos();
-            final UnivariateDerivative1 cg1 = sinCosCg1.cos();
-            final UnivariateDerivative1 sg1 = sinCosCg1.sin();
-            final UnivariateDerivative1 c2g = cg1.square().subtract(sg1.square());
-            final UnivariateDerivative1 s2g = cg1.multiply(sg1).add(sg1.multiply(cg1));
-            final UnivariateDerivative1 c3g = c2g.multiply(cg1).subtract(s2g.multiply(sg1));
-            final UnivariateDerivative1 sg2 = sg1.square();
-            final UnivariateDerivative1 sg3 = sg1.multiply(sg2);
+            // argument of perigee
+            final double gppVal = mean.getPerigeeArgument() + dsg * not.getValue();
+            final UnivariateDerivative1 gpp = new UnivariateDerivative1(MathUtils.normalizeAngle(gppVal, 0.),
+                                                                        dsg * n0);
 
+            // longitude of ascending node
+            final double hppVal = mean.getRightAscensionOfAscendingNode() + dsh * not.getValue();
+            final UnivariateDerivative1 hpp = new UnivariateDerivative1(MathUtils.normalizeAngle(hppVal, 0.),
+                                                                        dsh * n0);
 
-            // de eccentricity
-            final UnivariateDerivative1 d1e = sg3.multiply(dei3sg).
-                                              add(sg1.multiply(deisg)).
-                                              add(sg2.multiply(de2sg)).
-                                              add(de);
+            // mean anomaly (with drag Eq. 2.38 of Phipps' 1992 thesis)
+            final double lppVal = mean.getMeanAnomaly() + (1. + dsl) * not.getValue() + dt2M2.getValue();
+            final double dlppdt = (1. + dsl) * n0 + 2.0 * dtM2.getValue();
+            final UnivariateDerivative1 lpp = new UnivariateDerivative1(MathUtils.normalizeAngle(lppVal, 0.),
+                                                                        dlppdt);
 
-            // l' + g'
-            final UnivariateDerivative1 lpPGp = s2g.multiply(dlgs2g).
-                                               add(c3g.multiply(dlgc3g)).
-                                               add(cg1.multiply(dlgcg)).
-                                               add(lpp).
-                                               add(gpp);
+            // Long period corrections
+            //------------------------
+            final FieldSinCos<UnivariateDerivative1> scgpp = gpp.sinCos();
+            final UnivariateDerivative1 cgpp  = scgpp.cos();
+            final UnivariateDerivative1 sgpp  = scgpp.sin();
+            final FieldSinCos<UnivariateDerivative1> sc2gpp = gpp.multiply(2).sinCos();
+            final UnivariateDerivative1 c2gpp  = sc2gpp.cos();
+            final UnivariateDerivative1 s2gpp  = sc2gpp.sin();
+            final FieldSinCos<UnivariateDerivative1> sc3gpp = gpp.multiply(3).sinCos();
+            final UnivariateDerivative1 c3gpp  = sc3gpp.cos();
+            final UnivariateDerivative1 s3gpp  = sc3gpp.sin();
 
-            // h'
-            final UnivariateDerivative1 hp = sg2.multiply(cg1).multiply(dh2sgcg).
-                                               add(sg1.multiply(cg1).multiply(dhsgcg)).
-                                               add(cg1.multiply(dhcg)).
-                                               add(hpp);
+            // δ1e
+            final UnivariateDerivative1 d1e = c2gpp.multiply(vle1).
+                                              add(sgpp.multiply(vle2)).
+                                              add(s3gpp.multiply(vle3));
 
-            // Short periodical terms
-            // eccentric anomaly
-            final UnivariateDerivative1 Ep = getEccentricAnomaly(lpp);
-            final FieldSinCos<UnivariateDerivative1> sinCosEp = Ep.sinCos();
-            final UnivariateDerivative1 cf1 = (sinCosEp.cos().subtract(mean.getE())).divide(sinCosEp.cos().multiply(-mean.getE()).add(1.0));
-            final UnivariateDerivative1 sf1 = (sinCosEp.sin().multiply(n)).divide(sinCosEp.cos().multiply(-mean.getE()).add(1.0));
-            final UnivariateDerivative1 f = FastMath.atan2(sf1, cf1);
+            // δ1I
+            UnivariateDerivative1 d1I = sgpp.multiply(vli2).
+                                        add(s3gpp.multiply(vli3));
+            // Pseudo singular term, not to add if Ipp is zero
+            if (Double.isFinite(vli1)) {
+                d1I = d1I.add(c2gpp.multiply(vli1));
+            }
 
-            final UnivariateDerivative1 cf2 = cf1.square();
-            final UnivariateDerivative1 c2f = cf2.subtract(sf1.multiply(sf1));
-            final UnivariateDerivative1 s2f = cf1.multiply(sf1).add(sf1.multiply(cf1));
-            final UnivariateDerivative1 c3f = c2f.multiply(cf1).subtract(s2f.multiply(sf1));
-            final UnivariateDerivative1 s3f = c2f.multiply(sf1).add(s2f.multiply(cf1));
-            final UnivariateDerivative1 cf3 = cf1.multiply(cf2);
+            // e"δ1l
+            final UnivariateDerivative1 eppd1l = s2gpp.multiply(vle1).
+                                                 subtract(cgpp.multiply(vll2)).
+                                                 subtract(c3gpp.multiply(vle3)).
+                                                 multiply(n);
 
-            final UnivariateDerivative1 c2g1f = cf1.multiply(c2g).subtract(sf1.multiply(s2g));
-            final UnivariateDerivative1 c2g2f = c2f.multiply(c2g).subtract(s2f.multiply(s2g));
-            final UnivariateDerivative1 c2g3f = c3f.multiply(c2g).subtract(s3f.multiply(s2g));
-            final UnivariateDerivative1 s2g1f = cf1.multiply(s2g).add(c2g.multiply(sf1));
-            final UnivariateDerivative1 s2g2f = c2f.multiply(s2g).add(c2g.multiply(s2f));
-            final UnivariateDerivative1 s2g3f = c3f.multiply(s2g).add(c2g.multiply(s3f));
+            // δ1h
+            final UnivariateDerivative1 sIppd1h = s2gpp.multiply(vlh1I).
+                                                  add(cgpp.multiply(vlh2I)).
+                                                  add(c3gpp.multiply(vlh3I));
 
-            final UnivariateDerivative1 eE = (sinCosEp.cos().multiply(-mean.getE()).add(1.0)).reciprocal();
-            final UnivariateDerivative1 eE3 = eE.square().multiply(eE);
-            final UnivariateDerivative1 sigma = eE.multiply(n * n).multiply(eE).add(eE);
+            // δ1z = δ1l + δ1g + δ1h
+            final UnivariateDerivative1 d1z = s2gpp.multiply(vls1).
+                                              add(cgpp.multiply(vls2)).
+                                              add(c3gpp.multiply(vls3));
 
-            // Semi-major axis (with drag Eq. 2.41 of Phipps' 1992 thesis)
-            final UnivariateDerivative1 a = eE3.multiply(aCbis).add(appDrag.add(mean.getA())).
-                                            add(aC).
-                                            add(eE3.multiply(c2g2f).multiply(ac2g2f));
+            // Short period corrections
+            // ------------------------
 
-            // Eccentricity (with drag Eq. 2.45 of Phipps' 1992 thesis)
-            final UnivariateDerivative1 e = d1e.add(eppDrag.add(mean.getE())).
-                                            add(eC).
-                                            add(cf1.multiply(ecf)).
-                                            add(cf2.multiply(e2cf)).
-                                            add(cf3.multiply(e3cf)).
-                                            add(c2g2f.multiply(ec2f2g)).
-                                            add(c2g2f.multiply(cf1).multiply(ecfc2f2g)).
-                                            add(c2g2f.multiply(cf2).multiply(e2cfc2f2g)).
-                                            add(c2g2f.multiply(cf3).multiply(e3cfc2f2g)).
-                                            add(c2g1f.multiply(ec2gf)).
-                                            add(c2g3f.multiply(ec2g3f));
+            // true anomaly
+            final UnivariateDerivative1 fpp = getTrueAnomaly(lpp, epp);
+            final FieldSinCos<UnivariateDerivative1> scfpp = fpp.sinCos();
+            final UnivariateDerivative1 cfpp = scfpp.cos();
+            final UnivariateDerivative1 sfpp = scfpp.sin();
 
-            // Inclination
-            final UnivariateDerivative1 i = d1e.multiply(ide).
-                                            add(mean.getI()).
-                                            add(sf1.multiply(s2g2f.multiply(isfs2f2g))).
-                                            add(cf1.multiply(c2g2f.multiply(icfc2f2g))).
-                                            add(c2g2f.multiply(ic2f2g));
+            // e"sin(f')
+            final UnivariateDerivative1 eppsfpp = epp.multiply(sfpp);
+            // e"cos(f')
+            final UnivariateDerivative1 eppcfpp = epp.multiply(cfpp);
+            // 1 + e"cos(f')
+            final UnivariateDerivative1 eppcfppP1 = eppcfpp.add(1.);
+            // 2 + e"cos(f')
+            final UnivariateDerivative1 eppcfppP2 = eppcfpp.add(2.);
+            // 3 + e"cos(f')
+            final UnivariateDerivative1 eppcfppP3 = eppcfpp.add(3.);
+            // (1 + e"cos(f'))³
+            final UnivariateDerivative1 eppcfppP1_3 = eppcfppP1.square().multiply(eppcfppP1);
 
-            // Argument of perigee + mean anomaly
-            final UnivariateDerivative1 gPL = lpPGp.add(f.multiply(glf)).
-                                                add(lpp.multiply(gll)).
-                                                add(sf1.multiply(glsf)).
-                                                add(sigma.multiply(sf1).multiply(glosf)).
-                                                add(s2g2f.multiply(gls2f2g)).
-                                                add(s2g1f.multiply(gls2gf)).
-                                                add(sigma.multiply(s2g1f).multiply(glos2gf)).
-                                                add(s2g3f.multiply(gls2g3f)).
-                                                add(sigma.multiply(s2g3f).multiply(glos2g3f));
+            // 2g"
+            final UnivariateDerivative1 g2 = gpp.multiply(2);
 
+            // 2g" + f"
+            final UnivariateDerivative1 g2f = g2.add(fpp);
+            final FieldSinCos<UnivariateDerivative1> sc2gf = g2f.sinCos();
+            final UnivariateDerivative1 c2gf = sc2gf.cos();
+            final UnivariateDerivative1 s2gf = sc2gf.sin();
+            final UnivariateDerivative1 eppc2gf = epp.multiply(c2gf);
+            final UnivariateDerivative1 epps2gf = epp.multiply(s2gf);
 
-            // Longitude of ascending node
-            final UnivariateDerivative1 h = hp.add(f.multiply(hf)).
-                                            add(lpp.multiply(hl)).
-                                            add(sf1.multiply(hsf)).
-                                            add(cf1.multiply(s2g2f).multiply(hcfs2g2f)).
-                                            add(s2g2f.multiply(hs2g2f)).
-                                            add(c2g2f.multiply(sf1).multiply(hsfc2g2f));
+            // 2g" + 2f"
+            final UnivariateDerivative1 g2f2 = g2.add(fpp.multiply(2));
+            final FieldSinCos<UnivariateDerivative1> sc2g2f = g2f2.sinCos();
+            final UnivariateDerivative1 c2g2f = sc2g2f.cos();
+            final UnivariateDerivative1 s2g2f = sc2g2f.sin();
 
-            final UnivariateDerivative1 edl = s2g.multiply(edls2g).
-                                            add(cg1.multiply(edlcg)).
-                                            add(c3g.multiply(edlc3g)).
-                                            add(sf1.multiply(edlsf)).
-                                            add(s2g1f.multiply(edls2gf)).
-                                            add(s2g3f.multiply(edls2g3f)).
-                                            add(sf1.multiply(sigma).multiply(edlsf)).
-                                            add(s2g1f.multiply(sigma).multiply(-edls2gf)).
-                                            add(s2g3f.multiply(sigma).multiply(3.0 * edls2g3f));
+            // 2g" + 3f"
+            final UnivariateDerivative1 g2f3 = g2.add(fpp.multiply(3));
+            final FieldSinCos<UnivariateDerivative1> sc2g3f = g2f3.sinCos();
+            final UnivariateDerivative1 c2g3f = sc2g3f.cos();
+            final UnivariateDerivative1 s2g3f = sc2g3f.sin();
 
-            final FieldSinCos<UnivariateDerivative1> sinCosLpp = lpp.sinCos();
-            final UnivariateDerivative1 A = e.multiply(sinCosLpp.cos()).subtract(edl.multiply(sinCosLpp.sin()));
-            final UnivariateDerivative1 B = e.multiply(sinCosLpp.sin()).add(edl.multiply(sinCosLpp.cos()));
+            // e"cos(2g" + 3f")
+            final UnivariateDerivative1 eppc2g3f = epp.multiply(c2g3f);
+            // e"sin(2g" + 3f")
+            final UnivariateDerivative1 epps2g3f = epp.multiply(s2g3f);
+
+            // f" + e"sin(f") - l"
+            final UnivariateDerivative1 w17 = fpp.add(eppsfpp).subtract(lpp);
+
+            // ((e"cos(f") + 3)e"cos(f") + 3)cos(f")
+            final UnivariateDerivative1 w20 = cfpp.multiply(eppcfppP3.multiply(eppcfpp).add(3.));
+
+            // 3sin(2g" + 2f") + 3e"sin(2g" + f") + e"sin(2g" + f")
+            final UnivariateDerivative1 w21 = s2g2f.add(epps2gf).multiply(3).add(epps2g3f);
+
+            // (1 + e"cos(f"))(2 + e"cos(f"))/η²
+            final UnivariateDerivative1 w22 = eppcfppP1.multiply(eppcfppP2).divide(n2);
+
+            // sinCos(I"/2)
+            final SinCos sci = FastMath.sinCos(0.5 * mean.getI());
+            final double siO2 = sci.sin();
+            final double ciO2 = sci.cos();
+
+            // δ2a
+            final UnivariateDerivative1 d2a = app.multiply(yp2 / n2).
+                                                  multiply(eppcfppP1_3.subtract(n3).multiply(ci2X3M1).
+                                                           add(eppcfppP1_3.multiply(c2g2f).multiply(3 * oneMci2)));
+
+            // δ2e
+            final UnivariateDerivative1 d2e = (w20.add(epp.multiply(t8))).multiply(ci2X3M1).
+                                               add((w20.add(epp.multiply(c2g2f))).multiply(3 * oneMci2)).
+                                               subtract((eppc2gf.multiply(3).add(eppc2g3f)).multiply(n2 * oneMci2)).
+                                              multiply(0.5 * yp2);
+
+            // δ2I
+            final UnivariateDerivative1 d2I = ((c2g2f.add(eppc2gf)).multiply(3).add(eppc2g3f)).
+                                              multiply(0.5 * yp2 * ci * si);
+
+            // e"δ2l
+            final UnivariateDerivative1 eppd2l = (w22.add(1).multiply(sfpp).multiply(2 * oneMci2).
+                                                  add((w22.subtract(1).negate().multiply(s2gf)).
+                                                       add(w22.add(1. / 3.).multiply(s2g3f)).
+                                                      multiply(3 * oneMci2))).
+                                                 multiply(0.25 * yp2 * n3).negate();
+
+            // sinI"δ2h
+            final UnivariateDerivative1 sIppd2h = (w21.subtract(w17.multiply(6))).
+                                                  multiply(0.5 * yp2 * ci * si);
+
+            // δ2z = δ2l + δ2g + δ2h
+            final UnivariateDerivative1 d2z = (epp.multiply(eppd2l).multiply(t8 - 1.).divide(n3).
+                                               add(w17.multiply(6. * (1. + ci * (2 - 5. * ci)))
+                                                   .subtract(w21.multiply(3. + ci * (2 - 5. * ci))).multiply(0.25 * yp2))).
+                                               negate();
+
+            // Assembling elements
+            // -------------------
+
+            // e" + δe
+            final UnivariateDerivative1 de = epp.add(d1e).add(d2e);
+
+            // e"δl
+            final UnivariateDerivative1 dl = eppd1l.add(eppd2l);
+
+            // sin(I"/2)δh = sin(I")δh / cos(I"/2) (singular for I" = π, very unlikely)
+            final UnivariateDerivative1 dh = sIppd1h.add(sIppd2h).divide(2. * ciO2);
+
+            // δI
+            final UnivariateDerivative1 di = d1I.add(d2I).multiply(0.5 * ciO2).add(siO2);
+
+            // z = l" + g" + h" + δ1z + δ2z
+            final UnivariateDerivative1 z = lpp.add(gpp).add(hpp).add(d1z).add(d2z);
+
+            // Osculating elements
+            // -------------------
+
+            // Semi-major axis
+            final UnivariateDerivative1 a = app.add(d2a);
+
+            // Eccentricity
+            final UnivariateDerivative1 e = FastMath.sqrt(de.square().add(dl.square()));
 
             // Mean anomaly
-            final UnivariateDerivative1 l = FastMath.atan2(B, A);
+            final FieldSinCos<UnivariateDerivative1> sclpp = lpp.sinCos();
+            final UnivariateDerivative1 clpp = sclpp.cos();
+            final UnivariateDerivative1 slpp = sclpp.sin();
+            final UnivariateDerivative1 l = FastMath.atan2(de.multiply(slpp).add(dl.multiply(clpp)),
+                                                           de.multiply(clpp).subtract(dl.multiply(slpp)));
+
+            // Inclination
+            final UnivariateDerivative1 i = FastMath.acos(di.square().add(dh.square()).multiply(2).negate().add(1.));
+
+            // Longitude of ascending node
+            final FieldSinCos<UnivariateDerivative1> schpp = hpp.sinCos();
+            final UnivariateDerivative1 chpp = schpp.cos();
+            final UnivariateDerivative1 shpp = schpp.sin();
+            final UnivariateDerivative1 h = FastMath.atan2(di.multiply(shpp).add(dh.multiply(chpp)),
+                                                           di.multiply(chpp).subtract(dh.multiply(shpp)));
 
             // Argument of perigee
-            final UnivariateDerivative1 g = gPL.subtract(l);
+            final UnivariateDerivative1 g = z.subtract(l).subtract(h);
 
             // Return a Keplerian orbit
             return new KeplerianOrbit(a.getValue(), e.getValue(), i.getValue(),
