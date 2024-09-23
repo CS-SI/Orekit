@@ -104,7 +104,7 @@ public class SinexBiasParserTest {
     public void testDCBfile() {
         SinexBias sinexBias = load("/sinex/DLR0MGXFIN_20212740000_03L_01D_DCB_trunc_sat.BSX");
         DsbSatellite DCBSat = sinexBias.getDsbSatellite("G01");
-        Dsb DsbTest = DCBSat.getDcbData();
+        Dsb DsbTest = DCBSat.getDsbData();
         
         // Observation Pair test
         HashSet<Pair<ObservationType, ObservationType>> ObsPairs = DsbTest.getAvailableObservationPairs();
@@ -125,8 +125,8 @@ public class SinexBiasParserTest {
         Assertions.assertEquals(ObsPairs, observationSetsRef);
         
         // Defining observation codes for further checks.
-        String Obs1 = "C1C";
-        String Obs2 = "C1W";
+        ObservationType Obs1 = PredefinedObservationType.C1C;
+        ObservationType Obs2 = PredefinedObservationType.C1W;
         
         // Minimum Date test
         int year = 2021;
@@ -168,7 +168,7 @@ public class SinexBiasParserTest {
         
         // Value Test for a Station
         DsbStation DsbStation = sinexBias.getDsbStation("ALIC");
-        Dsb DsbTestStation = DsbStation.getDcbData(SatelliteSystem.parseSatelliteSystem("R"));
+        Dsb DsbTestStation = DsbStation.getDsbData(SatelliteSystem.parseSatelliteSystem("R"));
 
         year = 2021;
         day = 300;
@@ -178,7 +178,9 @@ public class SinexBiasParserTest {
                 shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                 shiftedBy(secInDay);
         
-        double valueDcbStation = DsbTestStation.getDsb("C1C", "C1P", refDateStation);
+        double valueDcbStation = DsbTestStation.getDsb(PredefinedObservationType.C1C,
+                                                       PredefinedObservationType.C1P,
+                                                       refDateStation);
         double valueDcbRealStation = -0.6458e-9;
         
         Assertions.assertEquals(valueDcbRealStation, valueDcbStation, 1e-13);
@@ -213,7 +215,8 @@ public class SinexBiasParserTest {
     }
 
     private SinexBias load(final String name) {
-        return new SinexBiasParser(TimeScalesFactory.getTimeScales()).
+        return new SinexBiasParser(TimeScalesFactory.getTimeScales(),
+                                   PredefinedObservationType::valueOf).
                parse(new DataSource(name, () -> SinexParserTest.class.getResourceAsStream(name)));
     }
 

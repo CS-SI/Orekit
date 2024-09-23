@@ -19,11 +19,9 @@ package org.orekit.files.sinex;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.function.Function;
 
 import org.hipparchus.util.Pair;
 import org.orekit.gnss.ObservationType;
-import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
@@ -32,87 +30,51 @@ import org.orekit.utils.TimeSpanMap;
  * <p>
  * This class is made to handle both station and satellite DSB data.
  * Bias values are stored in TimeSpanMaps associated with a given pair
- * of observation codes. Those TimeSpanMaps are stored in a Map, which
- * associate a pair of observation code (as a HashSet of ObservationType)
- * to a TimeSpanMap, encapsulated in a DSBCode object.
+ * of observation types. Those TimeSpanMaps are stored in a Map, which
+ * associate a pair of observation types to a TimeSpanMap of double values.
  * </p>
  * @author Louis Aucouturier
  * @since 12.0
  */
 public class Dsb {
 
-    /** Ensemble of observation code pairs available for the satellite. */
+    /** Set of observation type pairs available for the satellite. */
     private final HashSet<Pair<ObservationType, ObservationType>> observationSets;
 
-    /**
-     * Ensemble of DSBCode object, identifiable by observation code pairs,
+    /** Set of biases, identifiable by observation type pairs,
      * each containing the corresponding TimeSpanMap of biases (DSB).
      */
-    private final HashMap<Pair<ObservationType, ObservationType>, TimeSpanMap<Double>> dsbCodeMap;
-
-    /** Mapper from string to observation type.
-     * @since 13.0
-     */
-    private final Function<? super String, ? extends ObservationType> typeBuilder;
+    private final HashMap<Pair<ObservationType, ObservationType>, TimeSpanMap<Double>> biases;
 
     /** Simple constructor.
-     * <p>
-     * This constructor just recognizes {@link PredefinedObservationType}.
-     * </p>
      */
     public Dsb() {
-        this(PredefinedObservationType::valueOf);
-    }
-
-    /** Simple constructor.
-     * @param typeBuilder mapper from string to observation type
-     * @since 13.0
-     */
-    public Dsb(final Function<? super String, ? extends ObservationType> typeBuilder) {
         this.observationSets = new HashSet<>();
-        this.dsbCodeMap      = new HashMap<>();
-        this.typeBuilder     = typeBuilder;
+        this.biases          = new HashMap<>();
     }
 
-    /**
-     * Add the content of a DSB line to the DSBSatellite object.
-     * <p>
-     * The method check the presence of a Code pair in a map, and add
-     * values to the corresponding TimeSpanMap.
-     * </p>
-     * @param obs1 String corresponding to the first code used for the DSB computation
-     * @param obs2 String corresponding to the second code used for the DSB computation
+    /** Add a bias.
+     * @param obs1 first observation used for the DSB computation
+     * @param obs2 second observation used for the DSB computation
      * @param spanBegin Absolute Date corresponding to the beginning of the validity span for this bias value
      * @param spanEnd Absolute Date corresponding to the end of the validity span for this bias value
      * @param biasValue DSB bias value expressed in S.I. units
      */
-    public void addDsbLine(final String obs1, final String obs2,
-                           final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
-                           final double biasValue) {
+    public void addBias(final ObservationType obs1, final ObservationType obs2,
+                        final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
+                        final double biasValue) {
 
         // Setting a pair of observation type.
-        final Pair<ObservationType, ObservationType> observationPair =
-            new Pair<>(typeBuilder.apply(obs1), typeBuilder.apply(obs2));
+        final Pair<ObservationType, ObservationType> observationPair = new Pair<>(obs1, obs2);
 
-        // If not present add a new DSBCode to the map, identified by the Observation Pair.
+        // If not present add a new bias to the map, identified by the Observation Pair.
         // Then add the bias value and validity period.
         if (observationSets.add(observationPair)) {
-            dsbCodeMap.put(observationPair, new TimeSpanMap<>(null));
+            biases.put(observationPair, new TimeSpanMap<>(null));
         }
 
-        dsbCodeMap.get(observationPair).addValidBetween(biasValue, spanBegin, spanEnd);
-    }
+        biases.get(observationPair).addValidBetween(biasValue, spanBegin, spanEnd);
 
-    /**
-     * Get the value of the Differential Signal Bias for a given observation pair at a given date.
-     *
-     * @param obs1 string corresponding to the first code used for the DSB computation
-     * @param obs2 string corresponding to the second code used for the DSB computation
-     * @param date date at which to obtain the DSB
-     * @return the value of the DSB in S.I. units
-     */
-    public double getDsb(final String obs1, final String obs2, final AbsoluteDate date) {
-        return getDsb(typeBuilder.apply(obs1), typeBuilder.apply(obs2), date);
     }
 
     /**
@@ -128,23 +90,12 @@ public class Dsb {
     }
 
     /**
-     * Get all available observation code pairs for the satellite.
+     * Get all available observation type pairs for the satellite.
      *
-     * @return HashSet(HashSet(ObservationType)) Observation code pairs obtained.
+     * @return observation type pairs obtained.
      */
     public HashSet<Pair<ObservationType, ObservationType>> getAvailableObservationPairs() {
         return observationSets;
-    }
-
-    /**
-     * Get the minimum valid date for a given observation pair.
-     *
-     * @param obs1 sString corresponding to the first code used for the DSB computation
-     * @param obs2 string corresponding to the second code used for the DSB computation
-     * @return minimum valid date for the observation pair
-     */
-    public AbsoluteDate getMinimumValidDateForObservationPair(final String obs1, final String obs2) {
-        return getMinimumValidDateForObservationPair(typeBuilder.apply(obs1), typeBuilder.apply(obs2));
     }
 
     /**
@@ -161,17 +112,6 @@ public class Dsb {
     /**
      * Get the maximum valid date for a given observation pair.
      *
-     * @param obs1 string corresponding to the first code used for the DSB computation
-     * @param obs2 string corresponding to the second code used for the DSB computation
-     * @return maximum valid date for the observation pair
-     */
-    public AbsoluteDate getMaximumValidDateForObservationPair(final String obs1, final String obs2) {
-        return getMaximumValidDateForObservationPair(typeBuilder.apply(obs1), typeBuilder.apply(obs2));
-    }
-
-    /**
-     * Get the maximum valid date for a given observation pair.
-     *
      * @param obs1 first observation type
      * @param obs2 second observation type
      * @return maximum valid date for the observation pair
@@ -181,15 +121,15 @@ public class Dsb {
     }
 
     /**
-     * Return the TimeSpanMap object for a given observation code pair,
+     * Return the TimeSpanMap object for a given observation type pair,
      * for further operation on the object directly.
      *
      * @param obs1 first observation type
      * @param obs2 second observation type
-     * @return the time span map for a given observation code pair
+     * @return the time span map for a given observation type pair
      */
     private TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs1, final ObservationType obs2) {
-        return dsbCodeMap.get(new Pair<>(obs1, obs2));
+        return biases.get(new Pair<>(obs1, obs2));
     }
 
 }

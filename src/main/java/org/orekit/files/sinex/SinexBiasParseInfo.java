@@ -16,17 +16,22 @@
  */
 package org.orekit.files.sinex;
 
+import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.TimeScales;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /** Parse information for Solution INdependent EXchange (SINEX) bias files.
  * @author Luc Maisonobe
  * @since 13.0
  */
 public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
+
+    /** Mapper from string to observation type. */
+    private final Function<? super String, ? extends ObservationType> typeBuilder;
 
     /** DSB description. */
     private final BiasDescription description;
@@ -39,12 +44,15 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
 
     /** Simple constructor.
      * @param timeScales time scales
+     * @param typeBuilder mapper from string to observation type
      */
-    SinexBiasParseInfo(final TimeScales timeScales) {
+    SinexBiasParseInfo(final TimeScales timeScales,
+                       final Function<? super String, ? extends ObservationType> typeBuilder) {
         super(timeScales);
         this.description = new BiasDescription();
         this.stations    = new HashMap<>();
         this.satellites  = new HashMap<>();
+        this.typeBuilder = typeBuilder;
     }
 
     /** Get description.
@@ -76,6 +84,15 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     void setTimeSystem(final TimeSystem timeSystem) {
         getDescription().setTimeSystem(timeSystem);
         setTimeScale(timeSystem.getTimeScale(getTimeScales()));
+    }
+
+    /** Extract an observation type from current line.
+     * @param start  start index of the string
+     * @param length length of the string
+     * @return parsed observation type
+     */
+    protected ObservationType parseObservationType(final int start, final int length) {
+        return typeBuilder.apply(parseString(start, length));
     }
 
     /** {@inheritDoc} */

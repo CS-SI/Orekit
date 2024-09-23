@@ -53,7 +53,7 @@ public class DsbSatellite {
     /** Get the DSB data for the current satellite.
      * @return the DSB data for the current satellite
      */
-    public Dsb getDcbData() {
+    public Dsb getDsbData() {
         return dsb;
     }
 

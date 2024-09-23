@@ -16,11 +16,13 @@
  */
 package org.orekit.files.sinex;
 
+import org.orekit.gnss.ObservationType;
 import org.orekit.time.TimeScales;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 /** Parser for Solution INdependent EXchange (SINEX) bias files.
  * @author Luc Maisonobe
@@ -28,15 +30,25 @@ import java.util.List;
  */
 public class SinexBiasParser extends AbstractSinexParser<SinexBias, SinexBiasParseInfo> {
 
+    /** Mapper from string to observation type. */
+    private final Function<? super String, ? extends ObservationType> typeBuilder;
+
     /** Top level parsers. */
     private final List<LineParser<SinexBiasParseInfo>> topParsers;
 
     /** Simple constructor.
      * @param timeScales time scales
+     * @param typeBuilder mapper from string to observation type
+     *                    (typically {@code PredefinedObservationType::valueOf} if the file uses only
+     *                    predefined types)
+     * @see org.orekit.gnss.PredefinedObservationType#valueOf(String)
      */
-    public SinexBiasParser(final TimeScales timeScales) {
+    public SinexBiasParser(final TimeScales timeScales,
+                           final Function<? super String, ? extends ObservationType> typeBuilder) {
 
         super(timeScales);
+
+        this.typeBuilder = typeBuilder;
 
         // set up parsers for supported blocks
         final List<BlockParser<SinexBiasParseInfo>> blockParsers = new ArrayList<>();
@@ -80,7 +92,7 @@ public class SinexBiasParser extends AbstractSinexParser<SinexBias, SinexBiasPar
     /** {@inheritDoc} */
     @Override
     protected SinexBiasParseInfo buildParseInfo() {
-        final SinexBiasParseInfo parseInfo = new SinexBiasParseInfo(getTimeScales());
+        final SinexBiasParseInfo parseInfo = new SinexBiasParseInfo(getTimeScales(), typeBuilder);
         parseInfo.setTimeScale(getTimeScales().getUTC());
         return parseInfo;
     }

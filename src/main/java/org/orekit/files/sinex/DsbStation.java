@@ -37,14 +37,14 @@ public class DsbStation {
     private final String siteCode;
 
     /** Map containing DSB objects as a function of the satellite system. */
-    private final HashMap<SatelliteSystem, Dsb> dcbMap;
+    private final HashMap<SatelliteSystem, Dsb> dsbMap;
 
     /** Simple constructor.
      * @param siteCode the site code (station identifier)
      */
     public DsbStation(final String siteCode) {
         this.siteCode = siteCode;
-        this.dcbMap   = new HashMap<>();
+        this.dsbMap = new HashMap<>();
     }
 
     /** Get the site code (station identifier).
@@ -58,15 +58,15 @@ public class DsbStation {
      * @param satelliteSystem satellite system
      * @return the DSB data corresponding to the satellite system
      */
-    public Dsb getDcbData(final SatelliteSystem satelliteSystem) {
-        return dcbMap.computeIfAbsent(satelliteSystem, s -> new Dsb());
+    public Dsb getDsbData(final SatelliteSystem satelliteSystem) {
+        return dsbMap.computeIfAbsent(satelliteSystem, s -> new Dsb());
     }
 
     /** Get the satellite systems available for the station.
      * @return a Set containing all SatelliteSystems available for DSB computation.
      */
     public Iterable<SatelliteSystem> getAvailableSatelliteSystems() {
-        return dcbMap.keySet();
+        return dsbMap.keySet();
     }
 
 }
