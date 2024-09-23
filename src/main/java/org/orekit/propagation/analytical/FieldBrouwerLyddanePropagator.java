@@ -1186,7 +1186,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
             final FieldUnivariateDerivative1<T> gpp = new FieldUnivariateDerivative1<>(gp0, gp1);
 
             // mean longitude of ascending node
-            final T hp0 = MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(dsh.multiply(not.getValue())).add(dt2M2.getValue()), zero);
+            final T hp0 = MathUtils.normalizeAngle(mean.getRightAscensionOfAscendingNode().add(dsh.multiply(not.getValue())), zero);
             final T hp1 = dsh.multiply(n0);
             final FieldUnivariateDerivative1<T> hpp = new FieldUnivariateDerivative1<>(hp0, hp1);
 

@@ -460,7 +460,6 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldAbsoluteDate<T> initDate = date.shiftedBy(584.);
         double timeshift = 60000. ;
 
-
         // Initial orbit
         final double a = 24396159; // semi major axis in meters
         final double e = 0.01; // eccentricity
@@ -484,7 +483,6 @@ public class FieldBrouwerLyddanePropagatorTest {
         //_______________________________________________________________________________________________
         // SET UP A REFERENCE NUMERICAL PROPAGATION
         //_______________________________________________________________________________________________
-
 
         // Adaptive step integrator with a minimum step of 0.001 and a maximum step of 1000
         final double minStep = 0.001;
@@ -511,9 +509,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         final SpacecraftState NumFinalState = NumPropagator.propagate(initDate.toAbsoluteDate().shiftedBy(timeshift));
         final KeplerianOrbit NumOrbit = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(NumFinalState.getOrbit());
 
-        //_______________________________________________________________________________________________
-        // SET UP A BROUWER LYDDANE PROPAGATION
-        //_______________________________________________________________________________________________
+        // Asserts
         Assertions.assertEquals(NumOrbit.getA(), BLOrbit.getA(), 0.174);
         Assertions.assertEquals(NumOrbit.getE(), BLOrbit.getE(), 3.2e-6);
         Assertions.assertEquals(NumOrbit.getI(), BLOrbit.getI(), 6.9e-8);
