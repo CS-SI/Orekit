@@ -20,8 +20,8 @@ package org.orekit.files.sinex;
 import org.orekit.gnss.SatelliteSystem;
 
 /**
- * Class based on DSB, used to store the data parsed in {@link SinexLoader}
- * for Differential Code Biases computed for satellites.
+ * Class based on DSB, used to store the data parsed in {@link SinexBiasParser}
+ * for Differential Signal Biases computed for satellites.
  * <p>
  * Satellites and stations have differentiated classes as stations might have multiple satellite systems.
  * The data are stored in a single DSB object.

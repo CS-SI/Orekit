@@ -161,7 +161,7 @@ public class SinexBiasParserTest {
                 shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                 shiftedBy(secInDay);
         
-        double valueDcb = DsbTest.getDcb(Obs1, Obs2, refDate);
+        double valueDcb = DsbTest.getDsb(Obs1, Obs2, refDate);
         double valueDcbReal = -1.0697e-9;
         
         Assertions.assertEquals(valueDcbReal, valueDcb, 1e-13);
@@ -178,7 +178,7 @@ public class SinexBiasParserTest {
                 shiftedBy(Constants.JULIAN_DAY * (day - 1)).
                 shiftedBy(secInDay);
         
-        double valueDcbStation = DsbTestStation.getDcb("C1C", "C1P", refDateStation);
+        double valueDcbStation = DsbTestStation.getDsb("C1C", "C1P", refDateStation);
         double valueDcbRealStation = -0.6458e-9;
         
         Assertions.assertEquals(valueDcbRealStation, valueDcbStation, 1e-13);

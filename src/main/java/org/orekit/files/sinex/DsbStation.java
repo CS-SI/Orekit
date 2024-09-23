@@ -22,8 +22,8 @@ import java.util.HashMap;
 import org.orekit.gnss.SatelliteSystem;
 
 /**
- * Class based on DSB, used to store the data parsed in {@link SinexLoader}
- * for Differential Code Biases computed for stations.
+ * Class based on DSB, used to store the data parsed in {@link SinexBiasParser}
+ * for Differential Signal Biases computed for stations.
  * <p>
  * Satellites and stations have differentiated classes as stations might have multiple satellite systems.
  * The data are stored in a Map of DSB, identified by the {@link SatelliteSystem}
@@ -60,17 +60,6 @@ public class DsbStation {
      */
     public Dsb getDcbData(final SatelliteSystem satelliteSystem) {
         return dcbMap.computeIfAbsent(satelliteSystem, s -> new Dsb());
-    }
-
-    /** Add the DSB data corresponding to a satellite system.
-     * <p>
-     * If the instance previously contained DSB data for the satellite system, the old value is replaced.
-     * </p>
-     * @param satelliteSystem satellite system for which the DSB is added
-     * @param dsb DSB data
-     */
-    public void addDcb(final SatelliteSystem satelliteSystem, final Dsb dsb) {
-        dcbMap.put(satelliteSystem, dsb);
     }
 
     /** Get the satellite systems available for the station.

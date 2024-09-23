@@ -257,7 +257,7 @@ public class SinexParserEopTest {
     }
 
     @Test
-    // Check the behaviour of the SinexLoader when given several sources, with consistent dates for EOP entries.
+    // Check the behaviour of the SinexParser when given several sources, with consistent dates for EOP entries.
     public void testSmallSinexEopSynthMultiFile() {
 
         Sinex sinex = load("/sinex/cod_test_1.snx", "/sinex/cod_test_2.snx", "/sinex/cod_test_3.snx");
@@ -289,7 +289,7 @@ public class SinexParserEopTest {
         Sinex sinex2 = load("/sinex/cod_test_2.snx");
         Sinex sinex3 = load("/sinex/cod_test_3.snx");
 
-        // Setting the DataContext to extract the EOP data from the 3 SinexLoader objects
+        // Setting the DataContext to extract the EOP data from the 3 SinexParser objects
         final LazyLoadedFrames frames = DataContext.getDefault().getFrames();
         frames.addEOPHistoryLoader(IERSConventions.IERS_2010, sinex1.getEopLoader(ITRFVersion.ITRF_2014));
         frames.addEOPHistoryLoader(IERSConventions.IERS_2010, sinex2.getEopLoader(ITRFVersion.ITRF_2014));

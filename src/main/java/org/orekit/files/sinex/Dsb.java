@@ -28,13 +28,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
 
 /**
- * Class to store DSB Solution data parsed in the SinexLoader.
+ * Class to store DSB Solution data parsed in the SinexBiasParser.
  * <p>
  * This class is made to handle both station and satellite DSB data.
  * Bias values are stored in TimeSpanMaps associated with a given pair
  * of observation codes. Those TimeSpanMaps are stored in a Map, which
  * associate a pair of observation code (as a HashSet of ObservationType)
- * to a TimeSpanMap,  encapsulated in a DSBCode object.
+ * to a TimeSpanMap, encapsulated in a DSBCode object.
  * </p>
  * @author Louis Aucouturier
  * @since 12.0
@@ -48,7 +48,7 @@ public class Dsb {
      * Ensemble of DSBCode object, identifiable by observation code pairs,
      * each containing the corresponding TimeSpanMap of biases (DSB).
      */
-    private final HashMap<Pair<ObservationType, ObservationType>, TimeSpanMap<Double>> dcbCodeMap;
+    private final HashMap<Pair<ObservationType, ObservationType>, TimeSpanMap<Double>> dsbCodeMap;
 
     /** Mapper from string to observation type.
      * @since 13.0
@@ -70,7 +70,7 @@ public class Dsb {
      */
     public Dsb(final Function<? super String, ? extends ObservationType> typeBuilder) {
         this.observationSets = new HashSet<>();
-        this.dcbCodeMap      = new HashMap<>();
+        this.dsbCodeMap      = new HashMap<>();
         this.typeBuilder     = typeBuilder;
     }
 
@@ -86,7 +86,7 @@ public class Dsb {
      * @param spanEnd Absolute Date corresponding to the end of the validity span for this bias value
      * @param biasValue DSB bias value expressed in S.I. units
      */
-    public void addDcbLine(final String obs1, final String obs2,
+    public void addDsbLine(final String obs1, final String obs2,
                            final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
                            final double biasValue) {
 
@@ -97,35 +97,33 @@ public class Dsb {
         // If not present add a new DSBCode to the map, identified by the Observation Pair.
         // Then add the bias value and validity period.
         if (observationSets.add(observationPair)) {
-            dcbCodeMap.put(observationPair, new TimeSpanMap<>(null));
+            dsbCodeMap.put(observationPair, new TimeSpanMap<>(null));
         }
 
-        dcbCodeMap.get(observationPair).addValidBetween(biasValue, spanBegin, spanEnd);
+        dsbCodeMap.get(observationPair).addValidBetween(biasValue, spanBegin, spanEnd);
     }
 
     /**
-     * Get the value of the Differential Code Bias for a given observation pair
-     * and a at a given date.
+     * Get the value of the Differential Signal Bias for a given observation pair at a given date.
      *
      * @param obs1 string corresponding to the first code used for the DSB computation
      * @param obs2 string corresponding to the second code used for the DSB computation
      * @param date date at which to obtain the DSB
      * @return the value of the DSB in S.I. units
      */
-    public double getDcb(final String obs1, final String obs2, final AbsoluteDate date) {
-        return getDcb(typeBuilder.apply(obs1), typeBuilder.apply(obs2), date);
+    public double getDsb(final String obs1, final String obs2, final AbsoluteDate date) {
+        return getDsb(typeBuilder.apply(obs1), typeBuilder.apply(obs2), date);
     }
 
     /**
-     * Get the value of the Differential Code Bias for a given observation pair
-     * and a at a given date.
+     * Get the value of the Differential Signal Bias for a given observation pair at a given date.
      *
      * @param obs1 first observation type
      * @param obs2 second observation type
      * @param date date at which to obtain the DSB
      * @return the value of the DSB in S.I. units
      */
-    public double getDcb(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
+    public double getDsb(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
         return getTimeSpanMap(obs1, obs2).get(date);
     }
 
@@ -191,7 +189,7 @@ public class Dsb {
      * @return the time span map for a given observation code pair
      */
     private TimeSpanMap<Double> getTimeSpanMap(final ObservationType obs1, final ObservationType obs2) {
-        return dcbCodeMap.get(new Pair<>(obs1, obs2));
+        return dsbCodeMap.get(new Pair<>(obs1, obs2));
     }
 
 }

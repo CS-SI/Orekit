@@ -39,12 +39,12 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
             if (siteCode.isEmpty()) {
                 // this is a satellite bias
                 final DsbSatellite dcb = parseInfo.getSatelliteDcb(prn);
-                dcb.getDcbData().addDcbLine(obs1, obs2, beginDate, finalDate, bias);
+                dcb.getDcbData().addDsbLine(obs1, obs2, beginDate, finalDate, bias);
             } else {
                 // this is a station bias
                 final DsbStation dcb       = parseInfo.getStationDcb(siteCode);
                 final SatelliteSystem satSystem = SatelliteSystem.parseSatelliteSystem(prn);
-                dcb.getDcbData(satSystem).addDcbLine(obs1, obs2, beginDate, finalDate, bias);
+                dcb.getDcbData(satSystem).addDsbLine(obs1, obs2, beginDate, finalDate, bias);
             }
         }
     },

@@ -85,7 +85,7 @@ class BlockParser<T extends ParseInfo<?>> implements LineParser<T> {
     /** {@inheritDoc} */
     @Override
     public Iterable<LineParser<T>> allowedNextParsers(final T parseInfo) {
-        return endPattern == null  ? siblingParsers : inBlockParsers;
+        return outsideBlock()  ? siblingParsers : inBlockParsers;
     }
 
     /** Check if we are outside block.
