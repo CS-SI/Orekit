@@ -83,7 +83,7 @@ public class AngularSeparationDetector extends AbstractDetector<AngularSeparatio
                                         final PVCoordinatesProvider beacon,
                                         final PVCoordinatesProvider observer,
                                         final double proximityAngle) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.beacon         = beacon;
         this.observer       = observer;
         this.proximityAngle = proximityAngle;

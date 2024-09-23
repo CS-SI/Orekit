@@ -76,8 +76,29 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
      */
     public RelativeDistanceDetector(final PVCoordinatesProvider secondaryPVProvider,
                                     final double distanceThreshold) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(), secondaryPVProvider,
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnEvent(), secondaryPVProvider,
                 distanceThreshold);
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * This constructor is to be used if the user wants to change the default behavior of the detector.
+     * </p>
+     *
+     * @param detectionSettings   Detection settings
+     * @param handler             Event handler to call at event occurrences.
+     * @param secondaryPVProvider PVCoordinates provider of the other object defining relative distance.
+     * @param distanceThreshold Relative distance threshold for event detection
+     * @see EventHandler
+     * @since 12.2
+     */
+    protected RelativeDistanceDetector(final EventDetectionSettings detectionSettings,
+                                       final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider,
+                                       final double distanceThreshold) {
+        super(detectionSettings, handler);
+        this.secondaryPVProvider = secondaryPVProvider;
+        this.distanceThreshold = distanceThreshold;
     }
 
     /**
@@ -93,13 +114,13 @@ public class RelativeDistanceDetector extends AbstractDetector<RelativeDistanceD
      * @param secondaryPVProvider PVCoordinates provider of the other object defining relative distance.
      * @param distanceThreshold Relative distance threshold for event detection
      * @see EventHandler
+     * @deprecated as of 12.2
      */
+    @Deprecated
     protected RelativeDistanceDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                        final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider,
                                        final double distanceThreshold) {
-        super(maxCheck, threshold, maxIter, handler);
-        this.secondaryPVProvider = secondaryPVProvider;
-        this.distanceThreshold = distanceThreshold;
+        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, secondaryPVProvider, distanceThreshold);
     }
 
     /**

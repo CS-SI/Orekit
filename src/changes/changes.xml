@@ -54,6 +54,9 @@
       <action dev="serrof" type="update" issue="1508">
         Use (Field)EventDetectionSettings in cylindrical shadow.
       </action>
+      <action dev="serrof" type="update" issue="1506">
+        Deprecated a few methods in (Field)AbstractDetector to increase use of (Field)EventDetectionSettings.
+      </action>
       <action dev="serrof" type="add" issue="1506">
         Add toGeodeticPoint in FieldGeodeticPoint.
       </action>

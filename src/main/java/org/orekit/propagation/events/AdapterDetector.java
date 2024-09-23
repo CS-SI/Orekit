@@ -85,4 +85,9 @@ public class AdapterDetector implements EventDetector {
         return detector.getHandler();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return detector.getDetectionSettings();
+    }
 }

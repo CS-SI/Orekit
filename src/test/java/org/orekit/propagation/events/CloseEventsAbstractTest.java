@@ -2188,7 +2188,7 @@ public abstract class CloseEventsAbstractTest {
                              int newMaxIter,
                              EventHandler newHandler,
                              List<AbsoluteDate> dates) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.eventTs = dates;
         }
 
@@ -2242,7 +2242,7 @@ public abstract class CloseEventsAbstractTest {
                              int newMaxIter,
                              EventHandler newHandler,
                              EventDetector g) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.g = g;
         }
 
@@ -2277,7 +2277,7 @@ public abstract class CloseEventsAbstractTest {
                                    int newMaxIter,
                                    EventHandler newHandler,
                                    List<AbsoluteDate> eventDates) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.eventTs = eventDates;
         }
 
@@ -2407,7 +2407,7 @@ public abstract class CloseEventsAbstractTest {
         private ResetChangesSignGenerator(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
                                           final EventHandler newHandler,
                                           final AbsoluteDate t0, final double y1, final double y2, final double change ) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.t0     = t0;
             this.y1     = y1;
             this.y2     = y2;

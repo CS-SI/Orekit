@@ -55,7 +55,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      */
     protected AbstractDetector(final double maxCheck, final double threshold, final int maxIter,
                                final EventHandler handler) {
-        this(AdaptableInterval.of(maxCheck), threshold, maxIter, handler);
+        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
     }
 
     /** Build a new instance.
@@ -64,7 +64,9 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @since 12.0
+     * @deprecated as of 12.2
      */
+    @Deprecated
     protected AbstractDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                final EventHandler handler) {
         this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
@@ -151,7 +153,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 12.0
      */
     public T withMaxCheck(final AdaptableInterval newMaxCheck) {
-        return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
+        return create(new EventDetectionSettings(newMaxCheck, getThreshold(), getMaxIterationCount()), getHandler());
     }
 
     /**
@@ -164,7 +166,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withMaxIter(final int newMaxIter) {
-        return create(getMaxCheckInterval(), getThreshold(), newMaxIter,  getHandler());
+        return create(new EventDetectionSettings(getMaxCheckInterval(), getThreshold(), newMaxIter), getHandler());
     }
 
     /**
@@ -177,7 +179,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withThreshold(final double newThreshold) {
-        return create(getMaxCheckInterval(), newThreshold, getMaxIterationCount(),  getHandler());
+        return create(new EventDetectionSettings(getMaxCheckInterval(), newThreshold, getMaxIterationCount()), getHandler());
     }
 
     /**
@@ -190,7 +192,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 12.2
      */
     public T withDetectionSettings(final EventDetectionSettings newSettings) {
-        return create(newSettings.getMaxCheckInterval(), newSettings.getThreshold(), newSettings.getMaxIterationCount(),
+        return create(new EventDetectionSettings(newSettings.getMaxCheckInterval(), newSettings.getThreshold(), newSettings.getMaxIterationCount()),
                 getHandler());
     }
 
@@ -204,7 +206,7 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @since 6.1
      */
     public T withHandler(final EventHandler newHandler) {
-        return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
+        return create(getDetectionSettings(), newHandler);
     }
 
     /** {@inheritDoc} */
@@ -219,9 +221,22 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @param newMaxIter maximum number of iterations in the event time search
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
+     * @deprecated as of 12.2. Will be removed in 13.0 and only the other signature shall remain
      */
-    protected abstract T create(AdaptableInterval newMaxCheck, double newThreshold,
-                                int newMaxIter, EventHandler newHandler);
+    @Deprecated
+    protected abstract T create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter,
+                                EventHandler newHandler);
+
+    /** Build a new instance.
+     * @param detectionSettings detection settings
+     * @param newHandler event handler to call at event occurrences
+     * @return a new instance of the appropriate sub-type
+     * @since 12.2
+     */
+    protected T create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return create(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(), detectionSettings.getMaxIterationCount(),
+            newHandler);
+    }
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

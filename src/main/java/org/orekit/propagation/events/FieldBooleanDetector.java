@@ -86,7 +86,7 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
                                    final T newThreshold,
                                    final int newMaxIter,
                                    final FieldEventHandler<T> newHandler) {
-        super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        super(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
         this.detectors = detectors;
         this.operator = operator;
     }
@@ -311,7 +311,7 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
          */
         public abstract <T extends CalculusFieldElement<T>> T combine(T g1, T g2);
 
-    };
+    }
 
     /** Comparator for field elements.
      * @param <T> type of the field elements

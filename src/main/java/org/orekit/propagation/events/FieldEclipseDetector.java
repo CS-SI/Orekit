@@ -98,7 +98,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     protected FieldEclipseDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                    final int maxIter, final FieldEventHandler<T> handler,
                                    final OccultationEngine occultationEngine, final T margin, final boolean totalEclipse) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.occultationEngine = occultationEngine;
         this.margin            = margin;
         this.totalEclipse      = totalEclipse;

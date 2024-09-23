@@ -79,6 +79,27 @@ public class FieldRelativeDistanceDetector<T extends CalculusFieldElement<T>>
      * This constructor is to be used if the user wants to change the default behavior of the detector.
      * </p>
      *
+     * @param detectionSettings   Detection settings.
+     * @param handler             Event handler to call at event occurrences.
+     * @param secondaryPVProvider PVCoordinates provider of the other object defining relative distance.
+     * @param distanceThreshold Relative distance threshold for event detection
+     * @see FieldEventHandler
+     * @since 12.2
+     */
+    protected FieldRelativeDistanceDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                            final FieldEventHandler<T> handler, final FieldPVCoordinatesProvider<T> secondaryPVProvider,
+                                            final T distanceThreshold) {
+        super(detectionSettings, handler);
+        this.secondaryPVProvider = secondaryPVProvider;
+        this.distanceThreshold = distanceThreshold;
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * This constructor is to be used if the user wants to change the default behavior of the detector.
+     * </p>
+     *
      * @param maxCheck            Maximum checking interval.
      * @param threshold           Convergence threshold (s).
      * @param maxIter             Maximum number of iterations in the event time search.
@@ -86,13 +107,13 @@ public class FieldRelativeDistanceDetector<T extends CalculusFieldElement<T>>
      * @param secondaryPVProvider PVCoordinates provider of the other object defining relative distance.
      * @param distanceThreshold Relative distance threshold for event detection
      * @see FieldEventHandler
+     * @deprecated as of 12.2
      */
+    @Deprecated
     protected FieldRelativeDistanceDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                             final FieldEventHandler<T> handler, final FieldPVCoordinatesProvider<T> secondaryPVProvider,
                                             final T distanceThreshold) {
-        super(maxCheck, threshold, maxIter, handler);
-        this.secondaryPVProvider = secondaryPVProvider;
-        this.distanceThreshold = distanceThreshold;
+        this(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler, secondaryPVProvider, distanceThreshold);
     }
 
     /**

@@ -112,7 +112,7 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
                                     final int maxIter, final FieldEventHandler<T> handler,
                                     final T altitude,
                                     final BodyShape bodyShape) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
     }
