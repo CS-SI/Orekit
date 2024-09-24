@@ -105,23 +105,6 @@ class CylindricallyShadowedLightFluxModelTest {
         }
     }
 
-    @Test
-    void testGetUnoccultedFluxVector() {
-        // GIVEN
-        final ComplexField field = ComplexField.getInstance();
-        final double occultingBodyRadius = 0.5;
-        final FieldVector3D<Complex> sunPosition = FieldVector3D.getPlusI(field).scalarMultiply(10.);
-        final ExtendedPositionProvider sun = mockFieldProvider(sunPosition);
-        final CylindricallyShadowedLightFluxModel model = new CylindricallyShadowedLightFluxModel(Double.NaN, sun, occultingBodyRadius);
-        final Vector3D position = new Vector3D(1., 1.);
-        final FieldVector3D<Complex> fieldPosition = new FieldVector3D<>(field, position);
-        // WHEN
-        final FieldVector3D<Complex> fieldFlux = model.getUnoccultedFluxVector(fieldPosition);
-        // THEN
-        final Vector3D expectedFlux = model.getUnoccultedFluxVector(position);
-        Assertions.assertEquals(expectedFlux, fieldFlux.toVector3D());
-    }
-
     @SuppressWarnings("unchecked")
     private ExtendedPositionProvider mockFieldProvider(final FieldVector3D<Complex> sunPosition) {
         final ExtendedPositionProvider mockedProvider = Mockito.mock(ExtendedPositionProvider.class);
