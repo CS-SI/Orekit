@@ -666,14 +666,10 @@ public class RinexObservationParser {
                             }
 
                             for (int i = 19; i + 3 < RinexUtils.LABEL_INDEX && parseInfo.satPhaseShift.size() < parseInfo.phaseShiftNbSat; i += 4) {
-                                final SatelliteSystem system = line.charAt(i) == ' ' ?
-                                                               parseInfo.currentSystem :
-                                                               SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, i, 1));
-                                final int             prn    = RinexUtils.parseInt(line, i + 1, 2);
-                                parseInfo.satPhaseShift.add(new SatInSystem(system,
-                                                                            system == SatelliteSystem.SBAS ?
-                                                                            prn + 100 :
-                                                                            (system == SatelliteSystem.QZSS ? prn + 192 : prn)));
+                                final String satSpec = line.charAt(i) == ' ' ?
+                                                       parseInfo.currentSystem.getKey() + line.substring(i + 1, i + 3) :
+                                                       line.substring(i, i + 3);
+                                parseInfo.satPhaseShift.add(new SatInSystem(satSpec));
                             }
 
                             if (parseInfo.satPhaseShift.size() == parseInfo.phaseShiftNbSat) {
@@ -701,10 +697,8 @@ public class RinexObservationParser {
                                 for (int i = 4;
                                      i < RinexUtils.LABEL_INDEX && parseInfo.file.getHeader().getGlonassChannels().size() < parseInfo.nbGlonass;
                                      i += 7) {
-                                    final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, i, 1));
-                                    final int             prn    = RinexUtils.parseInt(line, i + 1, 2);
-                                    final int             k      = RinexUtils.parseInt(line, i + 4, 2);
-                                    parseInfo.file.getHeader().addGlonassChannel(new GlonassSatelliteChannel(new SatInSystem(system, prn), k));
+                                    final int k = RinexUtils.parseInt(line, i + 4, 2);
+                                    parseInfo.file.getHeader().addGlonassChannel(new GlonassSatelliteChannel(new SatInSystem(line.substring(i, i + 3)), k));
                                 }
 
                             },
@@ -763,13 +757,8 @@ public class RinexObservationParser {
                       (line, parseInfo) ->  {
                           final String systemName = RinexUtils.parseString(line, 3, 1);
                           if (!systemName.isEmpty()) {
-                              final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(systemName);
-                              final int             prn    = RinexUtils.parseInt(line, 4, 2);
-                              parseInfo.currentSat         = new SatInSystem(system,
-                                                                             system == SatelliteSystem.SBAS ?
-                                                                             prn + 100 :
-                                                                             (system == SatelliteSystem.QZSS ? prn + 192 : prn));
-                              parseInfo.nbTypes            = 0;
+                              parseInfo.currentSat = new SatInSystem(line.substring(3, 6));
+                              parseInfo.nbTypes    = 0;
                           }
                           final List<ObservationType> types = parseInfo.file.getHeader().getTypeObs().get(parseInfo.currentSat.getSystem());
 
@@ -832,19 +821,18 @@ public class RinexObservationParser {
                               (line, parseInfo) -> {
                                   for (int index = 32; parseInfo.satObs.size() < parseInfo.nbSatObs && index < 68; index += 3) {
                                       // add one PRN to the list of observed satellites
-                                      final SatelliteSystem system = line.charAt(index) == ' ' ?
-                                                                     parseInfo.file.getHeader().getSatelliteSystem() :
-                                                                     SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, index, 1));
-                                      if (system != parseInfo.file.getHeader().getSatelliteSystem() &&
+                                      final String satSpec =
+                                              line.charAt(index) == ' ' ?
+                                              parseInfo.file.getHeader().getSatelliteSystem().getKey() + line.substring(index + 1, index + 3) :
+                                              line.substring(index, index + 3);
+                                      final SatInSystem satellite = new SatInSystem(satSpec);
+                                      if (satellite.getSystem() != parseInfo.file.getHeader().getSatelliteSystem() &&
                                           parseInfo.file.getHeader().getSatelliteSystem() != SatelliteSystem.MIXED) {
                                           throw new OrekitException(OrekitMessages.INCONSISTENT_SATELLITE_SYSTEM,
                                                                     parseInfo.lineNumber, parseInfo.name,
                                                                     parseInfo.file.getHeader().getSatelliteSystem(),
-                                                                    system);
+                                                                    satellite.getSystem());
                                       }
-                                      final int             prn       = RinexUtils.parseInt(line, index + 1, 2);
-                                      final SatInSystem     satellite = new SatInSystem(system,
-                                                                                        system == SatelliteSystem.SBAS ? prn + 100 : prn);
                                       parseInfo.satObs.add(satellite);
                                       // note that we *must* use parseInfo.file.getHeader().getSatelliteSystem() as it was used to set up parseInfo.mapTypeObs
                                       // and it may be MIXED to be applied to all satellites systems
@@ -976,12 +964,7 @@ public class RinexObservationParser {
         /** Parser for Rinex 3 observation line. */
         RINEX_3_OBSERVATION(line -> true,
                             (line, parseInfo) -> {
-                                final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(RinexUtils.parseString(line, 0, 1));
-                                final int             prn    = RinexUtils.parseInt(line, 1, 2);
-                                final SatInSystem sat = new SatInSystem(system,
-                                                                        system == SatelliteSystem.SBAS ?
-                                                                        prn + 100 :
-                                                                        (system == SatelliteSystem.QZSS ? prn + 192 : prn));
+                                final SatInSystem sat = new SatInSystem(line.substring(0, 3));
                                 final List<ObservationType> types = parseInfo.file.getHeader().getTypeObs().get(sat.getSystem());
                                 for (int index = 3;
                                      parseInfo.observations.size() < types.size();

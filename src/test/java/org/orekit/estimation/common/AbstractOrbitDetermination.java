@@ -103,7 +103,8 @@ import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservation;
 import org.orekit.files.rinex.observation.RinexObservationParser;
-import org.orekit.files.sinex.SinexLoader;
+import org.orekit.files.sinex.Sinex;
+import org.orekit.files.sinex.SinexParser;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -373,8 +374,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
 
         // read sinex files
-        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final Sinex                       stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final Sinex                       stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
 
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
@@ -655,8 +656,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
         // read sinex files
-        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final Sinex                       stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final Sinex                       stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
 
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
@@ -1387,15 +1388,15 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
                                                         final AbsoluteDate refDate,
-                                                        final SinexLoader sinexPosition,
-                                                        final SinexLoader sinexEcc,
+                                                        final Sinex sinexPosition,
+                                                        final Sinex sinexEcc,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
         throws NoSuchElementException {
 
         final Map<String, StationData> stations       = new HashMap<>();
 
-        final boolean   useTimeSpanModel      = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
+        final boolean   useTimeSpanModel                  = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
         final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
         final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
@@ -1498,7 +1499,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final GeodeticPoint position;
             if (sinexPosition != null) {
                 // A sinex file is available -> use the station positions inside the file
-                final Station stationData = sinexPosition.getStation(stationNames[i].substring(0, 4));
+                final Station stationData = sinexPosition.getStations().get(stationNames[i].substring(0, 4));
                 position = body.transform(stationData.getPosition(), body.getBodyFrame(), stationData.getEpoch());
             } else {
                 // If a sinex file is not available -> use the values in input file
@@ -1519,7 +1520,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
-                final Station stationEcc = sinexEcc.getStation(stationNames[i]);
+                final Station stationEcc = sinexEcc.getStations().get(stationNames[i]);
                 final Vector3D eccentricities;
                 if (stationEcc.getEccRefSystem() == Station.ReferenceSystem.UNE) {
                     eccentricities = stationEcc.getEccentricities(refDate);
@@ -1662,7 +1663,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                                              stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
-                        totalDelayAfter.setName(subName + TimeSpanEstimatedModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
+                        totalDelayAfter.setName(subName + TimeSpanEstimatedModel.DATE_AFTER +
+                                                epoch.toString(TimeScalesFactory.getUTC()) + " " +
+                                                EstimatedModel.TOTAL_ZENITH_DELAY);
 
                         // Add models to the time span tropospheric model
                         // A very ugly trick is used when no measurements are available for a specific time span.
@@ -1963,9 +1966,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @return container for sinex data or null if key does not exist
      * @throws IOException if file is not read properly
      */
-    private SinexLoader readSinexFile(final File input,
-                                      final KeyValueFileParser<ParameterKey> parser,
-                                      final ParameterKey key)
+    private Sinex readSinexFile(final File input,
+                                final KeyValueFileParser<ParameterKey> parser,
+                                final ParameterKey key)
         throws IOException {
 
         // Verify if the key is defined
@@ -1984,7 +1987,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             }
 
             // Return a configured SINEX file
-            return new SinexLoader(nd);
+            return new SinexParser(TimeScalesFactory.getTimeScales()).parse(nd);
 
         } else {
 
