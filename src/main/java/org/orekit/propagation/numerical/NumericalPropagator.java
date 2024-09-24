@@ -107,7 +107,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngleType#TRUE true} longitude argument. If the central attraction coefficient
+ * {@link PositionAngleType#ECCENTRIC} longitude argument. If the central attraction coefficient
  * is not explicitly specified, the one used to define the initial orbit will be used.
  * However, specifying only the initial state and perhaps the central attraction coefficient
  * would mean the propagator would use only Keplerian forces. In this case, the simpler {@link
@@ -167,6 +167,12 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class NumericalPropagator extends AbstractIntegratedPropagator {
 
+    /** Default orbit type. */
+    public static final OrbitType DEFAULT_ORBIT_TYPE = OrbitType.EQUINOCTIAL;
+
+    /** Default position angle type. */
+    public static final PositionAngleType DEFAULT_POSITION_ANGLE_TYPE = PositionAngleType.ECCENTRIC;
+
     /** Space dimension. */
     private static final int SPACE_DIMENSION = 3;
 
@@ -195,7 +201,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
@@ -216,7 +222,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * called after creation, the integrated orbit will follow a Keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
      * for {@link #setOrbitType(OrbitType) propagation
-     * orbit type} and {@link PositionAngleType#TRUE} for {@link
+     * orbit type} and {@link PositionAngleType#ECCENTRIC} for {@link
      * #setPositionAngleType(PositionAngleType) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      * @param attitudeProvider the attitude law.
@@ -230,8 +236,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         initMapper();
         setAttitudeProvider(attitudeProvider);
         clearStepHandlers();
-        setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngleType.TRUE);
+        setOrbitType(DEFAULT_ORBIT_TYPE);
+        setPositionAngleType(DEFAULT_POSITION_ANGLE_TYPE);
     }
 
     /** Set the flag to ignore or not the creation of a {@link NewtonianAttraction}.

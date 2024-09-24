@@ -100,6 +100,9 @@
         <action dev="serrof" type="update" issue="1382">
           Add direction of propagation as argument in (Field)AdaptableInterval.
         </action>
+        <action dev="serrof" type="update" issue="1373">
+            Change default position angle type to ECCENTRIC in (Field)NumericalPropagator.
+        </action>
         <action dev="luc" type="update" issue="1350">
           Allow measurement generation feature to return estimated measurements,
           with fully populated states.
