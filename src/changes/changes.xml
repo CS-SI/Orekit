@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1542">
+            Use SatInSystem in SatelliteAntenna.
+        </action>
         <action dev="luc" type="fix" issue="1538">
             Revamped Sinex and Sinex-bias parsing.
         </action>
