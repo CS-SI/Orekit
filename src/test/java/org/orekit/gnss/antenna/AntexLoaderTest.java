@@ -305,11 +305,11 @@ public class AntexLoaderTest {
                                                         23, 59, 59.9999999,
                                                         TimeScalesFactory.getGPS());
         final SatelliteAntenna antenna = tsm.get(startDate.shiftedBy(oneMilliSecond));
-        Assertions.assertEquals(system,         antenna.getSatelliteSystem());
+        Assertions.assertEquals(system,         antenna.getSatInSystem().getSystem());
         Assertions.assertEquals(type,           antenna.getType());
         Assertions.assertEquals(satType,        antenna.getSatelliteType());
         Assertions.assertEquals(satCode,        antenna.getSatelliteCode());
-        Assertions.assertEquals(prnNumber,      antenna.getPrnNumber());
+        Assertions.assertEquals(prnNumber,      antenna.getSatInSystem().getPRN());
         Assertions.assertEquals(cosparId,       antenna.getCosparID());
         Assertions.assertEquals(0.0,            startDate.durationFrom(antenna.getValidFrom()), 1.0e-10);
         if (endDate == AbsoluteDate.FUTURE_INFINITY) {

@@ -43,6 +43,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.RadioWave;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -130,8 +131,7 @@ public class AntexLoader {
      */
     private void addSatelliteAntenna(final SatelliteAntenna antenna) {
         try {
-            final TimeSpanMap<SatelliteAntenna> existing =
-                            findSatelliteAntenna(antenna.getSatelliteSystem(), antenna.getPrnNumber());
+            final TimeSpanMap<SatelliteAntenna> existing = findSatelliteAntenna(antenna.getSatInSystem());
             // this is an update for a satellite antenna, with new time span
             existing.addValidAfter(antenna, antenna.getValidFrom(), false);
         } catch (OrekitException oe) {
@@ -148,25 +148,20 @@ public class AntexLoader {
     }
 
     /** Find the time map for a specific satellite antenna.
-     * @param satelliteSystem satellite system
-     * @param prnNumber number within the satellite system
+     * @param satInSystem satellite in system
      * @return time map for the antenna
      */
-    public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatelliteSystem satelliteSystem,
-                                                              final int prnNumber) {
+    public TimeSpanMap<SatelliteAntenna> findSatelliteAntenna(final SatInSystem satInSystem) {
         final Optional<TimeSpanMap<SatelliteAntenna>> existing =
                         satellitesAntennas.
                         stream().
-                        filter(m -> {
-                            final SatelliteAntenna first = m.getFirstSpan().getData();
-                            return first.getSatelliteSystem() == satelliteSystem &&
-                                   first.getPrnNumber() == prnNumber;
-                        }).findFirst();
+                        filter(m -> m.getFirstSpan().getData().getSatInSystem().equals(satInSystem)).
+                        findFirst();
         if (existing.isPresent()) {
             return existing.get();
         } else {
             throw new OrekitException(OrekitMessages.CANNOT_FIND_SATELLITE_IN_SYSTEM,
-                                      prnNumber, satelliteSystem);
+                                      satInSystem.getPRN(), satInSystem.getSystem());
         }
     }
 
@@ -214,11 +209,10 @@ public class AntexLoader {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8))) {
 
                 // placeholders for parsed data
-                SatelliteSystem                  satelliteSystem      = null;
+                SatInSystem                      satInSystem          = null;
                 String                           antennaType          = null;
                 SatelliteType                    satelliteType        = null;
                 String                           serialNumber         = null;
-                int                              prnNumber            = -1;
                 int                              satelliteCode        = -1;
                 String                           cosparID             = null;
                 AbsoluteDate                     validFrom            = AbsoluteDate.PAST_INFINITY;
@@ -259,11 +253,10 @@ public class AntexLoader {
                             break;
                         case "START OF ANTENNA" :
                             // reset antenna data
-                            satelliteSystem      = null;
+                            satInSystem          = null;
                             antennaType          = null;
                             satelliteType        = null;
                             serialNumber         = null;
-                            prnNumber            = -1;
                             satelliteCode        = -1;
                             cosparID             = null;
                             validFrom            = AbsoluteDate.PAST_INFINITY;
@@ -287,26 +280,11 @@ public class AntexLoader {
                                 satelliteType = SatelliteType.parseSatelliteType(antennaType);
                                 final String satField = parseString(line, 20, 20);
                                 if (!satField.isEmpty()) {
-                                    satelliteSystem = SatelliteSystem.parseSatelliteSystem(satField);
-                                    final int n = parseInt(satField, 1, 19);
-                                    switch (satelliteSystem) {
-                                        case GPS:
-                                        case GLONASS:
-                                        case GALILEO:
-                                        case BEIDOU:
-                                        case IRNSS:
-                                            prnNumber = n;
-                                            break;
-                                        case QZSS:
-                                            prnNumber = n + 192;
-                                            break;
-                                        case SBAS:
-                                            prnNumber = n + 100;
-                                            break;
-                                        default:
-                                            // MIXED satellite system is not allowed here
-                                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                      lineNumber, name, line);
+                                    satInSystem = new SatInSystem(satField);
+                                    if (satInSystem.getSystem() == SatelliteSystem.MIXED) {
+                                        // MIXED satellite system is not allowed here
+                                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                                  lineNumber, name, line);
                                     }
                                     satelliteCode = parseInt(line, 41, 9); // we drop the system type
                                     cosparID      = parseString(line, 50, 10);
@@ -420,8 +398,7 @@ public class AntexLoader {
                                 addReceiverAntenna(new ReceiverAntenna(antennaType, sinexCode, patterns, serialNumber));
                             } else {
                                 addSatelliteAntenna(new SatelliteAntenna(antennaType, sinexCode, patterns,
-                                                                         satelliteSystem, prnNumber,
-                                                                         satelliteType, satelliteCode,
+                                                                         satInSystem, satelliteType, satelliteCode,
                                                                          cosparID, validFrom, validUntil));
                             }
                             break;
