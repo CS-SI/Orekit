@@ -17,6 +17,7 @@
 
 package org.orekit.files.sinex;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -191,15 +192,11 @@ public class SinexBiasParserTest {
         // Test getStationId : Station Case
         Assertions.assertEquals(stationIdRef, DSBTest.getSiteCode());
          
-        //Test getAvailableSystems
-        final SatelliteSystem sat1 = SatelliteSystem.parseSatelliteSystem("G");
-        final SatelliteSystem sat2 = SatelliteSystem.parseSatelliteSystem("E");
-        final Set<SatelliteSystem> setSystemRef = new HashSet<>();
-        setSystemRef.add(sat1);
-        setSystemRef.add(sat2);
-        
-        final Iterable<SatelliteSystem> setSystem = DSBTest.getAvailableSatelliteSystems();
-        Assertions.assertEquals(setSystemRef, setSystem);
+        final Collection<SatelliteSystem> availableSystems = DSBTest.getAvailableSatelliteSystems();
+        Assertions.assertEquals(2, availableSystems.size());
+        Assertions.assertTrue(availableSystems.contains(SatelliteSystem.GPS));
+        Assertions.assertTrue(availableSystems.contains(SatelliteSystem.GALILEO));
+
     }
 
     @Test
@@ -257,6 +254,10 @@ public class SinexBiasParserTest {
         final TimeSystem ts = sinexBias.getDescription().getTimeSystem();
         Assertions.assertEquals(TimeSystem.GALILEO, ts);
         final TimeScale timeScale = ts.getTimeScale(TimeScalesFactory.getTimeScales());
+
+        Assertions.assertEquals(1, staOsb.getAvailableSatelliteSystems().size());
+        Assertions.assertTrue(staOsb.getAvailableSatelliteSystems().contains(SatelliteSystem.GALILEO));
+        Assertions.assertEquals("TUKT", staOsb.getSiteCode());
 
         // Observations test
         HashSet<ObservationType> types = osb.getAvailableObservations();

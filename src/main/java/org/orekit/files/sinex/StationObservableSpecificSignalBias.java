@@ -19,6 +19,7 @@ package org.orekit.files.sinex;
 
 import org.orekit.gnss.SatelliteSystem;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -66,7 +67,7 @@ public class StationObservableSpecificSignalBias {
     /** Get the satellite systems available for the station.
      * @return a Set containing all SatelliteSystems available for DSB computation.
      */
-    public Iterable<SatelliteSystem> getAvailableSatelliteSystems() {
+    public Collection<SatelliteSystem> getAvailableSatelliteSystems() {
         return osbMap.keySet();
     }
 
