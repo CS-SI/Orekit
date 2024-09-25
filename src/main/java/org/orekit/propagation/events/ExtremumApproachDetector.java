@@ -89,7 +89,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      *                            approach.
      */
     public ExtremumApproachDetector(final PVCoordinatesProvider secondaryPVProvider) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnIncreasing(), secondaryPVProvider);
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing(), secondaryPVProvider);
     }
 
     /**
@@ -108,7 +108,25 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      */
     protected ExtremumApproachDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                        final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider) {
-        super(maxCheck, threshold, maxIter, handler);
+        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, secondaryPVProvider);
+    }
+
+    /**
+     * Constructor.
+     * <p>
+     * This constructor is to be used if the user wants to change the default behavior of the detector.
+     * </p>
+     *
+     * @param detectionSettings   Detection settings.
+     * @param handler             Event handler to call at event occurrences.
+     * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
+     *                            approach.
+     * @see EventHandler
+     * @since 12.2
+     */
+    protected ExtremumApproachDetector(final EventDetectionSettings detectionSettings,
+                                       final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider) {
+        super(detectionSettings, handler);
         this.secondaryPVProvider = secondaryPVProvider;
     }
 

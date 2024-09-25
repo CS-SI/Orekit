@@ -96,7 +96,7 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
     protected FieldNodeDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                 final int maxIter, final FieldEventHandler<T> handler,
                                 final Frame frame) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.frame = frame;
     }
 

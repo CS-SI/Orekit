@@ -115,7 +115,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
                                                 final int maxIter, final FieldEventHandler<T> handler,
                                                 final FieldEventDetector<T> rawDetector,
                                                 final FieldEnablingPredicate<T> enabler) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];

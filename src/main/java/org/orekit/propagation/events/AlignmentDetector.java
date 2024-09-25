@@ -110,7 +110,7 @@ public class AlignmentDetector extends AbstractDetector<AlignmentDetector> {
                                 final int maxIter, final EventHandler handler,
                                 final PVCoordinatesProvider body,
                                 final double alignAngle) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         final SinCos sc    = FastMath.sinCos(alignAngle);
         this.body          = body;
         this.alignAngle    = alignAngle;

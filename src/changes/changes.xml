@@ -112,8 +112,14 @@
         </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="pascal" type="fix" issue="947">
+        Fix negative eccentricity issue with Brouwer-Lyddane propagator.
+      </action>
       <action dev="luc" type="update" issue="1487">
         Additional protection for zenith line-of-sight in NeQuick-G model.
+      </action>
+      <action dev="serrof" type="add" issue="1539">
+        Add abstract class for solar flux model with spherical body.
       </action>
       <action dev="serrof" type="update" issue="1536">
         Override methods in (Field) static transform identity.
@@ -144,6 +150,9 @@
       </action>
       <action dev="serrof" type="update" issue="1508">
         Use (Field)EventDetectionSettings in cylindrical shadow.
+      </action>
+      <action dev="serrof" type="update" issue="1506">
+        Deprecated a few methods in (Field)AbstractDetector to increase use of (Field)EventDetectionSettings.
       </action>
       <action dev="serrof" type="add" issue="1506">
         Add toGeodeticPoint in FieldGeodeticPoint.

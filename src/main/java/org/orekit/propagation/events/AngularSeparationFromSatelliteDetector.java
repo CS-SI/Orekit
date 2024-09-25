@@ -83,7 +83,7 @@ public class AngularSeparationFromSatelliteDetector extends AbstractDetector<Ang
                                                      final PVCoordinatesProvider primaryObject,
                                                      final PVCoordinatesProvider secondaryObject,
                                                      final double proximityAngle) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.primaryObject         = primaryObject;
         this.secondaryObject       = secondaryObject;
         this.proximityAngle = proximityAngle;

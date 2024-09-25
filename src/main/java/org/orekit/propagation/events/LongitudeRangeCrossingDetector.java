@@ -88,7 +88,7 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
     protected LongitudeRangeCrossingDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
                                              final EventHandler handler,
                                              final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.body     = body;
         this.fromLongitude = ensureLongitudePositiveContinuity(fromLongitude);
         this.toLongitude = ensureLongitudePositiveContinuity(toLongitude);

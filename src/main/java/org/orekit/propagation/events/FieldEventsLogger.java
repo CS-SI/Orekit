@@ -59,7 +59,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
      * </p>
      */
     public FieldEventsLogger() {
-        log = new ArrayList<FieldEventsLogger.FieldLoggedEvent<T>>();
+        log = new ArrayList<>();
     }
 
     /** Monitor an event detector.
@@ -102,7 +102,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
      * @return an immutable copy of the logged events
      */
     public List<FieldLoggedEvent<T>> getLoggedEvents() {
-        return new ArrayList<FieldEventsLogger.FieldLoggedEvent<T>>(log);
+        return new ArrayList<>(log);
     }
 
     /** Class for logged events entries.
@@ -166,9 +166,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
          * @param detector events detector to wrap
          */
         FieldLoggingWrapper(final FieldEventDetector<T> detector) {
-            this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), null,
-                 detector);
+            this(detector.getDetectionSettings(), null, detector);
         }
 
         /** Private constructor with full parameters.
@@ -177,17 +175,14 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
          * API with the various {@code withXxx()} methods to set up the instance
          * in a readable manner without using a huge amount of parameters.
          * </p>
-         * @param maxCheck maximum checking interval
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
+         * @param detectionSettings detection settings
          * @param handler event handler to call at event occurrences
          * @param detector events detector to wrap
          * @since 6.1
          */
-        private FieldLoggingWrapper(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                    final int maxIter, final FieldEventHandler<T> handler,
+        private FieldLoggingWrapper(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
                                     final FieldEventDetector<T> detector) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(detectionSettings, handler);
             this.detector = detector;
         }
 
@@ -195,7 +190,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
         @Override
         protected FieldLoggingWrapper create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                              final int newMaxIter, final FieldEventHandler<T> newHandler) {
-            return new FieldLoggingWrapper(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
+            return new FieldLoggingWrapper(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler, detector);
         }
 
         /** Log an event.
@@ -207,6 +202,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void init(final FieldSpacecraftState<T> s0,
                          final FieldAbsoluteDate<T> t) {
             super.init(s0, t);
@@ -219,6 +215,7 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
         }
 
         /** {@inheritDoc} */
+        @Override
         public FieldEventHandler<T> getHandler() {
 
             final FieldEventHandler<T> handler = detector.getHandler();

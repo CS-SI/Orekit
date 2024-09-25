@@ -132,7 +132,7 @@ public class FootprintOverlapDetector extends AbstractDetector<FootprintOverlapD
                                        final double samplingStep,
                                        final List<SamplingPoint> sampledZone) {
 
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.fov          = fov;
         this.body         = body;
         this.samplingStep = samplingStep;

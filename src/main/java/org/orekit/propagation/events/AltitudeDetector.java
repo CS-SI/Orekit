@@ -107,7 +107,7 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
                                final int maxIter, final EventHandler handler,
                                final double altitude,
                                final BodyShape bodyShape) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
     }

@@ -82,7 +82,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
     protected ElevationExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
                                         final int maxIter, final EventHandler handler,
                                         final TopocentricFrame topo) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.topo = topo;
     }
 
