@@ -203,7 +203,7 @@ public class SinexBiasParserTest {
     }
 
     @Test
-    public void testOsbfile() {
+    public void testOsbSatellite() {
         SinexBias sinexBias = load("/sinex/code.bia");
         SatelliteObservableSpecificSignalBias satOsb = sinexBias.getSatellitesOsb().get(new SatInSystem("E08"));
         ObservableSpecificSignalBias osb = satOsb.getOsb();
@@ -241,6 +241,49 @@ public class SinexBiasParserTest {
                                                        TimeComponents.H00,
                                                        timeScale));
         double valueOsbReal = -6.7298e-9;
+
+        Assertions.assertEquals(valueOsbReal, valueOsb, 1e-13);
+
+    }
+
+    @Test
+    public void testOsbStation() {
+        SinexBias sinexBias = load("/sinex/station.bia");
+        StationObservableSpecificSignalBias staOsb = sinexBias.getStationsOsb().get("TUKT");
+        ObservableSpecificSignalBias osb = staOsb.getOsb(SatelliteSystem.GALILEO);
+        Assertions.assertTrue(sinexBias.getSatellitesDsb().isEmpty());
+        Assertions.assertTrue(sinexBias.getStationsDsb().isEmpty());
+
+        final TimeSystem ts = sinexBias.getDescription().getTimeSystem();
+        Assertions.assertEquals(TimeSystem.GALILEO, ts);
+        final TimeScale timeScale = ts.getTimeScale(TimeScalesFactory.getTimeScales());
+
+        // Observations test
+        HashSet<ObservationType> types = osb.getAvailableObservations();
+        Assertions.assertEquals(3, types.size());
+        Assertions.assertTrue(types.contains(PredefinedObservationType.C1C));
+        Assertions.assertTrue(types.contains(PredefinedObservationType.C1X));
+        Assertions.assertTrue(types.contains(PredefinedObservationType.C6A));
+
+        // Minimum Date test
+        AbsoluteDate refFirstDate = new AbsoluteDate(new DateComponents(2024, 237),
+                                                     TimeComponents.H00,
+                                                     timeScale);
+        AbsoluteDate firstDate =  osb.getMinimumValidDateForObservation(PredefinedObservationType.C1C);
+        Assertions.assertEquals(refFirstDate, firstDate);
+
+        // Max Date Test
+        AbsoluteDate refLastDate = new AbsoluteDate(new DateComponents(2024, 267),
+                                                    TimeComponents.H00,
+                                                    timeScale);
+        AbsoluteDate lastDate =  osb.getMaximumValidDateForObservation(PredefinedObservationType.C1X);
+        Assertions.assertEquals(refLastDate, lastDate);
+
+        double valueOsb = osb.getBias(PredefinedObservationType.C6A,
+                                      new AbsoluteDate(new DateComponents(2024, 250),
+                                                       TimeComponents.H00,
+                                                       timeScale));
+        double valueOsbReal = -18.5167e-9;
 
         Assertions.assertEquals(valueOsbReal, valueOsb, 1e-13);
 
