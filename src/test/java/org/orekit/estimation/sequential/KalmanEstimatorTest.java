@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
+import org.orekit.estimation.TLEEstimationTestUtils;
 import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
 import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
 import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
@@ -54,7 +55,11 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -62,6 +67,31 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class KalmanEstimatorTest {
+
+    @Test
+    void testEstimationStepWithBStarOnly() {
+        // GIVEN
+        TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
+        String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
+        final TLE tle = new TLE(line1, line2);
+        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle,
+                PositionAngleType.TRUE, 1., new FixedPointTleGenerationAlgorithm());
+        for (final ParameterDriver driver: propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
+        }
+        propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        final KalmanEstimatorBuilder builder = new KalmanEstimatorBuilder();
+        builder.addPropagationConfiguration(propagatorBuilder,
+                new ConstantProcessNoise(MatrixUtils.createRealMatrix(1, 1)));
+        final KalmanEstimator estimator = builder.build();
+        final AbsoluteDate measurementDate = tle.getDate().shiftedBy(1.0);
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        final Position positionMeasurement = new Position(measurementDate, propagator.getPosition(measurementDate,
+                propagator.getFrame()), 1., 1., new ObservableSatellite(0));
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> estimator.estimationStep(positionMeasurement));
+    }
 
     @Test
     public void testMissingPropagatorBuilder() {

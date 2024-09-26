@@ -30,6 +30,9 @@
       <action dev="serrof" type="add" issue="1539">
         Add abstract class for solar flux model with spherical body.
       </action>
+      <action dev="serrof" type="fix" issue="1537" due-to="markrutten">
+        Fix crash of EKF whithout orbital parameters and at least one propagation parameter to estimate.
+      </action>
       <action dev="serrof" type="update" issue="1536">
         Override methods in (Field) static transform identity.
       </action>

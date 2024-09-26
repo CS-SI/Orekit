@@ -148,7 +148,7 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
 
             // Derivatives of the state vector with respect to propagation parameters
             final int nbParams = estimatedPropagationParameters[k].getNbParams();
-            if (nbParams > 0) {
+            if (nbOrbParams > 0 && nbParams > 0) {
                 final RealMatrix dYdPp = harvesters[k].getParametersJacobian(predictedSpacecraftStates[k]);
 
                 // Fill 1st row, 2nd column (dY/dPp)
