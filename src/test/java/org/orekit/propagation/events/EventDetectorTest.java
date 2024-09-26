@@ -153,11 +153,6 @@ public class EventDetectorTest {
         public boolean outOfOrderCallDetected() {
             return outOfOrderCallDetected;
         }
-
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
-        }
-
     }
 
     @Test

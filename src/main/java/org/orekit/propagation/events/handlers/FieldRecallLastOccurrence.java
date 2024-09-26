@@ -80,4 +80,10 @@ public class FieldRecallLastOccurrence<T extends CalculusFieldElement<T>> implem
                                               final FieldSpacecraftState<T> oldState) {
         return wrappedHandler.resetState(detector, oldState);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final FieldSpacecraftState<T> finalState, final FieldEventDetector<T> detector) {
+        wrappedHandler.finish(finalState, detector);
+    }
 }
