@@ -216,6 +216,12 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
         /** {@inheritDoc} */
         @Override
+        public void finish(final FieldSpacecraftState<T> state) {
+            detector.finish(state);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public FieldEventHandler<T> getHandler() {
 
             final FieldEventHandler<T> handler = detector.getHandler();

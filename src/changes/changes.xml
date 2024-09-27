@@ -230,6 +230,9 @@
       <action dev="laura" type="add" issue="1413">
         Added method getMJD and getJD in AbsoluteDate.
       </action>
+      <action dev="serrof" type="add" issue="959">
+        Add finish method in (Field)EventDetector and call it in propagators.
+      </action>
     </release>
     <release version="12.1.1" date="25/06/2024"
              description="Version 12.1.1 is a patch release of Orekit.

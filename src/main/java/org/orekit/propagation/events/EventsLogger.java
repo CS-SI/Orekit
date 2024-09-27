@@ -217,6 +217,12 @@ public class EventsLogger {
 
         /** {@inheritDoc} */
         @Override
+        public void finish(final SpacecraftState state) {
+            detector.finish(state);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public EventHandler getHandler() {
 
             final EventHandler handler = detector.getHandler();

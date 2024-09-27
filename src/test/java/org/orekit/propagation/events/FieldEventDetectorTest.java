@@ -68,6 +68,29 @@ public class FieldEventDetectorTest {
     private double mu;
 
     @Test
+    void testFinish() {
+        // GIVEN
+        final FinishingHandler handler = new FinishingHandler();
+        final FieldEventDetector<?> mockedDetector = Mockito.mock(FieldEventDetector.class);
+        Mockito.when(mockedDetector.getHandler()).thenReturn(handler);
+        final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
+        Mockito.doCallRealMethod().when(mockedDetector).finish(mockedState);
+        // WHEN
+        mockedDetector.finish(mockedState);
+        // THEN
+        Assertions.assertTrue(handler.isFinished);
+    }
+
+    private static class FinishingHandler extends FieldContinueOnEvent {
+        boolean isFinished = false;
+
+        @Override
+        public void finish(FieldSpacecraftState finalState, FieldEventDetector detector) {
+            isFinished = true;
+        }
+    }
+
+    @Test
     void testGetDetectionSettings() {
         // GIVEN
         final FieldEventDetector mockedDetector = Mockito.mock(FieldEventDetector.class);
