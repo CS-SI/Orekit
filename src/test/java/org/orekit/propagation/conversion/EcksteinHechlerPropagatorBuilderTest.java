@@ -18,6 +18,7 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
@@ -78,10 +79,11 @@ public class EcksteinHechlerPropagatorBuilderTest {
                 PositionAngleType.MEAN, 10.0);
 
         // When
-        final AbstractPropagatorBuilder copyBuilder = builder.clone();
+        final EcksteinHechlerPropagatorBuilder copyBuilder = (EcksteinHechlerPropagatorBuilder) builder.clone();
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
+        Assertions.assertEquals(builder.getImpulseManeuvers().size(), copyBuilder.getImpulseManeuvers().size());
 
     }
 }

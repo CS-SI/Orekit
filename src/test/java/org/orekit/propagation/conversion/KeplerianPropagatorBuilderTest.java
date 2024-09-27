@@ -18,11 +18,15 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -35,10 +39,7 @@ public class KeplerianPropagatorBuilderTest {
     void testClone() {
 
         // Given
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                                               new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+        final Orbit orbit = getOrbit();
         final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
 
         // When
@@ -46,7 +47,40 @@ public class KeplerianPropagatorBuilderTest {
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
+        Assertions.assertEquals(builder.getImpulseManeuvers().size(), copyBuilder.getImpulseManeuvers().size());
 
+    }
+
+    @Test
+    void testClearImpulseManeuvers() {
+        // Given
+        final Orbit orbit = getOrbit();
+        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
+        final ImpulseManeuver mockedManeuver = Mockito.mock(ImpulseManeuver.class);
+        builder.addImpulseManeuver(mockedManeuver);
+
+        // When
+        builder.clearImpulseManeuvers();
+
+        // Then
+        final Propagator propagator = builder.buildPropagator();
+        Assertions.assertTrue(propagator.getEventsDetectors().isEmpty());
+    }
+
+    @Test
+    void testAddImpulseManeuver() {
+        // Given
+        final Orbit orbit = getOrbit();
+        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
+        final ImpulseManeuver mockedManeuver = Mockito.mock(ImpulseManeuver.class);
+
+        // When
+        builder.addImpulseManeuver(mockedManeuver);
+
+        // Then
+        final Propagator propagator = builder.buildPropagator();
+        Assertions.assertEquals(1, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(mockedManeuver, propagator.getEventsDetectors().toArray()[0]);
     }
 
     @Test
@@ -54,10 +88,7 @@ public class KeplerianPropagatorBuilderTest {
     void testCopyMethod() {
 
         // Given
-        final Orbit orbit = new CartesianOrbit(new PVCoordinates(
-                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
-                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+        final Orbit orbit = getOrbit();
         final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
 
         // When
@@ -65,6 +96,14 @@ public class KeplerianPropagatorBuilderTest {
 
         // Then
         assertPropagatorBuilderIsACopy(builder, copyBuilder);
+        Assertions.assertEquals(builder.getImpulseManeuvers().size(), copyBuilder.getImpulseManeuvers().size());
 
+    }
+
+    private static Orbit getOrbit() {
+        return new CartesianOrbit(new PVCoordinates(
+                new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
+                new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
+                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
     }
 }

@@ -28,6 +28,7 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -49,8 +50,8 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
     /** Force models used during the extrapolation of the orbit. */
     private final List<ForceModel> forceModels;
 
-    /** Current mass for initial state (kg). */
-    private double mass;
+    /** Impulse maneuvers. */
+    private final List<ImpulseManeuver> impulseManeuvers;
 
     /** Build a new instance.
      * <p>
@@ -102,10 +103,27 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, positionAngleType, positionScale, true, attitudeProvider);
+        super(referenceOrbit, positionAngleType, positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
         this.builder     = builder;
         this.forceModels = new ArrayList<>();
-        this.mass        = Propagator.DEFAULT_MASS;
+        this.impulseManeuvers = new ArrayList<>();
+    }
+
+    /**
+     * Add impulse maneuver.
+     * @param impulseManeuver impulse maneuver
+     * @since 12.2
+     */
+    public void addImpulseManeuver(final ImpulseManeuver impulseManeuver) {
+        impulseManeuvers.add(impulseManeuver);
+    }
+
+    /**
+     * Remove all impulse maneuvers.
+     * @since 12.2
+     */
+    public void clearImpulseManeuvers() {
+        impulseManeuvers.clear();
     }
 
     /** Create a copy of a NumericalPropagatorBuilder object.
@@ -119,10 +137,11 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
                                                        getPositionAngleType(),
                                                        getPositionScale(),
                                                        getAttitudeProvider());
-        copyBuilder.setMass(mass);
+        copyBuilder.setMass(getMass());
         for (ForceModel model : forceModels) {
             copyBuilder.addForceModel(model);
         }
+        impulseManeuvers.forEach(copyBuilder::addImpulseManeuver);
         return copyBuilder;
     }
 
@@ -174,22 +193,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         addSupportedParameters(model.getParametersDrivers());
     }
 
-    /** Get the mass.
-     * @return the mass
-     * @since 9.2
-     */
-    public double getMass()
-    {
-        return mass;
-    }
-
-    /** Set the initial mass.
-     * @param mass the mass (kg)
-     */
-    public void setMass(final double mass) {
-        this.mass = mass;
-    }
-
     /** {@inheritDoc} */
     public NumericalPropagator buildPropagator(final double[] normalizedParameters) {
 
@@ -197,7 +200,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         final Orbit           orbit    = createInitialOrbit();
         final Attitude        attitude =
                 getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState state    = new SpacecraftState(orbit, attitude, mass);
+        final SpacecraftState state    = new SpacecraftState(orbit, attitude, getMass());
 
         final NumericalPropagator propagator = new NumericalPropagator(
                 builder.buildIntegrator(orbit, getOrbitType()),
@@ -213,6 +216,7 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         for (ForceModel model : forceModels) {
             propagator.addForceModel(model);
         }
+        impulseManeuvers.forEach(propagator::addEventDetector);
 
         propagator.resetInitialState(state);
 
