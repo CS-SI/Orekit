@@ -52,9 +52,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
     /** Force models used during the extrapolation of the orbit. */
     private final List<DSSTForceModel> forceModels;
 
-    /** Current mass for initial state (kg). */
-    private double mass;
-
     /** Type of the orbit used for the propagation.*/
     private PropagationType propagationType;
 
@@ -114,10 +111,9 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
                                  final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, PositionAngleType.MEAN, positionScale, true, attitudeProvider);
+        super(referenceOrbit, PositionAngleType.MEAN, positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
         this.builder           = builder;
         this.forceModels       = new ArrayList<>();
-        this.mass              = Propagator.DEFAULT_MASS;
         this.propagationType   = propagationType;
         this.stateType         = stateType;
     }
@@ -148,7 +144,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                                   propagationType,
                                                   stateType,
                                                   getAttitudeProvider());
-        copyBuilder.setMass(mass);
+        copyBuilder.setMass(getMass());
         for (DSSTForceModel model : forceModels) {
             copyBuilder.addForceModel(model);
         }
@@ -169,21 +165,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
     public List<DSSTForceModel> getAllForceModels()
     {
         return Collections.unmodifiableList(forceModels);
-    }
-
-    /** Get the mass.
-     * @return the mass
-     */
-    public double getMass()
-    {
-        return mass;
-    }
-
-    /** Set the initial mass.
-     * @param mass the mass (kg)
-     */
-    public void setMass(final double mass) {
-        this.mass = mass;
     }
 
     /** Add a force model to the global perturbation model.
@@ -231,7 +212,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
         setParameters(normalizedParameters);
         final EquinoctialOrbit orbit    = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(createInitialOrbit());
         final Attitude         attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), getFrame());
-        final SpacecraftState  state    = new SpacecraftState(orbit, attitude, mass);
+        final SpacecraftState  state    = new SpacecraftState(orbit, attitude, getMass());
 
         final DSSTPropagator propagator = new DSSTPropagator(
                 builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL),
