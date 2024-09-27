@@ -19,7 +19,6 @@ package org.orekit.files.sinex;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 import org.hipparchus.util.Pair;
 import org.junit.jupiter.api.Assertions;
