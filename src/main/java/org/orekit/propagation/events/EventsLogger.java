@@ -55,7 +55,7 @@ public class EventsLogger {
      * </p>
      */
     public EventsLogger() {
-        log = new ArrayList<EventsLogger.LoggedEvent>();
+        log = new ArrayList<>();
     }
 
     /** Monitor an event detector.
@@ -99,7 +99,7 @@ public class EventsLogger {
      * @return an immutable copy of the logged events
      */
     public List<LoggedEvent> getLoggedEvents() {
-        return new ArrayList<EventsLogger.LoggedEvent>(log);
+        return new ArrayList<>(log);
     }
 
     /** Class for logged events entries. */
@@ -203,6 +203,7 @@ public class EventsLogger {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void init(final SpacecraftState s0,
                          final AbsoluteDate t) {
             super.init(s0, t);
@@ -215,6 +216,7 @@ public class EventsLogger {
         }
 
         /** {@inheritDoc} */
+        @Override
         public EventHandler getHandler() {
 
             final EventHandler handler = detector.getHandler();

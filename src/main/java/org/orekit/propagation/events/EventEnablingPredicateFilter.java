@@ -136,6 +136,7 @@ public class EventEnablingPredicateFilter
     }
 
     /**  {@inheritDoc} */
+    @Override
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
         super.init(s0, t);

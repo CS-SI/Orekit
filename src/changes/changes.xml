@@ -120,6 +120,9 @@
       <action dev="serrof" type="add" issue="1466">
         Add unbounded energy cost for Cartesian adjoint dynamics.
       </action>
+      <action dev="serrof" type="add" issue="1465">
+        Add finish method in (Field)EventHandler.
+      </action>
       <action dev="serrof" type="add" issue="1464">
         Add analytical solar ephemerides.
       </action>

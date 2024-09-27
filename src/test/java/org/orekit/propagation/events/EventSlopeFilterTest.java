@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -47,6 +48,14 @@ public class EventSlopeFilterTest {
 
     private double sunRadius = 696000000.;
     private double earthRadius = 6400000.;
+
+    @Test
+    void testFinish() {
+        //
+        final ApsideDetector detector = new ApsideDetector(1.);
+        final EventSlopeFilter<ApsideDetector> slopeFilter = new EventSlopeFilter<>(detector, FilterType.TRIGGER_ONLY_INCREASING_EVENTS);
+        slopeFilter.getHandler().finish(Mockito.mock(SpacecraftState.class), detector);
+    }
 
     @Test
     public void testEnums() {

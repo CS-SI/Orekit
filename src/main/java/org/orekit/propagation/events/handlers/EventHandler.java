@@ -77,4 +77,18 @@ public interface EventHandler {
         return oldState;
     }
 
+
+    /**
+     * This method finalizes the event handler's job.
+     * <p>
+     * The default implementation does nothing
+     * </p>
+     * @param finalState state at propagation end
+     * @param detector event detector related to the event handler
+     * @since 12.2
+     */
+    default void finish(final SpacecraftState finalState, final EventDetector detector) {
+        // nothing by default
+    }
+
 }

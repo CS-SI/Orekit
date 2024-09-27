@@ -29,6 +29,18 @@ class RecallLastOccurrenceTest {
     private static final Action ACTION = Action.CONTINUE;
 
     @Test
+    void testFinish() {
+        // GIVEN
+        final TestHandler testHandler = new TestHandler();
+        final RecallLastOccurrence recallLastOccurrence = new RecallLastOccurrence(testHandler);
+        final SpacecraftState mockedState = mockState(AbsoluteDate.ARBITRARY_EPOCH);
+        // WHEN
+        recallLastOccurrence.finish(mockedState, null);
+        // THEN
+        Assertions.assertEquals(true, testHandler.isFinished);
+    }
+
+    @Test
     void testEventOccurred() {
         // GIVEN
         final TestHandler testHandler = new TestHandler();
@@ -91,6 +103,8 @@ class RecallLastOccurrenceTest {
 
         boolean isInitialized = false;
 
+        boolean isFinished = false;
+
         @Override
         public void init(SpacecraftState initialState, AbsoluteDate target, EventDetector detector) {
             isInitialized = true;
@@ -101,6 +115,10 @@ class RecallLastOccurrenceTest {
             return ACTION;
         }
 
+        @Override
+        public void finish(SpacecraftState finalState, EventDetector detector) {
+            isFinished = true;
+        }
     }
 
 }

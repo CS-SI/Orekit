@@ -26,7 +26,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -35,6 +34,8 @@ import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEclipseDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.ExtendedPVCoordinatesProviderAdapter;
@@ -92,13 +93,13 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
                                    withMargin(-ANGULAR_MARGIN).
                                    withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(ECLIPSE_THRESHOLD).
-                                   withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                                   withHandler(new ResetDerivativesOnEvent());
             detectors[2 * i + 1] = new EclipseDetector(occulting).
                                    withPenumbra().
                                    withMargin(ANGULAR_MARGIN).
                                    withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(ECLIPSE_THRESHOLD).
-                                   withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                                   withHandler(new ResetDerivativesOnEvent());
         }
         // Fusion between Date detector for parameter driver span change and
         // Detector for umbra / penumbra events
@@ -119,13 +120,13 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
                                    withMargin(zero.newInstance(-ANGULAR_MARGIN)).
                                    withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
-                                   withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                                   withHandler(new FieldResetDerivativesOnEvent<>());
             detectors[2 * i + 1] = new FieldEclipseDetector<>(field, occulting).
                                    withPenumbra().
                                    withMargin(zero.newInstance(ANGULAR_MARGIN)).
                                    withMaxCheck(ECLIPSE_MAX_CHECK).
                                    withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
-                                   withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                                   withHandler(new FieldResetDerivativesOnEvent<>());
         }
         return Stream.concat(Stream.of(detectors), RadiationForceModel.super.getFieldEventDetectors(field));
     }

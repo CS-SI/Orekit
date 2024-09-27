@@ -71,4 +71,10 @@ public class RecallLastOccurrence implements EventHandler {
     public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
         return wrappedHandler.resetState(detector, oldState);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState finalState, final EventDetector detector) {
+        wrappedHandler.finish(finalState, detector);
+    }
 }

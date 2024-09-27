@@ -143,6 +143,13 @@ public class EventMultipleHandler implements EventHandler {
         return newState;
     }
 
+    @Override
+    public void finish(final SpacecraftState finalState, final EventDetector detector) {
+        for (final EventHandler handler : handlers) {
+            handler.finish(finalState, detector);
+        }
+    }
+
     /** Add one handler to the managed handlers list.
      * @param handler handler associated with D detector
      * @return this object
