@@ -141,6 +141,9 @@
       <action dev="serrof" type="add" issue="1349">
         Add more overrides of getAttitudeRotation.
       </action>
+      <action dev="maxime" type="fix" issue="1104">
+        Use proper body-fixed frame in DSSTZonal and refactored DSSTGravityContext.
+      </action>
     </release>
     <release version="12.1.3" date="04/09/2024"
              description="Version 12.1.3 is a patch release of Orekit.
