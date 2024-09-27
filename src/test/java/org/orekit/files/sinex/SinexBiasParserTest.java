@@ -298,8 +298,7 @@ public class SinexBiasParserTest {
     }
 
     private SinexBias load(final String name) {
-        return new SinexBiasParser(TimeScalesFactory.getTimeScales(),
-                                   PredefinedObservationType::valueOf).
+        return new SinexBiasParser(TimeScalesFactory.getTimeScales(), SinexBiasParser::defaultTypeBuilder).
                parse(new DataSource(name, () -> SinexParserTest.class.getResourceAsStream(name)));
     }
 

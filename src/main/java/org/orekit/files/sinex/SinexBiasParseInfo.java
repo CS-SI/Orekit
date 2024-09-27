@@ -18,12 +18,13 @@ package org.orekit.files.sinex;
 
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.TimeScales;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /** Parse information for Solution INdependent EXchange (SINEX) bias files.
  * @author Luc Maisonobe
@@ -31,8 +32,8 @@ import java.util.function.Function;
  */
 public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
 
-    /** Mapper from string to observation type. */
-    private final Function<? super String, ? extends ObservationType> typeBuilder;
+    /** Mapper from satellite system and string to observation type. */
+    private final BiFunction<? super SatelliteSystem, ? super String, ? extends ObservationType> typeBuilder;
 
     /** DSB description. */
     private final BiasDescription description;
@@ -54,7 +55,7 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
      * @param typeBuilder mapper from string to observation type
      */
     SinexBiasParseInfo(final TimeScales timeScales,
-                       final Function<? super String, ? extends ObservationType> typeBuilder) {
+                       final BiFunction<? super SatelliteSystem, ? super String, ? extends ObservationType> typeBuilder) {
         super(timeScales);
         this.description   = new BiasDescription();
         this.stationsDsb   = new HashMap<>();
@@ -112,13 +113,14 @@ public class SinexBiasParseInfo extends ParseInfo<SinexBias> {
     }
 
     /** Extract an observation type from current line.
+     * @param system satellite system
      * @param start  start index of the string
      * @param length length of the string
      * @return parsed observation type (null if field is empty)
      */
-    protected ObservationType parseObservationType(final int start, final int length) {
+    protected ObservationType parseObservationType(final SatelliteSystem system, final int start, final int length) {
         final String type = parseString(start, length);
-        return type.isEmpty() ? null : typeBuilder.apply(type);
+        return type.isEmpty() ? null : typeBuilder.apply(system, type);
     }
 
     /** {@inheritDoc} */

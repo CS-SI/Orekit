@@ -80,10 +80,9 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
             final String          svn      = parseInfo.parseString(6, 4);
             final SatInSystem     satId    = new SatInSystem(parseInfo.parseString(11, 3));
             final String          siteCode = parseInfo.parseString(15, 9);
-            final ObservationType obs1     = parseInfo.parseObservationType(25, 4);
-            final ObservationType obs2     = parseInfo.parseObservationType(30, 4);
-            final AbsoluteDate    start    = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(35, 14),
-                                                                          true);
+            final ObservationType obs1     = parseInfo.parseObservationType(satId.getSystem(), 25, 4);
+            final ObservationType obs2     = parseInfo.parseObservationType(satId.getSystem(), 30, 4);
+            final AbsoluteDate    start    = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(35, 14), true);
             final AbsoluteDate    end      = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(50, 14), false);
 
             // code biases are in time units (ns converted to seconds by parseDoubleWithUnit),
