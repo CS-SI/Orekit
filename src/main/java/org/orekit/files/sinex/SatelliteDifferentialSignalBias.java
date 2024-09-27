@@ -37,7 +37,7 @@ public class SatelliteDifferentialSignalBias {
     /** DSB solution data. */
     private final DifferentialSignalBias dsb;
 
-    /** Constructor for the DSBSatellite class.
+    /** Simple constructor.
      * @param satellite satellite identifier
      */
     public SatelliteDifferentialSignalBias(final SatInSystem satellite) {

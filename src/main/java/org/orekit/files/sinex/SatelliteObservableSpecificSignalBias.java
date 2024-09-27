@@ -38,7 +38,7 @@ public class SatelliteObservableSpecificSignalBias {
     /** OSB solution data. */
     private final ObservableSpecificSignalBias osb;
 
-    /** Constructor for the OSBSatellite class.
+    /** Simple constructor.
      * @param satellite satellite identifier
      */
     public SatelliteObservableSpecificSignalBias(final SatInSystem satellite) {

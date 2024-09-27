@@ -42,7 +42,7 @@ public class ObservableSpecificSignalBias {
     private final HashSet<ObservationType> observationSets;
 
     /** Set of biases, identifiable by observation types,
-     * each containing the corresponding TimeSpanMap of biases (OSB).
+     * each containing the corresponding TimeSpanMap of biases.
      */
     private final HashMap<ObservationType, TimeSpanMap<Double>> biases;
 
@@ -57,7 +57,7 @@ public class ObservableSpecificSignalBias {
      * @param obs observation used for the OSB computation
      * @param spanBegin beginning of the validity span for this bias value
      * @param spanEnd end of the validity span for this bias value
-     * @param biasValue DSB bias value expressed in S.I. units
+     * @param biasValue Observable-specific Signal Bias value expressed in S.I. units
      */
     public void addBias(final ObservationType obs,
                         final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
@@ -72,10 +72,10 @@ public class ObservableSpecificSignalBias {
         biases.get(obs).addValidBetween(biasValue, spanBegin, spanEnd);
     }
 
-    /** Get the value of the Differential Signal Bias for a given observation type at a given date.
+    /** Get the value of the Observable-specific Signal Bias for a given observation type at a given date.
      * @param obs observation type
-     * @param date date at which to obtain the DSB
-     * @return the value of the DSB in S.I. units
+     * @param date date at which to obtain the Observable-specific Signal Bias
+     * @return the value of the Observable-specific Signal Bias in S.I. units
      */
     public double getBias(final ObservationType obs, final AbsoluteDate date) {
         return getTimeSpanMap(obs).get(date);
