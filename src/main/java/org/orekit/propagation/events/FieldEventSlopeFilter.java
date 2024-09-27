@@ -246,6 +246,12 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
     }
 
+    @Override
+    public void finish(final FieldSpacecraftState<T> state) {
+        super.finish(state);
+        rawDetector.finish(state);
+    }
+
     /** Local handler. */
     private static class LocalHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 

@@ -248,6 +248,13 @@ public class EventEnablingPredicateFilter
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState state) {
+        super.finish(state);
+        rawDetector.finish(state);
+    }
+
     /** Get next function transformer in the specified direction.
      * @param previous transformer active on the previous point with respect
      * to integration direction (may be null if no previous point is known)

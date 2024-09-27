@@ -247,6 +247,13 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState state) {
+        super.finish(state);
+        rawDetector.finish(state);
+    }
+
     /** Local handler. */
     private static class LocalHandler<T extends EventDetector> implements EventHandler {
 

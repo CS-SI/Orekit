@@ -252,6 +252,13 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void finish(FieldSpacecraftState<T> state) {
+        super.finish(state);
+        rawDetector.finish(state);
+    }
+
     /** Get next function transformer in the specified direction.
      * @param previous transformer active on the previous point with respect
      * to integration direction (may be null if no previous point is known)
