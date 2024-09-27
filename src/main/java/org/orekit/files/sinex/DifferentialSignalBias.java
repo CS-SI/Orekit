@@ -58,7 +58,7 @@ public class DifferentialSignalBias {
      * @param obs2 second observation used for the DSB computation
      * @param spanBegin beginning of the validity span for this bias value
      * @param spanEnd end of the validity span for this bias value
-     * @param biasValue DSB bias value expressed in S.I. units
+     * @param biasValue DSB bias value (meters for code and cycle for phase)
      */
     public void addBias(final ObservationType obs1, final ObservationType obs2,
                         final AbsoluteDate spanBegin, final AbsoluteDate spanEnd,
@@ -81,7 +81,7 @@ public class DifferentialSignalBias {
      * @param obs1 first observation type
      * @param obs2 second observation type
      * @param date date at which to obtain the DSB
-     * @return the value of the DSB in S.I. units
+     * @return the value of the DSB (meters for code and cycle for phase)
      */
     public double getBias(final ObservationType obs1, final ObservationType obs2, final AbsoluteDate date) {
         return getTimeSpanMap(obs1, obs2).get(date);

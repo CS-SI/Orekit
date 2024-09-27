@@ -37,7 +37,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-
+import org.orekit.utils.Constants;
 
 public class SinexBiasParserTest {
 
@@ -155,9 +155,9 @@ public class SinexBiasParserTest {
                                                 TimeScalesFactory.getGPS());
         
         double valueDsb = dsb.getBias(Obs1, Obs2, refDate);
-        double valueDsbReal = -1.0697e-9;
+        double valueDsbReal = -1.0697e-9 * Constants.SPEED_OF_LIGHT;
         
-        Assertions.assertEquals(valueDsbReal, valueDsb, 1e-13);
+        Assertions.assertEquals(valueDsbReal, valueDsb, 1e-5);
         
         // Value Test for a Station
         StationDifferentialSignalBias StationDifferentialSignalBias = sinexBias.getStationsDsb().get("ALIC");
@@ -170,7 +170,7 @@ public class SinexBiasParserTest {
         double valueDsbStation = differentialSignalBiasTestStation.getBias(PredefinedObservationType.C1C,
                                                        PredefinedObservationType.C1P,
                                                        refDateStation);
-        double valueDsbRealStation = -0.6458e-9;
+        double valueDsbRealStation = -0.6458e-9 * Constants.SPEED_OF_LIGHT;
         
         Assertions.assertEquals(valueDsbRealStation, valueDsbStation, 1e-13);
         
@@ -237,9 +237,9 @@ public class SinexBiasParserTest {
                                       new AbsoluteDate(new DateComponents(2024, 250),
                                                        TimeComponents.H00,
                                                        timeScale));
-        double valueOsbReal = -6.7298e-9;
+        double valueOsbReal = -6.7298e-9 * Constants.SPEED_OF_LIGHT;
 
-        Assertions.assertEquals(valueOsbReal, valueOsb, 1e-13);
+        Assertions.assertEquals(valueOsbReal, valueOsb, 1e-5);
 
     }
 
@@ -284,9 +284,9 @@ public class SinexBiasParserTest {
                                       new AbsoluteDate(new DateComponents(2024, 250),
                                                        TimeComponents.H00,
                                                        timeScale));
-        double valueOsbReal = -18.5167e-9;
+        double valueOsbReal = -18.5167e-9 * Constants.SPEED_OF_LIGHT;
 
-        Assertions.assertEquals(valueOsbReal, valueOsb, 1e-13);
+        Assertions.assertEquals(valueOsbReal, valueOsb, 1e-5);
 
         final double phaseBias = sinexBias.
                                  getStationsOsb().

@@ -16,9 +16,11 @@
  */
 package org.orekit.files.sinex;
 
+import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.ObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 import java.util.function.Predicate;
 
@@ -83,7 +85,14 @@ enum BiasSolutionPredicate implements Predicate<SinexBiasParseInfo> {
             final AbsoluteDate    start    = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(35, 14),
                                                                           true);
             final AbsoluteDate    end      = parseInfo.stringEpochToAbsoluteDate(parseInfo.parseString(50, 14), false);
-            final double          bias     = parseInfo.parseDoubleWithUnit(65, 4, 70, 21);
+
+            // code biases are in time units (ns converted to seconds by parseDoubleWithUnit),
+            // they must be converted to meters
+            // phase biases are in cycles, no conversion is needed for them
+            final double          factor   =
+                obs1.getMeasurementType() == MeasurementType.PSEUDO_RANGE ? Constants.SPEED_OF_LIGHT :  1;
+            final double          bias     = factor * parseInfo.parseDoubleWithUnit(65, 4, 70, 21);
+
             store(parseInfo, svn, satId, siteCode, obs1, obs2, start, end, bias);
             return true;
         } else {
