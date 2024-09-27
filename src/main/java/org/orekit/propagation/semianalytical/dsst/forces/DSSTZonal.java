@@ -16,6 +16,16 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
@@ -29,6 +39,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -54,16 +65,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldTimeSpanMap;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
 
 /** Zonal contribution to the central body gravitational perturbation.
  *
@@ -111,6 +112,9 @@ public class DSSTZonal implements DSSTForceModel {
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
+    /** Central body rotating frame (fixed with respect to body). */
+    private final Frame bodyFixedFrame;
+
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
 
@@ -155,14 +159,52 @@ public class DSSTZonal implements DSSTForceModel {
      *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
      *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
      * </ul>
+     * @param bodyFixedFrame rotating body frame
+     * <p>If set, this frame will be used to compute the Earth pole direction and the zonal contribution.
+     * If not, the inertial frame from the propagator will be used.<br>
+     * Ideally this frame should be always set to ITRF.
+     * However, using TOD is advised since it's generally a good trade-off between performance and precision.
+     *
+     * @param provider provider for spherical harmonics
+     * @since 12.1
+     */
+    public DSSTZonal(final Frame bodyFixedFrame, final UnnormalizedSphericalHarmonicsProvider provider) {
+        this(bodyFixedFrame, provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
+    }
+
+    /**
+     * Constructor with bodyFixedFrame = orbit frame, and default reference values.
+     * <p>
+     * Kept for compatibility with anterior versions.
+     * <p>
+     * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
+     * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
+     * <p>
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
+     * <p>
+     * When this constructor is used, maximum allowed values are used
+     * for the short periodic coefficients:
+     * </p>
+     * <ul>
+     *    <li> {@link #maxDegreeShortPeriodics} is set to {@code provider.getMaxDegree()} </li>
+     *    <li> {@link #maxEccPowShortPeriodics} is set to {@code min(provider.getMaxDegree() - 1, 4)}.
+     *         This parameter should not exceed 4 as higher values will exceed computer capacity </li>
+     *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
+     * </ul>
      * @param provider provider for spherical harmonics
      * @since 10.1
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider) {
-        this(provider, provider.getMaxDegree(), FastMath.min(4, provider.getMaxDegree() - 1), 2 * provider.getMaxDegree() + 1);
+        this(null, provider);
     }
 
-    /** Simple constructor.
+    /** Constructor.
+     * @param bodyFixedFrame rotating body frame
+     * <p>If set, this frame will be used to compute the Earth pole direction and the zonal contribution.
+     * If not, the inertial frame from the propagator will be used.<br>
+     * Ideally this frame should be always set to ITRF.
+     * However, using TOD is advised since it's a good trade-off between performance and precision.
+     *
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
      * (must be between 2 and {@code provider.getMaxDegree()})
@@ -171,9 +213,10 @@ public class DSSTZonal implements DSSTForceModel {
      * values will exceed computer capacity)
      * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
-     * @since 7.2
+     * @since 12.1
      */
-    public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
+    public DSSTZonal(final Frame bodyFixedFrame,
+                     final UnnormalizedSphericalHarmonicsProvider provider,
                      final int maxDegreeShortPeriodics,
                      final int maxEccPowShortPeriodics,
                      final int maxFrequencyShortPeriodics) {
@@ -181,6 +224,9 @@ public class DSSTZonal implements DSSTForceModel {
         gmParameterDriver = new ParameterDriver(DSSTNewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                 provider.getMu(), MU_SCALE,
                                                 0.0, Double.POSITIVE_INFINITY);
+
+        // Central body rotating frame
+        this.bodyFixedFrame = bodyFixedFrame;
 
         // Vns coefficients
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
@@ -202,7 +248,33 @@ public class DSSTZonal implements DSSTForceModel {
 
         zonalFieldSPCoefs = new HashMap<>();
         fieldHansen       = new HashMap<>();
+    }
 
+    /**
+     * Constructor with bodyFixedFrame = orbit frame.
+     * <p>
+     * Added for retro-compatibility with anterior versions for initialization.
+     * <p>
+     * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
+     * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
+     * <p>
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
+     * <p>
+     * @param provider provider for spherical harmonics
+     * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
+     * (must be between 2 and {@code provider.getMaxDegree()})
+     * @param maxEccPowShortPeriodics maximum power of the eccentricity to be used in short periodic computations
+     * (must be between 0 and {@code maxDegreeShortPeriodics - 1}, but should typically not exceed 4 as higher
+     * values will exceed computer capacity)
+     * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
+     * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
+     * @since 7.2
+     */
+    public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
+                     final int maxDegreeShortPeriodics,
+                     final int maxEccPowShortPeriodics,
+                     final int maxFrequencyShortPeriodics) {
+        this(null, provider, maxDegreeShortPeriodics, maxEccPowShortPeriodics, maxFrequencyShortPeriodics);
     }
 
     /** Check an index range.
@@ -313,7 +385,7 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private void computeMeanElementsTruncations(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
 
-        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, provider, parameters);
+        final DSSTZonalContext context = new DSSTZonalContext(auxiliaryElements, bodyFixedFrame, provider, parameters);
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
             maxEccPowMeanElements = 0;
@@ -326,12 +398,12 @@ public class DSSTZonal implements DSSTForceModel {
             double xmuran = parameters[0] / auxiliaryElements.getSma();
             // Set a lower bound for eccentricity
             final double eo2  = FastMath.max(0.0025, auxiliaryElements.getEcc() / 2.);
-            final double x2o2 = context.getXX() / 2.;
+            final double x2o2 = context.getChi2() / 2.;
             final double[] eccPwr = new double[maxDegree + 1];
             final double[] chiPwr = new double[maxDegree + 1];
             final double[] hafPwr = new double[maxDegree + 1];
             eccPwr[0] = 1.;
-            chiPwr[0] = context.getX();
+            chiPwr[0] = context.getChi();
             hafPwr[0] = 1.;
             for (int i = 1; i <= maxDegree; i++) {
                 eccPwr[i] = eccPwr[i - 1] * eo2;
@@ -369,13 +441,13 @@ public class DSSTZonal implements DSSTForceModel {
                             term =  csnm * xmuran *
                                     (CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
                                     (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
-                                    eccPwr[l] * UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I));
+                                    eccPwr[l] * UpperBounds.getDnl(context.getChi2(), chiPwr[l], maxDeg, l) *
+                                    (UpperBounds.getRnml(context.getGamma(), maxDeg, l, m, 1, I) + UpperBounds.getRnml(context.getGamma(), maxDeg, l, m, -1, I));
                         } else {
                             term =  csnm * xmuran *
                                     (CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))) *
-                                    eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l) *
-                                    (UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I) + UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I));
+                                    eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(context.getChi2(), chiPwr[l], maxDeg, l) *
+                                    (UpperBounds.getRnml(context.getGamma(), maxDeg, m, l, 1, I) + UpperBounds.getRnml(context.getGamma(), maxDeg, m, l, -1, I));
                         }
                         // Is the current spherical harmonic term bigger than the truncation tolerance ?
                         if (term >= TRUNCATION_TOLERANCE) {
@@ -415,11 +487,11 @@ public class DSSTZonal implements DSSTForceModel {
      * @param field field used by default
      */
     private <T extends CalculusFieldElement<T>> void computeMeanElementsTruncations(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                                                                final T[] parameters,
-                                                                                final Field<T> field) {
+                                                                                    final T[] parameters,
+                                                                                    final Field<T> field) {
 
         final T zero = field.getZero();
-        final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
+        final FieldDSSTZonalContext<T> context = new FieldDSSTZonalContext<>(auxiliaryElements, bodyFixedFrame, provider, parameters);
         //Compute the max eccentricity power for the mean element rate expansion
         if (maxDegree == 2) {
             maxEccPowMeanElements = 0;
@@ -432,12 +504,12 @@ public class DSSTZonal implements DSSTForceModel {
             T xmuran = parameters[0].divide(auxiliaryElements.getSma());
             // Set a lower bound for eccentricity
             final T eo2  = FastMath.max(zero.newInstance(0.0025), auxiliaryElements.getEcc().divide(2.));
-            final T x2o2 = context.getXX().divide(2.);
+            final T x2o2 = context.getChi2().divide(2.);
             final T[] eccPwr = MathArrays.buildArray(field, maxDegree + 1);
             final T[] chiPwr = MathArrays.buildArray(field, maxDegree + 1);
             final T[] hafPwr = MathArrays.buildArray(field, maxDegree + 1);
             eccPwr[0] = zero.newInstance(1.);
-            chiPwr[0] = context.getX();
+            chiPwr[0] = context.getChi();
             hafPwr[0] = zero.newInstance(1.);
             for (int i = 1; i <= maxDegree; i++) {
                 eccPwr[i] = eccPwr[i - 1].multiply(eo2);
@@ -475,13 +547,13 @@ public class DSSTZonal implements DSSTForceModel {
                             term = csnm.multiply(xmuran).
                                    multiply((CombinatoricsUtils.factorialDouble(maxDeg - l) / (CombinatoricsUtils.factorialDouble(maxDeg - m))) *
                                    (CombinatoricsUtils.factorialDouble(maxDeg + l) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l)))).
-                                   multiply(eccPwr[l]).multiply(UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l)).
-                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, l, m, -1, I)));
+                                   multiply(eccPwr[l]).multiply(UpperBounds.getDnl(context.getChi2(), chiPwr[l], maxDeg, l)).
+                                   multiply(UpperBounds.getRnml(context.getGamma(), maxDeg, l, m, 1, I).add(UpperBounds.getRnml(context.getGamma(), maxDeg, l, m, -1, I)));
                         } else {
                             term = csnm.multiply(xmuran).
                                    multiply(CombinatoricsUtils.factorialDouble(maxDeg + m) / (CombinatoricsUtils.factorialDouble(nsld2) * CombinatoricsUtils.factorialDouble(nsld2 + l))).
-                                   multiply(eccPwr[l]).multiply(hafPwr[m - l]).multiply(UpperBounds.getDnl(context.getXX(), chiPwr[l], maxDeg, l)).
-                                   multiply(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, 1, I).add(UpperBounds.getRnml(auxiliaryElements.getGamma(), maxDeg, m, l, -1, I)));
+                                   multiply(eccPwr[l]).multiply(hafPwr[m - l]).multiply(UpperBounds.getDnl(context.getChi2(), chiPwr[l], maxDeg, l)).
+                                   multiply(UpperBounds.getRnml(context.getGamma(), maxDeg, m, l, 1, I).add(UpperBounds.getRnml(context.getGamma(), maxDeg, m, l, -1, I)));
                         }
                         // Is the current spherical harmonic term bigger than the truncation tolerance ?
                         if (term.getReal() >= TRUNCATION_TOLERANCE) {
@@ -523,7 +595,7 @@ public class DSSTZonal implements DSSTForceModel {
      *  @return new force model context
      */
     private DSSTZonalContext initializeStep(final AuxiliaryElements auxiliaryElements, final double[] parameters) {
-        return new DSSTZonalContext(auxiliaryElements, provider, parameters);
+        return new DSSTZonalContext(auxiliaryElements, bodyFixedFrame, provider, parameters);
     }
 
     /** Performs initialization at each integration step for the current force model.
@@ -537,7 +609,7 @@ public class DSSTZonal implements DSSTForceModel {
      */
     private <T extends CalculusFieldElement<T>> FieldDSSTZonalContext<T> initializeStep(final FieldAuxiliaryElements<T> auxiliaryElements,
                                                                                     final T[] parameters) {
-        return new FieldDSSTZonalContext<>(auxiliaryElements, provider, parameters);
+        return new FieldDSSTZonalContext<>(auxiliaryElements, bodyFixedFrame, provider, parameters);
     }
 
     /** {@inheritDoc} */
@@ -589,9 +661,9 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
-        final double UAlphaGamma   = auxiliaryElements.getAlpha() * udu.getdUdGa() - auxiliaryElements.getGamma() * udu.getdUdAl();
+        final double UAlphaGamma   = context.getAlpha() * udu.getdUdGa() - context.getGamma() * udu.getdUdAl();
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final double UBetaGamma    =  auxiliaryElements.getBeta() * udu.getdUdGa() - auxiliaryElements.getGamma() * udu.getdUdBe();
+        final double UBetaGamma    =  context.getBeta() * udu.getdUdGa() - context.getGamma() * udu.getdUdBe();
         // Common factor
         final double pUAGmIqUBGoAB = (auxiliaryElements.getP() * UAlphaGamma - I * auxiliaryElements.getQ() * UBetaGamma) * context.getOoAB();
 
@@ -599,9 +671,9 @@ public class DSSTZonal implements DSSTForceModel {
         final double da =  0.;
         final double dh =  context.getBoA() * udu.getdUdk() + auxiliaryElements.getK() * pUAGmIqUBGoAB;
         final double dk = -context.getBoA() * udu.getdUdh() - auxiliaryElements.getH() * pUAGmIqUBGoAB;
-        final double dp =  context.getMCo2AB() * UBetaGamma;
-        final double dq =  context.getMCo2AB() * UAlphaGamma * I;
-        final double dM =  context.getM2aoA() * udu.getdUda() + context.getBoABpo() * (auxiliaryElements.getH() * udu.getdUdh() + auxiliaryElements.getK() * udu.getdUdk()) + pUAGmIqUBGoAB;
+        final double dp = -context.getCo2AB() * UBetaGamma;
+        final double dq = -context.getCo2AB() * UAlphaGamma * I;
+        final double dM = -context.getAx2oA() * udu.getdUda() + context.getBoABpo() * (auxiliaryElements.getH() * udu.getdUdh() + auxiliaryElements.getK() * udu.getdUdk()) + pUAGmIqUBGoAB;
 
         return new double[] {da, dk, dh, dq, dp, dM};
     }
@@ -625,9 +697,9 @@ public class DSSTZonal implements DSSTForceModel {
 
         // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
-        final T UAlphaGamma   = udu.getdUdGa().multiply(auxiliaryElements.getAlpha()).subtract(udu.getdUdAl().multiply(auxiliaryElements.getGamma()));
+        final T UAlphaGamma   = udu.getdUdGa().multiply(context.getAlpha()).subtract(udu.getdUdAl().multiply(context.getGamma()));
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final T UBetaGamma    =  udu.getdUdGa().multiply(auxiliaryElements.getBeta()).subtract(udu.getdUdBe().multiply(auxiliaryElements.getGamma()));
+        final T UBetaGamma    =  udu.getdUdGa().multiply(context.getBeta()).subtract(udu.getdUdBe().multiply(context.getGamma()));
         // Common factor
         final T pUAGmIqUBGoAB = (UAlphaGamma.multiply(auxiliaryElements.getP()).subtract(UBetaGamma.multiply(I).multiply(auxiliaryElements.getQ()))).multiply(context.getOoAB());
 
@@ -635,9 +707,9 @@ public class DSSTZonal implements DSSTForceModel {
         final T da =  field.getZero();
         final T dh =  udu.getdUdk().multiply(context.getBoA()).add(pUAGmIqUBGoAB.multiply(auxiliaryElements.getK()));
         final T dk =  (udu.getdUdh().multiply(context.getBoA()).negate()).subtract(pUAGmIqUBGoAB.multiply(auxiliaryElements.getH()));
-        final T dp =  UBetaGamma.multiply(context.getMCo2AB());
-        final T dq =  UAlphaGamma.multiply(context.getMCo2AB()).multiply(I);
-        final T dM =  pUAGmIqUBGoAB.add(udu.getdUda().multiply(context.getM2aoA())).add((udu.getdUdh().multiply(auxiliaryElements.getH()).add(udu.getdUdk().multiply(auxiliaryElements.getK()))).multiply(context.getBoABpo()));
+        final T dp =  UBetaGamma.multiply(context.getCo2AB().negate());
+        final T dq =  UAlphaGamma.multiply(context.getCo2AB().negate()).multiply(I);
+        final T dM =  pUAGmIqUBGoAB.add(udu.getdUda().multiply(context.getAx2oA().negate())).add((udu.getdUdh().multiply(auxiliaryElements.getH()).add(udu.getdUdk().multiply(auxiliaryElements.getK()))).multiply(context.getBoABpo()));
 
         final T[] elements =  MathArrays.buildArray(field, 6);
         elements[0] = da;
@@ -1004,19 +1076,19 @@ public class DSSTZonal implements DSSTForceModel {
             if (isBetween(j, 1, 2 * nMax - 1) && j < cjsj.jMax) {
                 // Compute cross derivatives
                 // Cj(alpha,gamma) = alpha * dC/dgamma - gamma * dC/dalpha
-                final double CjAlphaGamma   = auxiliaryElements.getAlpha() * cjsj.getdCjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdCjdAlpha(j);
+                final double CjAlphaGamma   = context.getAlpha() * cjsj.getdCjdGamma(j) - context.getGamma() * cjsj.getdCjdAlpha(j);
                 // Cj(alpha,beta) = alpha * dC/dbeta - beta * dC/dalpha
-                final double CjAlphaBeta   = auxiliaryElements.getAlpha() * cjsj.getdCjdBeta(j) - auxiliaryElements.getBeta() * cjsj.getdCjdAlpha(j);
+                final double CjAlphaBeta   = context.getAlpha() * cjsj.getdCjdBeta(j) - context.getBeta() * cjsj.getdCjdAlpha(j);
                 // Cj(beta,gamma) = beta * dC/dgamma - gamma * dC/dbeta
-                final double CjBetaGamma    =  auxiliaryElements.getBeta() * cjsj.getdCjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdCjdBeta(j);
+                final double CjBetaGamma    =  context.getBeta() * cjsj.getdCjdGamma(j) - context.getGamma() * cjsj.getdCjdBeta(j);
                 // Cj(h,k) = h * dC/dk - k * dC/dh
                 final double CjHK   = auxiliaryElements.getH() * cjsj.getdCjdK(j) - auxiliaryElements.getK() * cjsj.getdCjdH(j);
                 // Sj(alpha,gamma) = alpha * dS/dgamma - gamma * dS/dalpha
-                final double SjAlphaGamma   = auxiliaryElements.getAlpha() * cjsj.getdSjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdSjdAlpha(j);
+                final double SjAlphaGamma   = context.getAlpha() * cjsj.getdSjdGamma(j) - context.getGamma() * cjsj.getdSjdAlpha(j);
                 // Sj(alpha,beta) = alpha * dS/dbeta - beta * dS/dalpha
-                final double SjAlphaBeta   = auxiliaryElements.getAlpha() * cjsj.getdSjdBeta(j) - auxiliaryElements.getBeta() * cjsj.getdSjdAlpha(j);
+                final double SjAlphaBeta   = context.getAlpha() * cjsj.getdSjdBeta(j) - context.getBeta() * cjsj.getdSjdAlpha(j);
                 // Sj(beta,gamma) = beta * dS/dgamma - gamma * dS/dbeta
-                final double SjBetaGamma    =  auxiliaryElements.getBeta() * cjsj.getdSjdGamma(j) - auxiliaryElements.getGamma() * cjsj.getdSjdBeta(j);
+                final double SjBetaGamma    =  context.getBeta() * cjsj.getdSjdGamma(j) - context.getGamma() * cjsj.getdSjdBeta(j);
                 // Sj(h,k) = h * dS/dk - k * dS/dh
                 final double SjHK   = auxiliaryElements.getH() * cjsj.getdSjdK(j) - auxiliaryElements.getK() * cjsj.getdSjdH(j);
 
@@ -1044,8 +1116,8 @@ public class DSSTZonal implements DSSTForceModel {
                 //Coefficients for λ
                 final double coef6 = auxiliaryElements.getH() * cjsj.getdCjdH(j) + auxiliaryElements.getK() * cjsj.getdCjdK(j);
                 final double coef7 = auxiliaryElements.getH() * cjsj.getdSjdH(j) + auxiliaryElements.getK() * cjsj.getdSjdK(j);
-                currentCij[5] += context.getOON2A2() * (-2 * auxiliaryElements.getSma() * cjsj.getdCjdA(j) + coef6 / (context.getX() + 1) + context.getX() * coef2 - 3 * cjsj.getCj(j));
-                currentSij[5] += context.getOON2A2() * (-2 * auxiliaryElements.getSma() * cjsj.getdSjdA(j) + coef7 / (context.getX() + 1) + context.getX() * coef3 - 3 * cjsj.getSj(j));
+                currentCij[5] += context.getOON2A2() * (-2 * auxiliaryElements.getSma() * cjsj.getdCjdA(j) + coef6 / (context.getChi() + 1) + context.getChi() * coef2 - 3 * cjsj.getCj(j));
+                currentSij[5] += context.getOON2A2() * (-2 * auxiliaryElements.getSma() * cjsj.getdSjdA(j) + coef7 / (context.getChi() + 1) + context.getChi() * coef3 - 3 * cjsj.getSj(j));
             }
 
             for (int i = 0; i < 6; i++) {
@@ -1266,19 +1338,19 @@ public class DSSTZonal implements DSSTForceModel {
             if (isBetween(j, 1, 2 * nMax - 1) && j < cjsj.jMax) {
                 // Compute cross derivatives
                 // Cj(alpha,gamma) = alpha * dC/dgamma - gamma * dC/dalpha
-                final T CjAlphaGamma = auxiliaryElements.getAlpha().multiply(cjsj.getdCjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdCjdAlpha(j)));
+                final T CjAlphaGamma = context.getAlpha().multiply(cjsj.getdCjdGamma(j)).subtract(context.getGamma().multiply(cjsj.getdCjdAlpha(j)));
                 // Cj(alpha,beta) = alpha * dC/dbeta - beta * dC/dalpha
-                final T CjAlphaBeta  = auxiliaryElements.getAlpha().multiply(cjsj.getdCjdBeta(j)).subtract(auxiliaryElements.getBeta().multiply(cjsj.getdCjdAlpha(j)));
+                final T CjAlphaBeta  = context.getAlpha().multiply(cjsj.getdCjdBeta(j)).subtract(context.getBeta().multiply(cjsj.getdCjdAlpha(j)));
                 // Cj(beta,gamma) = beta * dC/dgamma - gamma * dC/dbeta
-                final T CjBetaGamma  = auxiliaryElements.getBeta().multiply(cjsj.getdCjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdCjdBeta(j)));
+                final T CjBetaGamma  = context.getBeta().multiply(cjsj.getdCjdGamma(j)).subtract(context.getGamma().multiply(cjsj.getdCjdBeta(j)));
                 // Cj(h,k) = h * dC/dk - k * dC/dh
                 final T CjHK         = auxiliaryElements.getH().multiply(cjsj.getdCjdK(j)).subtract(auxiliaryElements.getK().multiply(cjsj.getdCjdH(j)));
                 // Sj(alpha,gamma) = alpha * dS/dgamma - gamma * dS/dalpha
-                final T SjAlphaGamma = auxiliaryElements.getAlpha().multiply(cjsj.getdSjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdSjdAlpha(j)));
+                final T SjAlphaGamma = context.getAlpha().multiply(cjsj.getdSjdGamma(j)).subtract(context.getGamma().multiply(cjsj.getdSjdAlpha(j)));
                 // Sj(alpha,beta) = alpha * dS/dbeta - beta * dS/dalpha
-                final T SjAlphaBeta  = auxiliaryElements.getAlpha().multiply(cjsj.getdSjdBeta(j)).subtract(auxiliaryElements.getBeta().multiply(cjsj.getdSjdAlpha(j)));
+                final T SjAlphaBeta  = context.getAlpha().multiply(cjsj.getdSjdBeta(j)).subtract(context.getBeta().multiply(cjsj.getdSjdAlpha(j)));
                 // Sj(beta,gamma) = beta * dS/dgamma - gamma * dS/dbeta
-                final T SjBetaGamma  = auxiliaryElements.getBeta().multiply(cjsj.getdSjdGamma(j)).subtract(auxiliaryElements.getGamma().multiply(cjsj.getdSjdBeta(j)));
+                final T SjBetaGamma  = context.getBeta().multiply(cjsj.getdSjdGamma(j)).subtract(context.getGamma().multiply(cjsj.getdSjdBeta(j)));
                 // Sj(h,k) = h * dS/dk - k * dS/dh
                 final T SjHK         = auxiliaryElements.getH().multiply(cjsj.getdSjdK(j)).subtract(auxiliaryElements.getK().multiply(cjsj.getdSjdH(j)));
 
@@ -1306,8 +1378,8 @@ public class DSSTZonal implements DSSTForceModel {
                 //Coefficients for λ
                 final T coef6 = auxiliaryElements.getH().multiply(cjsj.getdCjdH(j)).add(auxiliaryElements.getK().multiply(cjsj.getdCjdK(j)));
                 final T coef7 = auxiliaryElements.getH().multiply(cjsj.getdSjdH(j)).add(auxiliaryElements.getK().multiply(cjsj.getdSjdK(j)));
-                currentCij[5] = currentCij[5].add(context.getOON2A2().multiply(auxiliaryElements.getSma().multiply(-2.).multiply(cjsj.getdCjdA(j)).add(coef6.divide(context.getX().add(1.))).add(context.getX().multiply(coef2)).subtract(cjsj.getCj(j).multiply(3.))));
-                currentSij[5] = currentSij[5].add(context.getOON2A2().multiply(auxiliaryElements.getSma().multiply(-2.).multiply(cjsj.getdSjdA(j)).add(coef7.divide(context.getX().add(1.))).add(context.getX().multiply(coef3)).subtract(cjsj.getSj(j).multiply(3.))));
+                currentCij[5] = currentCij[5].add(context.getOON2A2().multiply(auxiliaryElements.getSma().multiply(-2.).multiply(cjsj.getdCjdA(j)).add(coef6.divide(context.getChi().add(1.))).add(context.getChi().multiply(coef2)).subtract(cjsj.getCj(j).multiply(3.))));
+                currentSij[5] = currentSij[5].add(context.getOON2A2().multiply(auxiliaryElements.getSma().multiply(-2.).multiply(cjsj.getdSjdA(j)).add(coef7.divide(context.getChi().add(1.))).add(context.getChi().multiply(coef3)).subtract(cjsj.getSj(j).multiply(3.))));
             }
 
             for (int i = 0; i < 6; i++) {
@@ -1770,9 +1842,9 @@ public class DSSTZonal implements DSSTForceModel {
 
             final AuxiliaryElements auxiliaryElements = context.getAuxiliaryElements();
 
-            this.ghijCoef = new GHIJjsPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta());
+            this.ghijCoef = new GHIJjsPolynomials(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta());
             // Qns coefficients
-            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), nMax, nMax);
+            final double[][] Qns  = CoefficientsFactory.computeQns(context.getGamma(), nMax, nMax);
 
             this.lnsCoef = new LnsCoefficients(nMax, nMax, Qns, Vns, context.getRoa());
             this.nMax = nMax;
@@ -1780,8 +1852,8 @@ public class DSSTZonal implements DSSTForceModel {
             this.jMax = jMax;
 
             // compute the common factors that depends on the mean elements
-            this.hXXX = auxiliaryElements.getH() * context.getXXX();
-            this.kXXX = auxiliaryElements.getK() * context.getXXX();
+            this.hXXX = auxiliaryElements.getH() * context.getChi3();
+            this.kXXX = auxiliaryElements.getK() * context.getChi3();
 
             this.cCoef = new double[7][jMax + 1];
             this.sCoef = new double[7][jMax + 1];
@@ -1845,8 +1917,8 @@ public class DSSTZonal implements DSSTForceModel {
                                 final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
                                 // K₀<sup>-n-1,s</sup>
-                                final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                 final double coef0 = d0smj * jn;
                                 final double coef1 = coef0 * lns;
@@ -1904,8 +1976,8 @@ public class DSSTZonal implements DSSTForceModel {
                                 final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
                                 // K₀<sup>-n-1,s</sup>
-                                final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                 final double coef0 = d0spj * jn;
                                 final double coef1 = coef0 * lns;
@@ -1964,8 +2036,8 @@ public class DSSTZonal implements DSSTForceModel {
                                 final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
                                 // K₀<sup>-n-1,s</sup>
-                                final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                 final double coef0 = d0smj * jn;
                                 final double coef1 = coef0 * lns;
@@ -1999,8 +2071,8 @@ public class DSSTZonal implements DSSTForceModel {
                     //add first term
                     // J<sub>j</sub>
                     final double jj = -harmonics.getUnnormalizedCnm(j, 0);
-                    double kns = hansenObjects.getHansenObjects()[0].getValue(-j - 1, context.getX());
-                    double dkns = hansenObjects.getHansenObjects()[0].getDerivative(-j - 1, context.getX());
+                    double kns = hansenObjects.getHansenObjects()[0].getValue(-j - 1, context.getChi());
+                    double dkns = hansenObjects.getHansenObjects()[0].getDerivative(-j - 1, context.getChi());
 
                     double lns = lnsCoef.getLns(j, j);
                     //dlns is 0 because n == s == j
@@ -2052,8 +2124,8 @@ public class DSSTZonal implements DSSTForceModel {
                         // if s is odd, then the term is equal to zero due to the factor Vj,s-j
                         if (s % 2 == 0) {
                             // (2 - delta(0,j-s)) * J<sub>j</sub> * K₀<sup>-j-1,s</sup> * L<sub>j</sub><sup>j-s</sup>
-                            kns   = hansenObjects.getHansenObjects()[s].getValue(-j - 1, context.getX());
-                            dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-j - 1, context.getX());
+                            kns   = hansenObjects.getHansenObjects()[s].getValue(-j - 1, context.getChi());
+                            dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-j - 1, context.getChi());
 
                             lns = lnsCoef.getLns(j, jms);
                             final double dlns = lnsCoef.getdLnsdGamma(j, jms);
@@ -2135,8 +2207,8 @@ public class DSSTZonal implements DSSTForceModel {
                                     final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
                                     // K₀<sup>-n-1,s</sup>
-                                    final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                    final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                    final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                    final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                     final double coef0 = d0smj * jn;
                                     final double coef1 = coef0 * lns;
@@ -2195,8 +2267,8 @@ public class DSSTZonal implements DSSTForceModel {
                                     final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
                                     // K₀<sup>-n-1,s</sup>
-                                    final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                    final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                    final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                    final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                     final double coef0 = d0smj * jn;
                                     final double coef1 = coef0 * lns;
@@ -2259,8 +2331,8 @@ public class DSSTZonal implements DSSTForceModel {
 
                                     // K₀<sup>-n-1,s</sup>
 
-                                    final double kns = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                    final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                    final double kns = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                    final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                     final double coef0 = d0smj * jn;
                                     final double coef1 = coef0 * lns;
@@ -2321,8 +2393,8 @@ public class DSSTZonal implements DSSTForceModel {
                                         final double jn = -harmonics.getUnnormalizedCnm(n, 0);
 
                                         // K₀<sup>-n-1,s</sup>
-                                        final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                        final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                        final double kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                        final double dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                         final double coef0 = d0smj * jn;
                                         final double coef1 = coef0 * lns;
@@ -2584,9 +2656,9 @@ public class DSSTZonal implements DSSTForceModel {
 
             final FieldAuxiliaryElements<T> auxiliaryElements = context.getFieldAuxiliaryElements();
 
-            this.ghijCoef = new FieldGHIJjsPolynomials<>(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta());
+            this.ghijCoef = new FieldGHIJjsPolynomials<>(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta());
             // Qns coefficients
-            final T[][] Qns = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), nMax, nMax);
+            final T[][] Qns = CoefficientsFactory.computeQns(context.getGamma(), nMax, nMax);
 
             this.lnsCoef = new FieldLnsCoefficients<>(nMax, nMax, Qns, Vns, context.getRoa(), field);
             this.nMax = nMax;
@@ -2594,8 +2666,8 @@ public class DSSTZonal implements DSSTForceModel {
             this.jMax = jMax;
 
             // compute the common factors that depends on the mean elements
-            this.hXXX = auxiliaryElements.getH().multiply(context.getXXX());
-            this.kXXX = auxiliaryElements.getK().multiply(context.getXXX());
+            this.hXXX = auxiliaryElements.getH().multiply(context.getChi3());
+            this.kXXX = auxiliaryElements.getK().multiply(context.getChi3());
 
             this.cCoef = MathArrays.buildArray(field, 7, jMax + 1);
             this.sCoef = MathArrays.buildArray(field, 7, jMax + 1);
@@ -2664,8 +2736,8 @@ public class DSSTZonal implements DSSTForceModel {
                                 final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
 
                                 // K₀<sup>-n-1,s</sup>
-                                final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                 final T coef0 = jn.multiply(d0smj);
                                 final T coef1 = coef0.multiply(lns);
@@ -2723,8 +2795,8 @@ public class DSSTZonal implements DSSTForceModel {
                                 final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
 
                                 // K₀<sup>-n-1,s</sup>
-                                final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                 final T coef0 = jn.multiply(d0spj);
                                 final T coef1 = coef0.multiply(lns);
@@ -2783,8 +2855,8 @@ public class DSSTZonal implements DSSTForceModel {
                                 final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
 
                                 // K₀<sup>-n-1,s</sup>
-                                final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                 final T coef0 = jn.multiply(d0smj);
                                 final T coef1 = coef0.multiply(lns);
@@ -2818,8 +2890,8 @@ public class DSSTZonal implements DSSTForceModel {
                     //add first term
                     // J<sub>j</sub>
                     final T jj = zero.subtract(harmonics.getUnnormalizedCnm(j, 0));
-                    T kns  = hansenObjects.getHansenObjects()[0].getValue(-j - 1, context.getX());
-                    T dkns = hansenObjects.getHansenObjects()[0].getDerivative(-j - 1, context.getX());
+                    T kns  = hansenObjects.getHansenObjects()[0].getValue(-j - 1, context.getChi());
+                    T dkns = hansenObjects.getHansenObjects()[0].getDerivative(-j - 1, context.getChi());
 
                     T lns = lnsCoef.getLns(j, j);
                     //dlns is 0 because n == s == j
@@ -2871,8 +2943,8 @@ public class DSSTZonal implements DSSTForceModel {
                         // if s is odd, then the term is equal to zero due to the factor Vj,s-j
                         if (s % 2 == 0) {
                             // (2 - delta(0,j-s)) * J<sub>j</sub> * K₀<sup>-j-1,s</sup> * L<sub>j</sub><sup>j-s</sup>
-                            kns   = hansenObjects.getHansenObjects()[s].getValue(-j - 1, context.getX());
-                            dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-j - 1, context.getX());
+                            kns   = hansenObjects.getHansenObjects()[s].getValue(-j - 1, context.getChi());
+                            dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-j - 1, context.getChi());
 
                             lns = lnsCoef.getLns(j, jms);
                             final T dlns = lnsCoef.getdLnsdGamma(j, jms);
@@ -2954,8 +3026,8 @@ public class DSSTZonal implements DSSTForceModel {
                                     final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
 
                                     // K₀<sup>-n-1,s</sup>
-                                    final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                    final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                    final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                    final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                     final T coef0 = jn.multiply(d0smj);
                                     final T coef1 = coef0.multiply(lns);
@@ -3014,8 +3086,8 @@ public class DSSTZonal implements DSSTForceModel {
                                     final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
 
                                     // K₀<sup>-n-1,s</sup>
-                                    final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                    final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                    final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                    final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                     final T coef0 = jn.multiply(d0smj);
                                     final T coef1 = coef0.multiply(lns);
@@ -3078,8 +3150,8 @@ public class DSSTZonal implements DSSTForceModel {
 
                                     // K₀<sup>-n-1,s</sup>
 
-                                    final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                    final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                    final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                    final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                     final T coef0 = jn.multiply(d0smj);
                                     final T coef1 = coef0.multiply(lns);
@@ -3140,8 +3212,8 @@ public class DSSTZonal implements DSSTForceModel {
                                         final T jn = zero.subtract(harmonics.getUnnormalizedCnm(n, 0));
 
                                         // K₀<sup>-n-1,s</sup>
-                                        final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                                        final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                                        final T kns   = hansenObjects.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                                        final T dkns  = hansenObjects.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                                         final T coef0 = jn.multiply(d0smj);
                                         final T coef1 = coef0.multiply(lns);
@@ -3505,9 +3577,9 @@ public class DSSTZonal implements DSSTForceModel {
             U = 0.;
 
             // Gs and Hs coefficients
-            final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), maxEccPowMeanElements);
+            final double[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), context.getAlpha(), context.getBeta(), maxEccPowMeanElements);
             // Qns coefficients
-            final double[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), maxDegree, maxEccPowMeanElements);
+            final double[][] Qns  = CoefficientsFactory.computeQns(context.getGamma(), maxDegree, maxEccPowMeanElements);
 
             final double[] roaPow = new double[maxDegree + 1];
             roaPow[0] = 1.;
@@ -3540,8 +3612,8 @@ public class DSSTZonal implements DSSTForceModel {
                     final double sxgsm1 = s * GsHs[0][s - 1];
                     final double sxhsm1 = s * GsHs[1][s - 1];
                     // Then compute derivatives
-                    dGsdh  = auxiliaryElements.getBeta()  * sxgsm1 - auxiliaryElements.getAlpha() * sxhsm1;
-                    dGsdk  = auxiliaryElements.getAlpha() * sxgsm1 + auxiliaryElements.getBeta()  * sxhsm1;
+                    dGsdh  = context.getBeta()  * sxgsm1 - context.getAlpha() * sxhsm1;
+                    dGsdk  = context.getAlpha() * sxgsm1 + context.getBeta()  * sxhsm1;
                     dGsdAl = auxiliaryElements.getK() * sxgsm1 - auxiliaryElements.getH() * sxhsm1;
                     dGsdBe = auxiliaryElements.getH() * sxgsm1 + auxiliaryElements.getK() * sxhsm1;
                 }
@@ -3554,8 +3626,8 @@ public class DSSTZonal implements DSSTForceModel {
                     if ((n - s) % 2 == 0) {
 
                         //Extract data from previous computation :
-                        final double kns   = hansen.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                        final double dkns  = hansen.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                        final double kns   = hansen.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                        final double dkns  = hansen.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                         final double vns   = Vns.get(new NSKey(n, s));
                         final double coef0 = d0s * roaPow[n] * vns * -harmonics.getUnnormalizedCnm(n, 0);
@@ -3570,9 +3642,9 @@ public class DSSTZonal implements DSSTForceModel {
                         // Compute dU / da :
                         dUda += coef3 * (n + 1);
                         // Compute dU / dEx
-                        dUdk += coef1 * (kns * dGsdk + auxiliaryElements.getK() * context.getXXX() * gs * dkns);
+                        dUdk += coef1 * (kns * dGsdk + auxiliaryElements.getK() * context.getChi3() * gs * dkns);
                         // Compute dU / dEy
-                        dUdh += coef1 * (kns * dGsdh + auxiliaryElements.getH() * context.getXXX() * gs * dkns);
+                        dUdh += coef1 * (kns * dGsdh + auxiliaryElements.getH() * context.getChi3() * gs * dkns);
                         // Compute dU / dAlpha
                         dUdAl += coef2 * dGsdAl;
                         // Compute dU / dBeta
@@ -3699,9 +3771,11 @@ public class DSSTZonal implements DSSTForceModel {
             U = zero;
 
             // Gs and Hs coefficients
-            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(), auxiliaryElements.getAlpha(), auxiliaryElements.getBeta(), maxEccPowMeanElements, field);
+            final T[][] GsHs = CoefficientsFactory.computeGsHs(auxiliaryElements.getK(), auxiliaryElements.getH(),
+                                                               context.getAlpha(), context.getBeta(),
+                                                               maxEccPowMeanElements, field);
             // Qns coefficients
-            final T[][] Qns  = CoefficientsFactory.computeQns(auxiliaryElements.getGamma(), maxDegree, maxEccPowMeanElements);
+            final T[][] Qns  = CoefficientsFactory.computeQns(context.getGamma(), maxDegree, maxEccPowMeanElements);
 
             final T[] roaPow = MathArrays.buildArray(field, maxDegree + 1);
             roaPow[0] = zero.newInstance(1.);
@@ -3734,8 +3808,8 @@ public class DSSTZonal implements DSSTForceModel {
                     final T sxgsm1 = GsHs[0][s - 1].multiply(s);
                     final T sxhsm1 = GsHs[1][s - 1].multiply(s);
                     // Then compute derivatives
-                    dGsdh  = sxgsm1.multiply(auxiliaryElements.getBeta()).subtract(sxhsm1.multiply(auxiliaryElements.getAlpha()));
-                    dGsdk  = sxgsm1.multiply(auxiliaryElements.getAlpha()).add(sxhsm1.multiply(auxiliaryElements.getBeta()));
+                    dGsdh  = sxgsm1.multiply(context.getBeta()).subtract(sxhsm1.multiply(context.getAlpha()));
+                    dGsdk  = sxgsm1.multiply(context.getAlpha()).add(sxhsm1.multiply(context.getBeta()));
                     dGsdAl = sxgsm1.multiply(auxiliaryElements.getK()).subtract(sxhsm1.multiply(auxiliaryElements.getH()));
                     dGsdBe = sxgsm1.multiply(auxiliaryElements.getH()).add(sxhsm1.multiply(auxiliaryElements.getK()));
                 }
@@ -3748,8 +3822,8 @@ public class DSSTZonal implements DSSTForceModel {
                     if ((n - s) % 2 == 0) {
 
                         //Extract data from previous computation :
-                        final T kns   = hansen.getHansenObjects()[s].getValue(-n - 1, context.getX());
-                        final T dkns  = hansen.getHansenObjects()[s].getDerivative(-n - 1, context.getX());
+                        final T kns   = hansen.getHansenObjects()[s].getValue(-n - 1, context.getChi());
+                        final T dkns  = hansen.getHansenObjects()[s].getDerivative(-n - 1, context.getChi());
 
                         final double vns   = Vns.get(new NSKey(n, s));
                         final T coef0 = d0s.multiply(roaPow[n]).multiply(vns).multiply(-harmonics.getUnnormalizedCnm(n, 0));
@@ -3764,9 +3838,9 @@ public class DSSTZonal implements DSSTForceModel {
                         // Compute dU / da :
                         dUda  = dUda.add(coef3.multiply(n + 1));
                         // Compute dU / dEx
-                        dUdk  = dUdk.add(coef1.multiply(dGsdk.multiply(kns).add(auxiliaryElements.getK().multiply(context.getXXX()).multiply(dkns).multiply(gs))));
+                        dUdk  = dUdk.add(coef1.multiply(dGsdk.multiply(kns).add(auxiliaryElements.getK().multiply(context.getChi3()).multiply(dkns).multiply(gs))));
                         // Compute dU / dEy
-                        dUdh  = dUdh.add(coef1.multiply(dGsdh.multiply(kns).add(auxiliaryElements.getH().multiply(context.getXXX()).multiply(dkns).multiply(gs))));
+                        dUdh  = dUdh.add(coef1.multiply(dGsdh.multiply(kns).add(auxiliaryElements.getH().multiply(context.getChi3()).multiply(dkns).multiply(gs))));
                         // Compute dU / dAlpha
                         dUdAl = dUdAl.add(coef2.multiply(dGsdAl));
                         // Compute dU / dBeta
@@ -3860,7 +3934,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @param element element of the array to compute the init values
          */
         public void computeHansenObjectsInitValues(final DSSTZonalContext context, final int element) {
-            hansenObjects[element].computeInitValues(context.getX());
+            hansenObjects[element].computeInitValues(context.getChi());
         }
 
         /** Get the Hansen Objects.
@@ -3897,7 +3971,7 @@ public class DSSTZonal implements DSSTForceModel {
          * @param element element of the array to compute the init values
          */
         public void computeHansenObjectsInitValues(final FieldDSSTZonalContext<T> context, final int element) {
-            hansenObjects[element].computeInitValues(context.getX());
+            hansenObjects[element].computeInitValues(context.getChi());
         }
 
         /** Get the Hansen Objects.

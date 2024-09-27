@@ -16,6 +16,12 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
@@ -60,12 +66,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class FieldDSSTTesseralTest {
 
@@ -125,12 +125,12 @@ public class FieldDSSTTesseralTest {
             elements[i] = daidt[i];
         }
 
-        Assertions.assertEquals(7.120011500375922E-5,   elements[0].getReal(), 6.0e-19);
-        Assertions.assertEquals(-1.109767646425212E-11, elements[1].getReal(), 2.0e-26);
-        Assertions.assertEquals(2.3036711391089307E-11, elements[2].getReal(), 1.5e-26);
-        Assertions.assertEquals(2.499304852807308E-12,  elements[3].getReal(), 1.0e-27);
-        Assertions.assertEquals(1.3899097178558372E-13, elements[4].getReal(), 3.0e-27);
-        Assertions.assertEquals(5.795522421338584E-12,  elements[5].getReal(), 1.0e-26);
+        Assertions.assertEquals(7.12557687065243E-05 , elements[0].getReal(), 6.0e-19);
+        Assertions.assertEquals(-1.11351345747909E-11, elements[1].getReal(), 2.0e-26);
+        Assertions.assertEquals(2.302319084099072E-11, elements[2].getReal(), 1.5e-26);
+        Assertions.assertEquals(2.499448456499174E-12, elements[3].getReal(), 1.0e-27);
+        Assertions.assertEquals(1.38138527141734E-13 , elements[4].getReal(), 3.0e-27);
+        Assertions.assertEquals(5.81588304559558E-12 , elements[5].getReal(), 1.0e-26);
 
     }
 
@@ -187,12 +187,12 @@ public class FieldDSSTTesseralTest {
             }
         }
 
-        Assertions.assertEquals(5.192409957353236,      y[0].getReal(), 1.e-15);
-        Assertions.assertEquals(9.660364749662076E-7,   y[1].getReal(), 1.e-22);
-        Assertions.assertEquals(1.542008987162059E-6,   y[2].getReal(), 1.e-21);
-        Assertions.assertEquals(-4.9944146013126755E-8, y[3].getReal(), 1.e-22);
-        Assertions.assertEquals(-4.500974242661177E-8,  y[4].getReal(), 1.e-22);
-        Assertions.assertEquals(-2.785213556107612E-7,  y[5].getReal(), 1.e-21);
+        Assertions.assertEquals(5.192409957353241    ,      y[0].getReal(), 1.e-15);
+        Assertions.assertEquals(9.660364749662038E-7 ,   y[1].getReal(), 1.e-22);
+        Assertions.assertEquals(1.5420089871620561E-6,   y[2].getReal(), 1.e-21);
+        Assertions.assertEquals(-4.99441460131262E-8 , y[3].getReal(), 1.e-22);
+        Assertions.assertEquals(-4.500974242661193E-8,  y[4].getReal(), 1.e-22);
+        Assertions.assertEquals(-2.785213556107623E-7,  y[5].getReal(), 1.e-21);
     }
 
     @Test
@@ -415,7 +415,7 @@ public class FieldDSSTTesseralTest {
         for (int m = 0; m < 6; ++m) {
             for (int n = 0; n < 6; ++n) {
                 double error = FastMath.abs((shortPeriodJacobian[m][n] - shortPeriodJacobianRef[m][n]) / shortPeriodJacobianRef[m][n]);
-                Assertions.assertEquals(0, error, 7.6e-10);
+                Assertions.assertEquals(0, error, 1.52e-09);
             }
         }
 
