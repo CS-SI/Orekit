@@ -288,6 +288,14 @@ public class SinexBiasParserTest {
 
         Assertions.assertEquals(valueOsbReal, valueOsb, 1e-13);
 
+        final double phaseBias = sinexBias.
+                                 getStationsOsb().
+                                 get("BRUX").
+                                 getOsb(SatelliteSystem.GALILEO).
+                                 getBias(PredefinedObservationType.L6A,
+                                         new AbsoluteDate(new DateComponents(2024, 250), TimeComponents.H00, timeScale));
+        Assertions.assertEquals(1.7e-3, phaseBias, 1.0e-15);
+
     }
 
     private SinexBias load(final String name) {
