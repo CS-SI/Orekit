@@ -62,6 +62,29 @@ public class EventDetectorTest {
     private double mu;
 
     @Test
+    void testFinish() {
+        // GIVEN
+        final FinishingHandler handler = new FinishingHandler();
+        final EventDetector mockedDetector = Mockito.mock(EventDetector.class);
+        Mockito.when(mockedDetector.getHandler()).thenReturn(handler);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.doCallRealMethod().when(mockedDetector).finish(mockedState);
+        // WHEN
+        mockedDetector.finish(mockedState);
+        // THEN
+        Assertions.assertTrue(handler.isFinished);
+    }
+
+    private static class FinishingHandler extends ContinueOnEvent {
+        boolean isFinished = false;
+
+        @Override
+        public void finish(SpacecraftState finalState, EventDetector detector) {
+            isFinished = true;
+        }
+    }
+
+    @Test
     public void testEventHandlerInit() {
         final TimeScale utc = TimeScalesFactory.getUTC();
         final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);

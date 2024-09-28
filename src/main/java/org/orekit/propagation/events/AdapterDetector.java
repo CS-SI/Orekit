@@ -87,6 +87,12 @@ public class AdapterDetector implements EventDetector {
 
     /** {@inheritDoc} */
     @Override
+    public void finish(final SpacecraftState state) {
+        detector.finish(state);
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public EventDetectionSettings getDetectionSettings() {
         return detector.getDetectionSettings();
     }

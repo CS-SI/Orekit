@@ -439,8 +439,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // propagate from start date to end date with event detection
             final SpacecraftState finalState = integrateDynamics(tEnd, false);
 
-            return finalState;
+            // Finalize event detectors
+            getEventsDetectors().forEach(detector -> detector.finish(finalState));
 
+            return finalState;
         }
 
     }

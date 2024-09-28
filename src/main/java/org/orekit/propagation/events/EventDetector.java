@@ -110,6 +110,15 @@ public interface EventDetector {
     EventHandler getHandler();
 
     /**
+     * This method finalizes the event detector's job.
+     * @param state state at propagation end
+     * @since 12.2
+     */
+    default void finish(SpacecraftState state) {
+        getHandler().finish(state, this);
+    }
+
+    /**
      * Getter for the settings.
      * @return detection settings
      * @since 12.2
