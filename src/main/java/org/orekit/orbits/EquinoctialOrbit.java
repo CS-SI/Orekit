@@ -142,7 +142,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                             final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         this(a, ex, ey, hx, hy, l,
-             Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
+             0., 0., 0., 0., 0., computeKeplerianLDot(type, a, ex, ey, mu, l, type),
              type, cachedPositionAngleType, frame, date, mu);
     }
 
@@ -216,14 +216,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         this.hy    = hy;
         this.hyDot = hyDot;
 
-        if (hasDerivatives()) {
-            final UnivariateDerivative1 lUD = initializeCachedL(l, lDot, type);
-            this.cachedL = lUD.getValue();
-            this.cachedLDot = lUD.getFirstDerivative();
-        } else {
-            this.cachedL = initializeCachedL(l, type);
-            this.cachedLDot = Double.NaN;
-        }
+        final UnivariateDerivative1 lUD = initializeCachedL(l, lDot, type);
+        this.cachedL = lUD.getValue();
+        this.cachedLDot = lUD.getFirstDerivative();
 
         this.partialPV = null;
 
@@ -350,12 +345,12 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             // acceleration is either almost zero or NaN,
             // we assume acceleration was not known
             // we don't set up derivatives
-            aDot  = Double.NaN;
-            exDot = Double.NaN;
-            eyDot = Double.NaN;
-            hxDot = Double.NaN;
-            hyDot = Double.NaN;
-            cachedLDot = Double.NaN;
+            aDot  = 0.;
+            exDot = 0.;
+            eyDot = 0.;
+            hxDot = 0.;
+            hyDot = 0.;
+            cachedLDot = computeKeplerianLDot(cachedPositionAngleType, a, ex, ey, mu, cachedL, cachedPositionAngleType);
         }
 
     }
@@ -398,8 +393,16 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         hyDot     = op.getHyDot();
         cachedPositionAngleType = PositionAngleType.TRUE;
         cachedL   = op.getLv();
-        cachedLDot = op.getLvDot();
+        cachedLDot = op.hasNonKeplerianAcceleration() ? op.getLvDot() :
+                computeKeplerianLDot(cachedPositionAngleType, a, ex, ey, op.getMu(), cachedL, cachedPositionAngleType);
         partialPV = null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNonKeplerianAcceleration() {
+        return aDot != 0. && exDot != 0. && eyDot != 0. && hxDot != 0. && hyDot != 0. &&
+                cachedLDot != computeKeplerianLDot(cachedPositionAngleType, a, ex, ey, getMu(), cachedL, cachedPositionAngleType);
     }
 
     /** {@inheritDoc} */
@@ -634,6 +637,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public double getEDot() {
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         return (ex * exDot + ey * eyDot) / FastMath.sqrt(ex * ex + ey * ey);
     }
 
@@ -646,6 +652,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public double getIDot() {
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         final double h2 = hx * hx + hy * hy;
         final double h  = FastMath.sqrt(h2);
         return 2 * (hx * hxDot + hy * hyDot) / (h * (1 + h2));
@@ -767,9 +776,6 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * <p>
-     * This method should be called only when {@link #hasDerivatives()} returns true.
-     * </p>
      * @return non-Keplerian part of the acceleration
      */
     private Vector3D nonKeplerianAcceleration() {
@@ -841,7 +847,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         // acceleration
         final double r2 = partialPV.getPosition().getNormSq();
         final Vector3D keplerianAcceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), partialPV.getPosition());
-        final Vector3D acceleration = hasDerivatives() ?
+        final Vector3D acceleration = hasNonKeplerianRates() ?
                                       keplerianAcceleration.add(nonKeplerianAcceleration()) :
                                       keplerianAcceleration;
 
@@ -868,7 +874,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                                                                        getFrame(),
                                                                        getDate().shiftedBy(dt), getMu());
 
-        if (hasDerivatives()) {
+        if (hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -1122,13 +1128,13 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasRates() {
-        return hasDerivatives();
+    public boolean hasNonKeplerianRates() {
+        return hasNonKeplerianAcceleration();
     }
 
     /** {@inheritDoc} */
     @Override
-    public EquinoctialOrbit removeRates() {
+    public EquinoctialOrbit withKeplerianRates() {
         final PositionAngleType positionAngleType = getCachedPositionAngleType();
         return new EquinoctialOrbit(getA(), getEquinoctialEx(), getEquinoctialEy(), getHx(), getHy(),
                 getL(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
@@ -1175,24 +1181,10 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             this.seconds     = orbit.getDate().getSeconds();
             this.attoseconds = orbit.getDate().getAttoSeconds();
 
-            if (orbit.hasDerivatives()) {
-                // we have derivatives
-                this.d = new double[] {
-                    orbit.getMu(),
-                    orbit.a, orbit.ex, orbit.ey,
-                    orbit.hx, orbit.hy, orbit.cachedL,
-                    orbit.aDot, orbit.exDot, orbit.eyDot,
-                    orbit.hxDot, orbit.hyDot, orbit.cachedLDot
-                };
-            } else {
-                // we don't have derivatives
-                this.d = new double[] {
-                    orbit.getMu(),
-                    orbit.a, orbit.ex, orbit.ey,
-                    orbit.hx, orbit.hy, orbit.cachedL
-                };
-            }
-
+            this.d = new double[] {
+                orbit.getMu(), orbit.a, orbit.ex, orbit.ey, orbit.hx, orbit.hy, orbit.cachedL,
+                orbit.aDot, orbit.exDot, orbit.eyDot, orbit.hxDot, orbit.hyDot, orbit.cachedLDot
+            };
             this.frame = orbit.getFrame();
 
         }

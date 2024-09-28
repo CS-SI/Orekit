@@ -88,7 +88,7 @@ public class WalkerConstellation {
      * <p>
      * The various orbits are built from the {@code referenceOrbit} using plane
      * rotations and {@link Orbit#shiftedBy(double) shifts}. This implies that
-     * if orbit does not include {@link Orbit#hasDerivatives() derivatives}, a
+     * if orbit does not include non-Keplerian derivatives, a
      * simple Keplerian motion is assumed, which is the intended use case.
      * </p>
      * @param <O> type of the orbits

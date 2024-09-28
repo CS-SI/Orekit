@@ -391,8 +391,8 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     public abstract T getIDot();
 
-    /** Check if orbit includes derivatives.
-     * @return true if orbit includes derivatives
+    /** Check if orbit includes non-Keplerian rates.
+     * @return true if orbit includes non-Keplerian derivatives
      * @see #getADot()
      * @see #getEquinoctialExDot()
      * @see #getEquinoctialEyDot()
@@ -403,9 +403,11 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      * @see #getLMDot()
      * @see #getEDot()
      * @see #getIDot()
-     * @since 9.0
+     * @since 13.0
      */
-    public abstract boolean hasDerivatives();
+    public boolean hasNonKeplerianAcceleration() {
+        return hasNonKeplerianAcceleration(getPVCoordinates(), getMu());
+    }
 
     /** Get the central attraction coefficient used for position and velocity conversions (m³/s²).
      * @return central attraction coefficient used for position and velocity conversions (m³/s²)

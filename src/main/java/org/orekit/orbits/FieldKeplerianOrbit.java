@@ -153,8 +153,8 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, e, i, pa, raan, anomaly,
-             null, null, null, null, null, null,
-             type, cachedPositionAngleType, frame, date, mu);
+             a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(),
+             computeKeplerianAnomalyDot(type, a, e, mu, anomaly, type), type, cachedPositionAngleType, frame, date, mu);
     }
 
     /** Creates a new instance.
@@ -236,14 +236,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         this.PLUS_K = FieldVector3D.getPlusK(a.getField());  // third canonical vector
 
-        if (hasDerivatives()) {
-            final FieldUnivariateDerivative1<T> cachedAnomalyUD = initializeCachedAnomaly(anomaly, anomalyDot, type);
-            this.cachedAnomaly = cachedAnomalyUD.getValue();
-            this.cachedAnomalyDot = cachedAnomalyUD.getFirstDerivative();
-        } else {
-            this.cachedAnomaly = initializeCachedAnomaly(anomaly, type);
-            this.cachedAnomalyDot = null;
-        }
+        final FieldUnivariateDerivative1<T> cachedAnomalyUD = initializeCachedAnomaly(anomaly, anomalyDot, type);
+        this.cachedAnomaly = cachedAnomalyUD.getValue();
+        this.cachedAnomalyDot = cachedAnomalyUD.getFirstDerivative();
 
         // check true anomaly range
         if (!isElliptical()) {
@@ -425,12 +420,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
             // acceleration is either almost zero or NaN,
             // we assume acceleration was not known
             // we don't set up derivatives
-            aDot    = null;
-            eDot    = null;
-            iDot    = null;
-            paDot   = null;
-            raanDot = null;
-            cachedAnomalyDot    = null;
+            aDot    = getZero();
+            eDot    = getZero();
+            iDot    = getZero();
+            paDot   = getZero();
+            raanDot = getZero();
+            cachedAnomalyDot    = computeKeplerianAnomalyDot(cachedPositionAngleType, a, e, mu, cachedAnomaly, cachedPositionAngleType);
         }
 
     }
@@ -460,7 +455,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @param op orbital parameters to copy
      */
     public FieldKeplerianOrbit(final FieldOrbit<T> op) {
-        this(op.getPVCoordinates(), op.getFrame(), op.getMu(), op.hasDerivatives());
+        this(op.getPVCoordinates(), op.getFrame(), op.getMu());
     }
 
     /** Constructor from Field and KeplerianOrbit.
@@ -473,12 +468,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         this(field.getZero().newInstance(op.getA()), field.getZero().newInstance(op.getE()), field.getZero().newInstance(op.getI()),
                 field.getZero().newInstance(op.getPerigeeArgument()), field.getZero().newInstance(op.getRightAscensionOfAscendingNode()),
                 field.getZero().newInstance(op.getAnomaly(op.getCachedPositionAngleType())),
-                (op.hasDerivatives()) ? field.getZero().newInstance(op.getADot()) : null,
-                (op.hasDerivatives()) ? field.getZero().newInstance(op.getEDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().newInstance(op.getIDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().newInstance(op.getPerigeeArgumentDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().newInstance(op.getRightAscensionOfAscendingNodeDot()) : null,
-                (op.hasDerivatives()) ? field.getZero().newInstance(op.getAnomalyDot(op.getCachedPositionAngleType())) : null,
+                field.getZero().newInstance(op.getADot()),
+                field.getZero().newInstance(op.getEDot()),
+                field.getZero().newInstance(op.getIDot()),
+                field.getZero().newInstance(op.getPerigeeArgumentDot()),
+                field.getZero().newInstance(op.getRightAscensionOfAscendingNodeDot()),
+                field.getZero().newInstance(op.getAnomalyDot(op.getCachedPositionAngleType())),
                 op.getCachedPositionAngleType(), op.getFrame(),
                 new FieldAbsoluteDate<>(field, op.getDate()), field.getZero().newInstance(op.getMu()));
     }
@@ -543,9 +538,6 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** Get the perigee argument derivative.
-     * <p>
-     * If the orbit was created without derivatives, the value returned is null.
-     * </p>
      * @return perigee argument derivative (rad/s)
      */
     public T getPerigeeArgumentDot() {
@@ -560,9 +552,6 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** Get the right ascension of the ascending node derivative.
-     * <p>
-     * If the orbit was created without derivatives, the value returned is null.
-     * </p>
      * @return right ascension of the ascending node derivative (rad/s)
      */
     public T getRightAscensionOfAscendingNodeDot() {
@@ -587,38 +576,31 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** Get the true anomaly derivative.
-     * <p>
-     * If the orbit was created without derivatives, the value returned is null.
-     * </p>
      * @return true anomaly derivative (rad/s)
      */
     public T getTrueAnomalyDot() {
-        if (hasDerivatives()) {
-            switch (cachedPositionAngleType) {
-                case MEAN:
-                    final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
-                    final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
-                    final FieldUnivariateDerivative1<T> vUD = (a.getReal() < 0) ?
-                             FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
-                             FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
-                    return vUD.getFirstDerivative();
+        switch (cachedPositionAngleType) {
+            case MEAN:
+                final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
+                final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
+                final FieldUnivariateDerivative1<T> vUD = (a.getReal() < 0) ?
+                         FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
+                         FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
+                return vUD.getFirstDerivative();
 
-                case TRUE:
-                    return cachedAnomalyDot;
+            case TRUE:
+                return cachedAnomalyDot;
 
-                case ECCENTRIC:
-                    final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
-                    final FieldUnivariateDerivative1<T> EUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
-                    final FieldUnivariateDerivative1<T> vUD2 = (a.getReal() < 0) ?
-                             FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD2, EUD) :
-                             FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD2, EUD);
-                    return vUD2.getFirstDerivative();
+            case ECCENTRIC:
+                final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
+                final FieldUnivariateDerivative1<T> EUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
+                final FieldUnivariateDerivative1<T> vUD2 = (a.getReal() < 0) ?
+                         FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD2, EUD) :
+                         FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD2, EUD);
+                return vUD2.getFirstDerivative();
 
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        } else {
-            return null;
+            default:
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -644,38 +626,31 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** Get the eccentric anomaly derivative.
-     * <p>
-     * If the orbit was created without derivatives, the value returned is null.
-     * </p>
      * @return eccentric anomaly derivative (rad/s)
      */
     public T getEccentricAnomalyDot() {
-        if (hasDerivatives()) {
-            switch (cachedPositionAngleType) {
-                case ECCENTRIC:
-                    return cachedAnomalyDot;
+        switch (cachedPositionAngleType) {
+            case ECCENTRIC:
+                return cachedAnomalyDot;
 
-                case TRUE:
-                    final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
-                    final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
-                    final FieldUnivariateDerivative1<T> EUD = (a.getReal() < 0) ?
-                             FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
-                             FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
-                    return EUD.getFirstDerivative();
+            case TRUE:
+                final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
+                final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
+                final FieldUnivariateDerivative1<T> EUD = (a.getReal() < 0) ?
+                         FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
+                         FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
+                return EUD.getFirstDerivative();
 
-                case MEAN:
-                    final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
-                    final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
-                    final FieldUnivariateDerivative1<T> EUD2 = (a.getReal() < 0) ?
-                             FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD2, MUD) :
-                             FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD2, MUD);
-                    return EUD2.getFirstDerivative();
+            case MEAN:
+                final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
+                final FieldUnivariateDerivative1<T> MUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
+                final FieldUnivariateDerivative1<T> EUD2 = (a.getReal() < 0) ?
+                         FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD2, MUD) :
+                         FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD2, MUD);
+                return EUD2.getFirstDerivative();
 
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        } else {
-            return null;
+            default:
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -697,38 +672,32 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** Get the mean anomaly derivative.
-     * <p>
-     * If the orbit was created without derivatives, the value returned is null.
-     * </p>
+
      * @return mean anomaly derivative (rad/s)
      */
     public T getMeanAnomalyDot() {
-        if (hasDerivatives()) {
-            switch (cachedPositionAngleType) {
-                case MEAN:
-                    return cachedAnomalyDot;
+        switch (cachedPositionAngleType) {
+            case MEAN:
+                return cachedAnomalyDot;
 
-                case ECCENTRIC:
-                    final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
-                    final FieldUnivariateDerivative1<T> EUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
-                    final FieldUnivariateDerivative1<T> MUD = (a.getReal() < 0) ?
-                             FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(eUD, EUD) :
-                             FieldKeplerianAnomalyUtility.ellipticEccentricToMean(eUD, EUD);
-                    return MUD.getFirstDerivative();
+            case ECCENTRIC:
+                final FieldUnivariateDerivative1<T> eUD = new FieldUnivariateDerivative1<>(e, eDot);
+                final FieldUnivariateDerivative1<T> EUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
+                final FieldUnivariateDerivative1<T> MUD = (a.getReal() < 0) ?
+                         FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(eUD, EUD) :
+                         FieldKeplerianAnomalyUtility.ellipticEccentricToMean(eUD, EUD);
+                return MUD.getFirstDerivative();
 
-                case TRUE:
-                    final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
-                    final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
-                    final FieldUnivariateDerivative1<T> MUD2 = (a.getReal() < 0) ?
-                             FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD2, vUD) :
-                             FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD2, vUD);
-                    return MUD2.getFirstDerivative();
+            case TRUE:
+                final FieldUnivariateDerivative1<T> eUD2 = new FieldUnivariateDerivative1<>(e, eDot);
+                final FieldUnivariateDerivative1<T> vUD = new FieldUnivariateDerivative1<>(cachedAnomaly, cachedAnomalyDot);
+                final FieldUnivariateDerivative1<T> MUD2 = (a.getReal() < 0) ?
+                         FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD2, vUD) :
+                         FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD2, vUD);
+                return MUD2.getFirstDerivative();
 
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        } else {
-            return null;
+            default:
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -743,9 +712,6 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** Get the anomaly derivative.
-     * <p>
-     * If the orbit was created without derivatives, the value returned is null.
-     * </p>
      * @param type type of the angle
      * @return anomaly derivative (rad/s)
      */
@@ -757,8 +723,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasDerivatives() {
-        return aDot != null;
+    public boolean hasNonKeplerianAcceleration() {
+        return aDot.getReal() != 0. && eDot.getReal() != 0 && iDot.getReal() != 0. && raanDot.getReal() != 0. &&
+                paDot.getReal() != 0. && cachedAnomalyDot.getReal() != computeKeplerianAnomalyDot(cachedPositionAngleType, a, e, getMu(), cachedAnomaly, cachedPositionAngleType).getReal();
     }
 
     /** {@inheritDoc} */
@@ -770,11 +737,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public T getEquinoctialExDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         final FieldUnivariateDerivative1<T> eUD    = new FieldUnivariateDerivative1<>(e,    eDot);
         final FieldUnivariateDerivative1<T> paUD   = new FieldUnivariateDerivative1<>(pa,   paDot);
         final FieldUnivariateDerivative1<T> raanUD = new FieldUnivariateDerivative1<>(raan, raanDot);
@@ -791,11 +756,9 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public T getEquinoctialEyDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         final FieldUnivariateDerivative1<T> eUD    = new FieldUnivariateDerivative1<>(e,    eDot);
         final FieldUnivariateDerivative1<T> paUD   = new FieldUnivariateDerivative1<>(pa,   paDot);
         final FieldUnivariateDerivative1<T> raanUD = new FieldUnivariateDerivative1<>(raan, raanDot);
@@ -817,13 +780,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     public T getHxDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
-
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return getZero().add(Double.NaN);
+        }
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
 
         final FieldUnivariateDerivative1<T> iUD    = new FieldUnivariateDerivative1<>(i,    iDot);
@@ -846,13 +808,12 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     public T getHyDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
-
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return getZero().add(Double.NaN);
+        }
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
 
         final FieldUnivariateDerivative1<T> iUD    = new FieldUnivariateDerivative1<>(i,    iDot);
@@ -870,9 +831,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public T getLvDot() {
-        return hasDerivatives() ?
-               paDot.add(raanDot).add(getTrueAnomalyDot()) :
-               null;
+        return paDot.add(raanDot).add(getTrueAnomalyDot());
     }
 
     /** {@inheritDoc} */
@@ -884,9 +843,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public T getLEDot() {
-        return hasDerivatives() ?
-               paDot.add(raanDot).add(getEccentricAnomalyDot()) :
-               null;
+        return paDot.add(raanDot).add(getEccentricAnomalyDot());
     }
 
     /** {@inheritDoc} */
@@ -898,9 +855,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     public T getLMDot() {
-        return hasDerivatives() ?
-               paDot.add(raanDot).add(getMeanAnomalyDot()) :
-               null;
+        return paDot.add(raanDot).add(getMeanAnomalyDot());
     }
 
     /** Initialize cached anomaly with rate.
@@ -1074,9 +1029,6 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * <p>
-     * This method should be called only when {@link #hasDerivatives()} returns true.
-     * </p>
      * @return non-Keplerian part of the acceleration
      */
     private FieldVector3D<T> nonKeplerianAcceleration() {
@@ -1154,7 +1106,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
         final T r2 = partialPV.getPosition().getNormSq();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(FastMath.sqrt(r2)).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
-        final FieldVector3D<T> acceleration = hasDerivatives() ?
+        final FieldVector3D<T> acceleration = hasNonKeplerianRates() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
                                               keplerianAcceleration;
 
@@ -1177,7 +1129,7 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
                                                                                   getKeplerianMeanMotion().multiply(dt).add(getMeanAnomaly()),
                                                                                   PositionAngleType.MEAN, cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (hasDerivatives()) {
+        if (hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -1704,13 +1656,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasRates() {
-        return hasDerivatives();
+    public boolean hasNonKeplerianRates() {
+        return hasNonKeplerianAcceleration();
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldKeplerianOrbit<T> removeRates() {
+    public FieldKeplerianOrbit<T> withKeplerianRates() {
         return new FieldKeplerianOrbit<>(getA(), getE(), getI(), getPerigeeArgument(), getRightAscensionOfAscendingNode(),
                 cachedAnomaly, cachedPositionAngleType, getFrame(), getDate(), getMu());
     }
@@ -1741,20 +1693,13 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     public KeplerianOrbit toOrbit() {
         final double cachedPositionAngle = cachedAnomaly.getReal();
-        if (hasDerivatives()) {
-            return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
-                                      pa.getReal(), raan.getReal(), cachedPositionAngle,
-                                      aDot.getReal(), eDot.getReal(), iDot.getReal(),
-                                      paDot.getReal(), raanDot.getReal(),
-                                      cachedAnomalyDot.getReal(),
-                                      cachedPositionAngleType, cachedPositionAngleType,
-                                      getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
-        } else {
-            return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
-                                      pa.getReal(), raan.getReal(), cachedPositionAngle,
-                                      cachedPositionAngleType, cachedPositionAngleType,
-                                      getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
-        }
+        return new KeplerianOrbit(a.getReal(), e.getReal(), i.getReal(),
+                                  pa.getReal(), raan.getReal(), cachedPositionAngle,
+                                  aDot.getReal(), eDot.getReal(), iDot.getReal(),
+                                  paDot.getReal(), raanDot.getReal(),
+                                  cachedAnomalyDot.getReal(),
+                                  cachedPositionAngleType, cachedPositionAngleType,
+                                  getFrame(), getDate().toAbsoluteDate(), getMu().getReal());
     }
 
 
