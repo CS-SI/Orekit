@@ -125,7 +125,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      */
     public FieldCartesianOrbit(final FieldOrbit<T> op) {
         super(op.getPVCoordinates(), op.getFrame(), op.getMu());
-        hasNonKeplerianAcceleration = op.hasDerivatives();
+        hasNonKeplerianAcceleration = op.hasNonKeplerianAcceleration();
         if (op instanceof FieldEquinoctialOrbit) {
             equinoctial = (FieldEquinoctialOrbit<T>) op;
         } else if (op instanceof FieldCartesianOrbit) {
@@ -144,7 +144,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     public FieldCartesianOrbit(final Field<T> field, final CartesianOrbit op) {
         super(new TimeStampedFieldPVCoordinates<>(field, op.getPVCoordinates()), op.getFrame(),
                 field.getZero().newInstance(op.getMu()));
-        hasNonKeplerianAcceleration = op.hasDerivatives();
+        hasNonKeplerianAcceleration = op.hasNonKeplerianAcceleration();
         if (op.isElliptical()) {
             equinoctial = new FieldEquinoctialOrbit<>(field, new EquinoctialOrbit(op));
         } else {
@@ -170,7 +170,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {
-            if (hasDerivatives()) {
+            if (hasNonKeplerianAcceleration()) {
                 // getPVCoordinates includes accelerations that will be interpreted as derivatives
                 equinoctial = new FieldEquinoctialOrbit<>(getPVCoordinates(), getFrame(), getDate(), getMu());
             } else {
@@ -214,7 +214,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public T getADot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration()) {
             final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
             final FieldUnivariateDerivative2<T> r  = pv.getPosition().getNorm();
             final FieldUnivariateDerivative2<T> V2 = pv.getVelocity().getNormSq();
@@ -246,7 +246,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public T getEDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration()) {
             final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
             final FieldUnivariateDerivative2<T> r       = pv.getPosition().getNorm();
             final FieldUnivariateDerivative2<T> V2      = pv.getVelocity().getNormSq();
@@ -268,7 +268,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public T getIDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration()) {
             final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
             final FieldVector3D<FieldUnivariateDerivative2<T>> momentum =
                             FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity());
@@ -318,7 +318,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public T getHxDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration()) {
             final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
             final FieldVector3D<FieldUnivariateDerivative2<T>> w =
                             FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
@@ -351,7 +351,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
     /** {@inheritDoc} */
     public T getHyDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration()) {
             final FieldPVCoordinates<FieldUnivariateDerivative2<T>> pv = getPVDerivatives();
             final FieldVector3D<FieldUnivariateDerivative2<T>> w =
                             FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
@@ -406,7 +406,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
-    public boolean hasDerivatives() {
+    public boolean hasNonKeplerianAcceleration() {
         return hasNonKeplerianAcceleration;
     }
 
@@ -544,7 +544,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     public CartesianOrbit toOrbit() {
         final PVCoordinates pv = getPVCoordinates().toPVCoordinates();
         final AbsoluteDate date = getPVCoordinates().getDate().toAbsoluteDate();
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration()) {
             // getPVCoordinates includes accelerations that will be interpreted as derivatives
             return new CartesianOrbit(pv, getFrame(), date, getMu().getReal());
         } else {

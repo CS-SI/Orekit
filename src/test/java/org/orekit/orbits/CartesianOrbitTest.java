@@ -351,7 +351,7 @@ public class CartesianOrbitTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
-        Assertions.assertTrue(orbit.hasDerivatives());
+        Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
@@ -359,9 +359,9 @@ public class CartesianOrbitTest {
 
         for (OrbitType type : OrbitType.values()) {
             Orbit converted = type.convertType(orbit);
-            Assertions.assertTrue(converted.hasDerivatives());
+            Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
             CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
-            Assertions.assertTrue(rebuilt.hasDerivatives());
+            Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     2.0e-9);
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     2.5e-12);
             Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 4.9e-15);
@@ -378,7 +378,7 @@ public class CartesianOrbitTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
-        Assertions.assertTrue(orbit.hasDerivatives());
+        Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
@@ -386,9 +386,9 @@ public class CartesianOrbitTest {
 
         OrbitType type = OrbitType.KEPLERIAN;
         Orbit converted = type.convertType(orbit);
-        Assertions.assertTrue(converted.hasDerivatives());
+        Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
         CartesianOrbit rebuilt = (CartesianOrbit) OrbitType.CARTESIAN.convertType(converted);
-        Assertions.assertTrue(rebuilt.hasDerivatives());
+        Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPosition(),     position),     1.0e-15);
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getVelocity(),     velocity),     1.0e-15);
         Assertions.assertEquals(0, Vector3D.distance(rebuilt.getPVCoordinates().getAcceleration(), acceleration), 1.0e-15);

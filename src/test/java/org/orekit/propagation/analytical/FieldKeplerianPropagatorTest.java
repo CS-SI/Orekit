@@ -919,7 +919,7 @@ public class FieldKeplerianPropagatorTest {
 
     private <T extends CalculusFieldElement<T>> void checkDerivatives(final FieldOrbit<T> orbit,
                                                                   final boolean expectedDerivatives) {
-        Assertions.assertEquals(expectedDerivatives, orbit.hasDerivatives());
+        Assertions.assertEquals(expectedDerivatives, orbit.hasNonKeplerianAcceleration());
         if (expectedDerivatives) {
             Assertions.assertNotNull(orbit.getADot());
             Assertions.assertNotNull(orbit.getEquinoctialExDot());

@@ -236,7 +236,7 @@ class FieldOrbitTest {
         }
 
         @Override
-        public boolean hasDerivatives() {
+        public boolean hasNonKeplerianAcceleration() {
             return false;
         }
 

@@ -896,7 +896,7 @@ public class KeplerianPropagatorTest {
     }
 
     private void checkDerivatives(final Orbit orbit, final boolean expectedDerivatives) {
-        Assertions.assertEquals(expectedDerivatives, orbit.hasDerivatives());
+        Assertions.assertEquals(expectedDerivatives, orbit.hasNonKeplerianAcceleration());
         Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getADot()));
         Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialExDot()));
         Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialEyDot()));

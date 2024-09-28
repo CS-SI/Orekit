@@ -237,7 +237,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return semi-major axis  derivative (m/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getADot();
@@ -252,7 +251,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the equinoctial eccentricity vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEquinoctialExDot();
@@ -267,7 +265,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the equinoctial eccentricity vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEquinoctialEyDot();
@@ -282,7 +279,7 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the inclination vector derivative
-     * @see #hasDerivatives()
+
      * @since 9.0
      */
     public abstract double getHxDot();
@@ -297,7 +294,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the inclination vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getHyDot();
@@ -312,7 +308,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(E + ω + Ω)/dt eccentric longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLEDot();
@@ -327,7 +322,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(v + ω + Ω)/dt true longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLvDot();
@@ -342,7 +336,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(M + ω + Ω)/dt mean longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLMDot();
@@ -359,7 +352,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return eccentricity derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEDot();
@@ -374,13 +366,12 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return inclination derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getIDot();
 
-    /** Check if orbit includes derivatives.
-     * @return true if orbit includes derivatives
+    /** Check if orbit includes non-Keplerian rates.
+     * @return true if orbit includes non-Keplerian derivatives
      * @see #getADot()
      * @see #getEquinoctialExDot()
      * @see #getEquinoctialEyDot()
@@ -391,10 +382,10 @@ public abstract class Orbit
      * @see #getLMDot()
      * @see #getEDot()
      * @see #getIDot()
-     * @since 9.0
+     * @since 13.0
      */
-    public boolean hasDerivatives() {
-        return !Double.isNaN(getADot());
+    public boolean hasNonKeplerianAcceleration() {
+        return hasNonKeplerianAcceleration(getPVCoordinates(), getMu());
     }
 
     /** Get the central acceleration constant.
