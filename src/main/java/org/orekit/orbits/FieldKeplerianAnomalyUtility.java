@@ -23,6 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -74,8 +75,7 @@ public class FieldKeplerianAnomalyUtility {
      */
     public static <T extends CalculusFieldElement<T>> T ellipticTrueToMean(final T e, final T v) {
         final T E = ellipticTrueToEccentric(e, v);
-        final T M = ellipticEccentricToMean(e, E);
-        return M;
+        return ellipticEccentricToMean(e, E);
     }
 
     /**
@@ -86,7 +86,7 @@ public class FieldKeplerianAnomalyUtility {
      * @return elliptic true anomaly (rad)
      */
     public static <T extends CalculusFieldElement<T>> T ellipticEccentricToTrue(final T e, final T E) {
-        final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
+        final T beta = e.divide(e.square().negate().add(1).sqrt().add(1));
         final FieldSinCos<T> scE = FastMath.sinCos(E);
         return E.add(beta.multiply(scE.sin()).divide(beta.multiply(scE.cos()).subtract(1).negate()).atan().multiply(2));
     }
@@ -99,7 +99,7 @@ public class FieldKeplerianAnomalyUtility {
      * @return elliptic eccentric anomaly (rad)
      */
     public static <T extends CalculusFieldElement<T>> T ellipticTrueToEccentric(final T e, final T v) {
-        final T beta = e.divide(e.multiply(e).negate().add(1).sqrt().add(1));
+        final T beta = e.divide(e.square().negate().add(1).sqrt().add(1));
         final FieldSinCos<T> scv = FastMath.sinCos(v);
         return v.subtract((beta.multiply(scv.sin()).divide(beta.multiply(scv.cos()).add(1))).atan().multiply(2));
     }
@@ -166,9 +166,9 @@ public class FieldKeplerianAnomalyUtility {
 
                 f = eMeSinE(e, E).subtract(reducedM);
                 final T s = E.multiply(0.5).sin();
-                fd = e1.add(e.multiply(s).multiply(s).multiply(2));
+                fd = e1.add(e.multiply(s.square()).multiply(2));
             }
-            final T dee = f.multiply(fd).divide(f.multiply(fdd).multiply(0.5).subtract(fd.multiply(fd)));
+            final T dee = f.multiply(fd).divide(f.multiply(fdd).multiply(0.5).subtract(fd.square()));
 
             // update eccentric anomaly, using expressions that limit underflow problems
             final T w = fd.add(dee.multiply(fdd.add(dee.multiply(fddd.divide(3)))).multiply(0.5));
@@ -243,8 +243,7 @@ public class FieldKeplerianAnomalyUtility {
      */
     public static <T extends CalculusFieldElement<T>> T hyperbolicTrueToMean(final T e, final T v) {
         final T H = hyperbolicTrueToEccentric(e, v);
-        final T M = hyperbolicEccentricToMean(e, H);
-        return M;
+        return hyperbolicEccentricToMean(e, H);
     }
 
     /**
@@ -269,7 +268,7 @@ public class FieldKeplerianAnomalyUtility {
      */
     public static <T extends CalculusFieldElement<T>> T hyperbolicTrueToEccentric(final T e, final T v) {
         final FieldSinCos<T> scv = FastMath.sinCos(v);
-        final T sinhH = e.multiply(e).subtract(1).sqrt().multiply(scv.sin()).divide(e.multiply(scv.cos()).add(1));
+        final T sinhH = e.square().subtract(1).sqrt().multiply(scv.sin()).divide(e.multiply(scv.cos()).add(1));
         return sinhH.asinh();
     }
 
@@ -306,16 +305,16 @@ public class FieldKeplerianAnomalyUtility {
         if (L.isZero()) {
             return M.getField().getZero();
         }
-        final T cl = L.multiply(L).add(one).sqrt();
+        final T cl = L.square().add(one).sqrt();
         final T al = L.asinh();
-        final T w = g.multiply(g).multiply(al).divide(cl.multiply(cl).multiply(cl));
+        final T w = g.square().multiply(al).divide(cl.multiply(cl).multiply(cl));
         S = one.subtract(g.divide(cl));
-        S = L.add(g.multiply(al).divide(S.multiply(S).multiply(S)
+        S = L.add(g.multiply(al).divide(S.square().multiply(S)
                 .add(w.multiply(L).multiply(onePointFive.subtract(fourThirds.multiply(g)))).cbrt()));
 
         // Two iterations (at most) of Halley-then-Newton process.
         for (int i = 0; i < 2; ++i) {
-            final T s0 = S.multiply(S);
+            final T s0 = S.square();
             final T s1 = s0.add(one);
             final T s2 = s1.sqrt();
             final T s3 = s1.multiply(s2);
@@ -376,4 +375,77 @@ public class FieldKeplerianAnomalyUtility {
         return e.multiply(H.sinh()).subtract(H);
     }
 
+    /**
+     * Convert anomaly.
+     * @param oldType old position angle type
+     * @param anomaly old value for anomaly
+     * @param e eccentricity
+     * @param newType new position angle type
+     * @param <T> field type
+     * @return converted anomaly
+     * @since 12.2
+     */
+    public static <T extends CalculusFieldElement<T>> T convertAnomaly(final PositionAngleType oldType, final T anomaly,
+                                                                       final T e, final PositionAngleType newType) {
+        if (oldType == newType) {
+            return anomaly;
+
+        } else {
+            if (e.getReal() > 1) {
+                switch (newType) {
+                    case MEAN:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, anomaly);
+                        } else {
+                            return FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, anomaly);
+                        }
+
+                    case ECCENTRIC:
+                        if (oldType == PositionAngleType.MEAN) {
+                            return FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, anomaly);
+                        } else {
+                            return FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, anomaly);
+                        }
+
+                    case TRUE:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly);
+                        } else {
+                            return FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly);
+                        }
+
+                    default:
+                        break;
+                }
+
+            } else {
+                switch (newType) {
+                    case MEAN:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, anomaly);
+                        } else {
+                            return FieldKeplerianAnomalyUtility.ellipticTrueToMean(e, anomaly);
+                        }
+
+                    case ECCENTRIC:
+                        if (oldType == PositionAngleType.MEAN) {
+                            return FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, anomaly);
+                        } else {
+                            return FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, anomaly);
+                        }
+
+                    case TRUE:
+                        if (oldType == PositionAngleType.ECCENTRIC) {
+                            return FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
+                        } else {
+                            return FieldKeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
+                        }
+
+                    default:
+                        break;
+                }
+            }
+            throw new OrekitInternalError(null);
+        }
+    }
 }

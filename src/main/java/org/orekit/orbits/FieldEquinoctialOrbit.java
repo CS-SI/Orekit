@@ -218,9 +218,9 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
         this.hyDot = hyDot;
 
         if (hasDerivatives()) {
-            final FieldUnivariateDerivative1<T> alphaUD = initializeCachedL(l, lDot, type);
-            this.cachedL = alphaUD.getValue();
-            this.cachedLDot = alphaUD.getFirstDerivative();
+            final FieldUnivariateDerivative1<T> lUD = initializeCachedL(l, lDot, type);
+            this.cachedL = lUD.getValue();
+            this.cachedLDot = lUD.getFirstDerivative();
         } else {
             this.cachedL = initializeCachedL(l, type);
             this.cachedLDot = null;
@@ -892,37 +892,7 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
      * @since 12.1
      */
     private T initializeCachedL(final T l, final PositionAngleType positionAngleType) {
-        if (positionAngleType == cachedPositionAngleType) {
-            return l;
-
-        } else {
-            switch (cachedPositionAngleType) {
-
-                case ECCENTRIC:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return FieldEquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, l);
-                    } else {
-                        return FieldEquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, l);
-                    }
-
-                case MEAN:
-                    if (positionAngleType == PositionAngleType.TRUE) {
-                        return FieldEquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, l);
-                    } else {
-                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, l);
-                    }
-
-                case TRUE:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return FieldEquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
-                    } else {
-                        return FieldEquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
-                    }
-
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        }
+        return FieldEquinoctialLongitudeArgumentUtility.convertL(positionAngleType, l, ex, ey, cachedPositionAngleType);
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
@@ -1238,27 +1208,39 @@ public class FieldEquinoctialOrbit<T extends CalculusFieldElement<T>> extends Fi
     @Override
     public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
-        final T oMe2;
-        final T ksi;
-        final T n               = gm.divide(a).sqrt().divide(a);
+        pDot[5] = pDot[5].add(computeKeplerianLDot(type, a, ex, ey, gm, cachedL, cachedPositionAngleType));
+    }
+
+    /**
+     * Compute rate of argument of longitude.
+     * @param type position angle type of rate
+     * @param a semi major axis
+     * @param ex ex
+     * @param ey ey
+     * @param mu mu
+     * @param l argument of longitude
+     * @param cachedType position angle type of passed l
+     * @param <T> field type
+     * @return first-order time derivative for l
+     * @since 12.2
+     */
+    private static <T extends CalculusFieldElement<T>> T computeKeplerianLDot(final PositionAngleType type, final T a, final T ex,
+                                                                              final T ey, final T mu, final T l, final PositionAngleType cachedType) {
+        final T n               = mu.divide(a).sqrt().divide(a);
+        if (type == PositionAngleType.MEAN) {
+            return n;
+        }
         final FieldSinCos<T> sc;
-        switch (type) {
-            case MEAN :
-                pDot[5] = pDot[5].add(n);
-                break;
-            case ECCENTRIC :
-                sc = FastMath.sinCos(getLE());
-                ksi  = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
-                pDot[5] = pDot[5].add(n.multiply(ksi));
-                break;
-            case TRUE :
-                sc = FastMath.sinCos(getLv());
-                oMe2 = getOne().subtract(ex.square()).subtract(ey.square());
-                ksi  =  ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
-                pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        final T ksi;
+        if (type == PositionAngleType.ECCENTRIC) {
+            sc = FastMath.sinCos(FieldEquinoctialLongitudeArgumentUtility.convertL(cachedType, l, ex, ey, type));
+            ksi = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
+            return n.multiply(ksi);
+        } else {
+            sc = FastMath.sinCos(FieldEquinoctialLongitudeArgumentUtility.convertL(cachedType, l, ex, ey, type));
+            final T oMe2 = a.getField().getOne().subtract(ex.square()).subtract(ey.square());
+            ksi  =  ex.multiply(sc.cos()).add(1).add(ey.multiply(sc.sin()));
+            return n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt()));
         }
     }
 
