@@ -16,6 +16,8 @@
  */
 package org.orekit.gnss;
 
+import java.util.Locale;
+
 /** Container for satellite system and PRN.
  * @author Luc Maisonobe
  * @since 12.0
@@ -107,6 +109,14 @@ public class SatInSystem {
         return system == SatelliteSystem.SBAS ?
                prn - SBAS_SHIFT :
                (system == SatelliteSystem.QZSS ? prn - QZSS_SHIFT : prn);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String toString() {
+        return prn < 0 ?
+               String.format(Locale.US, "%c  ", system.getKey()) :
+               String.format(Locale.US, "%c%02d", system.getKey(), getTwoDigitsRinexPRN());
     }
 
     @Override

@@ -103,4 +103,13 @@ public class SatInSystemTest {
         Assertions.assertNotEquals(new SatInSystem(SatelliteSystem.GPS, 11), new SatInSystem("E11"));
         Assertions.assertNotEquals(new SatInSystem(SatelliteSystem.GALILEO, 11), "E11");
     }
+
+    @Test
+    public void testToString() {
+        Assertions.assertEquals("E01", new SatInSystem(SatelliteSystem.GALILEO, 1).toString());
+        Assertions.assertEquals("E  ", new SatInSystem(SatelliteSystem.GALILEO, SatInSystem.ANY_PRN).toString());
+        Assertions.assertEquals("S10", new SatInSystem(SatelliteSystem.SBAS, 110).toString());
+        Assertions.assertEquals("J07", new SatInSystem(SatelliteSystem.QZSS, 199).toString());
+    }
+
 }
