@@ -528,8 +528,7 @@ public class RinexObservationWriter implements AutoCloseable {
                         outputField("", 18, true);
                         next = column + 4;
                     }
-                    outputField(sis.getSystem().getKey(), next - 2);
-                    outputField(PADDED_TWO_DIGITS_INTEGER, sis.getTwoDigitsRinexPRN(), next);
+                    outputField(sis.toString(), next, false);
                 }
             }
             finishHeaderLine(RinexLabels.SYS_PHASE_SHIFT);
@@ -610,8 +609,7 @@ public class RinexObservationWriter implements AutoCloseable {
         // PRN / # OF OBS
         for (final Map.Entry<SatInSystem, Map<ObservationType, Integer>> entry1 : header.getNbObsPerSat().entrySet()) {
             final SatInSystem sis = entry1.getKey();
-            outputField(sis.getSystem().getKey(), 4);
-            outputField(PADDED_TWO_DIGITS_INTEGER, sis.getTwoDigitsRinexPRN(), 6);
+            outputField(sis.toString(), 6, false);
             for (final Map.Entry<ObservationType, Integer> entry2 : entry1.getValue().entrySet()) {
                 int next = column + 6;
                 if (next > LABEL_INDEX) {
@@ -723,8 +721,7 @@ public class RinexObservationWriter implements AutoCloseable {
                 outputField("", 32, true);
                 next = column + 3;
             }
-            outputField(ods.getSatellite().getSystem().getKey(), next - 2);
-            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getSatellite().getTwoDigitsRinexPRN(), next);
+            outputField(ods.getSatellite().toString(), next, false);
         }
         if (!offsetWritten && clockOffset != 0.0) {
             outputField("", 68, true);
@@ -799,8 +796,7 @@ public class RinexObservationWriter implements AutoCloseable {
 
         // observations per se
         for (final ObservationDataSet ods : pending) {
-            outputField(ods.getSatellite().getSystem().getKey(), 1);
-            outputField(PADDED_TWO_DIGITS_INTEGER, ods.getSatellite().getTwoDigitsRinexPRN(), 3);
+            outputField(ods.getSatellite().toString(), 3, false);
             for (final ObservationData od : ods.getObservationData()) {
                 final int next = column + 16;
                 final double scaling = getScaling(od.getObservationType(), ods.getSatellite().getSystem());
