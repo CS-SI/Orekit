@@ -77,6 +77,9 @@ public class RelativisticJ2ClockInterSatellitesRangeModifierTest {
         //          The computed value is equal to 67.375 ps, therefore lying in the supposed range.
         Assertions.assertEquals(-0.0202125, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-2);
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(1,
+                                estimatedAfter.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
 
     }
 

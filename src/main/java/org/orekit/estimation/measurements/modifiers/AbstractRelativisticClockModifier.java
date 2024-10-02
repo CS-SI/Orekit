@@ -42,6 +42,14 @@ public class AbstractRelativisticClockModifier {
         this.s = -2.0 / (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT);
     }
 
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "clock relativity";
+    }
+
     /** Computes the relativistic clock correction.
      * @param estimated estimated measurement
      * @return the relativistic clock correction in seconds

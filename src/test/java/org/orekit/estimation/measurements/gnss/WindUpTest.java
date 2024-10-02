@@ -174,6 +174,9 @@ public class WindUpTest {
             Assertions.assertEquals(correction, windUp.getAngularWindUp() / MathUtils.TWO_PI, 1.0e-5);
             min = FastMath.min(min, correction);
             max = FastMath.max(max, correction);
+            Assertions.assertEquals(1,
+                                    estimated.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("wind-up")).count());
         }
         Assertions.assertEquals(expectedMin, min, 1.0e-5);
         Assertions.assertEquals(expectedMax, max, 1.0e-5);

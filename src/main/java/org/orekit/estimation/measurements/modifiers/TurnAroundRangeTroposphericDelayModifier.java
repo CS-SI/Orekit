@@ -68,6 +68,12 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
         tropoModel = model;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "troposphere";
+    }
+
     /** Compute the measurement error due to Troposphere.
      * @param station station
      * @param state spacecraft state

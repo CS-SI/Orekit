@@ -102,6 +102,9 @@ public class RelativisticClockPhaseModifierTest {
 
         // Verify
         Assertions.assertEquals(-6.87 / PredefinedGnssSignal.G01.getWavelength(), estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(1,
+                                estimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("clock relativity")).count());
 
     }
 

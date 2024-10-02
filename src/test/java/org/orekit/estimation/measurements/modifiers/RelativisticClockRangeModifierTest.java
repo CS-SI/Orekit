@@ -84,7 +84,7 @@ public class RelativisticClockRangeModifierTest {
 
         // Range measurement
         final Range range = new Range(station, false, state.getDate(), 26584264.45, 1.0, 1.0, new ObservableSatellite(0));
-        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<Range>(range, 0, 0,
+        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<>(range, 0, 0,
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(range.getObservedValue()[0]);
@@ -97,6 +97,9 @@ public class RelativisticClockRangeModifierTest {
 
         // Verify
         Assertions.assertEquals(-6.87, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(1,
+                                estimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("clock relativity")).count());
 
     }
 

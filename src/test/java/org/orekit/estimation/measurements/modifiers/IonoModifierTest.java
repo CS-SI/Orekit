@@ -128,6 +128,7 @@ public class IonoModifierTest {
             Assertions.assertEquals(12, evalNoMod.getIteration());
             Assertions.assertEquals(17, evalNoMod.getCount());
 
+
             // add modifier
             phase.addModifier(modifier);
             boolean found = false;
@@ -153,6 +154,9 @@ public class IonoModifierTest {
             Assertions.assertTrue(diffMeters < 0);
             Assertions.assertEquals(0.0, diffMeters, 30.0);
 
+            Assertions.assertEquals(1,
+                                    eval.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("ionosphere")).count());
         }
     }
 

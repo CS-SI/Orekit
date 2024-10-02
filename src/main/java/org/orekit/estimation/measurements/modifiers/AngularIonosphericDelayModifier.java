@@ -70,6 +70,12 @@ public class AngularIonosphericDelayModifier implements EstimationModifier<Angul
         frequency = freq;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "ionosphere";
+    }
+
     /** Compute the measurement error due to ionosphere.
      * @param station station
      * @param state spacecraft state

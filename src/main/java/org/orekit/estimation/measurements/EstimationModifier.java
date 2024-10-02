@@ -40,6 +40,12 @@ import org.orekit.utils.ParameterDriversProvider;
  */
 public interface EstimationModifier<T extends ObservedMeasurement<T>> extends ParameterDriversProvider {
 
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    String getEffectName();
+
     /** Apply a modifier to an estimated measurement without derivatives.
      * @param estimated estimated measurement to modify
      * @since 12.0

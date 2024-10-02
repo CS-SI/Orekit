@@ -112,6 +112,9 @@ public class RelativisticJ2ClockPhaseModifierTest {
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 60ps for Galileo.
         //          The computed value is equal to 64.745 ps, therefore lying in the supposed range.
         Assertions.assertEquals(-0.10202, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-2);
+        Assertions.assertEquals(1,
+                                estimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
 
     }
 

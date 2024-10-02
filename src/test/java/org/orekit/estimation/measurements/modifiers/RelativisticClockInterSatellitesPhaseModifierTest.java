@@ -66,6 +66,9 @@ public class RelativisticClockInterSatellitesPhaseModifierTest {
         // Verify
         Assertions.assertEquals(-10.57, (estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0]) * wavelength, 1.0e-2);
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(1,
+                                estimatedAfter.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("clock relativity")).count());
 
     }
 

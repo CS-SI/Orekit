@@ -60,6 +60,12 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
         tropoModel = model;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "troposphere";
+    }
+
     /** Compute the measurement error due to Troposphere on a single downlink.
      * @param station station
      * @param state spacecraft state

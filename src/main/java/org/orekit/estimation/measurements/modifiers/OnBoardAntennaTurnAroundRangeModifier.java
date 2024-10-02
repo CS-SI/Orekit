@@ -47,6 +47,12 @@ public class OnBoardAntennaTurnAroundRangeModifier implements EstimationModifier
 
     /** {@inheritDoc} */
     @Override
+    public String getEffectName() {
+        return "mean phase center";
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
     }
