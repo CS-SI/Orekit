@@ -16,8 +16,8 @@ E C1C   0.1111        0.2222        0.3333                  ANTENNA: PHASECENTER
         0.1455       -0.3421        0.0024                  CENTER OF MASS: XYZ 
 K    2 X1C Y1C                                              SYS / # / OBS TYPES
     15.000                                                  INTERVAL
-  2018     1    29     0     0    0.0000000     GPS         TIME OF FIRST OBS   
-  2018     1    29    23    59   45.0000000     GPS         TIME OF LAST OBS    
+  2018     1    29     0     0    0.0000000                 TIME OF FIRST OBS
+  2018     1    29    23    59   45.0000000                 TIME OF LAST OBS
     87                                                      # OF SATELLITES     
  C1C    0.000 C2C    0.000                                  GLONASS COD/PHS/BIS 
 DBHZ                                                        SIGNAL STRENGTH UNIT

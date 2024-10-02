@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1549">
+            Fixed wrong default time scale when parsing Rinex observation files.
+        </action>
         <action dev="luc" type="fix" issue="1548">
             Added toString to SatInSystem.
         </action>

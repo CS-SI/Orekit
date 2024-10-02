@@ -133,6 +133,11 @@ public class RinexObservationWriter implements AutoCloseable {
     /** Time scale for writing dates. */
     private TimeScale timeScale;
 
+    /** Name of the time scale to put in header lines.
+     * @since 13.0
+     */
+    private String timeScaleName;
+
     /** Saved header. */
     private RinexObservationHeader savedHeader;
 
@@ -260,13 +265,18 @@ public class RinexObservationWriter implements AutoCloseable {
         savedHeader = header;
         lineNumber  = 1;
 
-        timeScale = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) != null ?
-                    timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) :
-                    ObservationTimeScale.GPS.getTimeScale(timeScales);
+        if (timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales) != null) {
+            timeScale     = timeScaleBuilder.apply(header.getSatelliteSystem(), timeScales);
+            timeScaleName = "   ";
+        } else {
+            timeScale     = ObservationTimeScale.GPS.getTimeScale(timeScales);
+            timeScaleName = timeScale.getName();
+        }
         if (!header.getClockOffsetApplied() && receiverClockModel != null) {
             // getClockOffsetApplied returned false, which means the measurements
             // should *NOT* be put in system time scale, and the receiver has a clock model
             // we have to set up a time scale corresponding to this receiver clock
+            // (but we keep the name set earlier despite it is not really relevant anymore)
             timeScale = new ClockTimeScale(timeScale.getName(), timeScale, receiverClockModel);
         }
 
@@ -433,11 +443,6 @@ public class RinexObservationWriter implements AutoCloseable {
             finishHeaderLine(RinexLabels.INTERVAL);
         }
 
-        ObservationTimeScale ots = header.getSatelliteSystem().getObservationTimeScale();
-        if (ots == null) {
-            ots = ObservationTimeScale.GPS;
-        }
-
         // TIME OF FIRST OBS
         final DateTimeComponents dtcFirst = header.getTFirstObs().getComponents(timeScale);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getDate().getYear(), 6);
@@ -446,7 +451,7 @@ public class RinexObservationWriter implements AutoCloseable {
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getHour(), 24);
         outputField(SIX_DIGITS_INTEGER,          dtcFirst.getTime().getMinute(), 30);
         outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcFirst.getTime().getSecond(), 43);
-        outputField(ots.name(), 51, false);
+        outputField(timeScaleName, 51, false);
         finishHeaderLine(RinexLabels.TIME_OF_FIRST_OBS);
 
         // TIME OF LAST OBS
@@ -458,7 +463,7 @@ public class RinexObservationWriter implements AutoCloseable {
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getHour(), 24);
             outputField(SIX_DIGITS_INTEGER,          dtcLast.getTime().getMinute(), 30);
             outputField(THIRTEEN_SEVEN_DIGITS_FLOAT, dtcLast.getTime().getSecond(), 43);
-            outputField(ots.name(), 51, false);
+            outputField(timeScaleName, 51, false);
             finishHeaderLine(RinexLabels.TIME_OF_LAST_OBS);
         }
 
