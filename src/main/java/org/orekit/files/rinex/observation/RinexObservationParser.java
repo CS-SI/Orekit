@@ -561,22 +561,23 @@ public class RinexObservationParser {
         /** Parser for time of first observation. */
         TIME_OF_FIRST_OBS(line -> RinexLabels.TIME_OF_FIRST_OBS.matches(RinexUtils.getLabel(line)),
                           (line, parseInfo) -> {
-                              if (parseInfo.file.getHeader().getSatelliteSystem() == SatelliteSystem.MIXED) {
-                                  // in case of mixed data, time scale must be specified in the Time of First Observation line
-                                  try {
-                                      parseInfo.timeScale = ObservationTimeScale.
-                                                            valueOf(RinexUtils.parseString(line, 48, 3)).
-                                                            getTimeScale(parseInfo.timeScales);
-                                  } catch (IllegalArgumentException iae) {
-                                      throw new OrekitException(iae,
-                                                                OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                                parseInfo.lineNumber, parseInfo.name, line);
-                                  }
-                              } else {
-                                  parseInfo.timeScale = parseInfo.timeScaleBuilder.apply(parseInfo.file.getHeader().getSatelliteSystem(),
-                                                                                         parseInfo.timeScales);
-                                  if (parseInfo.timeScale == null) {
-                                      throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                              try {
+                                  // general case: TIME OF FIRST OBS specifies the time scale
+                                  parseInfo.timeScale = ObservationTimeScale.
+                                                        valueOf(RinexUtils.parseString(line, 48, 3)).
+                                                        getTimeScale(parseInfo.timeScales);
+                              } catch (IllegalArgumentException iae) {
+                                  if (parseInfo.file.getHeader().getSatelliteSystem() != SatelliteSystem.MIXED) {
+                                      // use the default from time system header
+                                      parseInfo.timeScale = parseInfo.timeScaleBuilder.apply(parseInfo.file.getHeader().getSatelliteSystem(),
+                                                                                             parseInfo.timeScales);
+                                      if (parseInfo.timeScale == null) {
+                                          throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                                    parseInfo.lineNumber, parseInfo.name, line);
+                                      }
+                                  } else {
+                                      // in case of mixed data, time scale must be specified in the Time of First Observation line
+                                      throw new OrekitException(iae, OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                 parseInfo.lineNumber, parseInfo.name, line);
                                   }
                               }
