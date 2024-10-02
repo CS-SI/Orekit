@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -186,4 +187,50 @@ public class FieldCircularLatitudeArgumentUtility {
         return eccentricToTrue(ex, ey, alphaE);
     }
 
+    /**
+     * Convert argument of latitude.
+     * @param oldType old position angle type
+     * @param alpha old value for argument of latitude
+     * @param ex ex
+     * @param ey ey
+     * @param newType new position angle type
+     * @param <T> field type
+     * @return convert argument of latitude
+     * @since 12.2
+     */
+    public static <T extends CalculusFieldElement<T>> T convertAlpha(final PositionAngleType oldType, final T alpha,
+                                                                     final T ex, final T ey,
+                                                                     final PositionAngleType newType) {
+        if (oldType == newType) {
+            return alpha;
+
+        } else {
+            switch (newType) {
+
+                case ECCENTRIC:
+                    if (oldType == PositionAngleType.MEAN) {
+                        return FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alpha);
+                    } else {
+                        return FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alpha);
+                    }
+
+                case MEAN:
+                    if (oldType == PositionAngleType.TRUE) {
+                        return FieldCircularLatitudeArgumentUtility.trueToMean(ex, ey, alpha);
+                    } else {
+                        return FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alpha);
+                    }
+
+                case TRUE:
+                    if (oldType == PositionAngleType.MEAN) {
+                        return FieldCircularLatitudeArgumentUtility.meanToTrue(ex, ey, alpha);
+                    } else {
+                        return FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alpha);
+                    }
+
+                default:
+                    throw new OrekitInternalError(null);
+            }
+        }
+    }
 }

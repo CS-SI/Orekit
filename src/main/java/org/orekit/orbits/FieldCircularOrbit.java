@@ -1062,37 +1062,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      * @since 12.1
      */
     private T initializeCachedAlpha(final T alpha, final PositionAngleType positionAngleType) {
-        if (positionAngleType == cachedPositionAngleType) {
-            return alpha;
-
-        } else {
-            switch (cachedPositionAngleType) {
-
-                case ECCENTRIC:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alpha);
-                    } else {
-                        return FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alpha);
-                    }
-
-                case MEAN:
-                    if (positionAngleType == PositionAngleType.TRUE) {
-                        return FieldCircularLatitudeArgumentUtility.trueToMean(ex, ey, alpha);
-                    } else {
-                        return FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alpha);
-                    }
-
-                case TRUE:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return FieldCircularLatitudeArgumentUtility.meanToTrue(ex, ey, alpha);
-                    } else {
-                        return FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alpha);
-                    }
-
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        }
+        return FieldCircularLatitudeArgumentUtility.convertAlpha(positionAngleType, alpha, ex, ey, cachedPositionAngleType);
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
@@ -1478,29 +1448,42 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
     /** {@inheritDoc} */
     @Override
-    public void addKeplerContribution(final PositionAngleType type, final T gm,
-                                      final T[] pDot) {
-        final T oMe2;
-        final T ksi;
-        final T n = a.reciprocal().multiply(gm).sqrt().divide(a);
+    public void addKeplerContribution(final PositionAngleType type, final T gm, final T[] pDot) {
+        pDot[5] = pDot[5].add(computeKeplerianAlphaDot(type, a, ex, ey, gm, cachedAlpha, cachedPositionAngleType));
+    }
+
+    /**
+     * Compute rate of argument of latitude.
+     * @param type position angle type of rate
+     * @param a semi major axis
+     * @param ex ex
+     * @param ey ey
+     * @param mu mu
+     * @param alpha argument of latitude
+     * @param cachedType position angle type of passed alpha
+     * @param <T> field type
+     * @return first-order time derivative for alpha
+     * @since 12.2
+     */
+    private static <T extends CalculusFieldElement<T>> T computeKeplerianAlphaDot(final PositionAngleType type, final T a,
+                                                                                  final T ex, final T ey, final T mu,
+                                                                                  final T alpha, final PositionAngleType cachedType) {
+        final T n = a.reciprocal().multiply(mu).sqrt().divide(a);
+        if (type == PositionAngleType.MEAN) {
+            return n;
+        }
         final FieldSinCos<T> sc;
-        switch (type) {
-            case MEAN :
-                pDot[5] = pDot[5].add(n);
-                break;
-            case ECCENTRIC :
-                sc = FastMath.sinCos(getAlphaE());
-                ksi  = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
-                pDot[5] = pDot[5].add(n.multiply(ksi));
-                break;
-            case TRUE :
-                sc = FastMath.sinCos(getAlphaV());
-                oMe2  = getOne().subtract(ex.multiply(ex)).subtract(ey.multiply(ey));
-                ksi   = getOne().add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
-                pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        final T ksi;
+        if (type == PositionAngleType.ECCENTRIC) {
+            sc = FastMath.sinCos(FieldCircularLatitudeArgumentUtility.convertAlpha(cachedType, alpha, ex, ey, type));
+            ksi  = ((ex.multiply(sc.cos())).add(ey.multiply(sc.sin()))).negate().add(1).reciprocal();
+            return n.multiply(ksi);
+        } else {  // TRUE
+            sc = FastMath.sinCos(FieldCircularLatitudeArgumentUtility.convertAlpha(cachedType, alpha, ex, ey, type));
+            final T one = n.getField().getOne();
+            final T oMe2  = one.subtract(ex.square()).subtract(ey.square());
+            ksi   = one.add(ex.multiply(sc.cos())).add(ey.multiply(sc.sin()));
+            return n.multiply(ksi.square()).divide(oMe2.multiply(oMe2.sqrt()));
         }
     }
 

@@ -19,6 +19,7 @@ package org.orekit.orbits;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 /**
@@ -172,4 +173,48 @@ public class EquinoctialLongitudeArgumentUtility {
         return eccentricToTrue(ex, ey, alphaE);
     }
 
+    /**
+     * Convert argument of longitude.
+     * @param oldType old position angle type
+     * @param l old value for argument of longitude
+     * @param ex ex
+     * @param ey ey
+     * @param newType new position angle type
+     * @return converted argument of longitude
+     * @since 12.2
+     */
+    public static double convertL(final PositionAngleType oldType, final double l, final double ex,
+                                  final double ey, final PositionAngleType newType) {
+        if (oldType == newType) {
+            return l;
+
+        } else {
+            switch (newType) {
+
+                case ECCENTRIC:
+                    if (oldType == PositionAngleType.MEAN) {
+                        return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, l);
+                    } else {
+                        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, l);
+                    }
+
+                case MEAN:
+                    if (oldType == PositionAngleType.TRUE) {
+                        return EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, l);
+                    } else {
+                        return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, l);
+                    }
+
+                case TRUE:
+                    if (oldType == PositionAngleType.MEAN) {
+                        return EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
+                    } else {
+                        return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
+                    }
+
+                default:
+                    throw new OrekitInternalError(null);
+            }
+        }
+    }
 }
