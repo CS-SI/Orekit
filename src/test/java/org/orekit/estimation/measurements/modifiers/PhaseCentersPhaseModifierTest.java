@@ -159,6 +159,9 @@ public class PhaseCentersPhaseModifierTest {
             Phase ar = (Phase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 1.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0], estimated.getEstimatedValue()[0], 1.1e-5);
+            Assertions.assertEquals(1,
+                                    estimated.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("mean phase center")).count());
         }
 
     }

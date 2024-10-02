@@ -65,6 +65,12 @@ public class Bias<T extends ObservedMeasurement<T>> implements EstimationModifie
 
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return drivers.get(0).getName();
+    }
+
     /** {@inheritDoc}
      * <p>
      * For a bias, there are {@link ObservedMeasurement#getDimension()} parameter drivers,

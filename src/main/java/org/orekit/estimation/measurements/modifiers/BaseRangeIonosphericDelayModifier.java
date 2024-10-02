@@ -57,6 +57,14 @@ public abstract class BaseRangeIonosphericDelayModifier {
         this.frequency = freq;
     }
 
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "ionosphere";
+    }
+
     /** Get the ionospheric delay model.
      * @return ionospheric delay model
      */

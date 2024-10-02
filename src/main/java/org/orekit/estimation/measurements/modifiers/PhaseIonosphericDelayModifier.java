@@ -64,6 +64,12 @@ public class PhaseIonosphericDelayModifier implements EstimationModifier<Phase> 
         frequency = freq;
     }
 
+/** {@inheritDoc} */
+    @Override
+        public String getEffectName() {
+        return "ionosphere";
+    }
+
     /** Compute the measurement error due to ionosphere.
      * @param station station
      * @param state spacecraft state

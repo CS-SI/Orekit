@@ -52,6 +52,12 @@ public class AngularRadioRefractionModifier implements EstimationModifier<Angula
         atmosModel = model;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "refraction";
+    }
+
     /** Compute the measurement error due to troposphere refraction.
     * @param station station
     * @param state spacecraft state

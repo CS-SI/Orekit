@@ -52,6 +52,14 @@ public class PhaseCentersOneWayGNSSBaseModifier<T extends AbstractMeasurement<T>
         this.attitudeProvider = attitudeProvider;
     }
 
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "mean phase center";
+    }
+
     /** Compute distance modification for one way measurement.
      * @param estimated estimated measurement to modify
      * @return distance modification to add to raw measurement

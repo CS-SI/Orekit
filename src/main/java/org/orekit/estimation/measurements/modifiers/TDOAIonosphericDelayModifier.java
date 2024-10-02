@@ -61,6 +61,12 @@ public class TDOAIonosphericDelayModifier implements EstimationModifier<TDOA> {
         frequency = freq;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "ionosphere";
+    }
+
     /** Compute the measurement error due to ionosphere on a single downlink.
      * @param station station
      * @param state spacecraft state

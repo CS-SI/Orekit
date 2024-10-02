@@ -56,6 +56,12 @@ public abstract class AbstractWindUp<T extends ObservedMeasurement<T>> implement
         angularWindUp = 0.0;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "wind-up";
+    }
+
     /** {@inheritDoc}
      * <p>
      * Wind-up effect has no parameters, the returned list is always empty.

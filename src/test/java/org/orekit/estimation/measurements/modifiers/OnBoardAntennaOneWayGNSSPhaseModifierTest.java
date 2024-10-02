@@ -172,6 +172,9 @@ public class OnBoardAntennaOneWayGNSSPhaseModifierTest {
             OneWayGNSSPhase ar = (OneWayGNSSPhase) antennaCenteredMeasurements.get(i);
             Assertions.assertEquals(0.0, sr.getDate().durationFrom(ar.getDate()), 2.0e-8);
             Assertions.assertEquals(ar.getObservedValue()[0] * RADIO_WAVE.getWavelength(), estimated.getEstimatedValue()[0] * RADIO_WAVE.getWavelength(), 6.0e-5);
+            Assertions.assertEquals(1,
+                                    estimated.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("mean phase center")).count());
         }
 
     }

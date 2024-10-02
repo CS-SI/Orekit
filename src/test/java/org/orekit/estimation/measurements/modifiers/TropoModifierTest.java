@@ -112,6 +112,9 @@ public class TropoModifierTest {
             Assertions.assertEquals(eval.getEstimatedValue()[0] - eval.getOriginalEstimatedValue()[0],
                                     eval.getAppliedEffects().get(modifier)[0],
                                     1.0e-15);
+            Assertions.assertEquals(1,
+                                    eval.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("troposphere")).count());
         }
     }
 

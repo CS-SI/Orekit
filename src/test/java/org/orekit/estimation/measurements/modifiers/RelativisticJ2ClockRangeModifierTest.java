@@ -97,7 +97,7 @@ public class RelativisticJ2ClockRangeModifierTest {
 
         // Range measurement
         final Range range = new Range(station, false, state.getDate(), 26584264.45, 1.0, 1.0, new ObservableSatellite(0));
-        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<Range>(range, 0, 0,
+        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<>(range, 0, 0,
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(range.getObservedValue()[0]);
@@ -112,6 +112,9 @@ public class RelativisticJ2ClockRangeModifierTest {
         // Verify : According to Teunissen and Montenbruck, the delay is supposed to be around 60ps for Galileo.
         //          The computed value is equal to 63.3 ps, therefore lying in the supposed range.
         Assertions.assertEquals(-0.019414, estimated.getObservedValue()[0] - estimated.getEstimatedValue()[0], 1.0e-6);
+        Assertions.assertEquals(1,
+                                estimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
 
     }
 
@@ -160,7 +163,7 @@ public class RelativisticJ2ClockRangeModifierTest {
         // Range measurement : The two way boolean is set to true.
         final Range range = new Range(station, true, state.getDate(), 26584264.45, 1.0, 1.0, new ObservableSatellite(0));
         // The EstimatedMeasurement variable has now 3 TimeStampedPVCoordinates, as expected for the 2 way case.
-        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<Range>(range, 0, 0,
+        final EstimatedMeasurement<Range> estimated = new EstimatedMeasurement<>(range, 0, 0,
                         new SpacecraftState[] {state},
                         new TimeStampedPVCoordinates[] {stationPV, state.getPVCoordinates(), stationPV});
         estimated.setEstimatedValue(range.getObservedValue()[0]);

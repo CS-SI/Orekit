@@ -43,6 +43,14 @@ public class AbstractShapiroBaseModifier {
         this.s = 2 * gm / (Constants.SPEED_OF_LIGHT * Constants.SPEED_OF_LIGHT);
     }
 
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "Shapiro";
+    }
+
     /** Modify measurement.
      * @param <T> type of the measurements
      * @param modifier applied modifier

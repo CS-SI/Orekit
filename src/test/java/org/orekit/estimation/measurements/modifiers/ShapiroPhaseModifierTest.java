@@ -98,6 +98,9 @@ public class ShapiroPhaseModifierTest {
             EstimatedMeasurementBase<Phase> eval = phase.estimateWithoutDerivatives( new SpacecraftState[] { refstate });
 
             stat.addValue(eval.getEstimatedValue()[0] - evalNoMod.getEstimatedValue()[0]);
+            Assertions.assertEquals(1,
+                                    eval.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("Shapiro")).count());
 
         }
 

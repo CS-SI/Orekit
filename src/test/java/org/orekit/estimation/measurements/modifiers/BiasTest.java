@@ -59,7 +59,7 @@ public class BiasTest {
                                                                1.0, 3.0, 300.0);
 
         // create range biases: one bias for each station
-        final RandomGenerator random = new Well19937a(0x0c4b69da5d64b35al);
+        final RandomGenerator random = new Well19937a(0x0c4b69da5d64b35aL);
         final Bias<?>[] stationsRangeBiases = new Bias<?>[context.stations.size()];
         final double[] realStationsBiases  = new double[context.stations.size()];
         for (int i = 0; i < context.stations.size(); ++i) {
@@ -80,6 +80,7 @@ public class BiasTest {
                                                          Double.POSITIVE_INFINITY
                                                      });
             realStationsBiases[i]  = 2 * random.nextDouble() - 1;
+            Assertions.assertEquals(base.getName() + " range bias", stationsRangeBiases[i].getEffectName());
         }
 
         // create orbit estimator
