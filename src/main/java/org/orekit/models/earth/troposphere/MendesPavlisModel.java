@@ -51,12 +51,12 @@ import org.orekit.utils.units.UnitsConverter;
 */
 public class MendesPavlisModel implements TroposphericModel, TroposphereMappingFunction {
 
-    /** Coefficients for the dispertion equation for the hydrostatic component [µm<sup>-2</sup>]. */
+    /** Coefficients for the dispersion equation for the hydrostatic component [µm<sup>-2</sup>]. */
     private static final double[] K_COEFFICIENTS = {
         238.0185, 19990.975, 57.362, 579.55174
     };
 
-    /** Coefficients for the dispertion equation for the non-hydrostatic component. */
+    /** Coefficients for the dispersion equation for the non-hydrostatic component. */
     private static final double[] W_COEFFICIENTS = {
         295.235, 2.6422, -0.032380, 0.004028
     };
