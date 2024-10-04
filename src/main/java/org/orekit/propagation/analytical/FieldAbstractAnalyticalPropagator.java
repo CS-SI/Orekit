@@ -167,6 +167,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
             } while (!isLastStep);
 
+            // Finalize event detectors
+            for (final FieldEventState<?, T> es : eventsStates) {
+                es.finish(state);
+            }
+
             // return the last computed state
             lastPropagationEnd = state.getDate();
             setStartDate(state.getDate());

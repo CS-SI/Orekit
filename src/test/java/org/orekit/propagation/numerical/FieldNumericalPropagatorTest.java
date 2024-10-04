@@ -734,7 +734,7 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(0, finalState.getDate().durationFrom(stopDate).getReal(), 1.0e-10);
         propagator.clearEventsDetectors();
         Assertions.assertEquals(0, propagator.getEventDetectors().size());
-
+        Assertions.assertTrue(checking.isFinished);
     }
 
     @Test
@@ -2042,6 +2042,7 @@ public class FieldNumericalPropagatorTest {
 
         private final Action actionOnEvent;
         private boolean gotHere;
+        private boolean isFinished = false;
 
         public CheckingHandler(final Action actionOnEvent) {
             this.actionOnEvent = actionOnEvent;
@@ -2057,6 +2058,10 @@ public class FieldNumericalPropagatorTest {
             return actionOnEvent;
         }
 
+        @Override
+        public void finish(FieldSpacecraftState<T> finalState, FieldEventDetector<T> detector) {
+            isFinished = true;
+        }
     }
 
     private <T extends CalculusFieldElement<T>>  FieldNumericalPropagator<T> createPropagator(Field<T> field) {

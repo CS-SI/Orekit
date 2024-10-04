@@ -18,9 +18,12 @@ package org.orekit.orbits;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 public class FieldKeplerianAnomalyUtilityTest {
 
@@ -235,4 +238,35 @@ public class FieldKeplerianAnomalyUtilityTest {
         Assertions.assertTrue(Double.isNaN(E.getReal()));
     }
 
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testConvertAnomalyEllipticVersusDouble(final PositionAngleType positionAngleType) {
+        // GIVEN
+        final Complex fieldOriginalPositionAngle = new Complex(3., 0.);
+        final PositionAngleType outputType = PositionAngleType.TRUE;
+        final Complex eccentricity = new Complex(0.5, 0.);
+        // WHEN
+        final double actualConvertedPositionAngle = FieldKeplerianAnomalyUtility.convertAnomaly(positionAngleType,
+                fieldOriginalPositionAngle, eccentricity, outputType).getReal();
+        // THEN
+        final double expectedPositionAngle = KeplerianAnomalyUtility.convertAnomaly(positionAngleType,
+                fieldOriginalPositionAngle.getReal(), eccentricity.getReal(), outputType);
+        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, 1e-12);
+    }
+
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testConvertAnomalyHyperbolicVersusDouble(final PositionAngleType positionAngleType) {
+        // GIVEN
+        final Complex fieldOriginalPositionAngle = new Complex(3., 0.);
+        final PositionAngleType outputType = PositionAngleType.MEAN;
+        final Complex eccentricity = new Complex(2., 0.);
+        // WHEN
+        final double actualConvertedPositionAngle = FieldKeplerianAnomalyUtility.convertAnomaly(positionAngleType,
+                fieldOriginalPositionAngle, eccentricity, outputType).getReal();
+        // THEN
+        final double expectedPositionAngle = KeplerianAnomalyUtility.convertAnomaly(positionAngleType,
+                fieldOriginalPositionAngle.getReal(), eccentricity.getReal(), outputType);
+        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, 1e-12);
+    }
 }

@@ -625,6 +625,15 @@ public class FieldEventState<D extends FieldEventDetector<T>, T extends Calculus
     }
 
     /**
+     * This method finalizes the event detector's job.
+     * @param state state at propagation end
+     * @since 12.2
+     */
+    public void finish(final FieldSpacecraftState<T> state) {
+        detector.finish(state);
+    }
+
+    /**
      * Class to hold the data related to an event occurrence that is needed to decide how
      * to modify integration.
      * @param <T> type of the field elements

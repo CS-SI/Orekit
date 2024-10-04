@@ -22,6 +22,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.propagation.semianalytical.dsst.forces.FieldDSSTGravityContext;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Container class for common parameters used by all DSST forces.
@@ -105,15 +106,6 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
     /** Equinoctial frame w vector. */
     private final FieldVector3D<T> w;
 
-    /** Direction cosine α. */
-    private final T alpha;
-
-    /** Direction cosine β. */
-    private final T beta;
-
-    /** Direction cosine γ. */
-    private final T gamma;
-
     /** Simple constructor.
      * @param orbit related mean orbit for auxiliary elements
      * @param retrogradeFactor retrograde factor I [Eq. 2.1.2-(2)]
@@ -170,11 +162,6 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
         f = new FieldVector3D<>(ooC, new FieldVector3D<>(p2.negate().add(1.).add(q2), pq2, px2.multiply(I).negate()));
         g = new FieldVector3D<>(ooC, new FieldVector3D<>(pq2.multiply(I), (p2.add(1.).subtract(q2)).multiply(I), qx2));
         w = new FieldVector3D<>(ooC, new FieldVector3D<>(px2, qx2.negate(), (p2.add(q2).negate().add(1.)).multiply(I)));
-
-        // Direction cosines for central body [Eq. 2.1.9-(1)]
-        alpha = (T) f.getZ();
-        beta  = (T) g.getZ();
-        gamma = (T) w.getZ();
     }
 
     /** Get the orbit.
@@ -333,32 +320,38 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
         return w;
     }
 
-    /** Get direction cosine α for central body.
-     * @return α
-     */
-    public T getAlpha() {
-        return alpha;
-    }
-
-    /** Get direction cosine β for central body.
-     * @return β
-     */
-    public T getBeta() {
-        return beta;
-    }
-
-    /** Get direction cosine γ for central body.
-     * @return γ
-     */
-    public T getGamma() {
-        return gamma;
-    }
-
     /** Transforms the FieldAuxiliaryElements instance into an AuxiliaryElements instance.
      * @return the AuxiliaryElements instance
      * @since 11.3.3
      */
     public AuxiliaryElements toAuxiliaryElements() {
         return new AuxiliaryElements(orbit.toOrbit(), getRetrogradeFactor());
+    }
+
+    /** Get direction cosine α for central body.
+     * @return α
+     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getAlpha()} instead
+     */
+    @Deprecated
+    public T getAlpha() {
+        return (T) f.getZ();
+    }
+
+    /** Get direction cosine β for central body.
+     * @return β
+     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getBeta()} instead
+     */
+    @Deprecated
+    public T getBeta() {
+        return (T) g.getZ();
+    }
+
+    /** Get direction cosine γ for central body.
+     * @return γ
+     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getGamma()} instead
+     */
+    @Deprecated
+    public T getGamma() {
+        return (T) w.getZ();
     }
 }

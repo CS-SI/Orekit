@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.forces;
+package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -44,15 +44,18 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
+import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-class DSSTTesseralTest {
+public class DSSTTesseralTest {
 
     @Test
-    void testGetMeanElementRate() {
+    public void testGetMeanElementRate() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -99,16 +102,18 @@ class DSSTTesseralTest {
         for (int i = 0; i < daidt.length; i++) {
             elements[i] = daidt[i];
         }
+
         Assertions.assertEquals(7.125576870652436E-5   , elements[0], 1.e-20);
         Assertions.assertEquals(-1.1135134574790914E-11, elements[1], 1.e-26);
         Assertions.assertEquals(2.302319084099073E-11  , elements[2], 1.e-26);
         Assertions.assertEquals(2.4994484564991748E-12 , elements[3], 1.e-27);
         Assertions.assertEquals(1.381385271417345E-13  , elements[4], 1.e-28);
         Assertions.assertEquals(5.815883045595586E-12  , elements[5], 1.e-27);
+
     }
 
     @Test
-    void testShortPeriodTerms() throws IllegalArgumentException {
+    public void testShortPeriodTerms() throws IllegalArgumentException {
 
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
@@ -147,6 +152,7 @@ class DSSTTesseralTest {
                 y[i] += shortPeriodic[i];
             }
         }
+
         Assertions.assertEquals(5.192409957353241    , y[0], 1.e-15);
         Assertions.assertEquals(9.660364749662038E-7 , y[1], 1.e-22);
         Assertions.assertEquals(1.5420089871620561E-6, y[2], 1.e-21);
@@ -156,7 +162,7 @@ class DSSTTesseralTest {
     }
 
     @Test
-    void testIssue625() {
+    public void testIssue625() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -213,7 +219,7 @@ class DSSTTesseralTest {
     }
 
     @Test
-    void testIssue736() {
+    public void testIssue736() {
 
         // Central Body geopotential 4x4
         final UnnormalizedSphericalHarmonicsProvider provider =
@@ -259,7 +265,7 @@ class DSSTTesseralTest {
      * when the order is lower or equal to 3.
      */
     @Test
-    void testIssue672() {
+    public void testIssue672() {
 
         // GIVEN
         // -----
@@ -317,7 +323,7 @@ class DSSTTesseralTest {
      *    order of the gravity field (0 in this case). This last behavior was added for non-regression purposes.
      */
     @Test
-    void testIssue672OutOfRangeException() {
+    public void testIssue672OutOfRangeException() {
 
         // Throwing exception
         // ------------------
@@ -367,7 +373,7 @@ class DSSTTesseralTest {
     }
 
     @Test
-    void testOutOfRangeException() {
+    public void testOutOfRangeException() {
         // Central Body geopotential 1x0
         final UnnormalizedSphericalHarmonicsProvider provider =
                         GravityFieldFactory.getUnnormalizedProvider(1, 0);
@@ -387,7 +393,7 @@ class DSSTTesseralTest {
     }
 
     @Test
-    void testGetMaxEccPow()
+    public void testGetMaxEccPow()
                     throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final UnnormalizedSphericalHarmonicsProvider provider =
                         GravityFieldFactory.getUnnormalizedProvider(4, 4);;

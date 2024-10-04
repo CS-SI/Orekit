@@ -897,70 +897,11 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
      * @since 12.1
      */
     private double initializeCachedAnomaly(final double anomaly, final PositionAngleType inputType) {
-        if (inputType == cachedPositionAngleType) {
-            return anomaly;
-
-        } else {
-            if (a < 0) {
-                switch (cachedPositionAngleType) {
-                    case MEAN:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.hyperbolicEccentricToMean(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.hyperbolicTrueToMean(e, anomaly);
-                        }
-
-                    case ECCENTRIC:
-                        if (inputType == PositionAngleType.MEAN) {
-                            return KeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, anomaly);
-                        }
-
-                    case TRUE:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-
-            } else {
-                switch (cachedPositionAngleType) {
-                    case MEAN:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.ellipticEccentricToMean(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.ellipticTrueToMean(e, anomaly);
-                        }
-
-                    case ECCENTRIC:
-                        if (inputType == PositionAngleType.MEAN) {
-                            return KeplerianAnomalyUtility.ellipticMeanToEccentric(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.ellipticTrueToEccentric(e, anomaly);
-                        }
-
-                    case TRUE:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return KeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
-                        } else {
-                            return KeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-            }
-            throw new OrekitInternalError(null);
-        }
+        return KeplerianAnomalyUtility.convertAnomaly(inputType, anomaly, e, cachedPositionAngleType);
     }
 
     /** Compute reference axes.
-     * @return referecne axes
+     * @return reference axes
      * @since 12.0
      */
     private Vector3D[] referenceAxes() {
@@ -1608,26 +1549,33 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
-        final double oMe2;
-        final double ksi;
+        pDot[5] += computeKeplerianAnomalyDot(type, a, e, gm, cachedAnomaly, cachedPositionAngleType);
+    }
+
+    /**
+     * Compute rate of argument of latitude.
+     * @param type position angle type of rate
+     * @param a semi major axis
+     * @param e eccentricity
+     * @param mu mu
+     * @param anomaly anomaly
+     * @param cachedType position angle type of passed anomaly
+     * @return first-order time derivative for anomaly
+     * @since 12.2
+     */
+    private static double computeKeplerianAnomalyDot(final PositionAngleType type, final double a, final double e,
+                                                     final double mu, final double anomaly, final PositionAngleType cachedType) {
         final double absA = FastMath.abs(a);
-        final double n    = FastMath.sqrt(gm / absA) / absA;
-        switch (type) {
-            case MEAN :
-                pDot[5] += n;
-                break;
-            case ECCENTRIC :
-                oMe2 = FastMath.abs(1 - e * e);
-                ksi  = 1 + e * FastMath.cos(getTrueAnomaly());
-                pDot[5] += n * ksi / oMe2;
-                break;
-            case TRUE :
-                oMe2 = FastMath.abs(1 - e * e);
-                ksi  = 1 + e * FastMath.cos(getTrueAnomaly());
-                pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        final double n    = FastMath.sqrt(mu / absA) / absA;
+        if (type == PositionAngleType.MEAN) {
+            return n;
+        }
+        final double oMe2 = FastMath.abs(1 - e * e);
+        final double ksi = 1 + e * FastMath.cos(KeplerianAnomalyUtility.convertAnomaly(cachedType, anomaly, e, PositionAngleType.TRUE));
+        if (type == PositionAngleType.ECCENTRIC) {
+            return n * ksi / oMe2;
+        } else { // TRUE
+            return n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
         }
     }
 

@@ -19,6 +19,7 @@ package org.orekit.propagation.events.handlers;
 import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetector;
@@ -51,6 +52,15 @@ public class EventHandlerTest {
         handler.init(null, null, detector);
         Assertions.assertTrue(detector.isInitialized());
 
+    }
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final Handler handler = new Handler();
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> handler.finish(Mockito.mock(SpacecraftState.class),
+                Mockito.mock(EventDetector.class)));
     }
 
     private static class Detector implements EventDetector {

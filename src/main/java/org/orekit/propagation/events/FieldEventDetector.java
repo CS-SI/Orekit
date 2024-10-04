@@ -113,6 +113,15 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
     FieldEventHandler<T> getHandler();
 
     /**
+     * This method finalizes the event detector's job.
+     * @param state state at propagation end
+     * @since 12.2
+     */
+    default void finish(FieldSpacecraftState<T> state) {
+        getHandler().finish(state, this);
+    }
+
+    /**
      * Getter for the settings.
      * @return detection settings
      * @since 12.2

@@ -687,9 +687,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                      SP3Utils.POSITION_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock (microsec)
-                    pi.latestClock = SP3Utils.CLOCK_UNIT.toSI(line.trim().length() <= 46 ?
-                                                              SP3Utils.DEFAULT_CLOCK_VALUE :
-                                                              Double.parseDouble(line.substring(46, 60).trim()));
+                    final double clockField = line.trim().length() <= 46 ?
+                                              SP3Utils.DEFAULT_CLOCK_VALUE :
+                                              Double.parseDouble(line.substring(46, 60).trim());
+                    pi.latestClock = FastMath.abs(clockField - SP3Utils.DEFAULT_CLOCK_VALUE) < 1.0e-6 ?
+                                     Double.NaN : SP3Utils.CLOCK_UNIT.toSI(clockField);
 
                     if (pi.latestPosition.getNorm() > 0) {
 
@@ -781,9 +783,11 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
                                                            SP3Utils.VELOCITY_UNIT.toSI(Double.parseDouble(line.substring(32, 46).trim())));
 
                     // clock rate in file is 1e-4 us / s
-                    final double clockRateChange = SP3Utils.CLOCK_RATE_UNIT.toSI(line.trim().length() <= 46 ?
-                                                                                 SP3Utils.DEFAULT_CLOCK_RATE_VALUE :
-                                                                                 Double.parseDouble(line.substring(46, 60).trim()));
+                    final double clockRateField = line.trim().length() <= 46 ?
+                                                  SP3Utils.DEFAULT_CLOCK_RATE_VALUE :
+                                                  Double.parseDouble(line.substring(46, 60).trim());
+                    final double clockRateChange = FastMath.abs(clockRateField - SP3Utils.DEFAULT_CLOCK_RATE_VALUE) < 1.0e-6 ?
+                                                   Double.NaN : SP3Utils.CLOCK_RATE_UNIT.toSI(clockRateField);
 
                     final Vector3D velocityAccuracy;
                     if (line.length() < 69 ||

@@ -646,7 +646,7 @@ class NumericalPropagatorTest {
         Assertions.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
         propagator.clearEventsDetectors();
         Assertions.assertEquals(0, propagator.getEventDetectors().size());
-
+        Assertions.assertTrue(checking.isFinished);
     }
 
     @Test
@@ -1052,6 +1052,7 @@ class NumericalPropagatorTest {
 
         private final Action actionOnEvent;
         private boolean gotHere;
+        private boolean isFinished = false;
 
         public CheckingHandler(final Action actionOnEvent) {
             this.actionOnEvent = actionOnEvent;
@@ -1067,6 +1068,10 @@ class NumericalPropagatorTest {
             return actionOnEvent;
         }
 
+        @Override
+        public void finish(SpacecraftState finalState, EventDetector detector) {
+            isFinished = true;
+        }
     }
 
     @Test

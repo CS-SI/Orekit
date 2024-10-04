@@ -444,8 +444,12 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // propagate from start date to end date with event detection
-            return integrateDynamics(tEnd);
+            final FieldSpacecraftState<T> state = integrateDynamics(tEnd);
 
+            // Finalize event detectors
+            getEventsDetectors().forEach(detector -> detector.finish(state));
+
+            return state;
         }
 
     }

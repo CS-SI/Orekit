@@ -19,6 +19,8 @@ package org.orekit.orbits;
 import org.hipparchus.complex.Complex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -152,6 +154,21 @@ class FieldCircularLatitudeArgumentUtilityTest {
         // WHEN & THEN
         Assertions.assertThrows(OrekitException.class, () -> FieldCircularLatitudeArgumentUtility.meanToEccentric(EX,
                 EY, fieldNaNPositionAngle), OrekitMessages.UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT.toString());
+    }
+
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testConvertAlphaVersusDouble(final PositionAngleType positionAngleType) {
+        // GIVEN
+        final Complex fieldOriginalPositionAngle = new Complex(3., 0.);
+        final PositionAngleType outputType = PositionAngleType.MEAN;
+        // WHEN
+        final double actualConvertedPositionAngle = FieldCircularLatitudeArgumentUtility.convertAlpha(positionAngleType,
+                fieldOriginalPositionAngle, EX, EY, outputType).getReal();
+        // THEN
+        final double expectedPositionAngle = CircularLatitudeArgumentUtility.convertAlpha(positionAngleType,
+                fieldOriginalPositionAngle.getReal(), EX.getReal(), EY.getReal(), outputType);
+        Assertions.assertEquals(expectedPositionAngle, actualConvertedPositionAngle, TOLERANCE);
     }
 
 }

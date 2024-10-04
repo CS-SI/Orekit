@@ -988,37 +988,7 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
      * @since 12.1
      */
     private double initializeCachedAlpha(final double alpha, final PositionAngleType positionAngleType) {
-        if (positionAngleType == cachedPositionAngleType) {
-            return alpha;
-
-        } else {
-            switch (cachedPositionAngleType) {
-
-                case ECCENTRIC:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alpha);
-                    } else {
-                        return CircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alpha);
-                    }
-
-                case MEAN:
-                    if (positionAngleType == PositionAngleType.TRUE) {
-                        return CircularLatitudeArgumentUtility.trueToMean(ex, ey, alpha);
-                    } else {
-                        return CircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alpha);
-                    }
-
-                case TRUE:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return CircularLatitudeArgumentUtility.meanToTrue(ex, ey, alpha);
-                    } else {
-                        return CircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alpha);
-                    }
-
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        }
+        return CircularLatitudeArgumentUtility.convertAlpha(positionAngleType, alpha, ex, ey, cachedPositionAngleType);
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
@@ -1366,27 +1336,39 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
     @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
-        final double oMe2;
+        pDot[5] += computeKeplerianAlphaDot(type, a, ex, ey, gm, cachedAlpha, cachedPositionAngleType);
+    }
+
+    /**
+     * Compute rate of argument of latitude.
+     * @param type position angle type of rate
+     * @param a semi major axis
+     * @param ex ex
+     * @param ey ey
+     * @param mu mu
+     * @param alpha argument of latitude
+     * @param cachedType position angle type of passed alpha
+     * @return first-order time derivative for alpha
+     * @since 12.2
+     */
+    private static double computeKeplerianAlphaDot(final PositionAngleType type, final double a, final double ex,
+                                                   final double ey, final double mu,
+                                                   final double alpha, final PositionAngleType cachedType) {
+        final double n  = FastMath.sqrt(mu / a) / a;
+        if (type == PositionAngleType.MEAN) {
+            return n;
+        }
         final double ksi;
-        final double n  = FastMath.sqrt(gm / a) / a;
         final SinCos sc;
-        switch (type) {
-            case MEAN :
-                pDot[5] += n;
-                break;
-            case ECCENTRIC :
-                sc = FastMath.sinCos(getAlphaE());
-                ksi   = 1. / (1 - ex * sc.cos() - ey * sc.sin());
-                pDot[5] += n * ksi;
-                break;
-            case TRUE :
-                sc = FastMath.sinCos(getAlphaV());
-                oMe2  = 1 - ex * ex - ey * ey;
-                ksi   = 1 + ex * sc.cos() + ey * sc.sin();
-                pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        if (type == PositionAngleType.ECCENTRIC) {
+            sc = FastMath.sinCos(CircularLatitudeArgumentUtility.convertAlpha(cachedType, alpha, ex, ey, type));
+            ksi   = 1. / (1 - ex * sc.cos() - ey * sc.sin());
+            return n * ksi;
+        } else { // TRUE
+            sc = FastMath.sinCos(CircularLatitudeArgumentUtility.convertAlpha(cachedType, alpha, ex, ey, type));
+            final double oMe2  = 1 - ex * ex - ey * ey;
+            ksi   = 1 + ex * sc.cos() + ey * sc.sin();
+            return n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
         }
     }
 

@@ -124,14 +124,27 @@
         </action>
     </release>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1552">
+        Fixed wrong interpolation of clock models when parsing
+        SP3 files with default clock entries.
+      </action>
       <action dev="pascal" type="fix" issue="947">
         Fix negative eccentricity issue with Brouwer-Lyddane propagator.
       </action>
       <action dev="luc" type="update" issue="1487">
         Additional protection for zenith line-of-sight in NeQuick-G model.
       </action>
+      <action dev="serrof" type="add" issue="1547">
+        Add generic conversion routines for position angles.
+      </action>
+      <action dev="serrof" type="add" issue="1544">
+        Add addImpulseManeuver to relevant propagator builder.
+      </action>
       <action dev="serrof" type="add" issue="1539">
         Add abstract class for solar flux model with spherical body.
+      </action>
+      <action dev="serrof" type="fix" issue="1537" due-to="markrutten">
+        Fix crash of EKF whithout orbital parameters and at least one propagation parameter to estimate.
       </action>
       <action dev="serrof" type="update" issue="1536">
         Override methods in (Field) static transform identity.
@@ -220,6 +233,9 @@
       <action dev="serrof" type="add" issue="1466">
         Add unbounded energy cost for Cartesian adjoint dynamics.
       </action>
+      <action dev="serrof" type="add" issue="1465">
+        Add finish method in (Field)EventHandler.
+      </action>
       <action dev="serrof" type="add" issue="1464">
         Add analytical solar ephemerides.
       </action>
@@ -240,6 +256,9 @@
       </action>
       <action dev="serrof" type="add" issue="1349">
         Add more overrides of getAttitudeRotation.
+      </action>
+      <action dev="maxime" type="fix" issue="1104">
+        Use proper body-fixed frame in DSSTZonal and refactored DSSTGravityContext.
       </action>
     </release>
     <release version="12.1.3" date="04/09/2024"
@@ -323,6 +342,9 @@
       </action>
       <action dev="laura" type="add" issue="1413">
         Added method getMJD and getJD in AbsoluteDate.
+      </action>
+      <action dev="serrof" type="add" issue="959">
+        Add finish method in (Field)EventDetector and call it in propagators.
       </action>
     </release>
     <release version="12.1.1" date="25/06/2024"

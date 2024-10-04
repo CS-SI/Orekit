@@ -18,6 +18,8 @@ package org.orekit.orbits;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -62,6 +64,21 @@ class CircularLatitudeArgumentUtilityTest {
                 expectedLatitudeArgument);
         final double actualLatitudeArgument = CircularLatitudeArgumentUtility.meanToEccentric(EX, EY,
                 intermediateLatitudeArgument);
+        // THEN
+        Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testConvertAlpha(final PositionAngleType inputType) {
+        // GIVEN
+        final double expectedLatitudeArgument = 3.;
+        final PositionAngleType intermediateType = PositionAngleType.MEAN;
+        // WHEN
+        final double intermediateLatitudeArgument = CircularLatitudeArgumentUtility.convertAlpha(inputType,
+                expectedLatitudeArgument, EX, EY, intermediateType);
+        final double actualLatitudeArgument = CircularLatitudeArgumentUtility.convertAlpha(intermediateType,
+                intermediateLatitudeArgument, EX, EY, inputType);
         // THEN
         Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
     }

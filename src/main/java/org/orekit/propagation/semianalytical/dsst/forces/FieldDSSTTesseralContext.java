@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.Frame;
@@ -36,7 +37,7 @@ import org.orekit.time.AbsoluteDate;
  * @since 10.0
  * @param <T> type of the field elements
  */
-public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends FieldForceModelContext<T> {
+public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends FieldDSSTGravityContext<T> {
 
     /** Retrograde factor I.
      *  <p>
@@ -53,46 +54,11 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
      */
     private static final int I = 1;
 
-    /** A = sqrt(μ * a). */
-    private T A;
-
-    // Common factors for potential computation
-    /** &Chi; = 1 / sqrt(1 - e²) = 1 / B. */
-    private T chi;
-
-    /** &Chi;². */
-    private T chi2;
-
     /** Central body rotation angle θ. */
     private T theta;
 
-    // Common factors from equinoctial coefficients
-    /** 2 * a / A .*/
-    private T ax2oA;
-
-    /** 1 / (A * B) .*/
-    private T ooAB;
-
-    /** B / A .*/
-    private T BoA;
-
-    /** B / (A * (1 + B)) .*/
-    private T BoABpo;
-
-    /** C / (2 * A * B) .*/
-    private T Co2AB;
-
-    /** μ / a .*/
-    private T moa;
-
-    /** R / a .*/
-    private T roa;
-
     /** ecc². */
     private T e2;
-
-    /** Keplerian mean motion. */
-    private T n;
 
     /** Keplerian period. */
     private T period;
@@ -114,62 +80,34 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
      * to selected the right value for state date or by getting the parameters for a specific date
      */
     FieldDSSTTesseralContext(final FieldAuxiliaryElements<T> auxiliaryElements,
-                                    final Frame centralBodyFrame,
-                                    final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final int maxFrequencyShortPeriodics,
-                                    final double bodyPeriod,
-                                    final T[] parameters) {
+                             final Frame centralBodyFrame,
+                             final UnnormalizedSphericalHarmonicsProvider provider,
+                             final int maxFrequencyShortPeriodics,
+                             final double bodyPeriod,
+                             final T[] parameters) {
 
-        super(auxiliaryElements);
+        super(auxiliaryElements, centralBodyFrame, provider, parameters);
 
+        // Get field and zero
         final Field<T> field = auxiliaryElements.getDate().getField();
         final T zero = field.getZero();
 
-        final T mu = parameters[0];
-
-        // Keplerian mean motion
-        final T absA = FastMath.abs(auxiliaryElements.getSma());
-        n = FastMath.sqrt(mu.divide(absA)).divide(absA);
-
         // Keplerian period
         final T a = auxiliaryElements.getSma();
-        period = (a.getReal() < 0) ? zero.newInstance(Double.POSITIVE_INFINITY) : a.multiply(a.getPi().multiply(2.0)).multiply(a.divide(mu).sqrt());
-
-        A = FastMath.sqrt(mu.multiply(auxiliaryElements.getSma()));
+        period = (a.getReal() < 0) ? zero.newInstance(Double.POSITIVE_INFINITY) : getMeanMotion().reciprocal().multiply(MathUtils.TWO_PI);
 
         // Eccentricity square
         e2 = auxiliaryElements.getEcc().multiply(auxiliaryElements.getEcc());
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        final FieldStaticTransform<T> t = centralBodyFrame.getStaticTransformTo(auxiliaryElements.getFrame(), auxiliaryElements.getDate());
+        final FieldStaticTransform<T> t = getBodyFixedToInertialTransform();
         final FieldVector3D<T> xB = t.transformVector(FieldVector3D.getPlusI(field));
         final FieldVector3D<T> yB = t.transformVector(FieldVector3D.getPlusJ(field));
         theta = FastMath.atan2(auxiliaryElements.getVectorF().dotProduct(yB).negate().add((auxiliaryElements.getVectorG().dotProduct(xB)).multiply(I)),
                                auxiliaryElements.getVectorF().dotProduct(xB).add(auxiliaryElements.getVectorG().dotProduct(yB).multiply(I)));
 
-        // Common factors from equinoctial coefficients
-        // 2 * a / A
-        ax2oA  = auxiliaryElements.getSma().divide(A).multiply(2.);
-        // B / A
-        BoA    = auxiliaryElements.getB().divide(A);
-        // 1 / AB
-        ooAB   = A.multiply(auxiliaryElements.getB()).reciprocal();
-        // C / 2AB
-        Co2AB  = auxiliaryElements.getC().multiply(ooAB).divide(2.);
-        // B / (A * (1 + B))
-        BoABpo = BoA.divide(auxiliaryElements.getB().add(1.));
-        // &mu / a
-        moa    = mu.divide(auxiliaryElements.getSma());
-        // R / a
-        roa    = auxiliaryElements.getSma().divide(provider.getAe()).reciprocal();
-
-        // &Chi; = 1 / B
-        chi  = auxiliaryElements.getB().reciprocal();
-        chi2 = chi.multiply(chi);
-
         // Ratio of satellite to central body periods to define resonant terms
         ratio = period.divide(bodyPeriod);
-
     }
 
     /** Get ecc².
@@ -186,67 +124,13 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
         return theta;
     }
 
-    /** Get ax2oA = 2 * a / A .
-     * @return ax2oA
-     */
-    public T getAx2oA() {
-        return ax2oA;
-    }
-
-    /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
-     * @return chi
-     */
-    public T getChi() {
-        return chi;
-    }
-
-    /** Get &Chi;².
-     * @return chi2
-     */
-    public T getChi2() {
-        return chi2;
-    }
-
-    /** Get B / A.
-     * @return BoA
-     */
-    public T getBoA() {
-        return BoA;
-    }
-
-    /** Get ooAB = 1 / (A * B).
-     * @return ooAB
-     */
-    public T getOoAB() {
-        return ooAB;
-    }
-
-    /** Get Co2AB = C / 2AB.
-     * @return Co2AB
-     */
-    public T getCo2AB() {
-        return Co2AB;
-    }
-
-    /** Get BoABpo = B / A(1 + B).
-     * @return BoABpo
-     */
-    public T getBoABpo() {
-        return BoABpo;
-    }
-
     /** Get μ / a .
      * @return moa
+     * @deprecated since 12.2 Use getMuoa() instead
      */
+    @Deprecated
     public T getMoa() {
-        return moa;
-    }
-
-    /** Get roa = R / a.
-     * @return roa
-     */
-    public T getRoa() {
-        return roa;
+        return getMuoa();
     }
 
     /** Get the Keplerian period.
@@ -258,20 +142,10 @@ public class FieldDSSTTesseralContext<T extends CalculusFieldElement<T>> extends
         return period;
     }
 
-    /** Get the Keplerian mean motion.
-     * <p>The Keplerian mean motion is computed directly from semi major axis
-     * and central acceleration constant.</p>
-     * @return Keplerian mean motion in radians per second
-     */
-    public T getMeanMotion() {
-        return n;
-    }
-
     /** Get the ratio of satellite period to central body rotation period.
      * @return ratio
      */
     public T getRatio() {
         return ratio;
     }
-
 }
