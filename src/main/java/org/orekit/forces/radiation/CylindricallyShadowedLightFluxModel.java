@@ -46,12 +46,12 @@ import java.util.List;
 public class CylindricallyShadowedLightFluxModel extends AbstractSolarLightFluxModel {
 
     /**
-     * Max. check interval for eclipse detection.
+     * Default max. check interval for eclipse detection.
      */
     private static final double CYLINDRICAL_ECLIPSE_MAX_CHECK = 100;
 
     /**
-     * Threshold for eclipse detection.
+     * Default threshold for eclipse detection.
      */
     private static final double CYLINDRICAL_ECLIPSE_THRESHOLD = 1e-7;
 
