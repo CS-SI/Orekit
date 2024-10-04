@@ -440,7 +440,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             final SpacecraftState finalState = integrateDynamics(tEnd, false);
 
             // Finalize event detectors
-            getEventsDetectors().forEach(detector -> detector.finish(finalState));
+            getEventDetectors().forEach(detector -> detector.finish(finalState));
 
             return finalState;
         }

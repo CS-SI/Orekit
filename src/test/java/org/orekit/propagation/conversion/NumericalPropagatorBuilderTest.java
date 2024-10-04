@@ -21,7 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.forces.ForceModel;
@@ -64,7 +63,7 @@ public class NumericalPropagatorBuilderTest {
         builder.clearImpulseManeuvers();
         // THEN
         final Propagator propagator = builder.buildPropagator();
-        final Collection<EventDetector> detectors = propagator.getEventsDetectors();
+        final Collection<EventDetector> detectors = propagator.getEventDetectors();
         Assertions.assertTrue(detectors.isEmpty());
     }
 
@@ -80,7 +79,7 @@ public class NumericalPropagatorBuilderTest {
         builder.addImpulseManeuver(mockedManeuver);
         // THEN
         final Propagator propagator = builder.buildPropagator();
-        final Collection<EventDetector> detectors = propagator.getEventsDetectors();
+        final Collection<EventDetector> detectors = propagator.getEventDetectors();
         Assertions.assertEquals(1, detectors.size());
         Assertions.assertEquals(mockedManeuver, detectors.toArray()[0]);
     }

@@ -447,7 +447,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             final FieldSpacecraftState<T> state = integrateDynamics(tEnd);
 
             // Finalize event detectors
-            getEventsDetectors().forEach(detector -> detector.finish(state));
+            getEventDetectors().forEach(detector -> detector.finish(state));
 
             return state;
         }
@@ -1085,7 +1085,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     }
 
     /** Adapt an {@link org.orekit.propagation.sampling.FieldOrekitStepInterpolator<T>}
-     * to Hipparchus {@link FieldODEStepInterpolator<T>} interface.
+     * to Hipparchus {@link FieldODEStateInterpolator<T>} interface.
      * @author Luc Maisonobe
      */
     private class FieldAdaptedStepInterpolator implements FieldOrekitStepInterpolator<T> {
