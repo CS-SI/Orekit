@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="luc" type="fix" issue="1552">
+        Fixed wrong interpolation of clock models when parsing
+        SP3 files with default clock entries.
+      </action>
       <action dev="pascal" type="fix" issue="947">
         Fix negative eccentricity issue with Brouwer-Lyddane propagator.
       </action>

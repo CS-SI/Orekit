@@ -75,6 +75,11 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
     }
 
     /** Extract the clock model.
+     * <p>
+     * If some clock or clock rate are present in the SP3 files as default values (999999.999999), then they
+     * filtered out here when building the clock model, so interpolation will work if at least there are
+     * some remaining regular values.
+     * </p>
      * @return extracted clock model
      * @since 12.1
      */
@@ -83,8 +88,10 @@ public class SP3Segment implements EphemerisFile.EphemerisSegment<SP3Coordinate>
         coordinates.forEach(c -> {
             final AbsoluteDate date   = c.getDate();
             final double       offset = c.getClockCorrection();
-            final double       rate   = filter.getMaxOrder() > 0 ? c.getClockRateChange() : Double.NaN;
-            sample.add(new ClockOffset(date, offset, rate, Double.NaN));
+            if (!Double.isNaN(offset)) {
+                final double rate = filter.getMaxOrder() > 0 ? c.getClockRateChange() : Double.NaN;
+                sample.add(new ClockOffset(date, offset, rate, Double.NaN));
+            }
         });
         return new SampledClockModel(sample, interpolationSamples);
     }
