@@ -16,8 +16,6 @@
  */
 package org.orekit.files.sp3;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.List;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -32,7 +30,7 @@ import org.orekit.time.AbstractTimeInterpolator;
 public class SP3CoordinateHermiteInterpolatorTest {
 
     @Test
-    public void testNoRates() throws IOException, URISyntaxException {
+    public void testNoRates() {
         final String ex = "/sp3/gbm18432.sp3.Z";
 
         final SP3Parser           parser      = new SP3Parser();
@@ -79,7 +77,7 @@ public class SP3CoordinateHermiteInterpolatorTest {
     }
 
     @Test
-    public void testRates() throws IOException, URISyntaxException {
+    public void testRates() {
         final String ex = "/sp3/issue895-minutes-increment.sp3";
 
         final SP3Parser           parser      = new SP3Parser();
@@ -100,9 +98,7 @@ public class SP3CoordinateHermiteInterpolatorTest {
 
         SP3TestUtils.checkEquals(pointA, interpolated);
         Assertions.assertEquals(5996.687746,                       interpolated.getVelocity().getNorm(), 1.0e-6);
-        Assertions.assertEquals(SP3Utils.DEFAULT_CLOCK_RATE_VALUE,
-                                SP3Utils.CLOCK_RATE_UNIT.fromSI(interpolated.getClockRateChange()),
-                                1.0e-6);
+        Assertions.assertTrue(Double.isNaN(interpolated.getClockRateChange()));
 
         // check between sample points
         SP3Coordinate pointB  = coordinates.get(55);
