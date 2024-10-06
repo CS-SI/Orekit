@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="serrof" type="add" issue="1555">
+        Add init methods in LightFluxModel.
+      </action>
       <action dev="luc" type="fix" issue="1552">
         Fixed wrong interpolation of clock models when parsing
         SP3 files with default clock entries.

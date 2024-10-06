@@ -158,13 +158,13 @@ class RadiationPressureModelTest {
         final RadiationPressureModel forceModel = new RadiationPressureModel(lightFluxModel,
                 isotropicRadiationSingleCoefficient);
         final double radius = lightFluxModel.getOccultingBodyRadius() + 700e3;
-        final Binary64Field field = Binary64Field.getInstance();
+        final ComplexField field = ComplexField.getInstance();
         final SpacecraftState initialState = createState(radius);
-        final FieldNumericalPropagator<Binary64> fieldPropagator = buildFieldPropagator(field, forceModel, initialState);
+        final FieldNumericalPropagator<Complex> fieldPropagator = buildFieldPropagator(field, forceModel, initialState);
         final AbsoluteDate epoch = initialState.getDate();
         final AbsoluteDate terminalDate = epoch.shiftedBy(initialState.getKeplerianPeriod() * 10);
         // WHEN
-        final FieldSpacecraftState<Binary64> propagatedState = fieldPropagator.propagate(new FieldAbsoluteDate<>(field, terminalDate));
+        final FieldSpacecraftState<Complex> propagatedState = fieldPropagator.propagate(new FieldAbsoluteDate<>(field, terminalDate));
         // THEN
         final NumericalPropagator propagator = createPropagator(radius);
         propagator.setOrbitType(fieldPropagator.getOrbitType());
@@ -175,13 +175,13 @@ class RadiationPressureModelTest {
         Assertions.assertEquals(0., relativePosition.getNorm(), 1e-3);
     }
 
-    private static FieldNumericalPropagator<Binary64> buildFieldPropagator(final Binary64Field field,
-                                                                           final ForceModel forceModel,
-                                                                           final SpacecraftState initialState) {
-        final FieldODEIntegratorBuilder<Binary64> fieldIntegratoBuilder = new DormandPrince54FieldIntegratorBuilder<>(1e-3, 1e2, 1e-3);
+    private static FieldNumericalPropagator<Complex> buildFieldPropagator(final ComplexField field,
+                                                                          final ForceModel forceModel,
+                                                                          final SpacecraftState initialState) {
+        final FieldODEIntegratorBuilder<Complex> fieldIntegratoBuilder = new DormandPrince54FieldIntegratorBuilder<>(1e-3, 1e2, 1e-3);
         final OrbitType propagationType = OrbitType.EQUINOCTIAL;
-        final FieldODEIntegrator<Binary64> fieldIntegrator = fieldIntegratoBuilder.buildIntegrator(field, initialState.getOrbit(), propagationType);
-        final FieldNumericalPropagator<Binary64> fieldPropagator = new FieldNumericalPropagator<>(field, fieldIntegrator);
+        final FieldODEIntegrator<Complex> fieldIntegrator = fieldIntegratoBuilder.buildIntegrator(field, initialState.getOrbit(), propagationType);
+        final FieldNumericalPropagator<Complex> fieldPropagator = new FieldNumericalPropagator<>(field, fieldIntegrator);
         fieldPropagator.addForceModel(forceModel);
         fieldPropagator.setOrbitType(propagationType);
         fieldPropagator.setInitialState(new FieldSpacecraftState<>(field, initialState));
