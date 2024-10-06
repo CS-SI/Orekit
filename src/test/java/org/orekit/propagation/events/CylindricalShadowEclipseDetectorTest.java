@@ -6,11 +6,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.bodies.AnalyticalSolarPositionProvider;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.RecordAndContinue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.*;
 
@@ -121,6 +129,44 @@ class CylindricalShadowEclipseDetectorTest {
         public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
             return new TimeStampedPVCoordinates(date, new PVCoordinates(Vector3D.MINUS_I));
         }
+    }
+
+    @Test
+    void testDetections() {
+        // GIVEN
+        final ExtendedPositionProvider positionProvider = new AnalyticalSolarPositionProvider();
+        final RecordAndContinue recordAndContinue = new RecordAndContinue();
+        final CylindricalShadowEclipseDetector cylindricalShadowEclipseDetector = new CylindricalShadowEclipseDetector(positionProvider,
+                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, recordAndContinue);
+        final Orbit initialOrbit = getOrbit();
+        final KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+        propagator.addEventDetector(cylindricalShadowEclipseDetector);
+        final AbsoluteDate targetDate = initialOrbit.getDate().shiftedBy(initialOrbit.getKeplerianPeriod() * 200);
+        // WHEN
+        propagator.propagate(targetDate);
+        // THEN
+        propagator.clearEventsDetectors();
+        propagator.resetInitialState(new SpacecraftState(initialOrbit));
+        final RecordAndContinue recordAndContinue2 = new RecordAndContinue();
+        final EclipseDetector eclipseDetector = new EclipseDetector(getExtendedPVCoordinatesProvider(positionProvider),
+                Constants.SUN_RADIUS, new OneAxisEllipsoid(cylindricalShadowEclipseDetector.getOccultingBodyRadius(), 0., FramesFactory.getGTOD(false)));
+        propagator.addEventDetector(eclipseDetector.withPenumbra().withHandler(recordAndContinue2));
+        propagator.propagate(targetDate);
+        Assertions.assertEquals(400, recordAndContinue2.getEvents().size());
+        Assertions.assertEquals(recordAndContinue.getEvents().size(), recordAndContinue2.getEvents().size());
+        for (int i = 0; i < recordAndContinue.getEvents().size(); i++) {
+            Assertions.assertEquals(0., recordAndContinue.getEvents().get(i).getState().durationFrom(recordAndContinue2.getEvents().get(i).getState()),
+                    10.);
+        }
+    }
+
+    private static ExtendedPVCoordinatesProvider getExtendedPVCoordinatesProvider(final ExtendedPositionProvider positionProvider) {
+        return positionProvider::getPVCoordinates;
+    }
+
+    private static KeplerianOrbit getOrbit() {
+        return new KeplerianOrbit(Constants.EGM96_EARTH_EQUATORIAL_RADIUS + 600e3, 0.001, 0.1, 2, 3, 4, PositionAngleType.ECCENTRIC,
+                FramesFactory.getGCRF(), AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
     }
 
 }

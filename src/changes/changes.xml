@@ -55,6 +55,9 @@
       <action dev="luc" type="fix" issue="1526">
         Fixed position accuracy in spliced SP3 files.
       </action>
+      <action dev="serrof" type="add" issue="1518">
+        Add light flux model for spherical occulting and occulted bodies.
+      </action>
       <action dev="serrof" type="add" issue="1516">
         Add scales for defect in indirect shooting.
       </action>
