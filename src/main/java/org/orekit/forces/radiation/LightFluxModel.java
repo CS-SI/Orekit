@@ -24,6 +24,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 
 import java.util.List;
 
@@ -35,6 +37,28 @@ import java.util.List;
  * @since 12.1
  */
 public interface LightFluxModel {
+
+    /**
+     * Perform initialization steps before starting propagation.
+     * @param initialState initial state
+     * @param targetDate target date for propagation
+     * @since 12.2
+     */
+    default void init(SpacecraftState initialState, final AbsoluteDate targetDate) {
+        // nothing by default
+    }
+
+    /**
+     * Perform initialization steps before starting propagation.
+     * @param initialState initial state
+     * @param targetDate target date for propagation
+     * @param <T> field type
+     * @since 12.2
+     */
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState,
+                                                          final FieldAbsoluteDate<T> targetDate) {
+        // nothing by default
+    }
 
     /**
      * Get the light flux vector in the state's frame.

@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdaptableInterval;
@@ -33,6 +34,8 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.ArrayList;
@@ -63,6 +66,15 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
 
     /** Occulted body radius. */
     private final double occultedBodyRadius;
+
+    /** Cached date. */
+    private AbsoluteDate lastDate;
+
+    /** Cached frame. */
+    private Frame propagationFrame;
+
+    /** Cached position. */
+    private Vector3D lastPosition;
 
     /**
      * Constructor.
@@ -110,6 +122,57 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
     public static EventDetectionSettings getDefaultEclipseDetectionSettings() {
         return new EventDetectionSettings(CONICAL_ECLIPSE_MAX_CHECK, CONICAL_ECLIPSE_THRESHOLD,
                 EventDetectionSettings.DEFAULT_MAX_ITER);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate targetDate) {
+        super.init(initialState, targetDate);
+        lastDate = initialState.getDate();
+        propagationFrame = initialState.getFrame();
+        lastPosition = getOccultedBodyPosition(lastDate, propagationFrame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState,
+                                                         final FieldAbsoluteDate<T> targetDate) {
+        super.init(initialState, targetDate);
+        lastDate = initialState.getDate().toAbsoluteDate();
+        propagationFrame = initialState.getFrame();
+        lastPosition = getOccultedBodyPosition(initialState.getDate(), propagationFrame).toVector3D();
+    }
+
+    /**
+     * Get occulted body position using cache.
+     * @param date date
+     * @return occulted body position
+     */
+    private Vector3D getOccultedBodyPosition(final AbsoluteDate date) {
+        if (!lastDate.isEqualTo(date)) {
+            lastPosition = getOccultedBodyPosition(date, propagationFrame);
+            lastDate = date;
+        }
+        return lastPosition;
+    }
+
+    /**
+     * Get occulted body position using cache (non-Field and no derivatives case).
+     * @param fieldDate date
+     * @param <T> field type
+     * @return occulted body position
+     */
+    private <T extends CalculusFieldElement<T>> FieldVector3D<T> getOccultedBodyPosition(final FieldAbsoluteDate<T> fieldDate) {
+        if (fieldDate.hasZeroField()) {
+            final AbsoluteDate date = fieldDate.toAbsoluteDate();
+            if (!lastDate.isEqualTo(date)) {
+                lastPosition = getOccultedBodyPosition(date, propagationFrame);
+                lastDate = date;
+            }
+            return new FieldVector3D<>(fieldDate.getField(), lastPosition);
+        } else {
+            return getOccultedBodyPosition(fieldDate, propagationFrame);
+        }
     }
 
     /** {@inheritDoc} */
@@ -204,7 +267,7 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
             @Override
             public double g(final SpacecraftState s) {
                 final Vector3D position = s.getPosition();
-                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate(), s.getFrame());
+                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
                 final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
                 final double s0 = -position.dotProduct(occultedBodyDirection);
                 final double distanceSun = occultedBodyPosition.getNorm();
@@ -226,7 +289,7 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
             @Override
             public double g(final SpacecraftState s) {
                 final Vector3D position = s.getPosition();
-                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate(), s.getFrame());
+                final Vector3D occultedBodyPosition = getOccultedBodyPosition(s.getDate());
                 final Vector3D occultedBodyDirection = occultedBodyPosition.normalize();
                 final double s0 = -position.dotProduct(occultedBodyDirection);
                 final double distanceSun = occultedBodyPosition.getNorm();
@@ -301,7 +364,7 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
             @Override
             public T g(final FieldSpacecraftState<T> s) {
                 final FieldVector3D<T> position = s.getPosition();
-                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate(), s.getFrame());
+                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate());
                 final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
                 final T s0 = position.dotProduct(occultedBodyDirection).negate();
                 final T distanceSun = occultedBodyPosition.getNorm();
@@ -326,7 +389,7 @@ public class ConicallyShadowedLightFluxModel extends AbstractSolarLightFluxModel
             @Override
             public T g(final FieldSpacecraftState<T> s) {
                 final FieldVector3D<T> position = s.getPosition();
-                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate(), s.getFrame());
+                final FieldVector3D<T> occultedBodyPosition = getOccultedBodyPosition(s.getDate());
                 final FieldVector3D<T> occultedBodyDirection = occultedBodyPosition.normalize();
                 final T s0 = position.dotProduct(occultedBodyDirection).negate();
                 final T distanceSun = occultedBodyPosition.getNorm();

@@ -24,6 +24,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
@@ -85,6 +87,21 @@ public class RadiationPressureModel implements RadiationForceModel {
     @Override
     public boolean dependsOnPositionOnly() {
         return radiationSensitive instanceof IsotropicRadiationClassicalConvention || radiationSensitive instanceof IsotropicRadiationCNES95Convention || radiationSensitive instanceof IsotropicRadiationSingleCoefficient;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void init(final SpacecraftState initialState, final AbsoluteDate target) {
+        RadiationForceModel.super.init(initialState, target);
+        lightFluxModel.init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> void init(final FieldSpacecraftState<T> initialState,
+                                                         final FieldAbsoluteDate<T> target) {
+        RadiationForceModel.super.init(initialState, target);
+        lightFluxModel.init(initialState, target);
     }
 
     /** {@inheritDoc} */
