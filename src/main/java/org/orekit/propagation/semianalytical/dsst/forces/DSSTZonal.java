@@ -137,7 +137,7 @@ public class DSSTZonal implements DSSTForceModel {
     private ZonalShortPeriodicCoefficients zonalSPCoefs;
 
     /** Short period terms. */
-    private Map<Field<?>, FieldZonalShortPeriodicCoefficients<?>> zonalFieldSPCoefs;
+    private final Map<Field<?>, FieldZonalShortPeriodicCoefficients<?>> zonalFieldSPCoefs;
 
     /** Driver for gravitational parameter. */
     private final ParameterDriver gmParameterDriver;
@@ -146,7 +146,7 @@ public class DSSTZonal implements DSSTForceModel {
     private HansenObjects hansen;
 
     /** Hansen objects for field elements. */
-    private Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
+    private final Map<Field<?>, FieldHansenObjects<?>> fieldHansen;
 
     /** Constructor with default reference values.
      * <p>
@@ -176,11 +176,11 @@ public class DSSTZonal implements DSSTForceModel {
      * Constructor with bodyFixedFrame = orbit frame, and default reference values.
      * <p>
      * Kept for compatibility with anterior versions.
+     * </p>
      * <p>
      * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
      * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
-     * <p>
-     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
+     * </p>
      * <p>
      * When this constructor is used, maximum allowed values are used
      * for the short periodic coefficients:
@@ -192,6 +192,7 @@ public class DSSTZonal implements DSSTForceModel {
      *    <li> {@link #maxFrequencyShortPeriodics} is set to {@code 2 * provider.getMaxDegree() + 1} </li>
      * </ul>
      * @param provider provider for spherical harmonics
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
      * @since 10.1
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider) {
@@ -254,12 +255,11 @@ public class DSSTZonal implements DSSTForceModel {
      * Constructor with bodyFixedFrame = orbit frame.
      * <p>
      * Added for retro-compatibility with anterior versions for initialization.
+     * </p>
      * <p>
      * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
      * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
-     * <p>
-     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
-     * <p>
+     * </p>
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
      * (must be between 2 and {@code provider.getMaxDegree()})
@@ -268,6 +268,7 @@ public class DSSTZonal implements DSSTForceModel {
      * values will exceed computer capacity)
      * @param maxFrequencyShortPeriodics maximum frequency in true longitude for short periodic computations
      * (must be between 1 and {@code 2 * maxDegreeShortPeriodics + 1})
+     * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
      * @since 7.2
      */
     public DSSTZonal(final UnnormalizedSphericalHarmonicsProvider provider,
@@ -3919,7 +3920,7 @@ public class DSSTZonal implements DSSTForceModel {
 
         /** An array that contains the objects needed to build the Hansen coefficients. <br/>
          * The index is s*/
-        private HansenZonalLinear[] hansenObjects;
+        private final HansenZonalLinear[] hansenObjects;
 
         /** Simple constructor. */
         HansenObjects() {
@@ -3953,7 +3954,7 @@ public class DSSTZonal implements DSSTForceModel {
 
         /** An array that contains the objects needed to build the Hansen coefficients. <br/>
          * The index is s*/
-        private FieldHansenZonalLinear<T>[] hansenObjects;
+        private final FieldHansenZonalLinear<T>[] hansenObjects;
 
         /** Simple constructor.
          * @param field field used by default
