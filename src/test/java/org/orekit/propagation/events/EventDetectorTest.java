@@ -67,12 +67,10 @@ public class EventDetectorTest {
     void testFinish() {
         // GIVEN
         final FinishingHandler handler = new FinishingHandler();
-        final EventDetector mockedDetector = Mockito.mock(EventDetector.class);
-        Mockito.when(mockedDetector.getHandler()).thenReturn(handler);
-        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
-        Mockito.doCallRealMethod().when(mockedDetector).finish(mockedState);
+        final EventDetector detector =
+            new DummyDetector(new EventDetectionSettings(1.0, 1.0e-10, 100), handler);
         // WHEN
-        mockedDetector.finish(mockedState);
+        detector.finish(Mockito.mock(SpacecraftState.class));
         // THEN
         Assertions.assertTrue(handler.isFinished);
     }
@@ -84,6 +82,24 @@ public class EventDetectorTest {
         public void finish(SpacecraftState finalState, EventDetector detector) {
             isFinished = true;
         }
+    }
+
+    private static class DummyDetector
+        extends AbstractDetector<DummyDetector> {
+
+        public DummyDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
+            super(detectionSettings, handler);
+        }
+
+        public double g(final SpacecraftState s) {
+            return 0;
+        }
+
+        protected DummyDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler newHandler) {
+            return new DummyDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        }
+
     }
 
     @Test
@@ -504,15 +520,11 @@ public class EventDetectorTest {
     @Test
     void testGetDetectionSettings() {
         // GIVEN
-        final EventDetector mockedDetector = Mockito.mock(EventDetector.class);
         final AdaptableInterval mockedInterval = Mockito.mock(AdaptableInterval.class);
         final EventDetectionSettings settings = new EventDetectionSettings(mockedInterval, 10, 19);
-        Mockito.when(mockedDetector.getThreshold()).thenReturn(settings.getThreshold());
-        Mockito.when(mockedDetector.getMaxIterationCount()).thenReturn(settings.getMaxIterationCount());
-        Mockito.when(mockedDetector.getMaxCheckInterval()).thenReturn(mockedInterval);
-        Mockito.when(mockedDetector.getDetectionSettings()).thenCallRealMethod();
+        final EventDetector detector = new DummyDetector(settings, null);
         // WHEN
-        final EventDetectionSettings actualSettings = mockedDetector.getDetectionSettings();
+        final EventDetectionSettings actualSettings = detector.getDetectionSettings();
         // THEN
         Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
         Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());

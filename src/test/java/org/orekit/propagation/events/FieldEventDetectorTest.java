@@ -74,12 +74,10 @@ public class FieldEventDetectorTest {
     void testFinish() {
         // GIVEN
         final FinishingHandler handler = new FinishingHandler();
-        final FieldEventDetector<?> mockedDetector = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(mockedDetector.getHandler()).thenReturn(handler);
-        final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
-        Mockito.doCallRealMethod().when(mockedDetector).finish(mockedState);
+        final FieldEventDetector<?> detector =
+            new DummyDetector(new FieldEventDetectionSettings<>(1.0, Complex.ONE, 100), handler);
         // WHEN
-        mockedDetector.finish(mockedState);
+        detector.finish(Mockito.mock(FieldSpacecraftState.class));
         // THEN
         Assertions.assertTrue(handler.isFinished);
     }
@@ -93,18 +91,32 @@ public class FieldEventDetectorTest {
         }
     }
 
+    private static class DummyDetector<T extends CalculusFieldElement<T>>
+        extends FieldAbstractDetector<DummyDetector<T>, T> {
+
+        public DummyDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler) {
+            super(detectionSettings, handler);
+        }
+
+        public T g(final FieldSpacecraftState<T> s) {
+            return s.getDate().getField().getZero();
+        }
+
+        protected DummyDetector create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
+                                       final int newMaxIter, final FieldEventHandler<T> newHandler) {
+            return new DummyDetector(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        }
+
+    }
+
     @Test
     void testGetDetectionSettings() {
         // GIVEN
-        final FieldEventDetector mockedDetector = Mockito.mock(FieldEventDetector.class);
         final FieldAdaptableInterval<Complex> mockedInterval = Mockito.mock(FieldAdaptableInterval.class);
         final FieldEventDetectionSettings<Complex> settings = new FieldEventDetectionSettings<>(mockedInterval, Complex.ONE, 10);
-        Mockito.when(mockedDetector.getThreshold()).thenReturn(settings.getThreshold());
-        Mockito.when(mockedDetector.getMaxIterationCount()).thenReturn(settings.getMaxIterationCount());
-        Mockito.when(mockedDetector.getMaxCheckInterval()).thenReturn(mockedInterval);
-        Mockito.when(mockedDetector.getDetectionSettings()).thenCallRealMethod();
+        final FieldEventDetector<Complex> detector = new DummyDetector(settings, null);
         // WHEN
-        final FieldEventDetectionSettings<Complex> actualSettings = mockedDetector.getDetectionSettings();
+        final FieldEventDetectionSettings<Complex> actualSettings = detector.getDetectionSettings();
         // THEN
         Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
         Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
