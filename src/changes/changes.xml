@@ -21,6 +21,8 @@
   </properties>
   <body>
     <release version="12.2" date="TBD" description="TBD">
+      <action dev="manny" type="update">
+        Updated conference paper URL in JB2008 class documentation.
       <action dev="serrof" type="add" issue="1555">
         Add init methods in LightFluxModel.
       </action>
