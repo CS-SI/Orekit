@@ -524,6 +524,9 @@ public enum OrekitMessages implements Localizable {
     /** NON_CHRONOLOGICALLY_SORTED_ENTRIES. */
     NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s"),
 
+    /** TRANSITION_DATES_COLLISION. */
+    TRANSITION_DATES_COLLISION("moving transition date from {0} to {1} collides with existing transition at {2}"),
+
     /** NO_DATA_GENERATED. */
     NO_DATA_GENERATED("no data generated around date: {0}"),
 

@@ -80,7 +80,7 @@ public class TimeSpanMap<T> {
      * @param entry entry (initially valid throughout the timeline)
      */
     public TimeSpanMap(final T entry) {
-        current = new Span<>(entry);
+        current = new Span<>(this, entry);
         nbSpans = 1;
     }
 
@@ -145,7 +145,7 @@ public class TimeSpanMap<T> {
 
         }
 
-        final Span<T> span = new Span<>(entry);
+        final Span<T> span = new Span<>(this, entry);
 
         final Transition<T> start = current.getStartTransition();
         if (start != null && start.getDate().equals(latestValidityDate)) {
@@ -222,7 +222,7 @@ public class TimeSpanMap<T> {
 
         }
 
-        final Span<T> span = new Span<>(entry);
+        final Span<T> span = new Span<>(this, entry);
         if (current.getEndTransition() != null) {
             current.getEndTransition().setBefore(span);
         }
@@ -261,7 +261,7 @@ public class TimeSpanMap<T> {
         if (AbsoluteDate.PAST_INFINITY.equals(earliestValidityDate)) {
             if (AbsoluteDate.FUTURE_INFINITY.equals(latestValidityDate)) {
                 // we wipe everything in the map
-                current = new Span<>(entry);
+                current = new Span<>(this, entry);
                 return current;
             } else {
                 // we wipe from past infinity
@@ -281,13 +281,13 @@ public class TimeSpanMap<T> {
             }
             if (latest == current) {
                 // the interval splits one transition in the middle, we need to duplicate the instance
-                latest = new Span<>(current.data);
+                latest = new Span<>(this, current.data);
                 if (current.getEndTransition() != null) {
                     current.getEndTransition().setBefore(latest);
                 }
             }
 
-            final Span<T> span = new Span<>(entry);
+            final Span<T> span = new Span<>(this, entry);
 
             // manage earliest transition
             final Transition<T> start = current.getStartTransition();
@@ -343,7 +343,7 @@ public class TimeSpanMap<T> {
 
     /** Locate the time span containing a specified date.
      * <p>
-     * The {@link current} field is updated to the located span.
+     * The {@code current} field is updated to the located span.
      * After the method returns, {@code current.getStartTransition()} is either
      * null or its date is before or equal to date, and {@code
      * current.getEndTransition()} is either null or its date is after date.
@@ -379,7 +379,7 @@ public class TimeSpanMap<T> {
      * @since 11.1
      */
     private void insertTransition(final AbsoluteDate date, final Span<T> before, final Span<T> after) {
-        final Transition<T> transition = new Transition<>(date);
+        final Transition<T> transition = new Transition<>(this, date);
         transition.setBefore(before);
         transition.setAfter(after);
         ++nbSpans;
@@ -518,6 +518,11 @@ public class TimeSpanMap<T> {
      */
     public static class Transition<S> implements TimeStamped {
 
+        /** Map this transition belongs to.
+         * @since 13.0
+         */
+        private final TimeSpanMap<S> map;
+
         /** Transition date. */
         private AbsoluteDate date;
 
@@ -528,9 +533,11 @@ public class TimeSpanMap<T> {
         private Span<S> after;
 
         /** Simple constructor.
+         * @param map map this transition belongs to
          * @param date transition date
          */
-        private Transition(final AbsoluteDate date) {
+        private Transition(final TimeSpanMap<S> map, final AbsoluteDate date) {
+            this.map  = map;
             this.date = date;
         }
 
@@ -556,6 +563,80 @@ public class TimeSpanMap<T> {
         @Override
         public AbsoluteDate getDate() {
             return date;
+        }
+
+        /** Move transition.
+         * <p>
+         * When moving a transition to past or future infinity, it will be disconnected
+         * from the time span it initially belonged to as the next or previous time
+         * span validity will be extends to infinity.
+         * </p>
+         * @param newDate new transition date
+         * @param eraseOverridden if true, spans that are entirely between current
+         * and new transition dates will be silently removed, if false and such
+         * spans exist, an exception will be triggered
+         * @since 13.0
+         */
+        public void resetDate(final AbsoluteDate newDate, final boolean eraseOverridden) {
+            if (newDate.isAfter(date)) {
+                // we are moving the transition towards future
+
+                // find span after new date
+                Span<S> newAfter = after;
+                while (newAfter.getEndTransition() != null &&
+                       newAfter.getEndTransition().getDate().isBeforeOrEqualTo(newDate)) {
+                    if (eraseOverridden) {
+                        map.nbSpans--;
+                    } else {
+                        // forbidden collision detected
+                        throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
+                                                  date, newDate, newAfter.getEndTransition().getDate());
+                    }
+                    newAfter = newAfter.next();
+                }
+
+                // perform update
+                date        = newDate;
+                after       = newAfter;
+                after.start = this;
+                map.current = before;
+
+                if (newDate.isInfinite()) {
+                    // we have just moved the transition to future infinity, it should really disappear
+                    map.nbSpans--;
+                    before.end = null;
+                }
+
+            } else {
+                // we are moving transition towards past
+
+                // find span before new date
+                Span<S> newBefore = before;
+                while (newBefore.getStartTransition() != null &&
+                       newBefore.getStartTransition().getDate().isAfterOrEqualTo(newDate)) {
+                    if (eraseOverridden) {
+                        map.nbSpans--;
+                    } else {
+                        // forbidden collision detected
+                        throw new OrekitException(OrekitMessages.TRANSITION_DATES_COLLISION,
+                                                  date, newDate, newBefore.getStartTransition().getDate());
+                    }
+                    newBefore = newBefore.previous();
+                }
+
+                // perform update
+                date        = newDate;
+                before      = newBefore;
+                before.end  = this;
+                map.current = after;
+
+                if (newDate.isInfinite()) {
+                    // we have just moved the transition to past infinity, it should really disappear
+                    map.nbSpans--;
+                    after.start = null;
+                }
+
+            }
         }
 
         /** Get the previous transition.
@@ -621,6 +702,11 @@ public class TimeSpanMap<T> {
      */
     public static class Span<S> {
 
+        /** Map this span belongs to.
+         * @since 13.0
+         */
+        private final TimeSpanMap<S> map;
+
         /** Valid data. */
         private final S data;
 
@@ -631,9 +717,11 @@ public class TimeSpanMap<T> {
         private Transition<S> end;
 
         /** Simple constructor.
+         * @paam map map this span belongs to
          * @param data valid data
          */
-        private Span(final S data) {
+        private Span(final TimeSpanMap<S> map, final S data) {
+            this.map  = map;
             this.data = data;
         }
 
