@@ -595,16 +595,18 @@ public class TimeSpanMap<T> {
                     newAfter = newAfter.next();
                 }
 
-                // perform update
-                date        = newDate;
-                after       = newAfter;
-                after.start = this;
-                map.current = before;
+                synchronized (map) {
+                    // perform update
+                    date = newDate;
+                    after = newAfter;
+                    after.start = this;
+                    map.current = before;
 
-                if (newDate.isInfinite()) {
-                    // we have just moved the transition to future infinity, it should really disappear
-                    map.nbSpans--;
-                    before.end = null;
+                    if (newDate.isInfinite()) {
+                        // we have just moved the transition to future infinity, it should really disappear
+                        map.nbSpans--;
+                        before.end = null;
+                    }
                 }
 
             } else {
@@ -624,16 +626,18 @@ public class TimeSpanMap<T> {
                     newBefore = newBefore.previous();
                 }
 
-                // perform update
-                date        = newDate;
-                before      = newBefore;
-                before.end  = this;
-                map.current = after;
+                synchronized (map) {
+                    // perform update
+                    date = newDate;
+                    before = newBefore;
+                    before.end = this;
+                    map.current = after;
 
-                if (newDate.isInfinite()) {
-                    // we have just moved the transition to past infinity, it should really disappear
-                    map.nbSpans--;
-                    after.start = null;
+                    if (newDate.isInfinite()) {
+                        // we have just moved the transition to past infinity, it should really disappear
+                        map.nbSpans--;
+                        after.start = null;
+                    }
                 }
 
             }
