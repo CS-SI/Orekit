@@ -451,6 +451,9 @@ NO_CACHED_ENTRIES = nu există înregistrări în cache
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = înregistrările generate nu sunt în ordine cronologică: {0} > {1} cu {2,number,0.0##############E0} s
 
+# moving transition date from {0} to {1} collides with existing transition at {2}
+TRANSITION_DATES_COLLISION = <MISSING TRANSLATION>
+
 # no data generated around date: {0}
 NO_DATA_GENERATED = nu există informații generate în jurul datei: {0}
 

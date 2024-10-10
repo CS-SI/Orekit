@@ -700,6 +700,241 @@ public class TimeSpanMapTest {
         Assertions.assertEquals(17, map.getLastNonNullSpan().getData());
     }
 
+    @Test
+    public void testMoveTowardsPastNoOverride() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidAfter(i, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i), false);
+        }
+        Assertions.assertEquals(11, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(30, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(35.5)));
+        Assertions.assertEquals(30, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(34.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(35), true);
+        Assertions.assertEquals(11, map.getSpansNumber());
+        Assertions.assertEquals(35, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(30, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(34.5)));
+        Assertions.assertEquals(40, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(35.5)));
+    }
+
+    @Test
+    public void testMoveTowardsPastOverride() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidAfter(i, AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i), false);
+        }
+        Assertions.assertEquals(11, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(10, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(15.5)));
+        Assertions.assertEquals(10, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(14.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(15), true);
+        Assertions.assertEquals( 9, map.getSpansNumber());
+        Assertions.assertEquals(15, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(10, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(14.5)));
+        Assertions.assertEquals(40, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(15.5)));
+    }
+
+    @Test
+    public void testMoveTowardsPastOverrideAll() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-9.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10), true);
+        Assertions.assertEquals( 8, map.getSpansNumber());
+        Assertions.assertEquals(-10, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(40, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-9.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10.5)));
+    }
+
+    @Test
+    public void testMoveTowardsPastFirst() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getFirstTransition();
+        Assertions.assertEquals(0, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-9.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10), true);
+        Assertions.assertEquals(12, map.getSpansNumber());
+        Assertions.assertEquals(-10, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(0, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-9.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-10.5)));
+    }
+
+    @Test
+    public void testMoveToPastInfinity() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(55)).getStartTransition();
+        Assertions.assertEquals(50, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        transition.resetDate(AbsoluteDate.PAST_INFINITY, true);
+        Assertions.assertEquals( 6, map.getSpansNumber());
+        Assertions.assertEquals(60, map.getFirstTransition().getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(60, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(60.5)));
+        Assertions.assertEquals(50, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-1000)));
+    }
+
+    @Test
+    public void testMoveTransitionPastCollision() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        try {
+            transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-3600), false);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.TRANSITION_DATES_COLLISION, oe.getSpecifier());
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(   40), oe.getParts()[0]);
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(-3600), oe.getParts()[1]);
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(   30), oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testMoveTowardsFutureNoOverride() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(40, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45.5)));
+        Assertions.assertEquals(40, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(44.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45), true);
+        Assertions.assertEquals(12, map.getSpansNumber());
+        Assertions.assertEquals(45, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(30, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(44.5)));
+        Assertions.assertEquals(40, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45.5)));
+    }
+
+    @Test
+    public void testMoveTowardsFutureOverride() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(70, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(75.5)));
+        Assertions.assertEquals(70, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(74.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(75), true);
+        Assertions.assertEquals( 9, map.getSpansNumber());
+        Assertions.assertEquals(75, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(30, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(74.5)));
+        Assertions.assertEquals(70, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(75.5)));
+    }
+
+    @Test
+    public void testMoveTowardsFutureOverrideAll() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(110.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(109.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(110), true);
+        Assertions.assertEquals( 6, map.getSpansNumber());
+        Assertions.assertEquals(110, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(30, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(109.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(110.5)));
+    }
+
+    @Test
+    public void testMoveTowardsFutureLast() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getLastTransition();
+        Assertions.assertEquals(100, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(110.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(109.5)));
+        transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(110), true);
+        Assertions.assertEquals(12, map.getSpansNumber());
+        Assertions.assertEquals(110, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(90,  map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(109.5)));
+        Assertions.assertNull(map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(110.5)));
+    }
+
+    @Test
+    public void testMoveToFutureInfinity() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        Assertions.assertEquals(12, map.getSpansNumber());
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(70, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(75.5)));
+        Assertions.assertEquals(70, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(74.5)));
+        transition.resetDate(AbsoluteDate.FUTURE_INFINITY, true);
+        Assertions.assertEquals( 5, map.getSpansNumber());
+        Assertions.assertEquals(30, map.getLastTransition().getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(30, map.get(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(1000)));
+    }
+
+    @Test
+    public void testMoveTransitionFutureCollision() {
+        final TimeSpanMap<Integer> map = new TimeSpanMap<>(null);
+        for (int i = 0; i < 100; i +=10) {
+            map.addValidBetween(i,
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i),
+                                AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(i + 10));
+        }
+        TimeSpanMap.Transition<Integer> transition = map.getSpan(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(45)).getStartTransition();
+        Assertions.assertEquals(40, transition.getDate().durationFrom(AbsoluteDate.ARBITRARY_EPOCH));
+        try {
+            transition.resetDate(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3600), false);
+            Assertions.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assertions.assertEquals(OrekitMessages.TRANSITION_DATES_COLLISION, oe.getSpecifier());
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(  40), oe.getParts()[0]);
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(3600), oe.getParts()[1]);
+            Assertions.assertEquals(AbsoluteDate.ARBITRARY_EPOCH.shiftedBy(  50), oe.getParts()[2]);
+        }
+    }
+
     private <T> void checkException(final TimeSpanMap<T> map,
                                     final Consumer<TimeSpanMap<T>> f,
                                     OrekitMessages expected) {
