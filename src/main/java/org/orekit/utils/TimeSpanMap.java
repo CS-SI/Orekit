@@ -717,7 +717,7 @@ public class TimeSpanMap<T> {
         private Transition<S> end;
 
         /** Simple constructor.
-         * @paam map map this span belongs to
+         * @param map map this span belongs to
          * @param data valid data
          */
         private Span(final TimeSpanMap<S> map, final S data) {
