@@ -179,7 +179,6 @@ public class DSSTZonal implements DSSTForceModel {
      * <p>
      * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
      * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
-     * <p>
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
      * <p>
      * When this constructor is used, maximum allowed values are used
@@ -257,9 +256,7 @@ public class DSSTZonal implements DSSTForceModel {
      * <p>
      * Setting bodyFixedFrame to null will lead to large errors if the orbit frame is far from Earth rotating frame (GCRF, EME2000...).
      * The error gets smaller as the orbit frame gets closer to Earth rotating frame (MOD, then TOD).
-     * <p>
      * @see <a href="https://gitlab.orekit.org/orekit/orekit/-/issues/1104">issue-1104 on the forge</a>
-     * <p>
      * @param provider provider for spherical harmonics
      * @param maxDegreeShortPeriodics maximum degree to consider for short periodics zonal harmonics potential
      * (must be between 2 and {@code provider.getMaxDegree()})
