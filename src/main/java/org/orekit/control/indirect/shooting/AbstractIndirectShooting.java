@@ -80,7 +80,8 @@ public abstract class AbstractIndirectShooting {
      */
     protected NumericalPropagator buildPropagator(final SpacecraftState initialState) {
         final ODEIntegrator integrator = buildIntegrator(initialState);
-        final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        final NumericalPropagator propagator =
+              new NumericalPropagator(integrator, propagationSettings.getAttitudeProvider());
         propagator.setIgnoreCentralAttraction(true);
         propagator.setInitialState(initialState);
         propagator.setIgnoreCentralAttraction(false);
@@ -93,7 +94,6 @@ public abstract class AbstractIndirectShooting {
             }
             propagator.setOrbitType(null);
         }
-        propagator.setAttitudeProvider(propagationSettings.getAttitudeProvider());
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }
@@ -126,7 +126,8 @@ public abstract class AbstractIndirectShooting {
     protected FieldNumericalPropagator<Gradient> buildFieldPropagator(final FieldSpacecraftState<Gradient> initialState) {
         final Field<Gradient> field = initialState.getDate().getField();
         final FieldODEIntegrator<Gradient> integrator = buildFieldIntegrator(initialState);
-        final FieldNumericalPropagator<Gradient> propagator = new FieldNumericalPropagator<>(field, integrator);
+        final FieldNumericalPropagator<Gradient> propagator =
+              new FieldNumericalPropagator<>(field, integrator, propagationSettings.getAttitudeProvider());
         propagator.setIgnoreCentralAttraction(true);
         propagator.removeForceModels();
         propagator.setInitialState(initialState);
@@ -139,7 +140,6 @@ public abstract class AbstractIndirectShooting {
                 propagator.setIgnoreCentralAttraction(true);
             }
         }
-        propagator.setAttitudeProvider(propagationSettings.getAttitudeProvider());
         for (final ForceModel forceModel: propagationSettings.getForceModels()) {
             propagator.addForceModel(forceModel);
         }

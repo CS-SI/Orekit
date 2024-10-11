@@ -250,6 +250,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     private static class LocalHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         /** {@inheritDoc} */
+        @SuppressWarnings("unchecked")
         public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
@@ -257,6 +258,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
 
         /** {@inheritDoc} */
         @Override
+        @SuppressWarnings("unchecked")
         public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector, final FieldSpacecraftState<T> oldState) {
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().resetState(esf.rawDetector, oldState);
