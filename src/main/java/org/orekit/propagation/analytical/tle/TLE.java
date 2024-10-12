@@ -714,7 +714,7 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
      * Convert Spacecraft State into TLE.
      *
      * @param state Spacecraft State to convert into TLE
-     * @param templateTLE first guess used to get identification and estimate new TLE
+     * @param templateTLE only used to get identifiers like satellite number, launch year, etc. In other words, the keplerian elements contained in the generated TLE are based on the provided state and not the template TLE.
      * @param generationAlgorithm TLE generation algorithm
      * @return a generated TLE
      * @since 12.0
