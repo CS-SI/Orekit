@@ -127,8 +127,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Minute number. */
     private final int minute;
 
-    /** Split second number. */
-    private final TimeOffset splitSecond;
+    /** Second number. */
+    private final TimeOffset second;
 
     /** Offset between the specified date and UTC.
      * <p>
@@ -149,8 +149,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * are given (parameters out of range)
      */
     public TimeComponents(final int hour, final int minute, final double second)
-        throws
-        IllegalArgumentException {
+        throws IllegalArgumentException {
         this(hour, minute, new TimeOffset(second));
     }
 
@@ -160,14 +159,14 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * in the {@link UTCScale UTC} time scale.</p>
      * @param hour hour number from 0 to 23
      * @param minute minute number from 0 to 59
-     * @param splitSecond second number from 0.0 to 61.0 (excluded)
+     * @param second second number from 0.0 to 61.0 (excluded)
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range)
      * @since 13.0
      */
-    public TimeComponents(final int hour, final int minute, final TimeOffset splitSecond)
+    public TimeComponents(final int hour, final int minute, final TimeOffset second)
         throws IllegalArgumentException {
-        this(hour, minute, splitSecond, 0);
+        this(hour, minute, second, 0);
     }
 
     /** Build a time from its clock elements.
@@ -184,8 +183,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 7.2
      */
     public TimeComponents(final int hour, final int minute, final double second, final int minutesFromUTC)
-        throws
-        IllegalArgumentException {
+        throws IllegalArgumentException {
         this(hour, minute, new TimeOffset(second), minutesFromUTC);
     }
 
@@ -195,29 +193,29 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * in the {@link UTCScale UTC} time scale.</p>
      * @param hour hour number from 0 to 23
      * @param minute minute number from 0 to 59
-     * @param splitSecond second number from 0.0 to 62.0 (excluded, more than 61 s occurred on
-     *                    the 1961 leap second, which was between 1 and 2 seconds in duration)
+     * @param second second number from 0.0 to 62.0 (excluded, more than 61 s occurred on
+     *               the 1961 leap second, which was between 1 and 2 seconds in duration)
      * @param minutesFromUTC offset between the specified date and UTC, as an
      * integral number of minutes, as per ISO-8601 standard
      * @exception IllegalArgumentException if inconsistent arguments
      * are given (parameters out of range)
      * @since 13.0
      */
-    public TimeComponents(final int hour, final int minute, final TimeOffset splitSecond,
+    public TimeComponents(final int hour, final int minute, final TimeOffset second,
                           final int minutesFromUTC)
         throws IllegalArgumentException {
 
         // range check
         if (hour < 0 || hour > 23 ||
             minute < 0 || minute > 59 ||
-            splitSecond.getSeconds() < 0L || splitSecond.getSeconds() >= 62L) {
+            second.getSeconds() < 0L || second.getSeconds() >= 62L) {
             throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_HMS_TIME,
-                                                     hour, minute, splitSecond.toDouble());
+                                                     hour, minute, second.toDouble());
         }
 
         this.hour           = hour;
         this.minute         = minute;
-        this.splitSecond    = splitSecond;
+        this.second         = second;
         this.minutesFromUTC = minutesFromUTC;
 
     }
@@ -278,7 +276,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         this.hour           = tc.hour;
         this.minute         = tc.minute;
-        this.splitSecond    = tc.splitSecond;
+        this.second         = tc.second;
         this.minutesFromUTC = tc.minutesFromUTC;
 
     }
@@ -315,15 +313,15 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                                                          splitSecondInDay.toDouble(),
                                                          0, TimeOffset.DAY_WITH_POSITIVE_LEAP.getSeconds());
             } else {
-                hour        = TWENTY_THREE;
-                minute      = FIFTY_NINE;
-                splitSecond = splitSecondInDay.subtract(TWENTY_THREE_FIFTY_NINE);
+                hour   = TWENTY_THREE;
+                minute = FIFTY_NINE;
+                second = splitSecondInDay.subtract(TWENTY_THREE_FIFTY_NINE);
             }
         } else {
             // regular time within day
-            hour        = (int) splitSecondInDay.getSeconds() / HOUR;
-            minute      = ((int) splitSecondInDay.getSeconds() % HOUR) / MINUTE;
-            splitSecond = splitSecondInDay.subtract(new TimeOffset(hour * HOUR + minute * MINUTE, 0L));
+            hour   = (int) splitSecondInDay.getSeconds() / HOUR;
+            minute = ((int) splitSecondInDay.getSeconds() % HOUR) / MINUTE;
+            second = splitSecondInDay.subtract(new TimeOffset(hour * HOUR + minute * MINUTE, 0L));
         }
 
         minutesFromUTC = 0;
@@ -374,9 +372,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         if (secondInDay.isNaN()) {
             // special handling for NaN
-            hour        = 0;
-            minute      = 0;
-            splitSecond = secondInDay;
+            hour   = 0;
+            minute = 0;
+            second = secondInDay;
             return;
         }
 
@@ -386,7 +384,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                                                      // this can produce some strange messages due to rounding
                                                      secondInDay.toDouble(), 0, Constants.JULIAN_DAY);
         }
-        final int maxExtraSeconds = minuteDuration - 60;
+        final int maxExtraSeconds = minuteDuration - MINUTE;
         if (leap.getSeconds() * maxExtraSeconds < 0 || FastMath.abs(leap.getSeconds()) > FastMath.abs(maxExtraSeconds)) {
             throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER_DETAIL,
                                                      leap, 0, maxExtraSeconds);
@@ -394,10 +392,10 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
         // extract the time components
         int wholeSeconds = (int) secondInDay.getSeconds();
-        hour           = wholeSeconds / 3600;
-        wholeSeconds  -= 3600 * hour;
-        minute         = wholeSeconds / 60;
-        wholeSeconds  -= 60 * minute;
+        hour           = wholeSeconds / HOUR;
+        wholeSeconds  -= HOUR * hour;
+        minute         = wholeSeconds / MINUTE;
+        wholeSeconds  -= MINUTE * minute;
         // at this point ((minuteDuration - wholeSeconds) - leap) - fractional > 0
         // or else one of the preconditions was violated. Even if there is no violation,
         // naiveSecond may round to minuteDuration, creating an invalid time.
@@ -410,9 +408,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                     naiveSecond, 0, minuteDuration);
         }
         if (naiveSecond.getSeconds() < minuteDuration) {
-            splitSecond = naiveSecond;
+            second = naiveSecond;
         } else {
-            splitSecond = new TimeOffset(minuteDuration - 1, 999999999999999999L);
+            second = new TimeOffset(minuteDuration - 1, 999999999999999999L);
         }
 
     }
@@ -440,12 +438,12 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
         // is the date a calendar date ?
         final Matcher timeMatcher = ISO8601_FORMATS.matcher(string);
         if (timeMatcher.matches()) {
-            final int       hour        = Integer.parseInt(timeMatcher.group(1));
-            final int       minute      = Integer.parseInt(timeMatcher.group(2));
-            final TimeOffset splitSecond = timeMatcher.group(3) == null ?
-                                           TimeOffset.ZERO :
-                                           TimeOffset.parse(timeMatcher.group(3).replace(',', '.'));
-            final String    offset      = timeMatcher.group(4);
+            final int        hour    = Integer.parseInt(timeMatcher.group(1));
+            final int        minute  = Integer.parseInt(timeMatcher.group(2));
+            final TimeOffset second  = timeMatcher.group(3) == null ?
+                                       TimeOffset.ZERO :
+                                       TimeOffset.parse(timeMatcher.group(3).replace(',', '.'));
+            final String     offset  = timeMatcher.group(4);
             final int    minutesFromUTC;
             if (offset == null) {
                 // no offset from UTC is given
@@ -457,9 +455,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                 final int sign          = offset.codePointAt(0) == '-' ? -1 : +1;
                 final int hourOffset    = Integer.parseInt(offset.substring(1, 3));
                 final int minutesOffset = offset.length() <= 3 ? 0 : Integer.parseInt(offset.substring(offset.length() - 2));
-                minutesFromUTC          = sign * (minutesOffset + 60 * hourOffset);
+                minutesFromUTC          = sign * (minutesOffset + MINUTE * hourOffset);
             }
-            return new TimeComponents(hour, minute, splitSecond, minutesFromUTC);
+            return new TimeComponents(hour, minute, second, minutesFromUTC);
         }
 
         throw new OrekitIllegalArgumentException(OrekitMessages.NON_EXISTENT_TIME, string);
@@ -485,7 +483,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * &lt; 61 only occurs during a leap second.
      */
     public double getSecond() {
-        return splitSecond.toDouble();
+        return second.toDouble();
     }
 
     /** Get the seconds number.
@@ -493,7 +491,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * &lt; 61 only occurs during a leap second.
      */
     public TimeOffset getSplitSecond() {
-        return splitSecond;
+        return second;
     }
 
     /** Get the offset between the specified date and UTC.
@@ -524,7 +522,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public TimeOffset getSplitSecondsInLocalDay() {
-        return new TimeOffset(60L * minute + 3600L * hour, 0L).add(splitSecond);
+        return new TimeOffset((long) MINUTE * minute + (long) HOUR * hour, 0L).add(second);
     }
 
     /** Get the second number within the UTC day, applying the {@link #getMinutesFromUTC() offset from UTC}.
@@ -546,7 +544,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public TimeOffset getSplitSecondsInUTCDay() {
-        return new TimeOffset(60L * (minute - minutesFromUTC) + 3600L * hour, 0L).add(splitSecond);
+        return new TimeOffset((long) MINUTE * (minute - minutesFromUTC) + (long) HOUR * hour, 0L).add(second);
     }
 
     /**
@@ -609,24 +607,24 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      */
     String toStringWithoutUtcOffset(final int fractionDigits) {
 
-        if (splitSecond.isFinite()) {
+        if (second.isFinite()) {
             // general case for regular times
             final long      rounding = ROUNDING[FastMath.min(fractionDigits, ROUNDING.length - 1)];
             final TimeComponents rounded  = new TimeComponents(hour, minute,
-                                                               new TimeOffset(splitSecond.getSeconds(),
-                                                                              splitSecond.getAttoSeconds() + rounding));
+                                                               new TimeOffset(second.getSeconds(),
+                                                                              second.getAttoSeconds() + rounding));
             final StringBuilder builder = new StringBuilder();
             builder.append(String.format("%02d:%02d:%02d",
-                                         rounded.hour, rounded.minute, rounded.splitSecond.getSeconds()));
+                                         rounded.hour, rounded.minute, rounded.second.getSeconds()));
             if (fractionDigits > 0) {
                 builder.append('.');
-                builder.append(String.format("%018d", rounded.splitSecond.getAttoSeconds()), 0, fractionDigits);
+                builder.append(String.format("%018d", rounded.second.getAttoSeconds()), 0, fractionDigits);
             }
             return builder.toString();
-        } else if (splitSecond.isNaN()) {
+        } else if (second.isNaN()) {
             // special handling for NaN
             return String.format("%02d:%02d:NaN", hour, minute);
-        } else if (splitSecond.isNegativeInfinity()) {
+        } else if (second.isNegativeInfinity()) {
             // special handling for -∞
             return String.format("%02d:%02d:-∞", hour, minute);
         } else {
@@ -663,8 +661,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @see #toString()
      */
     public String formatUtcOffset() {
-        final int hourOffset = FastMath.abs(minutesFromUTC) / 60;
-        final int minuteOffset = FastMath.abs(minutesFromUTC) % 60;
+        final int hourOffset = FastMath.abs(minutesFromUTC) / MINUTE;
+        final int minuteOffset = FastMath.abs(minutesFromUTC) % MINUTE;
         return (minutesFromUTC < 0 ? '-' : '+') +
                 String.format("%02d:%02d", hourOffset, minuteOffset);
     }
@@ -693,7 +691,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
             return otherTime != null &&
                    hour           == otherTime.hour   &&
                    minute         == otherTime.minute &&
-                   splitSecond.compareTo(otherTime.splitSecond) == 0 &&
+                   second.compareTo(otherTime.second) == 0 &&
                    minutesFromUTC == otherTime.minutesFromUTC;
         } catch (ClassCastException cce) {
             return false;
@@ -702,7 +700,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
 
     /** {@inheritDoc} */
     public int hashCode() {
-        return ((hour << 16) ^ ((minute - minutesFromUTC) << 8)) ^ splitSecond.hashCode();
+        return ((hour << 16) ^ ((minute - minutesFromUTC) << 8)) ^ second.hashCode();
     }
 
 }

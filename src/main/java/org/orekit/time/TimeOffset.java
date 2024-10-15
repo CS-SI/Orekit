@@ -31,6 +31,21 @@ import java.util.concurrent.TimeUnit;
  * dates earlier than the reference date in the first interpretation, and
  * negative durations in the second interpretation.
  * </p>
+ * <p>
+ * The whole number of seconds is stored as signed primitive long, so the range
+ * of dates that can be represented is ±292 billion years. The fractional part
+ * within the second is stored as non-negative primitive long with fixed precision
+ * at a resolution of one attosecond (10⁻¹⁸s). The choice of attoseconds allows
+ * to represent exactly all important offsets (between TT and TAI, or between UTC
+ * and TAI during the linear eras), as well as all times converted from standard
+ * Java Instant, Date or TimeUnit classes. It also allows simple computation as
+ * adding or subtracting a few values in attoseconds that are less than one second
+ * does not overflow (a primitive long could hold any values between ±9.22s in
+ * attoseconds so simple additions and subtractions followed by handling a carry
+ * to bring the value back between 0 and 10¹⁸ is straightforward). There are also
+ * special encodings (internally using negative longs in the fractional part) to
+ * represent {@link #NaN}, {@link #POSITIVE_INFINITY} and {@link #NEGATIVE_INFINITY}.
+ * </p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  * @see FieldAbsoluteDate

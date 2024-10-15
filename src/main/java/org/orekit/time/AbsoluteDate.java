@@ -288,6 +288,7 @@ public class AbsoluteDate
      */
     public AbsoluteDate(final DateComponents date, final TimeComponents time,
                         final TimeScale timeScale) {
+        // epoch is at 12:00 (close to J2000.0, but in TAI scale), hence the subtraction of 720 minutes
         super(new TimeOffset(60L * ((date.getJ2000Day() * 24L + time.getHour()) * 60L +
                               time.getMinute() - time.getMinutesFromUTC() - 720L),
                              0L),
