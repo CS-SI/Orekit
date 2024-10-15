@@ -570,17 +570,17 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
      * @since 13.0
      */
     public TimeComponents wrapIfNeeded(final int minuteDuration, final int fractionDigits) {
-        TimeOffset second = getSplitSecond();
+        TimeOffset wrappedSecond = second;
 
         // adjust limit according to current minute duration
         final TimeOffset limit = WRAPPING[FastMath.min(fractionDigits, WRAPPING.length - 1)].
                                 add(new TimeOffset(minuteDuration - 60, 0L));
 
-        if (second.compareTo(limit) >= 0) {
+        if (wrappedSecond.compareTo(limit) >= 0) {
             // we should wrap around to the next minute
             int wrappedMinute = minute;
             int wrappedHour   = hour;
-            second = TimeOffset.ZERO;
+            wrappedSecond = TimeOffset.ZERO;
             ++wrappedMinute;
             if (wrappedMinute > 59) {
                 wrappedMinute = 0;
@@ -589,7 +589,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
                     wrappedHour = 0;
                 }
             }
-            return new TimeComponents(wrappedHour, wrappedMinute, second);
+            return new TimeComponents(wrappedHour, wrappedMinute, wrappedSecond);
         }
         return this;
     }
