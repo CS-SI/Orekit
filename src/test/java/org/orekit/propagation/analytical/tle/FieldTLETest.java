@@ -210,6 +210,7 @@ public class FieldTLETest {
         Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument().getReal()), 1e-10);
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly().getReal()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion().getReal() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
+        Assertions.assertEquals(7182887.680655473, tle.computeSemiMajorAxis().getReal(), 1e-10);
         Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assertions.assertEquals(tle.getElementNumber(), 2 , 0);
 
