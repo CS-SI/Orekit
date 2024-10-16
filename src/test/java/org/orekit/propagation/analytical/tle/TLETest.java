@@ -74,7 +74,7 @@ public class TLETest {
         Assertions.assertEquals(133.9522, FastMath.toDegrees(tle.getPerigeeArgument()), 1e-10);
         Assertions.assertEquals(226.1918, FastMath.toDegrees(tle.getMeanAnomaly()), 1e-10);
         Assertions.assertEquals(14.26113993, tle.getMeanMotion() * Constants.JULIAN_DAY / (2 * FastMath.PI), 0);
-        Assertions.assertEquals(7182887.680655473, tle.computeSemiMajorAxis(), 1e-10);
+        Assertions.assertEquals(7182888.814633288, tle.computeSemiMajorAxis(), 1e-10);
         Assertions.assertEquals(tle.getRevolutionNumberAtEpoch(), 6, 0);
         Assertions.assertEquals(tle.getElementNumber(), 2 , 0);
 
