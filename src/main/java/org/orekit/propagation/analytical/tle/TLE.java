@@ -701,6 +701,13 @@ public class TLE implements TimeStamped, Serializable, ParameterDriversProvider 
         return bStarParameterDriver.getValue(date);
     }
 
+    /** Compute the semi-major axis from the mean motion of the TLE and the gravitational parameter from TLEConstants.
+     * @return the semi-major axis computed.
+     */
+    public double computeSemiMajorAxis() {
+        return FastMath.cbrt(TLEConstants.MU / (meanMotion * meanMotion));
+    }
+
     /** Get a string representation of this TLE set.
      * <p>The representation is simply the two lines separated by the
      * platform line separator.</p>

@@ -703,6 +703,14 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
         return bStarParameterDriver.getValue(getDate().toAbsoluteDate());
     }
 
+    /**
+     * Compute the semi-major axis from the mean motion of the TLE and the gravitational parameter from TLEConstants.
+     * @return the semi-major axis computed.
+     */
+    public T computeSemiMajorAxis() {
+        return FastMath.cbrt(meanMotion.square().reciprocal().multiply(TLEConstants.MU));
+    }
+
     /** Get a string representation of this TLE set.
      * <p>The representation is simply the two lines separated by the
      * platform line separator.</p>
