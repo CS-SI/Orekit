@@ -327,6 +327,12 @@
     * sampling of zones of interest as grids of points
 	* construction of trajectories using loxodromes (commonly, a rhumb line)
 
+  * Indirect optimal control
+
+    * adjoint equations as defined by Pontryagin's Maximum Principle with Cartesian coordinates for a range of forces (gravitational, inertial) including J2
+    * so-called energy cost functions (proportional to the integral of the control vector's squared norm), with Hamiltonian evaluation
+    * single shooting based on Newton algorithm for the case of fixed time, fixed Cartesian bounds
+
   * Collisions
 
     * loading and writing of CCSDS Conjunction Data Messages (CDM in both KVN and XML formats)

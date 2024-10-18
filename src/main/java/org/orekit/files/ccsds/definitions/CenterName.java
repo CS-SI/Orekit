@@ -88,7 +88,7 @@ public enum CenterName {
     /** Celestial body getter.
      * @return getter for celestial body
      */
-    private final Function<CelestialBodies, CelestialBody> celestialBodyGetter;
+    private final transient Function<CelestialBodies, CelestialBody> celestialBodyGetter;
 
     /** Simple constructor.
      * @param celestialBodyGetter getter for celestial body

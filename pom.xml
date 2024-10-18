@@ -5,7 +5,7 @@
   <groupId>org.orekit</groupId>
   <artifactId>orekit</artifactId>
   <packaging>jar</packaging>
-  <version>12.2-SNAPSHOT</version>
+  <version>12.2</version>
   <name>OREKIT</name>
   <url>https://www.orekit.org/</url>
 
@@ -34,7 +34,7 @@
     <orekit.maven-jar-plugin.version>3.4.1</orekit.maven-jar-plugin.version>
     <orekit.maven-jxr-plugin.version>3.4.0</orekit.maven-jxr-plugin.version>
     <orekit.plantuml-maven-plugin.version>1.2</orekit.plantuml-maven-plugin.version>
-    <orekit.plantuml.version>1.2024.5</orekit.plantuml.version>
+    <orekit.plantuml.version>1.2024.7</orekit.plantuml.version>
     <orekit.maven-resources-plugin.version>3.3.1</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.12.1</orekit.maven-site-plugin.version>
     <orekit.maven-project-info-reports-plugin.version>3.6.0</orekit.maven-project-info-reports-plugin.version>
@@ -55,8 +55,8 @@
     <orekit.mathjax.config>&lt;script type=&quot;text/x-mathjax-config&quot;&gt;MathJax.Hub.Config({ TeX: { extensions: [&quot;autoload.js&quot;]}});&lt;/script&gt;</orekit.mathjax.config>
     <orekit.mathjax.enable>&lt;script type=&quot;text/javascript&quot; src=&quot;https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;</orekit.mathjax.enable>
     <orekit.hipparchus.version>3.1</orekit.hipparchus.version>
-    <orekit.junit.version>5.10.0</orekit.junit.version>
-    <orekit.hamcrest.version>2.2</orekit.hamcrest.version>
+    <orekit.junit.version>5.11.2</orekit.junit.version>
+    <orekit.hamcrest.version>3.0</orekit.hamcrest.version>
     <orekit.compiler.source>1.8</orekit.compiler.source>
     <orekit.compiler.target>1.8</orekit.compiler.target>
     <orekit.implementation.build>${git.revision}; ${maven.build.timestamp}</orekit.implementation.build>
