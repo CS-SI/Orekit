@@ -35,42 +35,42 @@ public class GNSSDateTest {
     @Test
     public void testFromWeekAndSecondsGPS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.GPS, date, time, 1387, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsGalileo() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.GALILEO, date, time, 363, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsQZSS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.QZSS, date, time, 1387, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsBeidou() {
         final DateComponents date = new DateComponents(2010, 2, 26);
-        final TimeComponents time = new TimeComponents(23, 15, 12);
+        final TimeComponents time = new TimeComponents(23, 15, new TimeOffset(12, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.BEIDOU, date, time, 216, 515713.0);
     }
 
     @Test
     public void testFromWeekAndSecondsIRNSS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.IRNSS, date, time, 363, 318677.0);
     }
 
     @Test
     public void testFromWeekAndSecondsSBAS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromWeekAndSeconds(SatelliteSystem.SBAS, date, time, 1387, 318677.0);
     }
 
@@ -88,42 +88,42 @@ public class GNSSDateTest {
     @Test
     public void testFromAbsoluteDateGPS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.GPS, date, time, 1387, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateGalileo() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.GALILEO, date, time, 363, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateQZSS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.QZSS, date, time, 1387, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateBeidou() {
         final DateComponents date = new DateComponents(2010, 2, 26);
-        final TimeComponents time = new TimeComponents(23, 15, 12.0);
+        final TimeComponents time = new TimeComponents(23, 15, new TimeOffset(12, 0));
         doTestFromAbsoluteDate(SatelliteSystem.BEIDOU, date, time, 216, 515713000.0);
     }
 
     @Test
     public void testFromAbsoluteDateIRNSS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.IRNSS, date, time, 363, 318677000.0);
     }
 
     @Test
     public void testFromAbsoluteDateSBAS() {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
         doTestFromAbsoluteDate(SatelliteSystem.SBAS, date, time, 1387, 318677000.0);
     }
 
@@ -255,43 +255,43 @@ public class GNSSDateTest {
     @Test
     public void testSerializationGPS() throws ClassNotFoundException, IOException {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.GPS, date, time, 1387, 318677.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
+        doTestSerialization(SatelliteSystem.GPS, date, time, 1387, new TimeOffset(318677, 0), 251);
     }
 
     @Test
     public void testSerializationGalileo() throws ClassNotFoundException, IOException {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.GALILEO, date, time, 363, 318677.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
+        doTestSerialization(SatelliteSystem.GALILEO, date, time, 363, new TimeOffset(318677, 0), 255);
     }
 
     @Test
     public void testSerializationQZSS() throws ClassNotFoundException, IOException {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.QZSS, date, time, 1387, 318677.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
+        doTestSerialization(SatelliteSystem.QZSS, date, time, 1387, new TimeOffset(318677, 0), 252);
     }
 
     @Test
     public void testSerializationBeidou() throws ClassNotFoundException, IOException {
         final DateComponents date = new DateComponents(2010, 2, 26);
-        final TimeComponents time = new TimeComponents(23, 15, 12.0);
-        doTestSerialization(SatelliteSystem.BEIDOU, date, time, 216, 515713.0);
+        final TimeComponents time = new TimeComponents(23, 15, new TimeOffset(12, 0));
+        doTestSerialization(SatelliteSystem.BEIDOU, date, time, 216, new TimeOffset(515713, 0), 254);
     }
 
     @Test
     public void testSerializationIRNSS() throws ClassNotFoundException, IOException {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.IRNSS, date, time, 363, 318677.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
+        doTestSerialization(SatelliteSystem.IRNSS, date, time, 363, new TimeOffset(318677, 0), 253);
     }
 
     @Test
     public void testSerializationSBAS() throws ClassNotFoundException, IOException {
         final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, 3.0);
-        doTestSerialization(SatelliteSystem.SBAS, date, time, 1387, 318677.0);
+        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
+        doTestSerialization(SatelliteSystem.SBAS, date, time, 1387, new TimeOffset(318677, 0), 252);
     }
 
     @Test
@@ -314,7 +314,8 @@ public class GNSSDateTest {
 
     private void doTestSerialization(final SatelliteSystem system,
                                      final DateComponents date, final TimeComponents time,
-                                     final int refWeek, final double refSeconds)
+                                     final int refWeek, final TimeOffset refSeconds,
+                                     final int size)
         throws IOException, ClassNotFoundException {
         GNSSDate GNSSDate = new GNSSDate(refWeek, refSeconds, system);
 
@@ -322,16 +323,16 @@ public class GNSSDateTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(GNSSDate);
 
-        Assertions.assertTrue(bos.size() > 230);
-        Assertions.assertTrue(bos.size() < 240);
+        Assertions.assertEquals(size, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         GNSSDate deserialized  = (GNSSDate) ois.readObject();
         AbsoluteDate ref  = new AbsoluteDate(date, time, utc);
         Assertions.assertEquals(refWeek, deserialized.getWeekNumber());
-        Assertions.assertEquals(1000 * refSeconds, deserialized.getMilliInWeek(), 1.0e-15);
-        Assertions.assertEquals(refSeconds, deserialized.getSecondsInWeek(), 1.0e-15);
+        Assertions.assertEquals(1000 * refSeconds.toDouble(), deserialized.getMilliInWeek(), 1.0e-15);
+        Assertions.assertEquals(refSeconds.toDouble(), deserialized.getSecondsInWeek(), 1.0e-15);
+        Assertions.assertEquals(refSeconds, deserialized.getSplitSecondsInWeek());
         Assertions.assertEquals(0, deserialized.getDate().durationFrom(ref), 1.0e-15);
 
     }

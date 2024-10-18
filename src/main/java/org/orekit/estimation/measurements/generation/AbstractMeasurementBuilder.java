@@ -19,13 +19,17 @@ package org.orekit.estimation.measurements.generation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-
+import org.orekit.utils.ParameterDriver;
 
 /** Base class for {@link MeasurementBuilder measurements builders}.
  * @param <T> the type of the measurement
@@ -167,6 +171,61 @@ public abstract class AbstractMeasurementBuilder<T extends ObservedMeasurement<T
     @Override
     public ObservableSatellite[] getSatellites() {
         return satellites.clone();
+    }
+
+    /**
+     * Build a dummy observed measurement.
+     *
+     * @param date          measurement date
+     * @param interpolators interpolators relevant for this builder
+     * @return dummy observed measurement
+     * @since 13.0
+     */
+    protected abstract T buildObserved(AbsoluteDate date,
+                                       Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
+
+    /** {@inheritDoc} */
+    @Override
+    public EstimatedMeasurementBase<T> build(final AbsoluteDate date,
+                                             final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+
+        final SpacecraftState[] relevant = new SpacecraftState[satellites.length];
+        for (int i = 0; i < relevant.length; ++i) {
+            relevant[i] = interpolators.get(satellites[i]).getInterpolatedState(date);
+        }
+
+        // create a dummy observed measurement
+        final T observed = buildObserved(date, interpolators);
+        for (final EstimationModifier<T> modifier : getModifiers()) {
+            observed.addModifier(modifier);
+        }
+
+        // set a reference date for parameters missing one
+        for (final ParameterDriver driver : observed.getParametersDrivers()) {
+            if (driver.getReferenceDate() == null) {
+                final AbsoluteDate start = getStart();
+                final AbsoluteDate end   = getEnd();
+                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
+            }
+        }
+
+        // estimate the perfect value of the measurement
+        final EstimatedMeasurementBase<T> estimated = observed.estimateWithoutDerivatives(relevant);
+        final double[] value = estimated.getEstimatedValue();
+
+        // add the noise
+        final double[] noise = getNoise();
+        if (noise != null) {
+            for (int i = 0; i < value.length; ++i) {
+                value[i] += noise[i];
+            }
+        }
+
+        // update the dummy measurement (which is referenced by the estimated measurement)
+        observed.setObservedValue(value);
+
+        return estimated;
+
     }
 
 }

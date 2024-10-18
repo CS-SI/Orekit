@@ -451,6 +451,9 @@ NO_CACHED_ENTRIES = aucune entrée en cache
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = les entrées générées ne sont pas dans l''ordre chronologique : {0} > {1} de {2,number,0.0##############E0} s
 
+# moving transition date from {0} to {1} collides with existing transition at {2}
+TRANSITION_DATES_COLLISION = déplacer la date de transition de {0} à {1} entre en collision avec la transition existante à {2}
+
 # no data generated around date: {0}
 NO_DATA_GENERATED = aucune donnée générée aux alentours de la date : {0}
 
@@ -828,6 +831,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = aucune transformation unscented configurée
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = la valeur {0} n''est pas strictement positive
 
+# value is not positive: {0}
+NOT_POSITIVE = la valeur {0} n''est pas positive
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = la transformation de {0} vers {1} n'est pas implémentée
 
@@ -896,3 +902,6 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = Le constructor de propagateur ne peut pas êt
 
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = le champ « {0} » est trop long, la longueur maximale est de {1} caractères
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}

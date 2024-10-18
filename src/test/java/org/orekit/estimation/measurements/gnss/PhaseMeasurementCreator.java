@@ -27,7 +27,7 @@ import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.RadioWave;
 import org.orekit.gnss.antenna.PhaseCenterVariationFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -48,18 +48,18 @@ public class PhaseMeasurementCreator extends MeasurementCreator {
     private final ObservableSatellite          satellite;
     private final AmbiguityCache               cache;
 
-    public PhaseMeasurementCreator(final Context context, final Frequency frequency,
+    public PhaseMeasurementCreator(final Context context, final RadioWave radioWave,
                                    final int ambiguity, final double satClockOffset) {
-        this(context, frequency, ambiguity, satClockOffset,
+        this(context, radioWave, ambiguity, satClockOffset,
              Vector3D.ZERO, null, Vector3D.ZERO, null);
     }
 
-    public PhaseMeasurementCreator(final Context context, final Frequency frequency,
+    public PhaseMeasurementCreator(final Context context, final RadioWave radioWave,
                                    final int ambiguity, final double satClockOffset,
                                    final Vector3D stationMeanPosition,   final PhaseCenterVariationFunction stationPhaseCenterVariation,
                                    final Vector3D satelliteMeanPosition, final PhaseCenterVariationFunction satellitePhaseCenterVariation) {
         this.context                       = context;
-        this.wavelength                    = frequency.getWavelength();
+        this.wavelength                    = radioWave.getWavelength();
         this.ambiguity                     = ambiguity;
         this.stationMeanPosition           = stationMeanPosition;
         this.stationPhaseCenterVariation   = stationPhaseCenterVariation;

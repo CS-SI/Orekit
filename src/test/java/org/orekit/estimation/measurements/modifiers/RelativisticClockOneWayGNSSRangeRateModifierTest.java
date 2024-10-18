@@ -67,6 +67,9 @@ public class RelativisticClockOneWayGNSSRangeRateModifierTest {
         // Verify
         Assertions.assertEquals(1.63e-3, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-5);
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(1,
+                                estimatedAfter.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("clock relativity")).count());
 
     }
 

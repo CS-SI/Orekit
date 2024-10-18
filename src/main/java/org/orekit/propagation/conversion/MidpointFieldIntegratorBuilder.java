@@ -18,7 +18,6 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
 import org.hipparchus.ode.nonstiff.MidpointFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -61,7 +60,12 @@ public class MidpointFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public MidpointFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
         return new MidpointFieldIntegrator<>(field, getFieldStep(field));
+    }
+
+    @Override
+    public MidpointIntegratorBuilder toODEIntegratorBuilder() {
+        return new MidpointIntegratorBuilder(getStep());
     }
 }

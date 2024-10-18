@@ -326,7 +326,7 @@ public class PositionAngleDetectorTest {
                 withThreshold(1.e-10).
                 withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-10, d.getThreshold(), 1.0e-15);
         Assertions.assertEquals(orbitType, d.getOrbitType());
         Assertions.assertEquals(positionAngleType, d.getPositionAngleType());

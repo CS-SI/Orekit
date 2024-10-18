@@ -29,11 +29,14 @@ import org.orekit.propagation.SpacecraftState;
 @FunctionalInterface
 public interface AdaptableInterval {
 
-    /** Get the current value of maximal time interval between events handler checks.
-     * @param state current state
+    /**
+     * Get the current value of maximal time interval between events handler checks.
+     *
+     * @param state     current state
+     * @param isForward direction of propagation
      * @return current value of maximal time interval between events handler checks
      */
-    double currentInterval(SpacecraftState state);
+    double currentInterval(SpacecraftState state, boolean isForward);
 
     /**
      * Method creating a constant interval provider.
@@ -42,6 +45,6 @@ public interface AdaptableInterval {
      * @since 12.1
      */
     static AdaptableInterval of(final double constantInterval) {
-        return state -> constantInterval;
+        return (state, isForward) -> constantInterval;
     }
 }

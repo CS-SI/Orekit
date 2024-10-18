@@ -28,7 +28,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -63,11 +63,13 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
     public void testRelativisticClockCorrectionDeprecated() {
 
         // Measurement
-        final double wavelength = Frequency.G01.getWavelength();
-        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), 0.0, date,
+        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
+        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), "",
+                                                          new QuadraticClockModel(date, 0.0, 0.0, 0.0), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
-                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0));
+                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0),
+                                                          new AmbiguityCache());
 
         // One-way GNSS phase before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
@@ -82,6 +84,9 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
         //          The computed value is equal to 67.284 ps, therefore lying in the supposed range.
         Assertions.assertEquals(-0.106217, estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0], 1.0e-6);
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(1,
+                                estimatedAfter.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("J₂ clock relativity")).count());
 
     }
 
@@ -89,7 +94,7 @@ public class RelativisticJ2ClockOneWayGNSSPhaseModifierTest {
     public void testRelativisticClockCorrection() {
 
         // Measurement
-        final double wavelength = Frequency.G01.getWavelength();
+        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
         final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), "remote",
                                                           new QuadraticClockModel(date, 0.0, 0.0, 0.0), date,
                                                           Vector3D.distance(states[0].getPosition(),

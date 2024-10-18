@@ -44,7 +44,7 @@ import org.orekit.utils.TrackingCoordinates;
  *  <p>
  *  The Global Mapping Function is based on spherical harmonics up
  *  to degree and order of 9. It was developed to be consistent
- *  with the {@link ViennaOneModel Vienna1} mapping function model.
+ *  with the {@link ViennaOne Vienna1} mapping function model.
  *  </p>
  *
  *  @see "Boehm, J., A.E. Niell, P. Tregoning, H. Schuh (2006),
@@ -58,8 +58,7 @@ import org.orekit.utils.TrackingCoordinates;
  *  @author Bryan Cazabonne
  *
  */
-@SuppressWarnings("deprecation")
-public class GlobalMappingFunctionModel implements MappingFunction, TroposphereMappingFunction {
+public class GlobalMappingFunctionModel implements TroposphereMappingFunction {
 
     /** Multiplication factor for mapping function coefficients. */
     private static final double FACTOR = 1.0e-5;
@@ -84,16 +83,6 @@ public class GlobalMappingFunctionModel implements MappingFunction, TroposphereM
      */
     public GlobalMappingFunctionModel(final TimeScale utc) {
         this.utc = utc;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final AbsoluteDate date) {
-        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0), point,
-                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                              date);
     }
 
     /** {@inheritDoc} */
@@ -191,18 +180,6 @@ public class GlobalMappingFunctionModel implements MappingFunction, TroposphereM
         function[0] = function[0] + correction;
 
         return function;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                                  final FieldAbsoluteDate<T> date) {
-        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                              point,
-                              new FieldPressureTemperatureHumidity<>(date.getField(),
-                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                              date);
     }
 
     /** {@inheritDoc} */

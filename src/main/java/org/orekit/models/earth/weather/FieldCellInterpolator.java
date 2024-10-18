@@ -16,10 +16,12 @@
  */
 package org.orekit.models.earth.weather;
 
-import java.util.function.ToDoubleFunction;
+import java.util.function.Function;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
+import org.hipparchus.Field;
+import org.hipparchus.analysis.interpolation.FieldBilinearInterpolatingFunction;
+import org.hipparchus.util.MathArrays;
 
 /** Interpolator within a grid cell.
  * @param <T> type of the field elements
@@ -35,16 +37,16 @@ public class FieldCellInterpolator<T extends CalculusFieldElement<T>> {
     private final T longitude;
 
     /** South-West grid entry. */
-    private final GridEntry southWest;
+    private final FieldEvaluatedGridEntry<T> southWest;
 
     /** South-East grid entry. */
-    private final GridEntry southEast;
+    private final FieldEvaluatedGridEntry<T> southEast;
 
     /** North-West grid entry. */
-    private final GridEntry northWest;
+    private final FieldEvaluatedGridEntry<T> northWest;
 
     /** North-East grid entry. */
-    private final GridEntry northEast;
+    private final FieldEvaluatedGridEntry<T> northEast;
 
     /** Simple constructor.
      * @param latitude latitude of point of interest
@@ -55,8 +57,8 @@ public class FieldCellInterpolator<T extends CalculusFieldElement<T>> {
      * @param northEast North-East grid entry
      */
     FieldCellInterpolator(final T latitude, final T longitude,
-                          final GridEntry southWest, final GridEntry southEast,
-                          final GridEntry northWest, final GridEntry northEast) {
+                          final FieldEvaluatedGridEntry<T> southWest, final FieldEvaluatedGridEntry<T> southEast,
+                          final FieldEvaluatedGridEntry<T> northWest, final FieldEvaluatedGridEntry<T> northEast) {
         this.latitude  = latitude;
         this.longitude = longitude;
         this.southWest = southWest;
@@ -67,31 +69,31 @@ public class FieldCellInterpolator<T extends CalculusFieldElement<T>> {
 
     /** Interpolate a grid function.
      * @param gridGetter getter for the grid function
-     * @return interpolated function"
+     * @return interpolated function
+     * @since 13.0
      */
-    T interpolate(final ToDoubleFunction<GridEntry> gridGetter) {
+    T fieldInterpolate(final Function<FieldEvaluatedGridEntry<T>, T> gridGetter) {
+
+        final Field<T> field = latitude.getField();
+        final T        zero  = field.getZero();
 
         // cell surrounding the point
-        final double[] xVal = new double[] {
-            southWest.getLongitude(), southEast.getLongitude()
-        };
-        final double[] yVal = new double[] {
-            southWest.getLatitude(), northWest.getLatitude()
-        };
+        final T[] xVal = MathArrays.buildArray(field, 2);
+        xVal[0] = zero.newInstance(southWest.getEntry().getLongitude());
+        xVal[1] = zero.newInstance(northEast.getEntry().getLongitude());
+        final T[] yVal = MathArrays.buildArray(field, 2);
+        yVal[0] = zero.newInstance(southWest.getEntry().getLatitude());
+        yVal[1] = zero.newInstance(northEast.getEntry().getLatitude());
 
         // evaluate grid points at specified day
-        final double[][] fval = new double[][] {
-            {
-                gridGetter.applyAsDouble(southWest),
-                gridGetter.applyAsDouble(northWest)
-            }, {
-                gridGetter.applyAsDouble(southEast),
-                gridGetter.applyAsDouble(northEast)
-            }
-        };
+        final T[][] fval = MathArrays.buildArray(field, 2, 2);
+        fval[0][0] = gridGetter.apply(southWest);
+        fval[0][1] = gridGetter.apply(northWest);
+        fval[1][0] = gridGetter.apply(southEast);
+        fval[1][1] = gridGetter.apply(northEast);
 
         // perform interpolation in the grid
-        return new BilinearInterpolatingFunction(xVal, yVal, fval).value(longitude, latitude);
+        return new FieldBilinearInterpolatingFunction<>(xVal, yVal, fval).value(longitude, latitude);
 
     }
 

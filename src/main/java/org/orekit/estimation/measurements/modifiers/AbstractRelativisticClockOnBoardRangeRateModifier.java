@@ -51,6 +51,12 @@ public abstract class AbstractRelativisticClockOnBoardRangeRateModifier<T extend
         this.gm = gm;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "clock relativity";
+    }
+
     /** Get gravitational constant for main body in signal path vicinity.
      * @return gravitational constant for main body in signal path vicinity
      */

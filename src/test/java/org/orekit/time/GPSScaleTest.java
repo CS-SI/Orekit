@@ -46,10 +46,10 @@ public class GPSScaleTest {
     @Test
     public void testConstant() {
         TimeScale scale = TimeScalesFactory.getGPS();
-        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH);
+        double reference = scale.offsetFromTAI(AbsoluteDate.J2000_EPOCH).toDouble();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            Assertions.assertEquals(reference, scale.offsetFromTAI(date), 1.0e-15);
+            Assertions.assertEquals(reference, scale.offsetFromTAI(date).toDouble(), 1.0e-15);
         }
     }
 
@@ -58,9 +58,9 @@ public class GPSScaleTest {
         TimeScale scale = TimeScalesFactory.getGPS();
         for (double dt = -10000; dt < 10000; dt += 123.456789) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt * Constants.JULIAN_DAY);
-            double dt1 = scale.offsetFromTAI(date);
+            double dt1 = scale.offsetFromTAI(date).toDouble();
             DateTimeComponents components = date.getComponents(scale);
-            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime());
+            double dt2 = scale.offsetToTAI(components.getDate(), components.getTime()).toDouble();
             Assertions.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
         }
     }
@@ -69,14 +69,14 @@ public class GPSScaleTest {
     public void testDuringLeap() {
         final TimeScale utc   = TimeScalesFactory.getUTC();
         final TimeScale scale = TimeScalesFactory.getGPS();
-        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 06, 30),
+        final AbsoluteDate before = new AbsoluteDate(new DateComponents(1983, 6, 30),
                                                      new TimeComponents(23, 59, 59),
                                                      utc);
         final AbsoluteDate during = before.shiftedBy(1.25);
         Assertions.assertEquals(61, utc.minuteDuration(during));
-        Assertions.assertEquals(1.0, utc.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(1.0, utc.getLeap(during).toDouble(), 1.0e-10);
         Assertions.assertEquals(60, scale.minuteDuration(during));
-        Assertions.assertEquals(0.0, scale.getLeap(during), 1.0e-10);
+        Assertions.assertEquals(0.0, scale.getLeap(during).toDouble(), 1.0e-10);
     }
 
     @BeforeEach

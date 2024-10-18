@@ -256,7 +256,7 @@ public class NadirPointing extends GroundPointing {
         final FieldPVCoordinates<T> pVWithoutDerivatives = new FieldPVCoordinates<>(position, FieldVector3D.getZero(date.getField()));
         final FieldStaticTransform<T> refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), date);
 
-        return nadirRef(new TimeStampedFieldPVCoordinates<T>(date, pVWithoutDerivatives), refToBody).getPosition();
+        return nadirRef(new TimeStampedFieldPVCoordinates<>(date, pVWithoutDerivatives), refToBody).getPosition();
 
     }
 

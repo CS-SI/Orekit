@@ -727,13 +727,13 @@ public class FieldNumericalPropagatorTest {
         CheckingHandler<T> checking = new CheckingHandler<>(Action.STOP);
         FieldDateDetector<T> detector = new FieldDateDetector<>(field, stopDate).withHandler(checking);
         propagator.addEventDetector(detector);
-        Assertions.assertEquals(1, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(1, propagator.getEventDetectors().size());
         checking.assertEvent(false);
         final FieldSpacecraftState<T> finalState = propagator.propagate(initDate.shiftedBy(3200));
         checking.assertEvent(true);
         Assertions.assertEquals(0, finalState.getDate().durationFrom(stopDate).getReal(), 1.0e-10);
         propagator.clearEventsDetectors();
-        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventDetectors().size());
         Assertions.assertTrue(checking.isFinished);
     }
 

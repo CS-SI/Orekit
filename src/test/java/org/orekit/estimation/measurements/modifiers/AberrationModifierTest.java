@@ -304,6 +304,11 @@ public class AberrationModifierTest {
         // Apply aberration to result should get us back to unmodified values
         double[] unmodRaDec = AberrationModifier.naturalToProper(estModRaDec, groundStation, epoch, FramesFactory.getGCRF());
         Assertions.assertArrayEquals(estimatedRaDec, unmodRaDec, 1e-12);
+
+        Assertions.assertEquals(1,
+                                modEstimated.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("aberration")).count());
+
     }
 
     @Test

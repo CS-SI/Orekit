@@ -57,28 +57,6 @@ public class SingleParameterFitter implements Serializable {
     private final double[] pulsations;
 
     /** Simple constructor.
-     * @param fittingDuration ignored parameter since 12.0
-     * @param timeConstant time constant \(\tau\) of the exponential decay weight, point weight is \(e^{\frac{t-t_0}{\tau}}\),
-     * i.e. points far in the past before \(t_0\) have smaller weights
-     * @param convergence convergence on fitted parameter
-     * @param degree degree of the polynomial model
-     * @param pulsations pulsations of harmonic part (rad/s)
-     * @see #createDefaultDut1FitterShortTermPrediction()
-     * @see #createDefaultDut1FitterLongTermPrediction()
-     * @see #createDefaultPoleFitterShortTermPrediction()
-     * @see #createDefaultPoleFitterLongTermPrediction()
-     * @see #createDefaultNutationFitterShortTermPrediction()
-     * @see #createDefaultNutationFitterLongTermPrediction()
-     * @see SecularAndHarmonic
-     * @deprecated replaced by {@link #SingleParameterFitter(double, double, int, double...)}
-     */
-    @Deprecated
-    public SingleParameterFitter(final double fittingDuration, final double timeConstant, final double convergence,
-                                 final int degree, final double... pulsations) {
-        this(timeConstant, convergence, degree, pulsations);
-    }
-
-    /** Simple constructor.
      * @param timeConstant time constant \(\tau\) of the exponential decay weight, point weight is \(e^{\frac{t-t_0}{\tau}}\),
      * i.e. points far in the past before \(t_0\) have smaller weights
      * @param convergence convergence on fitted parameter

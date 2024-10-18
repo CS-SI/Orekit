@@ -49,20 +49,18 @@ public abstract class BaseRangeRateTroposphericDelayModifier {
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
-     * @deprecated as of 12.1, replaced by {@link #BaseRangeRateTroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    protected BaseRangeRateTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
-
-    /** Constructor.
-     *
-     * @param model  Tropospheric delay model appropriate for the current range-rate measurement method.
      * @since 12.1
      */
     protected BaseRangeRateTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
+    }
+
+    /** Get the name of the effect modifying the measurement.
+     * @return name of the effect modifying the measurement
+     * @since 13.0
+     */
+    public String getEffectName() {
+        return "troposphere";
     }
 
     /** Get the tropospheric delay model.

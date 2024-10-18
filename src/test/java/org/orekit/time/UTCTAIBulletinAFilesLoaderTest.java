@@ -161,7 +161,7 @@ public class UTCTAIBulletinAFilesLoaderTest {
 
     private void checkOffset(final String s, final double expected) {
         final AbsoluteDate date = new AbsoluteDate(s, TimeScalesFactory.getTAI());
-        Assertions.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date), 10e-8);
+        Assertions.assertEquals(expected, TimeScalesFactory.getUTC().offsetFromTAI(date).toDouble(), 10e-8);
     }
 
     private void checkException(String name, OrekitMessages message) {

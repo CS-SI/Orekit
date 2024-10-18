@@ -201,13 +201,4 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagat
         return propagator;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public EcksteinHechlerPropagatorBuilder copy() {
-        final EcksteinHechlerPropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
-                                                    getPositionScale(), getAttitudeProvider());
-        builder.setMass(getMass());
-        return builder;
-    }
 }

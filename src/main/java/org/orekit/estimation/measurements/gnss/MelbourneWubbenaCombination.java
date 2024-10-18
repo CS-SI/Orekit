@@ -144,8 +144,8 @@ public class MelbourneWubbenaCombination implements MeasurementCombination {
         final double[] frequency = new double[4];
         int j = 0;
         for (int i = 0; i < odWL.getUsedObservationData().size(); i++) {
-            frequency[j++] = odWL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getFrequency();
-            frequency[j++] = odNL.getUsedObservationData().get(i).getObservationType().getFrequency(system).getFrequency();
+            frequency[j++] = odWL.getUsedObservationData().get(i).getObservationType().getSignal(system).getFrequency();
+            frequency[j++] = odNL.getUsedObservationData().get(i).getObservationType().getSignal(system).getFrequency();
         }
         // Verify if used frequencies are the same.
         // Possible numerical error is taken into account by using a threshold of acceptance

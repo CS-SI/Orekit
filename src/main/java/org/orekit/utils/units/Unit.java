@@ -48,6 +48,11 @@ public class Unit implements Serializable {
     /** Dimensionless unit. */
     public static final Unit ONE = new Unit("1", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
 
+    /** Cycle unit.
+     * @since 13.0
+     */
+    public static final Unit CYCLE = new Unit("cyc", 1.0, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
+
     /** Percentage unit. */
     public static final Unit PERCENT = new Unit("%", 1.0e-2, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO, Fraction.ZERO);
 

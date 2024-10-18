@@ -18,46 +18,52 @@ package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
 
-/** Base class for time scales with constant offset with respecto to TAI.
+/** Base class for time scales with constant offset with respect to to TAI.
  * @author Luc Maisonobe
  * @since 12.1
  */
 public class ConstantOffsetTimeScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Name of the time scale. */
     private final String name;
 
     /** Offset from TAI. */
-    private final double offset;
+    private final TimeOffset offset;
+
+    /** Negated offset from TAI.
+     * @since 13.0
+     */
+    private final TimeOffset negatedOffset;
 
     /** Simple constructor.
      * @param name name of the time scale
      * @param offset offset from TAI
      */
-    protected ConstantOffsetTimeScale(final String name, final double offset) {
-        this.name   = name;
-        this.offset = offset;
+    public ConstantOffsetTimeScale(final String name, final TimeOffset offset) {
+        this.name          = name;
+        this.offset        = offset;
+        this.negatedOffset = offset.negate();
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
         return offset;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.getField().getZero().newInstance(offset);
+        return date.getField().getZero().newInstance(offset.toDouble());
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        return -offset;
+    public TimeOffset offsetToTAI(final DateComponents date, final TimeComponents time) {
+        return negatedOffset;
     }
 
     /** {@inheritDoc} */

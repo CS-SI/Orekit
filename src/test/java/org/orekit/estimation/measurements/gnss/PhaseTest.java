@@ -41,7 +41,7 @@ import org.orekit.estimation.measurements.modifiers.PhaseIonosphericDelayModifie
 import org.orekit.estimation.measurements.modifiers.PhaseTroposphericDelayModifier;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.models.earth.ionosphere.IonosphericModel;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
 import org.orekit.models.earth.troposphere.EstimatedModel;
@@ -168,7 +168,7 @@ public class PhaseTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.E01,
+                                                                                           PredefinedGnssSignal.E01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
@@ -204,7 +204,7 @@ public class PhaseTest {
                     final TimeStampedPVCoordinates[] participants = estimated.getParticipants();
                     Assertions.assertEquals(2, participants.length);
                     final double dt = participants[1].getDate().durationFrom(participants[0].getDate());
-                    Assertions.assertEquals(Frequency.E01.getFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
+                    Assertions.assertEquals(PredefinedGnssSignal.E01.getFrequency() * (dt + groundClockOffset - satClockOffset) + ambiguity,
                                         estimated.getEstimatedValue()[0],
                                         1.0e-7);
 
@@ -299,7 +299,7 @@ public class PhaseTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.E01,
+                                                                                           PredefinedGnssSignal.E01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
@@ -442,7 +442,7 @@ public class PhaseTest {
         final int    ambiguity         = 1234;
         final double satClockOffset    = 345.0e-6;
         final PhaseMeasurementCreator creator = new PhaseMeasurementCreator(context,
-                                                                            Frequency.E01,
+                                                                            PredefinedGnssSignal.E01,
                                                                             ambiguity,
                                                                             satClockOffset);
         creator.getSatellite().getClockOffsetDriver().setSelected(true);
@@ -601,7 +601,7 @@ public class PhaseTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.E01,
+                                                                                           PredefinedGnssSignal.E01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
@@ -766,7 +766,7 @@ public class PhaseTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new PhaseMeasurementCreator(context,
-                                                                                           Frequency.E01,
+                                                                                           PredefinedGnssSignal.E01,
                                                                                            ambiguity,
                                                                                            satClockOffset),
                                                                1.0, 3.0, 300.0);
@@ -778,7 +778,7 @@ public class PhaseTest {
 
         final IonosphericModel model = new KlobucharIonoModel(new double[]{.3820e-07, .1490e-07, -.1790e-06, 0},
                                                               new double[]{.1430e+06, 0, -.3280e+06, .1130e+06});
-        final double frequency = Frequency.G01.getFrequency();
+        final double frequency = PredefinedGnssSignal.G01.getFrequency();
         final PhaseIonosphericDelayModifier modifier = new PhaseIonosphericDelayModifier(model, frequency);
 
         // Use a lambda function to implement "handleStep" function
@@ -914,7 +914,9 @@ public class PhaseTest {
         final GroundStation station = new GroundStation(topo, TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER);
 
         // Create a phase measurement
-        final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060, Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
+        final Phase phase = new Phase(station, AbsoluteDate.J2000_EPOCH, 119866527.060,
+                                      PredefinedGnssSignal.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0),
+                                      new AmbiguityCache());
 
         // First check
         Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);

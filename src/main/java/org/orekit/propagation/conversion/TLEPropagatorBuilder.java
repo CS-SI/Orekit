@@ -130,15 +130,6 @@ public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
         this.generationAlgorithm = generationAlgorithm;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public TLEPropagatorBuilder copy() {
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(templateTLE, getPositionAngleType(), getPositionScale(),
-                                        dataContext, generationAlgorithm, getAttitudeProvider());
-        builder.setMass(getMass());
-        return builder;
-    }
 
     /** {@inheritDoc} */
     @Override

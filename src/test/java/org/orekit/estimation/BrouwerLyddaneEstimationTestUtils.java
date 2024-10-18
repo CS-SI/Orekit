@@ -28,7 +28,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.data.DataContext;
 import org.orekit.estimation.leastsquares.BatchLSEstimator;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
-import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.MeasurementCreator;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.sequential.KalmanEstimator;
@@ -105,7 +104,7 @@ public class BrouwerLyddaneEstimationTestUtils {
         // Turn-around range stations
         // Map entry = primary station
         // Map value = secondary station associated
-        context.TARstations = new HashMap<GroundStation, GroundStation>();
+        context.TARstations = new HashMap<>();
 
         context.TARstations.put(context.createStation(-53.05388,  -75.01551, 1750.0, "Isla Desolación"),
                                 context.createStation(-54.815833,  -68.317778, 6.0, "Ushuaïa"));

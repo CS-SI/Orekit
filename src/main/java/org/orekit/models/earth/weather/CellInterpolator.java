@@ -33,16 +33,16 @@ public class CellInterpolator {
     private final double longitude;
 
     /** South-West grid entry. */
-    private final GridEntry southWest;
+    private final EvaluatedGridEntry southWest;
 
     /** South-East grid entry. */
-    private final GridEntry southEast;
+    private final EvaluatedGridEntry southEast;
 
     /** North-West grid entry. */
-    private final GridEntry northWest;
+    private final EvaluatedGridEntry northWest;
 
     /** North-East grid entry. */
-    private final GridEntry northEast;
+    private final EvaluatedGridEntry northEast;
 
     /** Simple constructor.
      * @param latitude latitude of point of interest
@@ -53,8 +53,8 @@ public class CellInterpolator {
      * @param northEast North-East grid entry
      */
     CellInterpolator(final double latitude, final double longitude,
-                     final GridEntry southWest, final GridEntry southEast,
-                     final GridEntry northWest, final GridEntry northEast) {
+                     final EvaluatedGridEntry southWest, final EvaluatedGridEntry southEast,
+                     final EvaluatedGridEntry northWest, final EvaluatedGridEntry northEast) {
         this.latitude  = latitude;
         this.longitude = longitude;
         this.southWest = southWest;
@@ -65,16 +65,16 @@ public class CellInterpolator {
 
     /** Interpolate a grid function.
      * @param gridGetter getter for the grid function
-     * @return interpolated function"
+     * @return interpolated function
      */
-    double interpolate(final ToDoubleFunction<GridEntry> gridGetter) {
+    double interpolate(final ToDoubleFunction<EvaluatedGridEntry> gridGetter) {
 
         // cell surrounding the point
         final double[] xVal = new double[] {
-            southWest.getLongitude(), southEast.getLongitude()
+            southWest.getEntry().getLongitude(), southEast.getEntry().getLongitude()
         };
         final double[] yVal = new double[] {
-            southWest.getLatitude(), northWest.getLatitude()
+            southWest.getEntry().getLatitude(), northWest.getEntry().getLatitude()
         };
 
         // evaluate grid points at specified day

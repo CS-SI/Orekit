@@ -108,7 +108,7 @@ public class NodeDetectorTest {
                 new KeplerianOrbit(a, e1, i, pa, raan, m, PositionAngleType.MEAN, frame, date, mu);
         EventDetector detector1 = new NodeDetector(orbit1, orbit1.getFrame());
         double t1 = orbit1.getKeplerianPeriod();
-        Assertions.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval().currentInterval(null), t1 / 10000);
+        Assertions.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval().currentInterval(null, true), t1 / 10000);
 
         // nearly circular, inclined orbit
         final KeplerianOrbit orbit2 =
@@ -116,7 +116,7 @@ public class NodeDetectorTest {
         EventDetector detector2 = new NodeDetector(orbit2, orbit2.getFrame());
         double t2 = orbit2.getKeplerianPeriod();
         Assertions.assertEquals(t1, t2, t1 / 10000);
-        Assertions.assertEquals(t2 / 3, detector2.getMaxCheckInterval().currentInterval(null), t2 / 10000);
+        Assertions.assertEquals(t2 / 3, detector2.getMaxCheckInterval().currentInterval(null, true), t2 / 10000);
 
     }
 
@@ -124,11 +124,11 @@ public class NodeDetectorTest {
     public void testIssue728() {
 
         NodeDetector detector1 = new NodeDetector(FramesFactory.getEME2000());
-        Assertions.assertEquals(1800.0, detector1.getMaxCheckInterval().currentInterval(null), 1.0e-3);
+        Assertions.assertEquals(1800.0, detector1.getMaxCheckInterval().currentInterval(null, true), 1.0e-3);
         Assertions.assertEquals(1.0e-3, detector1.getThreshold(), 1.0e-12);
 
         NodeDetector detector2 = detector1.withMaxCheck(3000.0).withThreshold(1.0e-6);
-        Assertions.assertEquals(3000.0, detector2.getMaxCheckInterval().currentInterval(null), 1.0e-3);
+        Assertions.assertEquals(3000.0, detector2.getMaxCheckInterval().currentInterval(null, true), 1.0e-3);
         Assertions.assertEquals(1.0e-6, detector2.getThreshold(), 1.0e-12);
 
     }

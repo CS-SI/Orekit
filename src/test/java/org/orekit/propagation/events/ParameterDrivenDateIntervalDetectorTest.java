@@ -50,7 +50,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("no-shift_START", detector.getStartDriver().getName());
@@ -77,7 +77,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("small-shift_START", detector.getStartDriver().getName());
@@ -109,7 +109,7 @@ public class ParameterDrivenDateIntervalDetectorTest {
                                                        withThreshold(1.0e-12).
                                                        withHandler(new ContinueOnEvent());
 
-        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(10.0, detector.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-12, detector.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, detector.getMaxIterationCount());
         Assertions.assertEquals("large-shift_START", detector.getStartDriver().getName());

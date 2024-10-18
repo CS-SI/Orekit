@@ -779,7 +779,7 @@ public class EquinoctialOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertEquals(bos.size(), 458);
+        Assertions.assertEquals(482, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -819,7 +819,7 @@ public class EquinoctialOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertEquals(bos.size(), 506);
+        Assertions.assertEquals(530, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -853,34 +853,34 @@ public class EquinoctialOrbitTest {
         final double mu   = Constants.EIGEN5C_EARTH_MU;
         final EquinoctialOrbit orbit = new EquinoctialOrbit(pv, frame, mu);
 
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getA()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getA),
                             orbit.getADot(),
                             4.3e-8);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getEquinoctialEx),
                             orbit.getEquinoctialExDot(),
                             2.1e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getEquinoctialEy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getEquinoctialEy),
                             orbit.getEquinoctialEyDot(),
                             5.3e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHx()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getHx),
                             orbit.getHxDot(),
                             4.4e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getHy()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getHy),
                             orbit.getHyDot(),
                             1.5e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLv()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getLv),
                             orbit.getLvDot(),
                             1.2e-15);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getLE),
                             orbit.getLEDot(),
                             7.7e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getLM()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getLM),
                             orbit.getLMDot(),
                             8.8e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getE()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getE),
                             orbit.getEDot(),
                             6.9e-16);
-        Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getI()),
+        Assertions.assertEquals(differentiate(pv, frame, mu, EquinoctialOrbit::getI),
                             orbit.getIDot(),
                             3.5e-15);
         Assertions.assertEquals(differentiate(pv, frame, mu, shifted -> shifted.getL(PositionAngleType.TRUE)),
@@ -1116,30 +1116,6 @@ public class EquinoctialOrbitTest {
         Assertions.assertEquals(0.0, normalized2.getHyDot()            - withDerivatives.getHyDot(),            1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getLvDot()            - withDerivatives.getLvDot(),            1.0e-10);
 
-    }
-
-    @Test
-    @Deprecated
-    void positionAngleNonRegressionOnDeprecated() {
-        // Can be removed when deprecated routines are removed in next major release (13.0)
-        // GIVEN
-        final double ex = 0.2;
-        final double ey = 0.3;
-        final double originalPositionAngle = 1.;
-        // WHEN
-        final double actualEccentricToMean = EquinoctialOrbit.eccentricToMean(originalPositionAngle, ex, ey);
-        final double actualEccentricToTrue = EquinoctialOrbit.eccentricToTrue(originalPositionAngle, ex, ey);
-        final double actualMeanToEccentric = EquinoctialOrbit.meanToEccentric(originalPositionAngle, ex, ey);
-        final double actualTrueToEccentric = EquinoctialOrbit.trueToEccentric(originalPositionAngle, ex, ey);
-        // THEN
-        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, originalPositionAngle),
-                actualEccentricToMean);
-        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, originalPositionAngle),
-                actualEccentricToTrue);
-        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, originalPositionAngle),
-                actualMeanToEccentric);
-        Assertions.assertEquals(EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, originalPositionAngle),
-                actualTrueToEccentric);
     }
 
     @Test

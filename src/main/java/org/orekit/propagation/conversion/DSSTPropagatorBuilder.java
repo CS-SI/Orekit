@@ -132,25 +132,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
         return stateType;
     }
 
-    /** Create a copy of a DSSTPropagatorBuilder object.
-     * @return Copied version of the DSSTPropagatorBuilder
-     */
-    @Deprecated
-    public DSSTPropagatorBuilder copy() {
-        final DSSTPropagatorBuilder copyBuilder =
-                        new DSSTPropagatorBuilder(createInitialOrbit(),
-                                                  builder,
-                                                  getPositionScale(),
-                                                  propagationType,
-                                                  stateType,
-                                                  getAttitudeProvider());
-        copyBuilder.setMass(getMass());
-        for (DSSTForceModel model : forceModels) {
-            copyBuilder.addForceModel(model);
-        }
-        return copyBuilder;
-    }
-
     /** Get the integrator builder.
      * @return the integrator builder
      */

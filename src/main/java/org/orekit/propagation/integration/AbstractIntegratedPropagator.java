@@ -329,7 +329,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public Collection<EventDetector> getEventsDetectors() {
+    public Collection<EventDetector> getEventDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 
@@ -440,7 +440,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             final SpacecraftState finalState = integrateDynamics(tEnd, false);
 
             // Finalize event detectors
-            getEventsDetectors().forEach(detector -> detector.finish(finalState));
+            getEventDetectors().forEach(detector -> detector.finish(finalState));
 
             return finalState;
         }
@@ -955,7 +955,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         @Override
         public AdaptableInterval getMaxCheckInterval() {
-            return s -> detector.getMaxCheckInterval().currentInterval(convert(s));
+            return (state, isForward) -> detector.getMaxCheckInterval().currentInterval(convert(state), isForward);
         }
 
         /** {@inheritDoc} */

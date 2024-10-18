@@ -639,13 +639,13 @@ class NumericalPropagatorTest {
         final AbsoluteDate stopDate = initDate.shiftedBy(1000);
         CheckingHandler checking = new CheckingHandler(Action.STOP);
         propagator.addEventDetector(new DateDetector(stopDate).withHandler(checking));
-        Assertions.assertEquals(1, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(1, propagator.getEventDetectors().size());
         checking.assertEvent(false);
         final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(3200));
         checking.assertEvent(true);
         Assertions.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
         propagator.clearEventsDetectors();
-        Assertions.assertEquals(0, propagator.getEventsDetectors().size());
+        Assertions.assertEquals(0, propagator.getEventDetectors().size());
         Assertions.assertTrue(checking.isFinished);
     }
 

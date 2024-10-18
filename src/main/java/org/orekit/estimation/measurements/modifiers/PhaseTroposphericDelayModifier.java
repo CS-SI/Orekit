@@ -54,20 +54,16 @@ public class PhaseTroposphericDelayModifier implements EstimationModifier<Phase>
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current range measurement method.
-     * @deprecated as of 12.1, replaced by {@link #PhaseTroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    public PhaseTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
-
-    /** Constructor.
-     *
-     * @param model  Tropospheric delay model appropriate for the current range measurement method.
      * @since 12.1
      */
     public PhaseTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
+    }
+
+/** {@inheritDoc} */
+    @Override
+        public String getEffectName() {
+        return "troposphere";
     }
 
     /** Compute the measurement error due to Troposphere.

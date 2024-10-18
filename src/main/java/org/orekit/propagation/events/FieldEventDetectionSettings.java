@@ -80,7 +80,7 @@ public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
      * @param eventDetectionSettings non-Field detection settings
      */
     public FieldEventDetectionSettings(final Field<T> field, final EventDetectionSettings eventDetectionSettings) {
-        this(state -> eventDetectionSettings.getMaxCheckInterval().currentInterval(state.toSpacecraftState()),
+        this((state, isForward) -> eventDetectionSettings.getMaxCheckInterval().currentInterval(state.toSpacecraftState(), isForward),
             field.getZero().newInstance(eventDetectionSettings.getThreshold()), eventDetectionSettings.getMaxIterationCount());
     }
 
@@ -113,7 +113,7 @@ public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
      * @return event detection settings
      */
     public EventDetectionSettings toEventDetectionSettings() {
-        return new EventDetectionSettings(state -> getMaxCheckInterval().currentInterval(new FieldSpacecraftState<>(getThreshold().getField(), state)),
+        return new EventDetectionSettings((state, isForward) -> getMaxCheckInterval().currentInterval(new FieldSpacecraftState<>(getThreshold().getField(), state), isForward),
                 getThreshold().getReal(), getMaxIterationCount());
     }
 }

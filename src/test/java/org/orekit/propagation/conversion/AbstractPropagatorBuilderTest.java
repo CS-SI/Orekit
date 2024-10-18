@@ -52,12 +52,6 @@ public class AbstractPropagatorBuilderTest {
         final AbstractPropagatorBuilder propagatorBuilder = new AbstractPropagatorBuilder(initialOrbit, PositionAngleType.TRUE, 10., true) {
 
             @Override
-            @Deprecated
-            public PropagatorBuilder copy() {
-                return null;
-            }
-
-            @Override
             public Propagator buildPropagator(double[] normalizedParameters) {
                 // Dummy function "buildPropagator", copied from KeplerianPropagatorBuilder
                 setParameters(normalizedParameters);

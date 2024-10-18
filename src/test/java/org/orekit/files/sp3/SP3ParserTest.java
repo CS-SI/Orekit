@@ -285,14 +285,6 @@ public class SP3ParserTest {
         Assertions.assertEquals(0.00000029942, coord.getClockCorrection(), 1.0e-15);
     }
 
-    @Deprecated
-    @Test
-    public void testDeprecated() {
-        for (String name : Arrays.asList("IGS14", "ITR20", "SLR08", "UNDEF", "WGS84")) {
-            Assertions.assertSame(SP3Parser.guessFrame(name), IGSUtils.guessFrame(name));
-        }
-    }
-
     @Test
     public void testParseSP3d2() {
         // simple test for version sp3-c, contains p/v entries and correlations

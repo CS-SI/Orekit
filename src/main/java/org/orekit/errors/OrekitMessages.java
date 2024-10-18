@@ -16,12 +16,9 @@
  */
 package org.orekit.errors;
 
-import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
-
 import org.hipparchus.exception.Localizable;
-import org.hipparchus.exception.UTF8Control;
+
+import java.util.Locale;
 
 /**
  * Enumeration for localized messages formats.
@@ -527,6 +524,9 @@ public enum OrekitMessages implements Localizable {
     /** NON_CHRONOLOGICALLY_SORTED_ENTRIES. */
     NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s"),
 
+    /** TRANSITION_DATES_COLLISION. */
+    TRANSITION_DATES_COLLISION("moving transition date from {0} to {1} collides with existing transition at {2}"),
+
     /** NO_DATA_GENERATED. */
     NO_DATA_GENERATED("no data generated around date: {0}"),
 
@@ -866,6 +866,9 @@ public enum OrekitMessages implements Localizable {
     /** NOT_STRICTLY_POSITIVE. */
     NOT_STRICTLY_POSITIVE("value is not strictly positive: {0}"),
 
+    /** NOT_POSITIVE. */
+    NOT_POSITIVE("value is not positive: {0}"),
+
     /** UNSUPPORTED_TRANSFORM. */
     UNSUPPORTED_TRANSFORM("transform from {0} to {1} is not implemented"),
 
@@ -936,7 +939,10 @@ public enum OrekitMessages implements Localizable {
     FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters"),
 
     /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
-    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned");
+    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned"),
+
+    /** CANNOT_PARSE_DATA. */
+    CANNOT_PARSE_DATA("cannot parse data {0}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
@@ -960,23 +966,7 @@ public enum OrekitMessages implements Localizable {
 
     /** {@inheritDoc} */
     public String getLocalizedString(final Locale locale) {
-        try {
-            final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale, new UTF8Control());
-            if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
-                final String translated = bundle.getString(name());
-                if (!(translated.isEmpty() || translated.toLowerCase().contains("missing translation"))) {
-                    // the value of the resource is the translated format
-                    return translated;
-                }
-            }
-
-        } catch (MissingResourceException mre) {
-            // do nothing here
-        }
-
-        // either the locale is not supported or the resource is not translated or
-        // it is unknown: don't translate and fall back to using the source format
-        return sourceFormat;
-
+        return getLocalizedString(RESOURCE_BASE_NAME, name(), locale);
     }
+
 }

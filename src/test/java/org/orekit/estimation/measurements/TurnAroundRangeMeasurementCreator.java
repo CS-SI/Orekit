@@ -182,7 +182,7 @@ public class TurnAroundRangeMeasurementCreator extends MeasurementCreator {
                     // Primary station uplink delay - from primary station to P1
                     // Here the state date is known. Thus we can use the function "signalTimeOfFlight"
                     // of the AbstractMeasurement class
-                    final double primaryTauU = AbstractMeasurement.signalTimeOfFlight(primaryStationAtReception, P1, T1, inertial);
+                    final double primaryTauU = AbstractMeasurement.signalTimeOfFlightAdjustableEmitter(primaryStationAtReception, P1, T1, inertial);
 
                     final AbsoluteDate primaryEmissionDate   = T1.shiftedBy(-primaryTauU);
 

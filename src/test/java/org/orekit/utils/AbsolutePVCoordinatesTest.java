@@ -369,8 +369,7 @@ public class AbsolutePVCoordinatesTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(pv);
 
-        Assertions.assertTrue(bos.size() > 320);
-        Assertions.assertTrue(bos.size() < 340);
+        Assertions.assertEquals(354, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

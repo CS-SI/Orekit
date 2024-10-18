@@ -30,26 +30,6 @@ import static org.orekit.propagation.conversion.AbstractPropagatorBuilderTest.as
 public class TLEPropagatorBuilderTest {
 
     @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final DataContext dataContext = Utils.setDataRoot("regular-data");
-        final TLE tle = new TLE("1 27421U 02021A   02124.48976499 -.00021470  00000-0 -89879-2 0    20",
-                                "2 27421  98.7490 199.5121 0001333 133.9522 226.1918 14.26113993    62");
-        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(tle, PositionAngleType.MEAN, 1.0, dataContext,
-                                                                      new FixedPointTleGenerationAlgorithm());
-
-        // When
-        final TLEPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertPropagatorBuilderIsACopy(builder, copyBuilder);
-        Assertions.assertEquals(builder.getTemplateTLE(), copyBuilder.getTemplateTLE());
-
-    }
-
-    @Test
     void testClone() {
 
         // Given

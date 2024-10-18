@@ -21,10 +21,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.MultiplexedMeasurement;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -89,20 +91,34 @@ public class MultiplexedMeasurementBuilder implements MeasurementBuilder<Multipl
 
     /** {@inheritDoc} */
     @Override
-    public MultiplexedMeasurement build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+    public EstimatedMeasurementBase<MultiplexedMeasurement> build(final AbsoluteDate date,
+                                                                  final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
 
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<>(builders.size());
+        // estimate underlying measurements
+        final List<EstimatedMeasurementBase<?>> underlyingEstimated = new ArrayList<>(builders.size());
+        final List<ObservedMeasurement<?>>      underlyingObserved  = new ArrayList<>(builders.size());
         for (final MeasurementBuilder<?> builder : builders) {
-            measurements.add(builder.build(date, interpolators));
+            final EstimatedMeasurementBase<?> built = builder.build(date, interpolators);
+            underlyingEstimated.add(built);
+            underlyingObserved.add(built.getObservedMeasurement());
         }
 
-
-        // generate measurement
-        final MultiplexedMeasurement measurement = new MultiplexedMeasurement(measurements);
+        // generate observed multiplexed measurement
+        final MultiplexedMeasurement measurement = new MultiplexedMeasurement(underlyingObserved);
         for (final EstimationModifier<MultiplexedMeasurement> modifier : getModifiers()) {
             measurement.addModifier(modifier);
         }
-        return measurement;
+
+        // generate estimated multiplexed measurement
+        final SpacecraftState[] states = new SpacecraftState[satellites.length];
+        for (int i = 0; i < underlyingEstimated.size(); ++i) {
+            final EstimatedMeasurementBase<?> mI = underlyingEstimated.get(i);
+            final SpacecraftState[] statesI = mI.getStates();
+            for (int j = 0; j < statesI.length; ++j) {
+                states[measurement.getMultiplexedStateIndex(i, j)] = statesI[j];
+            }
+        }
+        return measurement.estimateWithoutDerivatives(states);
 
     }
 

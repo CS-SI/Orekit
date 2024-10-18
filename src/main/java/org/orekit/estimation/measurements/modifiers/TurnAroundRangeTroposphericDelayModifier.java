@@ -62,20 +62,16 @@ public class TurnAroundRangeTroposphericDelayModifier implements EstimationModif
     /** Constructor.
      *
      * @param model  Tropospheric delay model appropriate for the current TurnAroundRange measurement method.
-     * @deprecated as of 12.1, replaced  by {@link #TurnAroundRangeTroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    public TurnAroundRangeTroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
-
-    /** Constructor.
-     *
-     * @param model  Tropospheric delay model appropriate for the current TurnAroundRange measurement method.
      * @since 12.1
      */
     public TurnAroundRangeTroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "troposphere";
     }
 
     /** Compute the measurement error due to Troposphere.

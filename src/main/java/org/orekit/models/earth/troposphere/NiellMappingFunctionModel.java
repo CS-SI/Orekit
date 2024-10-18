@@ -49,8 +49,7 @@ import org.orekit.utils.TrackingCoordinates;
  * @author Bryan Cazabonne
  *
  */
-@SuppressWarnings("deprecation")
-public class NiellMappingFunctionModel implements MappingFunction, TroposphereMappingFunction {
+public class NiellMappingFunctionModel implements TroposphereMappingFunction {
 
     /** Values for the ah average function. */
     private static final double[] VALUES_FOR_AH_AVERAGE = {
@@ -165,17 +164,6 @@ public class NiellMappingFunctionModel implements MappingFunction, TroposphereMa
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public double[] mappingFactors(final double elevation, final GeodeticPoint point,
-                                   final AbsoluteDate date) {
-        return mappingFactors(new TrackingCoordinates(0.0, elevation, 0.0),
-                              point,
-                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                              date);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
@@ -219,18 +207,6 @@ public class NiellMappingFunctionModel implements MappingFunction, TroposphereMa
         function[0] = function[0] + correction;
 
         return function;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public <T extends CalculusFieldElement<T>> T[] mappingFactors(final T elevation, final FieldGeodeticPoint<T> point,
-                                                                  final FieldAbsoluteDate<T> date) {
-        return mappingFactors(new FieldTrackingCoordinates<>(date.getField().getZero(), elevation, date.getField().getZero()),
-                              point,
-                              new FieldPressureTemperatureHumidity<>(date.getField(),
-                                                                     TroposphericModelUtils.STANDARD_ATMOSPHERE),
-                              date);
     }
 
     /** {@inheritDoc} */

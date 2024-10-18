@@ -26,12 +26,12 @@ package org.orekit.time;
 public class IRNSSScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Package private constructor for the factory.
      */
     IRNSSScale() {
-        super("IRNSS", -19);
+        super("IRNSS", new TimeOffset(-19L, 0L));
     }
 
 }

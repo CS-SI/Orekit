@@ -57,7 +57,7 @@
         +void initializeShortPeriodTerms(AuxiliaryElements auxiliary, PropagationType type, double[] parameters)
         +double[] getMeanElementRate(SpacecraftState state, AuxiliaryElements auxiliary, double[] parameters)
         +void updateShortPeriodTerms(double[] parameters, SpacecraftState ... meanStates)
-        +EventDetector[] getEventsDetectors()
+        +EventDetector[] getEventDetectors()
       }
 
       DSSTForceModel -right->  AuxiliaryElements

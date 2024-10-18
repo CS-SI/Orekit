@@ -22,9 +22,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -103,7 +103,8 @@ import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservation;
 import org.orekit.files.rinex.observation.RinexObservationParser;
-import org.orekit.files.sinex.SinexLoader;
+import org.orekit.files.sinex.Sinex;
+import org.orekit.files.sinex.SinexParser;
 import org.orekit.files.sinex.Station;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.IsotropicDrag;
@@ -161,7 +162,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
-import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
@@ -186,19 +186,19 @@ import org.orekit.utils.units.Unit;
 public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Suffix for range bias. */
-    private final String RANGE_BIAS_SUFFIX = "/range bias";
+    private static final String RANGE_BIAS_SUFFIX = "/range bias";
 
     /** Suffix for range rate bias. */
-    private final String RANGE_RATE_BIAS_SUFFIX = "/range rate bias";
+    private static final String RANGE_RATE_BIAS_SUFFIX = "/range rate bias";
 
     /** Suffix for azimuth bias. */
-    private final String AZIMUTH_BIAS_SUFFIX = "/az bias";
+    private static final String AZIMUTH_BIAS_SUFFIX = "/az bias";
 
     /** Suffix for elevation bias. */
-    private final String ELEVATION_BIAS_SUFFIX = "/el bias";
+    private static final String ELEVATION_BIAS_SUFFIX = "/el bias";
 
     /** CPF file mandatory key. */
-    private final String CPF_MANDATORY_KEY = "cpf";
+    private static final String CPF_MANDATORY_KEY = "cpf";
 
     /** Flag for range measurement use. */
     private boolean useRangeMeasurements;
@@ -335,7 +335,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     protected ResultBatchLeastSquares runBLS(final File input, final boolean print) throws IOException {
 
         // read input parameters
-        final KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
+        final KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<>(ParameterKey.class);
         try (FileInputStream fis = new FileInputStream(input)) {
             parser.parseInput(input.getAbsolutePath(), fis);
         }
@@ -374,8 +374,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
 
         // read sinex files
-        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final Sinex                       stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final Sinex                       stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
 
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
@@ -395,11 +395,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, false);
 
         // measurements
-        final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<>();
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
-            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName, () -> Files.newInputStream(new File(input.getParentFile(), fileName).toPath()));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -433,9 +433,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
         }
         final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
-        for (ObservedMeasurement<?> measurement : multiplexed) {
-            estimator.addMeasurement(measurement);
-        }
+        multiplexed.forEach(estimator::addMeasurement);
 
         // estimate orbit
         if (print) {
@@ -468,7 +466,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     protected ResultSequentialBatchLeastSquares runSequentialBLS(final File inputModel, final boolean print) throws IOException {
 
         // read input parameters
-        final KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
+        final KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<>(ParameterKey.class);
         try (FileInputStream fis = new FileInputStream(inputModel)) {
             parser.parseInput(inputModel.getAbsolutePath(), fis);
         }
@@ -511,7 +509,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
-            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(inputModel.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName, () -> Files.newInputStream(new File(inputModel.getParentFile(), fileName).toPath()));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -553,7 +551,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES_SEQUENTIAL, ',')) {
 
             // set up filtering for measurements files
-            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(inputModel.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName, () -> Files.newInputStream(new File(inputModel.getParentFile(), fileName).toPath()));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -621,8 +619,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         throws IOException {
 
         // Read input parameters
-        KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-        parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+        KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<>(ParameterKey.class);
+        parser.parseInput(input.getAbsolutePath(), Files.newInputStream(input.toPath()));
 
         // Log files
         final RangeLog        rangeLog        = new RangeLog();
@@ -658,8 +656,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                         configurePropagatorBuilder(parser, conventions, body, initialGuess);
 
         // read sinex files
-        final SinexLoader                 stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
-        final SinexLoader                 stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
+        final Sinex                       stationPositionData      = readSinexFile(input, parser, ParameterKey.SINEX_POSITION_FILE);
+        final Sinex                       stationEccData           = readSinexFile(input, parser, ParameterKey.SINEX_ECC_FILE);
 
         // use measurement types flags
         useRangeMeasurements                                       = parser.getBoolean(ParameterKey.USE_RANGE_MEASUREMENTS);
@@ -679,12 +677,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final OutlierFilter<PV>           pvOutliersManager        = createPVOutliersManager(parser, true);
 
         // measurements
-        final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> independentMeasurements = new ArrayList<>();
         for (final String fileName : parser.getStringsList(ParameterKey.MEASUREMENTS_FILES, ',')) {
 
             // set up filtering for measurements files
             DataSource nd = new DataSource(fileName,
-                                         () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+                                           () -> Files.newInputStream(new File(input.getParentFile(), fileName).toPath()));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -769,7 +767,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         if (isUnscented) {
             // Unscented 
             final UnscentedKalmanEstimatorBuilder kalmanBuilder = new UnscentedKalmanEstimatorBuilder().
-                    addPropagationConfiguration((NumericalPropagatorBuilder) propagatorBuilder, new ConstantProcessNoise(initialP, Q));
+                    addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
             if (measurementP != null) {
                 // Measurement part
                 kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
@@ -812,7 +810,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                              true, length, measurementsParameters);
                 }
                 // Measurements statistics summary
-                System.out.println("");
+                System.out.println();
                 rangeLog.displaySummary(System.out);
                 rangeRateLog.displaySummary(System.out);
                 azimuthLog.displaySummary(System.out);
@@ -877,7 +875,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                              true, length, measurementsParameters);
 
                     // Measurements statistics summary
-                    System.out.println("");
+                    System.out.println();
                     rangeLog.displaySummary(System.out);
                     rangeRateLog.displaySummary(System.out);
                     azimuthLog.displaySummary(System.out);
@@ -924,8 +922,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                   final AbsoluteDate finalDate) throws IOException {
 
          // Read input parameters
-         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
-         parser.parseInput(input.getAbsolutePath(), new FileInputStream(input));
+         KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<>(ParameterKey.class);
+         parser.parseInput(input.getAbsolutePath(), Files.newInputStream(input.toPath()));
 
          // Gravity field
          createGravityField(parser);
@@ -1060,7 +1058,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         // solid tides force model
-        final List<CelestialBody> solidTidesBodies = new ArrayList<CelestialBody>();
+        final List<CelestialBody> solidTidesBodies = new ArrayList<>();
         if (parser.containsKey(ParameterKey.SOLID_TIDES_SUN) &&
             parser.getBoolean(ParameterKey.SOLID_TIDES_SUN)) {
             solidTidesBodies.add(CelestialBodyFactory.getSun());
@@ -1071,7 +1069,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
         if (!solidTidesBodies.isEmpty()) {
             setSolidTides(propagatorBuilder, conventions, body,
-                          solidTidesBodies.toArray(new CelestialBody[solidTidesBodies.size()]));
+                          solidTidesBodies.toArray(new CelestialBody[0]));
         }
 
         // drag
@@ -1332,11 +1330,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         if (FastMath.abs(transponderDelayBias) >= Precision.SAFE_MIN || transponderDelayBiasEstimated) {
             // bias is either non-zero or will be estimated,
             // we really need to create a modifier for this
-            final Bias<Range> bias = new Bias<Range>(new String[] { "transponder delay bias", },
-                                                     new double[] { transponderDelayBias },
-                                                     new double[] { 1.0 },
-                                                     new double[] { transponderDelayBiasMin },
-                                                     new double[] { transponderDelayBiasMax });
+            final Bias<Range> bias = new Bias<>(new String[] { "transponder delay bias", },
+                                                new double[] { transponderDelayBias },
+                                                new double[] { 1.0 },
+                                                new double[] { transponderDelayBiasMin },
+                                                new double[] { transponderDelayBiasMax });
             bias.getParametersDrivers().get(0).setSelected(transponderDelayBiasEstimated);
             return bias;
         } else {
@@ -1390,15 +1388,15 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      */
     private Map<String, StationData> createStationsData(final KeyValueFileParser<ParameterKey> parser,
                                                         final AbsoluteDate refDate,
-                                                        final SinexLoader sinexPosition,
-                                                        final SinexLoader sinexEcc,
+                                                        final Sinex sinexPosition,
+                                                        final Sinex sinexEcc,
                                                         final IERSConventions conventions,
                                                         final OneAxisEllipsoid body)
         throws NoSuchElementException {
 
-        final Map<String, StationData> stations       = new HashMap<String, StationData>();
+        final Map<String, StationData> stations       = new HashMap<>();
 
-        final boolean   useTimeSpanModel      = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
+        final boolean   useTimeSpanModel                  = parser.getBoolean(ParameterKey.USE_TIME_SPAN_TROPOSPHERIC_MODEL);
         final String[]  stationNames                      = parser.getStringArray(ParameterKey.GROUND_STATION_NAME);
         final double[]  stationLatitudes                  = parser.getAngleArray(ParameterKey.GROUND_STATION_LATITUDE);
         final double[]  stationLongitudes                 = parser.getAngleArray(ParameterKey.GROUND_STATION_LONGITUDE);
@@ -1501,7 +1499,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final GeodeticPoint position;
             if (sinexPosition != null) {
                 // A sinex file is available -> use the station positions inside the file
-                final Station stationData = sinexPosition.getStation(stationNames[i].substring(0, 4));
+                final Station stationData = sinexPosition.getStations().get(stationNames[i].substring(0, 4));
                 position = body.transform(stationData.getPosition(), body.getBodyFrame(), stationData.getEpoch());
             } else {
                 // If a sinex file is not available -> use the values in input file
@@ -1522,7 +1520,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
             // Take into consideration station eccentricities if not null
             if (sinexEcc != null) {
-                final Station stationEcc = sinexEcc.getStation(stationNames[i]);
+                final Station stationEcc = sinexEcc.getStations().get(stationNames[i]);
                 final Vector3D eccentricities;
                 if (stationEcc.getEccRefSystem() == Station.ReferenceSystem.UNE) {
                     eccentricities = stationEcc.getEccentricities(refDate);
@@ -1544,11 +1542,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final double rangeSigma = stationRangeSigma[i];
             final Bias<Range> rangeBias;
             if (FastMath.abs(stationRangeBias[i])   >= Precision.SAFE_MIN || stationRangeBiasEstimated[i]) {
-                rangeBias = new Bias<Range>(new String[] { stationNames[i] + RANGE_BIAS_SUFFIX, },
-                                            new double[] { stationRangeBias[i] },
-                                            new double[] { rangeSigma },
-                                            new double[] { stationRangeBiasMin[i] },
-                                            new double[] { stationRangeBiasMax[i] });
+                rangeBias = new Bias<>(new String[] { stationNames[i] + RANGE_BIAS_SUFFIX, },
+                                       new double[] { stationRangeBias[i] },
+                                       new double[] { rangeSigma },
+                                       new double[] { stationRangeBiasMin[i] },
+                                       new double[] { stationRangeBiasMax[i] });
                 rangeBias.getParametersDrivers().get(0).setSelected(stationRangeBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
@@ -1559,13 +1557,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final double rangeRateSigma = stationRangeRateSigma[i];
             final Bias<RangeRate> rangeRateBias;
             if (FastMath.abs(stationRangeRateBias[i])   >= Precision.SAFE_MIN || stationRangeRateBiasEstimated[i]) {
-                rangeRateBias = new Bias<RangeRate>(new String[] { stationNames[i] + RANGE_RATE_BIAS_SUFFIX },
-                                                    new double[] { stationRangeRateBias[i] },
-                                                    new double[] { rangeRateSigma },
-                                                    new double[] { stationRangeRateBiasMin[i] },
-                                                    new double[] {
-                                                        stationRangeRateBiasMax[i]
-                                                    });
+                rangeRateBias = new Bias<>(new String[] { stationNames[i] + RANGE_RATE_BIAS_SUFFIX },
+                                           new double[] { stationRangeRateBias[i] },
+                                           new double[] { rangeRateSigma },
+                                           new double[] { stationRangeRateBiasMin[i] },
+                                           new double[] {
+                                               stationRangeRateBiasMax[i]
+                                           });
                 rangeRateBias.getParametersDrivers().get(0).setSelected(stationRangeRateBiasEstimated[i]);
             } else {
                 // bias fixed to zero, we don't need to create a modifier for this
@@ -1580,12 +1578,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             if (FastMath.abs(stationAzimuthBias[i])   >= Precision.SAFE_MIN ||
                 FastMath.abs(stationElevationBias[i]) >= Precision.SAFE_MIN ||
                 stationAzElBiasesEstimated[i]) {
-                azELBias = new Bias<AngularAzEl>(new String[] { stationNames[i] + AZIMUTH_BIAS_SUFFIX,
-                                                                stationNames[i] + ELEVATION_BIAS_SUFFIX },
-                                                 new double[] { stationAzimuthBias[i], stationElevationBias[i] },
-                                                 azELSigma,
-                                                 new double[] { stationAzimuthBiasMin[i], stationElevationBiasMin[i] },
-                                                 new double[] { stationAzimuthBiasMax[i], stationElevationBiasMax[i] });
+                azELBias = new Bias<>(new String[] { stationNames[i] + AZIMUTH_BIAS_SUFFIX,
+                                                     stationNames[i] + ELEVATION_BIAS_SUFFIX },
+                                      new double[] { stationAzimuthBias[i], stationElevationBias[i] },
+                                      azELSigma,
+                                      new double[] { stationAzimuthBiasMin[i], stationElevationBiasMin[i] },
+                                      new double[] { stationAzimuthBiasMax[i], stationElevationBiasMax[i] });
                 azELBias.getParametersDrivers().get(0).setSelected(stationAzElBiasesEstimated[i]);
                 azELBias.getParametersDrivers().get(1).setSelected(stationAzElBiasesEstimated[i]);
             } else {
@@ -1665,7 +1663,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                                              stationTroposphericZenithDelay[i]);
                         final ParameterDriver totalDelayAfter = modelAfter.getParametersDrivers().get(0);
                         totalDelayAfter.setSelected(stationZenithDelayEstimated[i]);
-                        totalDelayAfter.setName(subName + TimeSpanEstimatedModel.DATE_AFTER + epoch.toString(TimeScalesFactory.getUTC()) + " " + EstimatedModel.TOTAL_ZENITH_DELAY);
+                        totalDelayAfter.setName(subName + TimeSpanEstimatedModel.DATE_AFTER +
+                                                epoch.toString(TimeScalesFactory.getUTC()) + " " +
+                                                EstimatedModel.TOTAL_ZENITH_DELAY);
 
                         // Add models to the time span tropospheric model
                         // A very ugly trick is used when no measurements are available for a specific time span.
@@ -1966,9 +1966,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @return container for sinex data or null if key does not exist
      * @throws IOException if file is not read properly
      */
-    private SinexLoader readSinexFile(final File input,
-                                      final KeyValueFileParser<ParameterKey> parser,
-                                      final ParameterKey key)
+    private Sinex readSinexFile(final File input,
+                                final KeyValueFileParser<ParameterKey> parser,
+                                final ParameterKey key)
         throws IOException {
 
         // Verify if the key is defined
@@ -1978,7 +1978,8 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final String fileName = parser.getString(key);
 
             // Read the file
-            DataSource nd = new DataSource(fileName, () -> new FileInputStream(new File(input.getParentFile(), fileName)));
+            DataSource nd = new DataSource(fileName,
+                                           () -> Files.newInputStream(new File(input.getParentFile(), fileName).toPath()));
             for (final DataFilter filter : Arrays.asList(new GzipFilter(),
                                                          new UnixCompressFilter(),
                                                          new HatanakaCompressFilter())) {
@@ -1986,7 +1987,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             }
 
             // Return a configured SINEX file
-            return new SinexLoader(nd);
+            return new SinexParser(TimeScalesFactory.getTimeScales()).parse(nd);
 
         } else {
 
@@ -2025,14 +2026,14 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           final OutlierFilter<PV> pvOutliersManager)
         throws IOException {
 
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         try (Reader         reader = source.getOpener().openReaderOnce();
              BufferedReader br     = new BufferedReader(reader)) {
             int lineNumber = 0;
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
                 line = line.trim();
-                if (line.length() > 0 && !line.startsWith("#")) {
+                if (!line.isEmpty() && !line.startsWith("#")) {
                     final String[] fields = line.split("\\s+");
                     if (fields.length < 2) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
@@ -2114,7 +2115,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @param rangeRateOutliersManager manager for range-rate measurements outliers (null if none configured)
      * @param shapiroRangeModifier shapiro range modifier (null if none configured)
      * @return measurements list
-     * @exception IOException if measurement file cannot be read
      */
     private List<ObservedMeasurement<?>> readRinex(final DataSource source, final String satId,
                                                    final Map<String, StationData> stations,
@@ -2124,10 +2124,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                    final Weights weights,
                                                    final OutlierFilter<Range> rangeOutliersManager,
                                                    final OutlierFilter<RangeRate> rangeRateOutliersManager,
-                                                   final ShapiroRangeModifier shapiroRangeModifier)
-        throws IOException {
+                                                   final ShapiroRangeModifier shapiroRangeModifier) {
         final String notConfigured = " not configured";
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         final SatelliteSystem system = SatelliteSystem.parseSatelliteSystem(satId);
         final int prnNumber;
         switch (system) {
@@ -2162,7 +2161,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                           weights.getRangeBaseWeight(), satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeIonosphericDelayModifier ionoModifier = new RangeIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                     od.getObservationType().getFrequency(system).getFrequency());
+                                                                                                                     od.getObservationType().getSignal(system).getFrequency());
                                           range.addModifier(ionoModifier);
                             }
                             if (satAntennaRangeModifier != null) {
@@ -2195,7 +2194,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                                                       weights.getRangeRateBaseWeight(), false, satellite);
                             if (stationData.getIonosphericModel() != null) {
                                 final RangeRateIonosphericDelayModifier ionoModifier = new RangeRateIonosphericDelayModifier(stationData.getIonosphericModel(),
-                                                                                                                             od.getObservationType().getFrequency(system).getFrequency(),
+                                                                                                                             od.getObservationType().getSignal(system).getFrequency(),
                                                                                                                              false);
                                 rangeRate.addModifier(ionoModifier);
                             }
@@ -2219,15 +2218,14 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
      * @param satellite observable satellite
      * @param initialGuess initial guess (used for the frame)
      * @return list of observable measurements
-     * @throws IOException if file cannot be read
      */
      private List<ObservedMeasurement<?>> readCpf(final DataSource source,
                                                   final ObservableSatellite satellite,
-                                                  final Orbit initialGuess) throws IOException {
+                                                  final Orbit initialGuess) {
 
          // Initialize parser and read file
          final CPFParser parserCpf = new CPFParser();
-         final CPF file = (CPF) parserCpf.parse(source);
+         final CPF file = parserCpf.parse(source);
 
          // Satellite ephemeris
          final CPFEphemeris ephemeris = file.getSatellites().get(file.getHeader().getIlrsSatelliteId());
@@ -2268,7 +2266,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         throws IOException {
 
         // Initialize an empty list of measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
 
         // Initialise parser and read file
         final CRDParser parser =  new CRDParser();
@@ -2324,7 +2322,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 // Center of mass correction
                 if (kvParser.containsKey(ParameterKey.RANGE_CENTER_OF_MASS_CORRECTION)) {
                     final double bias = kvParser.getDouble(ParameterKey.RANGE_CENTER_OF_MASS_CORRECTION);
-                    final Bias<Range> centerOfMass = new Bias<Range>(new String[] {"center of mass"},
+                    final Bias<Range> centerOfMass = new Bias<>(new String[] {"center of mass"},
                                     new double[] {bias}, new double[] {1.0}, new double[] {Double.NEGATIVE_INFINITY},
                                     new double[] {Double.POSITIVE_INFINITY});
                     measurement.addModifier(centerOfMass);
@@ -2418,10 +2416,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     protected void sortParametersChanges(List<? extends ParameterDriver> parameters) {
 
         // sort the parameters lexicographically
-        Collections.sort(parameters, new Comparator<ParameterDriver>() {
+        parameters.sort(new Comparator<ParameterDriver>() {
+
             /** {@inheritDoc} */
             @Override
-            public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
+            public int compare(final ParameterDriver pd1,
+                               final ParameterDriver pd2) {
                 return pd1.getName().compareTo(pd2.getName());
             }
 
@@ -2467,13 +2467,15 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
     private void displayParametersChanges(final PrintStream out, final String header, final boolean sort,
                                           final int length, final ParameterDriversList parameters) {
 
-        List<ParameterDriver> list = new ArrayList<ParameterDriver>(parameters.getDrivers());
+        List<ParameterDriver> list = new ArrayList<>(parameters.getDrivers());
         if (sort) {
             // sort the parameters lexicographically
-            Collections.sort(list, new Comparator<ParameterDriver>() {
+            list.sort(new Comparator<ParameterDriver>() {
+
                 /** {@inheritDoc} */
                 @Override
-                public int compare(final ParameterDriver pd1, final ParameterDriver pd2) {
+                public int compare(final ParameterDriver pd1,
+                                   final ParameterDriver pd2) {
                     return pd1.getName().compareTo(pd2.getName());
                 }
 
@@ -2562,14 +2564,14 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
         }
-        logStream.println("");
+        logStream.println();
         String numFormat = String.format("%%%2d.6f  ", paramSize);
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {
                 logStream.format(Locale.US, numFormat, P.getEntry(i, j));
             }
-            logStream.println("");
+            logStream.println();
         }
 
         // Correlation coeff
@@ -2582,13 +2584,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
         }
-        logStream.println("");
+        logStream.println();
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {
                 logStream.format(Locale.US, numFormat, P.getEntry(i, j)/(sigmas[i]*sigmas[j]));
             }
-            logStream.println("");
+            logStream.println();
         }
 
         // Sigmas
@@ -2596,7 +2598,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat + numFormat + "\n", paramNames[i], sigmas[i]);
         }
-        logStream.println("");
+        logStream.println();
     } 
 
     /** Display covariances and sigmas as predicted by a Kalman filter at date t. 
@@ -2658,14 +2660,14 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
         }
-        logStream.println("");
+        logStream.println();
         String numFormat = String.format("%%%2d.6f  ", paramSize);
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {
                 logStream.format(Locale.US, numFormat, P.getEntry(i, j));
             }
-            logStream.println("");
+            logStream.println();
         }
         
         // Correlation coeff
@@ -2678,13 +2680,13 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
         }
-        logStream.println("");
+        logStream.println();
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat, paramNames[i]);
             for (int j = 0; j <= i; j++) {
                 logStream.format(Locale.US, numFormat, P.getEntry(i, j)/(sigmas[i]*sigmas[j]));
             }
-            logStream.println("");
+            logStream.println();
         }
         
         // Sigmas
@@ -2692,7 +2694,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         for (int i = 0; i < P.getRowDimension(); i++) {
             logStream.format(Locale.US, strFormat + numFormat + "\n", paramNames[i], sigmas[i]);
         }
-        logStream.println("");
+        logStream.println();
     }
 
     /** Log evaluations.
@@ -2708,46 +2710,60 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         
         // Get measurement type and send measurement to proper logger.
         final String measurementType = evaluation.getObservedMeasurement().getMeasurementType();
-        if (measurementType.equals(Range.MEASUREMENT_TYPE)) {
-            @SuppressWarnings("unchecked")
-            final EstimatedMeasurement<Range> ev = (EstimatedMeasurement<Range>) evaluation;
-            if (rangeLog != null) {
-                rangeLog.log(ev);
+        switch (measurementType) {
+            case Range.MEASUREMENT_TYPE: {
+                @SuppressWarnings("unchecked")
+                final EstimatedMeasurement<Range> ev = (EstimatedMeasurement<Range>) evaluation;
+                if (rangeLog != null) {
+                    rangeLog.log(ev);
+                }
+                break;
             }
-        } else if (measurementType.equals(RangeRate.MEASUREMENT_TYPE)) {
-            @SuppressWarnings("unchecked")
-            final EstimatedMeasurement<RangeRate> ev = (EstimatedMeasurement<RangeRate>) evaluation;
-            if (rangeRateLog != null) {
-                rangeRateLog.log(ev);
+            case RangeRate.MEASUREMENT_TYPE: {
+                @SuppressWarnings("unchecked")
+                final EstimatedMeasurement<RangeRate> ev = (EstimatedMeasurement<RangeRate>) evaluation;
+                if (rangeRateLog != null) {
+                    rangeRateLog.log(ev);
+                }
+                break;
             }
-        } else if (measurementType.equals(AngularAzEl.MEASUREMENT_TYPE)) {
-            @SuppressWarnings("unchecked")
-            final EstimatedMeasurement<AngularAzEl> ev = (EstimatedMeasurement<AngularAzEl>) evaluation;
-            if (azimuthLog != null) {
-                azimuthLog.log(ev);
+            case AngularAzEl.MEASUREMENT_TYPE: {
+                @SuppressWarnings("unchecked")
+                final EstimatedMeasurement<AngularAzEl> ev = (EstimatedMeasurement<AngularAzEl>) evaluation;
+                if (azimuthLog != null) {
+                    azimuthLog.log(ev);
+                }
+                if (elevationLog != null) {
+                    elevationLog.log(ev);
+                }
+                break;
             }
-            if (elevationLog != null) {
-                elevationLog.log(ev);
+            case Position.MEASUREMENT_TYPE: {
+                @SuppressWarnings("unchecked")
+                final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
+                if (positionOnlyLog != null) {
+                    positionOnlyLog.log(ev);
+                }
+                break;
             }
-        }  else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
-            @SuppressWarnings("unchecked")
-            final EstimatedMeasurement<Position> ev = (EstimatedMeasurement<Position>) evaluation;
-            if (positionOnlyLog != null) {
-                positionOnlyLog.log(ev);
+            case PV.MEASUREMENT_TYPE: {
+                @SuppressWarnings("unchecked")
+                final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
+                if (positionLog != null) {
+                    positionLog.log(ev);
+                }
+                if (velocityLog != null) {
+                    velocityLog.log(ev);
+                }
+                break;
             }
-        } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
-            @SuppressWarnings("unchecked")
-            final EstimatedMeasurement<PV> ev = (EstimatedMeasurement<PV>) evaluation;
-            if (positionLog != null) {
-                positionLog.log(ev);
-            }
-            if (velocityLog != null) {
-                velocityLog.log(ev);
-            }
-        } else if (measurementType.equals(MultiplexedMeasurement.MEASUREMENT_TYPE)) {
-            for (final EstimatedMeasurement<?> em : ((MultiplexedMeasurement) evaluation.getObservedMeasurement()).getEstimatedMeasurements()) {
-                logEvaluation(em, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
-            }
+            case MultiplexedMeasurement.MEASUREMENT_TYPE:
+                for (final EstimatedMeasurement<?> em : ((MultiplexedMeasurement) evaluation.getObservedMeasurement()).getEstimatedMeasurements()) {
+                    logEvaluation(em, rangeLog, rangeRateLog, azimuthLog,
+                                  elevationLog, positionOnlyLog, positionLog,
+                                  velocityLog);
+                }
+                break;
         }
     }
 
@@ -2758,33 +2774,33 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         private AbsoluteDate t0;
         
         /** Printing flag. */
-        private Boolean print;
+        private final Boolean print;
         
         /** Range logger. */
-        private RangeLog rangeLog;
+        private final RangeLog rangeLog;
         
         /** Range rate logger. */
-        private RangeRateLog rangeRateLog;
+        private final RangeRateLog rangeRateLog;
         
         /** Azimuth logger. */
-        private AzimuthLog azimuthLog;
+        private final AzimuthLog azimuthLog;
         
         /** Elevation logger. */
-        private ElevationLog elevationLog;
+        private final ElevationLog elevationLog;
         
         /** Position only logger. */
-        private PositionOnlyLog positionOnlyLog;
+        private final PositionOnlyLog positionOnlyLog;
         
         /** Position logger. */
-        private PositionLog positionLog;
+        private final PositionLog positionLog;
         
         /** Velocity logger. */
-        private VelocityLog velocityLog;
+        private final VelocityLog velocityLog;
 
-        public Observer(Boolean print, RangeLog rangeLog, RangeRateLog rangeRateLog, AzimuthLog azimuthLog,
-                ElevationLog elevationLog, PositionOnlyLog positionOnlyLog, PositionLog positionLog,
-                VelocityLog velocityLog) {
-            super();
+        public Observer(final Boolean print, final RangeLog rangeLog,
+                        final RangeRateLog rangeRateLog, final AzimuthLog azimuthLog,
+                        final ElevationLog elevationLog, final PositionOnlyLog positionOnlyLog,
+                        final PositionLog positionLog, final VelocityLog velocityLog) {
             this.print           = print;
             this.rangeLog        = rangeLog;
             this.rangeRateLog    = rangeRateLog;
@@ -2820,22 +2836,28 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                     rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
             // Get measurement type
             final String measurementType = observedMeasurement.getMeasurementType();
-            if (measurementType.equals(Range.MEASUREMENT_TYPE)) {
-                measType    = "RANGE";
-                stationName =  ((EstimatedMeasurement<Range>) estimatedMeasurement).getObservedMeasurement().
-                                getStation().getBaseFrame().getName();
-            } else if (measurementType.equals(RangeRate.MEASUREMENT_TYPE)) {
-                measType    = "RANGE_RATE";
-                stationName =  ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).getObservedMeasurement().
-                                getStation().getBaseFrame().getName();
-            } else if (measurementType.equals(AngularAzEl.MEASUREMENT_TYPE)) {
-                measType    = "AZ_EL";
-                stationName =  ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).getObservedMeasurement().
-                                getStation().getBaseFrame().getName();
-            } else if (measurementType.equals(PV.MEASUREMENT_TYPE)) {
-                measType    = "PV";
-            } else if (measurementType.equals(Position.MEASUREMENT_TYPE)) {
-                measType    = "POSITION";
+            switch (measurementType) {
+                case Range.MEASUREMENT_TYPE:
+                    measType = "RANGE";
+                    stationName = ((EstimatedMeasurement<Range>) estimatedMeasurement).
+                            getObservedMeasurement().getStation().getBaseFrame().getName();
+                    break;
+                case RangeRate.MEASUREMENT_TYPE:
+                    measType = "RANGE_RATE";
+                    stationName = ((EstimatedMeasurement<RangeRate>) estimatedMeasurement).
+                            getObservedMeasurement().getStation().getBaseFrame().getName();
+                    break;
+                case AngularAzEl.MEASUREMENT_TYPE:
+                    measType = "AZ_EL";
+                    stationName = ((EstimatedMeasurement<AngularAzEl>) estimatedMeasurement).
+                            getObservedMeasurement().getStation().getBaseFrame().getName();
+                    break;
+                case PV.MEASUREMENT_TYPE:
+                    measType = "PV";
+                    break;
+                case Position.MEASUREMENT_TYPE:
+                    measType = "POSITION";
+                    break;
             }
             
 

@@ -235,27 +235,6 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagato
     }
 
     /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public BrouwerLyddanePropagatorBuilder copy() {
-
-        // Find M2 value
-        double m2 = 0.0;
-        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
-            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
-                // it is OK as BL m2 parameterDriver has 1 value estimated from -INF to +INF, and
-                // setPeriod method should not be called on this driver (to have several values estimated)
-                m2 = driver.getValue();
-            }
-        }
-
-        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
-                                                   getPositionScale(), getAttitudeProvider(), m2);
-        builder.setMass(getMass());
-        return builder;
-    }
-
-    /** {@inheritDoc} */
     public BrouwerLyddanePropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
 

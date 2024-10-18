@@ -35,6 +35,7 @@ import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
@@ -529,6 +530,51 @@ public class SpacecraftState
         }
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * simple models. For orbits, the model is a Keplerian one if no derivatives
+     * are available in the orbit, or Keplerian plus quadratic effect of the
+     * non-Keplerian acceleration if derivatives are available. For attitude,
+     * a polynomial model is used. Neither mass nor additional states change.
+     * Shifting is <em>not</em> intended as a replacement for proper orbit
+     * and attitude propagation but should be sufficient for small time shifts
+     * or coarse accuracy.
+     * </p>
+     * <p>
+     * As a rough order of magnitude, the following table shows the extrapolation
+     * errors obtained between this simple shift method and an {@link
+     * org.orekit.propagation.numerical.NumericalPropagator numerical
+     * propagator} for a low Earth Sun Synchronous Orbit, with a 20x20 gravity field,
+     * Sun and Moon third bodies attractions, drag and solar radiation pressure.
+     * Beware that these results will be different for other orbits.
+     * </p>
+     * <table border="1">
+     * <caption>Extrapolation Error</caption>
+     * <tr style="background-color: #ccccff"><th>interpolation time (s)</th>
+     * <th>position error without derivatives (m)</th><th>position error with derivatives (m)</th></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px"> 60</td><td>  18</td><td> 1.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">120</td><td>  72</td><td> 9.1</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">300</td><td> 447</td><td> 140</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">600</td><td>1601</td><td>1067</td></tr>
+     * <tr><td style="background-color: #eeeeff; padding:5px">900</td><td>3141</td><td>3307</td></tr>
+     * </table>
+     * @param dt time shift in seconds
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * except for the mass and additional states which stay unchanged
+     * @since 13.0
+     */
+    @Override
+    public SpacecraftState shiftedBy(final TimeOffset dt) {
+        if (isOrbitDefined()) {
+            return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                                       mass, shiftAdditional(dt.toDouble()), additionalDot);
+        } else {
+            return new SpacecraftState(absPva.shiftedBy(dt), attitude.shiftedBy(dt),
+                                       mass, shiftAdditional(dt.toDouble()), additionalDot);
+        }
+    }
+
     /** Shift additional states.
      * @param dt time shift in seconds
      * @return shifted additional states
@@ -975,7 +1021,7 @@ public class SpacecraftState
         private final Orbit orbit;
 
         /** Attitude and mass double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Additional states. */
         private final DoubleArrayDictionary additional;
@@ -1029,7 +1075,7 @@ public class SpacecraftState
         private final AbsolutePVCoordinates absPva;
 
         /** Attitude and mass double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Additional states. */
         private final DoubleArrayDictionary additional;

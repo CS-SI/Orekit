@@ -78,16 +78,6 @@ public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuil
     }
 
     /** {@inheritDoc} */
-    @Override
-    @Deprecated
-    public KeplerianPropagatorBuilder copy() {
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
-                                              getPositionScale(), getAttitudeProvider());
-        builder.setMass(getMass());
-        return builder;
-    }
-
-    /** {@inheritDoc} */
     public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         final KeplerianPropagator propagator = new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider(), getMu(), getMass());

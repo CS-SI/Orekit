@@ -141,10 +141,10 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.AND,
-                                          s -> {
+                                          (s, isForward) -> {
                                               double minInterval = Double.POSITIVE_INFINITY;
                                               for (final FieldEventDetector<T> detector : detectors) {
-                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
+                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
                                               }
                                               return minInterval;
                                           },
@@ -202,10 +202,10 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.OR,
-                                          s -> {
+                                          (s, isForward) -> {
                                               double minInterval = Double.POSITIVE_INFINITY;
                                               for (final FieldEventDetector<T> detector : detectors) {
-                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s));
+                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
                                               }
                                               return minInterval;
                                           },

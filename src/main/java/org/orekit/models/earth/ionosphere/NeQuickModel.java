@@ -1362,7 +1362,7 @@ public class NeQuickModel implements IonosphericModel {
     private static class Segment {
 
         /** Threshold for zenith segment. */
-        private static final double THRESHOLD = 1.0e-3;
+        private static final double THRESHOLD = 1.0;
 
         /** Latitudes [rad]. */
         private final double[] latitudes;

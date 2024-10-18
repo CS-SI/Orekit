@@ -16,17 +16,14 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.Map;
-
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.FDOA;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
+
+import java.util.Map;
 
 /** Builder for {@link FDOA} measurements.
  * @author Bryan Cazabonne
@@ -42,9 +39,6 @@ public class FDOABuilder extends AbstractMeasurementBuilder<FDOA> {
 
     /** Centre frequency of the signal emitted from the satellite. */
     private final double centreFrequency;
-
-    /** Satellite related to this builder. */
-    private final ObservableSatellite satellite;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -65,50 +59,16 @@ public class FDOABuilder extends AbstractMeasurementBuilder<FDOA> {
         this.primeStation    = primeStation;
         this.secondStation   = secondStation;
         this.centreFrequency = centreFrequency;
-        this.satellite       = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public FDOA build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-
-        final double sigma                  = getTheoreticalStandardDeviation()[0];
-        final double baseWeight             = getBaseWeight()[0];
-        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
-
-        // create a dummy measurement
-        final FDOA dummy = new FDOA(primeStation, secondStation, centreFrequency, relevant[0].getDate(),
-                                    Double.NaN, sigma, baseWeight, satellite);
-        for (final EstimationModifier<FDOA> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        double fdoa = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue()[0];
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            fdoa += noise[0];
-        }
-
-        // generate measurement
-        final FDOA measurement = new FDOA(primeStation, secondStation, centreFrequency, relevant[0].getDate(),
-                                          fdoa, sigma, baseWeight, satellite);
-        for (final EstimationModifier<FDOA> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected FDOA buildObserved(final AbsoluteDate date,
+                                 final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new FDOA(primeStation, secondStation, centreFrequency,
+                        date, Double.NaN,
+                        getTheoreticalStandardDeviation()[0],
+                        getBaseWeight()[0], getSatellites()[0]);
     }
 
 }

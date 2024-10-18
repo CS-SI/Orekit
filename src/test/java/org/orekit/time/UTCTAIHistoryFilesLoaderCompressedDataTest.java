@@ -25,7 +25,7 @@ public class UTCTAIHistoryFilesLoaderCompressedDataTest {
     @Test
     public void testCompressed() {
         Utils.setDataRoot("compressed-data");
-        Assertions.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH), 1.0e-8);
+        Assertions.assertEquals(-32.0, TimeScalesFactory.getUTC().offsetFromTAI(AbsoluteDate.J2000_EPOCH).toDouble(), 1.0e-8);
     }
 
 }

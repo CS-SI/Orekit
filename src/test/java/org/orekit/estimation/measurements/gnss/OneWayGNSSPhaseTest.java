@@ -35,7 +35,9 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.gnss.Frequency;
+import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.gnss.PredefinedGnssSignal;
+import org.orekit.gnss.RadioWave;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -55,7 +57,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class OneWayGNSSPhaseTest {
 
-    private static final Frequency FREQUENCY = Frequency.G01;
+    private static final RadioWave RADIO_WAVE = PredefinedGnssSignal.G01;
 
     /**
      * Test the values of the phase comparing the observed values and the estimated values
@@ -156,7 +158,7 @@ public class OneWayGNSSPhaseTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new OneWayGNSSPhaseCreator(ephemeris, "remote",
-                                                                                          FREQUENCY, ambiguity,
+                                                                                          RADIO_WAVE, ambiguity,
                                                                                           localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
@@ -189,7 +191,7 @@ public class OneWayGNSSPhaseTest {
                                                                                                              state,
                                                                                                              ephemeris.propagate(state.getDate())
                                                                                                          });
-                    Assertions.assertEquals(FREQUENCY.getWavelength(), ((OneWayGNSSPhase) measurement).getWavelength(), 1.0e-15);
+                    Assertions.assertEquals(RADIO_WAVE.getWavelength(), ((OneWayGNSSPhase) measurement).getWavelength(), 1.0e-15);
                     final double phaseEstimated = estimated.getEstimatedValue()[0];
                     final double absoluteError  = phaseEstimated-phaseObserved;
                     absoluteErrors.add(absoluteError);
@@ -289,7 +291,7 @@ public class OneWayGNSSPhaseTest {
         final List<ObservedMeasurement<?>> measurements =
                         EstimationTestUtils.createMeasurements(propagator,
                                                                new OneWayGNSSPhaseCreator(ephemeris, "remote",
-                                                                                          FREQUENCY, ambiguity,
+                                                                                          RADIO_WAVE, ambiguity,
                                                                                           localClockOffset, remoteClockOffset),
                                                                1.0, 3.0, 300.0);
 
@@ -439,8 +441,7 @@ public class OneWayGNSSPhaseTest {
         final int    ambiguity         = 1234;
         final double localClockOffset  = 0.137e-6;
         final double remoteClockOffset = 469.0e-6;
-        final OneWayGNSSPhaseCreator creator = new OneWayGNSSPhaseCreator(ephemeris, "remote",
-                                                                          FREQUENCY, ambiguity, localClockOffset, remoteClockOffset);
+        final OneWayGNSSPhaseCreator creator = new OneWayGNSSPhaseCreator(ephemeris, "remote", RADIO_WAVE, ambiguity, localClockOffset, remoteClockOffset);
         creator.getLocalSatellite().getClockOffsetDriver().setSelected(true);
 
         final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
@@ -560,8 +561,12 @@ public class OneWayGNSSPhaseTest {
         Utils.setDataRoot("regular-data");
 
         // Create a phase measurement. Remote is set to null since it not used by the test
-        final OneWayGNSSPhase phase = new OneWayGNSSPhase(null, 635.0e-6, AbsoluteDate.J2000_EPOCH, 467614.701,
-                                                          Frequency.G01.getWavelength(), 0.02, 1.0, new ObservableSatellite(0));
+        final OneWayGNSSPhase phase = new OneWayGNSSPhase(null, "",
+                                                          new QuadraticClockModel(AbsoluteDate.J2000_EPOCH, 635.0e-6, 0.0, 0.0),
+                                                          AbsoluteDate.J2000_EPOCH, 467614.701,
+                                                          PredefinedGnssSignal.G01.getWavelength(), 0.02, 1.0,
+                                                          new ObservableSatellite(0),
+                                                          new AmbiguityCache());
 
         // First check
         Assertions.assertEquals(0.0, phase.getAmbiguityDriver().getValue(), Double.MIN_VALUE);

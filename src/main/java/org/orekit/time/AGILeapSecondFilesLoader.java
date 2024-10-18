@@ -48,6 +48,15 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
     /** Default supported files name pattern. */
     public static final String DEFAULT_SUPPORTED_NAMES = "^LeapSecond\\.dat$";
 
+    /** Number of seconds in one day. */
+    private static final long SEC_PER_DAY = 86400L;
+
+    /** Number of attoseconds in one second. */
+    private static final long ATTOS_PER_NANO = 1000000000L;
+
+    /** Slope conversion factor from seconds per day to nanoseconds per second. */
+    private static final long SLOPE_FACTOR = SEC_PER_DAY * ATTOS_PER_NANO;
+
     /**
      * Build a loader for LeapSecond.dat file from AGI. This constructor uses the {@link
      * DataContext#getDefault() default data context}.
@@ -104,7 +113,7 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
         private static final String INTEGER_REGEXP        = "[-+]?\\p{Digit}+";
 
         /** Regular expression matching real numbers. */
-        private static final String REAL_REGEXP           = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+        private static final String REAL_REGEXP           = "[-+]?(?:\\p{Digit}+(?:\\.\\p{Digit}*)?|\\.\\p{Digit}+)(?:[eE][-+]?\\p{Digit}+)?";
 
         /** Regular expression matching an integer field to store. */
         private static final String STORED_INTEGER_FIELD  = BLANKS + STORAGE_START + INTEGER_REGEXP + STORAGE_END;
@@ -113,7 +122,7 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
         private static final String STORED_REAL_FIELD     = BLANKS + STORAGE_START + REAL_REGEXP + STORAGE_END;
 
         /** Data lines pattern. */
-        private Pattern dataPattern;
+        private final Pattern dataPattern;
 
         /** Simple constructor.
          */
@@ -196,10 +205,10 @@ public class AGILeapSecondFilesLoader extends AbstractSelfFeedingLoader
                         }
                         lastDate = dc1;
 
-                        final double offset = Double.parseDouble(matcher.group(5));
                         final double mjdRef = Double.parseDouble(matcher.group(6));
-                        final double slope  = Double.parseDouble(matcher.group(7));
-                        offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef), offset, slope));
+                        offsets.add(new OffsetModel(dc1, (int) FastMath.rint(mjdRef),
+                                                    TimeOffset.parse(matcher.group(5)),
+                                                    (int) (TimeOffset.parse(matcher.group(7)).getAttoSeconds() / SLOPE_FACTOR)));
 
                     }
                 }

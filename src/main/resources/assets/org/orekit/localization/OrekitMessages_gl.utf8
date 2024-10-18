@@ -451,6 +451,9 @@ NO_CACHED_ENTRIES = ningunha entrada almacenada
 # generated entries not sorted: {0} > {1} by {2,number,0.0##############E0} s
 NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION>
 
+# moving transition date from {0} to {1} collides with existing transition at {2}
+TRANSITION_DATES_COLLISION = <MISSING TRANSLATION>
+
 # no data generated around date: {0}
 NO_DATA_GENERATED = ningún dato xerado alrededor da data: {0}
 
@@ -828,6 +831,9 @@ NO_UNSCENTED_TRANSFORM_CONFIGURED = <MISSING TRANSLATION>
 # value is not strictly positive: {0}
 NOT_STRICTLY_POSITIVE = <MISSING TRANSLATION>
 
+# value is not positive: {0}
+NOT_POSITIVE = <MISSING TRANSLATION>
+
 # transform from {0} to {1} is not implemented
 UNSUPPORTED_TRANSFORM = <MISSING TRANSLATION>
 
@@ -896,3 +902,6 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
 
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = <MISSING TRANSLATION>
+
+# cannot parse data {0}
+CANNOT_PARSE_DATA = <MISSING TRANSLATION>

@@ -336,7 +336,7 @@ public class ConfigurableLowThrustManeuverTest {
             DateIntervalDetector       did        = (DateIntervalDetector) detector.getOriginal();
             final FieldAbsoluteDate<S> fieldStart = new FieldAbsoluteDate<>(field, did.startDate);
             final FieldAbsoluteDate<S> fieldEnd   = new FieldAbsoluteDate<>(field, did.endDate);
-            final FieldAdaptableInterval<S> maxCheck = s -> did.getMaxCheckInterval().currentInterval(s.toSpacecraftState());
+            final FieldAdaptableInterval<S> maxCheck = (s, isForward) -> did.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
             @SuppressWarnings("unchecked")
             final FieldAbstractDetector<D, S> converted = (FieldAbstractDetector<D, S>)
             new FieldNegateDetector<>(new FieldDateDetector<S>(field, fieldStart, fieldEnd).

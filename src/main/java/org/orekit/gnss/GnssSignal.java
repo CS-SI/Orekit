@@ -33,4 +33,14 @@ public interface GnssSignal extends RadioWave {
      */
     double getRatio();
 
+    /** Get the RINEX name for the frequency.
+     * @return RINEX name for the frequency
+     */
+    String getName();
+
+    /** Get the satellite system for which this frequency is defined.
+     * @return satellite system for which this frequency is defined
+     */
+    SatelliteSystem getSatelliteSystem();
+
 }

@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.generation;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -55,6 +56,6 @@ public interface Scheduler<T extends ObservedMeasurement<T>> {
      * @return generated measurements
      * @since 12.0
      */
-    SortedSet<T> generate(Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
+    SortedSet<EstimatedMeasurementBase<T>> generate(Map<ObservableSatellite, OrekitStepInterpolator> interpolators);
 
 }

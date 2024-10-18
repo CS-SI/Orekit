@@ -17,7 +17,6 @@
 package org.orekit.time;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.utils.Constants;
 
 /** Scale for on-board clock.
  * @author Luc Maisonobe
@@ -26,7 +25,7 @@ import org.orekit.utils.Constants;
 public class SatelliteClockScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20210309L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Name of the scale. */
     private final String name;
@@ -38,7 +37,7 @@ public class SatelliteClockScale implements TimeScale {
     private final DateTimeComponents epochDT;
 
     /** Offset from TAI at epoch. */
-    private final double offsetAtEpoch;
+    private final TimeOffset offsetAtEpoch;
 
     /** Clock count at epoch. */
     private final double countAtEpoch;
@@ -87,7 +86,7 @@ public class SatelliteClockScale implements TimeScale {
         this.name          = name;
         this.epoch         = epoch;
         this.epochDT       = epoch.getComponents(epochScale);
-        this.offsetAtEpoch = epochScale.offsetFromTAI(epoch) + countAtEpoch;
+        this.offsetAtEpoch = epochScale.offsetFromTAI(epoch).add(new TimeOffset(countAtEpoch));
         this.countAtEpoch  = countAtEpoch;
         this.drift         = drift;
         this.rate          = 1.0 + drift;
@@ -95,17 +94,20 @@ public class SatelliteClockScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
-        return offsetAtEpoch + drift * date.durationFrom(epoch);
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
+        return offsetAtEpoch.add(new TimeOffset(drift * date.durationFrom(epoch)));
     }
 
     /** {@inheritDoc} */
     @Override
-    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
-        final double delta          = Constants.JULIAN_DAY * (date.getJ2000Day() - epochDT.getDate().getJ2000Day()) +
-                                      time.getSecondsInUTCDay() - epochDT.getTime().getSecondsInUTCDay();
-        final double timeSinceEpoch = (delta - countAtEpoch) / rate;
-        return -(offsetAtEpoch + drift * timeSinceEpoch);
+    public TimeOffset offsetToTAI(final DateComponents date, final TimeComponents time) {
+        final long      deltaDate      = (date.getJ2000Day() - epochDT.getDate().getJ2000Day()) *
+                                         TimeOffset.DAY.getSeconds();
+        final TimeOffset deltaTime      = time.getSplitSecondsInUTCDay().
+                                         subtract(epochDT.getTime().getSplitSecondsInUTCDay());
+        final double    delta          = deltaDate + deltaTime.toDouble();
+        final double    timeSinceEpoch = (delta - countAtEpoch) / rate;
+        return offsetAtEpoch.add(new TimeOffset(drift * timeSinceEpoch)).negate();
     }
 
     /** Compute date corresponding to some clock count.
@@ -127,7 +129,7 @@ public class SatelliteClockScale implements TimeScale {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> T offsetFromTAI(final FieldAbsoluteDate<T> date) {
-        return date.durationFrom(epoch).multiply(drift).add(offsetAtEpoch);
+        return date.durationFrom(epoch).multiply(drift).add(offsetAtEpoch.toDouble());
     }
 
     /** {@inheritDoc} */

@@ -332,7 +332,7 @@ class NadirPointingTest {
                                    FastMath.toRadians(90.), PositionAngleType.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
-        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> sample = new ArrayList<>();
         for (double dt = -0.1; dt < 0.1; dt += 0.05) {
             Orbit o = circ.shiftedBy(dt);
             sample.add(nadirAttitudeLaw.getTargetPV(o, o.getDate(), o.getFrame()));
@@ -431,7 +431,7 @@ class NadirPointingTest {
             Utils.setDataRoot("regular-data");
 
             // Computation date
-            date = new AbsoluteDate(new DateComponents(2008, 04, 07),
+            date = new AbsoluteDate(new DateComponents(2008, 4, 7),
                                     TimeComponents.H00,
                                     TimeScalesFactory.getUTC());
 

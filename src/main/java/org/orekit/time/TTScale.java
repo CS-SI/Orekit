@@ -28,12 +28,12 @@ package org.orekit.time;
 public class TTScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Package private constructor for the factory.
      */
     TTScale() {
-        super("TT", 32.184);
+        super("TT", new TimeOffset(32L, TimeOffset.SECOND, 184L, TimeOffset.MILLISECOND));
     }
 
 }

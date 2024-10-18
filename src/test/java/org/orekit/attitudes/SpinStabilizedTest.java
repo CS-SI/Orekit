@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -50,9 +52,10 @@ import org.orekit.utils.PVCoordinatesProvider;
 class SpinStabilizedTest {
 
     @Test
+    @DefaultDataContext
     void testBBQMode() {
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());
         double rate = 2.0 * FastMath.PI / (12 * 60);
@@ -75,6 +78,7 @@ class SpinStabilizedTest {
     }
 
     @Test
+    @DefaultDataContext
     void testGetAttitudeRotation() {
         // GIVEN
         final Orbit orbit = getOrbit();
@@ -89,6 +93,7 @@ class SpinStabilizedTest {
     }
 
     @Test
+    @DefaultDataContext
     void testFieldGetAttitudeRotation() {
         // GIVEN
         final CartesianOrbit orbit = getOrbit();
@@ -104,6 +109,7 @@ class SpinStabilizedTest {
         Assertions.assertEquals(0., Rotation.distance(rotation.toRotation(), attitude.getRotation().toRotation()));
     }
 
+    @DefaultDataContext
     private CartesianOrbit getOrbit() {
         final PVCoordinates pv =
                 new PVCoordinates(new Vector3D(28812595.32012577, 5948437.4640250085, 0),
@@ -112,9 +118,10 @@ class SpinStabilizedTest {
     }
 
     @Test
+    @DefaultDataContext
     void testSpin() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
         double rate = 2.0 * FastMath.PI / (12 * 60);

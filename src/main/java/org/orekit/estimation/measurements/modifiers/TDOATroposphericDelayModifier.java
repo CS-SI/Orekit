@@ -54,20 +54,16 @@ public class TDOATroposphericDelayModifier implements EstimationModifier<TDOA> {
     /** Constructor.
      *
      * @param model tropospheric model appropriate for the current TDOA measurement method.
-     * @deprecated as of 12.1, replaced by {@link #TDOATroposphericDelayModifier(TroposphericModel)}
-     */
-    @Deprecated
-    public TDOATroposphericDelayModifier(final org.orekit.models.earth.troposphere.DiscreteTroposphericModel model) {
-        this(new org.orekit.models.earth.troposphere.TroposphericModelAdapter(model));
-    }
-
-    /** Constructor.
-     *
-     * @param model tropospheric model appropriate for the current TDOA measurement method.
      * @since 12.1
      */
     public TDOATroposphericDelayModifier(final TroposphericModel model) {
         tropoModel = model;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "troposphere";
     }
 
     /** Compute the measurement error due to Troposphere on a single downlink.

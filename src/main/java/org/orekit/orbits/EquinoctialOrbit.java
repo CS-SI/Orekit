@@ -23,12 +23,12 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -625,50 +625,6 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
                                                                                    getLvDot());
     }
 
-    /** Computes the true longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω eccentric longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the true longitude argument
-     */
-    @Deprecated
-    public static double eccentricToTrue(final double lE, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, lE);
-    }
-
-    /** Computes the eccentric longitude argument from the true longitude argument.
-     * @param lv = v + ω + Ω true longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static double trueToEccentric(final double lv, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, lv);
-    }
-
-    /** Computes the eccentric longitude argument from the mean longitude argument.
-     * @param lM = M + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the eccentric longitude argument
-     */
-    @Deprecated
-    public static double meanToEccentric(final double lM, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM);
-    }
-
-    /** Computes the mean longitude argument from the eccentric longitude argument.
-     * @param lE = E + ω + Ω mean longitude argument (rad)
-     * @param ex first component of the eccentricity vector
-     * @param ey second component of the eccentricity vector
-     * @return the mean longitude argument
-     */
-    @Deprecated
-    public static double eccentricToMean(final double lE, final double ex, final double ey) {
-        return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, lE);
-    }
-
     /** {@inheritDoc} */
     @Override
     public double getE() {
@@ -896,10 +852,18 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public EquinoctialOrbit shiftedBy(final double dt) {
+        return shiftedBy(new TimeOffset(dt));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EquinoctialOrbit shiftedBy(final TimeOffset dt) {
+
+        final double dtS = dt.toDouble();
 
         // use Keplerian-only motion
         final EquinoctialOrbit keplerianShifted = new EquinoctialOrbit(a, ex, ey, hx, hy,
-                                                                       getLM() + getKeplerianMeanMotion() * dt,
+                                                                       getLM() + getKeplerianMeanMotion() * dtS,
                                                                        PositionAngleType.MEAN, cachedPositionAngleType,
                                                                        getFrame(),
                                                                        getDate().shiftedBy(dt), getMu());
@@ -912,11 +876,11 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             // add quadratic effect of non-Keplerian acceleration to Keplerian-only shift
             keplerianShifted.computePVWithoutA();
             final Vector3D fixedP   = new Vector3D(1, keplerianShifted.partialPV.getPosition(),
-                                                   0.5 * dt * dt, nonKeplerianAcceleration);
+                                                   0.5 * dtS * dtS, nonKeplerianAcceleration);
             final double   fixedR2 = fixedP.getNormSq();
             final double   fixedR  = FastMath.sqrt(fixedR2);
             final Vector3D fixedV  = new Vector3D(1, keplerianShifted.partialPV.getVelocity(),
-                                                  dt, nonKeplerianAcceleration);
+                                                  dtS, nonKeplerianAcceleration);
             final Vector3D fixedA  = new Vector3D(-getMu() / (fixedR2 * fixedR), keplerianShifted.partialPV.getPosition(),
                                                   1, nonKeplerianAcceleration);
 
@@ -1183,7 +1147,13 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20231217L;
+        private static final long serialVersionUID = 20240721L;
+
+        /** Seconds. */
+        private final long seconds;
+
+        /** Attoseconds. */
+        private final long attoseconds;
 
         /** Double values. */
         private final double[] d;
@@ -1199,19 +1169,16 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
          */
         private DTO(final EquinoctialOrbit orbit) {
 
-            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
-            positionAngleType = orbit.cachedPositionAngleType;
+            this.positionAngleType = orbit.cachedPositionAngleType;
 
             // decompose date
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
-            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
+            this.seconds     = orbit.getDate().getSeconds();
+            this.attoseconds = orbit.getDate().getAttoSeconds();
 
             if (orbit.hasDerivatives()) {
                 // we have derivatives
                 this.d = new double[] {
-                    epoch, offset, orbit.getMu(),
+                    orbit.getMu(),
                     orbit.a, orbit.ex, orbit.ey,
                     orbit.hx, orbit.hy, orbit.cachedL,
                     orbit.aDot, orbit.exDot, orbit.eyDot,
@@ -1220,7 +1187,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
             } else {
                 // we don't have derivatives
                 this.d = new double[] {
-                    epoch, offset, orbit.getMu(),
+                    orbit.getMu(),
                     orbit.a, orbit.ex, orbit.ey,
                     orbit.hx, orbit.hy, orbit.cachedL
                 };
@@ -1234,20 +1201,21 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
          * @return replacement {@link EquinoctialOrbit}
          */
         private Object readResolve() {
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            if (d.length >= 15) {
+            if (d.length >= 13) {
                 // we have derivatives
-                return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8],
-                                            d[ 9], d[10], d[11], d[12], d[13], d[14],
+                return new EquinoctialOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                            d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
                                             positionAngleType,
-                                            frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                            d[2]);
+                                            frame,
+                                            new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
+                                            d[0]);
             } else {
                 // we don't have derivatives
-                return new EquinoctialOrbit(d[ 3], d[ 4], d[ 5], d[ 6], d[ 7], d[ 8], positionAngleType,
-                                            frame, j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                            d[2]);
+                return new EquinoctialOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
+                                            positionAngleType,
+                                            frame,
+                                            new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
+                                            d[0]);
             }
         }
 

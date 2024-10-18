@@ -61,7 +61,7 @@ import org.orekit.utils.TrackingCoordinates;
 
 public class FieldMendesPavlisModelTest {
 
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     @BeforeAll
     public static void setUpGlobal() {
@@ -125,7 +125,7 @@ public class FieldMendesPavlisModelTest {
         final MendesPavlisModel model = new MendesPavlisModel(new ConstantPressureTemperatureHumidityProvider(pth),
                                                               lambda, TroposphericModelUtils.MICRO_M);
         
-        final T[] computedDelay = model.computeZenithDelay(point, model.getParameters(field), date);
+        final T[] computedDelay = model.computeZenithDelay(point, date);
 
         Assertions.assertEquals(expectedHydroDelay, computedDelay[0].getReal(),                    precision);
         Assertions.assertEquals(expectedWetDelay,   computedDelay[1].getReal(), precision);
@@ -362,7 +362,7 @@ public class FieldMendesPavlisModelTest {
             double  delayP4 = model.pathDelay(trackingCoordinatesP4, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                               model.getParameters(), stateP4.getDate()).getDelay();
             
-            fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
+            fillJacobianColumn(refDeriv, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
@@ -373,7 +373,7 @@ public class FieldMendesPavlisModelTest {
     }
 
     private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
+                                    double h,
                                     double sM4h, double sM3h,
                                     double sM2h, double sM1h,
                                     double sP1h, double sP2h,

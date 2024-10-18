@@ -19,15 +19,15 @@ package org.orekit.utils;
 import java.util.Objects;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
-/** Aggreate multiple {@link PVCoordinatesProvider} instances together
- *
+/** Aggregate multiple {@link PVCoordinatesProvider} instances together.
+ * <p>
  * This can be used to describe an aircraft or surface vehicle.
- *
+ * </p>
  * @author Joe Reed
  * @since 11.3
  */
@@ -43,10 +43,10 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     private final AbsoluteDate maxDate;
 
     /** Class constructor.
-     *
+     * <p>
      * Note the provided {@code map} is used directly. Modification of the
      * map after calling this constructor may result in undefined behavior.
-     *
+     * </p>
      * @param map the map of {@link PVCoordinatesProvider} instances by time.
      */
     public AggregatedPVCoordinatesProvider(final TimeSpanMap<PVCoordinatesProvider> map) {
@@ -54,16 +54,16 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     }
 
     /** Class constructor.
-     *
+     * <p>
      * Note the provided {@code map} is used directly. Modification of the
      * map after calling this constructor may result in undefined behavior.
-     *
+     * </p>
      * @param map the map of {@link PVCoordinatesProvider} instances by time.
      * @param minDate the earliest valid date, {@code null} if always valid
      * @param maxDate the latest valid date, {@code null} if always valid
      */
     public AggregatedPVCoordinatesProvider(final TimeSpanMap<PVCoordinatesProvider> map,
-            final AbsoluteDate minDate, final AbsoluteDate maxDate) {
+                                           final AbsoluteDate minDate, final AbsoluteDate maxDate) {
         this.pvProvMap = Objects.requireNonNull(map, "PVCoordinatesProvider map must be non-null");
         this.minDate = minDate == null ? AbsoluteDate.PAST_INFINITY : minDate;
         this.maxDate = maxDate == null ? AbsoluteDate.FUTURE_INFINITY : maxDate;
@@ -86,7 +86,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     @Override
     public Vector3D getPosition(final AbsoluteDate date, final Frame frame) {
         if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
         }
         return pvProvMap.get(date).getPosition(date, frame);
     }
@@ -94,7 +94,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
         if (date.isBefore(minDate) || date.isAfter(maxDate)) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date, minDate, maxDate);
         }
         return pvProvMap.get(date).getPVCoordinates(date, frame);
     }
@@ -105,7 +105,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
     public static class Builder {
 
         /** Time span map holding the incremental values. */
-        private TimeSpanMap<PVCoordinatesProvider> pvProvMap = null;
+        private final TimeSpanMap<PVCoordinatesProvider> pvProvMap;
 
         /**
          * Create a builder using the {@link InvalidPVProvider} as the initial provider.
@@ -120,13 +120,13 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
          * @param initialProvider the inital provider
          */
         public Builder(final PVCoordinatesProvider initialProvider) {
-            pvProvMap = new TimeSpanMap<PVCoordinatesProvider>(initialProvider);
+            pvProvMap = new TimeSpanMap<>(initialProvider);
         }
 
         /** Add a {@link PVCoordinatesProvider} to the collection.
-         *
+         * <p>
          * The provided date is the transition time, at which this provider will be used.
-         *
+         * </p>
          * @param date the transition date
          * @param pvProv the provider
          * @param erasesLater if true, the entry erases all existing transitions that are later than {@code date}
@@ -141,9 +141,9 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
         }
 
         /** Add a {@link PVCoordinatesProvider} to the collection.
-         *
+         * <p>
          * The provided date is the final transition time, before which this provider will be used.
-         *
+         * </p>
          * @param date the transition date
          * @param pvProv the provider
          * @param erasesEarlier if true, the entry erases all existing transitions that are earlier than {@code date}
@@ -197,7 +197,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
         }
     }
 
-    /**  Implementation of {@link PVCoordinatesProvider} that throws an illegal state exception.
+    /** Implementation of {@link PVCoordinatesProvider} that throws an {@link OrekitException} exception.
      *
      */
     public static class InvalidPVProvider implements PVCoordinatesProvider {
@@ -215,7 +215,7 @@ public class AggregatedPVCoordinatesProvider implements PVCoordinatesProvider {
 
         @Override
         public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-            throw new IllegalStateException();
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DATE, date);
         }
 
     }

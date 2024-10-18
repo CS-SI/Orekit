@@ -261,7 +261,7 @@ public class EventState<T extends EventDetector> {
             // we have to select some intermediate state
             // attempting to split the remaining time in an integer number of checks
             final double dt       = target.getDate().durationFrom(done.getDate());
-            final double maxCheck = detector.getMaxCheckInterval().currentInterval(done);
+            final double maxCheck = detector.getMaxCheckInterval().currentInterval(done, dt >= 0.);
             final int    n        = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / maxCheck));
             return n == 1 ? target : interpolator.getInterpolatedState(done.getDate().shiftedBy(dt / n));
         }

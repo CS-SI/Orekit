@@ -48,6 +48,12 @@ public class OutlierFilter<T extends ObservedMeasurement<T>> implements Estimati
         this.maxSigma = maxSigma;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public String getEffectName() {
+        return "outlier";
+    }
+
     /** Get the value of warmup iterations.
      * @return the value of warmup iterations
      */

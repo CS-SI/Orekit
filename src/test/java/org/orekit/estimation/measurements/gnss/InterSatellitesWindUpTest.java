@@ -33,7 +33,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.generation.EventBasedScheduler;
 import org.orekit.estimation.measurements.generation.GatheringSubscriber;
 import org.orekit.estimation.measurements.generation.Generator;
@@ -41,7 +40,7 @@ import org.orekit.estimation.measurements.generation.InterSatellitesPhaseBuilder
 import org.orekit.estimation.measurements.generation.SignSemantic;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.attitude.GPSBlockIIA;
 import org.orekit.gnss.attitude.GPSBlockIIR;
@@ -163,8 +162,8 @@ public class InterSatellitesWindUpTest {
                                                                                                   receiverAttitudeProvider));
         InterSatellitesPhaseBuilder builder     = new InterSatellitesPhaseBuilder(null,
                                                                                   receiverSat, emitterSat,
-                                                                                  Frequency.G01.getWavelength(),
-                                                                                  0.01 * Frequency.G01.getWavelength(),
+                                                                                  PredefinedGnssSignal.G01.getWavelength(),
+                                                                                  0.01 * PredefinedGnssSignal.G01.getWavelength(),
                                                                                   1.0,
                                                                                   new AmbiguityCache());
         generator.addScheduler(new EventBasedScheduler<>(builder,
@@ -176,7 +175,7 @@ public class InterSatellitesWindUpTest {
         final GatheringSubscriber gatherer = new GatheringSubscriber();
         generator.addSubscriber(gatherer);
         generator.generate(emitterOrbit.getDate(), emitterOrbit.getDate().shiftedBy(7200));
-        SortedSet<ObservedMeasurement<?>> measurements = gatherer.getGeneratedMeasurements();
+        SortedSet<EstimatedMeasurementBase<?>> measurements = gatherer.getGeneratedMeasurements();
         Assertions.assertEquals(120, measurements.size());
 
         InterSatellitesWindUp windUp  = new InterSatellitesWindUpFactory().getWindUp(emitterSystem,  emitterPrn,
@@ -187,20 +186,25 @@ public class InterSatellitesWindUpTest {
         Propagator receiverPropagator = new KeplerianPropagator(receiverOrbit, receiverAttitudeProvider);
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        for (ObservedMeasurement<?> m : measurements) {
-            InterSatellitesPhase phase = (InterSatellitesPhase) m;
+        for (EstimatedMeasurementBase<?> m : measurements) {
+            InterSatellitesPhase phase = (InterSatellitesPhase) m.getObservedMeasurement();
             @SuppressWarnings("unchecked")
             EstimatedMeasurementBase<InterSatellitesPhase> estimated =
-            (EstimatedMeasurementBase<InterSatellitesPhase>) m.estimateWithoutDerivatives(new SpacecraftState[] {
-                                                                                              receiverPropagator.propagate(phase.getDate()),
-                                                                                              emitterPropagator.propagate(phase.getDate())
-                                                                                          });
+            (EstimatedMeasurementBase<InterSatellitesPhase>) m.
+                getObservedMeasurement().
+                estimateWithoutDerivatives(new SpacecraftState[] {
+                                               receiverPropagator.propagate(phase.getDate()),
+                                               emitterPropagator.propagate(phase.getDate())
+                                           });
             final double original = estimated.getEstimatedValue()[0];
             windUp.modifyWithoutDerivatives(estimated);
             final double modified = estimated.getEstimatedValue()[0];
             final double correction = modified - original;
             min = FastMath.min(min, correction);
             max = FastMath.max(max, correction);
+            Assertions.assertEquals(1,
+                                    estimated.getAppliedEffects().entrySet().stream().
+                                    filter(e -> e.getKey().getEffectName().equals("wind-up")).count());
         }
         Assertions.assertEquals(expectedMin, min, 1.0e-5);
         Assertions.assertEquals(expectedMax, max, 1.0e-5);

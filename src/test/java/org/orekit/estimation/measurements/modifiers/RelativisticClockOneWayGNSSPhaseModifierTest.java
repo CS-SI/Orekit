@@ -25,8 +25,10 @@ import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.ObservableSatellite;
+import org.orekit.estimation.measurements.QuadraticClockModel;
+import org.orekit.estimation.measurements.gnss.AmbiguityCache;
 import org.orekit.estimation.measurements.gnss.OneWayGNSSPhase;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
@@ -45,11 +47,13 @@ public class RelativisticClockOneWayGNSSPhaseModifierTest {
     public void testRelativisticClockCorrection() {
 
         // Measurement
-        final double wavelength = Frequency.G01.getWavelength();
-        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), 0.0, date,
+        final double wavelength = PredefinedGnssSignal.G01.getWavelength();
+        final OneWayGNSSPhase phase = new OneWayGNSSPhase(states[1].getOrbit(), "",
+                                                          new QuadraticClockModel(date, 0.0, 0.0, 0.0), date,
                                                           Vector3D.distance(states[0].getPosition(),
                                                                             states[1].getPosition()) / wavelength,
-                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0));
+                                                          wavelength, 1.0, 1.0, new ObservableSatellite(0),
+                                                          new AmbiguityCache());
 
         // One-way GNSS phase before applying the modifier
         final EstimatedMeasurementBase<OneWayGNSSPhase> estimatedBefore = phase.estimateWithoutDerivatives(states);
@@ -62,6 +66,9 @@ public class RelativisticClockOneWayGNSSPhaseModifierTest {
         // Verify
         Assertions.assertEquals(-10.57, (estimatedBefore.getEstimatedValue()[0] - estimatedAfter.getEstimatedValue()[0]) * wavelength, 1.0e-2);
         Assertions.assertEquals(0, modifier.getParametersDrivers().size());
+        Assertions.assertEquals(1,
+                                estimatedAfter.getAppliedEffects().entrySet().stream().
+                                filter(e -> e.getKey().getEffectName().equals("clock relativity")).count());
 
     }
 

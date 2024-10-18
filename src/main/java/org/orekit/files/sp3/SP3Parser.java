@@ -39,7 +39,6 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.EphemerisFileParser;
 import org.orekit.frames.Frame;
-import org.orekit.frames.ITRFVersion;
 import org.orekit.gnss.IGSUtils;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.time.AbsoluteDate;
@@ -50,7 +49,6 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 
 /** A parser for the SP3 orbit file format. It supports all formats from sp3-a
  * to sp3-d.
@@ -65,12 +63,6 @@ import org.orekit.utils.IERSConventions;
  * @author Luc Maisonobe
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
-
-    /** String representation of the center of ephemeris coordinate system.
-     * @deprecated as of 12.1 not used anymore
-     */
-    @Deprecated
-    public static final String SP3_FRAME_CENTER_STRING = "EARTH";
 
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
@@ -145,30 +137,6 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
         this.interpolationSamples = interpolationSamples;
         this.frameBuilder         = frameBuilder;
         this.timeScales           = timeScales;
-    }
-
-    /**
-     * Default string to {@link Frame} conversion for {@link #SP3Parser()}.
-     *
-     * <p>
-     * This method uses the {@link DataContext#getDefault() default data context}.
-     * If the frame names has a form like IGS##, or ITR##, or SLR##, where ##
-     * is a two digits number, then this number will be used to build the
-     * appropriate {@link ITRFVersion}. Otherwise (for example if name is
-     * UNDEF or WGS84), then a default {@link
-     * org.orekit.frames.Frames#getITRF(IERSConventions, boolean) ITRF}
-     * will be created.
-     * </p>
-     *
-     * @param name of the frame.
-     * @return ITRF based on 2010 conventions,
-     * with tidal effects considered during EOP interpolation
-     * @deprecated as of 12.1, replaced by {@link IGSUtils#guessFrame(String)}
-     */
-    @Deprecated
-    @DefaultDataContext
-    public static Frame guessFrame(final String name) {
-        return IGSUtils.guessFrame(name);
     }
 
     @Override

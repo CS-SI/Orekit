@@ -146,8 +146,7 @@ public class PredictedEOPHistoryTest {
 
         EOPHistory predicted = new PredictedEOPHistory(truncatedEOP,
                                                        30 * Constants.JULIAN_DAY,
-                                                       new EOPFitter(new SingleParameterFitter(3 * Constants.JULIAN_YEAR,
-                                                                                               Constants.JULIAN_DAY,
+                                                       new EOPFitter(new SingleParameterFitter(Constants.JULIAN_DAY,
                                                                                                1.0e-12, 3,
                                                                                                SingleParameterFitter.SUN_PULSATION,
                                                                                                2 * SingleParameterFitter.SUN_PULSATION,
@@ -281,8 +280,7 @@ public class PredictedEOPHistoryTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(predicted);
 
-        Assertions.assertTrue(bos.size() > 215000);
-        Assertions.assertTrue(bos.size() < 216000);
+        Assertions.assertEquals(215375, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

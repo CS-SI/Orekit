@@ -73,4 +73,11 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
                 fieldAbsolutePVCoordinates.getDate().getField().getOne());
         return buildIntegrator(fieldOrbit, OrbitType.CARTESIAN);
     }
+
+    /**
+     * Form a non-Field equivalent.
+     * @return ODE integrator builder
+     * @since 13.0
+     */
+    ODEIntegratorBuilder toODEIntegratorBuilder();
 }

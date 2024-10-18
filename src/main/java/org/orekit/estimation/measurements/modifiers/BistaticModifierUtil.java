@@ -49,22 +49,6 @@ class BistaticModifierUtil {
      * @param emitter emitter station
      * @param receiver receiver station
      * @param modelEffect model effect
-     * @deprecated as of 12.1, replaced by {@link #modify(EstimatedMeasurementBase,
-     * GroundStation, GroundStation, ParametricModelEffect, EstimationModifier)}
-     */
-    @Deprecated
-    public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurementBase<T> estimated,
-                                                                 final GroundStation emitter, final GroundStation receiver,
-                                                                 final ParametricModelEffect modelEffect) {
-        modify(estimated, emitter, receiver, modelEffect, null);
-    }
-
-    /** Apply a modifier to an estimated measurement.
-     * @param <T> type of the measurement
-     * @param estimated estimated measurement to modify
-     * @param emitter emitter station
-     * @param receiver receiver station
-     * @param modelEffect model effect
      * @param modifier applied modifier
      * @since 12.1
      */
@@ -81,29 +65,6 @@ class BistaticModifierUtil {
         newValue[0] += modelEffect.evaluate(receiver, state);
         estimated.modifyEstimatedValue(modifier, newValue);
 
-    }
-
-    /** Apply a modifier to an estimated measurement.
-     * @param <T> type of the measurement
-     * @param estimated estimated measurement to modify
-     * @param emitter emitter station
-     * @param receiver receiver station
-     * @param converter gradient converter
-     * @param parametricModel parametric modifier model
-     * @param modelEffect model effect
-     * @param modelEffectGradient model effect gradient
-     * @deprecated as of 12.1, replaced by {@link #modify(EstimatedMeasurement,
-     * ParameterDriversProvider, AbstractGradientConverter, GroundStation, GroundStation,
-     * ParametricModelEffect, ParametricModelEffectGradient, EstimationModifier)}
-     */
-    @Deprecated
-    public static <T extends ObservedMeasurement<T>> void modify(final EstimatedMeasurement<T> estimated,
-                                                                 final ParameterDriversProvider parametricModel,
-                                                                 final AbstractGradientConverter converter,
-                                                                 final GroundStation emitter, final GroundStation receiver,
-                                                                 final ParametricModelEffect modelEffect,
-                                                                 final ParametricModelEffectGradient modelEffectGradient) {
-        modify(estimated, parametricModel, converter, emitter, receiver, modelEffect, modelEffectGradient, null);
     }
 
     /** Apply a modifier to an estimated measurement.

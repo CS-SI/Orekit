@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
@@ -51,6 +52,7 @@ import org.orekit.utils.PVCoordinates;
 public class FixedRateTest {
 
     @Test
+    @DefaultDataContext
     public void testZeroRate() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                              new TimeComponents(13, 17, 7.865),
@@ -73,6 +75,7 @@ public class FixedRateTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testNonZeroRate() {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                    new TimeComponents(13, 17, 7.865),
@@ -101,9 +104,10 @@ public class FixedRateTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testSpin() {
 
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
 
@@ -148,12 +152,13 @@ public class FixedRateTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testZeroRateField() {
         doTestZeroRate(Binary64Field.getInstance());
     }
 
-    private <T extends CalculusFieldElement<T>> void doTestZeroRate(final Field<T> field)
-        {
+    @DefaultDataContext
+    private <T extends CalculusFieldElement<T>> void doTestZeroRate(final Field<T> field) {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
                                                             new DateComponents(2004, 3, 2),
@@ -180,10 +185,12 @@ public class FixedRateTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testNonZeroRateField() {
         doTestNonZeroRate(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestNonZeroRate(final Field<T> field) {
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
@@ -213,15 +220,17 @@ public class FixedRateTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testSpinField() {
         doTestSpin(Binary64Field.getInstance());
     }
 
+    @DefaultDataContext
     private <T extends CalculusFieldElement<T>> void doTestSpin(final Field<T> field) {
 
         final T zero = field.getZero();
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
-                                                            new DateComponents(1970, 01, 01),
+                                                            new DateComponents(1970, 1, 1),
                                                             new TimeComponents(3, 25, 45.6789),
                                                             TimeScalesFactory.getUTC());
 

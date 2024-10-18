@@ -28,7 +28,7 @@ public abstract class MeasurementCreator implements OrekitFixedStepHandler {
     private final List<ObservedMeasurement<?>> measurements;
 
     protected MeasurementCreator() {
-        measurements = new ArrayList<ObservedMeasurement<?>>();
+        measurements = new ArrayList<>();
     }
 
     public List<ObservedMeasurement<?>> getMeasurements() {

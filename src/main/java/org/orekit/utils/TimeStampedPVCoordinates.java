@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeStamped;
 
@@ -207,6 +208,23 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                                             spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
     }
 
+    /** Get a time-shifted state.
+     * <p>
+     * The state can be slightly shifted to close dates. This shift is based on
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement for
+     * proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param dt time shift
+     * @return a new state, shifted with respect to the instance (which is immutable)
+     * @since 13.0
+     */
+    public TimeStampedPVCoordinates shiftedBy(final TimeOffset dt) {
+        final PVCoordinates spv = super.shiftedBy(dt);
+        return new TimeStampedPVCoordinates(date.shiftedBy(dt),
+                                            spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+    }
+
     /** Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.
      * <p>
      * The time evolution is based on a simple Taylor expansion. It is <em>not</em> intended as a
@@ -282,7 +300,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         private static final long serialVersionUID = 20140723L;
 
         /** Double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Simple constructor.
          * @param pv instance to serialize

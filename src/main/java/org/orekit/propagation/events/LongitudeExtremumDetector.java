@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.analysis.differentiation.DerivativeStructure;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -100,11 +100,11 @@ public class LongitudeExtremumDetector extends AbstractDetector<LongitudeExtremu
     public double g(final SpacecraftState s) {
 
         // convert state to geodetic coordinates
-        final FieldGeodeticPoint<DerivativeStructure> gp =
+        final FieldGeodeticPoint<UnivariateDerivative2> gp =
                         body.transform(s.getPVCoordinates(), s.getFrame(), s.getDate());
 
         // longitude time derivative
-        return gp.getLongitude().getPartialDerivative(1);
+        return gp.getLongitude().getFirstDerivative();
 
     }
 

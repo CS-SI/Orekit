@@ -136,7 +136,7 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         final TimeStampedPVCoordinates s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final double tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(), arrivalDate, frame);
+        final double tauD = signalTimeOfFlightAdjustableEmitter(pvaR, s1Downlink.getPosition(), arrivalDate, frame);
 
         // Transit state
         final double delta      = getDate().durationFrom(remote.getDate());
@@ -151,10 +151,10 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             final TimeStampedPVCoordinates transitState = pvaR.shiftedBy(deltaMTauD);
 
             // uplink delay
-            final double tauU = signalTimeOfFlight(pvaL,
-                                                   transitState.getPosition(),
-                                                   transitState.getDate(),
-                                                   frame);
+            final double tauU = signalTimeOfFlightAdjustableEmitter(pvaL,
+                                                                    transitState.getPosition(),
+                                                                    transitState.getDate(),
+                                                                    frame);
             estimated = new EstimatedMeasurementBase<>(this, iteration, evaluation,
                                                        new SpacecraftState[] {
                                                            local.shiftedBy(deltaMTauD),
@@ -242,8 +242,8 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
 
         final TimeStampedFieldPVCoordinates<Gradient> s1Downlink =
                         pvaL.shiftedBy(arrivalDate.durationFrom(pvaL.getDate()));
-        final Gradient tauD = signalTimeOfFlight(pvaR, s1Downlink.getPosition(),
-                                                 arrivalDate, frame);
+        final Gradient tauD = signalTimeOfFlightAdjustableEmitter(pvaR, s1Downlink.getPosition(),
+                                                                  arrivalDate, frame);
 
         // Transit state
         final double              delta      = getDate().durationFrom(remote.getDate());
@@ -258,10 +258,10 @@ public class InterSatellitesRange extends AbstractMeasurement<InterSatellitesRan
             final TimeStampedFieldPVCoordinates<Gradient> transitStateDS = pvaR.shiftedBy(deltaMTauD);
 
             // uplink delay
-            final Gradient tauU = signalTimeOfFlight(pvaL,
-                                                     transitStateDS.getPosition(),
-                                                     transitStateDS.getDate(),
-                                                     frame);
+            final Gradient tauU = signalTimeOfFlightAdjustableEmitter(pvaL,
+                                                                      transitStateDS.getPosition(),
+                                                                      transitStateDS.getDate(),
+                                                                      frame);
             estimated = new EstimatedMeasurement<>(this, iteration, evaluation,
                                                    new SpacecraftState[] {
                                                        local.shiftedBy(deltaMTauD.getValue()),

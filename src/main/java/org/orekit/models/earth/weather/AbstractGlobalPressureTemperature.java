@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataSource;
@@ -34,8 +33,6 @@ import org.orekit.models.earth.troposphere.ViennaACoefficients;
 import org.orekit.models.earth.troposphere.ViennaAProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.utils.Constants;
 
 /** Base class for Global Pressure and Temperature 2, 2w and 3 models.
  * These models are empirical models that provide the temperature, the pressure and the water vapor pressure
@@ -75,33 +72,21 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  * @since 12.1
  */
-public class AbstractGlobalPressureTemperature
+public abstract class AbstractGlobalPressureTemperature
     implements ViennaAProvider, AzimuthalGradientProvider, PressureTemperatureHumidityProvider {
-
-    /** Standard gravity constant [m/s²]. */
-    private static final double G = Constants.G0_STANDARD_GRAVITY;
-
-    /** Ideal gas constant for dry air [J/kg/K]. */
-    private static final double R = 287.0;
 
     /** Loaded grid. */
     private final Grid grid;
-
-    /** UTC time scale. */
-    private final TimeScale utc;
 
     /**
      * Constructor with source of GPTn auxiliary data given by user.
      *
      * @param source grid data source
-     * @param utc UTC time scale.
      * @param expected expected seasonal models types
      * @exception IOException if grid data cannot be read
      */
-    protected AbstractGlobalPressureTemperature(final DataSource source, final TimeScale utc,
-                                                final SeasonalModelType... expected)
+    protected AbstractGlobalPressureTemperature(final DataSource source, final SeasonalModelType... expected)
         throws IOException {
-        this.utc = utc;
 
         // load the grid data
         try (InputStream         is     = source.getOpener().openStreamOnce();
@@ -113,80 +98,76 @@ public class AbstractGlobalPressureTemperature
 
     }
 
-    /**
-     * Constructor with already loaded grid.
-     *
-     * @param grid loaded grid
-     * @param utc UTC time scale.
-     * @deprecated as of 12.1 used only by {@link GlobalPressureTemperature2Model}
+    /** Get duration since reference date.
+     * @param date date
+     * @return duration since reference date
+     * @since 13.0
      */
-    @Deprecated
-    protected AbstractGlobalPressureTemperature(final Grid grid, final TimeScale utc) {
-        this.grid = grid;
-        this.utc  = utc;
-    }
+    protected abstract double deltaRef(AbsoluteDate date);
+
+    /** Get duration since reference date.
+     * @param <T> type of the field elements
+     * @param date date
+     * @return duration since reference date
+     * @since 13.0
+     */
+    protected abstract <T extends CalculusFieldElement<T>> T deltaRef(FieldAbsoluteDate<T> date);
 
     /** {@inheritDoc} */
     @Override
     public ViennaACoefficients getA(final GeodeticPoint location, final AbsoluteDate date) {
 
         // set up interpolation parameters
-        final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
-        final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
+        final CellInterpolator interpolator =
+            grid.getInterpolator(location.getLatitude(), location.getLongitude(), location.getAltitude(),
+                                 deltaRef(date));
 
         // ah and aw coefficients
-        return new ViennaACoefficients(interpolator.interpolate(e -> e.getModel(SeasonalModelType.AH).evaluate(dayOfYear)) * 0.001,
-                                       interpolator.interpolate(e -> e.getModel(SeasonalModelType.AW).evaluate(dayOfYear)) * 0.001);
+        return new ViennaACoefficients(interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.AH)) * 0.001,
+                                       interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.AW)) * 0.001);
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public PressureTemperatureHumidity getWeatherParamerers(final GeodeticPoint location, final AbsoluteDate date) {
+    public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location, final AbsoluteDate date) {
 
         // set up interpolation parameters
-        final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
-        final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
-
-        // Corrected height (can be negative)
-        final double undu            = interpolator.interpolate(e -> e.getUndulation());
-        final double correctedheight = location.getAltitude() - undu - interpolator.interpolate(e -> e.getHs());
-
-        // Temperature gradient [K/m]
-        final double dTdH = interpolator.interpolate(e -> e.getModel(SeasonalModelType.DT).evaluate(dayOfYear)) * 0.001;
-
-        // Specific humidity
-        final double qv = interpolator.interpolate(e -> e.getModel(SeasonalModelType.QV).evaluate(dayOfYear)) * 0.001;
-
-        // For the computation of the temperature and the pressure, we use
-        // the standard ICAO atmosphere formulas.
+        final CellInterpolator interpolator =
+            grid.getInterpolator(location.getLatitude(), location.getLongitude(), location.getAltitude(),
+                                 deltaRef(date));
 
         // Temperature [K]
-        final double t0 = interpolator.interpolate(e -> e.getModel(SeasonalModelType.TEMPERATURE).evaluate(dayOfYear));
-        final double temperature = t0 + dTdH * correctedheight;
+        final double temperature = interpolator.interpolate(EvaluatedGridEntry::getTemperature);
 
         // Pressure [hPa]
-        final double p0       = interpolator.interpolate(e -> e.getModel(SeasonalModelType.PRESSURE).evaluate(dayOfYear));
-        final double exponent = G / (dTdH * R);
-        final double pressure = p0 * FastMath.pow(1 - (dTdH / t0) * correctedheight, exponent) * 0.01;
-
-        // Water vapor pressure [hPa]
-        final double e0 = qv * pressure / (0.622 + 0.378 * qv);
-
-        // mean temperature weighted with water vapor pressure
-        final double tm = grid.hasModels(SeasonalModelType.TM) ?
-                          interpolator.interpolate(e -> e.getModel(SeasonalModelType.TM).evaluate(dayOfYear)) :
-                          Double.NaN;
+        final double pressure = interpolator.interpolate(EvaluatedGridEntry::getPressure);
 
         // water vapor decrease factor
         final double lambda = grid.hasModels(SeasonalModelType.LAMBDA) ?
-                              interpolator.interpolate(e -> e.getModel(SeasonalModelType.LAMBDA).evaluate(dayOfYear)) :
+                              interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.LAMBDA)) :
                               Double.NaN;
+
+        // Water vapor pressure [hPa]
+        final double el;
+        if (Double.isNaN(lambda)) {
+            // GPT2
+            final double qv = interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.QV)) * 0.001;
+            el = qv * pressure / (0.622 + 0.378 * qv);
+        } else {
+            // GPT2w and GPT3
+            el = interpolator.interpolate(EvaluatedGridEntry::getWaterVaporPressure);
+        }
+
+        // mean temperature weighted with water vapor pressure
+        final double tm = grid.hasModels(SeasonalModelType.TM) ?
+                          interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.TM)) :
+                          Double.NaN;
 
         return new PressureTemperatureHumidity(location.getAltitude(),
                                                TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                temperature,
-                                               TroposphericModelUtils.HECTO_PASCAL.toSI(e0),
+                                               TroposphericModelUtils.HECTO_PASCAL.toSI(el),
                                                tm,
                                                lambda);
 
@@ -198,13 +179,13 @@ public class AbstractGlobalPressureTemperature
 
         if (grid.hasModels(SeasonalModelType.GN_H, SeasonalModelType.GE_H, SeasonalModelType.GN_W, SeasonalModelType.GE_W)) {
             // set up interpolation parameters
-            final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
-            final int              dayOfYear    = date.getComponents(utc).getDate().getDayOfYear();
+            final CellInterpolator interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude(),
+                                                                       location.getAltitude(), deltaRef(date));
 
-            return new AzimuthalGradientCoefficients(interpolator.interpolate(e -> e.getModel(SeasonalModelType.GN_H).evaluate(dayOfYear)),
-                                                     interpolator.interpolate(e -> e.getModel(SeasonalModelType.GE_H).evaluate(dayOfYear)),
-                                                     interpolator.interpolate(e -> e.getModel(SeasonalModelType.GN_W).evaluate(dayOfYear)),
-                                                     interpolator.interpolate(e -> e.getModel(SeasonalModelType.GE_W).evaluate(dayOfYear)));
+            return new AzimuthalGradientCoefficients(interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.GN_H) * 0.00001),
+                                                     interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.GE_H) * 0.00001),
+                                                     interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.GN_W) * 0.00001),
+                                                     interpolator.interpolate(e -> e.getEvaluatedModel(SeasonalModelType.GE_W) * 0.00001));
         } else {
             return null;
         }
@@ -217,63 +198,57 @@ public class AbstractGlobalPressureTemperature
                                                                                 final FieldAbsoluteDate<T> date) {
 
         // set up interpolation parameters
-        final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
-        final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
+        final FieldCellInterpolator<T> interpolator =
+            grid.getInterpolator(location.getLatitude(), location.getLongitude(), location.getAltitude(),
+                                 deltaRef(date));
 
         // ah and aw coefficients
-        return new FieldViennaACoefficients<>(interpolator.interpolate(e -> e.getModel(SeasonalModelType.AH).evaluate(dayOfYear)).multiply(0.001),
-                                              interpolator.interpolate(e -> e.getModel(SeasonalModelType.AW).evaluate(dayOfYear)).multiply(0.001));
+        return new FieldViennaACoefficients<>(interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.AH)).multiply(0.001),
+                                              interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.AW)).multiply(0.001));
 
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParamerers(final FieldGeodeticPoint<T> location,
+    public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T> getWeatherParameters(final FieldGeodeticPoint<T> location,
                                                                                                         final FieldAbsoluteDate<T> date) {
 
         // set up interpolation parameters
-        final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
-        final int dayOfYear = date.getComponents(utc).getDate().getDayOfYear();
-
-        // Corrected height (can be negative)
-        final T undu            = interpolator.interpolate(e -> e.getUndulation());
-        final T correctedheight = location.getAltitude().subtract(undu).subtract(interpolator.interpolate(e -> e.getHs()));
-
-        // Temperature gradient [K/m]
-        final T dTdH = interpolator.interpolate(e -> e.getModel(SeasonalModelType.DT).evaluate(dayOfYear)).multiply(0.001);
-
-        // Specific humidity
-        final T qv = interpolator.interpolate(e -> e.getModel(SeasonalModelType.QV).evaluate(dayOfYear)).multiply(0.001);
-
-        // For the computation of the temperature and the pressure, we use
-        // the standard ICAO atmosphere formulas.
+        final FieldCellInterpolator<T> interpolator =
+            grid.getInterpolator(location.getLatitude(), location.getLongitude(), location.getAltitude(),
+                                 deltaRef(date));
 
         // Temperature [K]
-        final T t0 = interpolator.interpolate(e -> e.getModel(SeasonalModelType.TEMPERATURE).evaluate(dayOfYear));
-        final T temperature = correctedheight.multiply(dTdH).add(t0);
+        final T temperature = interpolator.fieldInterpolate(FieldEvaluatedGridEntry::getTemperature);
 
         // Pressure [hPa]
-        final T p0       = interpolator.interpolate(e -> e.getModel(SeasonalModelType.PRESSURE).evaluate(dayOfYear));
-        final T exponent = dTdH.multiply(R).reciprocal().multiply(G);
-        final T pressure = FastMath.pow(correctedheight.multiply(dTdH.negate().divide(t0)).add(1), exponent).multiply(p0.multiply(0.01));
-
-        // Water vapor pressure [hPa]
-        final T e0 = pressure.multiply(qv.divide(qv.multiply(0.378).add(0.622 )));
-
-        // mean temperature weighted with water vapor pressure
-        final T tm = grid.hasModels(SeasonalModelType.TM) ?
-                     interpolator.interpolate(e -> e.getModel(SeasonalModelType.TM).evaluate(dayOfYear)) :
-                     date.getField().getZero().newInstance(Double.NaN);
+        final T pressure = interpolator.fieldInterpolate(FieldEvaluatedGridEntry::getPressure);
 
         // water vapor decrease factor
         final T lambda = grid.hasModels(SeasonalModelType.LAMBDA) ?
-                         interpolator.interpolate(e -> e.getModel(SeasonalModelType.LAMBDA).evaluate(dayOfYear)) :
+                         interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.LAMBDA)) :
                          date.getField().getZero().newInstance(Double.NaN);
+
+        // Water vapor pressure [hPa]
+        final T el;
+        if (lambda.isNaN()) {
+            // GPT2
+            final T qv = interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.QV)).multiply(0.001);
+            el = qv.multiply(pressure).divide(qv.multiply(0.378).add(0.622));
+        } else {
+            // GPT3
+            el = interpolator.fieldInterpolate(FieldEvaluatedGridEntry::getWaterVaporPressure);
+        }
+
+        // mean temperature weighted with water vapor pressure
+        final T tm = grid.hasModels(SeasonalModelType.TM) ?
+                     interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.TM)) :
+                     date.getField().getZero().newInstance(Double.NaN);
 
         return new FieldPressureTemperatureHumidity<>(location.getAltitude(),
                                                       TroposphericModelUtils.HECTO_PASCAL.toSI(pressure),
                                                       temperature,
-                                                      TroposphericModelUtils.HECTO_PASCAL.toSI(e0),
+                                                      TroposphericModelUtils.HECTO_PASCAL.toSI(el),
                                                       tm,
                                                       lambda);
 
@@ -286,13 +261,14 @@ public class AbstractGlobalPressureTemperature
 
         if (grid.hasModels(SeasonalModelType.GN_H, SeasonalModelType.GE_H, SeasonalModelType.GN_W, SeasonalModelType.GE_W)) {
             // set up interpolation parameters
-            final FieldCellInterpolator<T> interpolator = grid.getInterpolator(location.getLatitude(), location.getLongitude());
-            final int                      dayOfYear    = date.getComponents(utc).getDate().getDayOfYear();
+            final FieldCellInterpolator<T> interpolator =
+                grid.getInterpolator(location.getLatitude(), location.getLongitude(), location.getAltitude(),
+                                     deltaRef(date));
 
-            return new FieldAzimuthalGradientCoefficients<>(interpolator.interpolate(e -> e.getModel(SeasonalModelType.GN_H).evaluate(dayOfYear)),
-                                                            interpolator.interpolate(e -> e.getModel(SeasonalModelType.GE_H).evaluate(dayOfYear)),
-                                                            interpolator.interpolate(e -> e.getModel(SeasonalModelType.GN_W).evaluate(dayOfYear)),
-                                                            interpolator.interpolate(e -> e.getModel(SeasonalModelType.GE_W).evaluate(dayOfYear)));
+            return new FieldAzimuthalGradientCoefficients<>(interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.GN_H)).multiply(0.00001),
+                                                            interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.GE_H)).multiply(0.00001),
+                                                            interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.GN_W)).multiply(0.00001),
+                                                            interpolator.fieldInterpolate(e -> e.getEvaluatedModel(SeasonalModelType.GE_W)).multiply(0.00001));
         } else {
             return null;
         }

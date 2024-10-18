@@ -40,7 +40,7 @@
       +MIXED
     }
 
-    enum Frequency {
+    enum PredefinedGnssSignal {
       +G01
       +G02
       +...
@@ -50,7 +50,7 @@
       +S05
     }
 
-    SatelliteSystem "1" <--* Frequency
+    SatelliteSystem "1" <--* PredefinedGnssSignal
 
     package antenna #DDEBD8 {
 
@@ -68,8 +68,8 @@
       }
 
       class Antenna {
-        +Vector3D getEccentricities(frequency)
-        +double   getPhaseCenterVariation(frequency, direction)
+        +Vector3D getEccentricities(radioWave)
+        +double   getPhaseCenterVariation(radioWave, direction)
       }
 
       class ReceiverAntenna {
@@ -94,7 +94,7 @@
       }
 
       FrequencyPattern "1" <--* PhaseCenterVariationFunction
-      Frequency        "*" <-left-* Antenna
+      PredefinedGnssSignal  "*" <-left-* Antenna
       Antenna *-right-> "*" FrequencyPattern
       SatelliteAntenna     ..|> Antenna
       ReceiverAntenna     ..|> Antenna

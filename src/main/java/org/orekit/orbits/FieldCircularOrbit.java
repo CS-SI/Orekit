@@ -810,54 +810,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                                                                                    getAlphaVDot());
     }
 
-    /** Computes the true latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω eccentric latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the true latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToTrue(final T alphaE, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.eccentricToTrue(ex, ey, alphaE);
-    }
-
-    /** Computes the eccentric latitude argument from the true latitude argument.
-     * @param alphaV = v + ω true latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T trueToEccentric(final T alphaV, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.trueToEccentric(ex, ey, alphaV);
-    }
-
-    /** Computes the eccentric latitude argument from the mean latitude argument.
-     * @param alphaM = M + ω  mean latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the eccentric latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T meanToEccentric(final T alphaM, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM);
-    }
-
-    /** Computes the mean latitude argument from the eccentric latitude argument.
-     * @param alphaE = E + ω  eccentric latitude argument (rad)
-     * @param ex e cos(ω), first component of circular eccentricity vector
-     * @param ey e sin(ω), second component of circular eccentricity vector
-     * @param <T> Type of the field elements
-     * @return the mean latitude argument.
-     */
-    @Deprecated
-    public static <T extends CalculusFieldElement<T>> T eccentricToMean(final T alphaE, final T ex, final T ey) {
-        return FieldCircularLatitudeArgumentUtility.eccentricToMean(ex, ey, alphaE);
-    }
-
     /** {@inheritDoc} */
     @Override
     public T getE() {

@@ -16,19 +16,15 @@
  */
 package org.orekit.estimation.measurements.generation;
 
-import java.util.Map;
-
 import org.hipparchus.random.CorrelatedRandomVectorGenerator;
 import org.orekit.estimation.measurements.AngularRaDec;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
+import java.util.Map;
 
 /** Builder for {@link AngularRaDec} measurements.
  * @author Luc Maisonobe
@@ -36,16 +32,14 @@ import org.orekit.utils.ParameterDriver;
  */
 public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec> {
 
+    /** Zero value for initial dummy measurement. */
+    private static final double[] ZERO = { 0.0, 0.0 };
+
     /** Ground station from which measurement is performed. */
     private final GroundStation station;
 
     /** Reference frame in which the right ascension - declination angles are given. */
     private final Frame referenceFrame;
-
-    /** Satellite related to this builder.
-     * @since 12.0
-     */
-    private final ObservableSatellite satellite;
 
     /** Simple constructor.
      * @param noiseSource noise source, may be null for generating perfect measurements
@@ -62,53 +56,15 @@ public class AngularRaDecBuilder extends AbstractMeasurementBuilder<AngularRaDec
         super(noiseSource, sigma, baseWeight, satellite);
         this.station        = station;
         this.referenceFrame = referenceFrame;
-        this.satellite      = satellite;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AngularRaDec build(final AbsoluteDate date, final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
-
-        final double[] sigma                = getTheoreticalStandardDeviation();
-        final double[] baseWeight           = getBaseWeight();
-        final SpacecraftState[] relevant    = new SpacecraftState[] { interpolators.get(satellite).getInterpolatedState(date) };
-
-        // create a dummy measurement
-        final AngularRaDec dummy = new AngularRaDec(station, referenceFrame, relevant[0].getDate(),
-                                                    new double[] {
-                                                        0.0, 0.0
-                                                    }, sigma, baseWeight, satellite);
-        for (final EstimationModifier<AngularRaDec> modifier : getModifiers()) {
-            dummy.addModifier(modifier);
-        }
-
-        // set a reference date for parameters missing one
-        for (final ParameterDriver driver : dummy.getParametersDrivers()) {
-            if (driver.getReferenceDate() == null) {
-                final AbsoluteDate start = getStart();
-                final AbsoluteDate end   = getEnd();
-                driver.setReferenceDate(start.durationFrom(end) <= 0 ? start : end);
-            }
-        }
-
-        // estimate the perfect value of the measurement
-        final double[] angular = dummy.estimateWithoutDerivatives(relevant).getEstimatedValue();
-
-        // add the noise
-        final double[] noise = getNoise();
-        if (noise != null) {
-            angular[0] += noise[0];
-            angular[1] += noise[1];
-        }
-
-        // generate measurement
-        final AngularRaDec measurement = new AngularRaDec(station, referenceFrame, relevant[0].getDate(),
-                                                          angular, sigma, baseWeight, satellite);
-        for (final EstimationModifier<AngularRaDec> modifier : getModifiers()) {
-            measurement.addModifier(modifier);
-        }
-        return measurement;
-
+    protected AngularRaDec buildObserved(final AbsoluteDate date,
+                                         final Map<ObservableSatellite, OrekitStepInterpolator> interpolators) {
+        return new AngularRaDec(station, referenceFrame, date, ZERO,
+                                getTheoreticalStandardDeviation(),
+                                getBaseWeight(), getSatellites()[0]);
     }
 
 }

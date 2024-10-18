@@ -27,13 +27,6 @@ import org.hipparchus.util.Precision;
  */
 public class AmbiguityCache {
 
-    /** Default cache.
-     * @deprecated this default cache is only a temporary hack for compatibility purposes
-     * it will be removed in Orekit 13.0
-     */
-    @Deprecated
-    public static final AmbiguityCache DEFAULT_CACHE = new AmbiguityCache();
-
     /** Cache map. */
     private final Map<Key, AmbiguityDriver> cache;
 

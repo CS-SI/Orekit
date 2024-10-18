@@ -46,39 +46,11 @@ public class InterSatellitesPhase extends AbstractInterSatellitesMeasurement<Int
     /** Type of the measurement. */
     public static final String MEASUREMENT_TYPE = "InterSatellitesPhase";
 
-    /** Name for ambiguity driver.
-     * @deprecated as of 12.1 not used anymore
-     */
-    @Deprecated
-    public static final String AMBIGUITY_NAME = "ambiguity";
-
     /** Driver for ambiguity. */
     private final AmbiguityDriver ambiguityDriver;
 
     /** Wavelength of the phase observed value [m]. */
     private final double wavelength;
-
-    /** Constructor.
-     * @param local satellite which receives the signal and performs the measurement
-     * @param remote remote satellite which simply emits the signal
-     * @param date date of the measurement
-     * @param phase observed value (cycles)
-     * @param wavelength phase observed value wavelength (m)
-     * @param sigma theoretical standard deviation
-     * @param baseWeight base weight
-     * @deprecated as of 12.1, replaced by {@link #InterSatellitesPhase(ObservableSatellite,
-     * ObservableSatellite, AbsoluteDate, double, double, double, double,
-     * AmbiguityCache)}
-     */
-    @Deprecated
-    public InterSatellitesPhase(final ObservableSatellite local,
-                                final ObservableSatellite remote,
-                                final AbsoluteDate date, final double phase,
-                                final double wavelength, final double sigma,
-                                final double baseWeight) {
-        this(local, remote, date, phase, wavelength, sigma, baseWeight,
-             AmbiguityCache.DEFAULT_CACHE);
-    }
 
     /** Constructor.
      * @param local satellite which receives the signal and performs the measurement

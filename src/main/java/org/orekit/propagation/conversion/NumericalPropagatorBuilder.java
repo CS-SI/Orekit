@@ -126,25 +126,6 @@ public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
         impulseManeuvers.clear();
     }
 
-    /** Create a copy of a NumericalPropagatorBuilder object.
-     * @return Copied version of the NumericalPropagatorBuilder
-     */
-    @Deprecated
-    public NumericalPropagatorBuilder copy() {
-        final NumericalPropagatorBuilder copyBuilder =
-                        new NumericalPropagatorBuilder(createInitialOrbit(),
-                                                       builder,
-                                                       getPositionAngleType(),
-                                                       getPositionScale(),
-                                                       getAttitudeProvider());
-        copyBuilder.setMass(getMass());
-        for (ForceModel model : forceModels) {
-            copyBuilder.addForceModel(model);
-        }
-        impulseManeuvers.forEach(copyBuilder::addImpulseManeuver);
-        return copyBuilder;
-    }
-
     /** Get the integrator builder.
      * @return the integrator builder
      * @since 9.2

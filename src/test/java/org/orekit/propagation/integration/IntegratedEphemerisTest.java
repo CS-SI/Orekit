@@ -28,6 +28,7 @@ import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.CelestialBodyPointed;
 import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -51,10 +52,10 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-public class IntegratedEphemerisTest {
+class IntegratedEphemerisTest {
 
     @Test
-    public void testNormalKeplerIntegration() {
+    void testNormalKeplerIntegration() {
 
         // Keplerian propagator definition
         KeplerianPropagator keplerEx = new KeplerianPropagator(initialOrbit);
@@ -95,7 +96,7 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testPartialDerivativesIssue16() {
+    void testPartialDerivativesIssue16() {
 
         final String eqName = "derivatives";
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
@@ -122,7 +123,7 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testGetFrame() {
+    void testGetFrame() {
         // setup
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
         final EphemerisGenerator generator = numericalPropagator.getEphemerisGenerator();
@@ -137,7 +138,7 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testIssue766() {
+    void testIssue766() {
 
         // setup
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
@@ -151,7 +152,7 @@ public class IntegratedEphemerisTest {
         Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof FrameAlignedProvider);
 
         // action
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        CelestialBody sun = CelestialBodyFactory.getSun();
         ephemeris.setAttitudeProvider(new CelestialBodyPointed(FramesFactory.getEME2000(), sun, Vector3D.PLUS_K,
                                                                Vector3D.PLUS_I, Vector3D.PLUS_K));
         Assertions.assertTrue(ephemeris.getAttitudeProvider() instanceof CelestialBodyPointed);
@@ -159,7 +160,7 @@ public class IntegratedEphemerisTest {
     }
 
     @Test
-    public void testAdditionalDerivatives() {
+    void testAdditionalDerivatives() {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(10.0);
         double[][] tolerances = NumericalPropagator.tolerances(1.0e-3, initialOrbit, OrbitType.CARTESIAN);
@@ -197,7 +198,7 @@ public class IntegratedEphemerisTest {
 
     /** Error with specific propagators & additional state provider throwing a NullPointerException when propagating */
     @Test
-    public void testIssue949() {
+    void testIssue949() {
         // GIVEN
         final AbsoluteDate initialDate = new AbsoluteDate();
         numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));

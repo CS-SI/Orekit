@@ -87,7 +87,7 @@ class AbstractIndirectShootingTest {
         Assertions.assertEquals(propagator.getAllForceModels().get(0), forceModelList.get(0));
         Assertions.assertEquals(propagator.getAttitudeProvider(), fieldPropagator.getAttitudeProvider());
         Assertions.assertEquals(propagator.getFrame(), fieldPropagator.getFrame());
-        Assertions.assertEquals(propagator.getEventsDetectors().size(), fieldPropagator.getEventsDetectors().size());
+        Assertions.assertEquals(propagator.getEventDetectors().size(), fieldPropagator.getEventDetectors().size());
         Assertions.assertEquals(propagator.getOrbitType(), fieldPropagator.getOrbitType());
     }
 

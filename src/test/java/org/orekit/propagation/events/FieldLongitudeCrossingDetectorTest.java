@@ -67,7 +67,7 @@ public class FieldLongitudeCrossingDetectorTest {
                 FastMath.toRadians(10.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(10.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());
@@ -125,7 +125,7 @@ public class FieldLongitudeCrossingDetectorTest {
                 FastMath.toRadians(-100.0)).
                 withHandler(new FieldContinueOnEvent<>());
 
-        Assertions.assertEquals(600.0, d.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(600.0, d.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-6, d.getThreshold().getReal(), 1.0e-15);
         Assertions.assertEquals(-100.0, FastMath.toDegrees(d.getLongitude()), 1.0e-14);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, d.getMaxIterationCount());

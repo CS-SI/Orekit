@@ -20,6 +20,112 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1561">
+            Allow moving a transition between two spans in a TimeSpanMap.
+        </action>
+        <action dev="luc" type="fix" issue="1550">
+            Added getEffectName to EstimationModifier.
+        </action>
+        <action dev="luc" type="fix" issue="1549">
+            Fixed wrong default time scale when parsing Rinex observation files.
+        </action>
+        <action dev="luc" type="fix" issue="1548">
+            Added toString to SatInSystem.
+        </action>
+        <action dev="luc" type="fix" issue="1542">
+            Use SatInSystem in SatelliteAntenna.
+        </action>
+        <action dev="luc" type="fix" issue="1538">
+            Revamped Sinex and Sinex-bias parsing.
+        </action>
+        <action dev="luc" type="update">
+          Allow building SatInSystem directly for Rinex-formatted string.
+        </action>
+        <action dev="luc" type="fix" issue="1535">
+            Fixed parsing of slightly non-conformant SINEX-bias files.
+        </action>
+        <action dev="luc" type="fix" issue="1534">
+            Fixed parsing of IONEX files with jammed TEC fields.
+        </action>
+        <action dev="luc" type="fix" issue="1531">
+            Fixed Global Pressure Temperature models GPT2, GPT2w and GPT3.
+        </action>
+        <action dev="luc" type="add" issue="1528">
+            Added elevationSwitchSup to ElevationDetectionAdaptableIntervalFactory.
+        </action>
+        <action dev="serrof" type="add" issue="1519">
+          Allow to define body attraction without CelestialBody.
+        </action>
+        <action dev="luc" type="add" issue="707">
+            Properly parse dates during the 1961 leap that was 1.422818s long.
+        </action>
+        <action dev="luc" type="add" issue="1454">
+            Revamped dates handling to avoid rounding errors, improve accuracy
+            up to attoseconds and improve robustness.
+        </action>
+        <action dev="luc" type="add" issue="1498">
+            Allow roundtrip write/read for Rinex observation files with non-standard
+            satellite systems.
+        </action>
+        <action dev="luc" type="add" issue="1496">
+            Declared two-way time transfer entry in MeasurementType (measurement not implemented yet).
+        </action>
+        <action dev="luc" type="add" issue="1495">
+            Allow computation of angular wind-up without modifying a measurement.
+        </action>
+        <action dev="serrof" type="add" issue="1484">
+          Add toODEIntegratorBuilder in FieldODEIntegratorBuilder.
+        </action>
+        <action dev="luc" type="add" issue="1468">
+            Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
+            added signalTimeOfFlightAdjustableReceiver.
+        </action>
+        <action dev="serrof" type="update" issue="1241">
+            Use Field date in Sun's position for atmosphere when applicable.
+        </action>
+        <action dev="serrof" type="update" issue="1421">
+            Use UnivariateDerivative2 instead of DerivativeStructure in OneAxisEllispoid.
+        </action>
+        <action dev="serrof" type="update" issue="1411">
+            Use Field date when possible in CelestialBodyPointed.
+        </action>
+        <action dev="luc" type="add">
+            Allow reading and writing Rinex files with custom satellite systems and observation types.
+        </action>
+        <action dev="luc" type="update" issue="1456">
+            Changed ObservationType to an interface, PredefinedObservationType being a new enum.
+        </action>
+        <action dev="luc" type="add" issue="1443">
+            Added support for sexagesimal angles.
+        </action>
+        <action dev="luc" type="update" >
+            Removed all classes and methods that were deprecated in 12.X.
+        </action>
+        <action dev="luc" type="update" issue="1439">
+            Added a posteriori filtering feature for generated measurements.
+        </action>
+        <action dev="luc" type="update" issue="1438">
+            Added upgrade instructions for major versions.
+        </action>
+        <action dev="luc" type="update" issue="1434">
+            Replaced Frequency by RadioWave, GnssSignal or PredefinedGnssSignal
+            where relevant.
+        </action>
+        <action dev="serrof" type="update" issue="1382">
+          Add direction of propagation as argument in (Field)AdaptableInterval.
+        </action>
+        <action dev="serrof" type="update" issue="1373">
+            Change default position angle type to ECCENTRIC in (Field)NumericalPropagator.
+        </action>
+        <action dev="luc" type="update" issue="1350">
+          Allow measurement generation feature to return estimated measurements,
+          with fully populated states.
+        </action>
+        <action dev="serrof" type="update" issue="1270">
+          Rename getEventsDetectors as getEventDetectors in (Field)Propagator.
+        </action>
+    </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
              optimal control (indirect). It implements several methods that were missing in field

@@ -32,13 +32,13 @@ import org.orekit.utils.Constants;
 public class GMSTScale implements TimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Duration of one julian day. */
-    private static final double FULL_DAY = Constants.JULIAN_DAY;
+    private static final long FULL_DAY = 86400L;
 
     /** Duration of an half julian day. */
-    private static final double HALF_DAY = Constants.JULIAN_DAY / 2.0;
+    private static final long HALF_DAY = FULL_DAY / 2;
 
     /** Coefficient for degree 0. */
     private static final double C0 = 24110.54841;
@@ -71,7 +71,7 @@ public class GMSTScale implements TimeScale {
 
     /** {@inheritDoc} */
     @Override
-    public double offsetFromTAI(final AbsoluteDate date) {
+    public TimeOffset offsetFromTAI(final AbsoluteDate date) {
 
         // julian seconds since reference date
         final double ts = date.durationFrom(referenceDate);
@@ -83,10 +83,16 @@ public class GMSTScale implements TimeScale {
         final double gmst0h = C0 + tc * (C1 + tc * (C2 + tc * C3));
 
         // offset with respect to TAI
-        final double offset = gmst0h + ut1.offsetFromTAI(date);
+        final TimeOffset offset = new TimeOffset(gmst0h).add(ut1.offsetFromTAI(date));
 
         // normalize offset between -43200 and +43200 seconds
-        return offset - FULL_DAY * FastMath.floor((offset + HALF_DAY) / FULL_DAY);
+        long clipped = offset.getSeconds() < 0L ?
+                       (offset.getSeconds() - HALF_DAY) % FULL_DAY + HALF_DAY :
+                       (offset.getSeconds() + HALF_DAY) % FULL_DAY - HALF_DAY;
+        if (clipped == HALF_DAY && offset.getAttoSeconds() > 0L) {
+            clipped -= FULL_DAY;
+        }
+        return new TimeOffset(clipped, offset.getAttoSeconds());
 
     }
 

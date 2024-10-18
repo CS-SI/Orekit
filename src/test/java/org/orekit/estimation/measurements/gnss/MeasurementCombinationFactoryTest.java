@@ -33,7 +33,7 @@ import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservationParser;
 import org.orekit.gnss.GnssSignal;
 import org.orekit.gnss.MeasurementType;
-import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.utils.Constants;
@@ -61,7 +61,7 @@ public class MeasurementCombinationFactoryTest {
         RinexObservationParser parser = new RinexObservationParser();
 
         // Observation data
-        obs1 = new ObservationData(ObservationType.L1, 2.25E7, 0, 0);
+        obs1 = new ObservationData(PredefinedObservationType.L1, 2.25E7, 0, 0);
 
         // RINEX 2 Observation data set
         final String name2 = "rinex/truncate-sbch0440.16o";
@@ -122,8 +122,7 @@ public class MeasurementCombinationFactoryTest {
     private void doTestEmptyDataSet(final MeasurementCombination combination) {
         // Build empty observation data set
         final ObservationDataSet emptyDataSet = new ObservationDataSet(new SatInSystem(dataSetRinex2.getSatellite().getSystem(),
-                                                                                       dataSetRinex2.getSatellite()
-                                                                                        .getPRN()),
+                                                                                       dataSetRinex2.getSatellite().getPRN()),
                                                                        dataSetRinex2.getDate(), 0,
                                                                        dataSetRinex2.getRcvrClkOffset(),
                                                                        new ArrayList<>());
@@ -165,7 +164,7 @@ public class MeasurementCombinationFactoryTest {
     private void doTestExceptionsSingleFrequency(final AbstractSingleFrequencyCombination combination) {
         // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
-            final ObservationData observation = new ObservationData(ObservationType.L5, 12345678.0, 0, 0);
+            final ObservationData observation = new ObservationData(PredefinedObservationType.L5, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -174,7 +173,7 @@ public class MeasurementCombinationFactoryTest {
 
         // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
-            final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
+            final ObservationData observation = new ObservationData(PredefinedObservationType.L1, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -188,7 +187,7 @@ public class MeasurementCombinationFactoryTest {
     private void doTestExceptionsDualFrequency(final AbstractDualFrequencyCombination combination) {
         // Test INCOMPATIBLE_FREQUENCIES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
-            final ObservationData observation = new ObservationData(ObservationType.L1, 12345678.0, 0, 0);
+            final ObservationData observation = new ObservationData(PredefinedObservationType.L1, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -197,7 +196,7 @@ public class MeasurementCombinationFactoryTest {
 
         // Test INVALID_MEASUREMENT_TYPES_FOR_COMBINATION_OF_MEASUREMENTS exception
         try {
-            final ObservationData observation = new ObservationData(ObservationType.D2, 12345678.0, 0, 0);
+            final ObservationData observation = new ObservationData(PredefinedObservationType.D2, 12345678.0, 0, 0);
             combination.combine(obs1, observation);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -258,11 +257,6 @@ public class MeasurementCombinationFactoryTest {
         // L2/P2
         Assertions.assertEquals(expectedL2P2,       data.get(0).getValue(),                eps);
         Assertions.assertEquals(120 * GnssSignal.F0, data.get(0).getCombinedFrequency(), eps);
-
-        // test deprecated method
-        Assertions.assertEquals(120 * GnssSignal.F0 / AbstractDualFrequencyCombination.MHZ_TO_HZ,
-                                data.get(0).getCombinedMHzFrequency(),
-                                eps);
 
     }
 
@@ -397,8 +391,8 @@ public class MeasurementCombinationFactoryTest {
         // Source of the values: https://gitlab.orekit.org/orekit/orekit/-/issues/746
 
         // Build the observation data
-        final ObservationData obs1 = new ObservationData(ObservationType.L1, 1.17452520667E8, 0, 0);
-        final ObservationData obs2 = new ObservationData(ObservationType.L2, 9.1521434853E7, 0, 0);
+        final ObservationData obs1 = new ObservationData(PredefinedObservationType.L1, 1.17452520667E8, 0, 0);
+        final ObservationData obs2 = new ObservationData(PredefinedObservationType.L2, 9.1521434853E7, 0, 0);
 
         // Ionosphere-free measurement
         final IonosphereFreeCombination ionoFree = MeasurementCombinationFactory.getIonosphereFreeCombination(SatelliteSystem.GPS);

@@ -140,7 +140,7 @@ class EclipseDetectorTest {
                             withThreshold(1.0e-3).
                             withHandler(new StopOnDecreasing()).
                             withUmbra();
-        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(60.0, e.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-3, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(AbstractDetector.DEFAULT_MAX_ITER, e.getMaxIterationCount());
         Assertions.assertEquals(0.0, e.getMargin(), 1.0e-15);
@@ -170,7 +170,7 @@ class EclipseDetectorTest {
                              withThreshold(1.0e-4).
                              withMaxIter(12).
                              withMargin(0.001);
-        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null), 1.0e-15);
+        Assertions.assertEquals(120.0, e.getMaxCheckInterval().currentInterval(null, true), 1.0e-15);
         Assertions.assertEquals(1.0e-4, e.getThreshold(), 1.0e-15);
         Assertions.assertEquals(12, e.getMaxIterationCount());
         propagator.addEventDetector(e);

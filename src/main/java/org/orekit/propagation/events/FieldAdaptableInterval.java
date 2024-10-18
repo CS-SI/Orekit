@@ -30,11 +30,14 @@ import org.orekit.propagation.FieldSpacecraftState;
 @FunctionalInterface
 public interface FieldAdaptableInterval<T extends CalculusFieldElement<T>> {
 
-    /** Get the current value of maximal time interval between events handler checks.
-     * @param state current state
+    /**
+     * Get the current value of maximal time interval between events handler checks.
+     *
+     * @param state     current state
+     * @param isForward direction of propagation
      * @return current value of maximal time interval between events handler checks (only as a double)
      */
-    double currentInterval(FieldSpacecraftState<T> state);
+    double currentInterval(FieldSpacecraftState<T> state, boolean isForward);
 
     /**
      * Method creating a constant interval provider.
@@ -44,6 +47,6 @@ public interface FieldAdaptableInterval<T extends CalculusFieldElement<T>> {
      * @since 12.1
      */
     static <T extends CalculusFieldElement<T>> FieldAdaptableInterval<T> of(final double constantInterval) {
-        return state -> constantInterval;
+        return (state, isForward) -> constantInterval;
     }
 }

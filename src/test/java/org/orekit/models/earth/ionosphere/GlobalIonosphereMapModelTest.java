@@ -38,7 +38,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.gnss.Frequency;
+import org.orekit.gnss.PredefinedGnssSignal;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -53,8 +53,8 @@ import org.orekit.utils.IERSConventions;
 
 public class GlobalIonosphereMapModelTest {
 
-    private static double epsilonParser = 1.0e-16;
-    private static double epsilonDelay  = 0.001;
+    private static final double epsilonParser = 1.0e-16;
+    private static final double epsilonDelay  = 0.001;
     private SpacecraftState state;
     private OneAxisEllipsoid earth;
 
@@ -86,7 +86,7 @@ public class GlobalIonosphereMapModelTest {
             final double delay = (Double) pathDelay.invoke(model,
                                                            new AbsoluteDate(2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
                                                            new GeodeticPoint(latitude, longitude, 0.0),
-                                                           0.5 * FastMath.PI, Frequency.G01.getFrequency());
+                                                           0.5 * FastMath.PI, PredefinedGnssSignal.G01.getFrequency());
             Assertions.assertEquals(1.557, delay, epsilonDelay);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                  IllegalArgumentException | InvocationTargetException e) {
@@ -116,7 +116,7 @@ public class GlobalIonosphereMapModelTest {
                                                  new FieldAbsoluteDate<>(field, 2019, 1, 15, 3, 43, 12.0, TimeScalesFactory.getUTC()),
                                                  new GeodeticPoint(latitude, longitude, 0.0),
                                                  zero.add(0.5 * FastMath.PI),
-                                                 Frequency.G01.getFrequency());
+                                                 PredefinedGnssSignal.G01.getFrequency());
             Assertions.assertEquals(1.557, delay.getReal(), epsilonDelay);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                         IllegalArgumentException | InvocationTargetException e) {
@@ -144,7 +144,7 @@ public class GlobalIonosphereMapModelTest {
                                                                              FastMath.toRadians(85.7881),
                                                                              36.0),
                                                            "Cuttack");
-        final double delay = model.pathDelay(state, topo, Frequency.G01.getFrequency(), null);
+        final double delay = model.pathDelay(state, topo, PredefinedGnssSignal.G01.getFrequency(), null);
         Assertions.assertEquals(2.810, delay, epsilonDelay);
 
         // the delay at station longitude is different, due to IPP
@@ -156,7 +156,7 @@ public class GlobalIonosphereMapModelTest {
             pathDelay.setAccessible(true);
             final double delayIPP = (Double) pathDelay.invoke(model, date, topo.getPoint(),
                                                               0.5 * FastMath.PI,
-                                                              Frequency.G01.getFrequency());
+                                                              PredefinedGnssSignal.G01.getFrequency());
             Assertions.assertEquals(2.173, delayIPP, epsilonDelay);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                  IllegalArgumentException | InvocationTargetException ex) {
@@ -184,7 +184,7 @@ public class GlobalIonosphereMapModelTest {
                                                                              FastMath.toRadians(85.7881),
                                                                              650000.0),
                                                            "very-high");
-        final double delay = model.pathDelay(state, topo, Frequency.G01.getFrequency(), null);
+        final double delay = model.pathDelay(state, topo, PredefinedGnssSignal.G01.getFrequency(), null);
         Assertions.assertEquals(0.0, delay, epsilonDelay);
 
     }
@@ -214,7 +214,7 @@ public class GlobalIonosphereMapModelTest {
                                                                              FastMath.toRadians(85.7881),
                                                                              36.0),
                                                            "Cuttack");
-        final T delay = model.pathDelay(state, topo, Frequency.G01.getFrequency(), null);
+        final T delay = model.pathDelay(state, topo, PredefinedGnssSignal.G01.getFrequency(), null);
         Assertions.assertEquals(2.810, delay.getReal(), epsilonDelay);
 
         // the delay at station longitude is different, due to IPP
@@ -228,7 +228,7 @@ public class GlobalIonosphereMapModelTest {
             @SuppressWarnings("unchecked")
             final T delayIPP = (T) pathDelay.invoke(model, date, topo.getPoint(),
                                                     field.getZero().newInstance(0.5 * FastMath.PI),
-                                                    Frequency.G01.getFrequency());
+                                                    PredefinedGnssSignal.G01.getFrequency());
             Assertions.assertEquals(2.173, delayIPP.getReal(), epsilonDelay);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
                  IllegalArgumentException | InvocationTargetException ex) {
@@ -261,7 +261,7 @@ public class GlobalIonosphereMapModelTest {
                                                                              FastMath.toRadians(85.7881),
                                                                              650000.0),
                                                            "very-high");
-        final T delay = model.pathDelay(state, topo, Frequency.G01.getFrequency(), null);
+        final T delay = model.pathDelay(state, topo, PredefinedGnssSignal.G01.getFrequency(), null);
         Assertions.assertEquals(0.0, delay.getReal(), epsilonDelay);
 
     }
@@ -295,10 +295,10 @@ public class GlobalIonosphereMapModelTest {
             longitude1 = FastMath.toRadians(181.0);
             longitude2 = FastMath.toRadians(-179.0);
             AbsoluteDate date1 = new AbsoluteDate(2019, 1, 15, 1, 0, 0.0, TimeScalesFactory.getUTC());
-            Assertions.assertEquals(((Double) pathDelay.invoke(model, date1, new GeodeticPoint(latitude, longitude1, 0.0),
-                                                               0.01, Frequency.G01.getFrequency())).doubleValue(),
+            Assertions.assertEquals((Double) pathDelay.invoke(model, date1, new GeodeticPoint(latitude, longitude1, 0.0),
+                                                              0.01, PredefinedGnssSignal.G01.getFrequency()),
                                     ((Double) pathDelay.invoke(model, date1, new GeodeticPoint(latitude, longitude2, 0.0),
-                                                               0.01, Frequency.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     epsilonParser);
 
             // Test longitude = 180° and longitude = -180°
@@ -307,9 +307,9 @@ public class GlobalIonosphereMapModelTest {
             longitude2 = FastMath.toRadians(-180.0);
 
             Assertions.assertEquals(((Double) pathDelay.invoke(model, date2, new GeodeticPoint(latitude, longitude1, 0.0),
-                                                               0.01, Frequency.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     ((Double) pathDelay.invoke(model, date2, new GeodeticPoint(latitude, longitude2, 0.0),
-                                                               0.01, Frequency.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     epsilonParser);
 
             // Test longitude = 0° and longitude = 360°
@@ -318,9 +318,9 @@ public class GlobalIonosphereMapModelTest {
             longitude2 =  FastMath.toRadians(360.0);
 
             Assertions.assertEquals(((Double) pathDelay.invoke(model, date3, new GeodeticPoint(latitude, longitude1, 0.0),
-                                                               0.01, Frequency.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     ((Double) pathDelay.invoke(model, date3, new GeodeticPoint(latitude, longitude2, 0.0),
-                                                               0.01, Frequency.G01.getFrequency())).doubleValue(),
+                                                               0.01, PredefinedGnssSignal.G01.getFrequency())),
                                     epsilonParser);
 
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException |
@@ -351,7 +351,7 @@ public class GlobalIonosphereMapModelTest {
 
         try {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
-                            Frequency.G01.getFrequency(),
+                            PredefinedGnssSignal.G01.getFrequency(),
                             model.getParameters(new AbsoluteDate()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
@@ -372,7 +372,7 @@ public class GlobalIonosphereMapModelTest {
 
         try {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
-                            Frequency.G01.getFrequency(),
+                            PredefinedGnssSignal.G01.getFrequency(),
                             model.getParameters(field, new FieldAbsoluteDate<>(field)));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
@@ -389,7 +389,7 @@ public class GlobalIonosphereMapModelTest {
 
         try {
             model.pathDelay(state, new TopocentricFrame(earth, point, null),
-                            Frequency.G01.getFrequency(),
+                            PredefinedGnssSignal.G01.getFrequency(),
                             model.getParameters(new AbsoluteDate()));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
@@ -410,7 +410,7 @@ public class GlobalIonosphereMapModelTest {
         final GeodeticPoint point = new GeodeticPoint(latitude, longitude, 0.0);
         try {
             model.pathDelay(new FieldSpacecraftState<>(field, state), new TopocentricFrame(earth, point, null),
-                            Frequency.G01.getFrequency(),
+                            PredefinedGnssSignal.G01.getFrequency(),
                             model.getParameters(field, new FieldAbsoluteDate<>(field)));
             Assertions.fail("An exception should have been thrown");
         } catch (OrekitException oe) {
@@ -422,7 +422,7 @@ public class GlobalIonosphereMapModelTest {
     @Test
     /**
      * The goal of this test is to verify if an OrekitException is thrown when latitude or longitude
-     * bondaries are not present in the header section of the Global Ionosphere Map.
+     * boundaries are not present in the header section of the Global Ionosphere Map.
      */
     public void testIssue621() {
         final String fileName  = "missing-lat-lon-header-gpsg0150.19i";
@@ -434,6 +434,11 @@ public class GlobalIonosphereMapModelTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.NO_LATITUDE_LONGITUDE_BONDARIES_IN_IONEX_HEADER, oe.getSpecifier());
         }
+    }
+
+    @Test
+    public void testJammedFields() {
+        Assertions.assertNotNull(new GlobalIonosphereMapModel("jammed-fields.14i"));
     }
 
     @Test

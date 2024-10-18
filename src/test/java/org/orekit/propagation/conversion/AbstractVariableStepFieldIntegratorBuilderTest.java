@@ -41,5 +41,10 @@ class AbstractVariableStepFieldIntegratorBuilderTest {
         public AbstractFieldIntegrator buildIntegrator(Field field, Orbit orbit, OrbitType orbitType) {
             return null;
         }
+
+        @Override
+        public ODEIntegratorBuilder toODEIntegratorBuilder() {
+            return null;
+        }
     }
 }

@@ -32,12 +32,14 @@ import org.hipparchus.random.Well19937a;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.SinCos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeOffset;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -153,18 +155,18 @@ public class TransformTest {
     @Test
     public void testIdentityTranslation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(0, 0, 0)),
-                new Well19937a(0xfd118eac6b5ec136l));
+                new Well19937a(0xfd118eac6b5ec136L));
     }
 
     @Test
     public void testIdentityRotation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Rotation(1, 0, 0, 0, false)),
-                new Well19937a(0xfd118eac6b5ec136l));
+                new Well19937a(0xfd118eac6b5ec136L));
     }
 
     @Test
     public void testIdentityLine() {
-        RandomGenerator random = new Well19937a(0x98603025df70db7cl);
+        RandomGenerator random = new Well19937a(0x98603025df70db7cL);
         Vector3D p1 = randomVector(100.0, random);
         Vector3D p2 = randomVector(100.0, random);
         Line line = new Line(p1, p2, 1.0e-6);
@@ -173,7 +175,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testFieldBackwardGeneration() throws Exception {
+    public void testFieldBackwardGeneration() {
         Utils.setDataRoot("regular-data");
         TimeScale utc = TimeScalesFactory.getUTC();
         Frame tod = FramesFactory.getTOD(false);
@@ -202,16 +204,18 @@ public class TransformTest {
     public void testAcceleration() {
 
         PVCoordinates initPV = new PVCoordinates(new Vector3D(9, 8, 7), new Vector3D(6, 5, 4), new Vector3D(3, 2, 1));
-        for (double dt = 0; dt < 1; dt += 0.01) {
-            PVCoordinates basePV        = initPV.shiftedBy(dt);
+        for (TimeOffset dt = TimeOffset.ZERO; dt.compareTo(TimeOffset.SECOND) < 0; dt = dt.add(
+            TimeOffset.MILLISECOND.multiply(10))) {
+            PVCoordinates basePV        = initPV.shiftedBy(dt.toDouble());
             PVCoordinates transformedPV = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt).transformPVCoordinates(basePV);
 
             // rebuild transformed acceleration, relying only on transformed position and velocity
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
-            double h = 1.0e-2;
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
+            TimeOffset h = TimeOffset.MILLISECOND.multiply(10);
             for (int i = -3; i < 4; ++i) {
-                Transform t = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt + i * h);
-                PVCoordinates pv = t.transformPVCoordinates(initPV.shiftedBy(dt + i * h));
+                TimeOffset dthi = i < 0 ? dt.subtract(h.multiply(-i)) : dt.add(h.multiply(i));
+                Transform t = evolvingTransform(AbsoluteDate.J2000_EPOCH, dthi);
+                PVCoordinates pv = t.transformPVCoordinates(initPV.shiftedBy(dthi.toDouble()));
                 sample.add(new TimeStampedPVCoordinates(t.getDate(), pv.getPosition(), pv.getVelocity(), Vector3D.ZERO));
             }
 
@@ -231,7 +235,7 @@ public class TransformTest {
 
     @Test
     public void testAccelerationComposition() {
-        RandomGenerator random = new Well19937a(0x41fdd07d6c9e9f65l);
+        RandomGenerator random = new Well19937a(0x41fdd07d6c9e9f65L);
 
         Vector3D  p1 = randomVector(1.0e3,  random);
         Vector3D  v1 = randomVector(1.0,    random);
@@ -283,7 +287,7 @@ public class TransformTest {
     @Test
     public void testRandomComposition() {
 
-        RandomGenerator random = new Well19937a(0x171c79e323a1123l);
+        RandomGenerator random = new Well19937a(0x171c79e323a1123L);
         for (int i = 0; i < 20; ++i) {
 
             // build a complex transform by composing primitive ones
@@ -332,7 +336,7 @@ public class TransformTest {
 
     @Test
     public void testReverse() {
-        RandomGenerator random = new Well19937a(0x9f82ba2b2c98dac5l);
+        RandomGenerator random = new Well19937a(0x9f82ba2b2c98dac5L);
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
 
@@ -369,7 +373,7 @@ public class TransformTest {
 
     @Test
     public void testDecomposeAndRebuild() {
-        RandomGenerator random = new Well19937a(0xb8ee9da1b05198c9l);
+        RandomGenerator random = new Well19937a(0xb8ee9da1b05198c9L);
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
             Transform rebuilt  = new Transform(combined.getDate(),
@@ -386,7 +390,7 @@ public class TransformTest {
 
     @Test
     public void testTranslation() {
-        RandomGenerator rnd = new Well19937a(0x7e9d737ba4147787l);
+        RandomGenerator rnd = new Well19937a(0x7e9d737ba4147787L);
         for (int i = 0; i < 10; ++i) {
             Vector3D delta = randomVector(1.0e3, rnd);
             Transform transform = new Transform(AbsoluteDate.J2000_EPOCH, delta);
@@ -493,7 +497,7 @@ public class TransformTest {
     @Test
     public void testRotPV() {
 
-        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
+        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0L);
 
         // Instant Rotation only
 
@@ -535,7 +539,7 @@ public class TransformTest {
     @Test
     public void testTransPV() {
 
-        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
+        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0L);
 
         // translation velocity only :
 
@@ -564,22 +568,22 @@ public class TransformTest {
             checkVector(good, result, 1.0e-15);
 
             FieldPVCoordinates<Binary64> fieldPVOne =
-                    new FieldPVCoordinates<Binary64>(new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getPosition()),
-                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getVelocity()),
-                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getAcceleration()));
+                    new FieldPVCoordinates<>(new FieldVector3D<>(Binary64Field.getInstance(), pvOne.getPosition()),
+                            new FieldVector3D<>(Binary64Field.getInstance(), pvOne.getVelocity()),
+                            new FieldVector3D<>(Binary64Field.getInstance(), pvOne.getAcceleration()));
             FieldPVCoordinates<Binary64> fieldPVTwo = tr.transformPVCoordinates(fieldPVOne);
             FieldVector3D<Binary64> fieldResult  =
-                    fieldPVTwo.getPosition().add(new FieldVector3D<Binary64>(dt, fieldPVTwo.getVelocity()));
+                    fieldPVTwo.getPosition().add(new FieldVector3D<>(dt, fieldPVTwo.getVelocity()));
             checkVector(good, fieldResult.toVector3D(), 1.0e-15);
 
             TimeStampedFieldPVCoordinates<Binary64> fieldTPVOne =
-                    new TimeStampedFieldPVCoordinates<Binary64>(tr.getDate(),
-                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getPosition()),
-                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getVelocity()),
-                            new FieldVector3D<Binary64>(Binary64Field.getInstance(), pvOne.getAcceleration()));
+                    new TimeStampedFieldPVCoordinates<>(tr.getDate(),
+                            new FieldVector3D<>(Binary64Field.getInstance(), pvOne.getPosition()),
+                            new FieldVector3D<>(Binary64Field.getInstance(), pvOne.getVelocity()),
+                            new FieldVector3D<>(Binary64Field.getInstance(), pvOne.getAcceleration()));
             TimeStampedFieldPVCoordinates<Binary64> fieldTPVTwo = tr.transformPVCoordinates(fieldTPVOne);
             FieldVector3D<Binary64> fieldTResult  =
-                    fieldTPVTwo.getPosition().add(new FieldVector3D<Binary64>(dt, fieldTPVTwo.getVelocity()));
+                    fieldTPVTwo.getPosition().add(new FieldVector3D<>(dt, fieldTPVTwo.getVelocity()));
             checkVector(good, fieldTResult.toVector3D(), 1.0e-15);
 
             // test inverse
@@ -593,7 +597,7 @@ public class TransformTest {
 
     @Test
     public void testRotation() {
-        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
+        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0L);
         for (int i = 0; i < 10; ++i) {
 
             Rotation r    = randomRotation(rnd);
@@ -626,7 +630,7 @@ public class TransformTest {
         };
         double h = 0.01;
 
-        RandomGenerator random = new Well19937a(0x47fd0d6809f4b173l);
+        RandomGenerator random = new Well19937a(0x47fd0d6809f4b173L);
         for (int i = 0; i < 20; ++i) {
 
             // generate a random transform
@@ -702,7 +706,7 @@ public class TransformTest {
         };
         double h = 0.01;
 
-        RandomGenerator random = new Well19937a(0xce2bfddfbb9796bel);
+        RandomGenerator random = new Well19937a(0xce2bfddfbb9796beL);
         for (int i = 0; i < 20; ++i) {
 
             // generate a random transform
@@ -785,7 +789,7 @@ public class TransformTest {
         };
         double h = 0.01;
 
-        RandomGenerator random = new Well19937a(0xd223e88b6232198fl);
+        RandomGenerator random = new Well19937a(0xd223e88b6232198fL);
         for (int i = 0; i < 20; ++i) {
 
             // generate a random transform
@@ -845,7 +849,7 @@ public class TransformTest {
 
     @Test
     public void testLine() {
-        RandomGenerator random = new Well19937a(0x4a5ff67426c5731fl);
+        RandomGenerator random = new Well19937a(0x4a5ff67426c5731fL);
         for (int i = 0; i < 100; ++i) {
             Transform transform = randomTransform(random);
             for (int j = 0; j < 20; ++j) {
@@ -864,7 +868,7 @@ public class TransformTest {
     @Test
     public void testLinear() {
 
-        RandomGenerator random = new Well19937a(0x14f6411217b148d8l);
+        RandomGenerator random = new Well19937a(0x14f6411217b148d8L);
         for (int n = 0; n < 100; ++n) {
             Transform t = randomTransform(random);
 
@@ -972,7 +976,7 @@ public class TransformTest {
     @Test
     public void testShiftDerivatives() {
 
-        RandomGenerator random = new Well19937a(0x5acda4f605aadce7l);
+        RandomGenerator random = new Well19937a(0x5acda4f605aadce7L);
         for (int i = 0; i < 10; ++i) {
             Transform t = randomTransform(random);
 
@@ -1122,12 +1126,14 @@ public class TransformTest {
     public void testInterpolation() {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        List<Transform> sample = new ArrayList<Transform>();
+        List<Transform> sample = new ArrayList<>();
         for (int i = 0; i < 5; ++i) {
-            sample.add(evolvingTransform(t0, i * 0.8));
+            sample.add(evolvingTransform(t0, TimeOffset.MILLISECOND.multiply(800 * i)));
         }
 
-        for (double dt = 0.1; dt <= 3.1; dt += 0.01) {
+        for (TimeOffset dt = TimeOffset.MILLISECOND.multiply(100);
+             dt.compareTo(TimeOffset.MILLISECOND.multiply(3100)) < 0;
+             dt = dt.add(TimeOffset.MILLISECOND.multiply(100))) {
             Transform reference = evolvingTransform(t0, dt);
             Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample.stream());
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
@@ -1142,20 +1148,19 @@ public class TransformTest {
 
     }
 
-    private Transform evolvingTransform(final AbsoluteDate t0, final double dt) {
+    private Transform evolvingTransform(final AbsoluteDate t0, final TimeOffset dt) {
         // the following transform corresponds to a frame moving along the circle r = 1
         // with its x axis always pointing to the reference frame center
         final double omega = 0.2;
         final AbsoluteDate date = t0.shiftedBy(dt);
-        final double cos = FastMath.cos(omega * dt);
-        final double sin = FastMath.sin(omega * dt);
+        final SinCos sc = FastMath.sinCos(omega * dt.toDouble());
         return new Transform(date,
                 new Transform(date,
-                        new Vector3D(-cos, -sin, 0),
-                        new Vector3D(omega * sin, -omega * cos, 0),
-                        new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
+                        new Vector3D(-sc.cos(), -sc.sin(), 0),
+                        new Vector3D(omega * sc.sin(), -omega * sc.cos(), 0),
+                        new Vector3D(omega * omega * sc.cos(), omega * omega * sc.sin(), 0)),
                 new Transform(date,
-                        new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt,
+                        new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt.toDouble(),
                                 RotationConvention.VECTOR_OPERATOR),
                         new Vector3D(omega, Vector3D.PLUS_K)));
     }

@@ -64,7 +64,7 @@ public class KeplerianPropagatorBuilderTest {
 
         // Then
         final Propagator propagator = builder.buildPropagator();
-        Assertions.assertTrue(propagator.getEventsDetectors().isEmpty());
+        Assertions.assertTrue(propagator.getEventDetectors().isEmpty());
     }
 
     @Test
@@ -79,31 +79,14 @@ public class KeplerianPropagatorBuilderTest {
 
         // Then
         final Propagator propagator = builder.buildPropagator();
-        Assertions.assertEquals(1, propagator.getEventsDetectors().size());
-        Assertions.assertEquals(mockedManeuver, propagator.getEventsDetectors().toArray()[0]);
-    }
-
-    @Test
-    @SuppressWarnings("deprecation")
-    void testCopyMethod() {
-
-        // Given
-        final Orbit orbit = getOrbit();
-        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(orbit, PositionAngleType.MEAN, 1.0);
-
-        // When
-        final KeplerianPropagatorBuilder copyBuilder = builder.copy();
-
-        // Then
-        assertPropagatorBuilderIsACopy(builder, copyBuilder);
-        Assertions.assertEquals(builder.getImpulseManeuvers().size(), copyBuilder.getImpulseManeuvers().size());
-
+        Assertions.assertEquals(1, propagator.getEventDetectors().size());
+        Assertions.assertEquals(mockedManeuver, propagator.getEventDetectors().toArray()[0]);
     }
 
     private static Orbit getOrbit() {
         return new CartesianOrbit(new PVCoordinates(
                 new Vector3D(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS + 400000, 0, 0),
                 new Vector3D(0, 7668.6, 0)), FramesFactory.getGCRF(),
-                new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
+                                  new AbsoluteDate(), Constants.EIGEN5C_EARTH_MU);
     }
 }

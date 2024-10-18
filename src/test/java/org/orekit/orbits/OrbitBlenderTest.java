@@ -48,6 +48,7 @@ import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.AbstractTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
@@ -251,7 +252,9 @@ class OrbitBlenderTest {
         final OrbitBlender                         orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
@@ -316,7 +319,9 @@ class OrbitBlenderTest {
         final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,
@@ -376,7 +381,9 @@ class OrbitBlenderTest {
         final OrbitBlender orbitBlender = new OrbitBlender(quadratic, propagator, sergeiFrame);
 
         final TimeInterpolator<SpacecraftState> stateInterpolator =
-                new SpacecraftStateInterpolator(sergeiFrame, orbitBlender, null, null, null, null);
+                new SpacecraftStateInterpolator(AbstractTimeInterpolator.DEFAULT_INTERPOLATION_POINTS,
+                                                AbstractTimeInterpolator.DEFAULT_EXTRAPOLATION_THRESHOLD_SEC,
+                                                sergeiFrame, orbitBlender, null, null, null, null);
 
         // When & Then
         doTestInterpolation(stateInterpolator, DEFAULT_SERGEI_PROPAGATION_TIME, DEFAUTL_SERGEI_TABULATED_TIMESTEP,

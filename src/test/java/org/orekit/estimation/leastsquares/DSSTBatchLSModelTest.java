@@ -95,7 +95,7 @@ public class DSSTBatchLSModelTest {
         model.setEvaluationsCounter(new Incrementor(100));
 
         // Test forward propagation flag to true
-        Assertions.assertEquals(true, model.isForwardPropagation());
+        Assertions.assertTrue(model.isForwardPropagation());
 
         // evaluate model on perfect start point
         final double[] normalizedProp = propagatorBuilder.getSelectedNormalizedParameters();
@@ -153,7 +153,7 @@ public class DSSTBatchLSModelTest {
         };
         final DSSTBatchLSModel model = new DSSTBatchLSModel(builders, measurements, estimatedMeasurementsParameters, modelObserver, PropagationType.MEAN);
         // Test forward propagation flag to false
-        Assertions.assertEquals(false, model.isForwardPropagation());
+        Assertions.assertFalse(model.isForwardPropagation());
     }
 
     @Test

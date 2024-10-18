@@ -651,7 +651,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
         private static final long serialVersionUID = 20140723L;
 
         /** Double values. */
-        private double[] d;
+        private final double[] d;
 
         /** Simple constructor.
          * @param pv instance to serialize

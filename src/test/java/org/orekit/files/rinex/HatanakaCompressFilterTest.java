@@ -42,6 +42,7 @@ import org.orekit.files.rinex.observation.ObservationDataSet;
 import org.orekit.files.rinex.observation.RinexObservation;
 import org.orekit.files.rinex.observation.RinexObservationParser;
 import org.orekit.gnss.ObservationType;
+import org.orekit.gnss.PredefinedObservationType;
 import org.orekit.gnss.SatInSystem;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
@@ -368,7 +369,7 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(SatelliteSystem.GPS, ods.get(59).getSatellite().getSystem());
         Assertions.assertEquals(23,                  ods.get(59).getSatellite().getPRN());
         Assertions.assertEquals(60.0,                ods.get(59).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(ObservationType.D2,  ods.get(59).getObservationData().get(7).getObservationType());
+        Assertions.assertEquals(PredefinedObservationType.D2, ods.get(59).getObservationData().get(7).getObservationType());
         Assertions.assertEquals(-0.096,              ods.get(59).getObservationData().get(7).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
@@ -395,7 +396,7 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(16).getSatellite().getSystem());
         Assertions.assertEquals(22,                      ods.get(16).getSatellite().getPRN());
         Assertions.assertEquals(30.0,                    ods.get(16).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(ObservationType.L2,      ods.get(16).getObservationData().get(1).getObservationType());
+        Assertions.assertEquals(PredefinedObservationType.L2,      ods.get(16).getObservationData().get(1).getObservationType());
         Assertions.assertEquals(79103696.341,            ods.get(16).getObservationData().get(1).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
@@ -556,7 +557,7 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(SatelliteSystem.BEIDOU, ods.get(24).getSatellite().getSystem());
         Assertions.assertEquals(12,                     ods.get(24).getSatellite().getPRN());
         Assertions.assertEquals(0.0,                    ods.get(24).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(ObservationType.L1I,    ods.get(24).getObservationData().get(1).getObservationType());
+        Assertions.assertEquals(PredefinedObservationType.L1I,    ods.get(24).getObservationData().get(1).getObservationType());
         Assertions.assertEquals(129123198.213,          ods.get(24).getObservationData().get(1).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
@@ -583,7 +584,7 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(SatelliteSystem.SBAS,   ods.get(37).getSatellite().getSystem());
         Assertions.assertEquals(123,                    ods.get(37).getSatellite().getPRN());
         Assertions.assertEquals(30.0,                   ods.get(37).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(ObservationType.D1C,    ods.get(37).getObservationData().get(2).getObservationType());
+        Assertions.assertEquals(PredefinedObservationType.D1C,    ods.get(37).getObservationData().get(2).getObservationType());
         Assertions.assertEquals(2.648,                  ods.get(37).getObservationData().get(2).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
@@ -610,7 +611,7 @@ public class HatanakaCompressFilterTest {
         Assertions.assertEquals(SatelliteSystem.GLONASS, ods.get(35).getSatellite().getSystem());
         Assertions.assertEquals(17,                      ods.get(35).getSatellite().getPRN());
         Assertions.assertEquals(30.0,                    ods.get(35).getDate().durationFrom(t0), 1.0e-15);
-        Assertions.assertEquals(ObservationType.L1C,     ods.get(35).getObservationData().get(1).getObservationType());
+        Assertions.assertEquals(PredefinedObservationType.L1C,     ods.get(35).getObservationData().get(1).getObservationType());
         Assertions.assertEquals(111836179.674,           ods.get(35).getObservationData().get(1).getValue(), 1.0e-15);
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
@@ -657,15 +658,15 @@ public class HatanakaCompressFilterTest {
         final SatInSystem c07 = new SatInSystem(SatelliteSystem.BEIDOU, 7);
         final Map<ObservationType, Integer> map = rinexObservation.getHeader().getNbObsPerSat().get(c07);
         Assertions.assertEquals(9, map.size());
-        Assertions.assertEquals(1395, map.get(ObservationType.C2I));
-        Assertions.assertEquals(1395, map.get(ObservationType.C6I));
-        Assertions.assertEquals(1395, map.get(ObservationType.C7I));
-        Assertions.assertEquals(1395, map.get(ObservationType.D2I));
-        Assertions.assertEquals(1388, map.get(ObservationType.D6I));
-        Assertions.assertEquals(1387, map.get(ObservationType.D7I));
-        Assertions.assertEquals(1384, map.get(ObservationType.L2I));
-        Assertions.assertEquals(1382, map.get(ObservationType.L6I));
-        Assertions.assertEquals(1382, map.get(ObservationType.L7I));
+        Assertions.assertEquals(1395, map.get(PredefinedObservationType.C2I));
+        Assertions.assertEquals(1395, map.get(PredefinedObservationType.C6I));
+        Assertions.assertEquals(1395, map.get(PredefinedObservationType.C7I));
+        Assertions.assertEquals(1395, map.get(PredefinedObservationType.D2I));
+        Assertions.assertEquals(1388, map.get(PredefinedObservationType.D6I));
+        Assertions.assertEquals(1387, map.get(PredefinedObservationType.D7I));
+        Assertions.assertEquals(1384, map.get(PredefinedObservationType.L2I));
+        Assertions.assertEquals(1382, map.get(PredefinedObservationType.L6I));
+        Assertions.assertEquals(1382, map.get(PredefinedObservationType.L7I));
 
         // the reference digest was computed externally using CRX2RNX and sha256sum on a Linux computer
         digester.checkDigest();
@@ -690,40 +691,40 @@ public class HatanakaCompressFilterTest {
         final SatInSystem g08 = new SatInSystem(SatelliteSystem.GPS, 8);
         final Map<ObservationType, Integer> mapG08 = rinexObservation.getHeader().getNbObsPerSat().get(g08);
         Assertions.assertEquals(12, mapG08.size());
-        Assertions.assertEquals(120, mapG08.get(ObservationType.C1C));
-        Assertions.assertNull(mapG08.get(ObservationType.C1L));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.C2S));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.C2W));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.C5Q));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.L1C));
-        Assertions.assertNull(mapG08.get(ObservationType.L1L));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.L2S));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.L2W));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.L5Q));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.S1C));
-        Assertions.assertNull(mapG08.get(ObservationType.S1L));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.S2S));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.S2W));
-        Assertions.assertEquals(120, mapG08.get(ObservationType.S5Q));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.C1C));
+        Assertions.assertNull(mapG08.get(PredefinedObservationType.C1L));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.C2S));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.C2W));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.C5Q));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.L1C));
+        Assertions.assertNull(mapG08.get(PredefinedObservationType.L1L));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.L2S));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.L2W));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.L5Q));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.S1C));
+        Assertions.assertNull(mapG08.get(PredefinedObservationType.S1L));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.S2S));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.S2W));
+        Assertions.assertEquals(120, mapG08.get(PredefinedObservationType.S5Q));
 
         final SatInSystem e11 = new SatInSystem(SatelliteSystem.GALILEO, 11);
         final Map<ObservationType, Integer> mapE11 = rinexObservation.getHeader().getNbObsPerSat().get(e11);
         Assertions.assertEquals(15, mapE11.size());
-        Assertions.assertEquals(37, mapE11.get(ObservationType.C1C));
-        Assertions.assertEquals(83, mapE11.get(ObservationType.C5Q));
-        Assertions.assertEquals(74, mapE11.get(ObservationType.C6C));
-        Assertions.assertEquals(84, mapE11.get(ObservationType.C7Q));
-        Assertions.assertEquals(89, mapE11.get(ObservationType.C8Q));
-        Assertions.assertEquals(37, mapE11.get(ObservationType.L1C));
-        Assertions.assertEquals(83, mapE11.get(ObservationType.L5Q));
-        Assertions.assertEquals(74, mapE11.get(ObservationType.L6C));
-        Assertions.assertEquals(84, mapE11.get(ObservationType.L7Q));
-        Assertions.assertEquals(89, mapE11.get(ObservationType.L8Q));
-        Assertions.assertEquals(37, mapE11.get(ObservationType.S1C));
-        Assertions.assertEquals(83, mapE11.get(ObservationType.S5Q));
-        Assertions.assertEquals(74, mapE11.get(ObservationType.S6C));
-        Assertions.assertEquals(84, mapE11.get(ObservationType.S7Q));
-        Assertions.assertEquals(89, mapE11.get(ObservationType.S8Q));
+        Assertions.assertEquals(37, mapE11.get(PredefinedObservationType.C1C));
+        Assertions.assertEquals(83, mapE11.get(PredefinedObservationType.C5Q));
+        Assertions.assertEquals(74, mapE11.get(PredefinedObservationType.C6C));
+        Assertions.assertEquals(84, mapE11.get(PredefinedObservationType.C7Q));
+        Assertions.assertEquals(89, mapE11.get(PredefinedObservationType.C8Q));
+        Assertions.assertEquals(37, mapE11.get(PredefinedObservationType.L1C));
+        Assertions.assertEquals(83, mapE11.get(PredefinedObservationType.L5Q));
+        Assertions.assertEquals(74, mapE11.get(PredefinedObservationType.L6C));
+        Assertions.assertEquals(84, mapE11.get(PredefinedObservationType.L7Q));
+        Assertions.assertEquals(89, mapE11.get(PredefinedObservationType.L8Q));
+        Assertions.assertEquals(37, mapE11.get(PredefinedObservationType.S1C));
+        Assertions.assertEquals(83, mapE11.get(PredefinedObservationType.S5Q));
+        Assertions.assertEquals(74, mapE11.get(PredefinedObservationType.S6C));
+        Assertions.assertEquals(84, mapE11.get(PredefinedObservationType.S7Q));
+        Assertions.assertEquals(89, mapE11.get(PredefinedObservationType.S8Q));
 
         digester.checkDigest();
 

@@ -18,8 +18,8 @@ package org.orekit.gnss.antenna;
 
 import java.util.Map;
 
-import org.orekit.gnss.Frequency;
-import org.orekit.gnss.SatelliteSystem;
+import org.orekit.gnss.RadioWave;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -32,11 +32,10 @@ import org.orekit.time.AbsoluteDate;
  */
 public class SatelliteAntenna extends Antenna {
 
-    /** Satellite system. */
-    private final SatelliteSystem satelliteSystem;
-
-    /** PRN number. */
-    private final int prnNumber;
+    /** Satellite in system.
+     * @since 13.0
+     */
+    private final SatInSystem satInSystem;
 
     /** Satellite type.
      * @since 9.3
@@ -59,8 +58,7 @@ public class SatelliteAntenna extends Antenna {
      * @param type antenna type
      * @param sinexCode sinex code
      * @param patterns frequencies patterns
-     * @param satelliteSystem satellite system
-     * @param prnNumber PRN number
+     * @param satInSystem satellite in system
      * @param satelliteType satellite type
      * @param satelliteCode satellite code
      * @param cosparID COSPAR ID
@@ -68,33 +66,26 @@ public class SatelliteAntenna extends Antenna {
      * @param validUntil end of validity
      */
     public SatelliteAntenna(final String type, final String sinexCode,
-                            final Map<Frequency, FrequencyPattern> patterns,
-                            final SatelliteSystem satelliteSystem, final int prnNumber,
+                            final Map<RadioWave, FrequencyPattern> patterns,
+                            final SatInSystem satInSystem,
                             final SatelliteType satelliteType, final int satelliteCode,
                             final String cosparID,
                             final AbsoluteDate validFrom, final AbsoluteDate validUntil) {
         super(type, sinexCode, patterns);
-        this.satelliteSystem = satelliteSystem;
-        this.prnNumber       = prnNumber;
-        this.satelliteType   = satelliteType;
-        this.satelliteCode   = satelliteCode;
-        this.cosparID        = cosparID;
-        this.validFrom       = validFrom;
-        this.validUntil      = validUntil;
+        this.satInSystem   = satInSystem;
+        this.satelliteType = satelliteType;
+        this.satelliteCode = satelliteCode;
+        this.cosparID      = cosparID;
+        this.validFrom     = validFrom;
+        this.validUntil    = validUntil;
     }
 
-    /** Get satellite system.
-     * @return satellite system
+    /** Get satellite in system.
+     * @return satellite in system
+     * @since 13.0
      */
-    public SatelliteSystem getSatelliteSystem() {
-        return satelliteSystem;
-    }
-
-    /** Get PRN number.
-     * @return PRN number
-     */
-    public int getPrnNumber() {
-        return prnNumber;
+    public SatInSystem getSatInSystem() {
+        return satInSystem;
     }
 
     /** Get satellite type.

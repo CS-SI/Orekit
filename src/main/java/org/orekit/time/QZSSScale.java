@@ -30,12 +30,12 @@ package org.orekit.time;
 public class QZSSScale extends ConstantOffsetTimeScale {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20240321L;
+    private static final long serialVersionUID = 20240720L;
 
     /** Package private constructor for the factory.
      */
     QZSSScale() {
-        super("QZSS", -19);
+        super("QZSS", new TimeOffset(-19L, 0L));
     }
 
 }

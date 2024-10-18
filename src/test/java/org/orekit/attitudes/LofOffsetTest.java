@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -108,6 +109,7 @@ public class LofOffsetTest {
     /** Test if the lof offset is the one expected
      */
     @Test
+    @DefaultDataContext
     public void testOffset() {
 
         //  Satellite position
@@ -184,6 +186,7 @@ public class LofOffsetTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testSpin() {
 
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0.1, 0.2, 0.3);
@@ -225,6 +228,7 @@ public class LofOffsetTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testAnglesSign() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
@@ -261,6 +265,7 @@ public class LofOffsetTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testRetrieveAngles() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
@@ -290,6 +295,7 @@ public class LofOffsetTest {
     }
 
     @Test
+    @DefaultDataContext
     public void testTypesField() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
@@ -373,6 +379,7 @@ public class LofOffsetTest {
     }
 
     @BeforeEach
+    @DefaultDataContext
     public void setUp() {
         try {
 

@@ -182,12 +182,7 @@ public class FieldTLETest {
         final DSFactory factory = new DSFactory(1, 1);
         FieldTLE<DerivativeStructure> tleA = new FieldTLE<>(factory.getDerivativeField(), line1, line2);
         FieldTLE<Binary64> tleB = new FieldTLE<>(Binary64Field.getInstance(), line1, line2);
-        try {
-            tleA.equals(tleB);
-            Assertions.fail("an exception should have been thrown");
-        } catch (Exception e) {
-            // nothing to do
-        }
+        Assertions.assertNotEquals(tleA, tleB);
     }
 
     public <T extends CalculusFieldElement<T>> void doTestTLEFormat(Field<T> field) {
