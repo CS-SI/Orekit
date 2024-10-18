@@ -87,8 +87,8 @@ class ConicallyShadowedLightFluxModelTest {
         fluxModel.init(fieldState, null);
         for (int i = 0; i < detectors.size(); i++) {
             Assertions.assertEquals(detectors.get(i).g(state), fieldDetectors.get(i).g(fieldState).getReal(), 1e-8);
-            Assertions.assertEquals(detectors.get(i).getMaxCheckInterval().currentInterval(state),
-                    fieldDetectors.get(i).getMaxCheckInterval().currentInterval(fieldState), 1e-14);
+            Assertions.assertEquals(detectors.get(i).getMaxCheckInterval().currentInterval(state, true),
+                    fieldDetectors.get(i).getMaxCheckInterval().currentInterval(fieldState, true), 1e-14);
         }
     }
 
