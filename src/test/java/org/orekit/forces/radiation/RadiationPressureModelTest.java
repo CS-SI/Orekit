@@ -1,5 +1,7 @@
 package org.orekit.forces.radiation;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -152,39 +154,54 @@ class RadiationPressureModelTest {
     void testLeoFieldPropagation() {
         // GIVEN
         Utils.setDataRoot("regular-data");
-        final IsotropicRadiationSingleCoefficient isotropicRadiationSingleCoefficient = new IsotropicRadiationSingleCoefficient(10., 1.6);
+        final IsotropicRadiationSingleCoefficient isotropicRadiationSingleCoefficient =
+              new IsotropicRadiationSingleCoefficient(10., 1.6);
         final ConicallyShadowedLightFluxModel lightFluxModel = new ConicallyShadowedLightFluxModel(Constants.SUN_RADIUS,
-                CelestialBodyFactory.getSun(), Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+                                                                                                   CelestialBodyFactory.getSun(),
+                                                                                                   Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
         final RadiationPressureModel forceModel = new RadiationPressureModel(lightFluxModel,
-                isotropicRadiationSingleCoefficient);
-        final double radius = lightFluxModel.getOccultingBodyRadius() + 700e3;
-        final ComplexField field = ComplexField.getInstance();
-        final SpacecraftState initialState = createState(radius);
-        final FieldNumericalPropagator<Complex> fieldPropagator = buildFieldPropagator(field, forceModel, initialState);
-        final AbsoluteDate epoch = initialState.getDate();
-        final AbsoluteDate terminalDate = epoch.shiftedBy(initialState.getKeplerianPeriod() * 10);
+                                                                             isotropicRadiationSingleCoefficient);
+        final double                             radius          = lightFluxModel.getOccultingBodyRadius() + 700e3;
+        final Binary64Field                      field           = Binary64Field.getInstance();
+        final SpacecraftState                    initialState    = createState(radius);
+        final FieldNumericalPropagator<Binary64> fieldPropagator =
+              doBuildFieldPropagator(field, forceModel, initialState);
+        final AbsoluteDate                       epoch           = initialState.getDate();
+        final AbsoluteDate terminalDate =
+              epoch.shiftedBy(initialState.getKeplerianPeriod() * 10);
         // WHEN
-        final FieldSpacecraftState<Complex> propagatedState = fieldPropagator.propagate(new FieldAbsoluteDate<>(field, terminalDate));
+        final FieldSpacecraftState<Binary64> propagatedState =
+              fieldPropagator.propagate(new FieldAbsoluteDate<>(field, terminalDate));
         // THEN
         final NumericalPropagator propagator = createPropagator(radius);
         propagator.setOrbitType(fieldPropagator.getOrbitType());
         propagator.setPositionAngleType(fieldPropagator.getPositionAngleType());
         propagator.addForceModel(forceModel);
         final SpacecraftState comparableState = propagator.propagate(terminalDate);
-        final Vector3D relativePosition = comparableState.getPosition().subtract(propagatedState.getPosition(comparableState.getFrame()).toVector3D());
+        final Vector3D relativePosition = comparableState.getPosition()
+                                                         .subtract(propagatedState.getPosition(
+                                                               comparableState.getFrame()).toVector3D());
         Assertions.assertEquals(0., relativePosition.getNorm(), 1e-3);
     }
 
-    private static FieldNumericalPropagator<Complex> buildFieldPropagator(final ComplexField field,
-                                                                          final ForceModel forceModel,
-                                                                          final SpacecraftState initialState) {
-        final FieldODEIntegratorBuilder<Complex> fieldIntegratoBuilder = new DormandPrince54FieldIntegratorBuilder<>(1e-3, 1e2, 1e-3);
+    private static <T extends CalculusFieldElement<T>> FieldNumericalPropagator<T>
+    doBuildFieldPropagator(final Field<T> field,
+                           final ForceModel forceModel,
+                           final SpacecraftState initialState) {
+        final FieldODEIntegratorBuilder<T> fieldIntegratoBuilder =
+              new DormandPrince54FieldIntegratorBuilder<>(1e-3, 1e2, 1e-3);
+
         final OrbitType propagationType = OrbitType.EQUINOCTIAL;
-        final FieldODEIntegrator<Complex> fieldIntegrator = fieldIntegratoBuilder.buildIntegrator(field, initialState.getOrbit(), propagationType);
-        final FieldNumericalPropagator<Complex> fieldPropagator = new FieldNumericalPropagator<>(field, fieldIntegrator);
+        final FieldODEIntegrator<T> fieldIntegrator =
+              fieldIntegratoBuilder.buildIntegrator(field, initialState.getOrbit(), propagationType);
+
+        final FieldNumericalPropagator<T> fieldPropagator =
+              new FieldNumericalPropagator<>(field, fieldIntegrator);
+
         fieldPropagator.addForceModel(forceModel);
         fieldPropagator.setOrbitType(propagationType);
         fieldPropagator.setInitialState(new FieldSpacecraftState<>(field, initialState));
+
         return fieldPropagator;
     }
 
