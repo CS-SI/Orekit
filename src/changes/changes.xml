@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1567">
+            Fixed interpolation of phase center variations in Antex files.
+        </action>
         <action dev="luc" type="fix" issue="1561">
             Allow moving a transition between two spans in a TimeSpanMap.
         </action>

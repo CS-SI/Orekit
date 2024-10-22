@@ -197,7 +197,7 @@ public class AntexLoaderTest {
         Assertions.assertEquals(+0.08051, loader.getReceiversAntennas().get(2).getEccentricities(PredefinedGnssSignal.G01).getZ(), 1.0e-15);
         Assertions.assertEquals(-0.00249,
                             loader.getReceiversAntennas().get(2).getPhaseCenterVariation(PredefinedGnssSignal.G01,
-                                                                                         new Vector3D(FastMath.toRadians(60.0),
+                                                                                         new Vector3D(FastMath.toRadians(90.0 - 60.0),
                                                                                                       FastMath.toRadians(55.0))),
                             1.0e-15);
 
@@ -294,7 +294,8 @@ public class AntexLoaderTest {
                                 final int endYear, final int endMonth, final int endDay,
                                 final SatelliteSystem system, final String type,
                                 final SatelliteType satType, final int satCode, final int prnNumber,
-                                final String cosparId, final RadioWave radioWave, final double az, final double pol,
+                                final String cosparId, final RadioWave radioWave,
+                                final double antexAz, final double pol,
                                 final double phaseCenterVariation) {
         final double oneMilliSecond = 0.001;
         final AbsoluteDate startDate = new AbsoluteDate(startYear, startMonth, startDay,
@@ -319,7 +320,7 @@ public class AntexLoaderTest {
         }
         Assertions.assertEquals(phaseCenterVariation * 0.001,
                             antenna.getPhaseCenterVariation(radioWave,
-                                                            new Vector3D(FastMath.toRadians(az),
+                                                            new Vector3D(FastMath.toRadians(90 - antexAz),
                                                                          FastMath.toRadians(90 - pol))),
                             1.0e-10);
     }

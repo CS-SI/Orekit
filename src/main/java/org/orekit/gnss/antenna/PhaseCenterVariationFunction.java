@@ -28,7 +28,12 @@ public interface PhaseCenterVariationFunction {
      * @param polarAngle angle from antenna axial direction
      * (zenith angle for receiver antennas, nadir angle for
      * GNSS satellites antennas)
-     * @param azimuthAngle angle around axial direction
+     * @param azimuthAngle angle around axial direction, counted from +X to +Y
+     * (note that this convention is consistent with
+     * {@link org.hipparchus.geometry.euclidean.threed.Vector3D#getAlpha()
+     * Vector3D.getAlpha()}, but it is <em>different</em> from
+     * {@link org.orekit.utils.TrackingCoordinates#getAzimuth() TrackingCoordinates.getAzimuth()},
+     * so care must be taken when using this for ground receivers)
      * @return phase center variation in the signal direction (m)
      */
     double value(double polarAngle, double azimuthAngle);

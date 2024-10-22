@@ -417,9 +417,19 @@ public class AntexLoader {
 
                                 } else {
                                     // azimuth-dependent phase
-                                    final int k = (int) FastMath.round(FastMath.toRadians(Double.parseDouble(fields[0])) / azimuthStep);
+                                    // azimuth is counted from Y/North to X/East in Antex files
+                                    // we will interpolate using phase angle in right-handed frame,
+                                    // so we have to change azimuth to 90-α and renormalize to have
+                                    // a 0° to 360° range with same values at both ends, closing the circle
+                                    final double antexAziDeg      = Double.parseDouble(fields[0]);
+                                    final double normalizedAziDeg = (antexAziDeg <= 90.0 ? 90.0 : 450.0) - antexAziDeg;
+                                    final int k = (int) FastMath.round(FastMath.toRadians(normalizedAziDeg) / azimuthStep);
                                     for (int i = 0; i < grid2D[k].length; ++i) {
                                         grid2D[k][i] = Double.parseDouble(fields[i + 1]) * MM_TO_M;
+                                    }
+                                    if (k == 0) {
+                                        // copy X/East azimuth values to close the circle
+                                        System.arraycopy(grid2D[0], 0, grid2D[grid2D.length - 1], 0, grid2D[0].length);
                                     }
                                 }
                             } else if (inRMS) {
