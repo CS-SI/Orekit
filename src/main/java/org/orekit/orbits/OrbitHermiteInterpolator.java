@@ -213,10 +213,7 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
                                     final OrbitType orbitType) {
 
         // First pass to check if derivatives are available throughout the sample
-        boolean useDerivatives = true;
-        for (final Orbit orbit : orbits) {
-            useDerivatives = useDerivatives && orbit.hasDerivatives();
-        }
+        final boolean useDerivatives = true;
 
         // Use first entry gravitational parameter
         final double mu = orbits.get(0).getMu();

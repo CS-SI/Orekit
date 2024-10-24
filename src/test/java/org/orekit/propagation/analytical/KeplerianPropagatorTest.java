@@ -896,17 +896,16 @@ public class KeplerianPropagatorTest {
     }
 
     private void checkDerivatives(final Orbit orbit, final boolean expectedDerivatives) {
-        Assertions.assertEquals(expectedDerivatives, orbit.hasDerivatives());
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getADot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialExDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEquinoctialEyDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHxDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getHyDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLEDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLvDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getLMDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getEDot()));
-        Assertions.assertNotEquals(expectedDerivatives, Double.isNaN(orbit.getIDot()));
+        Assertions.assertEquals(expectedDerivatives, orbit.hasNonKeplerianAcceleration());
+        if (!expectedDerivatives) {
+            Assertions.assertEquals(0., orbit.getADot());
+            Assertions.assertEquals(0., orbit.getEDot());
+            Assertions.assertEquals(0., orbit.getIDot());
+            Assertions.assertEquals(0., orbit.getEquinoctialExDot());
+            Assertions.assertEquals(0., orbit.getEquinoctialEyDot());
+            Assertions.assertEquals(0., orbit.getHxDot());
+            Assertions.assertEquals(0., orbit.getHyDot());
+        }
     }
 
     private static double tangLEmLv(double Lv, double ex, double ey){

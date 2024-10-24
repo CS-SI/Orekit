@@ -919,29 +919,16 @@ public class FieldKeplerianPropagatorTest {
 
     private <T extends CalculusFieldElement<T>> void checkDerivatives(final FieldOrbit<T> orbit,
                                                                   final boolean expectedDerivatives) {
-        Assertions.assertEquals(expectedDerivatives, orbit.hasDerivatives());
-        if (expectedDerivatives) {
-            Assertions.assertNotNull(orbit.getADot());
-            Assertions.assertNotNull(orbit.getEquinoctialExDot());
-            Assertions.assertNotNull(orbit.getEquinoctialEyDot());
-            Assertions.assertNotNull(orbit.getHxDot());
-            Assertions.assertNotNull(orbit.getHyDot());
-            Assertions.assertNotNull(orbit.getLEDot());
-            Assertions.assertNotNull(orbit.getLvDot());
-            Assertions.assertNotNull(orbit.getLMDot());
-            Assertions.assertNotNull(orbit.getEDot());
-            Assertions.assertNotNull(orbit.getIDot());
-        } else {
-            Assertions.assertNull(orbit.getADot());
-            Assertions.assertNull(orbit.getEquinoctialExDot());
-            Assertions.assertNull(orbit.getEquinoctialEyDot());
-            Assertions.assertNull(orbit.getHxDot());
-            Assertions.assertNull(orbit.getHyDot());
-            Assertions.assertNull(orbit.getLEDot());
-            Assertions.assertNull(orbit.getLvDot());
-            Assertions.assertNull(orbit.getLMDot());
-            Assertions.assertNull(orbit.getEDot());
-            Assertions.assertNull(orbit.getIDot());
+        Assertions.assertEquals(expectedDerivatives, orbit.hasNonKeplerianAcceleration());
+        if (!expectedDerivatives) {
+            final T zero = orbit.getA().getField().getZero();
+            Assertions.assertEquals(zero, orbit.getADot());
+            Assertions.assertEquals(zero, orbit.getEDot());
+            Assertions.assertEquals(zero, orbit.getIDot());
+            Assertions.assertEquals(zero, orbit.getEquinoctialExDot());
+            Assertions.assertEquals(zero, orbit.getEquinoctialEyDot());
+            Assertions.assertEquals(zero, orbit.getHxDot());
+            Assertions.assertEquals(zero, orbit.getHyDot());
         }
     }
 

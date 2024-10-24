@@ -184,7 +184,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagat
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final PositionAngleType positionAngleType) {
         final double[] parameters    = new double[6];
-        final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
+        final double[] parametersDot = parameters.clone();
         templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngleType, parameters, parametersDot);
         return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngleType,
                                                        templateOrbit.getDate(),

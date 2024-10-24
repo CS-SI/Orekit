@@ -139,8 +139,8 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                               final Frame frame, final FieldAbsoluteDate<T> date, final T mu)
         throws IllegalArgumentException {
         this(a, ex, ey, i, raan, alpha,
-             null, null, null, null, null, null,
-             type, cachedPositionAngleType, frame, date, mu);
+             a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(), a.getField().getZero(),
+             computeKeplerianAlphaDot(type, a, ex, ey, mu, alpha, type), type, cachedPositionAngleType, frame, date, mu);
     }
 
     /** Creates a new instance without derivatives and with cached position angle same as value inputted.
@@ -243,14 +243,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         this.raanDot = raanDot;
         this.cachedPositionAngleType = cachedPositionAngleType;
 
-        if (hasDerivatives()) {
-            final FieldUnivariateDerivative1<T> alphaUD = initializeCachedAlpha(alpha, alphaDot, type);
-            this.cachedAlpha = alphaUD.getValue();
-            this.cachedAlphaDot = alphaUD.getFirstDerivative();
-        } else {
-            this.cachedAlpha = initializeCachedAlpha(alpha, type);
-            this.cachedAlphaDot = null;
-        }
+        final FieldUnivariateDerivative1<T> alphaUD = initializeCachedAlpha(alpha, alphaDot, type);
+        this.cachedAlpha = alphaUD.getValue();
+        this.cachedAlphaDot = alphaUD.getFirstDerivative();
 
         partialPV   = null;
 
@@ -359,12 +354,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
             // acceleration is either almost zero or NaN,
             // we assume acceleration was not known
             // we don't set up derivatives
-            aDot      = null;
-            exDot     = null;
-            eyDot     = null;
-            iDot      = null;
-            raanDot   = null;
-            cachedAlphaDot = null;
+            aDot      = getZero();
+            exDot     = getZero();
+            eyDot     = getZero();
+            iDot      = getZero();
+            raanDot   = getZero();
+            cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, mu, cachedAlpha, cachedPositionAngleType);
         }
 
     }
@@ -412,7 +407,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         cachedPositionAngleType = PositionAngleType.TRUE;
         cachedAlpha = op.getLv().subtract(raan);
 
-        if (op.hasDerivatives()) {
+        if (op.hasNonKeplerianAcceleration()) {
             aDot      = op.getADot();
             final T      hxDot = op.getHxDot();
             final T      hyDot = op.getHyDot();
@@ -426,12 +421,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                         subtract(equiExDot.add(equiEy.multiply(raanDot)).multiply(sinRaan));
             cachedAlphaDot = op.getLvDot().subtract(raanDot);
         } else {
-            aDot      = null;
-            exDot     = null;
-            eyDot     = null;
-            iDot      = null;
-            raanDot   = null;
-            cachedAlphaDot = null;
+            aDot      = getZero();
+            exDot     = getZero();
+            eyDot     = getZero();
+            iDot      = getZero();
+            raanDot   = getZero();
+            cachedAlphaDot = computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, op.getMu(), cachedAlpha, cachedPositionAngleType);
         }
 
         partialPV = null;
@@ -455,21 +450,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         cachedPositionAngleType = op.getCachedPositionAngleType();
         cachedAlpha = getZero().newInstance(op.getAlpha(cachedPositionAngleType));
 
-        if (op.hasDerivatives()) {
-            aDot      = getZero().newInstance(op.getADot());
-            iDot      = getZero().newInstance(op.getIDot());
-            raanDot   = getZero().newInstance(op.getRightAscensionOfAscendingNodeDot());
-            exDot     = getZero().newInstance(op.getCircularExDot());
-            eyDot     = getZero().newInstance(op.getCircularEyDot());
-            cachedAlphaDot = getZero().newInstance(op.getAlphaDot(cachedPositionAngleType));
-        } else {
-            aDot      = null;
-            exDot     = null;
-            eyDot     = null;
-            iDot      = null;
-            raanDot   = null;
-            cachedAlphaDot = null;
-        }
+        aDot      = getZero().newInstance(op.getADot());
+        iDot      = getZero().newInstance(op.getIDot());
+        raanDot   = getZero().newInstance(op.getRightAscensionOfAscendingNodeDot());
+        exDot     = getZero().newInstance(op.getCircularExDot());
+        eyDot     = getZero().newInstance(op.getCircularEyDot());
+        cachedAlphaDot = getZero().newInstance(op.getAlphaDot(cachedPositionAngleType));
 
         partialPV = null;
 
@@ -513,11 +499,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getEquinoctialExDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
         return exDot.subtract(ey.multiply(raanDot)).multiply(sc.cos()).
                subtract(eyDot.add(ex.multiply(raanDot)).multiply(sc.sin()));
@@ -534,11 +518,9 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getEquinoctialEyDot() {
-
-        if (!hasDerivatives()) {
-            return null;
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
-
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
         return eyDot.add(ex.multiply(raanDot)).multiply(sc.cos()).
                add(exDot.subtract(ey.multiply(raanDot)).multiply(sc.sin()));
@@ -587,13 +569,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     @Override
     public T getHxDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
-
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return getZero().add(Double.NaN);
+        }
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
 
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
@@ -617,13 +598,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     @Override
     public T getHyDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
-
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i.subtract(i.getPi()).getReal()) < 1.0e-10) {
             return getZero().add(Double.NaN);
+        }
+        if (!hasNonKeplerianRates()) {
+            return getZero();
         }
 
         final FieldSinCos<T> sc = FastMath.sinCos(raan);
@@ -657,9 +637,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     public T getAlphaVDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case ECCENTRIC:
                 final FieldUnivariateDerivative1<T> alphaEUD = new FieldUnivariateDerivative1<>(cachedAlpha, cachedAlphaDot);
@@ -709,9 +686,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     public T getAlphaEDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case TRUE:
                 final FieldUnivariateDerivative1<T> alphaVUD = new FieldUnivariateDerivative1<>(cachedAlpha, cachedAlphaDot);
@@ -762,9 +736,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
      */
     public T getAlphaMDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
         switch (cachedPositionAngleType) {
             case TRUE:
                 final FieldUnivariateDerivative1<T> alphaVUD = new FieldUnivariateDerivative1<>(cachedAlpha, cachedAlphaDot);
@@ -820,10 +791,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     @Override
     public T getEDot() {
 
-        if (!hasDerivatives()) {
-            return null;
-        }
-
         return ex.multiply(exDot).add(ey.multiply(eyDot)).divide(getE());
 
     }
@@ -863,7 +830,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getLvDot() {
-        return hasDerivatives() ? getAlphaVDot().add(raanDot) : null;
+        return getAlphaVDot().add(raanDot);
     }
 
     /** {@inheritDoc} */
@@ -875,7 +842,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getLEDot() {
-        return hasDerivatives() ? getAlphaEDot().add(raanDot) : null;
+        return getAlphaEDot().add(raanDot);
     }
 
     /** {@inheritDoc} */
@@ -887,13 +854,14 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     /** {@inheritDoc} */
     @Override
     public T getLMDot() {
-        return hasDerivatives() ? getAlphaMDot().add(raanDot) : null;
+        return getAlphaMDot().add(raanDot);
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasDerivatives() {
-        return aDot != null;
+    public boolean hasNonKeplerianAcceleration() {
+        return aDot.getReal() != 0. || exDot.getReal() != 0 || iDot.getReal() != 0. || eyDot.getReal() != 0. || raanDot.getReal() != 0. ||
+                FastMath.abs(cachedAlphaDot.subtract(computeKeplerianAlphaDot(cachedPositionAngleType, a, ex, ey, getMu(), cachedAlpha, cachedPositionAngleType)).getReal()) > TOLERANCE_POSITION_ANGLE_RATE;
     }
 
     /** Compute position and velocity but not acceleration.
@@ -1018,9 +986,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * <p>
-     * This method should be called only when {@link #hasDerivatives()} returns true.
-     * </p>
      * @return non-Keplerian part of the acceleration
      */
     private FieldVector3D<T> nonKeplerianAcceleration() {
@@ -1109,7 +1074,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
         final T r2 = partialPV.getPosition().getNormSq();
         final FieldVector3D<T> keplerianAcceleration = new FieldVector3D<>(r2.multiply(r2.sqrt()).reciprocal().multiply(getMu().negate()),
                                                                            partialPV.getPosition());
-        final FieldVector3D<T> acceleration = hasDerivatives() ?
+        final FieldVector3D<T> acceleration = hasNonKeplerianRates() ?
                                               keplerianAcceleration.add(nonKeplerianAcceleration()) :
                                               keplerianAcceleration;
 
@@ -1133,7 +1098,7 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
                                                                                 PositionAngleType.MEAN, cachedPositionAngleType, getFrame(),
                                                                                 getDate().shiftedBy(dt), getMu());
 
-        if (hasDerivatives()) {
+        if (hasNonKeplerianRates()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final FieldVector3D<T> nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -1460,13 +1425,13 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasRates() {
-        return hasDerivatives();
+    public boolean hasNonKeplerianRates() {
+        return hasNonKeplerianAcceleration();
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldCircularOrbit<T> removeRates() {
+    public FieldCircularOrbit<T> withKeplerianRates() {
         return new FieldCircularOrbit<>(getA(), getCircularEx(), getCircularEy(),
                 getI(), getRightAscensionOfAscendingNode(), cachedAlpha,
                 cachedPositionAngleType, getFrame(), getDate(), getMu());
@@ -1476,19 +1441,12 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
     @Override
     public CircularOrbit toOrbit() {
         final double cachedPositionAngle = cachedAlpha.getReal();
-        if (hasDerivatives()) {
-            return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                     i.getReal(), raan.getReal(), cachedPositionAngle,
-                                     aDot.getReal(), exDot.getReal(), eyDot.getReal(),
-                                     iDot.getReal(), raanDot.getReal(), cachedAlphaDot.getReal(),
-                                     cachedPositionAngleType, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu().getReal());
-        } else {
-            return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
-                                     i.getReal(), raan.getReal(), cachedPositionAngle,
-                                     cachedPositionAngleType, getFrame(),
-                                     getDate().toAbsoluteDate(), getMu().getReal());
-        }
+        return new CircularOrbit(a.getReal(), ex.getReal(), ey.getReal(),
+                                 i.getReal(), raan.getReal(), cachedPositionAngle,
+                                 aDot.getReal(), exDot.getReal(), eyDot.getReal(),
+                                 iDot.getReal(), raanDot.getReal(), cachedAlphaDot.getReal(),
+                                 cachedPositionAngleType, getFrame(),
+                                 getDate().toAbsoluteDate(), getMu().getReal());
     }
 
 
