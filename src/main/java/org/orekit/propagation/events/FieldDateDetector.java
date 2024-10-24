@@ -79,6 +79,14 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     /** Current event date. */
     private int currentIndex;
 
+    /** Build a new instance from a fielded date.
+     * @param fieldAbsoluteDate fielded date
+     * @since 13.0
+     */
+    public FieldDateDetector(final FieldAbsoluteDate<T> fieldAbsoluteDate) {
+        this(fieldAbsoluteDate.getField(), fieldAbsoluteDate);
+    }
+
     /** Build a new instance.
      * <p>First event dates are set here, but others can be
      * added later with {@link #addEventDate(FieldAbsoluteDate)}.</p>

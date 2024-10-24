@@ -16,6 +16,7 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -34,9 +35,18 @@ import org.orekit.utils.PVCoordinatesProvider;
 class AttitudeProviderModifierTest {
 
     @Test
+    void testGetEventDetectors() {
+        // GIVEN
+
+        // WHEN
+        // THEN
+    }
+
+    @Test
     void testGetFrozenAttitudeProvider() {
         // GIVEN
         final AttitudeProvider attitudeProvider = Mockito.mock(AttitudeProvider.class);
+        Mockito.when(attitudeProvider.getEventDetectors()).thenCallRealMethod();
         final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
         final PVCoordinatesProvider mockedPVCoordinatesProvider = Mockito.mock(PVCoordinatesProvider.class);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
@@ -51,6 +61,8 @@ class AttitudeProviderModifierTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
         Assertions.assertEquals(Vector3D.ZERO, attitude.getRotationAcceleration());
         Assertions.assertEquals(Vector3D.ZERO, attitude.getSpin());
+        Assertions.assertEquals(attitudeProvider.getEventDetectors().count(),
+                frozenAttitudeProvider.getEventDetectors().count());
     }
 
     @SuppressWarnings("unchecked")
@@ -58,8 +70,9 @@ class AttitudeProviderModifierTest {
     void testGetFrozenAttitudeProviderField() {
         // GIVEN
         final AttitudeProvider attitudeProvider = Mockito.mock(AttitudeProvider.class);
-        final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
         final ComplexField field = ComplexField.getInstance();
+        Mockito.when(attitudeProvider.getFieldEventDetectors(field)).thenCallRealMethod();
+        final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
         final FieldRotation<Complex> fieldRotation = new FieldRotation<>(field, expectedRotation);
         final FieldPVCoordinatesProvider<Complex> mockedPVCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
         final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
@@ -74,6 +87,8 @@ class AttitudeProviderModifierTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
         Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getRotationAcceleration());
         Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getSpin());
+        Assertions.assertEquals(attitudeProvider.getFieldEventDetectors(field).count(),
+                frozenAttitudeProvider.getEventDetectors().count());
     }
 
 }

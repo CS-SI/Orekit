@@ -27,6 +27,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -88,6 +89,18 @@ public class FieldDateDetectorTest {
     @Test
     public void testGenericHandler() {
         doTestGenericHandler(Binary64Field.getInstance());
+    }
+
+    @Test
+    void testConstructor() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(field, date);
+        // WHEN
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(fieldDate);
+        // THEN
+        Assertions.assertEquals(fieldDate, fieldDateDetector.getDate());
     }
 
     @Test
