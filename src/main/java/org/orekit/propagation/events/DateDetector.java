@@ -61,6 +61,12 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      */
     public static final double DEFAULT_THRESHOLD = 1.0e-13;
 
+    /** Default detection settings.
+     * @since 13.0
+     * */
+    public static final EventDetectionSettings DEFAULT_DETECTION_SETTINGS = new EventDetectionSettings(DEFAULT_MAX_CHECK,
+            DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER);
+
     /** Minimum gap between added dates.
      * @since 12.0
      */
@@ -83,7 +89,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @since 12.0
      */
     public DateDetector(final TimeStamped... dates) {
-        this(new EventDetectionSettings(AdaptableInterval.of(DEFAULT_MAX_CHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER), new StopOnEvent(), DEFAULT_MIN_GAP, dates);
+        this(DEFAULT_DETECTION_SETTINGS, new StopOnEvent(), DEFAULT_MIN_GAP, dates);
     }
 
     /** Protected constructor with full parameters.

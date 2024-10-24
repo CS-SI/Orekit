@@ -18,17 +18,24 @@ package org.orekit.attitudes;
 
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldAngularCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /** This interface represents an attitude provider that modifies/wraps another underlying provider.
  * @author Luc Maisonobe
@@ -40,6 +47,31 @@ public interface AttitudeProviderModifier extends AttitudeProvider {
      * @return underlying attitude provider
      */
     AttitudeProvider getUnderlyingAttitudeProvider();
+
+    /** {@inheritDoc} */
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return getUnderlyingAttitudeProvider().getEventDetectors();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default Stream<EventDetector> getEventDetectors(final List<ParameterDriver> parameterDrivers) {
+        return getUnderlyingAttitudeProvider().getEventDetectors(parameterDrivers);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return getUnderlyingAttitudeProvider().getFieldEventDetectors(field);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field,
+                                                                                                     final List<ParameterDriver> parameterDrivers) {
+        return getUnderlyingAttitudeProvider().getFieldEventDetectors(field, parameterDrivers);
+    }
 
     /**
      * Wrap the input provider with a new one always returning attitudes with zero rotation rate and acceleration.

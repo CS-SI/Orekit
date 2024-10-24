@@ -20,13 +20,21 @@ import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -141,4 +149,21 @@ public class AggregateBoundedAttitudeProvider implements BoundedAttitudeProvider
         }
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
+        final DateDetector detector = new DateDetector().withHandler(new ResetDerivativesOnEvent())
+                .withDetectionSettings(DateDetector.DEFAULT_DETECTION_SETTINGS);
+        providers.navigableKeySet().forEach(detector::addEventDate);
+        return Stream.of(detector);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        final FieldDateDetector<T> detector = new FieldDateDetector<>(field).withHandler(new FieldResetDerivativesOnEvent<>())
+                .withDetectionSettings(FieldDateDetector.getDefaultDetectionSettings(field));
+        providers.navigableKeySet().forEach(date -> detector.addEventDate(new FieldAbsoluteDate<>(field, date)));
+        return Stream.of(detector);
+    }
 }

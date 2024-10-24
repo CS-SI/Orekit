@@ -17,13 +17,19 @@
 package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.orekit.frames.Frame;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectorsProvider;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+
+import java.util.stream.Stream;
 
 
 /** This interface represents an attitude provider model set.
@@ -31,7 +37,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * from an date and position-velocity local provider.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface AttitudeProvider {
+public interface AttitudeProvider extends EventDetectorsProvider {
 
     /** Compute the attitude corresponding to an orbital state.
      * @param pvProv local position-velocity provider around current date
@@ -78,4 +84,19 @@ public interface AttitudeProvider {
         return getAttitude(pvProv, date, frame).getRotation();
     }
 
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    default Stream<EventDetector> getEventDetectors() {
+        return Stream.empty();
+    }
+
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return Stream.empty();
+    }
 }
