@@ -515,9 +515,11 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
             this.jacobian = MathArrays.buildArray(getField(),  6, 6);
             this.recomputingJacobian = true;
 
+            // feed internal event detectors
             for (final ForceModel forceModel : forceModels) {
                 forceModel.getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
             }
+            getAttitudeProvider().getFieldEventDetectors(getField()).forEach(detector -> setUpEventDetector(integrator, detector));
 
             // default value for Jacobian is identity
             for (int i = 0; i < jacobian.length; ++i) {

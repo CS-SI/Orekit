@@ -33,12 +33,14 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -49,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -134,6 +137,36 @@ public class FieldNumericalPropagatorTest {
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
+    }
+
+    @Test
+    void testInternalEventDetectorsFromAttitudeProvider() {
+        // GIVEN
+        final FieldNumericalPropagator<Binary64>  propagator = createPropagator(Binary64Field.getInstance());
+        final FieldAbsoluteDate<Binary64> epoch = propagator.getInitialState().getDate();
+        final FieldAbsoluteDate<Binary64> interruptingDate = epoch.shiftedBy(1);
+        propagator.setAttitudeProvider(new InterruptingAttitudeProvider(interruptingDate.toAbsoluteDate()));
+        // WHEN
+        final FieldSpacecraftState<Binary64> state = propagator.propagate(interruptingDate.shiftedBy(10));
+        // THEN
+        Assertions.assertEquals(state.getDate(), interruptingDate);
+    }
+
+    private static class InterruptingAttitudeProvider extends FrameAlignedProvider {
+
+        private final AbsoluteDate interruptingDate;
+
+        public InterruptingAttitudeProvider(final AbsoluteDate interruptingDate) {
+            super(Rotation.IDENTITY);
+            this.interruptingDate = interruptingDate;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+            final FieldDateDetector<T> detector = new FieldDateDetector<>(new FieldAbsoluteDate<>(field, interruptingDate))
+                    .withHandler(new FieldStopOnEvent<>());
+            return Stream.of(detector);
+        }
     }
 
     @Test

@@ -1018,6 +1018,35 @@ class NumericalPropagatorTest {
     }
 
     @Test
+    void testInternalEventDetectorsFromAttitudeProvider() {
+        // GIVEN
+        propagator.resetInitialState(initialState);
+        final AbsoluteDate epoch = propagator.getInitialState().getDate();
+        final AbsoluteDate interruptingDate = epoch.shiftedBy(1);
+        propagator.setAttitudeProvider(new InterruptingAttitudeProvider(interruptingDate));
+        // WHEN
+        final SpacecraftState state = propagator.propagate(interruptingDate.shiftedBy(10));
+        // THEN
+        Assertions.assertEquals(state.getDate(), interruptingDate);
+    }
+
+    private static class InterruptingAttitudeProvider extends FrameAlignedProvider {
+
+        private final AbsoluteDate interruptingDate;
+
+        public InterruptingAttitudeProvider(final AbsoluteDate interruptingDate) {
+            super(Rotation.IDENTITY);
+            this.interruptingDate = interruptingDate;
+        }
+
+        @Override
+        public Stream<EventDetector> getEventDetectors() {
+            final DateDetector detector = new DateDetector(interruptingDate).withHandler(new StopOnEvent());
+            return Stream.of(detector);
+        }
+    }
+
+    @Test
     void testIssue704() {
 
         // Coordinates
