@@ -16,11 +16,12 @@
  */
 package org.orekit.propagation.analytical;
 
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -28,19 +29,34 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+
+import java.util.stream.Stream;
 
 
 class AbstractAnalyticalPropagatorTest {
 
     @Test
+    void testInternalEventDetector() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Orbit orbit = getOrbit(date);
+        final TestAnalyticalPropagator propagator = new TestAnalyticalPropagator(orbit);
+        final AbsoluteDate interruptingDate = date.shiftedBy(1);
+        propagator.setAttitudeProvider(new InterruptingAttitudeProvider(interruptingDate));
+        // WHEN
+        final SpacecraftState state = propagator.propagate(date.shiftedBy(10.));
+        // THEN
+        Assertions.assertEquals(state.getDate(), interruptingDate);
+    }
+
+    @Test
     void testFinish() {
         // GIVEN
-        final Frame eme2000 = FramesFactory.getEME2000();
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final Orbit orbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
-                eme2000, date, Constants.EIGEN5C_EARTH_MU);
+        final Orbit orbit = getOrbit(date);
         final TestAnalyticalPropagator propagator = new TestAnalyticalPropagator(orbit);
         final TestHandler handler = new TestHandler();
         propagator.addEventDetector(new DateDetector(AbsoluteDate.ARBITRARY_EPOCH).withHandler(handler));
@@ -48,6 +64,11 @@ class AbstractAnalyticalPropagatorTest {
         propagator.propagate(propagator.getInitialState().getDate().shiftedBy(1.));
         // THEN
         Assertions.assertTrue(handler.isFinished);
+    }
+
+    private static Orbit getOrbit(final AbsoluteDate date) {
+        return new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05,
+                PositionAngleType.MEAN, FramesFactory.getEME2000(), date, Constants.EIGEN5C_EARTH_MU);
     }
 
     private static class TestHandler extends ContinueOnEvent {
@@ -81,7 +102,23 @@ class AbstractAnalyticalPropagatorTest {
 
         @Override
         protected Orbit propagateOrbit(AbsoluteDate date) {
-            return orbit.shiftedBy(date.durationFrom(orbit.getDate()));
+            return new CartesianOrbit(orbit.getPVCoordinates(), orbit.getFrame(), date, orbit.getMu());
+        }
+    }
+
+    private static class InterruptingAttitudeProvider extends FrameAlignedProvider {
+
+        private final AbsoluteDate interruptingDate;
+
+        public InterruptingAttitudeProvider(final AbsoluteDate interruptingDate) {
+            super(Rotation.IDENTITY);
+            this.interruptingDate = interruptingDate;
+        }
+
+        @Override
+        public Stream<EventDetector> getEventDetectors() {
+            final DateDetector detector = new DateDetector(interruptingDate).withHandler(new StopOnEvent());
+            return Stream.of(detector);
         }
     }
 }

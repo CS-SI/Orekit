@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -67,7 +68,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
                                                                                            implements ParameterDriversProvider {
 
     /** Provider for attitude computation. */
-    private FieldPVCoordinatesProvider<T> pvProvider;
+    private final FieldPVCoordinatesProvider<T> pvProvider;
 
     /** Start date of last propagation. */
     private FieldAbsoluteDate<T> lastPropagationStart;
@@ -81,8 +82,11 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
     /** Indicator for last step. */
     private boolean isLastStep;
 
-    /** Event steps. */
-    private final Collection<FieldEventState<?, T>> eventsStates;
+    /** User-defined event states. */
+    private final Collection<FieldEventState<?, T>> userEventsStates;
+
+    /** All event states, including internal ones. */
+    private Collection<FieldEventState<?, T>> eventsStates;
 
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
@@ -95,7 +99,7 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
         lastPropagationStart = FieldAbsoluteDate.getPastInfinity(field);
         lastPropagationEnd   = FieldAbsoluteDate.getFutureInfinity(field);
         statesInitialized    = false;
-        eventsStates         = new ArrayList<>();
+        userEventsStates     = new ArrayList<>();
     }
 
     /** {@inheritDoc} */
@@ -106,14 +110,14 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
 
     /** {@inheritDoc} */
     public <D extends FieldEventDetector<T>> void addEventDetector(final D detector) {
-        eventsStates.add(new FieldEventState<>(detector));
+        userEventsStates.add(new FieldEventState<>(detector));
     }
 
     /** {@inheritDoc} */
     @Override
     public Collection<FieldEventDetector<T>> getEventDetectors() {
         final List<FieldEventDetector<T>> list = new ArrayList<>();
-        for (final FieldEventState<?, T> state : eventsStates) {
+        for (final FieldEventState<?, T> state : userEventsStates) {
             list.add(state.getEventDetector());
         }
         return Collections.unmodifiableCollection(list);
@@ -122,8 +126,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
     /** {@inheritDoc} */
     @Override
     public void clearEventsDetectors() {
-        eventsStates.clear();
+        userEventsStates.clear();
     }
+
     /** {@inheritDoc} */
     @Override
     public FieldSpacecraftState<T> propagate(final FieldAbsoluteDate<T> start, final FieldAbsoluteDate<T> target) {
@@ -140,6 +145,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
 
             // initialize event detectors
+            eventsStates = getAttitudeProvider().getFieldEventDetectors(getField()).map(FieldEventState::new)
+                .collect(Collectors.toList());
+            eventsStates.addAll(userEventsStates);
             for (final FieldEventState<?, T> es : eventsStates) {
                 es.init(state, target);
             }
