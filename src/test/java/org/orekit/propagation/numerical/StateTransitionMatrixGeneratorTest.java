@@ -168,7 +168,7 @@ class StateTransitionMatrixGeneratorTest {
         final RealMatrix          jacobian2    = harvester2.getParametersJacobian(state2);
 
         // after completing the two-stage propagation, we get the same matrices
-        Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 1.3e-13 * stm1.getNorm1());
+        Assertions.assertEquals(0.0, stm2.subtract(stm1).getNorm1(), 5e-13 * stm1.getNorm1());
         Assertions.assertEquals(0.0, jacobian2.subtract(jacobian1).getNorm1(), 7.0e-11 * jacobian1.getNorm1());
 
     }

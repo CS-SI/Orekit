@@ -72,12 +72,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
 import org.orekit.orbits.*;
-import org.orekit.propagation.FieldAdditionalStateProvider;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -315,7 +310,7 @@ public class FieldNumericalPropagatorTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
                                                                  PositionAngleType.TRUE, eci, initialDate, zero.add(mu));
         OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
+        double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
                 new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
         prop.setOrbitType(type);
@@ -363,7 +358,7 @@ public class FieldNumericalPropagatorTest {
         FieldKeplerianOrbit<T> orbit = new FieldKeplerianOrbit<>(zero.add(600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS), zero, zero, zero, zero, zero,
                                                                  PositionAngleType.TRUE, eci, initialDate, zero.add(mu));
         OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = NumericalPropagator.tolerances(1e-3, orbit.toOrbit(), type);
+        double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         FieldNumericalPropagator<T> prop = new FieldNumericalPropagator<>(field,
                 new DormandPrince853FieldIntegrator<>(field, 0.1, 500, tol[0], tol[1]));
         prop.setOrbitType(type);
@@ -410,7 +405,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -460,7 +455,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -502,7 +497,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -546,7 +541,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -578,30 +573,30 @@ public class FieldNumericalPropagatorTest {
         final FieldPVCoordinates<T> pviT = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.TRUE, propagator);
         final FieldPVCoordinates<T> pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, propagator);
         final FieldPVCoordinates<T> pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngleType.TRUE, propagator);
-        Assertions.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.0);
+        Assertions.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.1);
         Assertions.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 2.0);
-        Assertions.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.6);
-        Assertions.assertEquals(0, pviM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.4);
+        Assertions.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.8);
+        Assertions.assertEquals(0, pviM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.5);
         Assertions.assertEquals(0, pvkM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.5);
-        Assertions.assertEquals(0, pvkM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.3);
-        Assertions.assertEquals(0, pveM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.2);
-        Assertions.assertEquals(0, pveM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.2);
+        Assertions.assertEquals(0, pvkM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.4);
+        Assertions.assertEquals(0, pveM.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.3);
+        Assertions.assertEquals(0, pveM.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.3);
 
-        Assertions.assertEquals(0, pvcE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.0);
+        Assertions.assertEquals(0, pvcE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.1);
         Assertions.assertEquals(0, pvcE.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 2.0);
 
-        Assertions.assertEquals(0, pviE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.03);
-        Assertions.assertEquals(0, pviE.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.04);
-        Assertions.assertEquals(0, pvkE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.4);
+        Assertions.assertEquals(0, pviE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.1);
+        Assertions.assertEquals(0, pviE.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.09);
+        Assertions.assertEquals(0, pvkE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.5);
         Assertions.assertEquals(0, pvkE.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.3);
-       Assertions.assertEquals(0, pveE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.2);
-        Assertions.assertEquals(0, pveE.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.07);
+        Assertions.assertEquals(0, pveE.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.2);
+        Assertions.assertEquals(0, pveE.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.2);
 
-        Assertions.assertEquals(0, pvcT.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.0);
+        Assertions.assertEquals(0, pvcT.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 3.1);
         Assertions.assertEquals(0, pvcT.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 2.0);
         Assertions.assertEquals(0, pviT.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.3);
         Assertions.assertEquals(0, pviT.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.2);
-        Assertions.assertEquals(0, pvkT.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.4);
+        Assertions.assertEquals(0, pvkT.getPosition().subtract(pveT.getPosition()).getNorm().getReal() / dP.getReal(), 0.5);
         Assertions.assertEquals(0, pvkT.getVelocity().subtract(pveT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.2);
 
     }
@@ -624,7 +619,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -658,16 +653,16 @@ public class FieldNumericalPropagatorTest {
         final FieldPVCoordinates<T> pvcT = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.TRUE, propagator);
         final FieldPVCoordinates<T> pvkT = propagateInType(state, dP, OrbitType.KEPLERIAN, PositionAngleType.TRUE, propagator);
 
-        Assertions.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.3);
-        Assertions.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.4);
-        Assertions.assertEquals(0, pvkM.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.2);
-        Assertions.assertEquals(0, pvkM.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.3);
-        Assertions.assertEquals(0, pvcE.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.3);
-        Assertions.assertEquals(0, pvcE.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.4);
+        Assertions.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.4);
+        Assertions.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.6);
+        Assertions.assertEquals(0, pvkM.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.4);
+        Assertions.assertEquals(0, pvkM.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.6);
+        Assertions.assertEquals(0, pvcE.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.4);
+        Assertions.assertEquals(0, pvcE.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.6);
         Assertions.assertEquals(0, pvkE.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.009);
         Assertions.assertEquals(0, pvkE.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.006);
-        Assertions.assertEquals(0, pvcT.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.3);
-        Assertions.assertEquals(0, pvcT.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.4);
+        Assertions.assertEquals(0, pvcT.getPosition().subtract(pvkT.getPosition()).getNorm().getReal() / dP.getReal(), 0.4);
+        Assertions.assertEquals(0, pvcT.getVelocity().subtract(pvkT.getVelocity()).getNorm().getReal() / dV.getReal(), 0.6);
 
     }
 
@@ -678,7 +673,7 @@ public class FieldNumericalPropagatorTest {
         final T dt = zero.add(3200);
         final double minStep = 0.001;
         final double maxStep = 1000;
-        double[][] tol = NumericalPropagator.tolerances(dP.getReal(), state.getOrbit().toOrbit(), type);
+        double[][] tol = ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal())).getTolerances(state.getOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(zero.getField(), minStep, maxStep, tol[0], tol[1]);
         FieldNumericalPropagator<T> newPropagator = new FieldNumericalPropagator<>(zero.getField(), integrator);
@@ -710,7 +705,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -748,7 +743,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -788,7 +783,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -827,7 +822,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -873,7 +868,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -923,7 +918,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<T>integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -1278,7 +1273,7 @@ public class FieldNumericalPropagatorTest {
                                                             FramesFactory.getTOD(false),
                                                             new FieldAbsoluteDate<>(field, 2003, 5, 6, TimeScalesFactory.getUTC()),
                                                             field.getZero().add(Constants.EIGEN5C_EARTH_MU));
-            FieldNumericalPropagator.tolerances(field.getZero().add(1.0), orbit, OrbitType.KEPLERIAN);
+            ToleranceProvider.of(CartesianToleranceProvider.of(1)).getTolerances(orbit, OrbitType.KEPLERIAN);
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, oe.getSpecifier());
@@ -2008,7 +2003,8 @@ public class FieldNumericalPropagatorTest {
         final double  spacecraftReflectionCoefficient = 2.0;
 
         // propagator main configuration
-        final double[][] tol           = FieldNumericalPropagator.tolerances(positionTolerance, spacecraftState.getOrbit(), orbitType);
+        final double[][] tol           = ToleranceProvider.of(CartesianToleranceProvider.of(positionTolerance.getReal()))
+                .getTolerances(spacecraftState.getOrbit(), orbitType);
         final FieldODEIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
         final FieldNumericalPropagator<T> np   = new FieldNumericalPropagator<>(field, integrator);
         np.setOrbitType(orbitType);
@@ -2110,7 +2106,7 @@ public class FieldNumericalPropagatorTest {
                                                                 FramesFactory.getEME2000(), initDate, zero.add(mu));
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
         OrbitType type = OrbitType.EQUINOCTIAL;
-        double[][] tolerance = FieldNumericalPropagator.tolerances(zero.add(0.001), orbit, type);
+        double[][] tolerance = ToleranceProvider.of(CartesianToleranceProvider.of(0.001)).getTolerances(orbit, type);
         AdaptiveStepsizeFieldIntegrator<T> integrator =
                 new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
 

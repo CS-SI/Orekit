@@ -42,14 +42,15 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.StateMapper;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.ShortPeriodTerms;
@@ -61,9 +62,10 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.ParameterObserver;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeSpanMap;
+import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeSpanMap.Span;
 
 /**
@@ -153,7 +155,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     private boolean initialIsOsculating;
 
     /** Force models used to compute short periodic terms. */
-    private final transient List<DSSTForceModel> forceModels;
+    private final List<DSSTForceModel> forceModels;
 
     /** State mapper holding the force models. */
     private MeanPlusShortPeriodicMapper mapper;
@@ -242,6 +244,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     * @see #addForceModel(DSSTForceModel)
     * @see #getAllForceModels()
     */
+    @Override
     public void setMu(final double mu) {
         addForceModel(new DSSTNewtonianAttraction(mu));
     }
@@ -620,6 +623,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
+    @Override
     public OrbitType getOrbitType() {
         return super.getOrbitType();
     }
@@ -627,6 +631,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
+    @Override
     public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
@@ -1244,8 +1249,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *                       and row 1 being the relative tolerance error
      */
     public static double[][] tolerances(final double dP, final Orbit orbit) {
+        // estimate the scalar velocity error
+        final PVCoordinates pv = orbit.getPVCoordinates();
+        final double r2 = pv.getPosition().getNormSq();
+        final double v  = pv.getVelocity().getNorm();
+        final double dV = orbit.getMu() * dP / (v * r2);
 
-        return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        return DSSTPropagator.tolerances(dP, dV, orbit);
 
     }
 
@@ -1269,8 +1279,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public static double[][] tolerances(final double dP, final double dV, final Orbit orbit) {
 
-        return NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.EQUINOCTIAL);
-
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP, dV, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
+            .getTolerances(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
     }
 
     /** Step handler used to compute the parameters for the short periodic contributions.
@@ -1309,7 +1319,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                                                        PropagationType.MEAN);
             }
 
-            // Computate short periodic coefficients for this step
+            // Compute short periodic coefficients for this step
             for (DSSTForceModel forceModel : forceModels) {
                 forceModel.updateShortPeriodTerms(forceModel.getParametersAllValues(), meanStates);
             }

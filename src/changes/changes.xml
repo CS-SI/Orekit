@@ -42,6 +42,9 @@
         <action dev="luc" type="fix" issue="1542">
             Use SatInSystem in SatelliteAntenna.
         </action>
+        <action dev="serrof" type="add" issue="1540">
+            New interface for integration tolerances.
+        </action>
         <action dev="luc" type="fix" issue="1538">
             Revamped Sinex and Sinex-bias parsing.
         </action>

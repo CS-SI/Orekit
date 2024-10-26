@@ -56,6 +56,7 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -1041,6 +1042,25 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
+    /**
+     * Get default tolerance providers. Matches < 13.0 values.
+     * @param dP expected position error
+     * @param dV expected velocity error
+     * @return tolerances
+     * @since 13.0
+     */
+    private static ToleranceProvider getDefaultToleranceProvider(final double dP, final double dV) {
+        return ToleranceProvider.of((position, velocity) -> {
+            final double[] absTol = new double[7];
+            final double[] relTol = new double[7];
+            Arrays.fill(absTol, 0, 3, dP);
+            Arrays.fill(absTol, 3, 6, dV);
+            absTol[6] = 1e-6;
+            Arrays.fill(relTol, dP / position.getNorm());
+            return new double[][] {absTol, relTol};
+        });
+    }
+
     /** Estimate tolerance vectors for integrators when propagating in absolute position-velocity-acceleration.
      * @param dP user specified position error
      * @param absPva reference absolute position-velocity-acceleration
@@ -1053,26 +1073,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final double relative = dP / absPva.getPosition().getNorm();
         final double dV = relative * absPva.getVelocity().getNorm();
 
-        final double[] absTol = new double[7];
-        final double[] relTol = new double[7];
-
-        absTol[0] = dP;
-        absTol[1] = dP;
-        absTol[2] = dP;
-        absTol[3] = dV;
-        absTol[4] = dV;
-        absTol[5] = dV;
-
-        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
-        // with trust, this often has no influence at all on propagation
-        absTol[6] = 1.0e-6;
-
-        Arrays.fill(relTol, relative);
-
-        return new double[][] {
-            absTol, relTol
-        };
-
+        return getDefaultToleranceProvider(dP, dV).getTolerances(absPva);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -1109,8 +1110,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         final double v  = pv.getVelocity().getNorm();
         final double dV = orbit.getMu() * dP / (v * r2);
 
-        return tolerances(dP, dV, orbit, type);
-
+        return getDefaultToleranceProvider(dP, dV).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -1135,48 +1135,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     public static double[][] tolerances(final double dP, final double dV,
                                         final Orbit orbit, final OrbitType type) {
 
-        final double[] absTol = new double[7];
-        final double[] relTol = new double[7];
-
-        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
-        // with trust, this often has no influence at all on propagation
-        absTol[6] = 1.0e-6;
-
-        if (type == OrbitType.CARTESIAN) {
-            absTol[0] = dP;
-            absTol[1] = dP;
-            absTol[2] = dP;
-            absTol[3] = dV;
-            absTol[4] = dV;
-            absTol[5] = dV;
-        } else {
-
-            // convert the orbit to the desired type
-            final double[][] jacobian = new double[6][6];
-            final Orbit converted = type.convertType(orbit);
-            converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
-
-            for (int i = 0; i < 6; ++i) {
-                final double[] row = jacobian[i];
-                absTol[i] = FastMath.abs(row[0]) * dP +
-                            FastMath.abs(row[1]) * dP +
-                            FastMath.abs(row[2]) * dP +
-                            FastMath.abs(row[3]) * dV +
-                            FastMath.abs(row[4]) * dV +
-                            FastMath.abs(row[5]) * dV;
-                if (Double.isNaN(absTol[i])) {
-                    throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
-                }
-            }
-
-        }
-
-        Arrays.fill(relTol, dP / FastMath.sqrt(orbit.getPosition().getNormSq()));
-
-        return new double[][] {
-            absTol, relTol
-        };
-
+        return getDefaultToleranceProvider(dP, dV).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** {@inheritDoc} */

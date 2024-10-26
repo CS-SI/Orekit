@@ -1080,7 +1080,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         final FieldOrbit<Binary64>        orbit = new FieldCartesianOrbit<>(new TimeStampedFieldPVCoordinates<>(date, p, v, a),
                                                                              FramesFactory.getGCRF(),
                                                                              field.getZero().newInstance(Constants.EIGEN5C_EARTH_MU));
-        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.193e-3);
+        doTestFieldMoonEarth(orbit, field.getZero().newInstance(720.0), field.getZero().newInstance(1.0), 0, 525, 0, 0, 2.192e-3);
     }
 
     @Test
