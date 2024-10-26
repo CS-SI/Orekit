@@ -79,6 +79,14 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     /** Current event date. */
     private int currentIndex;
 
+    /** Build a new instance from a fielded date.
+     * @param fieldAbsoluteDate fielded date
+     * @since 13.0
+     */
+    public FieldDateDetector(final FieldAbsoluteDate<T> fieldAbsoluteDate) {
+        this(fieldAbsoluteDate.getField(), fieldAbsoluteDate);
+    }
+
     /** Build a new instance.
      * <p>First event dates are set here, but others can be
      * added later with {@link #addEventDate(FieldAbsoluteDate)}.</p>
@@ -89,8 +97,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     @SafeVarargs
     public FieldDateDetector(final Field<T> field, final FieldTimeStamped<T>... dates) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAX_CHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
-             DEFAULT_MAX_ITER, new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
+        this(getDefaultDetectionSettings(field), new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
     }
 
     /** Protected constructor with full parameters.
@@ -99,18 +106,16 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param minGap minimum gap between added dates (s)
      * @param dates list of event dates
      */
     @SafeVarargs
-    protected FieldDateDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                final int maxIter, final FieldEventHandler<T> handler,
-                                final double minGap, final FieldTimeStamped<T>... dates) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+    protected FieldDateDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                final FieldEventHandler<T> handler, final double minGap,
+                                final FieldTimeStamped<T>... dates) {
+        super(detectionSettings, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
         this.eventDateList = new ArrayList<>(dates.length);
@@ -118,6 +123,17 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
             addEventDate(ts.getDate());
         }
         this.minGap        = minGap;
+    }
+
+    /** Get default detection settings.
+     * @param <T> field type
+     * @param field field
+     * @return default detection settings
+     * @since 13.0
+     * */
+    public static <T extends CalculusFieldElement<T>> FieldEventDetectionSettings<T> getDefaultDetectionSettings(final Field<T> field) {
+        return new FieldEventDetectionSettings<>(field, new EventDetectionSettings(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD,
+                EventDetectionSettings.DEFAULT_MAX_ITER));
     }
 
     /**
@@ -129,8 +145,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     public FieldDateDetector<T> withMinGap(final double newMinGap) {
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
-        return new FieldDateDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
-                                       getHandler(), newMinGap, dates);
+        return new FieldDateDetector<>(getDetectionSettings(), getHandler(), newMinGap, dates);
     }
 
     /** {@inheritDoc} */
@@ -139,7 +154,8 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
                                           final int newMaxIter, final FieldEventHandler<T> newHandler) {
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
-        return new FieldDateDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, minGap, dates);
+        return new FieldDateDetector<>(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter),
+                newHandler, minGap, dates);
     }
 
     /** Get all event field dates currently managed, in chronological order.

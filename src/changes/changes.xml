@@ -27,6 +27,9 @@
         <action dev="luc" type="fix" issue="1561">
             Allow moving a transition between two spans in a TimeSpanMap.
         </action>
+        <action dev="serrof" type="update" issue="1553">
+            Make AttitudeProvider implement EventDetectorsProvider.
+        </action>
         <action dev="luc" type="fix" issue="1550">
             Added getEffectName to EstimationModifier.
         </action>

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
@@ -92,6 +93,19 @@ public class DateDetectorTest {
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
         Assertions.assertEquals(2.0*dt, finalState.getDate().durationFrom(iniDate), threshold);
+    }
+
+    @Test
+    void testDefaultDetectionSettings() {
+        // GIVEN
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        // WHEN
+        final DateDetector detector = new DateDetector();
+        // THEN
+        Assertions.assertEquals(DateDetector.DEFAULT_MAX_ITER, detector.getDetectionSettings().getMaxIterationCount());
+        Assertions.assertEquals(DateDetector.DEFAULT_THRESHOLD, detector.getDetectionSettings().getThreshold());
+        Assertions.assertEquals(DateDetector.DEFAULT_DETECTION_SETTINGS.getMaxCheckInterval().currentInterval(mockedState, true),
+                detector.getMaxCheckInterval().currentInterval(mockedState, true));
     }
 
     @Test
