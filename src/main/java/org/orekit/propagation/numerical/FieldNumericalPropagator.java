@@ -44,6 +44,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
@@ -624,6 +625,25 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
     }
 
+    /**
+     * Get default tolerance providers. Matches < 13.0 values.
+     * @param dP expected position error
+     * @param dV expected velocity error
+     * @return tolerances
+     * @since 13.0
+     */
+    private static ToleranceProvider getDefaultToleranceProvider(final double dP, final double dV) {
+        return ToleranceProvider.of((position, velocity) -> {
+            final double[] absTol = new double[7];
+            final double[] relTol = new double[7];
+            Arrays.fill(absTol, 0, 3, dP);
+            Arrays.fill(absTol, 3, 6, dV);
+            absTol[6] = 1e-6;
+            Arrays.fill(relTol, dP / position.getNorm());
+            return new double[][] {absTol, relTol};
+        });
+    }
+
     /** Estimate tolerance vectors for integrators.
      * <p>
      * The errors are estimated from partial derivatives properties of orbits,
@@ -658,7 +678,7 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
         final T v  = pv.getVelocity().getNorm();
         final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
 
-        return tolerances(dP, dV, orbit, type);
+        return getDefaultToleranceProvider(dP.getReal(), dV.getReal()).getTolerances(orbit, type, PositionAngleType.TRUE);
 
     }
 
@@ -683,49 +703,10 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * @since 10.3
      */
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
-                                                                        final FieldOrbit<T> orbit, final OrbitType type) {
+                                                                            final FieldOrbit<T> orbit,
+                                                                            final OrbitType type) {
 
-        final double[] absTol = new double[7];
-        final double[] relTol = new double[7];
-
-        // we set the mass tolerance arbitrarily to 1.0e-6 kg, as mass evolves linearly
-        // with trust, this often has no influence at all on propagation
-        absTol[6] = 1.0e-6;
-
-        if (type == OrbitType.CARTESIAN) {
-            absTol[0] = dP.getReal();
-            absTol[1] = dP.getReal();
-            absTol[2] = dP.getReal();
-            absTol[3] = dV.getReal();
-            absTol[4] = dV.getReal();
-            absTol[5] = dV.getReal();
-        } else {
-
-            // convert the orbit to the desired type
-            final T[][] jacobian = MathArrays.buildArray(dP.getField(), 6, 6);
-            final FieldOrbit<T> converted = type.convertType(orbit);
-            converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
-
-            for (int i = 0; i < 6; ++i) {
-                final  T[] row = jacobian[i];
-                absTol[i] =     row[0].abs().multiply(dP).
-                            add(row[1].abs().multiply(dP)).
-                            add(row[2].abs().multiply(dP)).
-                            add(row[3].abs().multiply(dV)).
-                            add(row[4].abs().multiply(dV)).
-                            add(row[5].abs().multiply(dV)).
-                            getReal();
-                if (Double.isNaN(absTol[i])) {
-                    throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
-                }
-            }
-
-        }
-
-        Arrays.fill(relTol, dP.divide(orbit.getPosition().getNormSq().sqrt()).getReal());
-
-        return new double[][] { absTol, relTol };
-
+        return getDefaultToleranceProvider(dP.getReal(), dV.getReal()).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
 }

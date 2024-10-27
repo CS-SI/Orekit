@@ -45,13 +45,14 @@ import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.FieldAbstractIntegratedPropagator;
 import org.orekit.propagation.integration.FieldStateMapper;
-import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
 import org.orekit.propagation.semianalytical.dsst.forces.FieldShortPeriodTerms;
@@ -62,6 +63,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.FieldMaxGapInterpola
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
@@ -158,7 +160,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     private final Field<T> field;
 
     /** Force models used to compute short periodic terms. */
-    private final transient List<DSSTForceModel> forceModels;
+    private final List<DSSTForceModel> forceModels;
 
     /** State mapper holding the force models. */
     private FieldMeanPlusShortPeriodicMapper mapper;
@@ -274,6 +276,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     * @see #addForceModel(DSSTForceModel)
     * @see #getAllForceModels()
     */
+    @Override
     public void setMu(final T mu) {
         addForceModel(new DSSTNewtonianAttraction(mu.getReal()));
     }
@@ -493,6 +496,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
+    @Override
     public OrbitType getOrbitType() {
         return super.getOrbitType();
     }
@@ -500,6 +504,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
+    @Override
     public PositionAngleType getPositionAngleType() {
         return super.getPositionAngleType();
     }
@@ -1094,7 +1099,13 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      *                       and row 1 being the relative tolerance error
      */
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
-        return FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        // estimate the scalar velocity error
+        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
+        final T r2 = pv.getPosition().getNormSq();
+        final T v  = pv.getVelocity().getNorm();
+        final T dV = orbit.getMu().multiply(dP).divide(v.multiply(r2));
+
+        return tolerances(dP, dV, orbit);
     }
 
     /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
@@ -1117,8 +1128,10 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @since 10.3
      */
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
-                                                                        final FieldOrbit<T> orbit) {
-        return FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.EQUINOCTIAL);
+                                                                            final FieldOrbit<T> orbit) {
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal(), dV.getReal(),
+                        CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
+                .getTolerances(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN);
     }
 
     /** Step handler used to compute the parameters for the short periodic contributions.
