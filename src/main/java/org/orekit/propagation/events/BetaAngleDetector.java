@@ -44,6 +44,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 12.1
  */
 public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
+
     /** Beta angle crossing threshold. */
     private final double betaAngleThreshold;
     /** Coordinate provider for the celestial body. */
@@ -68,7 +69,7 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
      */
     public BetaAngleDetector(final double betaAngleThreshold, final PVCoordinatesProvider celestialBodyProvider,
             final Frame inertialFrame) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER, new StopOnEvent(),
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnEvent(),
                 betaAngleThreshold, celestialBodyProvider, inertialFrame);
     }
 
@@ -76,19 +77,16 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
      * <p>This constructor is not public as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.</p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
      * @param betaAngleThreshold beta angle threshold (radians)
      * @param celestialBodyProvider coordinate provider for the celestial provider
      * @param inertialFrame inertial frame in which to compute the beta angle
      */
-    protected BetaAngleDetector(final AdaptableInterval maxCheck, final double threshold,
-                             final int maxIter, final EventHandler handler,
+    protected BetaAngleDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                              final double betaAngleThreshold, final PVCoordinatesProvider celestialBodyProvider,
                              final Frame inertialFrame) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.betaAngleThreshold = betaAngleThreshold;
         this.celestialBodyProvider = celestialBodyProvider;
         this.inertialFrame = inertialFrame;
@@ -121,7 +119,7 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
      * @return the new detector instance
      */
     public BetaAngleDetector withCelestialProvider(final PVCoordinatesProvider newProvider) {
-        return new BetaAngleDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
+        return new BetaAngleDetector(getDetectionSettings(),
                 getHandler(), getBetaAngleThreshold(), newProvider, getInertialFrame());
     }
 
@@ -131,8 +129,8 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
      * @return the new detector instance
      */
     public BetaAngleDetector withBetaThreshold(final double newBetaAngleThreshold) {
-        return new BetaAngleDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
-                getHandler(), newBetaAngleThreshold, getCelestialBodyProvider(), getInertialFrame());
+        return new BetaAngleDetector(getDetectionSettings(), getHandler(),
+                newBetaAngleThreshold, getCelestialBodyProvider(), getInertialFrame());
     }
 
     /** Create a new instance with the provided inertial frame.
@@ -141,7 +139,7 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
      * @return the new detector instance
      */
     public BetaAngleDetector withInertialFrame(final Frame newFrame) {
-        return new BetaAngleDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(),
+        return new BetaAngleDetector(getDetectionSettings(),
                 getHandler(), getBetaAngleThreshold(), getCelestialBodyProvider(), newFrame);
     }
 
@@ -178,9 +176,8 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected BetaAngleDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-            final int newMaxIter, final EventHandler newHandler) {
-        return new BetaAngleDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+    protected BetaAngleDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new BetaAngleDetector(detectionSettings, newHandler,
                 getBetaAngleThreshold(), getCelestialBodyProvider(), getInertialFrame());
     }
 }

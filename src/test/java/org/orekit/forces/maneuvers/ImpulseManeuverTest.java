@@ -445,23 +445,15 @@ public class ImpulseManeuverTest {
     }
 
     /** Private detector used for testing issue #663. */
-    private class InitializationDetector extends AbstractDetector<InitializationDetector> {
+    private class InitializationDetector implements EventDetector {
 
         /** Flag for detector initialization. */
         private boolean initialized;
 
-        /**
-         * Constructor.
-         */
-        InitializationDetector() {
-            super(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing());
-            this.initialized = false;
-        }
-
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            super.init(s0, t);
+            EventDetector.super.init(s0, t);
             this.initialized = true;
         }
 
@@ -471,10 +463,9 @@ public class ImpulseManeuverTest {
             return 1;
         }
 
-        /** {@inheritDoc} */
         @Override
-        protected InitializationDetector create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
-            return new InitializationDetector();
+        public EventHandler getHandler() {
+            return new StopOnIncreasing();
         }
 
     }

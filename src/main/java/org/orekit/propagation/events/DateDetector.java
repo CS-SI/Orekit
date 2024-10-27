@@ -98,27 +98,6 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
-     * @param minGap minimum gap between added dates (s)
-     * @param dates list of event dates
-     * @since 12.0
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected DateDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
-                           final EventHandler handler, final double minGap, final TimeStamped... dates) {
-        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, minGap, dates);
-    }
-
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
      * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
      * @param minGap minimum gap between added dates (s)
@@ -150,9 +129,8 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
 
     /** {@inheritDoc} */
     @Override
-    protected DateDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler newHandler) {
-        return new DateDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler, minGap,
+    protected DateDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new DateDetector(detectionSettings, newHandler, minGap,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }
 

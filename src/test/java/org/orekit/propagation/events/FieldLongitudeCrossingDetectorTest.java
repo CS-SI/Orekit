@@ -26,6 +26,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -54,6 +55,17 @@ public class FieldLongitudeCrossingDetectorTest {
      */
     private static final Binary64Field field = Binary64Field.getInstance();
 
+    @Test
+    void testConstructor() {
+        // GIVEN
+        final OneAxisEllipsoid ellipsoid = Mockito.mock(OneAxisEllipsoid.class);
+        // WHEN
+        final FieldLongitudeCrossingDetector<Binary64> detector = new FieldLongitudeCrossingDetector<>(field, ellipsoid, 1.);
+        // THEN
+        final FieldEventDetectionSettings<Binary64> detectionSettings = detector.getDetectionSettings();
+        Assertions.assertEquals(EventDetectionSettings.DEFAULT_MAX_ITER, detectionSettings.getMaxIterationCount());
+        Assertions.assertEquals(EventDetectionSettings.DEFAULT_THRESHOLD, detectionSettings.getThreshold().getReal());
+    }
 
     @Test
     public void testRegularCrossing() {

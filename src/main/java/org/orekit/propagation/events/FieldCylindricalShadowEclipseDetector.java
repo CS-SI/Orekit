@@ -63,24 +63,6 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
     }
 
     /**
-     * Constructor.
-     * @param sun light source provider (infinitely distant)
-     * @param occultingBodyRadius occulting body radius
-     * @param maxCheck maximum check for event detection
-     * @param threshold threshold for event detection
-     * @param maxIter maximum iteration for event detection
-     * @param handler event handler
-     * @deprecated since 12.2
-     */
-    @Deprecated
-    public FieldCylindricalShadowEclipseDetector(final ExtendedPositionProvider sun,
-                                                 final T occultingBodyRadius,
-                                                 final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                                 final int maxIter, final FieldEventHandler<T> handler) {
-        this(sun, occultingBodyRadius, new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
-    }
-
-    /**
      * Constructor with default detection settings.
      * @param sun light source provider
      * @param occultingBodyRadius occulting body radius
@@ -116,9 +98,8 @@ public class FieldCylindricalShadowEclipseDetector<T extends CalculusFieldElemen
 
     /** {@inheritDoc} */
     @Override
-    protected FieldCylindricalShadowEclipseDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                              final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldCylindricalShadowEclipseDetector<>(sun, occultingBodyRadius,
-            new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+    protected FieldCylindricalShadowEclipseDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                                              final FieldEventHandler<T> newHandler) {
+        return new FieldCylindricalShadowEclipseDetector<>(sun, occultingBodyRadius, detectionSettings, newHandler);
     }
 }

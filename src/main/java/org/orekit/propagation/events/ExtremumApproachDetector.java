@@ -98,31 +98,12 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * This constructor is to be used if the user wants to change the default behavior of the detector.
      * </p>
      *
-     * @param maxCheck            Maximum checking interval.
-     * @param threshold           Convergence threshold (s).
-     * @param maxIter             Maximum number of iterations in the event time search.
-     * @param handler             Event handler to call at event occurrences.
-     * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
-     *                            approach.
-     * @see EventHandler
-     */
-    protected ExtremumApproachDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
-                                       final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider) {
-        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, secondaryPVProvider);
-    }
-
-    /**
-     * Constructor.
-     * <p>
-     * This constructor is to be used if the user wants to change the default behavior of the detector.
-     * </p>
-     *
      * @param detectionSettings   Detection settings.
      * @param handler             Event handler to call at event occurrences.
      * @param secondaryPVProvider PVCoordinates provider of the other object with which we want to find out the extremum
      *                            approach.
      * @see EventHandler
-     * @since 12.2
+     * @since 13.0
      */
     protected ExtremumApproachDetector(final EventDetectionSettings detectionSettings,
                                        final EventHandler handler, final PVCoordinatesProvider secondaryPVProvider) {
@@ -169,9 +150,9 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
 
     /** {@inheritDoc} */
     @Override
-    protected ExtremumApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold, final int newMaxIter,
+    protected ExtremumApproachDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new ExtremumApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, secondaryPVProvider);
+        return new ExtremumApproachDetector(detectionSettings, newHandler, secondaryPVProvider);
     }
 
     /**

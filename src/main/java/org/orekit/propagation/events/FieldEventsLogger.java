@@ -48,8 +48,6 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
 
-
-
     /** List of occurred events. */
     private final List<FieldLoggedEvent<T>> log;
 
@@ -180,17 +178,17 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
          * @param detector events detector to wrap
          * @since 6.1
          */
-        private FieldLoggingWrapper(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
-                                    final FieldEventDetector<T> detector) {
+        private FieldLoggingWrapper(final FieldEventDetectionSettings<T> detectionSettings,
+                                    final FieldEventHandler<T> handler, final FieldEventDetector<T> detector) {
             super(detectionSettings, handler);
             this.detector = detector;
         }
 
         /** {@inheritDoc} */
         @Override
-        protected FieldLoggingWrapper create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                             final int newMaxIter, final FieldEventHandler<T> newHandler) {
-            return new FieldLoggingWrapper(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler, detector);
+        protected FieldLoggingWrapper create(final FieldEventDetectionSettings<T> detectionSettings,
+                                             final FieldEventHandler<T> newHandler) {
+            return new FieldLoggingWrapper(detectionSettings, newHandler, detector);
         }
 
         /** Log an event.

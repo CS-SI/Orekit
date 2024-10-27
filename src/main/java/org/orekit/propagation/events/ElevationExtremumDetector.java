@@ -63,8 +63,7 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      */
     public ElevationExtremumDetector(final double maxCheck, final double threshold,
                                      final TopocentricFrame topo) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
-             topo);
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(), topo);
     }
 
     /** Protected constructor with full parameters.
@@ -73,25 +72,22 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
+     * @since 13.0
      */
-    protected ElevationExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
-                                        final int maxIter, final EventHandler handler,
+    protected ElevationExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                         final TopocentricFrame topo) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.topo = topo;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ElevationExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                              final int newMaxIter,
+    protected ElevationExtremumDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new ElevationExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
+        return new ElevationExtremumDetector(detectionSettings, newHandler, topo);
     }
 
     /**

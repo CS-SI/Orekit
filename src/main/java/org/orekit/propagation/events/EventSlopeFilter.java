@@ -90,9 +90,7 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * @param filter filter to use
      */
     public EventSlopeFilter(final T rawDetector, final FilterType filter) {
-        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
-             rawDetector.getMaxIterationCount(), new LocalHandler<>(),
-             rawDetector, filter);
+        this(rawDetector.getDetectionSettings(), new LocalHandler<>(), rawDetector, filter);
     }
 
     /** Protected constructor with full parameters.
@@ -101,18 +99,15 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param filter filter to use
-     * @since 6.1
+     * @since 13.0
      */
-    protected EventSlopeFilter(final AdaptableInterval maxCheck, final double threshold,
-                               final int maxIter, final EventHandler handler,
+    protected EventSlopeFilter(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                final T rawDetector, final FilterType filter) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
@@ -121,9 +116,8 @@ public class EventSlopeFilter<T extends EventDetector> extends AbstractDetector<
 
     /** {@inheritDoc} */
     @Override
-    protected EventSlopeFilter<T> create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                         final int newMaxIter, final EventHandler newHandler) {
-        return new EventSlopeFilter<>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
+    protected EventSlopeFilter<T> create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new EventSlopeFilter<>(detectionSettings, newHandler, rawDetector, filter);
     }
 
     /**

@@ -67,7 +67,7 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
      */
     public LongitudeRangeCrossingDetector(final double maxCheck, final double threshold,
                                           final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnDecreasing(),
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnDecreasing(),
              body, fromLongitude, toLongitude);
     }
 
@@ -77,18 +77,16 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the longitude is defined
      * @param fromLongitude longitude to be crossed, lower range boundary
      * @param toLongitude longitude to be crossed, upper range boundary
+     * @since 13.0
      */
-    protected LongitudeRangeCrossingDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
-                                             final EventHandler handler,
+    protected LongitudeRangeCrossingDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                              final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.body     = body;
         this.fromLongitude = ensureLongitudePositiveContinuity(fromLongitude);
         this.toLongitude = ensureLongitudePositiveContinuity(toLongitude);
@@ -97,12 +95,9 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
 
     /** {@inheritDoc} */
     @Override
-    protected LongitudeRangeCrossingDetector create(final AdaptableInterval newMaxCheck,
-                                                    final double newThreshold,
-                                                    final int newMaxIter,
+    protected LongitudeRangeCrossingDetector create(final EventDetectionSettings detectionSettings,
                                                     final EventHandler newHandler) {
-        return new LongitudeRangeCrossingDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                          body, fromLongitude, toLongitude);
+        return new LongitudeRangeCrossingDetector(detectionSettings, newHandler, body, fromLongitude, toLongitude);
     }
 
     /** Get the body on which the geographic zone is defined.

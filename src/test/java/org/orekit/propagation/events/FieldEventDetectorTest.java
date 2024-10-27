@@ -103,9 +103,8 @@ public class FieldEventDetectorTest {
             return s.getDate().getField().getZero();
         }
 
-        protected DummyDetector create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                       final int newMaxIter, final FieldEventHandler<T> newHandler) {
-            return new DummyDetector(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        protected DummyDetector create(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> newHandler) {
+            return new DummyDetector(detectionSettings, newHandler);
         }
 
     }
@@ -305,14 +304,14 @@ public class FieldEventDetectorTest {
 
         public GCallsCounter(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                              final int maxIter, final FieldEventHandler<T> handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
             count = 0;
         }
 
-        protected GCallsCounter<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                          final int newMaxIter,
+        protected GCallsCounter<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                           final FieldEventHandler<T> newHandler) {
-            return new GCallsCounter<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            return new GCallsCounter<>(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler);
         }
 
         public int getCount() {
@@ -379,7 +378,7 @@ public class FieldEventDetectorTest {
         public FieldCloseApproachDetector(FieldAdaptableInterval<T> maxCheck, T threshold,
                                           final int maxIter, final FieldEventHandler<T> handler,
                                           FieldPVCoordinatesProvider<T> provider) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
             this.provider = provider;
         }
 
@@ -392,11 +391,10 @@ public class FieldEventDetectorTest {
             return radialVelocity;
         }
 
-        protected FieldCloseApproachDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                       final int newMaxIter,
+        protected FieldCloseApproachDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                        final FieldEventHandler<T> newHandler) {
-            return new FieldCloseApproachDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                                    provider);
+            return new FieldCloseApproachDetector<>(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler, provider);
         }
 
     }

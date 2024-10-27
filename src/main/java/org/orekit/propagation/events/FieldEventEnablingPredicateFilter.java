@@ -92,9 +92,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      */
     public FieldEventEnablingPredicateFilter(final FieldEventDetector<T> rawDetector,
                                              final FieldEnablingPredicate<T> enabler) {
-        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
-             rawDetector.getMaxIterationCount(), new LocalHandler<>(),
-             rawDetector, enabler);
+        this(rawDetector.getDetectionSettings(), new LocalHandler<>(), rawDetector, enabler);
     }
 
     /** Protected constructor with full parameters.
@@ -103,19 +101,18 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param enabler event enabling function to use
+     * @since 13.0
      */
     @SuppressWarnings("unchecked")
-    protected FieldEventEnablingPredicateFilter(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                                final int maxIter, final FieldEventHandler<T> handler,
+    protected FieldEventEnablingPredicateFilter(final FieldEventDetectionSettings<T> detectionSettings,
+                                                final FieldEventHandler<T> handler,
                                                 final FieldEventDetector<T> rawDetector,
                                                 final FieldEnablingPredicate<T> enabler) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.rawDetector  = rawDetector;
         this.enabler      = enabler;
         this.transformers = new Transformer[HISTORY_SIZE];
@@ -124,10 +121,9 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldEventEnablingPredicateFilter<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                          final int newMaxIter,
+    protected FieldEventEnablingPredicateFilter<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                           final FieldEventHandler<T> newHandler) {
-        return new FieldEventEnablingPredicateFilter<>(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, enabler);
+        return new FieldEventEnablingPredicateFilter<>(detectionSettings, newHandler, rawDetector, enabler);
     }
 
     /**
@@ -139,6 +135,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     }
 
     /**  {@inheritDoc} */
+    @Override
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         super.init(s0, t);
@@ -158,6 +155,7 @@ public class FieldEventEnablingPredicateFilter<T extends CalculusFieldElement<T>
     }
 
     /**  {@inheritDoc} */
+    @Override
     public T g(final FieldSpacecraftState<T> s) {
 
         final T       rawG      = rawDetector.g(s);

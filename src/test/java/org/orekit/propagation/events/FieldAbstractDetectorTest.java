@@ -51,9 +51,8 @@ class FieldAbstractDetectorTest {
         }
 
         @Override
-        protected TestFieldDetector create(FieldAdaptableInterval<Complex> newMaxCheck, Complex newThreshold,
-                                                                       int newMaxIter, FieldEventHandler<Complex> newHandler) {
-            return new TestFieldDetector(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        protected TestFieldDetector create(FieldEventDetectionSettings<Complex> detectionSettings, FieldEventHandler<Complex> newHandler) {
+            return new TestFieldDetector(detectionSettings, newHandler);
         }
 
         @Override

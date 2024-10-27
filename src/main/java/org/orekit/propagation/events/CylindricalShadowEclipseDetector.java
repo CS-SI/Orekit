@@ -59,24 +59,6 @@ public class CylindricalShadowEclipseDetector extends AbstractDetector<Cylindric
     }
 
     /**
-     * Constructor.
-     * @param sun light source provider (infinitely distant)
-     * @param occultingBodyRadius occulting body radius
-     * @param maxCheck maximum check for event detection
-     * @param threshold threshold for event detection
-     * @param maxIter maximum iteration for event detection
-     * @param handler event handler
-     * @deprecated since 12.2
-     */
-    @Deprecated
-    public CylindricalShadowEclipseDetector(final PVCoordinatesProvider sun,
-                                            final double occultingBodyRadius,
-                                            final AdaptableInterval maxCheck, final double threshold,
-                                            final int maxIter, final EventHandler handler) {
-        this(sun, occultingBodyRadius, new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
-    }
-
-    /**
      * Constructor with default detection settings.
      * @param sun light source provider
      * @param occultingBodyRadius occulting body radius
@@ -111,9 +93,8 @@ public class CylindricalShadowEclipseDetector extends AbstractDetector<Cylindric
 
     /** {@inheritDoc} */
     @Override
-    protected CylindricalShadowEclipseDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                      final int newMaxIter, final EventHandler newHandler) {
-        return new CylindricalShadowEclipseDetector(sun, occultingBodyRadius,
-            new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
+    protected CylindricalShadowEclipseDetector create(final EventDetectionSettings detectionSettings,
+                                                      final EventHandler newHandler) {
+        return new CylindricalShadowEclipseDetector(sun, occultingBodyRadius, detectionSettings, newHandler);
     }
 }

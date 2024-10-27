@@ -59,20 +59,6 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /** Build a new instance.
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
-     * @since 12.0
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected AbstractDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
-                               final EventHandler handler) {
-        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
-    }
-
-    /** Build a new instance.
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @since 12.2
@@ -113,21 +99,6 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     @Override
     public EventDetectionSettings getDetectionSettings() {
         return eventDetectionSettings;
-    }
-
-    /** {@inheritDoc} */
-    public AdaptableInterval getMaxCheckInterval() {
-        return getDetectionSettings().getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    public int getMaxIterationCount() {
-        return getDetectionSettings().getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    public double getThreshold() {
-        return getDetectionSettings().getThreshold();
     }
 
     /**
@@ -216,27 +187,12 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /** Build a new instance.
-     * @param newMaxCheck maximum checking interval (s)
-     * @param newThreshold convergence threshold (s)
-     * @param newMaxIter maximum number of iterations in the event time search
-     * @param newHandler event handler to call at event occurrences
-     * @return a new instance of the appropriate sub-type
-     * @deprecated as of 12.2. Will be removed in 13.0 and only the other signature shall remain
-     */
-    @Deprecated
-    protected abstract T create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter,
-                                EventHandler newHandler);
-
-    /** Build a new instance.
      * @param detectionSettings detection settings
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      * @since 12.2
      */
-    protected T create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
-        return create(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(), detectionSettings.getMaxIterationCount(),
-            newHandler);
-    }
+    protected abstract T create(EventDetectionSettings detectionSettings, EventHandler newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

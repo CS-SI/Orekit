@@ -23,8 +23,6 @@ import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
@@ -81,14 +79,13 @@ public class UnboundedCartesianEnergy extends CartesianEnergyConsideringMass {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new SingularityDetector(getEventDetectionSettings(), new ResetDerivativesOnEvent(),
-                0.));
+        return Stream.of(new SingularityDetector(getEventDetectionSettings(), 0.));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return Stream.of(new FieldSingularityDetector<>(new FieldEventDetectionSettings<>(field, getEventDetectionSettings()),
-                new FieldResetDerivativesOnEvent<>(), field.getZero()));
+                field.getZero()));
     }
 }

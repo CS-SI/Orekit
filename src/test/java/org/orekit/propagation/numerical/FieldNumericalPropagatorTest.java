@@ -1063,10 +1063,9 @@ public class FieldNumericalPropagatorTest {
             super(detectionSettings, handler);
         }
 
-        protected AdditionalStateLinearDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                          final int newMaxIter,
+        protected AdditionalStateLinearDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                           final FieldEventHandler<T> newHandler) {
-            return new AdditionalStateLinearDetector<>(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+            return new AdditionalStateLinearDetector<>(detectionSettings, newHandler);
         }
 
         public T g(FieldSpacecraftState<T> s) {
