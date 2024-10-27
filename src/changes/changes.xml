@@ -87,6 +87,9 @@
             Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
             added signalTimeOfFlightAdjustableReceiver.
         </action>
+        <action dev="serrof" type="add" issue="1440">
+            Add some getters in PropagatorBuilder.
+        </action>
         <action dev="serrof" type="update" issue="1241">
             Use Field date in Sun's position for atmosphere when applicable.
         </action>

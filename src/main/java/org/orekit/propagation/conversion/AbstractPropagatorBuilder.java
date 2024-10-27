@@ -232,7 +232,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** Get the mass.
-     * @return the mass
+     * @return the mass (kg)
      * @since 9.2
      */
     public double getMass()
