@@ -27,6 +27,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.utils.PVCoordinates;
 
 import java.util.Arrays;
 
@@ -177,7 +178,80 @@ public interface ToleranceProvider extends CartesianToleranceProvider {
 
                 Arrays.fill(relTol, 0, 6, minimumRel);
                 relTol[6] = cartRelTol[6];
-                return new double[][] { absTol, relTol };
+                return new double[][] {absTol, relTol};
+            }
+        };
+    }
+
+    /**
+     * Defines a default tolerance provider. It is consistent with values from previous versions of Orekit obtained via other APIs.
+     *
+     * <p>
+     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
+     * are only local estimates, not global ones. So some care must be taken when using
+     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
+     * will guarantee a 1mm error position after several orbits integration.
+     * </p>
+     *
+     * @param dP expected position error
+     * @return tolerances
+     */
+    static ToleranceProvider getDefaultToleranceProvider(final double dP) {
+        return new ToleranceProvider() {
+            @Override
+            public double[][] getTolerances(final Orbit referenceOrbit, final OrbitType propagationOrbitType,
+                                            final PositionAngleType positionAngleType) {
+                // Cartesian case
+                final double[] relTol = new double[7];
+                final double[] cartAbsTol = new double[7];
+                final double relPos = dP / referenceOrbit.getPosition().getNorm();
+                Arrays.fill(relTol, 0, relTol.length, relPos);
+                Arrays.fill(cartAbsTol, 0, 3, dP);
+                // estimate the scalar velocity error
+                final PVCoordinates pv = referenceOrbit.getPVCoordinates();
+                final double r2 = pv.getPosition().getNormSq();
+                final double v  = pv.getVelocity().getNorm();
+                final double dV = referenceOrbit.getMu() * dP / (v * r2);
+                Arrays.fill(cartAbsTol, 3, 6, dV);
+                cartAbsTol[6] = DEFAULT_ABSOLUTE_MASS_TOLERANCE;
+
+                if (propagationOrbitType == OrbitType.CARTESIAN) {
+                    return new double[][] {cartAbsTol, relTol};
+                }
+
+                // convert the orbit to the desired type
+                final double[] absTol = cartAbsTol.clone();
+                final double[][] jacobian = new double[6][6];
+                final Orbit converted = propagationOrbitType.convertType(referenceOrbit);
+                converted.getJacobianWrtCartesian(PositionAngleType.TRUE, jacobian);
+
+                for (int i = 0; i < jacobian.length; ++i) {
+                    final double[] row = jacobian[i];
+                    absTol[i] = FastMath.abs(row[0]) * cartAbsTol[0] +
+                            FastMath.abs(row[1]) * cartAbsTol[1] +
+                            FastMath.abs(row[2]) * cartAbsTol[2] +
+                            FastMath.abs(row[3]) * cartAbsTol[3] +
+                            FastMath.abs(row[4]) * cartAbsTol[4] +
+                            FastMath.abs(row[5]) * cartAbsTol[5];
+                    if (Double.isNaN(absTol[i])) {
+                        throw new OrekitException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, propagationOrbitType);
+                    }
+                }
+
+                return new double[][] {absTol, relTol};
+            }
+
+            @Override
+            public double[][] getTolerances(final Vector3D position, final Vector3D velocity) {
+                final double[] absTol = new double[7];
+                final double[] relTol = absTol.clone();
+                final double relPos = dP / position.getNorm();
+                Arrays.fill(relTol, 0, relTol.length, relPos);
+                Arrays.fill(absTol, 0, 3, dP);
+                final double dV = relPos * velocity.getNorm();
+                Arrays.fill(absTol, 3, 6, dV);
+                absTol[6] = DEFAULT_ABSOLUTE_MASS_TOLERANCE;
+                return new double[][] {absTol, relTol};
             }
         };
     }

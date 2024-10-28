@@ -16,10 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.AdamsMoultonIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
 /** Builder for AdamsMoultonIntegrator.
@@ -31,7 +31,7 @@ public class AdamsMoultonIntegratorBuilder extends AbstractVariableStepIntegrato
     /** Number of steps. */
     private final int nSteps;
 
-    /** Build a new instance. Should only use this constructor with {@link Orbit}.
+    /** Build a new instance using default integration tolerances.
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
@@ -41,32 +41,27 @@ public class AdamsMoultonIntegratorBuilder extends AbstractVariableStepIntegrato
      */
     public AdamsMoultonIntegratorBuilder(final int nSteps, final double minStep,
                                          final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
-        this.nSteps  = nSteps;
+        this(nSteps, minStep, maxStep, getDefaultToleranceProvider(dP));
     }
 
-    /** Build a new instance.
+    /** Build a new instance using default integration tolerances.
      * @param nSteps number of steps
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
-     *
-     * @since 12.2
+     * @param toleranceProvider integration tolerance provider
      * @see AdamsMoultonIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
+     * @since 13.0
      */
     public AdamsMoultonIntegratorBuilder(final int nSteps, final double minStep,
-                                         final double maxStep, final double dP, final double dV) {
-        super(minStep, maxStep, dP, dV);
+                                         final double maxStep, final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
         this.nSteps  = nSteps;
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = getTolerances(orbit, orbitType);
-        return new AdamsMoultonIntegrator(nSteps, minStep, maxStep, tol[0], tol[1]);
+    protected AdamsMoultonIntegrator buildIntegrator(final double[][] tolerances) {
+        return new AdamsMoultonIntegrator(nSteps, getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
 }

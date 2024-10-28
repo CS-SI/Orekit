@@ -20,6 +20,7 @@ import org.hipparchus.ode.AbstractIntegrator;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.AbsolutePVCoordinates;
 
 /** This interface is the top-level abstraction to build first order integrators for propagators conversion.
@@ -31,14 +32,26 @@ public interface ODEIntegratorBuilder {
     /** Build a first order integrator.
      * @param orbit reference orbit
      * @param orbitType orbit type to use
+     * @param angleType position angle type to use
+     * @return a first order integrator ready to use
+     * @since 13.0
+     */
+    AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
+
+    /** Build a first order integrator.
+     * @param orbit reference orbit
+     * @param orbitType orbit type to use
      * @return a first order integrator ready to use
      */
-    AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
+    default AbstractIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType) {
+        return buildIntegrator(orbit, orbitType, PositionAngleType.MEAN);
+    }
 
     /**
      * Build a first order integrator. Non-orbit version.
      * @param absolutePVCoordinates absolute position-velocity vector
      * @return a first order integrator ready to use
+     * @since 12.2
      */
     default AbstractIntegrator buildIntegrator(final AbsolutePVCoordinates absolutePVCoordinates) {
         final double arbitraryMu = 1.;

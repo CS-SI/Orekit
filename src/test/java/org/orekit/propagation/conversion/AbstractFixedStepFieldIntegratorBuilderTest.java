@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 class AbstractFixedStepFieldIntegratorBuilderTest {
 
@@ -43,7 +44,7 @@ class AbstractFixedStepFieldIntegratorBuilderTest {
         }
 
         @Override
-        public AbstractFieldIntegrator<Complex> buildIntegrator(Field field, Orbit orbit, OrbitType orbitType) {
+        public AbstractFieldIntegrator<Complex> buildIntegrator(Field field, Orbit orbit, OrbitType orbitType, final PositionAngleType angleType) {
             return null;
         }
 

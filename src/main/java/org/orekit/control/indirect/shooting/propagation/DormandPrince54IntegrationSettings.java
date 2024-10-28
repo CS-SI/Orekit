@@ -18,6 +18,7 @@ package org.orekit.control.indirect.shooting.propagation;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.DormandPrince54FieldIntegratorBuilder;
 
 /**
@@ -35,30 +36,25 @@ public class DormandPrince54IntegrationSettings implements ShootingIntegrationSe
     /** Maximum step-size for integrator builders. */
     private final double maxStep;
 
-    /** Expected position error for integrator builders. */
-    private final double dP;
-
-    /** Expected velocity error for integrator builders. */
-    private final double dV;
+    /** Tolerance provider for integrator builders. */
+    private final ToleranceProvider toleranceProvider;
 
     /**
      * Constructor.
      * @param minStep minimum step-size for integrator
      * @param maxStep maximum step-size for integrator
-     * @param dP expected position error for integrator
-     * @param dV expected velocity error for integrator
+     * @param toleranceProvider integration tolerance provider
      */
     public DormandPrince54IntegrationSettings(final double minStep, final double maxStep,
-                                              final double dP, final double dV) {
+                                              final ToleranceProvider toleranceProvider) {
         this.minStep = minStep;
         this.maxStep = maxStep;
-        this.dP = dP;
-        this.dV = dV;
+        this.toleranceProvider = toleranceProvider;
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> DormandPrince54FieldIntegratorBuilder<T> getFieldIntegratorBuilder(final Field<T> field) {
-        return new DormandPrince54FieldIntegratorBuilder<>(minStep, maxStep, dP, dV);
+        return new DormandPrince54FieldIntegratorBuilder<>(minStep, maxStep, toleranceProvider);
     }
 }

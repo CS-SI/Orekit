@@ -248,7 +248,7 @@ class SpacecraftStateInterpolatorTest {
         final double     dP         = 1;
         final double     minStep    = 0.001;
         final double     maxStep    = 100;
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, absPV);
+        final double[][] tolerances = ToleranceProvider.of(CartesianToleranceProvider.of(dP)).getTolerances(absPV);
 
         return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
     }
