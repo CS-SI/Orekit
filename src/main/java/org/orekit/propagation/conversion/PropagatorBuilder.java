@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -66,6 +67,14 @@ public interface PropagatorBuilder extends Cloneable {
      */
     double[] getSelectedNormalizedParameters();
 
+    /**
+     * Get the attitude provider.
+     *
+     * @return the attitude provider
+     * @since 13.0
+     */
+    AttitudeProvider getAttitudeProvider();
+
     /** Get the orbit type expected for the 6 first parameters in
      * {@link #buildPropagator(double[])}.
      * @return orbit type to use in {@link #buildPropagator(double[])}
@@ -99,6 +108,12 @@ public interface PropagatorBuilder extends Cloneable {
      * @since 12.0
      */
     double getMu();
+
+    /** Get the initial mass.
+     * @return the mass (kg)
+     * @since 13.0
+     */
+    double getMass();
 
     /** Get the drivers for the configurable orbital parameters.
      * Orbital drivers should have only 1 value estimated (1 span)
