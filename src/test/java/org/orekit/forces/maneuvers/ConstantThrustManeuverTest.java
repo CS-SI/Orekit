@@ -55,6 +55,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -354,7 +355,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -416,7 +417,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
@@ -477,7 +478,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -546,7 +547,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         Assertions.assertEquals(isp, maneuver.getIsp(),    1.0e-10);
 
         final OrbitType orbitType = OrbitType.KEPLERIAN;
-        double[][] tol = NumericalPropagator.tolerances(1.0e-5, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-5).getTolerances(orbit, orbitType);
         AdaptiveStepsizeIntegrator integrator1 =
             new DormandPrince853Integrator(1.0e-5, 1000, tol[0], tol[1]);
         integrator1.setInitialStepSize(60);
@@ -669,7 +670,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         // reference propagation:
         // propagator already uses inertial law
         // maneuver does not need to override it to get an inertial maneuver
-        double[][] tol = NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator1 =
             new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator1.setInitialStepSize(60);
@@ -770,7 +771,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         // reference propagation:
         // propagator already uses inertial law
         // maneuver does not need to override it to get an inertial maneuver
-        double[][] tol = NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator1 =
             new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator1.setInitialStepSize(60);
@@ -826,7 +827,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double maxStep = 3600;
 
         // Defining integrator
-        final double[][]          tolerances = NumericalPropagator.tolerances(dP, cartesianOrbit, OrbitType.CARTESIAN);
+        final double[][]          tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(cartesianOrbit, OrbitType.CARTESIAN);
         final ODEIntegrator       integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0],
                 tolerances[1]);
         final NumericalPropagator numProp = new NumericalPropagator(integrator);

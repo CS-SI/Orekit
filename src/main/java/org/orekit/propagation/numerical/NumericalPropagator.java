@@ -141,7 +141,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * final double minStep  = 0.001;
  * final double maxStep  = 500;
  * final double initStep = 60;
- * final double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+ * final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.EQUINOCTIAL);
  * AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
  * propagator = new NumericalPropagator(integrator);
@@ -1047,7 +1047,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param absPva reference absolute position-velocity-acceleration
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
     @Deprecated

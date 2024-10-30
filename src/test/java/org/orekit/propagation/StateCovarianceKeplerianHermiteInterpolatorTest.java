@@ -386,7 +386,7 @@ public class StateCovarianceKeplerianHermiteInterpolatorTest {
 
     public static ODEIntegrator generateDefaultIntegrator(final Orbit orbit, final OrbitType orbitType) {
         final double     dP         = 1;
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         final double     minStep    = 0.001;
         final double     maxStep    = 300.;
 

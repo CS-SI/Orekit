@@ -17,10 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.ode.nonstiff.AdamsMoultonIntegrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.ToleranceProvider;
-import org.orekit.propagation.numerical.NumericalPropagator;
 
 /** Builder for AdamsMoultonIntegrator.
  * @author Pascal Parraud
@@ -37,7 +34,6 @@ public class AdamsMoultonIntegratorBuilder extends AbstractVariableStepIntegrato
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      * @see AdamsMoultonIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public AdamsMoultonIntegratorBuilder(final int nSteps, final double minStep,
                                          final double maxStep, final double dP) {

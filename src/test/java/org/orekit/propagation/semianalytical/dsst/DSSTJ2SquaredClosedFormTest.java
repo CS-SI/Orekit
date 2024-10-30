@@ -40,6 +40,7 @@ import org.orekit.orbits.*;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTJ2SquaredClosedForm;
@@ -155,7 +156,7 @@ public class DSSTJ2SquaredClosedFormTest {
         final AbsoluteDate end = initialOrbit.getDate().shiftedBy(duration);
 
         // Create numerical propagator
-        final double[][] tolerances = NumericalPropagator.tolerances(1.0, initialOrbit, initialOrbit.getType());
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialOrbit, initialOrbit.getType());
         final ODEIntegrator numIntegrator = new DormandPrince853Integrator(0.001, 300.0, tolerances[0], tolerances[1]);
         final NumericalPropagator numPropagator = new NumericalPropagator(numIntegrator);
         numPropagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), GravityFieldFactory.getNormalizedProvider(provider)));
@@ -267,7 +268,7 @@ public class DSSTJ2SquaredClosedFormTest {
         // Compute reference state Jacobian using finite differences
         double[][] meanElementRatesJacobianRef = new double[6][6];
         double dP = 1.0;
-        double[] steps = NumericalPropagator.tolerances(1000 * dP, orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(dP * 1000).getTolerances(orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
 
             SpacecraftState stateM4 = shiftState(state, orbitType, -4 * steps[i], i);

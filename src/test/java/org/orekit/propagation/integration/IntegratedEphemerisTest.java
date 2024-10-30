@@ -37,11 +37,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.EphemerisGenerator;
-import org.orekit.propagation.MatricesHarvester;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -50,7 +46,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinatesTest;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
 
 class IntegratedEphemerisTest {
 
@@ -163,7 +158,7 @@ class IntegratedEphemerisTest {
     void testAdditionalDerivatives() {
 
         AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(10.0);
-        double[][] tolerances = NumericalPropagator.tolerances(1.0e-3, initialOrbit, OrbitType.CARTESIAN);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialOrbit, OrbitType.CARTESIAN);
         DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-6, 10.0, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-3);
         NumericalPropagator propagator = new NumericalPropagator(integrator);

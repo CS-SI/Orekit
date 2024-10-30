@@ -24,6 +24,7 @@ import org.hipparchus.util.Binary64Field;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 
@@ -47,8 +48,7 @@ public class FieldCloseEventsNumericalDP853Test extends FieldCloseEventsAbstract
      * @return a usable propagator.
      */
     public FieldPropagator<Binary64> getPropagator(double stepSize) {
-        double[][] tol = FieldNumericalPropagator
-                .tolerances(v(1e-3), initialOrbit, OrbitType.CARTESIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialOrbit, OrbitType.CARTESIAN);
         final FieldNumericalPropagator<Binary64> propagator = new FieldNumericalPropagator<>(
                 field,
                 new DormandPrince853FieldIntegrator<>(field, stepSize, stepSize, tol[0], tol[1]));

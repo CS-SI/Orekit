@@ -50,6 +50,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -523,8 +524,7 @@ public class FieldEventDetectorTest {
     private <T extends CalculusFieldElement<T>> FieldPropagator<T> buildNumerical(final FieldOrbit<T> orbit) {
         Field<T>            field      = orbit.getDate().getField();
         OrbitType           type       = OrbitType.CARTESIAN;
-        double[][]          tol        = FieldNumericalPropagator.tolerances(field.getZero().newInstance(0.0001),
-                                                                             orbit, type);
+        double[][]          tol        = ToleranceProvider.getDefaultToleranceProvider(0.0001).getTolerances(orbit, type);
         FieldODEIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.0001, 10.0, tol[0], tol[1]);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);

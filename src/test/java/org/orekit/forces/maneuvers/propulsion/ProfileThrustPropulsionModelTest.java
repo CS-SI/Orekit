@@ -44,6 +44,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -141,7 +142,7 @@ class ProfileThrustPropulsionModelTest {
 
         final Maneuver maneuver = new Maneuver(null, new DateBasedManeuverTriggers(fireDate, duration), propulsionModel);
 
-        double[][] tolerance = NumericalPropagator.tolerances(1.0e-6, initOrbit, initOrbit.getType());
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(initOrbit, initOrbit.getType());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(1.0e-6, rampDuration, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(0.1);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
@@ -232,7 +233,7 @@ class ProfileThrustPropulsionModelTest {
 
         final Maneuver maneuver = new Maneuver(null, new DateBasedManeuverTriggers(fireDate.toAbsoluteDate(), duration), propulsionModel);
 
-        double[][] tolerance = FieldNumericalPropagator.tolerances(zero.newInstance(1.0e-6), initOrbit, initOrbit.getType());
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(initOrbit, initOrbit.getType());
         AdaptiveStepsizeFieldIntegrator<T> integrator =
             new DormandPrince853FieldIntegrator<>(field, 1.0e-6, rampDuration, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(0.1);

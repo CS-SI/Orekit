@@ -53,10 +53,7 @@ import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldPropagator;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -407,7 +404,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.addSwitchingCondition(targetPointing, nadirPointing, eventDetector,
                                                 false, true, transitionTime, AngularDerivativesFilter.USE_RR,
                                                 targetToNadir);
-        final double[][] tolerance = NumericalPropagator.tolerances(10.0, initialOrbit, initialOrbit.getType());
+        final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 300.0, tolerance[0], tolerance[1]);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
@@ -479,7 +476,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
                                                 (previous, next, state) -> nadirToTarget.add(state.getDate()));
-        final double[][] tolerance = NumericalPropagator.tolerances(10.0, initialOrbit, initialOrbit.getType());
+        final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 300.0, tolerance[0], tolerance[1]);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
@@ -547,7 +544,7 @@ public class AttitudesSequenceTest {
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
                                                 (previous, next, state) -> nadirToTarget.add(state.getDate()));
-        final double[][] tolerance = NumericalPropagator.tolerances(10.0, initialOrbit, initialOrbit.getType());
+        final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 300.0, tolerance[0], tolerance[1]);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));

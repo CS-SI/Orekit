@@ -84,12 +84,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.EphemerisGenerator;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagationType;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.events.AltitudeDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -145,7 +140,7 @@ public class DSSTPropagatorTest {
         final EquinoctialOrbit equinoctial = new EquinoctialOrbit(orbit);
 
         // create propagator
-        final double[][] tol = DSSTPropagator.tolerances(0.001, equinoctial);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.e-3).getTolerances(equinoctial, OrbitType.EQUINOCTIAL);
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(3600.0, 86400.0, tol[0], tol[1]);
         final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
 
@@ -256,8 +251,7 @@ public class DSSTPropagatorTest {
         KeplerianOrbit orbit = new KeplerianOrbit(
                                                   600e3 + Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 0, 0, 0, 0, 0,
                                                   PositionAngleType.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
-        double[][] tol = DSSTPropagator
-                        .tolerances(1, orbit);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         Propagator prop = new DSSTPropagator(
                                              new DormandPrince853Integrator(0.1, 500, tol[0], tol[1]));
         prop.resetInitialState(new SpacecraftState(new CartesianOrbit(orbit)));
@@ -681,7 +675,7 @@ public class DSSTPropagatorTest {
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
         double period = orbit.getKeplerianPeriod();
-        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
                         new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
@@ -734,7 +728,7 @@ public class DSSTPropagatorTest {
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
         double period = orbit.getKeplerianPeriod();
-        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
                         new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
@@ -796,7 +790,7 @@ public class DSSTPropagatorTest {
         // build integrator
         final double minStep = initialState.getKeplerianPeriod() * 0.1;
         final double maxStep = initialState.getKeplerianPeriod() * 10.0;
-        final double[][] tol = DSSTPropagator.tolerances(0.1, initialState.getOrbit());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.e-1).getTolerances(initialState.getOrbit(), OrbitType.CARTESIAN);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
 
         // build the propagator for the propagation of the mean elements
@@ -881,7 +875,7 @@ public class DSSTPropagatorTest {
                                          new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
                                          nshp.getMu());
         double period = orbit.getKeplerianPeriod();
-        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
                         new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(10 * period);
@@ -1055,7 +1049,7 @@ public class DSSTPropagatorTest {
         forceModels.add(new DSSTThirdBody(CelestialBodyFactory.getSun(), provider.getMu()));
 
         // Set up DSST propagator
-        final double[][] tol = DSSTPropagator.tolerances(10.0, state.getOrbit());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(state.getOrbit(), OrbitType.EQUINOCTIAL);
         final ODEIntegrator integrator = new DormandPrince54Integrator(60.0, 3600.0, tol[0], tol[1]);
         final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         for (DSSTForceModel force : forceModels) {
@@ -1093,6 +1087,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
+    @Deprecated
     public void testIssue704() {
 
         // Coordinates
@@ -1176,7 +1171,7 @@ public class DSSTPropagatorTest {
         final SpacecraftState initialState = new SpacecraftState(orbit);
         final double minStep = initialState.getKeplerianPeriod();
         final double maxStep = 100. * minStep;
-        final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         propagator.setInitialState(initialState, PropagationType.MEAN);
@@ -1277,7 +1272,7 @@ public class DSSTPropagatorTest {
                 a, e, 1, 0, 0, 0,
                 PositionAngleType.MEAN, eci, epoch, mu));
         final SpacecraftState initialState = new SpacecraftState(orbit);
-        final double[][] tols = DSSTPropagator.tolerances(1, orbit);
+        final double[][] tols = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         ODEIntegrator integrator = new DormandPrince853Integrator(
                 100 * 60,
                 Constants.JULIAN_DAY,
@@ -1582,7 +1577,7 @@ public class DSSTPropagatorTest {
         initialState.getDate();
         final double minStep = initialState.getKeplerianPeriod();
         final double maxStep = 100. * minStep;
-        final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         dsstProp = new DSSTPropagator(integrator);
         dsstProp.setInitialState(initialState, PropagationType.MEAN);
@@ -1725,7 +1720,7 @@ public class DSSTPropagatorTest {
         double maxstep = 1000.0;
         double positionTolerance = 10.0;
         OrbitType propagationType = OrbitType.EQUINOCTIAL;
-        double[][] tolerances = NumericalPropagator.tolerances(positionTolerance, osculatingOrbit, propagationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(osculatingOrbit, propagationType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(propagationType);

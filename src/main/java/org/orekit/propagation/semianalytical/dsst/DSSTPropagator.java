@@ -1247,7 +1247,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final Orbit orbit) {
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();
@@ -1276,7 +1278,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
      * @since 10.3
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final double dV, final Orbit orbit) {
 
         return ToleranceProvider.of(CartesianToleranceProvider.of(dP, dV, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))

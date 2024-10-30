@@ -51,6 +51,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -406,7 +407,7 @@ public class ConfigurableLowThrustManeuverTest {
         final double minStep = 1e-6;
         final double maxStep = 100;
 
-        final double[][] tol = NumericalPropagator.tolerances(1.0e-5, initialOrbit, orbitType);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-5).getTolerances(initialOrbit, orbitType);
         final DormandPrince54Integrator integrator = new DormandPrince54Integrator(minStep, maxStep, tol[0], tol[1]);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(orbitType);
@@ -521,7 +522,7 @@ public class ConfigurableLowThrustManeuverTest {
         final double minStep = 1e-6;
         final double maxStep = 100;
 
-        final double[][] tol = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-5), initOrbit, orbitType);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-5).getTolerances(initOrbit, orbitType);
         final DormandPrince54FieldIntegrator<T> integrator = new DormandPrince54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
         final FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(orbitType);
