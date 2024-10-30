@@ -1042,37 +1042,6 @@ class NumericalPropagatorTest {
         }
     }
 
-    @Test
-    void testIssue704() {
-
-        // Coordinates
-        final Orbit         orbit = initialState.getOrbit();
-        final PVCoordinates pv    = orbit.getPVCoordinates();
-
-        // dP
-        final double dP = 10.0;
-
-        // Computes dV
-        final double r2 = pv.getPosition().getNormSq();
-        final double v  = pv.getVelocity().getNorm();
-        final double dV = orbit.getMu() * dP / (v * r2);
-
-        // Verify: Cartesian case
-        final double[][] tolCart1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
-        final double[][] tolCart2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
-        for (int i = 0; i < tolCart1.length; i++) {
-            Assertions.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
-        }
-
-        // Verify: Non cartesian case
-        final double[][] tolKep1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
-        final double[][] tolKep2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
-        for (int i = 0; i < tolCart1.length; i++) {
-            Assertions.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
-        }
-
-    }
-
     private static class CheckingHandler implements EventHandler {
 
         private final Action actionOnEvent;
@@ -1592,7 +1561,8 @@ class NumericalPropagatorTest {
         final Orbit initialOrbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit, new DormandPrince853IntegratorBuilder(0.02, 0.2, 1., 0.0001), PositionAngleType.TRUE, 10);
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit,
+                new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.), PositionAngleType.TRUE, 10);
         NumericalPropagator propagator = (NumericalPropagator) builder.buildPropagator();
 
         IntStream.

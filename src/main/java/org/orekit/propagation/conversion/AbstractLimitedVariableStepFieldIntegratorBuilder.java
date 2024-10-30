@@ -17,6 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.propagation.ToleranceProvider;
 
 /**
  * Abstract class for integrator using a limited number of variable steps.
@@ -28,38 +29,30 @@ import org.hipparchus.CalculusFieldElement;
 public abstract class AbstractLimitedVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
         extends AbstractVariableStepFieldIntegratorBuilder<T> {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Number of steps. */
-    protected final int nSteps;
-    // CHECKSTYLE: resume VisibilityModifier check
+    private final int nSteps;
 
     /**
      * Constructor.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
+     * @param toleranceProvider integration tolerance provider
      * @param nSteps number of steps
+     * @since 13.0
      */
-    AbstractLimitedVariableStepFieldIntegratorBuilder(final int nSteps, final double minStep,
-                                                      final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+    protected AbstractLimitedVariableStepFieldIntegratorBuilder(final int nSteps, final double minStep,
+                                                      final double maxStep, final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
         this.nSteps = nSteps;
     }
 
     /**
-     * Constructor with expected velocity error.
-     *
-     * @param minStep minimum step size (s)
-     * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
-     * @param nSteps number of steps
-     * @since 12.2
+     * Getter for number of steps.
+     * @return nSteps
+     * @since 13.0
      */
-    AbstractLimitedVariableStepFieldIntegratorBuilder(final int nSteps, final double minStep,
-                                                      final double maxStep, final double dP, final double dV) {
-        super(minStep, maxStep, dP, dV);
-        this.nSteps = nSteps;
+    protected int getnSteps() {
+        return nSteps;
     }
 }

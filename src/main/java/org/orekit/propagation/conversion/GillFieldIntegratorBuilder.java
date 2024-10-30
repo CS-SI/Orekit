@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.GillFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /**
  * Builder for GillFieldIntegrator.
@@ -60,7 +61,8 @@ public class GillFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public GillFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public GillFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType,
+                                                  final PositionAngleType angleType) {
         return new GillFieldIntegrator<>(field, getFieldStep(field));
     }
 

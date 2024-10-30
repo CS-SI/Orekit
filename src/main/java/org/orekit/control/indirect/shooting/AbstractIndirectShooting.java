@@ -112,7 +112,7 @@ public abstract class AbstractIndirectShooting {
         final ODEIntegratorBuilder integratorBuilder = propagationSettings.getIntegrationSettings().getIntegratorBuilder();
         if (initialState.isOrbitDefined()) {
             final Orbit orbit = initialState.getOrbit();
-            return integratorBuilder.buildIntegrator(orbit, orbit.getType());
+            return integratorBuilder.buildIntegrator(orbit, orbit.getType(), NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
         } else {
             return integratorBuilder.buildIntegrator(initialState.getAbsPVA());
         }
@@ -156,11 +156,13 @@ public abstract class AbstractIndirectShooting {
      * @return integrator.
      */
     private <T extends CalculusFieldElement<T>> FieldODEIntegrator<T> buildFieldIntegrator(final FieldSpacecraftState<T> initialState) {
+        final Field<T> field = initialState.getMass().getField();
         final FieldODEIntegratorBuilder<T> integratorBuilder = propagationSettings.getIntegrationSettings()
-            .getFieldIntegratorBuilder(initialState.getMass().getField());
+            .getFieldIntegratorBuilder(field);
         if (initialState.isOrbitDefined()) {
             final FieldOrbit<T> orbit = initialState.getOrbit();
-            return integratorBuilder.buildIntegrator(orbit, orbit.getType());
+            return integratorBuilder.buildIntegrator(field, orbit.toOrbit(), orbit.getType(),
+                    NumericalPropagator.DEFAULT_POSITION_ANGLE_TYPE);
         } else {
             return integratorBuilder.buildIntegrator(initialState.getAbsPVA());
         }

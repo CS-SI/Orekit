@@ -19,9 +19,7 @@ package org.orekit.propagation.conversion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /**
  * Builder for DormandPrince54FieldIntegrator.
@@ -35,17 +33,16 @@ public class DormandPrince54FieldIntegratorBuilder<T extends CalculusFieldElemen
         extends AbstractVariableStepFieldIntegratorBuilder<T> {
 
     /**
-     * Build a new instance. Should only use this constructor with {@link Orbit}.
+     * Build a new instance using default integration tolerances.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      *
      * @see DormandPrince54FieldIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public DormandPrince54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+        super(minStep, maxStep, getDefaultToleranceProvider(dP));
     }
 
     /**
@@ -53,28 +50,24 @@ public class DormandPrince54FieldIntegratorBuilder<T extends CalculusFieldElemen
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
-     *
-     * @since 12.2
+     * @param toleranceProvider integration tolerance provider
+     * @since 13.0
      * @see DormandPrince54FieldIntegrator
-     * @see NumericalPropagator#tolerances(double, double, Orbit, OrbitType)
      */
-    public DormandPrince54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP,
-                                                 final double dV) {
-        super(minStep, maxStep, dP, dV);
+    public DormandPrince54FieldIntegratorBuilder(final double minStep, final double maxStep,
+                                                 final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
     }
 
     /** {@inheritDoc} */
     @Override
-    public DormandPrince54FieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = getTolerances(orbit, orbitType);
-        return new DormandPrince54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
+    protected DormandPrince54FieldIntegrator<T> buildIntegrator(final Field<T> field, final double[][] tolerances) {
+        return new DormandPrince54FieldIntegrator<>(field, getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
     /** {@inheritDoc} */
     @Override
     public DormandPrince54IntegratorBuilder toODEIntegratorBuilder() {
-        return new DormandPrince54IntegratorBuilder(minStep, maxStep, dP, dV);
+        return new DormandPrince54IntegratorBuilder(getMinStep(), getMaxStep(), getToleranceProvider());
     }
 }

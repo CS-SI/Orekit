@@ -196,7 +196,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude, getMass());
 
         final DSSTPropagator propagator = new DSSTPropagator(
-                builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL),
+                builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN),
                 propagationType,
                 getAttitudeProvider());
 

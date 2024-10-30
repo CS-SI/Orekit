@@ -29,7 +29,7 @@ import org.hipparchus.exception.MathIllegalArgumentException;
  * @author Vincent Cucchietti
  */
 public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractFieldIntegratorBuilder<T> {
+        implements FieldODEIntegratorBuilder<T> {
 
     /** Step size (s). */
     private final double step;
@@ -42,7 +42,7 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      *
      * @param step step size (s)
      */
-    AbstractFixedStepFieldIntegratorBuilder(final double step) {
+    protected AbstractFixedStepFieldIntegratorBuilder(final double step) {
         // Check that given step size is strictly positive
         checkStep(step);
 
@@ -84,10 +84,10 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
         return fieldStep != null ? fieldStep : field.getZero().newInstance(step);
     }
 
-
     /**
      * Getter for the step size (s).
      * @return step size
+     * @since 13.0
      */
     protected double getStep() {
         return step;

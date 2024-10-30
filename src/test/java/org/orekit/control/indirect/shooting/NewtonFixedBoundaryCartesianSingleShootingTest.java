@@ -44,8 +44,10 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.time.AbsoluteDate;
@@ -201,7 +203,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final double flowRateFactor = 1e-3;
         final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", flowRateFactor);
         final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, cartesianCost,
-                new DormandPrince54IntegrationSettings(1e-1, 1e2, 1e-3, 1e-6));
+                new DormandPrince54IntegrationSettings(1e-1, 1e2,
+                        ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
         final double toleranceMassAdjoint = 1e-10;
@@ -321,7 +324,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 tolerancePosition, toleranceVelocity);
         final FixedTimeBoundaryOrbits boundaryOrbits = createBoundaryForKeplerianSettings();
         final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", flowRateFactor);
-        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(1e-2, 2e2, 1e-3, 1e-6);
+        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(1e-2, 2e2,
+                ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)));
         final ShootingPropagationSettings propagationSettings = createKeplerianShootingSettings(boundaryOrbits.getInitialOrbit(),
                 cartesianCost, integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
@@ -386,7 +390,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final CartesianBoundaryConditionChecker conditionChecker = new NormBasedCartesianConditionChecker(10,
                 tolerancePosition, toleranceVelocity);
         final FixedTimeBoundaryOrbits boundaryOrbits = getHeliocentricBoundary();
-        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(2e2, 1e5, 1e5, 1e-1);
+        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(2e2, 1e5,
+                ToleranceProvider.of(CartesianToleranceProvider.of(1e5, 1e-1, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)));
         final EventDetectionSettings detectionSettings = new EventDetectionSettings(1e5, 1e3, EventDetectionSettings.DEFAULT_MAX_ITER);
         final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", 1. / (4000. * Constants.G0_STANDARD_GRAVITY),
                 detectionSettings);

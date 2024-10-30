@@ -16,9 +16,12 @@
  */
 package org.orekit.propagation.conversion;
 
+import org.hipparchus.ode.AbstractIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.ToleranceProvider;
+import org.orekit.utils.AbsolutePVCoordinates;
 
 /**
  * Abstract class for integrator builder using variable step size.
@@ -28,45 +31,46 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  */
 public abstract class AbstractVariableStepIntegratorBuilder implements ODEIntegratorBuilder {
 
-    // CHECKSTYLE: stop VisibilityModifier check
     /** Minimum step size (s). */
-    protected final double minStep;
+    private final double minStep;
 
     /** Maximum step size (s). */
-    protected final double maxStep;
+    private final double maxStep;
 
-    /** Position error (m). */
-    protected final double dP;
-
-    /** Velocity error (m/s). */
-    protected final double dV;
-    // CHECKSTYLE: resume VisibilityModifier check
+    /** Integration tolerance provider. */
+    private final ToleranceProvider toleranceProvider;
 
     /**
-     * Constructor. Should only use this constructor with {@link Orbit}.
+     * Constructor.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
+     * @param toleranceProvider integration tolerance provider
+     * @since 13.0
      */
-    protected AbstractVariableStepIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        this(minStep, maxStep, dP, Double.NaN);
+    protected AbstractVariableStepIntegratorBuilder(final double minStep, final double maxStep,
+                                                    final ToleranceProvider toleranceProvider) {
+        this.minStep = minStep;
+        this.maxStep = maxStep;
+        this.toleranceProvider = toleranceProvider;
     }
 
     /**
-     * Constructor with expected velocity error.
-     *
-     * @param minStep minimum step size (s)
-     * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
+     * Getter for the maximum step.
+     * @return max stepsize
+     * @since 13.0
      */
-    protected AbstractVariableStepIntegratorBuilder(final double minStep, final double maxStep, final double dP,
-                                          final double dV) {
-        this.minStep = minStep;
-        this.maxStep = maxStep;
-        this.dP      = dP;
-        this.dV      = dV;
+    public double getMaxStep() {
+        return maxStep;
+    }
+
+    /**
+     * Getter for the minimum step.
+     * @return min stepsize
+     * @since 13.0
+     */
+    public double getMinStep() {
+        return minStep;
     }
 
     /**
@@ -76,10 +80,47 @@ public abstract class AbstractVariableStepIntegratorBuilder implements ODEIntegr
      * @return integrator tolerances
      */
     protected double[][] getTolerances(final Orbit orbit, final OrbitType orbitType) {
-        if (Double.isNaN(dV)) {
-            return NumericalPropagator.tolerances(dP, orbit, orbitType);
-        } else {
-            return NumericalPropagator.tolerances(dP, dV, orbit, orbitType);
-        }
+        return toleranceProvider.getTolerances(orbit, orbitType, PositionAngleType.MEAN);
+    }
+
+    /**
+     * Computes tolerances.
+     * @param absolutePVCoordinates position-velocity vector
+     * @return integrator tolerances
+     * @since 13.0
+     */
+    protected double[][] getTolerances(final AbsolutePVCoordinates absolutePVCoordinates) {
+        return toleranceProvider.getTolerances(absolutePVCoordinates);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+                                              final PositionAngleType angleType) {
+        return buildIntegrator(getTolerances(orbit, orbitType));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AbstractIntegrator buildIntegrator(final AbsolutePVCoordinates absolutePVCoordinates) {
+        return buildIntegrator(getTolerances(absolutePVCoordinates));
+    }
+
+    /**
+     * Builds an integrator from input absolute and relative tolerances.
+     * @param tolerances tolerance array
+     * @return integrator
+     * @since 13.0
+     */
+    protected abstract AbstractIntegrator buildIntegrator(double[][] tolerances);
+
+    /**
+     * Get a default tolerance provider.
+     * @param dP expected position error (m)
+     * @return tolerance provider
+     * @since 13.0
+     */
+    protected static ToleranceProvider getDefaultToleranceProvider(final double dP) {
+        return ToleranceProvider.getDefaultToleranceProvider(dP);
     }
 }

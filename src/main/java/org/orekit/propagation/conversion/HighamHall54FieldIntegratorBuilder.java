@@ -18,10 +18,9 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+
 import org.hipparchus.ode.nonstiff.HighamHall54FieldIntegrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /**
  * Builder for HighamHall54Integrator.
@@ -35,17 +34,16 @@ public class HighamHall54FieldIntegratorBuilder<T extends CalculusFieldElement<T
         extends AbstractVariableStepFieldIntegratorBuilder<T> {
 
     /**
-     * Build a new instance. Should only use this constructor with {@link Orbit}.
+     * Build a new instance using default integration tolerances.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      *
      * @see HighamHall54FieldIntegrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public HighamHall54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+        this(minStep, maxStep, getDefaultToleranceProvider(dP));
     }
 
     /**
@@ -53,28 +51,25 @@ public class HighamHall54FieldIntegratorBuilder<T extends CalculusFieldElement<T
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
+     * @param toleranceProvider integration tolerance provider
      *
-     * @since 12.2
+     * @since 13.0
      * @see HighamHall54FieldIntegrator
-     * @see NumericalPropagator#tolerances(double, double, Orbit, OrbitType)
      */
-    public HighamHall54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP,
-                                              final double dV) {
-        super(minStep, maxStep, dP, dV);
+    public HighamHall54FieldIntegratorBuilder(final double minStep, final double maxStep,
+                                              final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
     }
 
     /** {@inheritDoc} */
     @Override
-    public HighamHall54FieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = getTolerances(orbit, orbitType);
-        return new HighamHall54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
+    protected HighamHall54FieldIntegrator<T> buildIntegrator(final Field<T> field, final double[][] tolerances) {
+        return new HighamHall54FieldIntegrator<>(field, getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
     /** {@inheritDoc} */
     @Override
     public HighamHall54IntegratorBuilder toODEIntegratorBuilder() {
-        return new HighamHall54IntegratorBuilder(minStep, maxStep, dP, dV);
+        return new HighamHall54IntegratorBuilder(getMinStep(), getMaxStep(), getToleranceProvider());
     }
 }

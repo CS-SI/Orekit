@@ -25,7 +25,7 @@ class HighamHall54FieldIntegratorBuilderTest {
     @Test
     void testToODEIntegratorBuilder() {
         // GIVEN
-        final HighamHall54FieldIntegratorBuilder<Complex> fieldIntegratorBuilder = new HighamHall54FieldIntegratorBuilder<>(1., 10., 0.1, 0.001);
+        final HighamHall54FieldIntegratorBuilder<Complex> fieldIntegratorBuilder = new HighamHall54FieldIntegratorBuilder<>(1., 10., 0.1);
         // WHEN
         final HighamHall54IntegratorBuilder integratorBuilder = fieldIntegratorBuilder.toODEIntegratorBuilder();
         // THEN

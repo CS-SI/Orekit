@@ -23,6 +23,7 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
@@ -45,9 +46,23 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      *
      * @return a first order integrator ready to use
      */
-    AbstractFieldIntegrator<T> buildIntegrator(Field<T> field,
-                                               Orbit orbit,
-                                               OrbitType orbitType);
+    default AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType) {
+        return buildIntegrator(field, orbit, orbitType, PositionAngleType.MEAN);
+    }
+
+    /**
+     * Build a first order integrator.
+     *
+     * @param field field
+     * @param orbit reference orbit
+     * @param orbitType orbit type to use
+     * @param angleType position angle type to use
+     *
+     * @return a first order integrator ready to use
+     * @since 13.0
+     */
+    AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType,
+                                               PositionAngleType angleType);
 
     /**
      * Build a first order integrator.
@@ -57,8 +72,9 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      *
      * @return a first order integrator ready to use
      */
-    AbstractFieldIntegrator<T> buildIntegrator(FieldOrbit<T> orbit,
-                                               OrbitType orbitType);
+    default AbstractFieldIntegrator<T> buildIntegrator(FieldOrbit<T> orbit, OrbitType orbitType) {
+        return buildIntegrator(orbit.getA().getField(), orbit.toOrbit(), orbitType);
+    }
 
     /**
      * Build a first order integrator. Non-orbit version.
@@ -66,6 +82,7 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      * @param fieldAbsolutePVCoordinates absolute position-velocity
      *
      * @return a first order integrator ready to use
+     * @since 12.2
      */
     default AbstractFieldIntegrator<T> buildIntegrator(final FieldAbsolutePVCoordinates<T> fieldAbsolutePVCoordinates) {
         final TimeStampedFieldPVCoordinates<T> fieldPVCoordinates = fieldAbsolutePVCoordinates.getPVCoordinates();
