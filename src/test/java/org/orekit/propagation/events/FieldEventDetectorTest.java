@@ -455,18 +455,8 @@ public class FieldEventDetectorTest {
         FieldEventDetector<T> dummyDetector = new FieldEventDetector<T>() {
 
             @Override
-            public T getThreshold() {
-                return field.getZero().add(1.0e-10);
-            }
-
-            @Override
-            public int getMaxIterationCount() {
-                return 100;
-            }
-
-            @Override
-            public FieldAdaptableInterval<T> getMaxCheckInterval() {
-                return FieldAdaptableInterval.of(60.);
+            public FieldEventDetectionSettings<T> getDetectionSettings() {
+                return new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(60), field.getZero().newInstance(1e-10), 100);
             }
 
             @Override

@@ -30,7 +30,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
@@ -357,18 +356,8 @@ public class EventDetectorTest {
         EventDetector dummyDetector = new EventDetector() {
 
             @Override
-            public double getThreshold() {
-                return 1.0e-10;
-            }
-
-            @Override
-            public int getMaxIterationCount() {
-                return 100;
-            }
-
-            @Override
-            public AdaptableInterval getMaxCheckInterval() {
-                return AdaptableInterval.of(60.);
+            public EventDetectionSettings getDetectionSettings() {
+                return new EventDetectionSettings(60, 1e-10, 100);
             }
 
             @Override
@@ -516,20 +505,32 @@ public class EventDetectorTest {
 
     }
 
-    // TODO: temporarily disabling test that fails when run with maven
-    @Disabled
     @Test
     void testGetDetectionSettings() {
         // GIVEN
-        final AdaptableInterval mockedInterval = Mockito.mock(AdaptableInterval.class);
-        final EventDetectionSettings settings = new EventDetectionSettings(mockedInterval, 10, 19);
-        final EventDetector detector = new DummyDetector(settings, null);
+        final EventDetector detector = new TestDetector();
         // WHEN
         final EventDetectionSettings actualSettings = detector.getDetectionSettings();
         // THEN
-        Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
-        Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
-        Assertions.assertEquals(settings.getThreshold(), actualSettings.getThreshold());
+        final EventDetectionSettings expectedSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Assertions.assertEquals(expectedSettings.getMaxCheckInterval().currentInterval(mockedState, true),
+                actualSettings.getMaxCheckInterval().currentInterval(mockedState, true));
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
+        Assertions.assertEquals(expectedSettings.getThreshold(), actualSettings.getThreshold());
+    }
+
+    private static class TestDetector implements EventDetector {
+
+        @Override
+        public double g(SpacecraftState s) {
+            return 0;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return null;
+        }
     }
 
     @BeforeEach

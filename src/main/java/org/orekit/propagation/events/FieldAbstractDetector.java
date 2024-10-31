@@ -101,21 +101,6 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
         return eventDetectionSettings;
     }
 
-    /** {@inheritDoc} */
-    public FieldAdaptableInterval<T> getMaxCheckInterval() {
-        return getDetectionSettings().getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    public int getMaxIterationCount() {
-        return getDetectionSettings().getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    public T getThreshold() {
-        return getDetectionSettings().getThreshold();
-    }
-
     /**
      * Set up the maximum checking interval.
      * <p>

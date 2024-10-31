@@ -33,9 +33,9 @@ import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdaptableInterval;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -160,22 +160,10 @@ public class AttitudesSequence implements AttitudeProvider {
                     return field.getZero().newInstance(sw.g(s.toSpacecraftState()));
                 }
 
-                /** {@inheritDoc} */
                 @Override
-                public T getThreshold() {
-                    return field.getZero().newInstance(sw.getThreshold());
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public FieldAdaptableInterval<T> getMaxCheckInterval() {
-                    return (s, isForward) -> sw.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public int getMaxIterationCount() {
-                    return sw.getMaxIterationCount();
+                public FieldEventDetectionSettings<T> getDetectionSettings() {
+                    return new FieldEventDetectionSettings<>((state, isForward) -> sw.getMaxCheckInterval().currentInterval(state.toSpacecraftState(), isForward),
+                            field.getZero().newInstance(sw.getThreshold()), sw.getMaxIterationCount());
                 }
 
                 /** {@inheritDoc} */
@@ -401,23 +389,12 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        public double getThreshold() {
-            return event.getThreshold();
+        public EventDetectionSettings getDetectionSettings() {
+            return event.getDetectionSettings();
         }
 
         /** {@inheritDoc} */
         @Override
-        public AdaptableInterval getMaxCheckInterval() {
-            return event.getMaxCheckInterval();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public int getMaxIterationCount() {
-            return event.getMaxIterationCount();
-        }
-
-        /** {@inheritDoc} */
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
 
             // reset the transition parameters (this will be done once for each switch,

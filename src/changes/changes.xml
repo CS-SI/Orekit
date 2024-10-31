@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1575">
+            Revamp (Field)ImpulseManeuver.
+        </action>
         <action dev="serrof" type="update" issue="1574">
             Deprecate tolerances in (Field)NumericalPropagator and (Field)DSSTPropagator.
         </action>

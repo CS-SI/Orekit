@@ -94,17 +94,23 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold (s)
      */
-    T getThreshold();
+    default T getThreshold() {
+        return getDetectionSettings().getThreshold();
+    }
 
     /** Get maximal time interval between switching function checks.
      * @return maximal time interval (s) between switching function checks
      */
-    FieldAdaptableInterval<T> getMaxCheckInterval();
+    default FieldAdaptableInterval<T> getMaxCheckInterval() {
+        return getDetectionSettings().getMaxCheckInterval();
+    }
 
     /** Get maximal number of iterations in the event time search.
      * @return maximal number of iterations in the event time search
      */
-    int getMaxIterationCount();
+    default int getMaxIterationCount() {
+        return getDetectionSettings().getMaxIterationCount();
+    }
 
     /** Get the handler.
      * @return event handler to call at event occurrences
@@ -126,7 +132,5 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
      * @return detection settings
      * @since 12.2
      */
-    default FieldEventDetectionSettings<T> getDetectionSettings() {
-        return new FieldEventDetectionSettings<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount());
-    }
+    FieldEventDetectionSettings<T> getDetectionSettings();
 }
