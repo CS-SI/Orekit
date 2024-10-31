@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Class for IRNSS almanac.
  *
@@ -30,9 +33,13 @@ public class IRNSSAlmanac extends AbstractAlmanac {
 
     /**
      * Constructor.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    public IRNSSAlmanac() {
-        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB);
+    public IRNSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
     }
 
     /**
@@ -43,7 +50,7 @@ public class IRNSSAlmanac extends AbstractAlmanac {
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
     public void setSqrtA(final double sqrtA) {
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
 }

@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * This class holds a QZSS almanac as read from YUMA files.
  *
@@ -33,9 +36,13 @@ public class QZSSAlmanac extends AbstractAlmanac {
 
     /**
      * Constructor.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    public QZSSAlmanac() {
-        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB);
+    public QZSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
     }
 
     /**
@@ -46,7 +53,7 @@ public class QZSSAlmanac extends AbstractAlmanac {
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
     public void setSqrtA(final double sqrtA) {
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
     /**

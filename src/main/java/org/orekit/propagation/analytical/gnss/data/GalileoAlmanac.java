@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.util.FastMath;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
 
 /**
  * Class for Galileo almanac.
@@ -50,9 +52,13 @@ public class GalileoAlmanac extends AbstractAlmanac {
 
     /**
      * Build a new almanac.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    public GalileoAlmanac() {
-        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB);
+    public GalileoAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system);
     }
 
     /**
@@ -65,7 +71,7 @@ public class GalileoAlmanac extends AbstractAlmanac {
      */
     public void setDeltaSqrtA(final double dsqa) {
         final double sqrtA = dsqa + FastMath.sqrt(A0);
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
     /**
@@ -76,7 +82,7 @@ public class GalileoAlmanac extends AbstractAlmanac {
      * @param dinc correction of orbit reference inclination at reference time in radians
      */
     public void setDeltaInc(final double dinc) {
-        super.setI0(I0 + dinc);
+        setI0(I0 + dinc);
     }
 
     /**

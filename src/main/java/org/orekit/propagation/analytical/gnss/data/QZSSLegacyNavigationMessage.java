@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a QZSS navigation message.
  * @author Bryan Cazabonne
@@ -23,9 +26,15 @@ package org.orekit.propagation.analytical.gnss.data;
  */
 public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage {
 
-    /** Constructor. */
-    public QZSSLegacyNavigationMessage() {
-        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB);
+    /** Constructor.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
+     */
+    public QZSSLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
+              timeScales, system);
     }
 
 }

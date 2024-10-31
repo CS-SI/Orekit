@@ -371,8 +371,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(-1.370000000000e-08, bdt.getTGD2(), 1.0e-15);
 
         // check weeks reference in Rinex navigation are aligned with Beidou weeks (not GPS weeks as other systems)
-        final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getWeek(), bdt.getTime(), SatelliteSystem.BEIDOU).
-                                            getDate();
+        final AbsoluteDate obsRebuiltDate = new GNSSDate(bdt.getWeek(), bdt.getTime(), SatelliteSystem.BEIDOU).getDate();
         final double relativeTime = obsRebuiltDate.durationFrom(bdt.getEpochToc());
         Assertions.assertEquals(0.0, relativeTime / Constants.JULIAN_DAY, 7.0);
         Assertions.assertEquals(0.0, obsRebuiltDate.durationFrom(bdt.getDate()), 1.0e-15);

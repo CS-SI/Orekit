@@ -36,8 +36,6 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 
@@ -247,7 +245,7 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
     private GPSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
         try {
             // Initializes almanac and set the source
-            final GPSAlmanac almanac = new GPSAlmanac();
+            final GPSAlmanac almanac = new GPSAlmanac(timeScales, SatelliteSystem.GPS);
             almanac.setSource(SOURCE);
 
             // Initializes checks
@@ -316,10 +314,6 @@ public class YUMAParser extends AbstractSelfFeedingLoader implements DataLoader 
 
             // If all expected fields have been read
             if (readOK(checks)) {
-                // Returns a GPSAlmanac built from the entries
-                final AbsoluteDate date = new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.GPS, timeScales).
-                                          getDate();
-                almanac.setDate(date);
 
                 // Add default values to missing keys
                 almanac.setSVN(-1);

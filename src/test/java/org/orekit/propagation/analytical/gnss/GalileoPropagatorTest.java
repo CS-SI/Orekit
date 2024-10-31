@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -51,7 +52,8 @@ public class GalileoPropagatorTest {
 
     @BeforeEach
     public void setUp() {
-        goe = new GalileoNavigationMessage();
+        goe = new GalileoNavigationMessage(DataContext.getDefault().getTimeScales(),
+                                           SatelliteSystem.GALILEO);
         goe.setPRN(4);
         goe.setWeek(1024);
         goe.setTime(293400.0);
@@ -70,7 +72,6 @@ public class GalileoPropagatorTest {
         goe.setCrs(-18.78125);
         goe.setCic(3.166496753692627E-8);
         goe.setCis(-1.862645149230957E-8);
-        goe.setDate(new GNSSDate(goe.getWeek(), goe.getTime(), SatelliteSystem.GALILEO).getDate());
     }
 
     @BeforeAll
@@ -81,7 +82,8 @@ public class GalileoPropagatorTest {
     @Test
     public void testGalileoCycle() {
         // Reference for the almanac: 2019-05-28T09:40:01.0Z
-        final GalileoAlmanac almanac = new GalileoAlmanac();
+        final GalileoAlmanac almanac = new GalileoAlmanac(DataContext.getDefault().getTimeScales(),
+                                                          SatelliteSystem.GALILEO);
         almanac.setPRN(1);
         almanac.setWeek(1024);
         almanac.setTime(293400.0);
@@ -98,7 +100,6 @@ public class GalileoPropagatorTest {
         almanac.setHealthE1(0);
         almanac.setHealthE5a(0);
         almanac.setHealthE5b(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.GALILEO).getDate());
 
         // Intermediate verification
         Assertions.assertEquals(1,                   almanac.getPRN());
@@ -173,7 +174,7 @@ public class GalileoPropagatorTest {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 60.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }

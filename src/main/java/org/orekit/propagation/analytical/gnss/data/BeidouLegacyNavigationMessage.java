@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a BeiDou navigation message.
  * @author Bryan Cazabonne
@@ -44,9 +47,16 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage {
     /** The user SV accuracy (m). */
     private double svAccuracy;
 
-    /** Constructor. */
-    public BeidouLegacyNavigationMessage() {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
+    /** Constructor.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
+     */
+    public BeidouLegacyNavigationMessage(final TimeScales timeScales,
+                                         final SatelliteSystem system) {
+        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+              timeScales, system);
     }
 
     /**

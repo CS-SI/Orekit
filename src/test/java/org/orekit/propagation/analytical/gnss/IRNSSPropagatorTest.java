@@ -54,7 +54,7 @@ public class IRNSSPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 1 for April 1st 2014 (Source: Rinex 3.04 format - Table A19)
-        almanac = new IRNSSAlmanac();
+        almanac = new IRNSSAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.IRNSS);
         almanac.setPRN(1);
         almanac.setWeek(1786);
         almanac.setTime(172800.0);
@@ -67,7 +67,6 @@ public class IRNSSPropagatorTest {
         almanac.setM0(-1.396094758025);
         almanac.setAf0(-9.473115205765e-04);
         almanac.setAf1(1.250555214938e-12);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.IRNSS).getDate());
 
         frames = DataContext.getDefault().getFrames();
     }
@@ -137,7 +136,7 @@ public class IRNSSPropagatorTest {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 10.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }

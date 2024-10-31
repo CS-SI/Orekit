@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -53,7 +54,7 @@ public class QZSSPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 193 for May 27th 2019 (q201914.alm)
-        almanac = new QZSSAlmanac();
+        almanac = new QZSSAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
         almanac.setPRN(193);
         almanac.setWeek(7);
         almanac.setTime(348160.0);
@@ -67,7 +68,6 @@ public class QZSSPropagatorTest {
         almanac.setAf0(-2.965927124E-04);
         almanac.setAf1(7.275957614E-12);
         almanac.setHealth(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.QZSS).getDate());
 
     }
 
@@ -136,7 +136,7 @@ public class QZSSPropagatorTest {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 60.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
@@ -160,7 +160,8 @@ public class QZSSPropagatorTest {
     @Test
     public void testPosition() {
         // Initial QZSS orbital elements (Ref: IGS)
-        final QZSSLegacyNavigationMessage qoe = new QZSSLegacyNavigationMessage();
+        final QZSSLegacyNavigationMessage qoe =
+            new QZSSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
         qoe.setPRN(195);
         qoe.setWeek(21);
         qoe.setTime(226800.0);
@@ -179,7 +180,6 @@ public class QZSSPropagatorTest {
         qoe.setCrs(-305.6875);
         qoe.setCic(1.2032687664031982E-6);
         qoe.setCis(-2.6728957891464233E-6);
-        qoe.setDate(new GNSSDate(qoe.getWeek(), qoe.getTime(), SatelliteSystem.QZSS).getDate());
         // Date of the QZSS orbital elements
         final AbsoluteDate target = qoe.getDate();
         // Build the QZSS propagator

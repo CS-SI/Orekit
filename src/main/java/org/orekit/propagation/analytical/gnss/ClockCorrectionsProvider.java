@@ -40,8 +40,7 @@ import org.orekit.utils.PVCoordinates;
  * </ul>
  * <p>
  * Since Orekit 10.3 the relativistic clock correction can be used as an {@link EstimationModifier}
- * in orbit determination applications to take into consideration this effect
- * in measurement modeling.
+ * in orbit determination applications to take into consideration this effect in measurement modeling.
  * </p>
  *
  * @author Luc Maisonobe
@@ -60,12 +59,17 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
     /** Clock reference epoch. */
     private final AbsoluteDate clockRef;
 
+    /** Duration of the GNSS cycle in seconds. */
+    private final double cycleDuration;
+
     /** Simple constructor.
      * @param gnssClk GNSS clock elements
      */
-    public ClockCorrectionsProvider(final GNSSClockElements gnssClk) {
-        this.gnssClk  = gnssClk;
-        this.clockRef = gnssClk.getDate();
+    public ClockCorrectionsProvider(final GNSSClockElements gnssClk,
+                                    final double cycleDuration) {
+        this.gnssClk       = gnssClk;
+        this.clockRef      = gnssClk.getDate();
+        this.cycleDuration = cycleDuration;
     }
 
     /** {@inheritDoc} */
@@ -82,7 +86,6 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
      * @return the duration from clock Reference epoch (s)
      */
     private double getDT(final AbsoluteDate date) {
-        final double cycleDuration = gnssClk.getCycleDuration();
         // Time from ephemeris reference epoch
         double dt = date.durationFrom(clockRef);
         // Adjusts the time to take roll over week into account

@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a Galileo navigation message.
  * @author Bryan Cazabonne
@@ -43,9 +46,15 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage {
     /** Satellite health status. */
     private double svHealth;
 
-    /** Constructor. */
-    public GalileoNavigationMessage() {
-        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB);
+    /** Constructor.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
+     */
+    public GalileoNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
+              timeScales, system);
     }
 
     /**

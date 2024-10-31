@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -53,7 +54,8 @@ public class BeidouPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 18 for May 28th 2019
-        almanac = new BeidouAlmanac();
+        almanac = new BeidouAlmanac(DataContext.getDefault().getTimeScales(),
+                                    SatelliteSystem.BEIDOU);
         almanac.setPRN(18);
         almanac.setWeek(694);
         almanac.setTime(4096.0);
@@ -67,7 +69,6 @@ public class BeidouPropagatorTest {
         almanac.setAf0(0.0001096725);
         almanac.setAf1(7.27596e-12);
         almanac.setHealth(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.BEIDOU).getDate());
     }
 
     @Test
@@ -140,7 +141,7 @@ public class BeidouPropagatorTest {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 60.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
@@ -164,7 +165,9 @@ public class BeidouPropagatorTest {
     @Test
     public void testPosition() {
         // Initial BeiDou orbital elements (Ref: IGS)
-        final BeidouLegacyNavigationMessage boe = new BeidouLegacyNavigationMessage();
+        final BeidouLegacyNavigationMessage boe =
+            new BeidouLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
+                                              SatelliteSystem.BEIDOU);
         boe.setPRN(7);
         boe.setWeek(713);
         boe.setTime(284400.0);
@@ -183,7 +186,6 @@ public class BeidouPropagatorTest {
         boe.setCrs(225.9375);
         boe.setCic(-7.450580596923828E-9);
         boe.setCis(-1.4062970876693726E-7);
-        boe.setDate(new GNSSDate(boe.getWeek(), boe.getTime(), SatelliteSystem.BEIDOU).getDate());
         // Date of the BeiDou orbital elements (GPStime - BDTtime = 14s)
         final AbsoluteDate target = boe.getDate().shiftedBy(-14.0);
         // Build the BeiDou propagator

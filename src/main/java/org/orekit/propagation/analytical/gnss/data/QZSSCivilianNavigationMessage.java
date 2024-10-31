@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a QZSS navigation message.
  * @author Luc Maisonobe
@@ -25,9 +28,15 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage {
 
     /** Constructor.
      * @param cnv2 indicator for CNV2 messages
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    public QZSSCivilianNavigationMessage(final boolean cnv2) {
-        super(cnv2, GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB);
+    public QZSSCivilianNavigationMessage(final boolean cnv2,
+                                         final TimeScales timeScales, final SatelliteSystem system) {
+        super(cnv2, GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
+              timeScales, system);
     }
 
 }

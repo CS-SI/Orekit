@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * This class holds a GPS almanac as read from SEM or YUMA files.
  *
@@ -27,7 +30,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @since 8.0
  *
  */
-public class GPSAlmanac extends AbstractAlmanac implements GNSSClockElements {
+public class GPSAlmanac extends AbstractAlmanac {
 
     /** Source of the almanac. */
     private String src;
@@ -46,9 +49,13 @@ public class GPSAlmanac extends AbstractAlmanac implements GNSSClockElements {
 
     /**
      * Constructor.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    public GPSAlmanac() {
-        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB);
+    public GPSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
     }
 
     /**
@@ -59,7 +66,7 @@ public class GPSAlmanac extends AbstractAlmanac implements GNSSClockElements {
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
     public void setSqrtA(final double sqrtA) {
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
     /**
@@ -151,15 +158,6 @@ public class GPSAlmanac extends AbstractAlmanac implements GNSSClockElements {
      */
     public void setSatConfiguration(final int satConfiguration) {
         this.config = satConfiguration;
-    }
-
-    /**
-     * Gets for the Group Delay Differential (s).
-     *
-     * @return the Group Delay Differential in seconds
-     */
-    public double getTGD() {
-        return 0.0;
     }
 
 }

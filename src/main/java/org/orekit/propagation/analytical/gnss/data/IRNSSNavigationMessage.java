@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in an IRNSS navigation message.
  * @author Bryan Cazabonne
@@ -26,18 +29,21 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;
 
-    /** Group Delay Differential (s). */
-    private double tgd;
-
     /** User range accuracy (m). */
     private double ura;
 
     /** Satellite health status. */
     private double svHealth;
 
-    /** Constructor. */
-    public IRNSSNavigationMessage() {
-        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB);
+    /** Constructor.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
+     */
+    public IRNSSNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB,
+              timeScales, system);
     }
 
     /**
@@ -55,22 +61,6 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
     public void setIODEC(final double value) {
         // The value is given as a floating number in the navigation message
         this.iodec = (int) value;
-    }
-
-    /**
-     * Getter for the estimated group delay differential TGD for L5-S correction.
-     * @return the estimated group delay differential TGD for L5-S correction (s)
-     */
-    public double getTGD() {
-        return tgd;
-    }
-
-    /**
-     * Setter for the Group Delay Differential (s).
-     * @param time the group delay differential to set
-     */
-    public void setTGD(final double time) {
-        this.tgd = time;
     }
 
     /**

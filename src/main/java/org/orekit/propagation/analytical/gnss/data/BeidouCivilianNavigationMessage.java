@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.orekit.gnss.RadioWave;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
@@ -94,9 +96,15 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
     /**
      * Constructor.
      * @param radioWave radio wave on which navigation signal is sent
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    public BeidouCivilianNavigationMessage(final RadioWave radioWave) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
+    public BeidouCivilianNavigationMessage(final RadioWave radioWave,
+                                           final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+              timeScales, system);
         this.radioWave = radioWave;
     }
 

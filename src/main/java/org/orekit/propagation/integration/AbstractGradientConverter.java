@@ -101,9 +101,7 @@ public abstract class AbstractGradientConverter {
      * @param freeParameters total number of free parameters in the gradient
      * @return extended date
      */
-    protected FieldAbsoluteDate<Gradient> extend(
-            final FieldAbsoluteDate<Gradient> original,
-            final int freeParameters) {
+    protected FieldAbsoluteDate<Gradient> extend(final FieldAbsoluteDate<Gradient> original, final int freeParameters) {
         final AbsoluteDate date = original.toAbsoluteDate();
         final Gradient gradient = original.durationFrom(date);
         return new FieldAbsoluteDate<>(date, extend(gradient, freeParameters));
@@ -310,7 +308,6 @@ public abstract class AbstractGradientConverter {
         for (ParameterDriver driver : drivers) {
             // Loop on the spans
             for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
                 parameters[i++] = driver.isSelected() ?
                                   Gradient.variable(freeParameters, index++, span.getData()) :
                                   Gradient.constant(freeParameters, span.getData());

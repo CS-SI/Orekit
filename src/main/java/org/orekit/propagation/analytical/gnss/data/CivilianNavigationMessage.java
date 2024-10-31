@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
  * @author Luc Maisonobe
@@ -37,9 +40,6 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
 
     /** Change rate in Δn₀. */
     private double deltaN0Dot;
-
-    /** Group Delay Differential (s). */
-    private double tgd;
 
     /** The user SV accuracy (m). */
     private double svAccuracy;
@@ -82,13 +82,16 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      * @param cnv2 indicator for CNV2 messages
      * @param mu Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weekNumber number of weeks in the GNSS cycle
+     * @param weeksInCycle number of weeks in the GNSS cycle
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
     protected CivilianNavigationMessage(final boolean cnv2,
-                                        final double mu,
-                                        final double angularVelocity,
-                                        final int weekNumber) {
-        super(mu, angularVelocity, weekNumber);
+                                        final double mu, final double angularVelocity, final int weeksInCycle,
+                                        final TimeScales timeScales, final SatelliteSystem system) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system);
         this.cnv2 = cnv2;
     }
 
@@ -129,22 +132,6 @@ public class CivilianNavigationMessage extends AbstractNavigationMessage impleme
      */
     public void setDeltaN0Dot(final double deltaN0Dot) {
         this.deltaN0Dot = deltaN0Dot;
-    }
-
-    /**
-     * Getter for the Group Delay Differential (s).
-     * @return the Group Delay Differential in seconds
-     */
-    public double getTGD() {
-        return tgd;
-    }
-
-    /**
-     * Setter for the Group Delay Differential (s).
-     * @param time the group delay differential to set
-     */
-    public void setTGD(final double time) {
-        this.tgd = time;
     }
 
     /**

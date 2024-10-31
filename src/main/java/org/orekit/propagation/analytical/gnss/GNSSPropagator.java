@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical.gnss;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -29,11 +30,19 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeSpanMap.Span;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** Common handling of {@link AbstractAnalyticalPropagator} methods for GNSS propagators.
  * <p>
@@ -59,8 +68,8 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         B  = k3 * k3 / (6 * k1);
     }
 
-    /** The GNSS orbital elements used. */
-    private final GNSSOrbitalElements gnssOrbit;
+    /** The GNSS propagation model used. */
+    private final GNSSOrbitalElements orbitalElements;
 
     /** The spacecraft mass (kg). */
     private final double mass;
@@ -73,20 +82,20 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
     /**
      * Build a new instance.
-     * @param gnssOrbit GNSS orbital elements
+     * @param orbitalElements GNSS orbital elements
      * @param eci Earth Centered Inertial frame
      * @param ecef Earth Centered Earth Fixed frame
      * @param provider Attitude provider
      * @param mass Satellite mass (kg)
      */
-    GNSSPropagator(final GNSSOrbitalElements gnssOrbit, final Frame eci,
+    GNSSPropagator(final GNSSOrbitalElements orbitalElements, final Frame eci,
                    final Frame ecef, final AttitudeProvider provider,
                    final double mass) {
         super(provider);
         // Stores the GNSS orbital elements
-        this.gnssOrbit = gnssOrbit;
+        this.orbitalElements = orbitalElements;
         // Sets the start date as the date of the orbital elements
-        setStartDate(gnssOrbit.getDate());
+        setStartDate(orbitalElements.getDate());
         // Sets the mass
         this.mass = mass;
         // Sets the Earth Centered Inertial frame
@@ -124,16 +133,49 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return the Earth gravity coefficient.
      */
     public double getMU() {
-        return gnssOrbit.getMu();
+        return orbitalElements.getMu();
     }
 
-    /**
-     * Get the underlying GNSS orbital elements.
-     *
+    /** Get the underlying GNSS propagation orbital elements.
      * @return the underlying GNSS orbital elements
+     * @since 13.0
      */
     public GNSSOrbitalElements getOrbitalElements() {
-        return gnssOrbit;
+        return orbitalElements;
+    }
+
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
+                                                        final DoubleArrayDictionary initialJacobianColumns) {
+        // Create the harvester
+        final GnssHarvester harvester = new GnssHarvester(this, stmName, initialStm, initialJacobianColumns);
+
+        // Update the list of additional state provider
+        addAdditionalStateProvider(harvester);
+        // Return the configured harvester
+        return harvester;
+     }
+
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    protected List<String> getJacobiansColumnsNames() {
+        final List<String> columnsNames = new ArrayList<>();
+        for (final ParameterDriver driver : orbitalElements.getParametersDrivers()) {
+            if (driver.isSelected() && !columnsNames.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
+                // As driver with same name should have same NamesSpanMap we only check if the first span is present,
+                // if not we add all span names to columnsNames
+                for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
+                    columnsNames.add(span.getData());
+                }
+            }
+        }
+        Collections.sort(columnsNames);
+        return columnsNames;
     }
 
     /** {@inheritDoc} */
@@ -160,51 +202,51 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         // Duration from GNSS ephemeris Reference date
         final UnivariateDerivative2 tk = new UnivariateDerivative2(getTk(date), 1.0, 0.0);
         // Mean anomaly
-        final UnivariateDerivative2 mk = tk.multiply(gnssOrbit.getMeanMotion()).add(gnssOrbit.getM0());
+        final UnivariateDerivative2 mk = tk.multiply(orbitalElements.getMeanMotion()).add(orbitalElements.getM0());
         // Eccentric Anomaly
-        final UnivariateDerivative2 ek = getEccentricAnomaly(mk);
+        final UnivariateDerivative2 ek = getEccentricAnomaly(orbitalElements.getE(), mk);
         // True Anomaly
-        final UnivariateDerivative2 vk =  getTrueAnomaly(ek);
+        final UnivariateDerivative2 vk =  getTrueAnomaly(orbitalElements.getE(), ek);
         // Argument of Latitude
-        final UnivariateDerivative2 phik    = vk.add(gnssOrbit.getPa());
+        final UnivariateDerivative2 phik    = vk.add(orbitalElements.getPa());
         final UnivariateDerivative2 twoPhik = phik.multiply(2);
         final UnivariateDerivative2 c2phi   = twoPhik.cos();
         final UnivariateDerivative2 s2phi   = twoPhik.sin();
         // Argument of Latitude Correction
-        final UnivariateDerivative2 dphik = c2phi.multiply(gnssOrbit.getCuc()).add(s2phi.multiply(gnssOrbit.getCus()));
+        final UnivariateDerivative2 dphik = c2phi.multiply(orbitalElements.getCuc()).add(s2phi.multiply(orbitalElements.getCus()));
         // Radius Correction
-        final UnivariateDerivative2 drk = c2phi.multiply(gnssOrbit.getCrc()).add(s2phi.multiply(gnssOrbit.getCrs()));
+        final UnivariateDerivative2 drk = c2phi.multiply(orbitalElements.getCrc()).add(s2phi.multiply(orbitalElements.getCrs()));
         // Inclination Correction
-        final UnivariateDerivative2 dik = c2phi.multiply(gnssOrbit.getCic()).add(s2phi.multiply(gnssOrbit.getCis()));
+        final UnivariateDerivative2 dik = c2phi.multiply(orbitalElements.getCic()).add(s2phi.multiply(orbitalElements.getCis()));
         // Corrected Argument of Latitude
         final UnivariateDerivative2 uk = phik.add(dphik);
         // Corrected Radius
-        final UnivariateDerivative2 rk = ek.cos().multiply(-gnssOrbit.getE()).add(1).multiply(gnssOrbit.getSma()).add(drk);
+        final UnivariateDerivative2 rk = ek.cos().multiply(-orbitalElements.getE()).add(1).multiply(orbitalElements.getSma()).add(drk);
         // Corrected Inclination
-        final UnivariateDerivative2 ik  = tk.multiply(gnssOrbit.getIDot()).add(gnssOrbit.getI0()).add(dik);
+        final UnivariateDerivative2 ik  = tk.multiply(orbitalElements.getIDot()).add(orbitalElements.getI0()).add(dik);
         final UnivariateDerivative2 cik = ik.cos();
         // Positions in orbital plane
         final UnivariateDerivative2 xk = uk.cos().multiply(rk);
         final UnivariateDerivative2 yk = uk.sin().multiply(rk);
         // Corrected longitude of ascending node
-        final UnivariateDerivative2 omk = tk.multiply(gnssOrbit.getOmegaDot() - gnssOrbit.getAngularVelocity()).
-                                        add(gnssOrbit.getOmega0() - gnssOrbit.getAngularVelocity() * gnssOrbit.getTime());
+        final UnivariateDerivative2 omk = tk.multiply(orbitalElements.getOmegaDot() - orbitalElements.getAngularVelocity()).
+                                        add(orbitalElements.getOmega0() - orbitalElements.getAngularVelocity() * orbitalElements.getTime());
         final UnivariateDerivative2 comk = omk.cos();
         final UnivariateDerivative2 somk = omk.sin();
         // returns the Earth-fixed coordinates
-        final FieldVector3D<UnivariateDerivative2> positionwithDerivatives =
+        final FieldVector3D<UnivariateDerivative2> positionWithDerivatives =
                         new FieldVector3D<>(xk.multiply(comk).subtract(yk.multiply(somk).multiply(cik)),
                                             xk.multiply(somk).add(yk.multiply(comk).multiply(cik)),
                                             yk.multiply(ik.sin()));
-        return new PVCoordinates(new Vector3D(positionwithDerivatives.getX().getValue(),
-                                              positionwithDerivatives.getY().getValue(),
-                                              positionwithDerivatives.getZ().getValue()),
-                                 new Vector3D(positionwithDerivatives.getX().getFirstDerivative(),
-                                              positionwithDerivatives.getY().getFirstDerivative(),
-                                              positionwithDerivatives.getZ().getFirstDerivative()),
-                                 new Vector3D(positionwithDerivatives.getX().getSecondDerivative(),
-                                              positionwithDerivatives.getY().getSecondDerivative(),
-                                              positionwithDerivatives.getZ().getSecondDerivative()));
+        return new PVCoordinates(new Vector3D(positionWithDerivatives.getX().getValue(),
+                                              positionWithDerivatives.getY().getValue(),
+                                              positionWithDerivatives.getZ().getValue()),
+                                 new Vector3D(positionWithDerivatives.getX().getFirstDerivative(),
+                                              positionWithDerivatives.getY().getFirstDerivative(),
+                                              positionWithDerivatives.getZ().getFirstDerivative()),
+                                 new Vector3D(positionWithDerivatives.getX().getSecondDerivative(),
+                                              positionWithDerivatives.getY().getSecondDerivative(),
+                                              positionWithDerivatives.getZ().getSecondDerivative()));
     }
 
     /**
@@ -214,9 +256,9 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return the duration from GNSS orbit Reference epoch (s)
      */
     private double getTk(final AbsoluteDate date) {
-        final double cycleDuration = gnssOrbit.getCycleDuration();
+        final double cycleDuration = orbitalElements.getCycleDuration();
         // Time from ephemeris reference epoch
-        double tk = date.durationFrom(gnssOrbit.getDate());
+        double tk = date.durationFrom(orbitalElements.getDate());
         // Adjusts the time to take roll over week into account
         while (tk > 0.5 * cycleDuration) {
             tk -= cycleDuration;
@@ -235,10 +277,12 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * Celestial Mechanics 38 (1986) 307-334</p>
      * <p>It has been copied from the OREKIT library (KeplerianOrbit class).</p>
      *
+     * @param e the eccentricity
      * @param mk the mean anomaly (rad)
      * @return the eccentric anomaly (rad)
      */
-    private UnivariateDerivative2 getEccentricAnomaly(final UnivariateDerivative2 mk) {
+    private UnivariateDerivative2 getEccentricAnomaly(final double e,
+                                                      final UnivariateDerivative2 mk) {
 
         // reduce M to [-PI PI] interval
         final UnivariateDerivative2 reducedM = new UnivariateDerivative2(MathUtils.normalizeAngle(mk.getValue(), 0.0),
@@ -255,34 +299,34 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
                 ek = reducedM;
             } else {
                 // this is the standard S12 starter
-                ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(gnssOrbit.getE()));
+                ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(e));
             }
         } else {
             if (reducedM.getValue() < 0) {
                 final UnivariateDerivative2 w = reducedM.add(FastMath.PI);
-                ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(gnssOrbit.getE()));
+                ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(e));
             } else {
                 final UnivariateDerivative2 minusW = reducedM.subtract(FastMath.PI);
-                ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(gnssOrbit.getE()));
+                ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(e));
             }
         }
 
-        final double e1 = 1 - gnssOrbit.getE();
+        final double e1 = 1 - e;
         final boolean noCancellationRisk = (e1 + ek.getValue() * ek.getValue() / 6) >= 0.1;
 
         // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
         for (int j = 0; j < 2; ++j) {
             final UnivariateDerivative2 f;
             UnivariateDerivative2 fd;
-            final UnivariateDerivative2 fdd  = ek.sin().multiply(gnssOrbit.getE());
-            final UnivariateDerivative2 fddd = ek.cos().multiply(gnssOrbit.getE());
+            final UnivariateDerivative2 fdd  = ek.sin().multiply(e);
+            final UnivariateDerivative2 fddd = ek.cos().multiply(e);
             if (noCancellationRisk) {
                 f  = ek.subtract(fdd).subtract(reducedM);
                 fd = fddd.subtract(1).negate();
             } else {
-                f  = eMeSinE(ek).subtract(reducedM);
+                f  = eMeSinE(e, ek).subtract(reducedM);
                 final UnivariateDerivative2 s = ek.multiply(0.5).sin();
-                fd = s.multiply(s).multiply(2 * gnssOrbit.getE()).add(e1);
+                fd = s.multiply(s).multiply(2 * e).add(e1);
             }
             final UnivariateDerivative2 dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
 
@@ -302,16 +346,17 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     /**
      * Accurate computation of E - e sin(E).
      *
+     * @param e eccentricity
      * @param E eccentric anomaly
      * @return E - e sin(E)
      */
-    private UnivariateDerivative2 eMeSinE(final UnivariateDerivative2 E) {
-        UnivariateDerivative2 x = E.sin().multiply(1 - gnssOrbit.getE());
+    private UnivariateDerivative2 eMeSinE(final double e, final UnivariateDerivative2 E) {
+        UnivariateDerivative2 x = E.sin().multiply(1 - e);
         final UnivariateDerivative2 mE2 = E.negate().multiply(E);
         UnivariateDerivative2 term = E;
         UnivariateDerivative2 d    = E.getField().getZero();
         // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(Double.valueOf(x0.getValue()));) {
+        for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(x0.getValue());) {
             d = d.add(2);
             term = term.multiply(mE2.divide(d.multiply(d.add(1))));
             x0 = x;
@@ -322,12 +367,13 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
     /** Gets true anomaly from eccentric anomaly.
      *
+     * @param e eccentricity
      * @param ek the eccentric anomaly (rad)
      * @return the true anomaly (rad)
      */
-    private UnivariateDerivative2 getTrueAnomaly(final UnivariateDerivative2 ek) {
-        final UnivariateDerivative2 svk = ek.sin().multiply(FastMath.sqrt(1. - gnssOrbit.getE() * gnssOrbit.getE()));
-        final UnivariateDerivative2 cvk = ek.cos().subtract(gnssOrbit.getE());
+    private UnivariateDerivative2 getTrueAnomaly(final double e, final UnivariateDerivative2 ek) {
+        final UnivariateDerivative2 svk = ek.sin().multiply(FastMath.sqrt(1. - e * e));
+        final UnivariateDerivative2 cvk = ek.cos().subtract(e);
         return svk.atan2(cvk);
     }
 

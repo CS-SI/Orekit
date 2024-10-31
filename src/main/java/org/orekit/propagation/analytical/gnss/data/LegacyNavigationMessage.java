@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
  * @author Bryan Cazabonne
@@ -32,9 +35,6 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
     /** Issue of Data, Clock. */
     private int iodc;
 
-    /** Group Delay Differential (s). */
-    private double tgd;
-
     /** The user SV accuracy (m). */
     private double svAccuracy;
 
@@ -50,12 +50,15 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      * Constructor.
      * @param mu Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weekNumber number of weeks in the GNSS cycle
+     * @param weeksInCycle number of weeks in the GNSS cycle
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    protected LegacyNavigationMessage(final double mu,
-                                      final double angularVelocity,
-                                      final int weekNumber) {
-        super(mu, angularVelocity, weekNumber);
+    protected LegacyNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
+                                      final TimeScales timeScales, final SatelliteSystem system) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system);
     }
 
     /**
@@ -89,22 +92,6 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      */
     public void setIODC(final int value) {
         this.iodc = value;
-    }
-
-    /**
-     * Getter for the Group Delay Differential (s).
-     * @return the Group Delay Differential in seconds
-     */
-    public double getTGD() {
-        return tgd;
-    }
-
-    /**
-     * Setter for the Group Delay Differential (s).
-     * @param time the group delay differential to set
-     */
-    public void setTGD(final double time) {
-        this.tgd = time;
     }
 
     /**

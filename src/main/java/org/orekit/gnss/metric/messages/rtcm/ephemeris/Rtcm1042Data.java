@@ -79,10 +79,8 @@ public class Rtcm1042Data extends RtcmEphemerisData {
 
         // Week number and time of ephemeris
         final int    week = beidouNavigationMessage.getWeek();
-        final double toe  = beidouNavigationMessage.getTime();
 
         // Set the ephemeris reference data
-        beidouNavigationMessage.setDate(new GNSSDate(week, toe, system, timeScales).getDate());
         beidouNavigationMessage.setEpochToc(new GNSSDate(week, beidouToc, system, timeScales).getDate());
 
         // Return the navigation message

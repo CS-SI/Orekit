@@ -16,6 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Class for BeiDou almanac.
  *
@@ -33,9 +36,13 @@ public class BeidouAlmanac extends AbstractAlmanac {
 
     /**
      * Build a new almanac.
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        are always according to GPS)
      */
-    public BeidouAlmanac() {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
+    public BeidouAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
     }
 
     /**
@@ -46,7 +53,7 @@ public class BeidouAlmanac extends AbstractAlmanac {
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
     public void setSqrtA(final double sqrtA) {
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
     /**
@@ -56,7 +63,7 @@ public class BeidouAlmanac extends AbstractAlmanac {
      * @param dinc the correction of orbit reference inclination at reference time
      */
     public void setI0(final double inc, final double dinc) {
-        super.setI0(inc + dinc);
+        setI0(inc + dinc);
     }
 
     /**

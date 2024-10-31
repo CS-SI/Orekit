@@ -64,8 +64,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @param <T> type of the field elements
  */
 
-public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T>
-                                                                                           implements ParameterDriversProvider {
+public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>>
+    extends FieldAbstractPropagator<T>
+    implements ParameterDriversProvider {
 
     /** Provider for attitude computation. */
     private final FieldPVCoordinatesProvider<T> pvProvider;
@@ -358,13 +359,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      * @return mass mass
      */
     protected abstract T getMass(FieldAbsoluteDate<T> date);
-
-    /** Get PV coordinates provider.
-     * @return PV coordinates provider
-     */
-    public FieldPVCoordinatesProvider<T> getPvProvider() {
-        return pvProvider;
-    }
 
     /** Reset an intermediate state.
      * @param state new intermediate state to consider
