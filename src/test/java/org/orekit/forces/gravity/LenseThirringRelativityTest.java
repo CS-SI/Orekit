@@ -46,6 +46,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -202,7 +203,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
@@ -264,7 +265,7 @@ public class LenseThirringRelativityTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,

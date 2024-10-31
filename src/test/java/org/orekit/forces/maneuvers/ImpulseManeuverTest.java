@@ -41,6 +41,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.AdaptableInterval;
@@ -273,7 +274,7 @@ public class ImpulseManeuverTest {
         final AttitudeProvider attitudeProvider = new LofOffset(initialOrbit.getFrame(), LOFType.VNC);
         final Attitude initialAttitude = attitudeProvider.getAttitude(initialOrbit, initialOrbit.getDate(), initialOrbit.getFrame());
 
-        double[][] tolerances = NumericalPropagator.tolerances(10.0, initialOrbit, initialOrbit.getType());
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         DormandPrince853Integrator integrator = new DormandPrince853Integrator(1.0e-3, 60, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(initialOrbit.getType());

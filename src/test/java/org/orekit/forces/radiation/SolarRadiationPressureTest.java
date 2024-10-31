@@ -68,6 +68,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagatorsParallelizer;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -246,7 +247,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -422,7 +423,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -456,7 +457,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -536,7 +537,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -659,7 +660,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // Field integrator and classical integrator
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(10.0, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(FKO.toOrbit(), type);
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
@@ -727,7 +728,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         final OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -804,7 +805,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
     private NumericalPropagator createLeoPropagator(final CelestialBody sun, final CelestialBody moon, final OneAxisEllipsoid earth,
                                                     final NormalizedSphericalHarmonicsProvider gravityField,
                                                     final RadiationSensitive spacecraft, SpacecraftState initialState) {
-        final double[][] tol = NumericalPropagator.tolerances(1.0e-6, initialState.getOrbit(), OrbitType.CIRCULAR);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(initialState.getOrbit(), OrbitType.CIRCULAR);
         final NumericalPropagator propagator =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 60.0, tol[0], tol[1]));
         propagator.setOrbitType(OrbitType.CIRCULAR);
@@ -932,7 +933,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // creation of the propagator
         final OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = NumericalPropagator.tolerances(1.0e-6, orbit, type);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(orbit, type);
 
         final NumericalPropagator propagatorWithFlattening =
                         new NumericalPropagator(new DormandPrince853Integrator(1.0e-9, 300, tol[0], tol[1]));
@@ -1125,7 +1126,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         // creation of the propagator
         final OrbitType type = OrbitType.CARTESIAN;
-        double[][] tol = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-6), orbit, type);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(orbit, type);
         final FieldNumericalPropagator<T> propagatorWithFlattening =
                         new FieldNumericalPropagator<>(field,
                                         new DormandPrince853FieldIntegrator<>(field, 1.0e-9, 300, tol[0], tol[1]));

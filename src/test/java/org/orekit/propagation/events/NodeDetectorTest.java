@@ -30,6 +30,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -52,7 +53,7 @@ public class NodeDetectorTest {
         KeplerianOrbit initialOrbit = new KeplerianOrbit(a, e, i, w, raan, v, PositionAngleType.TRUE, inertialFrame, initialDate, Constants.WGS84_EARTH_MU);
         SpacecraftState initialState = new SpacecraftState(initialOrbit, 1000);
 
-        double[][] tol = NumericalPropagator.tolerances(10, initialOrbit, initialOrbit.getType());
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);

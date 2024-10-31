@@ -41,10 +41,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.FieldAdditionalStateProvider;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -232,7 +229,7 @@ public class FieldIntegratedEphemerisTest {
 
         final FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(10.0);
-        double[][] tolerances = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-3),
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(
                                                                     initialOrbit, OrbitType.CARTESIAN);
         DormandPrince853FieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 1.0e-6, 10.0, tolerances[0], tolerances[1]);

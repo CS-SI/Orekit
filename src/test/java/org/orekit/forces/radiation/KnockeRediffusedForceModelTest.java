@@ -42,6 +42,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -144,7 +145,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -371,8 +372,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         final double maxStep = duration * 0.5;
         final double handlerStep = duration / 20;
         final double positionTolerance = 1e-3;
-        final double[][] tolerances =
-                        NumericalPropagator.tolerances(positionTolerance, keplerian, OrbitType.KEPLERIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(keplerian, OrbitType.KEPLERIAN);
         AdaptiveStepsizeIntegrator integrator =
             new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
 

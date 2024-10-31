@@ -47,6 +47,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -282,7 +283,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -344,7 +345,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =
@@ -405,7 +406,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
         SpacecraftState iSR = initialState.toSpacecraftState();
 
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<DerivativeStructure> integrator =
@@ -454,7 +455,7 @@ public class RelativityTest extends AbstractLegacyForceModelTest {
                         date,
                         gm
                 );
-        double[][] tol = NumericalPropagator.tolerances(0.00001, orbit, OrbitType.CARTESIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.00001).getTolerances(orbit, OrbitType.CARTESIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1, 3600, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(OrbitType.CARTESIAN);

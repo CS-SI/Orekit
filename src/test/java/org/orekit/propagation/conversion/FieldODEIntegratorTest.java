@@ -46,8 +46,8 @@ import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
 
@@ -179,7 +179,7 @@ public class FieldODEIntegratorTest {
         // Then
 
         // Creating reference integrators
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, orbit.toOrbit(), OrbitType.CARTESIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit.toOrbit(), OrbitType.CARTESIAN);
 
         final FieldODEIntegrator<Binary64> referenceIntegrator01 =
                 new AdamsBashforthFieldIntegrator<>(field, nSteps, minStep, maxStep, tolerances[0], tolerances[1]);

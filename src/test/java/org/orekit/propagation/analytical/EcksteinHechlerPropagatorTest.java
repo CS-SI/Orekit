@@ -65,6 +65,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.EcksteinHechlerPropagatorBuilder;
 import org.orekit.propagation.conversion.FiniteDifferencePropagatorConverter;
 import org.orekit.propagation.conversion.PropagatorConverter;
@@ -758,7 +759,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = NumericalPropagator.tolerances(0.1, initial, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initial, OrbitType.CIRCULAR);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);
@@ -873,7 +874,7 @@ public class EcksteinHechlerPropagatorTest {
 
         // set up a reference numerical propagator starting for the specified start orbit
         // using the same force models (i.e. the first few zonal terms)
-        double[][] tol = NumericalPropagator.tolerances(0.1, initialOsculating, OrbitType.CIRCULAR);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(initialOsculating, OrbitType.CIRCULAR);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         NumericalPropagator num = new NumericalPropagator(integrator);

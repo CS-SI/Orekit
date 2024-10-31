@@ -376,7 +376,7 @@ class FieldSpacecraftStateInterpolatorTest {
         final Binary64   dP         = new Binary64(1);
         final double     minStep    = 0.001;
         final double     maxStep    = 100;
-        final double[][] tolerances = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP.getReal()).getTolerances(orbit, OrbitType.CARTESIAN);
 
         return new DormandPrince853FieldIntegrator<>(field, minStep, maxStep, tolerances[0], tolerances[1]);
     }

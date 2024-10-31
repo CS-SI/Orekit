@@ -37,6 +37,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -291,7 +292,7 @@ class SmallManeuverAnalyticalModelTest {
 
         // set up numerical propagator
         final double dP = 1.0;
-        double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbit.getType());
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbit.getType());
         AdaptiveStepsizeIntegrator integrator =
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);

@@ -43,11 +43,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.MatricesHarvester;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.PropagatorsParallelizer;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
@@ -337,7 +333,7 @@ public class TriggersDerivativesTest {
         final double f        = 420;
         PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM");
 
-        double[][] tol = NumericalPropagator.tolerances(0.01, initialState.getOrbit(), orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 600, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);

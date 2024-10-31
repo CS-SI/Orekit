@@ -1057,7 +1057,7 @@ public class StateCovarianceTest {
         final double     dP         = 1;
         final double     minStep    = 0.001;
         final double     maxStep    = 60;
-        final double[][] tolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
 
         return new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
     }

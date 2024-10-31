@@ -47,6 +47,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -72,12 +74,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.*;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
@@ -103,14 +100,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.*;
 
 class NumericalPropagatorTest {
 
@@ -176,6 +166,62 @@ class NumericalPropagatorTest {
                 CoreMatchers.is(0.0));
         MatcherAssert.assertThat(actualState[0].getPVCoordinates(),
                 OrekitMatchers.pvIs(initialState.getPVCoordinates()));
+    }
+
+    @Test
+    @Deprecated
+    void testTolerancesOrbitdV() {
+        // GIVEN
+        final double dP = 1e-3;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
+                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        // WHEN
+        final double[][] tolerancesWithDv = NumericalPropagator.tolerances(dP, 1e-6, orbit, OrbitType.CARTESIAN);
+        // THEN
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.CARTESIAN);
+        for (int i = 0; i < 3; i++) {
+            Assertions.assertEquals(tolerances[0][i], tolerancesWithDv[0][i]);
+        }
+    }
+
+    @Deprecated
+    @ParameterizedTest
+    @EnumSource(OrbitType.class)
+    void testTolerancesOrbit(final OrbitType orbitType) {
+        // GIVEN
+        final double dP = 1e-3;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
+                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        // WHEN
+        final double[][] actualTolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        // THEN
+        final double[][] expectedTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
+        Assertions.assertArrayEquals(expectedTolerances[0], actualTolerances[0]);
+        Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
+    }
+
+    @Deprecated
+    @Test
+    void testTolerances() {
+        // GIVEN
+        final double dP = 1e-3;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
+                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        // WHEN
+        final double[][] orbitTolerances = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        // THEN
+        final double[][] pvTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(new AbsolutePVCoordinates(orbit.getFrame(),
+                new TimeStampedPVCoordinates(orbit.getDate(), position, velocity)));
+        for (int i = 0; i < 3; i++) {
+            Assertions.assertEquals(pvTolerances[0][i], orbitTolerances[0][i]);
+            Assertions.assertEquals(pvTolerances[1][i], orbitTolerances[1][i]);
+        }
     }
 
     @Test

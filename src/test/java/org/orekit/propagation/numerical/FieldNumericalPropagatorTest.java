@@ -451,7 +451,8 @@ public class FieldNumericalPropagatorTest {
         // WHEN
         final double[][] actualTolerances = FieldNumericalPropagator.tolerances(zero.add(dP), zero.add(dV), fieldOrbit, orbitType);
         // THEN
-        final double[][] expectedTolerances = NumericalPropagator.tolerances(dP, dV, orbit, orbitType);
+        final double[][] expectedTolerances = ToleranceProvider.of(CartesianToleranceProvider.of(dP, dV, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
+                .getTolerances(orbit, orbitType, PositionAngleType.TRUE);
         Assertions.assertArrayEquals(expectedTolerances[0], actualTolerances[0]);
         Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
     }
@@ -472,7 +473,7 @@ public class FieldNumericalPropagatorTest {
         final double[][] orbitTolerances = FieldNumericalPropagator.tolerances(zero.add(dP), zero.add(dV), fieldOrbit,
                 OrbitType.CARTESIAN);
         // THEN
-        final double[][] pvTolerances = NumericalPropagator.tolerances(dP, new AbsolutePVCoordinates(orbit.getFrame(),
+        final double[][] pvTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(new AbsolutePVCoordinates(orbit.getFrame(),
                 new TimeStampedPVCoordinates(orbit.getDate(), position.toVector3D(), velocity.toVector3D())));
         for (int i = 0; i < 3; i++) {
             Assertions.assertEquals(pvTolerances[0][i], orbitTolerances[0][i]);

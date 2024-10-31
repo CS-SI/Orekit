@@ -36,6 +36,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -137,8 +138,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
         double maxStep = 1000.0;
         double positionTolerance = 1.0e-4;
         OrbitType propagationType = OrbitType.KEPLERIAN;
-        double[][] tolerances =
-                NumericalPropagator.tolerances(positionTolerance, orbit, propagationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(orbit, propagationType);
         DormandPrince853Integrator integrator =
                 new DormandPrince853Integrator(minStep, maxStep,
                         tolerances[0], tolerances[1]);
