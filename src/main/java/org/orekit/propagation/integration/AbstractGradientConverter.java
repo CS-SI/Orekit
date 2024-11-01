@@ -147,19 +147,17 @@ public abstract class AbstractGradientConverter {
 
         // position always has derivatives
         final Vector3D pos = state.getPosition();
-        final FieldVector3D<Gradient> posG = new FieldVector3D<>(
-                Gradient.variable(freeStateParameters, 0, pos.getX()),
-                Gradient.variable(freeStateParameters, 1, pos.getY()),
-                Gradient.variable(freeStateParameters, 2, pos.getZ()));
+        final FieldVector3D<Gradient> posG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 0, pos.getX()),
+                                                                 Gradient.variable(freeStateParameters, 1, pos.getY()),
+                                                                 Gradient.variable(freeStateParameters, 2, pos.getZ()));
 
         // velocity may have derivatives or not
         final Vector3D vel = state.getPVCoordinates().getVelocity();
         final FieldVector3D<Gradient> velG;
         if (freeStateParameters > 3) {
-            velG = new FieldVector3D<>(
-                    Gradient.variable(freeStateParameters, 3, vel.getX()),
-                    Gradient.variable(freeStateParameters, 4, vel.getY()),
-                    Gradient.variable(freeStateParameters, 5, vel.getZ()));
+            velG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 3, vel.getX()),
+                                       Gradient.variable(freeStateParameters, 4, vel.getY()),
+                                       Gradient.variable(freeStateParameters, 5, vel.getZ()));
         } else {
             velG = new FieldVector3D<>(field, vel);
         }
@@ -171,8 +169,8 @@ public abstract class AbstractGradientConverter {
         // mass never has derivatives
         final Gradient gMass = Gradient.constant(freeStateParameters, state.getMass());
 
-        final TimeStampedFieldPVCoordinates<Gradient> timeStampedFieldPVCoordinates = new TimeStampedFieldPVCoordinates<>(
-                state.getDate(), posG, velG, accG);
+        final TimeStampedFieldPVCoordinates<Gradient> timeStampedFieldPVCoordinates =
+            new TimeStampedFieldPVCoordinates<>(state.getDate(), posG, velG, accG);
 
         final FieldCartesianOrbit<Gradient> gOrbit;
         final FieldAbsolutePVCoordinates<Gradient> gAbsolutePV;
@@ -189,7 +187,7 @@ public abstract class AbstractGradientConverter {
         if (freeStateParameters > 3) {
             // compute attitude partial derivatives with respect to position/velocity
             gAttitude = provider.getAttitude((state.isOrbitDefined()) ? gOrbit : gAbsolutePV,
-                    timeStampedFieldPVCoordinates.getDate(), state.getFrame());
+                                             timeStampedFieldPVCoordinates.getDate(), state.getFrame());
         } else {
             // force model does not depend on attitude, don't bother recomputing it
             gAttitude = new FieldAttitude<>(field, state.getAttitude());
@@ -200,6 +198,7 @@ public abstract class AbstractGradientConverter {
         } else {
             return new FieldSpacecraftState<>(gAbsolutePV, gAttitude, gMass);
         }
+
     }
 
     /**

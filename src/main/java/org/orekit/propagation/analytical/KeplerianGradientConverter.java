@@ -42,24 +42,22 @@ class KeplerianGradientConverter extends AbstractAnalyticalGradientConverter {
      * @param propagator orbit propagator used to access initial orbit
      */
     KeplerianGradientConverter(final KeplerianPropagator propagator) {
-        super(propagator, propagator.getInitialState().getMu(), FREE_STATE_PARAMETERS);
+        super(propagator, FREE_STATE_PARAMETERS);
         // Initialize fields
         this.propagator = propagator;
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldKeplerianPropagator<Gradient> getPropagator(final FieldSpacecraftState<Gradient> state,
-                                                            final Gradient[] parameters) {
+    public FieldKeplerianPropagator<Gradient> getPropagator() {
 
-        // Zero
-        final Gradient zero = state.getA().getField().getZero();
+        final FieldSpacecraftState<Gradient> state = getState(this);
 
         // Model parameters
         final AttitudeProvider provider = propagator.getAttitudeProvider();
 
         // Central attraction coefficient
-        final Gradient mu = zero.newInstance(propagator.getInitialState().getMu());
+        final Gradient mu = state.getA().newInstance(propagator.getInitialState().getMu());
 
         // Return the "Field" propagator
         return new FieldKeplerianPropagator<>(state.getOrbit(), provider, mu);

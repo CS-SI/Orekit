@@ -90,7 +90,10 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         // Sets initial state
         final Orbit orbit = propagateOrbit(getStartDate());
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+
+        // calling the method from base class because the one overridden below intentionally throws an exception
         super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
+
     }
 
     /**

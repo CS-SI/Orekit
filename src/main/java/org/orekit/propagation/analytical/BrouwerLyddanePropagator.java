@@ -133,13 +133,13 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
     private transient TimeSpanMap<BLModel> models;
 
     /** Reference radius of the central body attraction model (m). */
-    private double referenceRadius;
+    private final double referenceRadius;
 
     /** Central attraction coefficient (m³/s²). */
-    private double mu;
+    private final double mu;
 
     /** Un-normalized zonal coefficients. */
-    private double[] ck0;
+    private final double[] ck0;
 
     /** Empirical coefficient used in the drag modeling. */
     private final ParameterDriver M2Driver;
@@ -161,35 +161,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                     final double M2) {
         this(initialOrbit, FrameAlignedProvider.of(initialOrbit.getFrame()),
              DEFAULT_MASS, provider, provider.onDate(initialOrbit.getDate()), M2);
-    }
-
-    /**
-     * Private helper constructor.
-     * <p>Using this constructor, an initial osculating orbit is considered.</p>
-     * @param initialOrbit initial orbit
-     * @param attitude attitude provider
-     * @param mass spacecraft mass
-     * @param provider for un-normalized zonal coefficients
-     * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @param M2 value of empirical drag coefficient in rad/s².
-     *        If equal to {@link #M2} drag is not computed
-     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
-     *                                 UnnormalizedSphericalHarmonicsProvider,
-     *                                 UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics,
-     *                                 PropagationType, double)
-     */
-    public BrouwerLyddanePropagator(final Orbit initialOrbit,
-                                    final AttitudeProvider attitude,
-                                    final double mass,
-                                    final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final UnnormalizedSphericalHarmonics harmonics,
-                                    final double M2) {
-        this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
-             harmonics.getUnnormalizedCnm(2, 0),
-             harmonics.getUnnormalizedCnm(3, 0),
-             harmonics.getUnnormalizedCnm(4, 0),
-             harmonics.getUnnormalizedCnm(5, 0),
-             M2);
     }
 
     /** Build a propagator from orbit and potential.
@@ -425,33 +396,6 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
         this(initialOrbit, attitudeProv, mass, provider, provider.onDate(initialOrbit.getDate()), initialType, M2);
     }
 
-    /**
-     * Private helper constructor.
-     * <p>Using this constructor, it is possible to define the initial orbit as
-     * a mean Brouwer-Lyddane orbit or an osculating one.</p>
-     * @param initialOrbit initial orbit
-     * @param attitude attitude provider
-     * @param mass spacecraft mass
-     * @param provider for un-normalized zonal coefficients
-     * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
-     * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
-     * @param M2 value of empirical drag coefficient in rad/s².
-     *        If equal to {@link #M2} drag is not computed
-     */
-    public BrouwerLyddanePropagator(final Orbit initialOrbit,
-                                    final AttitudeProvider attitude,
-                                    final double mass,
-                                    final UnnormalizedSphericalHarmonicsProvider provider,
-                                    final UnnormalizedSphericalHarmonics harmonics,
-                                    final PropagationType initialType, final double M2) {
-        this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
-             harmonics.getUnnormalizedCnm(2, 0),
-             harmonics.getUnnormalizedCnm(3, 0),
-             harmonics.getUnnormalizedCnm(4, 0),
-             harmonics.getUnnormalizedCnm(5, 0),
-             initialType, M2);
-    }
-
     /** Build a propagator from orbit, attitude provider, mass and potential.
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
      * are related to both the normalized coefficients
@@ -549,6 +493,62 @@ public class BrouwerLyddanePropagator extends AbstractAnalyticalPropagator imple
                                               mass),
                           initialType, epsilon, maxIterations);
 
+    }
+
+    /**
+     * Private helper constructor.
+     * <p>Using this constructor, an initial osculating orbit is considered.</p>
+     * @param initialOrbit initial orbit
+     * @param attitude attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @param M2 value of empirical drag coefficient in rad/s².
+     *        If equal to {@link #M2} drag is not computed
+     * @see #BrouwerLyddanePropagator(Orbit, AttitudeProvider, double,
+     *                                 UnnormalizedSphericalHarmonicsProvider,
+     *                                 UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics,
+     *                                 PropagationType, double)
+     */
+    private BrouwerLyddanePropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitude,
+                                     final double mass,
+                                     final UnnormalizedSphericalHarmonicsProvider provider,
+                                     final UnnormalizedSphericalHarmonics harmonics,
+                                     final double M2) {
+        this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
+             harmonics.getUnnormalizedCnm(2, 0),
+             harmonics.getUnnormalizedCnm(3, 0),
+             harmonics.getUnnormalizedCnm(4, 0),
+             harmonics.getUnnormalizedCnm(5, 0),
+             M2);
+    }
+
+    /**
+     * Private helper constructor.
+     * <p>Using this constructor, it is possible to define the initial orbit as
+     * a mean Brouwer-Lyddane orbit or an osculating one.</p>
+     * @param initialOrbit initial orbit
+     * @param attitude attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @param harmonics {@code provider.onDate(initialOrbit.getDate())}
+     * @param initialType initial orbit type (mean Brouwer-Lyddane orbit or osculating orbit)
+     * @param M2 value of empirical drag coefficient in rad/s².
+     *        If equal to {@link #M2} drag is not computed
+     */
+    private BrouwerLyddanePropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitude,
+                                     final double mass,
+                                     final UnnormalizedSphericalHarmonicsProvider provider,
+                                     final UnnormalizedSphericalHarmonics harmonics,
+                                     final PropagationType initialType, final double M2) {
+        this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
+             harmonics.getUnnormalizedCnm(2, 0),
+             harmonics.getUnnormalizedCnm(3, 0),
+             harmonics.getUnnormalizedCnm(4, 0),
+             harmonics.getUnnormalizedCnm(5, 0),
+             initialType, M2);
     }
 
     /** Conversion from osculating to mean orbit.

@@ -39,24 +39,22 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
      * @param propagator orbit propagator used to access initial orbit
      */
     GnssGradientConverter(final GNSSPropagator propagator) {
-        super(propagator, propagator.getOrbitalElements().getMu(), FREE_STATE_PARAMETERS);
+        super(propagator, FREE_STATE_PARAMETERS);
         // Initialize fields
         this.propagator = propagator;
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldGnssPropagator<Gradient> getPropagator(final FieldSpacecraftState<Gradient> state,
-                                                       final Gradient[] parameters) {
+    public FieldGnssPropagator<Gradient> getPropagator() {
 
-        // Zero
-        final Gradient zero = state.getA().getField().getZero();
+        final FieldSpacecraftState<Gradient> state = getState(this);
 
-       // Return the "Field" propagator
+        // Return the "Field" propagator
         return new FieldGnssPropagator<>(propagator.getOrbitalElements(),
                                          propagator.getECI(), propagator.getECEF(),
                                          propagator.getAttitudeProvider(),
-                                         zero.newInstance(propagator.getMass(state.getDate().toAbsoluteDate())));
+                                         state);
 
     }
 

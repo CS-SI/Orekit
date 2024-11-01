@@ -22,7 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -52,9 +51,6 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** The GNSS orbital elements used. */
     private final GNSSOrbitalElements orbitalElements;
 
-    /** The spacecraft mass (kg). */
-    private final T mass;
-
     /** The ECI frame used for GNSS propagation. */
     private final Frame eci;
 
@@ -67,26 +63,22 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param eci Earth Centered Inertial frame
      * @param ecef Earth Centered Earth Fixed frame
      * @param provider Attitude provider
-     * @param mass Satellite mass (kg)
+     * @param initialState initial state (<em>must</em> be consistent with {@code orbitalElements})
      */
     FieldGnssPropagator(final GNSSOrbitalElements orbitalElements, final Frame eci,
                         final Frame ecef, final AttitudeProvider provider,
-                        final T mass) {
-        super(mass.getField(), provider);
+                        final FieldSpacecraftState<T> initialState) {
+        super(initialState.getDate().getField(), provider);
         // Stores the GNSS propagation model
         this.orbitalElements = orbitalElements;
-        // Sets the start date as the date of the orbital elements
-        setStartDate(new FieldAbsoluteDate<>(mass.getField(), orbitalElements.getDate()));
-        // Sets the mass
-        this.mass = mass;
         // Sets the Earth Centered Inertial frame
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = ecef;
-        // Sets initial state
-        final FieldOrbit<T> orbit = propagateOrbit(getStartDate(), getParameters(mass.getField()));
-        final FieldAttitude<T> attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, mass));
+
+        // calling the method from base class because the one overridden below intentionally throws an exception
+        super.resetInitialState(initialState);
+
     }
 
     /** {@inheritDoc} */
@@ -120,7 +112,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return the Earth gravity coefficient.
      */
     public T getMU() {
-        return mass.newInstance(orbitalElements.getMu());
+        return getInitialState().getDate().getField().getZero().newInstance(orbitalElements.getMu());
     }
 
     /** {@inheritDoc} */
@@ -141,7 +133,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * acceleration.</p>
      *
      * @param date the computation date
-     * @param parameters model parameters
+     * @param parameters propagation parameters
      * @return the GNSS SV PVCoordinates in {@link #getECEF() ECEF frame}
      */
     private FieldPVCoordinates<T> propagateInEcef(final FieldAbsoluteDate<T> date, final T[] parameters) {
@@ -237,7 +229,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
-        return mass;
+        return getInitialState().getMass();
     }
 
     /** {@inheritDoc} */

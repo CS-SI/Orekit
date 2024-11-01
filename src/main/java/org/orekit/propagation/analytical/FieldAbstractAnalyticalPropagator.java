@@ -367,10 +367,10 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      */
     protected abstract void resetIntermediateState(FieldSpacecraftState<T> state, boolean forward);
 
-    /** Extrapolate an orbit up to a specific target date.
+    /** Propagate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @param parameters model parameters
-     * @return extrapolated parameters
+     * @return propagated orbit
      */
     protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters);
 
