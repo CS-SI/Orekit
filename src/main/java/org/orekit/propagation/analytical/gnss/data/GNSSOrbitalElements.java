@@ -39,9 +39,6 @@ import java.util.List;
 */
 public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvider {
 
-    /** Name for time parameter. */
-    public static final String TIME = "GnssTime";
-
     /** Name for semi major axis parameter. */
     public static final String SEMI_MAJOR_AXIS = "GnssSemiMajorAxis";
 
@@ -51,20 +48,23 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     /** Name for inclination at reference time parameter. */
     public static final String INCLINATION = "GnssInclination";
 
-    /** Name for inclination rate parameter. */
-    public static final String INCLINATION_RATE = "GnssInclinationRate";
+    /** Name for argument of perigee parameter. */
+    public static final String ARGUMENT_OF_PERIGEE = "GnssPerigeeArgument";
 
     /** Name for longitude of ascending node at weekly epoch parameter. */
     public static final String NODE_LONGITUDE = "GnssNodeLongitude";
 
-    /** Name for longitude rate parameter. */
-    public static final String LONGITUDE_RATE = "GnssLongitudeRate";
-
-    /** Name for argument of perigee parameter. */
-    public static final String ARGUMENT_OF_PERIGEE = "GnssPerigeeArgument";
-
     /** Name for mean anomaly at reference time parameter. */
     public static final String MEAN_ANOMALY = "GnssMeanAnomaly";
+
+    /** Name for time parameter. */
+    public static final String TIME = "GnssTime";
+
+    /** Name for inclination rate parameter. */
+    public static final String INCLINATION_RATE = "GnssInclinationRate";
+
+    /** Name for longitude rate parameter. */
+    public static final String LONGITUDE_RATE = "GnssLongitudeRate";
 
     /** Name for cosine of latitude argument harmonic parameter. */
     public static final String LATITUDE_COSINE = "GnssLatitudeCosine";
@@ -87,50 +87,32 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     /** Index of time in the list returned by {@link #getParametersDrivers()}. */
     public static final int TIME_INDEX = 0;
 
-    /** Index of semi major axis in the list returned by {@link #getParametersDrivers()}. */
-    public static final int SMA_INDEX = 1;
-
-    /** Index of eccentricity in the list returned by {@link #getParametersDrivers()}. */
-    public static final int E_INDEX = 2;
-
-    /** Index of inclination in the list returned by {@link #getParametersDrivers()}. */
-    public static final int I0_INDEX = 3;
-
     /** Index of inclination rate in the list returned by {@link #getParametersDrivers()}. */
-    public static final int IO_DOT_INDEX = 4;
-
-    /** Index of node longitude in the list returned by {@link #getParametersDrivers()}. */
-    public static final int OM0_INDEX = 5;
+    public static final int IO_DOT_INDEX = TIME_INDEX + 1;
 
     /** Index of longitude rate in the list returned by {@link #getParametersDrivers()}. */
-    public static final int OMEGA_DOT_INDEX = 6;
+    public static final int OMEGA_DOT_INDEX = IO_DOT_INDEX + 1;
 
-    /** Index of perigee argument in the list returned by {@link #getParametersDrivers()}. */
-    public static final int PA_INDEX = 7;
+    /** Index of cosine on latitude argument in the list returned by {@link #getParametersDrivers()}. */
+    public static final int CUC_INDEX = OMEGA_DOT_INDEX + 1;
 
-    /** Index of mean anomaly in the list returned by {@link #getParametersDrivers()}. */
-    public static final int M0_INDEX = 8;
-
-    /** Index of cosine on latitude argumen,t in the list returned by {@link #getParametersDrivers()}. */
-    public static final int CUC_INDEX = 9;
-
-    /** Index of sine on latitude argume,t in the list returned by {@link #getParametersDrivers()}. */
-    public static final int CUS_INDEX = 10;
+    /** Index of sine on latitude argument in the list returned by {@link #getParametersDrivers()}. */
+    public static final int CUS_INDEX = CUC_INDEX + 1;
 
     /** Index of cosine on radius in the list returned by {@link #getParametersDrivers()}. */
-    public static final int CRC_INDEX = 11;
+    public static final int CRC_INDEX = CUS_INDEX + 1;
 
     /** Index of sine on radius in the list returned by {@link #getParametersDrivers()}. */
-    public static final int CRS_INDEX = 12;
+    public static final int CRS_INDEX = CRC_INDEX + 1;
 
     /** Index of cosine on inclination in the list returned by {@link #getParametersDrivers()}. */
-    public static final int CIC_INDEX = 13;
+    public static final int CIC_INDEX = CRS_INDEX + 1;
 
     /** Index of sine on inclination in the list returned by {@link #getParametersDrivers()}. */
-    public static final int CIS_INDEX = 14;
+    public static final int CIS_INDEX = CIC_INDEX + 1;
 
     /** Size of parameters array. */
-    private static final int SIZE = 15;
+    private static final int SIZE = CIS_INDEX + 1;
 
     /** Reference epoch. */
     private AbsoluteDate date;
@@ -156,9 +138,6 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     /** Reference Week of the orbit. */
     private int week;
 
-    /** Reference time. */
-    private final ParameterDriver timeDriver;
-
     /** Semi-Major Axis (m). */
     private final ParameterDriver smaDriver;
 
@@ -168,20 +147,23 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     /** Inclination angle at reference time (rad). */
     private final ParameterDriver i0Driver;
 
-    /** Inclination rate (rad/s). */
-    private final ParameterDriver iDotDriver;
+    /** Argument of perigee (rad). */
+    private final ParameterDriver aopDriver;
 
     /** Longitude of ascending node of orbit plane at weekly epoch (rad). */
     private final ParameterDriver om0Driver;
 
-    /** Rate of right ascension (rad/s). */
-    private final ParameterDriver domDriver;
-
-    /** Argument of perigee (rad). */
-    private final ParameterDriver aopDriver;
-
     /** Mean anomaly at reference time (rad). */
     private final ParameterDriver anomDriver;
+
+    /** Reference time. */
+    private final ParameterDriver timeDriver;
+
+    /** Inclination rate (rad/s). */
+    private final ParameterDriver iDotDriver;
+
+    /** Rate of right ascension (rad/s). */
+    private final ParameterDriver domDriver;
 
     /** Amplitude of the cosine harmonic correction term to the argument of latitude. */
     private final ParameterDriver cucDriver;
@@ -221,16 +203,18 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
         this.system          = system;
         this.timeScales      = timeScales;
 
-        // fields controlled by parameter drivers
-        this.timeDriver      = createDriver(TIME);
+        // fields controlled by parameter drivers for Keplerian orbital elements
         this.smaDriver       = createDriver(SEMI_MAJOR_AXIS);
         this.eccDriver       = createDriver(ECCENTRICITY);
         this.i0Driver        = createDriver(INCLINATION);
-        this.iDotDriver      = createDriver(INCLINATION_RATE);
-        this.om0Driver       = createDriver(NODE_LONGITUDE);
-        this.domDriver       = createDriver(LONGITUDE_RATE);
         this.aopDriver       = createDriver(ARGUMENT_OF_PERIGEE);
+        this.om0Driver       = createDriver(NODE_LONGITUDE);
         this.anomDriver      = createDriver(MEAN_ANOMALY);
+
+        // fields controlled by parameter drivers for non-Keplerian evolution
+        this.timeDriver      = createDriver(TIME);
+        this.iDotDriver      = createDriver(INCLINATION_RATE);
+        this.domDriver       = createDriver(LONGITUDE_RATE);
         this.cucDriver       = createDriver(LATITUDE_COSINE);
         this.cusDriver       = createDriver(LATITUDE_SINE);
         this.crcDriver       = createDriver(RADIUS_COSINE);
@@ -265,20 +249,30 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Only the 9 non-Keplerian evolution parameters are listed here,
+     * i.e. {@link #getTimeDriver()} (at index {@link #TIME_INDEX}),
+     * {@link #getIDotDriver()} (at index {@link #IO_DOT_INDEX}),
+     * {@link #getOmegaDotDriver()} (at index {@link #OMEGA_DOT_INDEX}),
+     * {@link #getCucDriver()} (at index {@link #CUC_INDEX}),
+     * {@link #getCusDriver()} (at index {@link #CUS_INDEX}),
+     * {@link #getCrcDriver()} (at index {@link #CRC_INDEX}),
+     * {@link #getCrsDriver()} (at index {@link #CRS_INDEX}),
+     * {@link #getCicDriver()} (at index {@link #CIC_INDEX}),
+     * and {@link #getCisDriver()} (at index {@link #CIS_INDEX})
+     * </p>
+     * <p>
+     * The Keplerian orbital parameters drivers are not included.
+     * </p>
+     */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         // ensure the parameters are really at the advertised indices
         final ParameterDriver[] array = new ParameterDriver[SIZE];
         array[TIME_INDEX]      = getTimeDriver();
-        array[SMA_INDEX]       = getSmaDriver();
-        array[E_INDEX]         = getEDriver();
-        array[I0_INDEX]        = getI0Driver();
         array[IO_DOT_INDEX]    = getIDotDriver();
-        array[OM0_INDEX]       = getOmega0Driver();
         array[OMEGA_DOT_INDEX] = getOmegaDotDriver();
-        array[PA_INDEX]        = getPaDriver();
-        array[M0_INDEX]        = getM0Driver();
         array[CUC_INDEX]       = getCucDriver();
         array[CUS_INDEX]       = getCusDriver();
         array[CRC_INDEX]       = getCrcDriver();
@@ -287,6 +281,7 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
         array[CIS_INDEX]       = getCisDriver();
         return Arrays.asList(array);
     }
+
     /** {@inheritDoc} */
     @Override
     public AbsoluteDate getDate() {
