@@ -20,15 +20,13 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.Precision;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
@@ -52,21 +50,6 @@ import java.util.List;
  * @author Pascal Parraud
  */
 public class GNSSPropagator extends AbstractAnalyticalPropagator {
-
-    // Data used to solve Kepler's equation
-    /** First coefficient to compute Kepler equation solver starter. */
-    private static final double A;
-
-    /** Second coefficient to compute Kepler equation solver starter. */
-    private static final double B;
-
-    static {
-        final double k1 = 3 * FastMath.PI + 2;
-        final double k2 = FastMath.PI - 1;
-        final double k3 = 6 * FastMath.PI - 1;
-        A  = 3 * k2 * k2 / k1;
-        B  = k3 * k3 / (6 * k1);
-    }
 
     /** The GNSS propagation model used. */
     private final GNSSOrbitalElements orbitalElements;
@@ -204,9 +187,10 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         // Mean anomaly
         final UnivariateDerivative2 mk = tk.multiply(orbitalElements.getMeanMotion()).add(orbitalElements.getM0());
         // Eccentric Anomaly
-        final UnivariateDerivative2 ek = getEccentricAnomaly(orbitalElements.getE(), mk);
+        final UnivariateDerivative2 e  = tk.newInstance(orbitalElements.getE());
+        final UnivariateDerivative2 ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, mk);
         // True Anomaly
-        final UnivariateDerivative2 vk =  getTrueAnomaly(orbitalElements.getE(), ek);
+        final UnivariateDerivative2 vk =  FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, ek);
         // Argument of Latitude
         final UnivariateDerivative2 phik    = vk.add(orbitalElements.getPa());
         final UnivariateDerivative2 twoPhik = phik.multiply(2);
@@ -268,113 +252,6 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         }
         // Returns the time from ephemeris reference epoch
         return tk;
-    }
-
-    /**
-     * Gets eccentric anomaly from mean anomaly.
-     * <p>The algorithm used to solve the Kepler equation has been published in:
-     * "Procedures for  solving Kepler's Equation", A. W. Odell and R. H. Gooding,
-     * Celestial Mechanics 38 (1986) 307-334</p>
-     * <p>It has been copied from the OREKIT library (KeplerianOrbit class).</p>
-     *
-     * @param e the eccentricity
-     * @param mk the mean anomaly (rad)
-     * @return the eccentric anomaly (rad)
-     */
-    private UnivariateDerivative2 getEccentricAnomaly(final double e,
-                                                      final UnivariateDerivative2 mk) {
-
-        // reduce M to [-PI PI] interval
-        final UnivariateDerivative2 reducedM = new UnivariateDerivative2(MathUtils.normalizeAngle(mk.getValue(), 0.0),
-                                                                         mk.getFirstDerivative(),
-                                                                         mk.getSecondDerivative());
-
-        // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-        UnivariateDerivative2 ek;
-        if (FastMath.abs(reducedM.getValue()) < 1.0 / 6.0) {
-            if (FastMath.abs(reducedM.getValue()) < Precision.SAFE_MIN) {
-                // this is an Orekit change to the S12 starter.
-                // If reducedM is 0.0, the derivative of cbrt is infinite which induces NaN appearing later in
-                // the computation. As in this case E and M are almost equal, we initialize ek with reducedM
-                ek = reducedM;
-            } else {
-                // this is the standard S12 starter
-                ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(e));
-            }
-        } else {
-            if (reducedM.getValue() < 0) {
-                final UnivariateDerivative2 w = reducedM.add(FastMath.PI);
-                ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(e));
-            } else {
-                final UnivariateDerivative2 minusW = reducedM.subtract(FastMath.PI);
-                ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(e));
-            }
-        }
-
-        final double e1 = 1 - e;
-        final boolean noCancellationRisk = (e1 + ek.getValue() * ek.getValue() / 6) >= 0.1;
-
-        // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
-        for (int j = 0; j < 2; ++j) {
-            final UnivariateDerivative2 f;
-            UnivariateDerivative2 fd;
-            final UnivariateDerivative2 fdd  = ek.sin().multiply(e);
-            final UnivariateDerivative2 fddd = ek.cos().multiply(e);
-            if (noCancellationRisk) {
-                f  = ek.subtract(fdd).subtract(reducedM);
-                fd = fddd.subtract(1).negate();
-            } else {
-                f  = eMeSinE(e, ek).subtract(reducedM);
-                final UnivariateDerivative2 s = ek.multiply(0.5).sin();
-                fd = s.multiply(s).multiply(2 * e).add(e1);
-            }
-            final UnivariateDerivative2 dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
-
-            // update eccentric anomaly, using expressions that limit underflow problems
-            final UnivariateDerivative2 w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
-            fd = fd.add(dee.multiply(fdd.add(dee.multiply(0.5).multiply(fdd))));
-            ek = ek.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
-        }
-
-        // expand the result back to original range
-        ek = ek.add(mk.getValue() - reducedM.getValue());
-
-        // Returns the eccentric anomaly
-        return ek;
-    }
-
-    /**
-     * Accurate computation of E - e sin(E).
-     *
-     * @param e eccentricity
-     * @param E eccentric anomaly
-     * @return E - e sin(E)
-     */
-    private UnivariateDerivative2 eMeSinE(final double e, final UnivariateDerivative2 E) {
-        UnivariateDerivative2 x = E.sin().multiply(1 - e);
-        final UnivariateDerivative2 mE2 = E.negate().multiply(E);
-        UnivariateDerivative2 term = E;
-        UnivariateDerivative2 d    = E.getField().getZero();
-        // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (UnivariateDerivative2 x0 = d.add(Double.NaN); !Double.valueOf(x.getValue()).equals(x0.getValue());) {
-            d = d.add(2);
-            term = term.multiply(mE2.divide(d.multiply(d.add(1))));
-            x0 = x;
-            x = x.subtract(term);
-        }
-        return x;
-    }
-
-    /** Gets true anomaly from eccentric anomaly.
-     *
-     * @param e eccentricity
-     * @param ek the eccentric anomaly (rad)
-     * @return the true anomaly (rad)
-     */
-    private UnivariateDerivative2 getTrueAnomaly(final double e, final UnivariateDerivative2 ek) {
-        final UnivariateDerivative2 svk = ek.sin().multiply(FastMath.sqrt(1. - e * e));
-        final UnivariateDerivative2 cvk = ek.cos().subtract(e);
-        return svk.atan2(cvk);
     }
 
     /** {@inheritDoc} */

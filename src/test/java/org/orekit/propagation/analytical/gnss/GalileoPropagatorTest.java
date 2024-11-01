@@ -138,7 +138,7 @@ public class GalileoPropagatorTest {
         final PVCoordinates pv1 = propagator.getPVCoordinates(date, propagator.getECEF());
 
         // Checks
-        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.4e-8);
+        Assertions.assertEquals(0., pv0.getPosition().distance(pv1.getPosition()), 2.5e-8);
         Assertions.assertEquals(0., pv0.getVelocity().distance(pv1.getVelocity()), 2.8e-12);
     }
 

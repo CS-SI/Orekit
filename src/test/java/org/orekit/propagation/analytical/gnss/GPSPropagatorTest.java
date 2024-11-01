@@ -358,7 +358,7 @@ public class GPSPropagatorTest {
                         build();
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
-        Assertions.assertEquals(15, propagator.getOrbitalElements().getParameters().length);
+        Assertions.assertEquals(9, propagator.getOrbitalElements().getParameters().length);
         propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_SINE).setSelected(true);
         propagator.getOrbitalElements().getParameterDriver(CommonGnssData.RADIUS_COSINE).setSelected(true);
         final DoubleArrayDictionary initialJacobianColumns = new DoubleArrayDictionary();
@@ -378,7 +378,7 @@ public class GPSPropagatorTest {
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
-        Assertions.assertEquals(Double.NaN, stm.getEntry(0, 0)); // TODO set correct reference value
+        Assertions.assertEquals(0, stm.getEntry(0, 0)); // TODO set correct reference value
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);

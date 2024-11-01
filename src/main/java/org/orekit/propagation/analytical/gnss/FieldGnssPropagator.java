@@ -20,14 +20,13 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
-import org.hipparchus.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
@@ -47,23 +46,7 @@ import java.util.List;
  * @author Luc Maisonobe
  * @param <T> type of the field elements
  */
-public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAnalyticalPropagator<T> {
-
-    // Data used to solve Kepler's equation
-    /** First coefficient to compute Kepler equation solver starter. */
-    private static final double A;
-
-    /** Second coefficient to compute Kepler equation solver starter. */
-    private static final double B;
-
-    static {
-        final double k1 = 3 * FastMath.PI + 2;
-        final double k2 = FastMath.PI - 1;
-        final double k3 = 6 * FastMath.PI - 1;
-        A  = 3 * k2 * k2 / k1;
-        B  = k3 * k3 / (6 * k1);
-    }
+public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     /** The GNSS orbital elements used. */
     private final GNSSOrbitalElements orbitalElements;
@@ -166,22 +149,18 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
                                                                                   date.getField().getOne(),
                                                                                   date.getField().getZero());
         // mean motion
-        final FieldUnivariateDerivative2<T> invA =
-            FastMath.abs(new FieldUnivariateDerivative2<>(parameters[GNSSOrbitalElements.SMA_INDEX],
-                                                          date.getField().getOne(),
-                                                          date.getField().getZero())).
-                reciprocal();
-        final FieldUnivariateDerivative2<T> meanMotion =
-            FastMath.sqrt(invA.multiply(orbitalElements.getMu())).multiply(invA);
+        final double a          = orbitalElements.getSma();
+        final double meanMotion = FastMath.sqrt(orbitalElements.getMu() / a) / a;
 
         // Mean anomaly
-        final FieldUnivariateDerivative2<T> mk = tk.multiply(meanMotion).add(parameters[GNSSOrbitalElements.M0_INDEX]);
+        final FieldUnivariateDerivative2<T> mk = tk.multiply(meanMotion).add(orbitalElements.getM0());
         // Eccentric Anomaly
-        final FieldUnivariateDerivative2<T> ek = getEccentricAnomaly(parameters[GNSSOrbitalElements.E_INDEX], mk);
+        final FieldUnivariateDerivative2<T> e  = tk.newInstance(orbitalElements.getE());
+        final FieldUnivariateDerivative2<T> ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, mk);
         // True Anomaly
-        final FieldUnivariateDerivative2<T> vk =  getTrueAnomaly(parameters[GNSSOrbitalElements.E_INDEX], ek);
+        final FieldUnivariateDerivative2<T> vk = FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, ek);
         // Argument of Latitude
-        final FieldUnivariateDerivative2<T> phik    = vk.add(parameters[GNSSOrbitalElements.PA_INDEX]);
+        final FieldUnivariateDerivative2<T> phik    = vk.add(orbitalElements.getPa());
         final FieldUnivariateDerivative2<T> twoPhik = phik.multiply(2);
         final FieldUnivariateDerivative2<T> c2phi   = twoPhik.cos();
         final FieldUnivariateDerivative2<T> s2phi   = twoPhik.sin();
@@ -197,11 +176,10 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
         // Corrected Argument of Latitude
         final FieldUnivariateDerivative2<T> uk = phik.add(dphik);
         // Corrected Radius
-        final FieldUnivariateDerivative2<T> rk = ek.cos().multiply(parameters[GNSSOrbitalElements.E_INDEX].negate()).add(1).
-                                                 multiply(parameters[GNSSOrbitalElements.SMA_INDEX]).add(drk);
+        final FieldUnivariateDerivative2<T> rk = ek.cos().multiply(e.negate()).add(1).multiply(a).add(drk);
         // Corrected Inclination
         final FieldUnivariateDerivative2<T> ik  = tk.multiply(parameters[GNSSOrbitalElements.IO_DOT_INDEX]).
-                                                  add(parameters[GNSSOrbitalElements.I0_INDEX]).add(dik);
+                                                  add(orbitalElements.getI0()).add(dik);
         final FieldUnivariateDerivative2<T> cik = ik.cos();
         // Positions in orbital plane
         final FieldUnivariateDerivative2<T> xk = uk.cos().multiply(rk);
@@ -209,9 +187,9 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
         // Corrected longitude of ascending node
         final FieldUnivariateDerivative2<T> omk = tk.multiply(parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX].
                                                               subtract(orbitalElements.getAngularVelocity())).
-                                                  add(parameters[GNSSOrbitalElements.OM0_INDEX].
-                                                                 subtract(parameters[GNSSOrbitalElements.TIME_INDEX].
-                                                                          multiply(orbitalElements.getAngularVelocity())));
+                                                  add(orbitalElements.getOmega0()).
+                                                  subtract(parameters[GNSSOrbitalElements.TIME_INDEX].
+                                                           multiply(orbitalElements.getAngularVelocity()));
         final FieldUnivariateDerivative2<T> comk = omk.cos();
         final FieldUnivariateDerivative2<T> somk = omk.sin();
         // returns the Earth-fixed coordinates
@@ -228,6 +206,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
                                         new FieldVector3D<>(positionWithDerivatives.getX().getSecondDerivative(),
                                                             positionWithDerivatives.getY().getSecondDerivative(),
                                                             positionWithDerivatives.getZ().getSecondDerivative()));
+
     }
 
     /**
@@ -249,114 +228,6 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>>
         }
         // Returns the time from ephemeris reference epoch
         return tk;
-    }
-
-    /**
-     * Gets eccentric anomaly from mean anomaly.
-     * <p>The algorithm used to solve the Kepler equation has been published in:
-     * "Procedures for  solving Kepler's Equation", A. W. Odell and R. H. Gooding,
-     * Celestial Mechanics 38 (1986) 307-334</p>
-     * <p>It has been copied from the OREKIT library (KeplerianOrbit class).</p>
-     *
-     * @param e the eccentricity
-     * @param mk the mean anomaly (rad)
-     * @return the eccentric anomaly (rad)
-     */
-    private FieldUnivariateDerivative2<T> getEccentricAnomaly(final T e, final FieldUnivariateDerivative2<T> mk) {
-
-        // reduce M to [-PI PI] interval
-        final FieldUnivariateDerivative2<T> reducedM =
-            new FieldUnivariateDerivative2<>(MathUtils.normalizeAngle(mk.getValue(), mk.getValue().getField().getZero()),
-                                             mk.getFirstDerivative(),
-                                             mk.getSecondDerivative());
-
-        // compute start value according to A. W. Odell and R. H. Gooding S12 starter
-        FieldUnivariateDerivative2<T> ek;
-        if (FastMath.abs(reducedM.getValue().getReal()) < 1.0 / 6.0) {
-            if (FastMath.abs(reducedM.getValue().getReal()) < Precision.SAFE_MIN) {
-                // this is an Orekit change to the S12 starter.
-                // If reducedM is 0.0, the derivative of cbrt is infinite which induces NaN appearing later in
-                // the computation. As in this case E and M are almost equal, we initialize ek with reducedM
-                ek = reducedM;
-            } else {
-                // this is the standard S12 starter
-                ek = reducedM.add(reducedM.multiply(6).cbrt().subtract(reducedM).multiply(e));
-            }
-        } else {
-            if (reducedM.getValue().getReal() < 0) {
-                final FieldUnivariateDerivative2<T> w = reducedM.add(FastMath.PI);
-                ek = reducedM.add(w.multiply(-A).divide(w.subtract(B)).subtract(FastMath.PI).subtract(reducedM).multiply(e));
-            } else {
-                final FieldUnivariateDerivative2<T> minusW = reducedM.subtract(FastMath.PI);
-                ek = reducedM.add(minusW.multiply(A).divide(minusW.add(B)).add(FastMath.PI).subtract(reducedM).multiply(e));
-            }
-        }
-
-        final T e1 = e.negate().add(1);
-        final boolean noCancellationRisk = (e1.getReal() + ek.getValue().getReal() * ek.getValue().getReal() / 6) >= 0.1;
-
-        // perform two iterations, each consisting of one Halley step and one Newton-Raphson step
-        for (int j = 0; j < 2; ++j) {
-            final FieldUnivariateDerivative2<T> f;
-            FieldUnivariateDerivative2<T> fd;
-            final FieldUnivariateDerivative2<T> fdd  = ek.sin().multiply(e);
-            final FieldUnivariateDerivative2<T> fddd = ek.cos().multiply(e);
-            if (noCancellationRisk) {
-                f  = ek.subtract(fdd).subtract(reducedM);
-                fd = fddd.subtract(1).negate();
-            } else {
-                f  = eMeSinE(e, ek).subtract(reducedM);
-                final FieldUnivariateDerivative2<T> s = ek.multiply(0.5).sin();
-                fd = s.multiply(s).multiply(e.multiply(2)).add(e1);
-            }
-            final FieldUnivariateDerivative2<T> dee = f.multiply(fd).divide(f.multiply(0.5).multiply(fdd).subtract(fd.multiply(fd)));
-
-            // update eccentric anomaly, using expressions that limit underflow problems
-            final FieldUnivariateDerivative2<T> w = fd.add(dee.multiply(0.5).multiply(fdd.add(dee.multiply(fdd).divide(3))));
-            fd = fd.add(dee.multiply(fdd.add(dee.multiply(0.5).multiply(fdd))));
-            ek = ek.subtract(f.subtract(dee.multiply(fd.subtract(w))).divide(fd));
-        }
-
-        // expand the result back to original range
-        ek = ek.add(mk.getValue().subtract(reducedM.getValue()));
-
-        // Returns the eccentric anomaly
-        return ek;
-    }
-
-    /**
-     * Accurate computation of E - e sin(E).
-     *
-     * @param e the eccentricity
-     * @param E eccentric anomaly
-     * @return E - e sin(E)
-     */
-    private FieldUnivariateDerivative2<T> eMeSinE(final T e, final FieldUnivariateDerivative2<T> E) {
-        FieldUnivariateDerivative2<T> x = E.sin().multiply(e.negate().add(1));
-        final FieldUnivariateDerivative2<T> mE2 = E.negate().multiply(E);
-        FieldUnivariateDerivative2<T> term = E;
-        FieldUnivariateDerivative2<T> d    = E.getField().getZero();
-        // the inequality test below IS intentional and should NOT be replaced by a check with a small tolerance
-        for (FieldUnivariateDerivative2<T> x0 = d.add(Double.NaN);
-             !Double.valueOf(x.getValue().getReal()).equals(x0.getValue().getReal());) {
-            d = d.add(2);
-            term = term.multiply(mE2.divide(d.multiply(d.add(1))));
-            x0 = x;
-            x = x.subtract(term);
-        }
-        return x;
-    }
-
-    /** Gets true anomaly from eccentric anomaly.
-     *
-     * @param e the eccentricity
-     * @param ek the eccentric anomaly (rad)
-     * @return the true anomaly (rad)
-     */
-    private FieldUnivariateDerivative2<T> getTrueAnomaly(final T e, final FieldUnivariateDerivative2<T> ek) {
-        final FieldUnivariateDerivative2<T> svk = ek.sin().multiply(FastMath.sqrt(e.square().negate().add(1)));
-        final FieldUnivariateDerivative2<T> cvk = ek.cos().subtract(e);
-        return svk.atan2(cvk);
     }
 
     /** {@inheritDoc} */
