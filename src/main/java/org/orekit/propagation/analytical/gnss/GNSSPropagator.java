@@ -20,6 +20,8 @@ import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -193,34 +195,32 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         final UnivariateDerivative2 vk =  FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, ek);
         // Argument of Latitude
         final UnivariateDerivative2 phik    = vk.add(orbitalElements.getPa());
-        final UnivariateDerivative2 twoPhik = phik.multiply(2);
-        final UnivariateDerivative2 c2phi   = twoPhik.cos();
-        final UnivariateDerivative2 s2phi   = twoPhik.sin();
+        final FieldSinCos<UnivariateDerivative2> cs2phi = FastMath.sinCos(phik.multiply(2));
         // Argument of Latitude Correction
-        final UnivariateDerivative2 dphik = c2phi.multiply(orbitalElements.getCuc()).add(s2phi.multiply(orbitalElements.getCus()));
+        final UnivariateDerivative2 dphik = cs2phi.cos().multiply(orbitalElements.getCuc()).add(cs2phi.sin().multiply(orbitalElements.getCus()));
         // Radius Correction
-        final UnivariateDerivative2 drk = c2phi.multiply(orbitalElements.getCrc()).add(s2phi.multiply(orbitalElements.getCrs()));
+        final UnivariateDerivative2 drk = cs2phi.cos().multiply(orbitalElements.getCrc()).add(cs2phi.sin().multiply(orbitalElements.getCrs()));
         // Inclination Correction
-        final UnivariateDerivative2 dik = c2phi.multiply(orbitalElements.getCic()).add(s2phi.multiply(orbitalElements.getCis()));
+        final UnivariateDerivative2 dik = cs2phi.cos().multiply(orbitalElements.getCic()).add(cs2phi.sin().multiply(orbitalElements.getCis()));
         // Corrected Argument of Latitude
-        final UnivariateDerivative2 uk = phik.add(dphik);
+        final FieldSinCos<UnivariateDerivative2> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
         final UnivariateDerivative2 rk = ek.cos().multiply(-orbitalElements.getE()).add(1).multiply(orbitalElements.getSma()).add(drk);
         // Corrected Inclination
         final UnivariateDerivative2 ik  = tk.multiply(orbitalElements.getIDot()).add(orbitalElements.getI0()).add(dik);
         final UnivariateDerivative2 cik = ik.cos();
         // Positions in orbital plane
-        final UnivariateDerivative2 xk = uk.cos().multiply(rk);
-        final UnivariateDerivative2 yk = uk.sin().multiply(rk);
+        final UnivariateDerivative2 xk = csuk.cos().multiply(rk);
+        final UnivariateDerivative2 yk = csuk.sin().multiply(rk);
         // Corrected longitude of ascending node
-        final UnivariateDerivative2 omk = tk.multiply(orbitalElements.getOmegaDot() - orbitalElements.getAngularVelocity()).
-                                        add(orbitalElements.getOmega0() - orbitalElements.getAngularVelocity() * orbitalElements.getTime());
-        final UnivariateDerivative2 comk = omk.cos();
-        final UnivariateDerivative2 somk = omk.sin();
+        final double thetaDot = orbitalElements.getAngularVelocity();
+        final FieldSinCos<UnivariateDerivative2> csomk =
+            FastMath.sinCos(tk.multiply(orbitalElements.getOmegaDot() - thetaDot).
+                            add(orbitalElements.getOmega0() - thetaDot * orbitalElements.getTime()));
         // returns the Earth-fixed coordinates
         final FieldVector3D<UnivariateDerivative2> positionWithDerivatives =
-                        new FieldVector3D<>(xk.multiply(comk).subtract(yk.multiply(somk).multiply(cik)),
-                                            xk.multiply(somk).add(yk.multiply(comk).multiply(cik)),
+                        new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(cik)),
+                                            xk.multiply(csomk.sin()).add(yk.multiply(csomk.cos()).multiply(cik)),
                                             yk.multiply(ik.sin()));
         return new PVCoordinates(new Vector3D(positionWithDerivatives.getX().getValue(),
                                               positionWithDerivatives.getY().getValue(),

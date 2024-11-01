@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
@@ -161,41 +162,38 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldUnivariateDerivative2<T> vk = FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, ek);
         // Argument of Latitude
         final FieldUnivariateDerivative2<T> phik    = vk.add(orbitalElements.getPa());
-        final FieldUnivariateDerivative2<T> twoPhik = phik.multiply(2);
-        final FieldUnivariateDerivative2<T> c2phi   = twoPhik.cos();
-        final FieldUnivariateDerivative2<T> s2phi   = twoPhik.sin();
+        final FieldSinCos<FieldUnivariateDerivative2<T>> cs2phi = FastMath.sinCos(phik.multiply(2));
         // Argument of Latitude Correction
-        final FieldUnivariateDerivative2<T> dphik = c2phi.multiply(parameters[GNSSOrbitalElements.CUC_INDEX]).
-                                                add(s2phi.multiply(parameters[GNSSOrbitalElements.CUS_INDEX]));
+        final FieldUnivariateDerivative2<T> dphik = cs2phi.cos().multiply(parameters[GNSSOrbitalElements.CUC_INDEX]).
+                                                add(cs2phi.sin().multiply(parameters[GNSSOrbitalElements.CUS_INDEX]));
         // Radius Correction
-        final FieldUnivariateDerivative2<T> drk = c2phi.multiply(parameters[GNSSOrbitalElements.CRC_INDEX]).
-                                              add(s2phi.multiply(parameters[GNSSOrbitalElements.CRS_INDEX]));
+        final FieldUnivariateDerivative2<T> drk = cs2phi.cos().multiply(parameters[GNSSOrbitalElements.CRC_INDEX]).
+                                              add(cs2phi.sin().multiply(parameters[GNSSOrbitalElements.CRS_INDEX]));
         // Inclination Correction
-        final FieldUnivariateDerivative2<T> dik = c2phi.multiply(parameters[GNSSOrbitalElements.CIC_INDEX]).
-                                              add(s2phi.multiply(parameters[GNSSOrbitalElements.CIS_INDEX]));
+        final FieldUnivariateDerivative2<T> dik = cs2phi.cos().multiply(parameters[GNSSOrbitalElements.CIC_INDEX]).
+                                              add(cs2phi.sin().multiply(parameters[GNSSOrbitalElements.CIS_INDEX]));
         // Corrected Argument of Latitude
-        final FieldUnivariateDerivative2<T> uk = phik.add(dphik);
+        final FieldSinCos<FieldUnivariateDerivative2<T>> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
         final FieldUnivariateDerivative2<T> rk = ek.cos().multiply(e.negate()).add(1).multiply(a).add(drk);
         // Corrected Inclination
-        final FieldUnivariateDerivative2<T> ik  = tk.multiply(parameters[GNSSOrbitalElements.IO_DOT_INDEX]).
+        final FieldUnivariateDerivative2<T> ik  = tk.multiply(parameters[GNSSOrbitalElements.I_DOT_INDEX]).
                                                   add(orbitalElements.getI0()).add(dik);
         final FieldUnivariateDerivative2<T> cik = ik.cos();
         // Positions in orbital plane
-        final FieldUnivariateDerivative2<T> xk = uk.cos().multiply(rk);
-        final FieldUnivariateDerivative2<T> yk = uk.sin().multiply(rk);
+        final FieldUnivariateDerivative2<T> xk = csuk.cos().multiply(rk);
+        final FieldUnivariateDerivative2<T> yk = csuk.sin().multiply(rk);
         // Corrected longitude of ascending node
-        final FieldUnivariateDerivative2<T> omk = tk.multiply(parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX].
-                                                              subtract(orbitalElements.getAngularVelocity())).
-                                                  add(orbitalElements.getOmega0()).
-                                                  subtract(parameters[GNSSOrbitalElements.TIME_INDEX].
-                                                           multiply(orbitalElements.getAngularVelocity()));
-        final FieldUnivariateDerivative2<T> comk = omk.cos();
-        final FieldUnivariateDerivative2<T> somk = omk.sin();
+        final double thetaDot = orbitalElements.getAngularVelocity();
+        final FieldSinCos<FieldUnivariateDerivative2<T>> csomk =
+            FastMath.sinCos(tk.multiply(parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX].
+                            subtract(thetaDot)).
+                            add(orbitalElements.getOmega0()).
+                            subtract(parameters[GNSSOrbitalElements.TIME_INDEX].multiply(thetaDot)));
         // returns the Earth-fixed coordinates
         final FieldVector3D<FieldUnivariateDerivative2<T>> positionWithDerivatives =
-                        new FieldVector3D<>(xk.multiply(comk).subtract(yk.multiply(somk).multiply(cik)),
-                                            xk.multiply(somk).add(yk.multiply(comk).multiply(cik)),
+                        new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(cik)),
+                                            xk.multiply(csomk.sin()).add(yk.multiply(csomk.cos()).multiply(cik)),
                                             yk.multiply(ik.sin()));
         return new FieldPVCoordinates<>(new FieldVector3D<>(positionWithDerivatives.getX().getValue(),
                                                             positionWithDerivatives.getY().getValue(),

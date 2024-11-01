@@ -32,7 +32,14 @@ import java.util.Arrays;
 import java.util.List;
 
 /** This class provides the minimal set of orbital elements needed by the {@link GNSSPropagator}.
- *
+ * <p>
+ * The parameters are split in two groups: Keplerian orbital parameters and non-Keplerian
+ * evolution parameters. All parameters can be updated as they are all instances of
+ * {@link ParameterDriver}. Only the non-Keplerian parameters are returned in the
+ * {@link #getParametersDrivers()} method, the Keplerian orbital parameters must
+ * be accessed independently. These groups ensure proper separate computation of
+ * state transition matrix and Jacobian matrix by {@link GNSSPropagator}.
+ * </p>
  * @since 13.0
  * @author Pascal Parraud
  * @author Luc Maisonobe
@@ -88,10 +95,10 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     public static final int TIME_INDEX = 0;
 
     /** Index of inclination rate in the list returned by {@link #getParametersDrivers()}. */
-    public static final int IO_DOT_INDEX = TIME_INDEX + 1;
+    public static final int I_DOT_INDEX = TIME_INDEX + 1;
 
     /** Index of longitude rate in the list returned by {@link #getParametersDrivers()}. */
-    public static final int OMEGA_DOT_INDEX = IO_DOT_INDEX + 1;
+    public static final int OMEGA_DOT_INDEX = I_DOT_INDEX + 1;
 
     /** Index of cosine on latitude argument in the list returned by {@link #getParametersDrivers()}. */
     public static final int CUC_INDEX = OMEGA_DOT_INDEX + 1;
@@ -253,7 +260,7 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
      * <p>
      * Only the 9 non-Keplerian evolution parameters are listed here,
      * i.e. {@link #getTimeDriver()} (at index {@link #TIME_INDEX}),
-     * {@link #getIDotDriver()} (at index {@link #IO_DOT_INDEX}),
+     * {@link #getIDotDriver()} (at index {@link #I_DOT_INDEX}),
      * {@link #getOmegaDotDriver()} (at index {@link #OMEGA_DOT_INDEX}),
      * {@link #getCucDriver()} (at index {@link #CUC_INDEX}),
      * {@link #getCusDriver()} (at index {@link #CUS_INDEX}),
@@ -271,7 +278,7 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
         // ensure the parameters are really at the advertised indices
         final ParameterDriver[] array = new ParameterDriver[SIZE];
         array[TIME_INDEX]      = getTimeDriver();
-        array[IO_DOT_INDEX]    = getIDotDriver();
+        array[I_DOT_INDEX]     = getIDotDriver();
         array[OMEGA_DOT_INDEX] = getOmegaDotDriver();
         array[CUC_INDEX]       = getCucDriver();
         array[CUS_INDEX]       = getCusDriver();
