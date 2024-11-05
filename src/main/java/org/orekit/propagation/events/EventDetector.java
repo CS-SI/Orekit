@@ -91,17 +91,23 @@ public interface EventDetector {
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold (s)
      */
-    double getThreshold();
+    default double getThreshold() {
+        return getDetectionSettings().getThreshold();
+    }
 
     /** Get maximal time interval between switching function checks.
      * @return maximal time interval (s) between switching function checks
      */
-    AdaptableInterval getMaxCheckInterval();
+    default AdaptableInterval getMaxCheckInterval() {
+        return getDetectionSettings().getMaxCheckInterval();
+    }
 
     /** Get maximal number of iterations in the event time search.
      * @return maximal number of iterations in the event time search
      */
-    int getMaxIterationCount();
+    default int getMaxIterationCount() {
+        return getDetectionSettings().getMaxIterationCount();
+    }
 
     /** Get the handler.
      * @return event handler to call at event occurrences
@@ -124,6 +130,6 @@ public interface EventDetector {
      * @since 12.2
      */
     default EventDetectionSettings getDetectionSettings() {
-        return new EventDetectionSettings(getMaxCheckInterval(), getThreshold(), getMaxIterationCount());
+        return EventDetectionSettings.getDefaultEventDetectionSettings();
     }
 }

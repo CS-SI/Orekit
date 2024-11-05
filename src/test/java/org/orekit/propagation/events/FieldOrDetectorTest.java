@@ -169,28 +169,13 @@ public class FieldOrDetectorTest {
         public Binary64 g = new Binary64(0);
 
         @Override
-        public void init(FieldSpacecraftState<Binary64> s0, FieldAbsoluteDate<Binary64> t) {
-
-        }
-
-        @Override
         public Binary64 g(FieldSpacecraftState<Binary64> s) {
             return this.g;
         }
 
         @Override
-        public Binary64 getThreshold() {
-            return new Binary64(AbstractDetector.DEFAULT_THRESHOLD);
-        }
-
-        @Override
-        public FieldAdaptableInterval<Binary64> getMaxCheckInterval() {
-            return FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK);
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return 0;
+        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
+            return new FieldEventDetectionSettings<>(Binary64Field.getInstance(), EventDetectionSettings.getDefaultEventDetectionSettings());
         }
 
         @Override

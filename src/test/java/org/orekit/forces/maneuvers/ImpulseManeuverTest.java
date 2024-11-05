@@ -16,16 +16,16 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.RotationConvention;
-import org.hipparchus.geometry.euclidean.threed.RotationOrder;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.euclidean.threed.*;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -43,10 +43,7 @@ import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.AdaptableInterval;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -54,12 +51,15 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ImpulseManeuverTest {
-    @Test
-    public void testInclinationManeuver() {
+
+    @ParameterizedTest
+    @EnumSource(Action.class)
+    void testInclinationManeuver(final Action action) {
         final Orbit initialOrbit =
             new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0 + 4 * FastMath.PI,
                                PositionAngleType.MEAN, FramesFactory.getEME2000(),
@@ -75,11 +75,12 @@ public class ImpulseManeuverTest {
         double dv = 0.99 * FastMath.tan(i) * vApo;
         KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit,
                                                                  new LofOffset(initialOrbit.getFrame(), LOFType.LVLH_CCSDS));
-        propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
+        final NodeDetector trigger = new NodeDetector(initialOrbit, FramesFactory.getEME2000());
+        propagator.addEventDetector(new ImpulseManeuver(trigger.withHandler((s, detector, increasing) -> action),
                                                         new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
         Assertions.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
-        Assertions.assertEquals(0.442476 + 6 * FastMath.PI, ((KeplerianOrbit) propagated.getOrbit()).getLv(), 1.0e-6);
+        Assertions.assertEquals(0.442476 + 6 * FastMath.PI, propagated.getOrbit().getLv(), 1.0e-6);
     }
 
     @Test
@@ -113,10 +114,10 @@ public class ImpulseManeuverTest {
         FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
-        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(driftTimeInSec/4);
+        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector.withThreshold(driftTimeInSec/4), attitudeOverride, deltaV, isp);
         Assertions.assertEquals(0.0, Vector3D.distance(deltaV, burnAtEpoch.getDeltaVSat()), 1.0e-15);
         Assertions.assertEquals(isp, burnAtEpoch.getIsp(), 1.0e-15);
-        Assertions.assertSame(dateDetector, burnAtEpoch.getTrigger());
+        Assertions.assertSame(dateDetector.getClass(), burnAtEpoch.getTrigger().getClass());
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
@@ -131,6 +132,38 @@ public class ImpulseManeuverTest {
         Assertions.assertEquals(finalVyExpected, finalVelocity.getY(), maneuverTolerance);
         Assertions.assertEquals(finalVzExpected, finalVelocity.getZ(), maneuverTolerance);
 
+    }
+
+    @Test
+    void testWithDetectionSettings() {
+        // GIVEN
+        final DateDetector dateDetector = new DateDetector();
+        final ImpulseManeuver maneuver = new ImpulseManeuver(dateDetector, Vector3D.ZERO, 1.);
+        final EventDetectionSettings expectedSettings = new EventDetectionSettings(1., 2., 3);
+        // WHEN
+        final ImpulseManeuver maneuverWithSettings = maneuver.withDetectionSettings(expectedSettings);
+        // THEN
+        Assertions.assertEquals(expectedSettings.getThreshold(), maneuverWithSettings.getThreshold());
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), maneuverWithSettings.getMaxIterationCount());
+        Assertions.assertEquals(expectedSettings.getMaxCheckInterval(), maneuverWithSettings.getMaxCheckInterval());
+    }
+
+    @Test
+    void testResetState() {
+        // GIVEN
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new Vector3D(1., 2, 3), new Vector3D(4, 5, 6));
+        final ImpulseManeuver impulseManeuver = new ImpulseManeuver(new DateDetector(), Vector3D.ZERO, 1.);
+        final SpacecraftState expectedSTate = new SpacecraftState(pvCoordinates);
+        // WHEN
+        final SpacecraftState actualSTate = impulseManeuver.getHandler().resetState(impulseManeuver, expectedSTate);
+        // THEN
+        Assertions.assertEquals(expectedSTate.getDate(), actualSTate.getDate());
+        Assertions.assertEquals(expectedSTate.getMass(), actualSTate.getMass());
+        Assertions.assertEquals(expectedSTate.getAttitude(), actualSTate.getAttitude());
+        Assertions.assertEquals(expectedSTate.getPosition(), actualSTate.getPosition());
+        Assertions.assertEquals(expectedSTate.getPVCoordinates().getVelocity(),
+                actualSTate.getPVCoordinates().getVelocity());
     }
 
     @Test
@@ -149,9 +182,8 @@ public class ImpulseManeuverTest {
         Vector3D deltaV = new Vector3D(12.0, 1.0, -4.0);
         final double isp = 300;
         ImpulseManeuver maneuver =
-                        new ImpulseManeuver(dateDetector, deltaV, isp).
-                        withMaxCheck(3600.0).
-                        withThreshold(1.0e-6);
+                        new ImpulseManeuver(dateDetector.withMaxCheck(3600.0).
+                                withThreshold(1.0e-6), deltaV, isp);
         propagator.addEventDetector(maneuver);
 
         SpacecraftState finalState = propagator.propagate(initialOrbit.getDate().shiftedBy(-900));
@@ -176,11 +208,10 @@ public class ImpulseManeuverTest {
         Vector3D deltaV = new Vector3D(12.0, 1.0, -4.0);
         final double isp = 300;
         ImpulseManeuver maneuver =
-                        new ImpulseManeuver(dateDetector,
+                        new ImpulseManeuver(dateDetector.withMaxCheck(3600.0).
+                                withThreshold(1.0e-6),
                                             new FrameAlignedProvider(Rotation.IDENTITY),
-                                            deltaV, isp).
-                        withMaxCheck(3600.0).
-                        withThreshold(1.0e-6);
+                                            deltaV, isp);
 
         double span = 900.0;
         KeplerianPropagator forwardPropagator = new KeplerianPropagator(pastOrbit, lof, mu, pastMass);
@@ -237,7 +268,7 @@ public class ImpulseManeuverTest {
         FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
-        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
+        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector.withThreshold(1.0e-3), attitudeOverride, deltaV, isp);
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
@@ -284,7 +315,7 @@ public class ImpulseManeuverTest {
         FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(new Rotation(RotationOrder.XYX,
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
-        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector, attitudeOverride, deltaV, isp).withThreshold(1.0e-3);
+        ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector.withThreshold(1.0e-3), attitudeOverride, deltaV, isp);
         propagator.addEventDetector(burnAtEpoch);
 
         SpacecraftState finalState = propagator.propagate(epoch.shiftedBy(totalPropagationTime));
@@ -423,8 +454,7 @@ public class ImpulseManeuverTest {
          * Constructor.
          */
         InitializationDetector() {
-            super(AbstractDetector.DEFAULT_MAXCHECK, AbstractDetector.DEFAULT_THRESHOLD,
-                  AbstractDetector.DEFAULT_MAX_ITER, new StopOnIncreasing());
+            super(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing());
             this.initialized = false;
         }
 

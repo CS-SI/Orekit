@@ -23,8 +23,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.AdaptableInterval;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -37,10 +35,8 @@ import org.orekit.utils.PVCoordinates;
  * <p>This class implements an impulse maneuver as a discrete event
  * that can be provided to any {@link org.orekit.propagation.Propagator
  * Propagator}.</p>
- * <p>The maneuver is triggered when an underlying event generates a
- * {@link Action#STOP STOP} event, in which case this class will generate a {@link
- * Action#RESET_STATE RESET_STATE}
- * event (the stop event from the underlying object is therefore filtered out).
+ * <p>The maneuver is executed when an underlying is triggered, in which case this class will generate a {@link
+ * Action#RESET_STATE RESET_STATE} event. By default, the detection settings are those of the trigger.
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.DateDetector date event}, but it
  * can also be a more elaborate {@link
@@ -70,7 +66,7 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
+public class ImpulseManeuver implements EventDetector {
 
     /** The attitude to override during the maneuver, if set. */
     private final AttitudeProvider attitudeOverride;
@@ -87,6 +83,12 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
     /** Engine exhaust velocity. */
     private final double vExhaust;
 
+    /** Trigger's detection settings. */
+    private final EventDetectionSettings detectionSettings;
+
+    /** Specific event handler. */
+    private final Handler handler;
+
     /** Indicator for forward propagation. */
     private boolean forward;
 
@@ -102,7 +104,6 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
         this(trigger, null, deltaVSat, isp);
     }
 
-
     /** Build a new instance.
      * @param trigger triggering event
      * @param attitudeOverride the attitude provider to use for the maneuver
@@ -111,9 +112,7 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
      */
     public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride,
                            final Vector3D deltaVSat, final double isp) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
-             trigger.getMaxIterationCount(), new Handler(),
-             trigger, attitudeOverride, deltaVSat, isp, Control3DVectorCostType.TWO_NORM);
+        this(trigger, attitudeOverride, deltaVSat, isp, Control3DVectorCostType.TWO_NORM);
     }
 
     /** Build a new instance.
@@ -125,50 +124,43 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
      */
     public ImpulseManeuver(final EventDetector trigger, final AttitudeProvider attitudeOverride,
                            final Vector3D deltaVSat, final double isp, final Control3DVectorCostType control3DVectorCostType) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
-             trigger.getMaxIterationCount(), new Handler(),
-             trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
+        this(trigger, trigger.getDetectionSettings(), attitudeOverride, deltaVSat, isp, control3DVectorCostType);
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
+    /** Private constructor.
      * @param trigger triggering event
+     * @param detectionSettings event detection settings
      * @param attitudeOverride the attitude provider to use for the maneuver
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      * @param control3DVectorCostType increment's norm for mass consumption
-     * @since 6.1
+     * @since 13.0
      */
-    protected ImpulseManeuver(final AdaptableInterval maxCheck, final double threshold,
-                              final int maxIter, final EventHandler handler,
-                              final EventDetector trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
-                              final double isp, final Control3DVectorCostType control3DVectorCostType) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+    private ImpulseManeuver(final EventDetector trigger, final EventDetectionSettings detectionSettings,
+                            final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
+                            final double isp, final Control3DVectorCostType control3DVectorCostType) {
         this.attitudeOverride = attitudeOverride;
         this.trigger   = trigger;
+        this.detectionSettings = detectionSettings;
         this.deltaVSat = deltaVSat;
         this.isp       = isp;
         this.vExhaust  = Constants.G0_STANDARD_GRAVITY * isp;
         this.control3DVectorCostType = control3DVectorCostType;
+        this.handler = new Handler();
+    }
+
+    /**
+     * Creates a copy with different event detection settings.
+     * @param eventDetectionSettings new detection settings
+     * @return a new detector with same properties except for the detection settings
+     */
+    public ImpulseManeuver withDetectionSettings(final EventDetectionSettings eventDetectionSettings) {
+        return new ImpulseManeuver(trigger, eventDetectionSettings, attitudeOverride, deltaVSat, isp,
+                control3DVectorCostType);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ImpulseManeuver create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                     final int newMaxIter, final EventHandler newHandler) {
-        return new ImpulseManeuver(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                   trigger, attitudeOverride, deltaVSat, isp, control3DVectorCostType);
-    }
-
-    /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         forward = t.durationFrom(s0.getDate()) >= 0;
         // Initialize the triggering event
@@ -176,8 +168,28 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double g(final SpacecraftState s) {
         return trigger.g(s);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState state) {
+        EventDetector.super.finish(state);
+        trigger.finish(state);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EventHandler getHandler() {
+        return handler;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EventDetectionSettings getDetectionSettings() {
+        return detectionSettings;
     }
 
     /**
@@ -223,13 +235,9 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing) {
-
-            // filter underlying event
             final ImpulseManeuver im = (ImpulseManeuver) detector;
-            final Action underlyingAction = im.trigger.getHandler().eventOccurred(s, im.trigger, increasing);
-
-            return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
-
+            im.trigger.getHandler().eventOccurred(s, detector, increasing); // Action is ignored but method still called
+            return Action.RESET_STATE;
         }
 
         /** {@inheritDoc} */
@@ -264,8 +272,13 @@ public class ImpulseManeuver extends AbstractDetector<ImpulseManeuver> {
             final double newMass = oldState.getMass() * FastMath.exp(-sign * normDeltaV / im.vExhaust);
 
             // pack everything in a new state
-            SpacecraftState newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                                                           oldState.getAttitude(), newMass);
+            SpacecraftState newState;
+            if (oldState.isOrbitDefined()) {
+                newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
+                        oldState.getAttitude(), newMass);
+            } else {
+                newState = new SpacecraftState(oldState.getAbsPVA(), oldState.getAttitude(), newMass);
+            }
             for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesValues().getData()) {
                 newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
             }

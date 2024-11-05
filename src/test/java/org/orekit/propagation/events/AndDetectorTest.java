@@ -169,18 +169,8 @@ public class AndDetectorTest {
         }
 
         @Override
-        public double getThreshold() {
-            return AbstractDetector.DEFAULT_THRESHOLD;
-        }
-
-        @Override
-        public AdaptableInterval getMaxCheckInterval() {
-            return AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK);
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return 0;
+        public EventDetectionSettings getDetectionSettings() {
+            return EventDetectionSettings.getDefaultEventDetectionSettings();
         }
 
         @Override

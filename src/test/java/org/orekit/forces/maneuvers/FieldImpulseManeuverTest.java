@@ -32,12 +32,17 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.LUDecomposition;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -59,17 +64,7 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EclipseDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldEclipseDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.FieldLatitudeCrossingDetector;
-import org.orekit.propagation.events.LatitudeCrossingDetector;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
@@ -80,6 +75,7 @@ import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -107,6 +103,22 @@ class FieldImpulseManeuverTest {
         DATE_DETECTOR,
         LATITUDE_CROSSING_DETECTOR,
         ECLIPSE_DETECTOR
+    }
+
+    private static class CountingHandler implements FieldEventHandler<Binary64> {
+        private final Action action;
+        private int count = 0;
+
+        CountingHandler(final Action action) {
+            this.action = action;
+        }
+
+        @Override
+        public Action eventOccurred(FieldSpacecraftState<Binary64> s, FieldEventDetector<Binary64> detector,
+                                    boolean increasing) {
+            count++;
+            return action;
+        }
     }
 
     private static class DummyFieldAdditionalDerivatives implements FieldAdditionalDerivativesProvider<Gradient> {
@@ -151,9 +163,9 @@ class FieldImpulseManeuverTest {
         final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate).withThreshold(zero.add(100.));
 
         // When
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuver1 = new FieldImpulseManeuver<>
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuver1 = new FieldImpulseManeuver<>
                 (dateDetector.withHandler(new FieldStopOnEvent<>()), deltaV, isp);
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuver2 = new FieldImpulseManeuver<>
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuver2 = new FieldImpulseManeuver<>
                 (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp);
 
         // Then
@@ -162,6 +174,61 @@ class FieldImpulseManeuverTest {
         Assertions.assertEquals(fieldImpulseManeuver1.getAttitudeOverride(), fieldImpulseManeuver2.getAttitudeOverride());
         Assertions.assertEquals(fieldImpulseManeuver1.getIsp(), fieldImpulseManeuver2.getIsp());
         Assertions.assertEquals(fieldImpulseManeuver1.getDeltaVSat(), fieldImpulseManeuver2.getDeltaVSat());
+    }
+
+    @Test
+    void testWithDetectionSettings() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector,
+                FieldVector3D.getZero(field), Binary64.ONE);
+        final FieldEventDetectionSettings<Binary64> expectedSettings = new FieldEventDetectionSettings<>(
+                FieldAdaptableInterval.of(1), new Binary64(2), 3);
+        // WHEN
+        final FieldImpulseManeuver<Binary64> maneuverWithSettings = fieldImpulseManeuver.withDetectionSettings(expectedSettings);
+        // THEN
+        Assertions.assertEquals(expectedSettings.getThreshold(), maneuverWithSettings.getThreshold());
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), maneuverWithSettings.getMaxIterationCount());
+        Assertions.assertEquals(expectedSettings.getMaxCheckInterval(), maneuverWithSettings.getMaxCheckInterval());
+    }
+
+    @ParameterizedTest
+    @EnumSource(Action.class)
+    void testEventOccurred(final Action action) {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final Orbit orbit = createOrbit();
+        final CountingHandler handler = new CountingHandler(action);
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector.withHandler(handler),
+                FieldVector3D.getZero(field), Binary64.ONE);
+        // WHEN
+        fieldImpulseManeuver.getHandler().eventOccurred(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(field, orbit)),
+                fieldImpulseManeuver, true);
+        // THEN
+        Assertions.assertEquals(1, handler.count);
+    }
+
+    @Test
+    void testResetState() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new Vector3D(1., 2, 3), new Vector3D(4, 5, 6));
+        final FieldSpacecraftState<Binary64> expectedSTate = new FieldSpacecraftState<>(field, new SpacecraftState(pvCoordinates));
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector,
+                FieldVector3D.getZero(field), Binary64.ONE);
+        // WHEN
+        final FieldSpacecraftState<Binary64> actualSTate = fieldImpulseManeuver.getHandler().resetState(fieldImpulseManeuver, expectedSTate);
+        // THEN
+        Assertions.assertEquals(expectedSTate.getDate(), actualSTate.getDate());
+        Assertions.assertEquals(expectedSTate.getMass(), actualSTate.getMass());
+        Assertions.assertEquals(expectedSTate.getAttitude(), actualSTate.getAttitude());
+        Assertions.assertEquals(expectedSTate.getPosition(), actualSTate.getPosition());
+        Assertions.assertEquals(expectedSTate.getPVCoordinates().getVelocity(),
+                actualSTate.getPVCoordinates().getVelocity());
     }
 
     @Test
@@ -174,11 +241,11 @@ class FieldImpulseManeuverTest {
         final FieldDateDetector<Complex> dateDetector = new FieldDateDetector<>(complexField, fieldAbsoluteDate);
 
         // When
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNorm1 = new FieldImpulseManeuver<>
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuverNorm1 = new FieldImpulseManeuver<>
                 (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.ONE_NORM);
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNorm2 = new FieldImpulseManeuver<>
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuverNorm2 = new FieldImpulseManeuver<>
                 (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.TWO_NORM);
-        final FieldImpulseManeuver<?, Complex> fieldImpulseManeuverNormInf = new FieldImpulseManeuver<>
+        final FieldImpulseManeuver<Complex> fieldImpulseManeuverNormInf = new FieldImpulseManeuver<>
                 (dateDetector.withHandler(new FieldStopOnEvent<>()), null, deltaV, isp, Control3DVectorCostType.INF_NORM);
 
         // Then
@@ -229,7 +296,7 @@ class FieldImpulseManeuverTest {
                 DetectorType.LATITUDE_CROSSING_DETECTOR, Control3DVectorCostType.TWO_NORM);
     }
 
-    private <T extends CalculusFieldElement<T>> FieldImpulseManeuver<FieldEventDetector<T>, T> convertManeuver(
+    private <T extends CalculusFieldElement<T>> FieldImpulseManeuver<T> convertManeuver(
             final Field<T> field, final ImpulseManeuver impulseManeuver, final FieldEventHandler<T> fieldHandler) {
         final T fieldIsp = field.getZero().add(impulseManeuver.getIsp());
         final FieldVector3D<T> fieldDeltaVSat = new FieldVector3D<>(field, impulseManeuver.getDeltaVSat());
@@ -253,11 +320,9 @@ class FieldImpulseManeuverTest {
         } else {
             throw new OrekitInternalError(null);
         }
-        fieldDetector = fieldDetector.
-                        withMaxIter(maxIter).
-                        withMaxCheck(fieldMaxCheck).
-                        withThreshold(fieldThreshold);
-        return new FieldImpulseManeuver<>(fieldDetector.withHandler(fieldHandler),
+
+        return new FieldImpulseManeuver<>(fieldDetector.withMaxIter(maxIter).withMaxCheck(fieldMaxCheck).
+                withThreshold(fieldThreshold).withHandler(fieldHandler),
                 impulseManeuver.getAttitudeOverride(), fieldDeltaVSat, fieldIsp, impulseManeuver.getControl3DVectorCostType());
     }
 

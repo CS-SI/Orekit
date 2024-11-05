@@ -175,23 +175,13 @@ public class FieldAndDetectorTest {
         }
 
         @Override
-        public Binary64 getThreshold() {
-            return new Binary64(AbstractDetector.DEFAULT_THRESHOLD);
-        }
-
-        @Override
-        public FieldAdaptableInterval<Binary64> getMaxCheckInterval() {
-            return FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK);
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return 0;
-        }
-
-        @Override
         public FieldEventHandler<Binary64> getHandler() {
             return (state, detector, increasing) -> null;
+        }
+
+        @Override
+        public FieldEventDetectionSettings<Binary64> getDetectionSettings() {
+            return new FieldEventDetectionSettings<>(Binary64Field.getInstance(), EventDetectionSettings.getDefaultEventDetectionSettings());
         }
     }
 }
