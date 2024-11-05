@@ -19,6 +19,7 @@ package org.orekit.attitudes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -29,9 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
@@ -91,7 +90,7 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 public class AttitudesSequence implements AttitudeProvider {
 
     /** Providers that have been activated. */
-    private transient TimeSpanMap<AttitudeProvider> activated;
+    private TimeSpanMap<AttitudeProvider> activated;
 
     /** Switching events list. */
     private final List<Switch> switches;
@@ -115,82 +114,6 @@ public class AttitudesSequence implements AttitudeProvider {
         activated = new TimeSpanMap<>(provider);
     }
 
-    /** Register all wrapped switch events to the propagator.
-     * <p>
-     * This method must be called once before propagation, after the
-     * switching conditions have been set up by calls to {@link
-     * #addSwitchingCondition(AttitudeProvider, AttitudeProvider, EventDetector,
-     * boolean, boolean, double, AngularDerivativesFilter, SwitchHandler)
-     * addSwitchingCondition}.
-     * </p>
-     * @param propagator propagator that will handle the events
-     */
-    public void registerSwitchEvents(final Propagator propagator) {
-        for (final Switch s : switches) {
-            propagator.addEventDetector(s);
-        }
-    }
-
-    /** Register all wrapped switch events to the propagator.
-     * <p>
-     * This method must be called once before propagation, after the
-     * switching conditions have been set up by calls to {@link
-     * #addSwitchingCondition(AttitudeProvider, AttitudeProvider, EventDetector,
-     * boolean, boolean, double, AngularDerivativesFilter, SwitchHandler)
-     * addSwitchingCondition}.
-     * </p>
-     * @param field field to which the elements belong
-     * @param propagator propagator that will handle the events
-     * @param <T> type of the field elements
-     */
-    public <T extends CalculusFieldElement<T>> void registerSwitchEvents(final Field<T> field, final FieldPropagator<T> propagator) {
-        for (final Switch sw : switches) {
-            propagator.addEventDetector(new FieldEventDetector<T>() {
-
-                /** {@inheritDoc} */
-                @Override
-                public void init(final FieldSpacecraftState<T> s0,
-                                 final FieldAbsoluteDate<T> t) {
-                    sw.init(s0.toSpacecraftState(), t.toAbsoluteDate());
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public T g(final FieldSpacecraftState<T> s) {
-                    return field.getZero().newInstance(sw.g(s.toSpacecraftState()));
-                }
-
-                @Override
-                public FieldEventDetectionSettings<T> getDetectionSettings() {
-                    return new FieldEventDetectionSettings<>((state, isForward) -> sw.getMaxCheckInterval().currentInterval(state.toSpacecraftState(), isForward),
-                            field.getZero().newInstance(sw.getThreshold()), sw.getMaxIterationCount());
-                }
-
-                /** {@inheritDoc} */
-                @Override
-                public FieldEventHandler<T> getHandler() {
-                    return new FieldEventHandler<T>() {
-                        /** {@inheritDoc} */
-                        @Override
-                        public Action eventOccurred(final FieldSpacecraftState<T> s,
-                                                    final FieldEventDetector<T> detector,
-                                                    final boolean increasing) {
-                            return sw.eventOccurred(s.toSpacecraftState(), sw, increasing);
-                        }
-
-                        /** {@inheritDoc} */
-                        @Override
-                        public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
-                                                                  final FieldSpacecraftState<T> oldState) {
-                            return new FieldSpacecraftState<>(field, sw.resetState(sw, oldState.toSpacecraftState()));
-                        }
-                    };
-                }
-
-            });
-        }
-    }
-
     /** Add a switching condition between two attitude providers.
      * <p>
      * The {@code past} and {@code future} attitude providers are defined with regard
@@ -208,13 +131,6 @@ public class AttitudesSequence implements AttitudeProvider {
      * An attitude provider may have several different switch events associated to
      * it. Depending on which event is triggered, the appropriate provider is
      * switched to.
-     * </p>
-     * <p>
-     * The switch events specified here must <em>not</em> be registered to the
-     * propagator directly. The proper way to register these events is to
-     * call {@link #registerSwitchEvents(Propagator)} once after all switching
-     * conditions have been set up. The reason for this is that the events will
-     * be wrapped before being registered.
      * </p>
      * <p>
      * If the underlying detector has an event handler associated to it, this handler
@@ -319,6 +235,57 @@ public class AttitudesSequence implements AttitudeProvider {
                                                                                     final FieldAbsoluteDate<T> date,
                                                                                     final Frame frame) {
         return activated.get(date.toAbsoluteDate()).getAttitudeRotation(pvProv, date, frame);
+    }
+
+    @Override
+    public Stream<EventDetector> getEventDetectors() {
+        return switches.stream().map(Switch.class::cast);
+    }
+
+    @Override
+    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        return switches.stream().map(sw -> new FieldEventDetector<T>() {
+
+            /** {@inheritDoc} */
+            @Override
+            public void init(final FieldSpacecraftState<T> s0,
+                             final FieldAbsoluteDate<T> t) {
+                sw.init(s0.toSpacecraftState(), t.toAbsoluteDate());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public T g(final FieldSpacecraftState<T> s) {
+                return field.getZero().newInstance(sw.g(s.toSpacecraftState()));
+            }
+
+            @Override
+            public FieldEventDetectionSettings<T> getDetectionSettings() {
+                return new FieldEventDetectionSettings<>(field, sw.getDetectionSettings());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public FieldEventHandler<T> getHandler() {
+                return new FieldEventHandler<T>() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public Action eventOccurred(final FieldSpacecraftState<T> s,
+                                                final FieldEventDetector<T> detector,
+                                                final boolean increasing) {
+                        return sw.eventOccurred(s.toSpacecraftState(), sw, increasing);
+                    }
+
+                    /** {@inheritDoc} */
+                    @Override
+                    public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
+                                                              final FieldSpacecraftState<T> oldState) {
+                        return new FieldSpacecraftState<>(field, sw.resetState(sw, oldState.toSpacecraftState()));
+                    }
+                };
+            }
+
+        });
     }
 
     /**

@@ -506,7 +506,6 @@ public class EphemerisTest {
 
         // Add attitude switch event to ephemeris
         ephemeris.setAttitudeProvider(attitudeSequence);
-        attitudeSequence.registerSwitchEvents(ephemeris);
 
         // Propagate with a step during the transition
         AbsoluteDate    endDate     = initialDate.shiftedBy(2 * 86400.0);

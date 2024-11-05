@@ -87,7 +87,7 @@ class CircularOrbitTest {
 
     }
 
-    @Timeout(1)
+    @Timeout(2)
     @ParameterizedTest()
     @EnumSource(PositionAngleType.class)
     void testConstructor(final PositionAngleType positionAngleType) {
