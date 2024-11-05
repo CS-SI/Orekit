@@ -26,10 +26,9 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
@@ -117,6 +116,17 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getRightAscensionOfAscendingNode(), kepHyp.getRightAscensionOfAscendingNode()), kepHyp.getRightAscensionOfAscendingNode(), Utils.epsilonAngle * FastMath.abs(kepHyp.getRightAscensionOfAscendingNode()));
         Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getMeanAnomaly(), kepHyp.getMeanAnomaly()), kepHyp.getMeanAnomaly(), Utils.epsilonAngle * FastMath.abs(kepHyp.getMeanAnomaly()));
 
+    }
+
+    @Timeout(1)
+    @ParameterizedTest()
+    @EnumSource(PositionAngleType.class)
+    void testConstructor(final PositionAngleType positionAngleType) {
+        for (int i = 0; i < 10000000; i++) {
+            final KeplerianOrbit orbit = new KeplerianOrbit(42166712.0, 0.0001, 1, 0, 0.,
+                    5.300, positionAngleType, FramesFactory.getEME2000(), date, mu);
+            Assertions.assertEquals(positionAngleType, orbit.getCachedPositionAngleType());
+        }
     }
 
     @Test 

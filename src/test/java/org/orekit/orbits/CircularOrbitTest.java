@@ -26,10 +26,9 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrixPreservingVisitor;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -86,6 +85,17 @@ class CircularOrbitTest {
         Assertions.assertEquals(param.getHy(), circ.getHy(), Utils.epsilonAngle * FastMath.abs(circ.getI()));
         Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv(), circ.getLv()), circ.getLv(), Utils.epsilonAngle * FastMath.abs(circ.getLv()));
 
+    }
+
+    @Timeout(1)
+    @ParameterizedTest()
+    @EnumSource(PositionAngleType.class)
+    void testConstructor(final PositionAngleType positionAngleType) {
+        for (int i = 0; i < 10000000; i++) {
+            final CircularOrbit orbit = new CircularOrbit(42166712.0, 0.1e-10, -0.1e-10, 0, 0.,
+                    5.300, positionAngleType, FramesFactory.getEME2000(), date, mu);
+            Assertions.assertEquals(positionAngleType, orbit.getCachedPositionAngleType());
+        }
     }
 
     @Test
