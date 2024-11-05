@@ -143,9 +143,6 @@ public class AttitudesSequenceTest {
                                                                     Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                     Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
 
-        // Register the switching events to the propagator
-        attitudesSequence.registerSwitchEvents(propagator);
-
         propagator.setStepHandler(60.0, currentState -> {
             // the Earth position in spacecraft frame should be along spacecraft Z axis
             // during night time and away from it during day time due to roll and pitch offsets
@@ -264,8 +261,6 @@ public class AttitudesSequenceTest {
                                                                                    Constants.EIGEN5C_EARTH_C30, Constants.EIGEN5C_EARTH_C40,
                                                                                    Constants.EIGEN5C_EARTH_C50, Constants.EIGEN5C_EARTH_C60);
 
-        // Register the switching events to the propagator
-        attitudesSequence.registerSwitchEvents(field, propagator);
 
         propagator.setStepHandler(field.getZero().add(60.0), currentState -> {
             // the Earth position in spacecraft frame should be along spacecraft Z axis
@@ -340,9 +335,6 @@ public class AttitudesSequenceTest {
         propagator.resetInitialState(initialState);
         Assertions.assertEquals(42.0, propagator.getInitialState().getAdditionalState("fortyTwo")[0], 1.0e-10);
 
-        // Register the switching events to the propagator
-        attitudesSequence.registerSwitchEvents(propagator);
-
         SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(-10000.0));
         Assertions.assertEquals(42.0, finalState.getAdditionalState("fortyTwo")[0], 1.0e-10);
         Assertions.assertEquals(1, handler.dates.size());
@@ -415,7 +407,6 @@ public class AttitudesSequenceTest {
                                                                                  initialOrbit.getDate(),
                                                                                  initialOrbit.getFrame())));
         propagator.setAttitudeProvider(attitudesSequence);
-        attitudesSequence.registerSwitchEvents(propagator);
         propagator.setStepHandler(10, state -> {
 
             Attitude nadirAttitude  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame());
@@ -487,7 +478,6 @@ public class AttitudesSequenceTest {
                                                                                  initialOrbit.getDate(),
                                                                                  initialOrbit.getFrame())));
         propagator.setAttitudeProvider(attitudesSequence);
-        attitudesSequence.registerSwitchEvents(propagator);
         propagator.propagate(initialDate.shiftedBy(6000));
 
         // check that if we restart a forward propagation from an intermediate state
@@ -555,7 +545,6 @@ public class AttitudesSequenceTest {
                                                                                  initialOrbit.getDate(),
                                                                                  initialOrbit.getFrame())));
         propagator.setAttitudeProvider(attitudesSequence);
-        attitudesSequence.registerSwitchEvents(propagator);
         propagator.propagate(initialDate.shiftedBy(6000));
 
         // check that if we restart a backward propagation from an intermediate state
@@ -604,7 +593,6 @@ public class AttitudesSequenceTest {
         // Initialize analytical propagator
         Propagator propagator = new KeplerianPropagator(initialOrbit);
         propagator.setAttitudeProvider(attitudeSequence);
-        attitudeSequence.registerSwitchEvents(propagator);
 
         SpacecraftState stateAfter = propagator.propagate(initialDate, initialDate.shiftedBy(1200));
         SpacecraftState stateBefore = propagator.propagate(initialDate, initialDate.shiftedBy(-1200));
