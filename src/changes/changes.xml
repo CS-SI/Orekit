@@ -24,6 +24,9 @@
         <action dev="serrof" type="update" issue="1577">
             Simplify use of AttitudesSequence.
         </action>
+        <action dev="serrof" type="update" issue="1576">
+            Deprecate ExtentedPVCoordinatesProvider.
+        </action>
         <action dev="serrof" type="update" issue="1575">
             Revamp (Field)ImpulseManeuver.
         </action>

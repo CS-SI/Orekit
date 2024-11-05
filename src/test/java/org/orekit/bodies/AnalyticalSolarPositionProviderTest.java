@@ -147,7 +147,7 @@ class AnalyticalSolarPositionProviderTest {
             }
 
             @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date, Frame frame) {
                 return null;
             }
         };

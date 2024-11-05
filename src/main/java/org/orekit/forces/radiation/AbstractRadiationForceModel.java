@@ -37,8 +37,8 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.ExtendedPVCoordinatesProviderAdapter;
+import org.orekit.utils.ExtendedPositionProviderAdapter;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 
 /**
@@ -76,7 +76,7 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
      * @param centralBody central body shape model (for umbra/penumbra computation)
      * @since 12.0
      */
-    protected AbstractRadiationForceModel(final ExtendedPVCoordinatesProvider sun, final OneAxisEllipsoid centralBody) {
+    protected AbstractRadiationForceModel(final ExtendedPositionProvider sun, final OneAxisEllipsoid centralBody) {
         // in most cases, there will be only Earth, sometimes also Moon so an initial capacity of 2 is appropriate
         occultingBodies = new ArrayList<>(2);
         occultingBodies.add(new OccultationEngine(sun, Constants.SUN_RADIUS, centralBody));
@@ -198,7 +198,7 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
      * @param radius body mean radius
      * @see #addOccultingBody(OneAxisEllipsoid)
      */
-    public void addOccultingBody(final ExtendedPVCoordinatesProvider provider, final double radius) {
+    public void addOccultingBody(final ExtendedPositionProvider provider, final double radius) {
 
         // as parent frame for occulting body frame,
         // we select the first inertial frame in central body hierarchy
@@ -209,7 +209,7 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
 
         // as the occulting body will be spherical, we can use an inertially oriented body frame
         final Frame inertiallyOrientedBodyFrame =
-                        new ExtendedPVCoordinatesProviderAdapter(parent,
+                        new ExtendedPositionProviderAdapter(parent,
                                                                  provider,
                                                                  OCCULTING_PREFIX + occultingBodies.size());
 
@@ -227,7 +227,7 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
      * Central body is already considered, it shall not be added this way.
      * </p>
      * @param occulting occulting body to add
-     * @see #addOccultingBody(ExtendedPVCoordinatesProvider, double)
+     * @see #addOccultingBody(ExtendedPositionProvider, double)
      * @since 12.0
      */
     public void addOccultingBody(final OneAxisEllipsoid occulting) {

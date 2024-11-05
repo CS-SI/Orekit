@@ -22,7 +22,6 @@ import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.PVCoordinates;
 
@@ -117,7 +116,7 @@ class ConicallyShadowedLightFluxModelTest {
         final ConicallyShadowedLightFluxModel fluxModel = new ConicallyShadowedLightFluxModel(Constants.SUN_RADIUS, positionProvider,
                 Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
         final Frame frame = FramesFactory.getGCRF();
-        final SolarRadiationPressure radiationPressure = new SolarRadiationPressure(getExtendedPVCoordinatesProvider(positionProvider),
+        final SolarRadiationPressure radiationPressure = new SolarRadiationPressure(positionProvider,
                 new OneAxisEllipsoid(fluxModel.getOccultingBodyRadius(), 0., FramesFactory.getGCRF()), null);
         // WHEN & THEN
         for (int i = 0; i < 10000; i++) {
@@ -129,7 +128,4 @@ class ConicallyShadowedLightFluxModelTest {
         }
     }
 
-    private static ExtendedPVCoordinatesProvider getExtendedPVCoordinatesProvider(final ExtendedPositionProvider positionProvider) {
-        return positionProvider::getPVCoordinates;
-    }
 }

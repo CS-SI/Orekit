@@ -23,7 +23,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 
 /** Finder for satellite eclipse related events.
@@ -61,7 +61,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field,
-                                final ExtendedPVCoordinatesProvider occulted, final double occultedRadius,
+                                final ExtendedPositionProvider occulted, final double occultedRadius,
                                 final OneAxisEllipsoid occulting) {
         this(field, new OccultationEngine(occulted, occultedRadius, occulting));
     }

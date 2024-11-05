@@ -55,7 +55,7 @@ import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -116,7 +116,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             final AbsoluteDate validityStart = dataBlock.get(0).gpsDate.getDate();
             final AbsoluteDate validityEnd   = dataBlock.get(dataBlock.size() - 1).gpsDate.getDate();
             final int          prnNumber     = dataBlock.get(0).prnNumber;
-            final ExtendedPVCoordinatesProvider fakedSun = new FakedSun(dataBlock);
+            final ExtendedPositionProvider fakedSun = new FakedSun(dataBlock);
             final GNSSAttitudeProvider attitudeProvider = useGenericAttitude ?
                                                           new GenericGNSS(validityStart, validityEnd, fakedSun, eme2000) :
                                                           dataBlock.get(0).satType.buildAttitudeProvider(validityStart, validityEnd,
@@ -193,7 +193,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
 
     }
 
-    private static class FakedSun implements ExtendedPVCoordinatesProvider {
+    private static class FakedSun implements ExtendedPositionProvider {
 
         final int SAMPLE_SIZE = 5;
         final List<ParsedLine> parsedLines;
@@ -215,8 +215,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
          }
 
         @Override
-        public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date,
-                                                         Frame frame) {
+        public Vector3D getPosition(AbsoluteDate date, Frame frame) {
             // create sample
             final List<TimeStampedPVCoordinates> sample = getCloseLines(date).
                     map(parsedLine ->
@@ -230,12 +229,12 @@ public abstract class AbstractGNSSAttitudeProviderTest {
             final TimeInterpolator<TimeStampedPVCoordinates> interpolator =
                     new TimeStampedPVCoordinatesHermiteInterpolator(sample.size(), 1000000, CartesianDerivativesFilter.USE_P);
 
-            return interpolator.interpolate(date, sample);
+            return interpolator.interpolate(date, sample).getPosition();
         }
 
         @Override
-        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-            getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T>
+            getPosition(FieldAbsoluteDate<T> date, Frame frame) {
             final Field<T> field = date.getField();
 
             // create sample
@@ -251,7 +250,7 @@ public abstract class AbstractGNSSAttitudeProviderTest {
                     new TimeStampedFieldPVCoordinatesHermiteInterpolator<>(sample.size(), 1.025 * Constants.JULIAN_DAY,
                                                                            CartesianDerivativesFilter.USE_P);
 
-            return interpolator.interpolate(date, sample);
+            return interpolator.interpolate(date, sample).getPosition();
         }
 
     }

@@ -19,13 +19,13 @@ package org.orekit.bodies;
 import java.io.Serializable;
 
 import org.orekit.frames.Frame;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /** Interface for celestial bodies like Sun, Moon or solar system planets.
  * @author Luc Maisonobe
  * @see CelestialBodyFactory
  */
-public interface CelestialBody extends Serializable, ExtendedPVCoordinatesProvider {
+public interface CelestialBody extends Serializable, ExtendedPositionProvider {
 
     /** Get an inertially oriented, body centered frame.
      * <p>The frame is always bound to the body center, and its axes have a

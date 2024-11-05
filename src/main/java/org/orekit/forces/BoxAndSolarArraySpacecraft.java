@@ -33,7 +33,7 @@ import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.ParameterDriver;
 
 /** Class representing the features of a classical satellite with a convex body shape.
@@ -138,7 +138,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @since 12.0
      */
     public BoxAndSolarArraySpacecraft(final double xLength, final double yLength, final double zLength,
-                                      final ExtendedPVCoordinatesProvider sun,
+                                      final ExtendedPositionProvider sun,
                                       final double solarArrayArea, final Vector3D solarArrayAxis,
                                       final double dragCoeff, final double liftRatio,
                                       final double absorptionCoeff, final double reflectionCoeff) {
@@ -400,7 +400,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @since 12.0
      */
     public static List<Panel> buildPanels(final double xLength, final double yLength, final double zLength,
-                                          final ExtendedPVCoordinatesProvider sun,
+                                          final ExtendedPositionProvider sun,
                                           final double solarArrayArea, final Vector3D solarArrayAxis,
                                           final double drag, final double liftRatio,
                                           final double absorption, final double reflection) {

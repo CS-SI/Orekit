@@ -98,4 +98,15 @@ public interface ExtendedPositionProvider extends PVCoordinatesProvider {
             }
         };
     }
+
+    /**
+     * Method to convert as {@link ExtendedPVCoordinatesProvider}.
+     * @return converted object
+     * @since 13.0
+     * @deprecated since 13.0. Only there to help transition out.
+     */
+    @Deprecated
+    default ExtendedPVCoordinatesProvider toExtendedPVCoordinatesProvider() {
+        return ExtendedPositionProvider.this::getPVCoordinates;
+    }
 }

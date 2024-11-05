@@ -31,7 +31,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -67,7 +67,7 @@ class GNSSAttitudeContext implements TimeStamped {
     private final AbsoluteDate date;
 
     /** Provider for Sun position. */
-    private final ExtendedPVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Provider for spacecraft position. */
     private final PVCoordinatesProvider pvProv;
@@ -122,7 +122,7 @@ class GNSSAttitudeContext implements TimeStamped {
      * null otherwise
      */
     GNSSAttitudeContext(final AbsoluteDate date,
-                        final ExtendedPVCoordinatesProvider sun, final PVCoordinatesProvider pvProv,
+                        final ExtendedPositionProvider sun, final PVCoordinatesProvider pvProv,
                         final Frame inertialFrame, final TurnSpan turnSpan) {
 
         this.date          = date;

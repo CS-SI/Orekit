@@ -18,6 +18,10 @@ package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -26,20 +30,19 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
+import org.orekit.frames.*;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class ExtendedPVCoordinatesAdapterTest {
+public class ExtendedPositionProviderAdapterTest {
 
     @Test
     public void testDouble() {
 
         final Frame         eme2000   = FramesFactory.getEME2000();
         final CelestialBody moon      = CelestialBodyFactory.getMoon();
-        final Frame         moonFrame = new ExtendedPVCoordinatesProviderAdapter(eme2000, moon, "moon-frame");
+        final Frame         moonFrame = new ExtendedPositionProviderAdapter(eme2000, moon, "moon-frame");
 
         final AbsoluteDate t0 = new AbsoluteDate("2000-01-22T13:30:00", TimeScalesFactory.getUTC());
         double maxP = 0;
@@ -70,7 +73,7 @@ public class ExtendedPVCoordinatesAdapterTest {
 
         final Frame         eme2000   = FramesFactory.getEME2000();
         final CelestialBody moon      = CelestialBodyFactory.getMoon();
-        final Frame         moonFrame = new ExtendedPVCoordinatesProviderAdapter(eme2000, moon, "moon-frame");
+        final Frame         moonFrame = new ExtendedPositionProviderAdapter(eme2000, moon, "moon-frame");
 
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field,
                                                                 new AbsoluteDate("2000-01-22T13:30:00",
@@ -94,9 +97,52 @@ public class ExtendedPVCoordinatesAdapterTest {
 
     }
 
+    @Test
+    void testGetStaticTransform() {
+        // GIVEN
+        final TestProvider provider = new TestProvider();
+        final Frame inputFrame = FramesFactory.getGCRF();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final ExtendedPositionProviderAdapter adapter = new ExtendedPositionProviderAdapter(inputFrame, provider, "");
+        final Frame frame = FramesFactory.getEME2000();
+        // WHEN
+        final StaticTransform staticTransform = adapter.getStaticTransformTo(frame, date);
+        // THEN
+        final Transform transform = adapter.getTransformTo(frame, date);
+        Assertions.assertEquals(transform.getTranslation(), staticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation(), staticTransform.getRotation()));
+    }
+
+    @Test
+    void testGetStaticTransformField() {
+        // GIVEN
+        final TestProvider provider = new TestProvider();
+        final Frame inputFrame = FramesFactory.getGCRF();
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final ExtendedPositionProviderAdapter adapter = new ExtendedPositionProviderAdapter(inputFrame, provider, "");
+        final Frame frame = FramesFactory.getEME2000();
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldAbsoluteDate<Binary64> fieldAbsoluteDate = new FieldAbsoluteDate<>(field, date);
+        // WHEN
+        final FieldStaticTransform<Binary64> staticTransform = adapter.getStaticTransformTo(frame, fieldAbsoluteDate);
+        // THEN
+        final FieldTransform<Binary64> transform = adapter.getTransformTo(frame, fieldAbsoluteDate);
+        Assertions.assertEquals(transform.getTranslation(), staticTransform.getTranslation());
+        Assertions.assertEquals(0., Rotation.distance(transform.getRotation().toRotation(),
+                staticTransform.getRotation().toRotation()));
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
+    }
+
+    private static class TestProvider implements ExtendedPositionProvider {
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date, Frame frame) {
+            return new FieldVector3D<>(date.getField(), Vector3D.MINUS_I);
+        }
     }
 
 }

@@ -18,7 +18,7 @@ package org.orekit.gnss.attitude;
 
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /**
  * Attitude providers for Beidou inclined geosynchronous orbit navigation satellites.
@@ -38,7 +38,7 @@ public class BeidouIGSO extends BeidouMeo {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public BeidouIGSO(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                      final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
+                      final ExtendedPositionProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 

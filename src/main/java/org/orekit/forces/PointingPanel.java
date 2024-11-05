@@ -23,7 +23,7 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 /** Class representing one panel of a satellite, roughly pointing towards some target.
  * <p>
@@ -47,7 +47,7 @@ public class PointingPanel extends Panel {
     private final Vector3D rotationAxis;
 
     /** Target towards which the panel will point. */
-    private final ExtendedPVCoordinatesProvider target;
+    private final ExtendedPositionProvider target;
 
     /** Simple constructor.
      * <p>
@@ -70,7 +70,7 @@ public class PointingPanel extends Panel {
      * @param absorption radiation pressure absorption coefficient (between 0 and 1)
      * @param reflection radiation pressure specular reflection coefficient (between 0 and 1)
      */
-    public PointingPanel(final Vector3D rotationAxis, final ExtendedPVCoordinatesProvider target,
+    public PointingPanel(final Vector3D rotationAxis, final ExtendedPositionProvider target,
                          final double area,
                          final double drag, final double liftRatio,
                          final double absorption, final double reflection) {
