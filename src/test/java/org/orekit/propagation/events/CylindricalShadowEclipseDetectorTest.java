@@ -148,7 +148,7 @@ class CylindricalShadowEclipseDetectorTest {
         propagator.clearEventsDetectors();
         propagator.resetInitialState(new SpacecraftState(initialOrbit));
         final RecordAndContinue recordAndContinue2 = new RecordAndContinue();
-        final EclipseDetector eclipseDetector = new EclipseDetector(getExtendedPVCoordinatesProvider(positionProvider),
+        final EclipseDetector eclipseDetector = new EclipseDetector(positionProvider,
                 Constants.SUN_RADIUS, new OneAxisEllipsoid(cylindricalShadowEclipseDetector.getOccultingBodyRadius(), 0., FramesFactory.getGTOD(false)));
         propagator.addEventDetector(eclipseDetector.withPenumbra().withHandler(recordAndContinue2));
         propagator.propagate(targetDate);
@@ -158,10 +158,6 @@ class CylindricalShadowEclipseDetectorTest {
             Assertions.assertEquals(0., recordAndContinue.getEvents().get(i).getState().durationFrom(recordAndContinue2.getEvents().get(i).getState()),
                     10.);
         }
-    }
-
-    private static ExtendedPVCoordinatesProvider getExtendedPVCoordinatesProvider(final ExtendedPositionProvider positionProvider) {
-        return positionProvider::getPVCoordinates;
     }
 
     private static KeplerianOrbit getOrbit() {

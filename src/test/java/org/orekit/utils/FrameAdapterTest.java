@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
@@ -42,7 +43,7 @@ public class FrameAdapterTest {
         final Frame                         eme2000        = FramesFactory.getEME2000();
         final CelestialBody                 moon           = CelestialBodyFactory.getMoon();
         final Frame                         moonFrame      = moon.getBodyOrientedFrame();
-        final ExtendedPVCoordinatesProvider moonPVProvider = new FrameAdapter(moonFrame);
+        final ExtendedPositionProvider moonPVProvider = new FrameAdapter(moonFrame);
 
         final AbsoluteDate t0 = new AbsoluteDate("2000-01-22T13:30:00", TimeScalesFactory.getUTC());
         double maxP = 0;
@@ -72,7 +73,7 @@ public class FrameAdapterTest {
         final Frame                         eme2000        = FramesFactory.getEME2000();
         final CelestialBody                 moon           = CelestialBodyFactory.getMoon();
         final Frame                         moonFrame      = moon.getBodyOrientedFrame();
-        final ExtendedPVCoordinatesProvider moonPVProvider = new FrameAdapter(moonFrame);
+        final ExtendedPositionProvider moonPVProvider = new FrameAdapter(moonFrame);
 
         final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field,
                                                                 new AbsoluteDate("2000-01-22T13:30:00",
@@ -92,6 +93,21 @@ public class FrameAdapterTest {
         Assertions.assertEquals(0.0, maxV.getReal(), 2.9e-12);
         Assertions.assertEquals(0.0, maxA.getReal(), 1.1e-17);
 
+    }
+
+    @Test
+    void testGetPositionField() {
+        // GIVEN
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final CelestialBody moon = CelestialBodyFactory.getMoon();
+        final Frame moonFrame = moon.getBodyOrientedFrame();
+        final FrameAdapter moonPVProvider = new FrameAdapter(moonFrame);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final FieldAbsoluteDate<Binary64> fieldDate = new FieldAbsoluteDate<>(Binary64Field.getInstance(), date);
+        // WHEN
+        final FieldVector3D<Binary64> fieldPosition = moonPVProvider.getPosition(fieldDate, eme2000);
+        // THEN
+        Assertions.assertEquals(moonPVProvider.getPosition(date, eme2000), fieldPosition.toVector3D());
     }
 
     @BeforeEach

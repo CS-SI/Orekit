@@ -54,7 +54,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.PVCoordinates;
 
 /**
@@ -86,7 +86,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                          Constants.EIGEN5C_EARTH_MU);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -115,7 +115,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
                                                        Constants.EIGEN5C_EARTH_MU));
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -153,7 +153,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         propagator.setOrbitType(integrationType);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -221,7 +221,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         NP.setInitialState(iSR);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -291,7 +291,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         NP.setInitialState(iSR);
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Radiation sensitive model
         final RadiationSensitive radiationSensitive = new IsotropicRadiationSingleCoefficient(1, 1.5);
@@ -351,7 +351,7 @@ class KnockeRediffusedForceModelTest extends AbstractForceModelTest{
         // Celestial objects
 
         // Sun
-        final ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Earth
         final double equatorialRadius = Constants.EGM96_EARTH_EQUATORIAL_RADIUS;

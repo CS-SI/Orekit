@@ -81,15 +81,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.OccultationEngine;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.*;
 
 
 public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
@@ -166,7 +158,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                              TimeScalesFactory.getUTC());
         Orbit orbit = new KeplerianOrbit(1.0e11, 0.1, 0.2, 0.3, 0.4, 0.5, PositionAngleType.TRUE,
                                          FramesFactory.getICRF(), date, Constants.JPL_SSD_SUN_GM);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
         SolarRadiationPressure srp =
             new SolarRadiationPressure(sun, new OneAxisEllipsoid(1.0e-10, 0.0, FramesFactory.getICRF()),
                                        new IsotropicRadiationClassicalConvention(50.0, 0.5, 0.5));
@@ -571,7 +563,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                            0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, mu);
         final double period = orbit.getKeplerianPeriod();
         Assertions.assertEquals(86164, period, 1);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -678,7 +670,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
         NP.setOrbitType(type);
         NP.setInitialState(iSR);
 
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // Set up the force model to test
         OneAxisEllipsoid earth =
@@ -744,7 +736,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         NumericalPropagator NP = new NumericalPropagator(RIntegrator);
         NP.setInitialState(iSR);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
@@ -911,8 +903,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
                                  double expectedDistance) {
 
         Utils.setDataRoot("2007");
-        final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
-        final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
+        final ExtendedPositionProvider sun  = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider moon = CelestialBodyFactory.getMoon();
         final SpacecraftState initialState = new SpacecraftState(orbit);
 
         // Create SRP perturbation with Moon and Earth
@@ -968,8 +960,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      */
     private static class MoonEclipseStepHandler implements OrekitFixedStepHandler {
 
-        final ExtendedPVCoordinatesProvider moon;
-        final ExtendedPVCoordinatesProvider sun;
+        final ExtendedPositionProvider moon;
+        final ExtendedPositionProvider sun;
         final SolarRadiationPressure srp;
         int earthUmbraSteps;
         int earthPenumbraSteps;
@@ -978,7 +970,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         /** Simple constructor.
          */
-        MoonEclipseStepHandler(final ExtendedPVCoordinatesProvider moon, final ExtendedPVCoordinatesProvider sun,
+        MoonEclipseStepHandler(final ExtendedPositionProvider moon, final ExtendedPositionProvider sun,
                                final SolarRadiationPressure srp) {
             this.moon = moon;
             this.sun  = sun;
@@ -1104,8 +1096,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         Utils.setDataRoot("2007");
         final Field<T> field = orbit.getDate().getField();
-        final ExtendedPVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
-        final ExtendedPVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
+        final ExtendedPositionProvider sun  = CelestialBodyFactory.getSun();
+        final ExtendedPositionProvider moon = CelestialBodyFactory.getMoon();
         final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(orbit);
 
         // Create SRP perturbation with Moon and Earth
@@ -1162,8 +1154,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
      */
     private static class FieldMoonEclipseStepHandler<T extends CalculusFieldElement<T>> implements FieldOrekitFixedStepHandler<T> {
 
-        final ExtendedPVCoordinatesProvider moon;
-        final ExtendedPVCoordinatesProvider sun;
+        final ExtendedPositionProvider moon;
+        final ExtendedPositionProvider sun;
         final SolarRadiationPressure srp;
         int earthUmbraSteps;
         int earthPenumbraSteps;
@@ -1172,7 +1164,7 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         /** Simple constructor.
          */
-        FieldMoonEclipseStepHandler(final ExtendedPVCoordinatesProvider moon, final ExtendedPVCoordinatesProvider sun,
+        FieldMoonEclipseStepHandler(final ExtendedPositionProvider moon, final ExtendedPositionProvider sun,
                                     final SolarRadiationPressure srp) {
             this.moon = moon;
             this.sun  = sun;

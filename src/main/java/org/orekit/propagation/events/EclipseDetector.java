@@ -21,7 +21,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -70,7 +70,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @param occulting the occulting body
      * @since 12.0
      */
-    public EclipseDetector(final ExtendedPVCoordinatesProvider occulted,  final double occultedRadius,
+    public EclipseDetector(final ExtendedPositionProvider occulted, final double occultedRadius,
                            final OneAxisEllipsoid occulting) {
         this(new OccultationEngine(occulted, occultedRadius, occulting));
     }

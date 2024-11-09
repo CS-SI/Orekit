@@ -18,8 +18,10 @@
 package org.orekit.utils;
 
 import org.hipparchus.CalculusFieldElement;
+import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
+import org.orekit.frames.StaticTransform;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
@@ -37,7 +39,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @since 12.0
  * @author Luc Maisonobe
  */
-public class ExtendedPVCoordinatesProviderAdapter extends Frame {
+public class ExtendedPositionProviderAdapter extends Frame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20221215L;
@@ -47,13 +49,25 @@ public class ExtendedPVCoordinatesProviderAdapter extends Frame {
      * @param provider coordinates provider defining the position of origin of the transformed frame
      * @param name name of the frame
      */
-    public ExtendedPVCoordinatesProviderAdapter(final Frame parent,
-                                                final ExtendedPVCoordinatesProvider provider,
-                                                final String name) {
+    public ExtendedPositionProviderAdapter(final Frame parent,
+                                           final ExtendedPositionProvider provider,
+                                           final String name) {
         super(parent, new TransformProvider() {
 
             /** Serializable UID. */
             private static final long serialVersionUID = 20221215L;
+
+            /** {@inheritDoc} */
+            @Override
+            public StaticTransform getStaticTransform(final AbsoluteDate date) {
+                return StaticTransform.of(date, provider.getPosition(date, parent).negate());
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldStaticTransform<T> getStaticTransform(final FieldAbsoluteDate<T> date) {
+                return FieldStaticTransform.of(date, provider.getPosition(date, parent).negate());
+            }
 
             /** {@inheritDoc} */
             @Override

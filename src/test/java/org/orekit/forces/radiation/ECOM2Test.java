@@ -64,11 +64,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
@@ -468,7 +464,7 @@ public class ECOM2Test extends AbstractForceModelTest {
                                            0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
         final double period = orbit.getKeplerianPeriod();
         Assertions.assertEquals(86164, period, 1);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =
