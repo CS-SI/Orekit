@@ -25,6 +25,7 @@ package org.orekit.estimation.sequential;
  * @author Maxime Journot
  * @since 9.2
  */
+@FunctionalInterface
 public interface KalmanObserver {
 
     /** Notification callback after each one of a Kalman filter estimation.

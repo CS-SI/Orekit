@@ -23,6 +23,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 8.0
  */
+@FunctionalInterface
 public interface ParameterFunction {
 
 
