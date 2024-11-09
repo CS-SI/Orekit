@@ -21,6 +21,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.PVCoordinatesProvider;

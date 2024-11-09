@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 /**
  * Class containing parameters for event detection.

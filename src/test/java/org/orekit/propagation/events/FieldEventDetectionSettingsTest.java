@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;

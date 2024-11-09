@@ -24,6 +24,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 /**
  * A detector that implements the {@link #g(FieldSpacecraftState)} function using a lambda

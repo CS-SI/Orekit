@@ -29,6 +29,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
