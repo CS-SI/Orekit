@@ -19,6 +19,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.*;
 

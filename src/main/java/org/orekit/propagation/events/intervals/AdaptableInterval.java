@@ -15,38 +15,37 @@
  * limitations under the License.
  */
 
-package org.orekit.propagation.events;
+package org.orekit.propagation.events.intervals;
 
-import org.hipparchus.CalculusFieldElement;
-import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 
 /** This interface represents an event checking interval that depends on state.
 *
-* @see FieldEventDetector
+* @see EventDetector
 * @author Luc Maisonobe
 * @since 12.0
-* @param <T> the type of the field elements
+*
 */
 @FunctionalInterface
-public interface FieldAdaptableInterval<T extends CalculusFieldElement<T>> {
+public interface AdaptableInterval {
 
     /**
      * Get the current value of maximal time interval between events handler checks.
      *
      * @param state     current state
      * @param isForward direction of propagation
-     * @return current value of maximal time interval between events handler checks (only as a double)
+     * @return current value of maximal time interval between events handler checks
      */
-    double currentInterval(FieldSpacecraftState<T> state, boolean isForward);
+    double currentInterval(SpacecraftState state, boolean isForward);
 
     /**
      * Method creating a constant interval provider.
-     * @param <T> field type
      * @param constantInterval value of constant interval
      * @return adaptable interval ready to be added to an event detector
      * @since 12.1
      */
-    static <T extends CalculusFieldElement<T>> FieldAdaptableInterval<T> of(final double constantInterval) {
+    static AdaptableInterval of(final double constantInterval) {
         return (state, isForward) -> constantInterval;
     }
 }

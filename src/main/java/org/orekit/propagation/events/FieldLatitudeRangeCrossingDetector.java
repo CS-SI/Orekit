@@ -24,6 +24,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 
 /** Detector for geographic latitude crossing.

@@ -58,6 +58,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;

@@ -16,7 +16,7 @@
  */
 /**
  *
- * This package provides built-in implementations of {@link org.orekit.propagation.events.AdaptableInterval}.
+ * This package provides built-in implementations of {@link org.orekit.propagation.events.intervals.AdaptableInterval}.
  * <p>
  * They are meant for specific {@link org.orekit.propagation.events.EventDetector} to optimize performance
  * (by minimizing the number of evaluations for the so-called g function).

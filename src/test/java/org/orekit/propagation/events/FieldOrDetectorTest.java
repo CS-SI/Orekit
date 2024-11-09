@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**

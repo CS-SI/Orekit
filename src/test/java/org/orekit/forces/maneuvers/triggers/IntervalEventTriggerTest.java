@@ -33,7 +33,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;

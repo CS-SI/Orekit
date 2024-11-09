@@ -55,6 +55,7 @@ import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;

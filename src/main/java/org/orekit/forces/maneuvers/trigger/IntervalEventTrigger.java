@@ -28,7 +28,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;

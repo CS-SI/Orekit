@@ -22,6 +22,7 @@ import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.utils.ElevationMask;
 import org.orekit.utils.TrackingCoordinates;
 

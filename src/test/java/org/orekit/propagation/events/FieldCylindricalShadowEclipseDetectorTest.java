@@ -15,6 +15,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.*;

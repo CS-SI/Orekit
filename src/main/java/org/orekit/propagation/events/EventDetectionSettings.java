@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.events;
 
+import org.orekit.propagation.events.intervals.AdaptableInterval;
+
 /**
  * Class containing parameters for event detection.
  *

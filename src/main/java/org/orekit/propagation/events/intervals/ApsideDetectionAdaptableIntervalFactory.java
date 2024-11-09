@@ -21,12 +21,11 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.events.AdaptableInterval;
 
 /**
  * Factory class for {@link AdaptableInterval} suitable for apside detection on eccentric orbits.
  * It requires {@link org.orekit.propagation.SpacecraftState} to be based on {@link Orbit} in order to work.
- * @see org.orekit.propagation.events.AdaptableInterval
+ * @see AdaptableInterval
  * @see org.orekit.propagation.events.ApsideDetector
  * @see org.orekit.propagation.events.EventSlopeFilter
  * @author Romain Serra

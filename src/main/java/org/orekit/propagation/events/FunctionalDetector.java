@@ -21,6 +21,7 @@ import java.util.function.ToDoubleFunction;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 
 /**
  * A detector that implements the {@link #g(SpacecraftState)} function using a lambda that
