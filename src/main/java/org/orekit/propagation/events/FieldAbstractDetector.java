@@ -51,19 +51,6 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     private boolean forward;
 
     /** Build a new instance.
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected FieldAbstractDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
-                                    final FieldEventHandler<T> handler) {
-        this(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
-    }
-
-    /** Build a new instance.
      * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @since 12.2
@@ -185,27 +172,12 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     }
 
     /** Build a new instance.
-     * @param newMaxCheck maximum checking interval
-     * @param newThreshold convergence threshold (s)
-     * @param newMaxIter maximum number of iterations in the event time search
-     * @param newHandler event handler to call at event occurrences
-     * @return a new instance of the appropriate sub-type
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected abstract D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold,
-                                int newMaxIter, FieldEventHandler<T> newHandler);
-
-    /** Build a new instance.
      * @param detectionSettings detection settings
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      * @since 12.2
      */
-    protected D create(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> newHandler) {
-        return create(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
-            detectionSettings.getMaxIterationCount(), newHandler);
-    }
+    protected abstract D create(FieldEventDetectionSettings<T> detectionSettings, FieldEventHandler<T> newHandler);
 
     /** Check if the current propagation is forward or backward.
      * @return true if the current propagation is forward

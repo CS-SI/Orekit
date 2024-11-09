@@ -36,8 +36,7 @@ class CylindricalShadowEclipseDetectorTest {
         final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();
         // WHEN
         final CylindricalShadowEclipseDetector detector = new CylindricalShadowEclipseDetector(Mockito.mock(PVCoordinatesProvider.class),
-                1., settings.getMaxCheckInterval(), settings.getThreshold(), settings.getMaxIterationCount(),
-                Mockito.mock(EventHandler.class));
+                1., settings, Mockito.mock(EventHandler.class));
         // THEN
         Assertions.assertEquals(settings.getMaxIterationCount(), detector.getDetectionSettings().getMaxIterationCount());
         Assertions.assertEquals(settings.getThreshold(), detector.getDetectionSettings().getThreshold());

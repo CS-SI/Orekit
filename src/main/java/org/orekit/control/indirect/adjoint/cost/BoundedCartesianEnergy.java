@@ -23,8 +23,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
@@ -99,8 +97,8 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
     @Override
     public Stream<EventDetector> getEventDetectors() {
         final EventDetectionSettings detectionSettings = getEventDetectionSettings();
-        return Stream.of(new SingularityDetector(detectionSettings, new ResetDerivativesOnEvent(), 0.),
-            new SingularityDetector(detectionSettings, new ResetDerivativesOnEvent(), maximumThrustMagnitude));
+        return Stream.of(new SingularityDetector(detectionSettings, 0.),
+            new SingularityDetector(detectionSettings, maximumThrustMagnitude));
     }
 
     /** {@inheritDoc} */
@@ -109,8 +107,8 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
         final FieldEventDetectionSettings<T> detectionSettings = new FieldEventDetectionSettings<>(field, getEventDetectionSettings());
         final T zero = field.getZero();
         final T maximumThrustMagnitudeForEvent = zero.newInstance(maximumThrustMagnitude);
-        return Stream.of(new FieldSingularityDetector<>(detectionSettings, new FieldResetDerivativesOnEvent<>(), zero),
-            new FieldSingularityDetector<>(detectionSettings, new FieldResetDerivativesOnEvent<>(), maximumThrustMagnitudeForEvent));
+        return Stream.of(new FieldSingularityDetector<>(detectionSettings, zero),
+            new FieldSingularityDetector<>(detectionSettings, maximumThrustMagnitudeForEvent));
     }
 
 }

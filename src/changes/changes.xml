@@ -54,6 +54,9 @@
         <action dev="luc" type="fix" issue="1542">
             Use SatInSystem in SatelliteAntenna.
         </action>
+        <action dev="serrof" type="update" issue="1541">
+            Removed deprecated signature of create in (Field)AbstractDetector.
+        </action>
         <action dev="serrof" type="add" issue="1540">
             New interface for integration tolerances.
         </action>

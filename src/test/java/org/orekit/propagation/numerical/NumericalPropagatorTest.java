@@ -78,12 +78,7 @@ import org.orekit.orbits.*;
 import org.orekit.propagation.*;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.AdaptableInterval;
-import org.orekit.propagation.events.ApsideDetector;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
@@ -821,7 +816,8 @@ class NumericalPropagatorTest {
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.STOP);
-        propagator.addEventDetector(new AdditionalStateLinearDetector(10.0, 1.0e-8).withHandler(checking));
+        propagator.addEventDetector(new AdditionalStateLinearDetector(new EventDetectionSettings(10.0, 1.0e-8, EventDetectionSettings.DEFAULT_MAX_ITER),
+                checking));
 
         final double dt = 3200;
         checking.assertEvent(false);
@@ -833,23 +829,29 @@ class NumericalPropagatorTest {
 
     }
 
-    private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
+    private static class AdditionalStateLinearDetector implements EventDetector {
 
-        public AdditionalStateLinearDetector(double maxCheck, double threshold) {
-            this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnEvent());
-        }
+        private final EventHandler eventHandler;
+        private final EventDetectionSettings detectionSettings;
 
-        private AdditionalStateLinearDetector(AdaptableInterval maxCheck, double threshold, int maxIter, EventHandler handler) {
-            super(maxCheck, threshold, maxIter, handler);
-        }
-
-        protected AdditionalStateLinearDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                       final int newMaxIter, final EventHandler newHandler) {
-            return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        AdditionalStateLinearDetector(final EventDetectionSettings detectionSettings,
+                                      final EventHandler eventHandler) {
+            this.detectionSettings = detectionSettings;
+            this.eventHandler = eventHandler;
         }
 
         public double g(SpacecraftState s) {
             return s.getAdditionalState("linear")[0] - 3.0;
+        }
+
+        @Override
+        public EventDetectionSettings getDetectionSettings() {
+            return detectionSettings;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return eventHandler;
         }
 
     }
@@ -879,7 +881,8 @@ class NumericalPropagatorTest {
             }
         };
 
-        propagator.addEventDetector(new AdditionalStateLinearDetector(10.0, 1.0e-8).withHandler(checking));
+        propagator.addEventDetector(new AdditionalStateLinearDetector(new EventDetectionSettings(10.0, 1.0e-8, EventDetectionSettings.DEFAULT_MAX_ITER),
+                checking));
 
         final double dt = 3200;
         checking.assertEvent(false);

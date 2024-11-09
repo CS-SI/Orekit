@@ -46,8 +46,8 @@ class AbstractDetectorTest {
         }
 
         @Override
-        protected TestDetector create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
-            return new TestDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        protected TestDetector create(EventDetectionSettings detectionSettings, EventHandler newHandler) {
+            return new TestDetector(detectionSettings, newHandler);
         }
 
         @Override

@@ -66,14 +66,10 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      * @param fromLongitude longitude to be crossed, lower range boundary
      * @param toLongitude   longitude to be crossed, upper range boundary
      */
-    public FieldLongitudeRangeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-            field.getZero().add(DEFAULT_THRESHOLD),
-            DEFAULT_MAX_ITER,
-            new FieldStopOnIncreasing<>(),
-            body,
-            fromLongitude,
-            toLongitude);
+    public FieldLongitudeRangeCrossingDetector(final Field<T> field, final OneAxisEllipsoid body,
+                                               final double fromLongitude, final double toLongitude) {
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
+            new FieldStopOnIncreasing<>(), body, fromLongitude, toLongitude);
     }
 
     /**
@@ -87,9 +83,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      */
     public FieldLongitudeRangeCrossingDetector(final T maxCheck, final T threshold,
                                                final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()),
-            threshold,
-            DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
             new FieldStopOnIncreasing<>(),
             body,
             fromLongitude,
@@ -97,29 +91,26 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
     }
 
     /**
-     * Private constructor with full parameters.
+     * Protected constructor with full parameters.
      * <p>
      * This constructor is private as users are expected to use the builder
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
      *
-     * @param maxCheck      maximum checking interval (s)
-     * @param threshold     convergence threshold (s)
-     * @param maxIter       maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler       event handler to call at event occurrences
      * @param body          body on which the longitude is defined
      * @param fromLongitude longitude to be crossed, lower range boundary
-     * @param toLongitude   longitude to be crossed, upper range boundary
+     * @param toLongitude   longitude to be crossed, upper range
+     * @since 13.0
      */
-    protected FieldLongitudeRangeCrossingDetector(final FieldAdaptableInterval<T> maxCheck,
-                                                  final T threshold,
-                                                  final int maxIter,
+    protected FieldLongitudeRangeCrossingDetector(final FieldEventDetectionSettings<T> detectionSettings,
                                                   final FieldEventHandler<T> handler,
                                                   final OneAxisEllipsoid body,
                                                   final double fromLongitude,
                                                   final double toLongitude) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.body = body;
         this.fromLongitude = ensureLongitudePositiveContinuity(fromLongitude);
         this.toLongitude = ensureLongitudePositiveContinuity(toLongitude);
@@ -130,11 +121,9 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
      * {@inheritDoc}
      */
     @Override
-    protected FieldLongitudeRangeCrossingDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck,
-                                                            final T newThreshold,
-                                                            final int newMaxIter,
+    protected FieldLongitudeRangeCrossingDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                             final FieldEventHandler<T> newHandler) {
-        return new FieldLongitudeRangeCrossingDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+        return new FieldLongitudeRangeCrossingDetector<>(detectionSettings, newHandler,
             body, fromLongitude, toLongitude);
     }
 

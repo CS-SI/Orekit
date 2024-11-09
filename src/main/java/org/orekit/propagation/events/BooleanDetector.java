@@ -66,23 +66,19 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     private final Operator operator;
 
     /**
-     * Private constructor with all the parameters.
+     * Protected constructor with all the parameters.
      *
      * @param detectors    the operands.
      * @param operator     reduction operator to apply to value of the g function of the
      *                     operands.
-     * @param newMaxCheck  max check interval in seconds.
-     * @param newThreshold convergence threshold in seconds.
-     * @param newMaxIter   max iterations.
+     * @param detectionSettings event detection settings.
      * @param newHandler   event handler.
      */
     protected BooleanDetector(final List<EventDetector> detectors,
                               final Operator operator,
-                              final AdaptableInterval newMaxCheck,
-                              final double newThreshold,
-                              final int newMaxIter,
+                              final EventDetectionSettings detectionSettings,
                               final EventHandler newHandler) {
-        super(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        super(detectionSettings, newHandler);
         this.detectors = detectors;
         this.operator = operator;
     }
@@ -133,7 +129,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.AND,
-                (s, isForward) -> {
+                new EventDetectionSettings((s, isForward) -> {
                     double minInterval = Double.POSITIVE_INFINITY;
                     for (final EventDetector detector : detectors) {
                         minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
@@ -141,7 +137,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
                     return minInterval;
                 },
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
-                detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
+                detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                 new ContinueOnEvent());
     }
 
@@ -191,7 +187,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.OR,
-                (s, isForward) -> {
+                new EventDetectionSettings((s, isForward) -> {
                     double minInterval = Double.POSITIVE_INFINITY;
                     for (final EventDetector detector : detectors) {
                         minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
@@ -199,7 +195,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
                     return minInterval;
                 },
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
-                detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get(),
+                detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                 new ContinueOnEvent());
     }
 
@@ -242,12 +238,9 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
     }
 
     @Override
-    protected BooleanDetector create(final AdaptableInterval newMaxCheck,
-                                     final double newThreshold,
-                                     final int newMaxIter,
+    protected BooleanDetector create(final EventDetectionSettings detectionSettings,
                                      final EventHandler newHandler) {
-        return new BooleanDetector(detectors, operator, newMaxCheck, newThreshold,
-                newMaxIter, newHandler);
+        return new BooleanDetector(detectors, operator, detectionSettings, newHandler);
     }
 
     @Override
@@ -265,7 +258,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
      * @since 10.2
      */
     public List<EventDetector> getDetectors() {
-        return new ArrayList<EventDetector>(detectors);
+        return new ArrayList<>(detectors);
     }
 
     /** Local class for operator. */
@@ -300,6 +293,6 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
          */
         public abstract double combine(double g1, double g2);
 
-    };
+    }
 
 }

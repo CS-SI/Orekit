@@ -150,12 +150,11 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
 
     /** {@inheritDoc} */
     @Override
-    protected FieldDateDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                          final int newMaxIter, final FieldEventHandler<T> newHandler) {
+    protected FieldDateDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                          final FieldEventHandler<T> newHandler) {
         @SuppressWarnings("unchecked")
         final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
-        return new FieldDateDetector<>(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter),
-                newHandler, minGap, dates);
+        return new FieldDateDetector<>(detectionSettings, newHandler, minGap, dates);
     }
 
     /** Get all event field dates currently managed, in chronological order.

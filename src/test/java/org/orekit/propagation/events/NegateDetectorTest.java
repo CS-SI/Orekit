@@ -39,8 +39,7 @@ public class NegateDetectorTest {
     public void testInit() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         EventHandler c = Mockito.mock(EventHandler.class);
         NegateDetector detector = new NegateDetector(a).withHandler(c);
         AbsoluteDate t = AbsoluteDate.GPS_EPOCH;
@@ -62,8 +61,7 @@ public class NegateDetectorTest {
     public void testG() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         NegateDetector detector = new NegateDetector(a);
         SpacecraftState s = Mockito.mock(SpacecraftState.class);
 
@@ -80,8 +78,7 @@ public class NegateDetectorTest {
     public void testCreate() {
         //setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
-        Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
+        Mockito.when(a.getDetectionSettings()).thenReturn(EventDetectionSettings.getDefaultEventDetectionSettings());
         NegateDetector detector = new NegateDetector(a);
 
         // action

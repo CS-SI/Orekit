@@ -35,8 +35,7 @@ class FieldCylindricalShadowEclipseDetectorTest {
                 settings);
         // WHEN
         final FieldCylindricalShadowEclipseDetector<Complex> detector = new FieldCylindricalShadowEclipseDetector<>(Mockito.mock(ExtendedPositionProvider.class),
-                Complex.ONE, fieldSettings.getMaxCheckInterval(), fieldSettings.getThreshold(), fieldSettings.getMaxIterationCount(),
-                Mockito.mock(FieldEventHandler.class));
+                Complex.ONE, fieldSettings, Mockito.mock(FieldEventHandler.class));
         // THEN
         Assertions.assertEquals(fieldSettings.getMaxIterationCount(), detector.getDetectionSettings().getMaxIterationCount());
         Assertions.assertEquals(fieldSettings.getThreshold(), detector.getDetectionSettings().getThreshold());
@@ -52,8 +51,8 @@ class FieldCylindricalShadowEclipseDetectorTest {
         final Complex expectedThreshold = new Complex(0.1);
         final int expectedMaxIter = 10;
         // WHEN
-        final FieldCylindricalShadowEclipseDetector<Complex> detector = eclipseDetector.create(adaptableInterval, expectedThreshold,
-                expectedMaxIter, eclipseDetector.getHandler());
+        final FieldCylindricalShadowEclipseDetector<Complex> detector = eclipseDetector.create(new FieldEventDetectionSettings<>(adaptableInterval, expectedThreshold,
+                expectedMaxIter), eclipseDetector.getHandler());
         // THEN
         Assertions.assertEquals(expectedMaxIter, detector.getMaxIterationCount());
         Assertions.assertEquals(expectedThreshold, detector.getThreshold());

@@ -63,24 +63,6 @@ public class AdapterDetector implements EventDetector {
 
     /** {@inheritDoc} */
     @Override
-    public double getThreshold() {
-        return detector.getThreshold();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AdaptableInterval getMaxCheckInterval() {
-        return detector.getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getMaxIterationCount() {
-        return detector.getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public EventHandler getHandler() {
         return detector.getHandler();
     }

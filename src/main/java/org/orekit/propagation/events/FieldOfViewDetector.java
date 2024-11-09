@@ -81,8 +81,7 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      */
     public FieldOfViewDetector(final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                final VisibilityTrigger trigger, final FieldOfView fov) {
-        this(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
-             new StopOnIncreasing(),
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing(),
              pvTarget, radiusTarget, trigger, fov);
     }
 
@@ -92,20 +91,19 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings detection settings
      * @param handler event handler to call at event occurrences
      * @param pvTarget Position/velocity provider of the considered target
      * @param radiusTarget radius of the target, considered to be a spherical body (m)
      * @param trigger visibility trigger for spherical bodies
      * @param fov Field Of View
+     * @since 13.0
      */
-    protected FieldOfViewDetector(final AdaptableInterval maxCheck, final double threshold, final int maxIter,
+    protected FieldOfViewDetector(final EventDetectionSettings detectionSettings,
                                   final EventHandler handler,
                                   final PVCoordinatesProvider pvTarget, final double radiusTarget,
                                   final VisibilityTrigger trigger, final FieldOfView fov) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.targetPVProvider = pvTarget;
         this.radiusTarget     = radiusTarget;
         this.trigger          = trigger;
@@ -114,10 +112,9 @@ public class FieldOfViewDetector extends AbstractDetector<FieldOfViewDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected FieldOfViewDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                         final int newMaxIter,
+    protected FieldOfViewDetector create(final EventDetectionSettings detectionSettings,
                                          final EventHandler newHandler) {
-        return new FieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+        return new FieldOfViewDetector(detectionSettings, newHandler,
                                        targetPVProvider, radiusTarget, trigger, fov);
     }
 

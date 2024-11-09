@@ -129,7 +129,7 @@ public class EquinoctialOrbitTest {
 
     }
 
-    @Timeout(2)
+    @Timeout(5)
     @ParameterizedTest()
     @EnumSource(PositionAngleType.class)
     void testConstructor(final PositionAngleType positionAngleType) {

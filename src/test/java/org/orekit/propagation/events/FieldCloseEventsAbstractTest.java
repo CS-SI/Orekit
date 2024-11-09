@@ -1959,11 +1959,11 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
     private abstract class AbstractTestDetector<D extends AbstractTestDetector<D>> extends FieldAbstractDetector<D, T> {
         AbstractTestDetector(final double maxCheck, final double tolerance, final List<Event<T>> events) {
-            super(FieldAdaptableInterval.of(maxCheck), v(tolerance), 100, new FieldRecordAndContinue<>(events));
+            super(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck), v(tolerance), 100), new FieldRecordAndContinue<>(events));
         }
 
         @Override
-        protected D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold, int newMaxIter, FieldEventHandler<T> newHandler) {
+        protected D create(FieldEventDetectionSettings<T> detectionSettings, FieldEventHandler<T> newHandler) {
             return null;
         }
     }
@@ -1981,10 +1981,6 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             this.detectorD = detectorD;
         }
 
-        @Override
-        protected D create(FieldAdaptableInterval<T> newMaxCheck, T newThreshold, int newMaxIter, FieldEventHandler<T> newHandler) {
-            return null;
-        }
     }
 
     private class Definition extends AbstractChangeDetector<Definition> {
@@ -2410,7 +2406,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                              int newMaxIter,
                              FieldEventHandler<T> newHandler,
                              List<FieldAbsoluteDate<T>> dates) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.eventTs = dates;
         }
 
@@ -2431,11 +2427,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         }
 
         @Override
-        protected TimeDetector create(FieldAdaptableInterval<T> newMaxCheck,
-                                      T newThreshold,
-                                      int newMaxIter,
+        protected TimeDetector create(FieldEventDetectionSettings<T> detectionSettings,
                                       FieldEventHandler<T> newHandler) {
-            return new TimeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
+            return new TimeDetector(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler, eventTs);
         }
 
     }
@@ -2464,7 +2459,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                              int newMaxIter,
                              FieldEventHandler<T> newHandler,
                              FieldEventDetector<T> g) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.g = g;
         }
 
@@ -2474,11 +2469,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         }
 
         @Override
-        protected FlatDetector create(FieldAdaptableInterval<T> newMaxCheck,
-                                      T newThreshold,
-                                      int newMaxIter,
+        protected FlatDetector create(FieldEventDetectionSettings<T> detectionSettings,
                                       FieldEventHandler<T> newHandler) {
-            return new FlatDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, g);
+            return new FlatDetector(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler, g);
         }
 
     }
@@ -2499,7 +2493,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
                                    int newMaxIter,
                                    FieldEventHandler<T> newHandler,
                                    List<FieldAbsoluteDate<T>> eventDates) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.eventTs = eventDates;
         }
 
@@ -2525,11 +2519,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
 
         @Override
         protected ContinuousDetector create(
-                FieldAdaptableInterval<T> newMaxCheck,
-                T newThreshold,
-                int newMaxIter,
+                FieldEventDetectionSettings<T> detectionSettings,
                 FieldEventHandler<T> newHandler) {
-            return new ContinuousDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, eventTs);
+            return new ContinuousDetector(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler, eventTs);
         }
 
     }
@@ -2633,7 +2626,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         private ResetChangesSignGenerator(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int newMaxIter,
                                           final FieldEventHandler<T> newHandler,
                                           final FieldAbsoluteDate<T> t0, final double y1, final double y2, final double change ) {
-            super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            super(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
             this.t0     = t0;
             this.y1     = y1;
             this.y2     = y2;
@@ -2642,10 +2635,10 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
             this.count  = 0;
         }
 
-        protected ResetChangesSignGenerator create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold, final int newMaxIter,
+        protected ResetChangesSignGenerator create(final FieldEventDetectionSettings<T> detectionSettings,
                                                    final FieldEventHandler<T> newHandler) {
-            return new ResetChangesSignGenerator(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                                 t0, y1, y2, change);
+            return new ResetChangesSignGenerator(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler, t0, y1, y2, change);
         }
 
         public T g(FieldSpacecraftState<T> s) {

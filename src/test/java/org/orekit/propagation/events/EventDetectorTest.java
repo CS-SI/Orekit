@@ -84,20 +84,28 @@ public class EventDetectorTest {
         }
     }
 
-    private static class DummyDetector
-        extends AbstractDetector<DummyDetector> {
+    private static class DummyDetector implements EventDetector {
+
+        private final EventDetectionSettings detectionSettings;
+        private final EventHandler handler;
 
         public DummyDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
-            super(detectionSettings, handler);
+            this.detectionSettings = detectionSettings;
+            this.handler = handler;
+        }
+
+        @Override
+        public EventDetectionSettings getDetectionSettings() {
+            return detectionSettings;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return handler;
         }
 
         public double g(final SpacecraftState s) {
             return 0;
-        }
-
-        protected DummyDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler newHandler) {
-            return new DummyDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
         }
 
     }
@@ -240,13 +248,13 @@ public class EventDetectorTest {
 
         public GCallsCounter(final AdaptableInterval maxCheck, final double threshold,
                              final int maxIter, final EventHandler handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
             count = 0;
         }
 
-        protected GCallsCounter create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler newHandler) {
-            return new GCallsCounter(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        protected GCallsCounter create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+            return new GCallsCounter(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler);
         }
 
         public int getCount() {
@@ -278,9 +286,8 @@ public class EventDetectorTest {
                 new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008912.4039522274, -3155453.3125615157, -5044297.6484738905),
                                                                                new Vector3D(-5012.5883854112530, 1920.6332221785074, -5172.2177085540500)),
                                                              eme2000, initialDate, Constants.WGS84_EARTH_MU));
-        k2.addEventDetector(new CloseApproachDetector((s, isForward) -> 2015.243454166727, 0.0001, 100,
-                                                      new ContinueOnEvent(),
-                                                      k1));
+        k2.addEventDetector(new CloseApproachDetector(new EventDetectionSettings(AdaptableInterval.of(2015.243454166727), 0.0001, 100),
+                                                      new ContinueOnEvent(), k1));
         k2.addEventDetector(new DateDetector(interruptDate).
                             withMaxCheck(Constants.JULIAN_DAY).
                             withThreshold(1.0e-6));
@@ -292,10 +299,9 @@ public class EventDetectorTest {
 
         private final PVCoordinatesProvider provider;
 
-        public CloseApproachDetector(AdaptableInterval maxCheck, double threshold,
-                                     final int maxIter, final EventHandler handler,
+        public CloseApproachDetector(EventDetectionSettings detectionSettings, final EventHandler handler,
                                      PVCoordinatesProvider provider) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(detectionSettings, handler);
             this.provider = provider;
         }
 
@@ -307,10 +313,9 @@ public class EventDetectorTest {
             return Vector3D.dotProduct(deltaP.normalize(), deltaV);
         }
 
-        protected CloseApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                               final int newMaxIter,
+        protected CloseApproachDetector create(final EventDetectionSettings detectionSettings,
                                                final EventHandler newHandler) {
-            return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, provider);
+            return new CloseApproachDetector(detectionSettings, newHandler, provider);
         }
 
     }

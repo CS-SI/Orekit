@@ -189,9 +189,8 @@ public class EventsLogger {
 
         /** {@inheritDoc} */
         @Override
-        protected LoggingWrapper create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                        final int newMaxIter, final EventHandler newHandler) {
-            return new LoggingWrapper(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler, detector);
+        protected LoggingWrapper create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+            return new LoggingWrapper(detectionSettings, newHandler, detector);
         }
 
         /** Log an event.
@@ -204,8 +203,7 @@ public class EventsLogger {
 
         /** {@inheritDoc} */
         @Override
-        public void init(final SpacecraftState s0,
-                         final AbsoluteDate t) {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
             super.init(s0, t);
             detector.init(s0, t);
         }
@@ -224,7 +222,6 @@ public class EventsLogger {
         /** {@inheritDoc} */
         @Override
         public EventHandler getHandler() {
-
             final EventHandler handler = detector.getHandler();
 
             return new EventHandler() {

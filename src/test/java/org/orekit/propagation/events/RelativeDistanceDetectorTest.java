@@ -42,8 +42,7 @@ class RelativeDistanceDetectorTest {
                 Mockito.mock(PVCoordinatesProvider.class), distanceThreshold);
         final EventHandler expectedHandler = new StopOnIncreasing();
         // WHEN
-        final RelativeDistanceDetector detector = distanceDetector.create(distanceDetector.getMaxCheckInterval(),
-                distanceDetector.getThreshold(), distanceDetector.getMaxIterationCount(), expectedHandler);
+        final RelativeDistanceDetector detector = distanceDetector.create(distanceDetector.getDetectionSettings(), expectedHandler);
         // THEN
         Assertions.assertEquals(expectedHandler, detector.getHandler());
     }

@@ -55,28 +55,22 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
      * @param field on which this detector is defined.
      */
     public FieldFunctionalDetector(final Field<T> field) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-             field.getZero().newInstance(DEFAULT_THRESHOLD),
-             DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
              new FieldContinueOnEvent<>(), value -> field.getOne());
     }
 
     /**
-     * Private constructor.
+     * Protected constructor.
      *
-     * @param maxCheck  maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter   maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler   event handler to call at event occurrences
      * @param function  the switching function.
+     * @since 13.0
      */
     protected FieldFunctionalDetector(
-            final FieldAdaptableInterval<T> maxCheck,
-            final T threshold,
-            final int maxIter,
-            final FieldEventHandler<T> handler,
+            final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
             final Function<FieldSpacecraftState<T>, T> function) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.function = function;
     }
 
@@ -88,13 +82,10 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
 
     @Override
     protected FieldFunctionalDetector<T> create(
-            final FieldAdaptableInterval<T> newMaxCheck,
-            final T newThreshold,
-            final int newMaxIter,
+            final FieldEventDetectionSettings<T> detectionSettings,
             final FieldEventHandler<T> newHandler) {
 
-        return new FieldFunctionalDetector<>(newMaxCheck, newThreshold, newMaxIter,
-                newHandler, function);
+        return new FieldFunctionalDetector<>(detectionSettings, newHandler, function);
     }
 
     /**
@@ -107,8 +98,7 @@ public class FieldFunctionalDetector<T extends CalculusFieldElement<T>>
      */
     public FieldFunctionalDetector<T> withFunction(
             final Function<FieldSpacecraftState<T>, T> newGFunction) {
-        return new FieldFunctionalDetector<>(getMaxCheckInterval(), getThreshold(),
-                getMaxIterationCount(), getHandler(), newGFunction);
+        return new FieldFunctionalDetector<>(getDetectionSettings(), getHandler(), newGFunction);
     }
 
     /**
