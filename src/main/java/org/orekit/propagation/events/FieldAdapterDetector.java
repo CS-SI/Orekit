@@ -55,6 +55,7 @@ public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements 
     /** {@inheritDoc} */
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        FieldEventDetector.super.init(s0, t);
         detector.init(s0, t);
     }
 
@@ -91,6 +92,7 @@ public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements 
     /** {@inheritDoc} */
     @Override
     public void finish(final FieldSpacecraftState<T> state) {
+        FieldEventDetector.super.finish(state);
         detector.finish(state);
     }
 

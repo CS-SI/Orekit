@@ -22,6 +22,9 @@
   <body>
     <release version="13.0" date="TBD" description="TBD">
         <action dev="serrof" type="update" issue="1580">
+            Made LoggingWrapper in (Field)EventsLogger inherit from (Field)AdapterDetector rather than (Field)AbstractDetector.
+        </action>
+        <action dev="serrof" type="update" issue="1580">
             Moved (Field)AdaptableInterval.
         </action>
         <action dev="serrof" type="update" issue="1577">
