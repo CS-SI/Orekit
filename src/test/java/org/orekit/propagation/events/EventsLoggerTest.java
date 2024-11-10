@@ -32,7 +32,6 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -48,14 +47,13 @@ public class EventsLoggerTest {
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
     private int                  count;
-    private EventDetector        umbraDetector;
-    private EventDetector        penumbraDetector;
+    private AbstractDetector<EclipseDetector>        umbraDetector;
+    private AbstractDetector<EclipseDetector>         penumbraDetector;
 
     @Test
     public void testLogUmbra() {
         EventsLogger logger = new EventsLogger();
-        EventDetector monitored = ((AbstractDetector<?>) logger.monitorDetector(umbraDetector)).
-                withMaxIter(200);
+        EventDetector monitored = logger.monitorDetector(umbraDetector.withMaxIter(200));
         Assertions.assertEquals(100, umbraDetector.getMaxIterationCount());
         Assertions.assertEquals(200, monitored.getMaxIterationCount());
         propagator.addEventDetector(monitored);
@@ -140,14 +138,15 @@ public class EventsLoggerTest {
         int penumbraIncreasingCount = 0;
         int penumbraDecreasingCount = 0;
         for (EventsLogger.LoggedEvent event : logger.getLoggedEvents()) {
-            if (event.getEventDetector() == umbraDetector) {
+            final EclipseDetector eclipseDetector = (EclipseDetector) (event.getEventDetector());
+            if (eclipseDetector.getTotalEclipse()) {
                 if (event.isIncreasing()) {
                     ++umbraIncreasingCount;
                 } else {
                     ++umbraDecreasingCount;
                 }
             }
-            if (event.getEventDetector() == penumbraDetector) {
+            else {
                 if (event.isIncreasing()) {
                     ++penumbraIncreasingCount;
                 } else {
@@ -161,7 +160,7 @@ public class EventsLoggerTest {
         Assertions.assertEquals(expectedPenumbraDecreasingCount, penumbraDecreasingCount);
     }
 
-    private EventDetector buildDetector(final boolean totalEclipse) {
+    private EclipseDetector buildDetector(final boolean totalEclipse) {
 
         EclipseDetector detector =
                 new EclipseDetector(CelestialBodyFactory.getSun(), 696000000,
@@ -177,13 +176,9 @@ public class EventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new EventHandler() {
-
-            public Action eventOccurred(SpacecraftState s, EventDetector detector, boolean increasing) {
-                ++count;
-                return Action.CONTINUE;
-            }
-
+        detector = detector.withHandler((s, detector1, increasing) -> {
+            ++count;
+            return Action.CONTINUE;
         });
 
         return detector;
