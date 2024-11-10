@@ -79,6 +79,7 @@ import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.propagation.integration.*;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
@@ -2178,7 +2179,7 @@ public class FieldNumericalPropagatorTest {
         @Override
         public Stream<EventDetector> getEventDetectors() {
             return Arrays.stream(dates).map(DateDetector::new)
-                    .map(d -> d.withHandler((a, b, c) -> Action.RESET_DERIVATIVES));
+                    .map(d -> d.withHandler(new ResetDerivativesOnEvent()));
         }
 
         @Override

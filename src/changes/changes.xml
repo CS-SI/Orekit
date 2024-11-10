@@ -21,7 +21,10 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
-        <action dev="serrof" type="update" issue="1580">
+        <action dev="serrof" type="add" issue="1583">
+            Add counting event handler.
+        </action>
+        <action dev="serrof" type="update" issue="1582">
             Made LoggingWrapper in (Field)EventsLogger inherit from (Field)AdapterDetector rather than (Field)AbstractDetector.
         </action>
         <action dev="serrof" type="update" issue="1580">

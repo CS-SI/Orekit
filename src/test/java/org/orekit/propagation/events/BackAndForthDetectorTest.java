@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.events;
 
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -31,9 +30,8 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.CountAndContinue;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -73,10 +71,10 @@ public class BackAndForthDetectorTest {
         final TopocentricFrame stationFrame = new TopocentricFrame(earth, stationPosition, "");
 
         // Detector
-        final Visibility visi = new Visibility();
+        final CountAndContinue handler = new CountAndContinue();
         propagator.addEventDetector(new ElevationDetector(stationFrame).
                                     withConstantElevation(FastMath.toRadians(10.)).
-                                    withHandler(visi));
+                                    withHandler(handler));
 
         // Forward propagation (AOS + LOS)
         propagator.propagate(date1);
@@ -85,25 +83,7 @@ public class BackAndForthDetectorTest {
         propagator.propagate(date1);
         propagator.propagate(date0);
 
-        Assertions.assertEquals(4, visi.getVisiNb());
-
-    }
-
-    private static class Visibility implements EventHandler {
-        private int _visiNb;
-
-        public Visibility() {
-            _visiNb = 0;
-        }
-
-        public int getVisiNb() {
-            return _visiNb;
-        }
-
-        public Action eventOccurred(SpacecraftState s, EventDetector ed, boolean increasing) {
-            _visiNb++;
-            return Action.CONTINUE;
-        }
+        Assertions.assertEquals(4, handler.getCount());
 
     }
 

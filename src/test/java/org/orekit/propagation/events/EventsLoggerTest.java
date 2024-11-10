@@ -17,7 +17,6 @@
 package org.orekit.propagation.events;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +31,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.CountAndContinue;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -46,7 +46,7 @@ public class EventsLoggerTest {
     private AbsoluteDate         iniDate;
     private SpacecraftState      initialState;
     private NumericalPropagator  propagator;
-    private int                  count;
+    private CountAndContinue countAndContinue;
     private AbstractDetector<EclipseDetector>        umbraDetector;
     private AbstractDetector<EclipseDetector>         penumbraDetector;
 
@@ -58,9 +58,9 @@ public class EventsLoggerTest {
         Assertions.assertEquals(200, monitored.getMaxIterationCount());
         propagator.addEventDetector(monitored);
         propagator.addEventDetector(penumbraDetector);
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assertions.assertEquals(11, count);
+        Assertions.assertEquals(11, countAndContinue.getCount());
         checkCounts(logger, 3, 3, 0, 0);
     }
 
@@ -69,9 +69,9 @@ public class EventsLoggerTest {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(umbraDetector);
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215)).getDate();
-        Assertions.assertEquals(11, count);
+        Assertions.assertEquals(11, countAndContinue.getCount());
         checkCounts(logger, 0, 0, 2, 3);
     }
 
@@ -80,9 +80,9 @@ public class EventsLoggerTest {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215));
-        Assertions.assertEquals(11, count);
+        Assertions.assertEquals(11, countAndContinue.getCount());
         checkCounts(logger, 3, 3, 2, 3);
     }
 
@@ -91,7 +91,7 @@ public class EventsLoggerTest {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215));
         List<EventsLogger.LoggedEvent> firstList = logger.getLoggedEvents();
         Assertions.assertEquals(11, firstList.size());
@@ -119,7 +119,7 @@ public class EventsLoggerTest {
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(umbraDetector));
         propagator.addEventDetector(logger.monitorDetector(penumbraDetector));
-        count = 0;
+        countAndContinue.reset();
         propagator.propagate(iniDate.shiftedBy(16215));
         List<EventsLogger.LoggedEvent> firstList = logger.getLoggedEvents();
         Assertions.assertEquals(11, firstList.size());
@@ -176,10 +176,7 @@ public class EventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler((s, detector1, increasing) -> {
-            ++count;
-            return Action.CONTINUE;
-        });
+        detector = detector.withHandler(countAndContinue);
 
         return detector;
 
@@ -207,7 +204,7 @@ public class EventsLoggerTest {
             integrator.setInitialStepSize(60);
             propagator = new NumericalPropagator(integrator);
             propagator.setInitialState(initialState);
-            count = 0;
+            countAndContinue = new CountAndContinue();
             umbraDetector = buildDetector(true);
             penumbraDetector = buildDetector(false);
         } catch (OrekitException oe) {
@@ -220,7 +217,7 @@ public class EventsLoggerTest {
         iniDate = null;
         initialState = null;
         propagator = null;
-        count = 0;
+        countAndContinue = null;
         umbraDetector = null;
         penumbraDetector = null;
     }
