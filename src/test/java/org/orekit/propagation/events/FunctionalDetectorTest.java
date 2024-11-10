@@ -25,6 +25,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -44,7 +45,7 @@ public class FunctionalDetectorTest {
     public void testFunctionalDetector() {
         // setup
         ToDoubleFunction<SpacecraftState> g = SpacecraftState::getMass;
-        EventHandler handler = (s, detector, increasing) -> Action.STOP;
+        EventHandler handler = new StopOnEvent();
 
         // action
         FunctionalDetector detector = new FunctionalDetector()

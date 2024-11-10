@@ -79,10 +79,7 @@ import org.orekit.propagation.*;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.propagation.events.*;
-import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.RecordAndContinue;
-import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.handlers.*;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
@@ -250,7 +247,7 @@ class NumericalPropagatorTest {
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
-        CountingHandler handler = new CountingHandler();
+        CountAndContinue handler = new CountAndContinue();
         DateDetector detector = new DateDetector(end).
                                 withMaxCheck(10).
                                 withThreshold(1e-9).
@@ -265,7 +262,7 @@ class NumericalPropagatorTest {
 
         //verify
         Assertions.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
-        Assertions.assertEquals(1, handler.eventCount);
+        Assertions.assertEquals(1, handler.getCount());
     }
 
     /** test for issue #238 */
@@ -278,7 +275,7 @@ class NumericalPropagatorTest {
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
-        CountingHandler handler = new CountingHandler();
+        CountAndContinue handler = new CountAndContinue();
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         AbsoluteDate eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
@@ -295,31 +292,7 @@ class NumericalPropagatorTest {
         Assertions.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end), 0.0, 0.0);
         // propagate backward
         Assertions.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0, 0.0);
-        Assertions.assertEquals(2, handler.eventCount);
-    }
-
-    /** Counts the number of events that have occurred. */
-    private static class CountingHandler implements EventHandler {
-
-        /**
-         * number of calls to {@link #eventOccurred(SpacecraftState,
-         * EventDetector, boolean)}.
-         */
-        private int eventCount = 0;
-
-        @Override
-        public Action eventOccurred(SpacecraftState s,
-                                    EventDetector detector,
-                                    boolean increasing) {
-            eventCount++;
-            return Action.CONTINUE;
-        }
-
-        @Override
-        public SpacecraftState resetState(EventDetector detector,
-                                          SpacecraftState oldState) {
-            return null;
-        }
+        Assertions.assertEquals(2, handler.getCount());
     }
 
     /**

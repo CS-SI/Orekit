@@ -65,10 +65,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.*;
-import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldStopOnEvent;
-import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.handlers.*;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.propagation.integration.FieldCombinedDerivatives;
@@ -104,22 +101,6 @@ class FieldImpulseManeuverTest {
         DATE_DETECTOR,
         LATITUDE_CROSSING_DETECTOR,
         ECLIPSE_DETECTOR
-    }
-
-    private static class CountingHandler implements FieldEventHandler<Binary64> {
-        private final Action action;
-        private int count = 0;
-
-        CountingHandler(final Action action) {
-            this.action = action;
-        }
-
-        @Override
-        public Action eventOccurred(FieldSpacecraftState<Binary64> s, FieldEventDetector<Binary64> detector,
-                                    boolean increasing) {
-            count++;
-            return action;
-        }
     }
 
     private static class DummyFieldAdditionalDerivatives implements FieldAdditionalDerivativesProvider<Gradient> {
@@ -201,14 +182,19 @@ class FieldImpulseManeuverTest {
         final Binary64Field field = Binary64Field.getInstance();
         final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
         final Orbit orbit = createOrbit();
-        final CountingHandler handler = new CountingHandler(action);
+        final FieldCountingHandler<Binary64> handler = new FieldCountingHandler<Binary64>(0, action) {
+            @Override
+            protected boolean doesCount(FieldSpacecraftState<Binary64> state, FieldEventDetector<Binary64> detector, boolean increasing) {
+                return true;
+            }
+        };
         final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector.withHandler(handler),
                 FieldVector3D.getZero(field), Binary64.ONE);
         // WHEN
         fieldImpulseManeuver.getHandler().eventOccurred(new FieldSpacecraftState<>(new FieldCartesianOrbit<>(field, orbit)),
                 fieldImpulseManeuver, true);
         // THEN
-        Assertions.assertEquals(1, handler.count);
+        Assertions.assertEquals(1, handler.getCount());
     }
 
     @Test
