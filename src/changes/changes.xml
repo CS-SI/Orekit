@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1584">
+            Add fuel cost for Cartesian adjoint dynamics.
+        </action>
         <action dev="serrof" type="add" issue="1583">
             Add counting event handler.
         </action>

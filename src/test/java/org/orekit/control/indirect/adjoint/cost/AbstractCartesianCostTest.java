@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class AbstractCartesianEnergyTest {
+class AbstractCartesianCostTest {
 
     @Test
     void testGetFieldAdjointVelocityNorm() {
@@ -36,7 +36,7 @@ class AbstractCartesianEnergyTest {
         for (int i = 0; i < fieldAdjoint.length; i++) {
             adjoint[i] = fieldAdjoint[i].getReal();
         }
-        final AbstractCartesianEnergy cartesianEnergy = Mockito.mock(AbstractCartesianEnergy.class);
+        final AbstractCartesianCost cartesianEnergy = Mockito.mock(AbstractCartesianCost.class);
         Mockito.when(cartesianEnergy.getFieldAdjointVelocityNorm(fieldAdjoint)).thenCallRealMethod();
         Mockito.when(cartesianEnergy.getAdjointVelocityNorm(adjoint)).thenCallRealMethod();
         // WHEN

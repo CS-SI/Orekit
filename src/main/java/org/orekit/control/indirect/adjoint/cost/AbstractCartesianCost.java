@@ -21,15 +21,13 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 
 /**
- * Abstract class for energy cost with Cartesian coordinates.
- * An energy cost is proportional to the integral over time of the Euclidean norm of the control vector, often scaled with 1/2.
- * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
+ * Abstract class for cost with Cartesian coordinates.
  *
  * @author Romain Serra
  * @see CartesianCost
- * @since 12.2
+ * @since 13.0
  */
-public abstract class AbstractCartesianEnergy implements CartesianCost {
+public abstract class AbstractCartesianCost implements CartesianCost {
 
     /** Name of adjoint vector. */
     private final String name;
@@ -42,7 +40,7 @@ public abstract class AbstractCartesianEnergy implements CartesianCost {
      * @param name name
      * @param massFlowRateFactor mass flow rate factor
      */
-    protected AbstractCartesianEnergy(final String name, final double massFlowRateFactor) {
+    protected AbstractCartesianCost(final String name, final double massFlowRateFactor) {
         this.name = name;
         this.massFlowRateFactor = FastMath.abs(massFlowRateFactor);
     }
