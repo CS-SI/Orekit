@@ -33,7 +33,7 @@ import java.util.stream.Stream;
  * @author Romain Serra
  * @since 12.2
  */
-public class UnboundedCartesianEnergyNeglectingMass extends AbstractCartesianEnergy {
+public class UnboundedCartesianEnergyNeglectingMass extends AbstractCartesianCost {
 
     /**
      * Constructor.

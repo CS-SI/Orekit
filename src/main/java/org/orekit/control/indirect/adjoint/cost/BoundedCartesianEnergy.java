@@ -28,8 +28,11 @@ import java.util.stream.Stream;
 
 /**
  * Class for bounded energy cost with Cartesian coordinates.
+ * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
+ * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
  * Here, the control vector is chosen as the thrust force divided by the maximum thrust magnitude and expressed in the propagation frame.
  * It has a unit Euclidean norm.
+ *
  * @author Romain Serra
  * @see UnboundedCartesianEnergyNeglectingMass
  * @since 12.2

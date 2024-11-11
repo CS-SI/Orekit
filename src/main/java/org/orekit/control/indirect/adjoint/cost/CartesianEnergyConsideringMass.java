@@ -33,11 +33,14 @@ import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 /**
  * Abstract class for energy cost with Cartesian coordinates and non-zero mass flow rate.
+ * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
+ * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
+ *
  * @author Romain Serra
- * @see AbstractCartesianEnergy
+ * @see AbstractCartesianCost
  * @since 12.2
  */
-abstract class CartesianEnergyConsideringMass extends AbstractCartesianEnergy {
+abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
 
     /** Detection settings for singularity detection. */
     private final EventDetectionSettings eventDetectionSettings;
