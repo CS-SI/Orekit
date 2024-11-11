@@ -119,7 +119,7 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     public static final int CIS_INDEX = CIC_INDEX + 1;
 
     /** Size of parameters array. */
-    private static final int SIZE = CIS_INDEX + 1;
+    public static final int SIZE = CIS_INDEX + 1;
 
     /** Reference epoch. */
     private AbsoluteDate date;
@@ -254,6 +254,20 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     protected static ParameterDriver createDriver(final String name) {
         return new ParameterDriver(name, 0, FastMath.scalb(1.0, -30),
                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+    }
+
+    /** Get satellite system.
+     * @return satellite system
+     */
+    public SatelliteSystem getSystem() {
+        return system;
+    }
+
+    /** Get known time scales.
+     * @return known time scales
+     */
+    public TimeScales getTimeScales() {
+        return timeScales;
     }
 
     /** {@inheritDoc}

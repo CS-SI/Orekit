@@ -378,13 +378,13 @@ public class GPSPropagatorTest {
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
-        Assertions.assertEquals(0, stm.getEntry(0, 0)); // TODO set correct reference value
+        Assertions.assertEquals(1.019954360, stm.getEntry(0, 0), 1.0e-9); // TODO set correct reference value
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
         Assertions.assertEquals(6, jacobian.getRowDimension());
         Assertions.assertEquals(2, jacobian.getColumnDimension());
-        Assertions.assertEquals(Double.NaN, jacobian.getEntry(0, 0), 1.0e-12); // TODO set correct reference value
+        Assertions.assertEquals(0.075744251, jacobian.getEntry(0, 0), 1.0e-9); // TODO set correct reference value
 
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,7 +21,9 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.MathArrays;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -30,6 +32,7 @@ import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.FieldAbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -48,8 +51,11 @@ import java.util.List;
  */
 public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
-    /** The GNSS orbital elements used. */
-    private final GNSSOrbitalElements orbitalElements;
+    /** The GNSS propagation model used. */
+    private final FieldGnssOrbitalElements<T> orbitalElements;
+
+    /** The spacecraft mass (kg). */
+    private final T mass;
 
     /** The ECI frame used for GNSS propagation. */
     private final Frame eci;
@@ -63,21 +69,38 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param eci Earth Centered Inertial frame
      * @param ecef Earth Centered Earth Fixed frame
      * @param provider Attitude provider
-     * @param initialState initial state (<em>must</em> be consistent with {@code orbitalElements})
+     * @param mass Satellite mass (kg)
      */
-    FieldGnssPropagator(final GNSSOrbitalElements orbitalElements, final Frame eci,
-                        final Frame ecef, final AttitudeProvider provider,
-                        final FieldSpacecraftState<T> initialState) {
-        super(initialState.getDate().getField(), provider);
-        // Stores the GNSS propagation model
+    FieldGnssPropagator(final FieldGnssOrbitalElements<T> orbitalElements,
+                        final Frame eci, final Frame ecef,
+                        final AttitudeProvider provider, final T mass) {
+        super(orbitalElements.getDate().getField(), provider);
+        // Stores the GNSS orbital elements
         this.orbitalElements = orbitalElements;
+        // Sets the start date as the date of the orbital elements
+        setStartDate(orbitalElements.getDate());
+        // Sets the mass
+        this.mass = mass;
         // Sets the Earth Centered Inertial frame
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = ecef;
+        // Sets initial state
+        final T[] parameters = MathArrays.buildArray(orbitalElements.getDate().getField(), GNSSOrbitalElements.SIZE);
+        parameters[GNSSOrbitalElements.TIME_INDEX]      = orbitalElements.getTime();
+        parameters[GNSSOrbitalElements.I_DOT_INDEX]     = orbitalElements.getIDot();
+        parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX] = orbitalElements.getOmegaDot();
+        parameters[GNSSOrbitalElements.CUC_INDEX]       = orbitalElements.getCuc();
+        parameters[GNSSOrbitalElements.CUS_INDEX]       = orbitalElements.getCus();
+        parameters[GNSSOrbitalElements.CRC_INDEX]       = orbitalElements.getCrc();
+        parameters[GNSSOrbitalElements.CRS_INDEX]       = orbitalElements.getCrs();
+        parameters[GNSSOrbitalElements.CIC_INDEX]       = orbitalElements.getCic();
+        parameters[GNSSOrbitalElements.CIS_INDEX]       = orbitalElements.getCis();
+        final FieldOrbit<T> orbit = propagateOrbit(getStartDate(), parameters);
+        final FieldAttitude<T> attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
         // calling the method from base class because the one overridden below intentionally throws an exception
-        super.resetInitialState(initialState);
+        super.resetInitialState(new FieldSpacecraftState<>(orbit, attitude, mass));
 
     }
 
@@ -112,7 +135,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return the Earth gravity coefficient.
      */
     public T getMU() {
-        return getInitialState().getDate().getField().getZero().newInstance(orbitalElements.getMu());
+        return orbitalElements.getMu();
     }
 
     /** {@inheritDoc} */
@@ -142,8 +165,9 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
                                                                                   date.getField().getOne(),
                                                                                   date.getField().getZero());
         // mean motion
-        final double a          = orbitalElements.getSma();
-        final double meanMotion = FastMath.sqrt(orbitalElements.getMu() / a) / a;
+        final T a          = orbitalElements.getSma();
+        final T invA       = a.reciprocal();
+        final T meanMotion = FastMath.sqrt(orbitalElements.getMu().multiply(invA)).multiply(invA);
 
         // Mean anomaly
         final FieldUnivariateDerivative2<T> mk = tk.multiply(meanMotion).add(orbitalElements.getM0());
@@ -176,26 +200,17 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldUnivariateDerivative2<T> xk = csuk.cos().multiply(rk);
         final FieldUnivariateDerivative2<T> yk = csuk.sin().multiply(rk);
         // Corrected longitude of ascending node
-        final double thetaDot = orbitalElements.getAngularVelocity();
         final FieldSinCos<FieldUnivariateDerivative2<T>> csomk =
             FastMath.sinCos(tk.multiply(parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX].
-                            subtract(thetaDot)).
+                            subtract(orbitalElements.getAngularVelocity())).
                             add(orbitalElements.getOmega0()).
-                            subtract(parameters[GNSSOrbitalElements.TIME_INDEX].multiply(thetaDot)));
+                            subtract(parameters[GNSSOrbitalElements.TIME_INDEX].multiply(orbitalElements.getAngularVelocity())));
         // returns the Earth-fixed coordinates
         final FieldVector3D<FieldUnivariateDerivative2<T>> positionWithDerivatives =
                         new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(cik)),
                                             xk.multiply(csomk.sin()).add(yk.multiply(csomk.cos()).multiply(cik)),
                                             yk.multiply(ik.sin()));
-        return new FieldPVCoordinates<>(new FieldVector3D<>(positionWithDerivatives.getX().getValue(),
-                                                            positionWithDerivatives.getY().getValue(),
-                                                            positionWithDerivatives.getZ().getValue()),
-                                        new FieldVector3D<>(positionWithDerivatives.getX().getFirstDerivative(),
-                                                            positionWithDerivatives.getY().getFirstDerivative(),
-                                                            positionWithDerivatives.getZ().getFirstDerivative()),
-                                        new FieldVector3D<>(positionWithDerivatives.getX().getSecondDerivative(),
-                                                            positionWithDerivatives.getY().getSecondDerivative(),
-                                                            positionWithDerivatives.getZ().getSecondDerivative()));
+        return new FieldPVCoordinates<>(positionWithDerivatives);
 
     }
 
@@ -206,15 +221,14 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return the duration from GNSS orbit Reference epoch (s)
      */
     private T getTk(final FieldAbsoluteDate<T> date) {
-        final double cycleDuration = orbitalElements.getCycleDuration();
         // Time from ephemeris reference epoch
         T tk = date.durationFrom(orbitalElements.getDate());
         // Adjusts the time to take roll over week into account
-        while (tk.getReal() > 0.5 * cycleDuration) {
-            tk = tk.subtract(cycleDuration);
+        while (tk.getReal() > 0.5 * orbitalElements.getCycleDuration()) {
+            tk = tk.subtract(orbitalElements.getCycleDuration());
         }
-        while (tk.getReal() < -0.5 * cycleDuration) {
-            tk = tk.add(cycleDuration);
+        while (tk.getReal() < -0.5 * orbitalElements.getCycleDuration()) {
+            tk = tk.add(orbitalElements.getCycleDuration());
         }
         // Returns the time from ephemeris reference epoch
         return tk;

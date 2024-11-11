@@ -146,8 +146,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
 
             // initialize event detectors
-            eventsStates = getAttitudeProvider().getFieldEventDetectors(getField()).map(FieldEventState::new)
-                .collect(Collectors.toList());
+            eventsStates = getAttitudeProvider().
+                           getFieldEventDetectors(getField()).map(FieldEventState::new).
+                           collect(Collectors.toList());
             eventsStates.addAll(userEventsStates);
             for (final FieldEventState<?, T> es : eventsStates) {
                 es.init(state, target);

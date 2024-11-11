@@ -252,28 +252,31 @@ public abstract class AbstractGradientConverter {
                 final FieldOrbit<Gradient> orbit = s0.getOrbit();
                 if (orbit.getType().equals(OrbitType.EQUINOCTIAL)) {
                     // for DSST, which always uses EquinoctialOrbit, not CartesianOrbit
-                    spacecraftState = new FieldSpacecraftState<>(
-                            new FieldEquinoctialOrbit<>(
-                                    extend(orbit.getA(), freeParameters),
-                                    extend(orbit.getEquinoctialEx(), freeParameters),
-                                    extend(orbit.getEquinoctialEy(), freeParameters),
-                                    extend(orbit.getHx(), freeParameters),
-                                    extend(orbit.getHy(), freeParameters),
-                                    extend(orbit.getLM(), freeParameters),
-                                    PositionAngleType.MEAN,
-                                    s0.getFrame(),
-                                    extend(s0.getDate(), freeParameters),
-                                    extend(s0.getMu(), freeParameters)
-                            ),
+                    spacecraftState =
+                        new FieldSpacecraftState<>(new FieldEquinoctialOrbit<>(extend(orbit.getA(), freeParameters),
+                                                                               extend(orbit.getEquinoctialEx(), freeParameters),
+                                                                               extend(orbit.getEquinoctialEy(), freeParameters),
+                                                                               extend(orbit.getHx(), freeParameters),
+                                                                               extend(orbit.getHy(), freeParameters),
+                                                                               extend(orbit.getLM(), freeParameters),
+                                                                               PositionAngleType.MEAN,
+                                                                               s0.getFrame(),
+                                                                               extend(s0.getDate(), freeParameters),
+                                                                               extend(s0.getMu(), freeParameters)),
                             gAttitude,
                             gMass);
                 } else {
-                    spacecraftState = new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
-                            s0.getFrame(), extend(s0.getMu(), freeParameters)), gAttitude, gMass);
+                    spacecraftState =
+                        new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
+                                                                             s0.getFrame(),
+                                                                             extend(s0.getMu(), freeParameters)),
+                                                   gAttitude, gMass);
                 }
             } else {
-                spacecraftState = new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
-                        timeStampedFieldPVCoordinates), gAttitude, gMass);
+                spacecraftState =
+                    new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
+                                                                                timeStampedFieldPVCoordinates),
+                                               gAttitude, gMass);
             }
 
             gStates.set(nbParams, spacecraftState);

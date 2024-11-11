@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
@@ -225,15 +224,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
                         new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(cik)),
                                             xk.multiply(csomk.sin()).add(yk.multiply(csomk.cos()).multiply(cik)),
                                             yk.multiply(ik.sin()));
-        return new PVCoordinates(new Vector3D(positionWithDerivatives.getX().getValue(),
-                                              positionWithDerivatives.getY().getValue(),
-                                              positionWithDerivatives.getZ().getValue()),
-                                 new Vector3D(positionWithDerivatives.getX().getFirstDerivative(),
-                                              positionWithDerivatives.getY().getFirstDerivative(),
-                                              positionWithDerivatives.getZ().getFirstDerivative()),
-                                 new Vector3D(positionWithDerivatives.getX().getSecondDerivative(),
-                                              positionWithDerivatives.getY().getSecondDerivative(),
-                                              positionWithDerivatives.getZ().getSecondDerivative()));
+        return new PVCoordinates(positionWithDerivatives);
     }
 
     /**
