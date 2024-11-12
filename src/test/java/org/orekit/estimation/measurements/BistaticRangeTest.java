@@ -34,6 +34,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.Differentiation;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterFunction;
@@ -379,4 +380,54 @@ public class BistaticRangeTest {
 
     }
 
+    /**
+     * Test the values of the measurement being correctly modified by ClockOffsetDriver
+     * (see issue 1418)
+     */
+    @Test
+    public void testIssue1418() {
+    	Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+    	// Set the clock offsets for the stations
+    	final double emitterClockOffset = 5e-9;
+    	final double receiverClockOffset = 10e-9;
+    	final GroundStation emitter = context.BRRstations.getKey();
+    	final GroundStation receiver = context.BRRstations.getValue();
+        emitter.getClockOffsetDriver().setValue(emitterClockOffset);
+        receiver.getClockOffsetDriver().setValue(receiverClockOffset);
+
+        // Create measurements
+        final NumericalPropagatorBuilder propagatorBuilder =
+                        context.createBuilder(OrbitType.EQUINOCTIAL, PositionAngleType.TRUE, false,
+                                              1.0e-6, 60.0, 0.001);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                                                                           propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                        EstimationTestUtils.createMeasurements(propagator,
+                                                               new BistaticRangeMeasurementCreator(context),
+                                                               1.0, 3.0, 300.0);
+        propagator.clearStepHandlers();
+
+        // Prepare statistics for values difference
+        final StreamingStatistics diffStat = new StreamingStatistics();
+
+        for (final ObservedMeasurement<?> measurement : measurements) {
+
+            // Propagate to measurement date
+            final AbsoluteDate datemeas  = measurement.getDate();
+            SpacecraftState    state     = propagator.propagate(datemeas);
+
+            // Estimate the measurement value
+            final EstimatedMeasurementBase<?> estimated = measurement.estimateWithoutDerivatives(new SpacecraftState[] { state });
+
+            // Store the difference between estimated and observed values in the stats
+            diffStat.addValue(FastMath.abs(estimated.getEstimatedValue()[0] - measurement.getObservedValue()[0]));
+        }
+
+        // Check that mean is shifted by the clock offset
+        final double clockOffsetShift = (receiverClockOffset - emitterClockOffset) * Constants.SPEED_OF_LIGHT;
+        Assertions.assertEquals(clockOffsetShift, diffStat.getMean(), 1e-6);
+
+
+    }
 }
