@@ -191,6 +191,7 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
     }
 
     /** Estimate the theoretical value without derivatives.
+     * The default implementation uses the computation with derivatives and ought to be overwritten for performance.
      * <p>
      * The theoretical value does not have <em>any</em> modifiers applied.
      * </p>
@@ -201,8 +202,16 @@ public abstract class AbstractMeasurement<T extends ObservedMeasurement<T>> impl
      * @see #estimate(int, int, SpacecraftState[])
      * @since 12.0
      */
-    protected abstract EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(int iteration, int evaluation,
-                                                                                           SpacecraftState[] states);
+    protected EstimatedMeasurementBase<T> theoreticalEvaluationWithoutDerivatives(final int iteration,
+                                                                                  final int evaluation,
+                                                                                  final SpacecraftState[] states) {
+        final EstimatedMeasurement<T> estimatedMeasurement = theoreticalEvaluation(iteration, evaluation, states);
+        final EstimatedMeasurementBase<T> estimatedMeasurementBase = new EstimatedMeasurementBase<>(estimatedMeasurement.getObservedMeasurement(),
+                iteration, evaluation, states, estimatedMeasurement.getParticipants());
+        estimatedMeasurementBase.setEstimatedValue(estimatedMeasurement.getEstimatedValue());
+        estimatedMeasurementBase.setStatus(estimatedMeasurement.getStatus());
+        return estimatedMeasurementBase;
+    }
 
     /** Estimate the theoretical value.
      * <p>
