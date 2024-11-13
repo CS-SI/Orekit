@@ -110,12 +110,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
     /**
      * Build a new instance.
-     * @param initialState initial state
+     *
+     * @param initialState    initial state
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param cycleDuration   duration of the GNSS cycle in seconds
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav weeks
-     *                        are always according to GPS)
+     * @param system          satellite system to consider for interpreting week number (may be different from real
+     *                        system, for example in Rinex nav weeks are always according to GPS)
      * @param timeScales      known time scales
      * @param prn             PRN number of the satellite
      * @param iDot            inclination rate (rad/s)
@@ -130,15 +129,14 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @param provider        attitude provider
      * @since 13.0
      */
-    GNSSPropagator(final SpacecraftState initialState,
-                   final double angularVelocity, final double cycleDuration,
+    GNSSPropagator(final SpacecraftState initialState, final double angularVelocity,
                    final SatelliteSystem system, final TimeScales timeScales,
                    final int prn, final double iDot, final double dom,
                    final double cuc, final double cus,
                    final double crc, final double crs,
                    final double cic, final double cis,
                    final Frame ecef, final AttitudeProvider provider) {
-        this(buildOrbitalElements(initialState, angularVelocity, cycleDuration, system, timeScales, prn,
+        this(buildOrbitalElements(initialState, angularVelocity, system, timeScales, prn,
                                   iDot, dom, cuc, cus, crc, crs, cic, cis, ecef),
              initialState.getFrame(), ecef, provider, initialState.getMass());
     }
@@ -320,17 +318,17 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
     }
 
-    /** Build orbital elements from initial state.
+    /**
+     * Build orbital elements from initial state.
      * <p>
-     * This method is roughly the inverse of {@link #propagateInEcef(AbsoluteDate)}, except it
-     * starts from a state in inertial frame
+     * This method is roughly the inverse of {@link #propagateInEcef(AbsoluteDate)}, except it starts from a state in
+     * inertial frame
      * </p>
+     *
      * @param initialState    initial state
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param cycleDuration   duration of the GNSS cycle in seconds
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav weeks
-     *                        are always according to GPS)
+     * @param system          satellite system to consider for interpreting week number (may be different from real
+     *                        system, for example in Rinex nav weeks are always according to GPS)
      * @param timeScales      known time scales
      * @param prn             PRN number of the satellite
      * @param iDot            inclination rate (rad/s)
@@ -346,7 +344,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @since 13.0
      */
     private static GNSSOrbitalElements buildOrbitalElements(final SpacecraftState initialState,
-                                                            final double angularVelocity, final double cycleDuration,
+                                                            final double angularVelocity,
                                                             final SatelliteSystem system, final TimeScales timeScales,
                                                             final int prn, final double iDot, final double dom,
                                                             final double cuc, final double cus,

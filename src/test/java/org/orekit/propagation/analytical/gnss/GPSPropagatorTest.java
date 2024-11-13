@@ -429,9 +429,7 @@ public class GPSPropagatorTest {
         GNSSPropagator propagator = goe.getPropagator();
 
         final GNSSPropagator rebuilt = new GNSSPropagator(propagator.getInitialState(),
-                                                          goe.getAngularVelocity(),
-                                                          goe.getCycleDuration(),
-                                                          goe.getSystem(),
+                                                          goe.getAngularVelocity(), goe.getSystem(),
                                                           goe.getTimeScales(),
                                                           goe.getPRN(),
                                                           goe.getIDot(),
