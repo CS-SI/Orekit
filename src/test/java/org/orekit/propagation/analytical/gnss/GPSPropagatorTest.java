@@ -349,13 +349,28 @@ public class GPSPropagatorTest {
 
     @Test
     public void testStmAndJacobian() {
-        // Builds the GPSPropagator from the almanac
-        final GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).
-                        attitudeProvider(Utils.defaultLaw()).
-                        mass(1521.0).
-                        eci(FramesFactory.getEME2000()).
-                        ecef(FramesFactory.getITRF(IERSConventions.IERS_2010, false)).
-                        build();
+        // Initial GPS orbital elements (Ref: IGS)
+        final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
+                                                                              SatelliteSystem.GPS);
+        goe.setPRN(7);
+        goe.setWeek(0);
+        goe.setTime(288000);
+        goe.setSqrtA(5153.599830627441);
+        goe.setE(0.012442796607501805);
+        goe.setDeltaN(4.419469802942352E-9);
+        goe.setI0(0.9558937988021613);
+        goe.setIDot(-2.4608167886110235E-10);
+        goe.setOmega0(1.0479401362158658);
+        goe.setOmegaDot(-7.967117576712062E-9);
+        goe.setPa(-2.4719019944000538);
+        goe.setM0(-1.0899023379614294);
+        goe.setCuc(4.3995678424835205E-6);
+        goe.setCus(1.002475619316101E-5);
+        goe.setCrc(183.40625);
+        goe.setCrs(87.03125);
+        goe.setCic(3.203749656677246E-7);
+        goe.setCis(4.0978193283081055E-8);
+        GNSSPropagator propagator = goe.getPropagator();
 
         // we want to compute the partial derivatives with respect to Crs and Crc parameters
         Assertions.assertEquals(9, propagator.getOrbitalElements().getParameters().length);
@@ -385,6 +400,75 @@ public class GPSPropagatorTest {
         Assertions.assertEquals(6, jacobian.getRowDimension());
         Assertions.assertEquals(2, jacobian.getColumnDimension());
         Assertions.assertEquals(0.075744251, jacobian.getEntry(0, 0), 1.0e-9); // TODO set correct reference value
+
+    }
+
+    @Test
+    public void testRebuildModel() {
+        // Initial GPS orbital elements (Ref: IGS)
+        final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
+                                                                              SatelliteSystem.GPS);
+        goe.setPRN(7);
+        goe.setWeek(0);
+        goe.setTime(288000);
+        goe.setSqrtA(5153.599830627441);
+        goe.setE(0.012442796607501805);
+        goe.setDeltaN(4.419469802942352E-9);
+        goe.setI0(0.9558937988021613);
+        goe.setIDot(-2.4608167886110235E-10);
+        goe.setOmega0(1.0479401362158658);
+        goe.setOmegaDot(-7.967117576712062E-9);
+        goe.setPa(-2.4719019944000538);
+        goe.setM0(-1.0899023379614294);
+        goe.setCuc(4.3995678424835205E-6);
+        goe.setCus(1.002475619316101E-5);
+        goe.setCrc(183.40625);
+        goe.setCrs(87.03125);
+        goe.setCic(3.203749656677246E-7);
+        goe.setCis(4.0978193283081055E-8);
+        GNSSPropagator propagator = goe.getPropagator();
+
+        final GNSSPropagator rebuilt = new GNSSPropagator(propagator.getInitialState(),
+                                                          goe.getAngularVelocity(),
+                                                          goe.getCycleDuration(),
+                                                          goe.getSystem(),
+                                                          goe.getTimeScales(),
+                                                          goe.getPRN(),
+                                                          goe.getIDot(),
+                                                          goe.getOmegaDot(),
+                                                          goe.getCuc(), goe.getCus(),
+                                                          goe.getCrc(), goe.getCrs(),
+                                                          goe.getCic(), goe.getCis(),
+                                                          FramesFactory.getITRF(IERSConventions.IERS_2010, false),
+                                                          Utils.defaultLaw());
+        final GNSSOrbitalElements oe2 = rebuilt.getOrbitalElements();
+        Assertions.assertEquals(0, goe.getDate().durationFrom(oe2),               1.0e-15);
+
+        // general parameters
+        Assertions.assertEquals(goe.getMu(), oe2.getMu(),                         1.0e-15);
+        Assertions.assertEquals(goe.getCycleDuration(),   oe2.getCycleDuration(), 1.0e-15);
+        Assertions.assertEquals(goe.getSystem(),          oe2.getSystem());
+        Assertions.assertEquals(goe.getPRN(),             oe2.getPRN());
+        Assertions.assertEquals(goe.getWeek(),            oe2.getWeek());
+
+        // non-Keplerian parameters, which are just copied
+        Assertions.assertEquals(goe.getTime(),            oe2.getTime(),          1.0e-15);
+        Assertions.assertEquals(goe.getIDot(),            oe2.getIDot(),          1.0e-15);
+        Assertions.assertEquals(goe.getOmegaDot(),        oe2.getOmegaDot(),      1.0e-15);
+        Assertions.assertEquals(goe.getCuc(),             oe2.getCuc(),           1.0e-15);
+        Assertions.assertEquals(goe.getCus(),             oe2.getCus(),           1.0e-15);
+        Assertions.assertEquals(goe.getCrc(),             oe2.getCrc(),           1.0e-15);
+        Assertions.assertEquals(goe.getCrs(),             oe2.getCrs(),           1.0e-15);
+        Assertions.assertEquals(goe.getCic(),             oe2.getCic(),           1.0e-15);
+        Assertions.assertEquals(goe.getCis(),             oe2.getCis(),           1.0e-15);
+
+        // orbital parameters, those are rebuilt from the initial state
+        Assertions.assertEquals(goe.getSma(),             oe2.getSma(),           1.0e-15);
+        Assertions.assertEquals(goe.getE(),               oe2.getE(),             1.0e-15);
+        Assertions.assertEquals(goe.getI0(),              oe2.getI0(),            1.0e-15);
+        Assertions.assertEquals(goe.getPa(),              oe2.getPa(),            1.0e-15);
+        Assertions.assertEquals(goe.getOmega0(),          oe2.getOmega0(),        1.0e-15);
+        Assertions.assertEquals(goe.getM0(),              oe2.getM0(),            1.0e-15);
 
     }
 
