@@ -29,10 +29,7 @@ import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /** This class provides the minimal set of orbital elements needed by the {@link
  * org.orekit.propagation.analytical.gnss.FieldGnssPropagator}.
@@ -78,7 +75,7 @@ public class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>> impleme
     private final T anom;
 
     /** Non-Keplerian evolution parameters. */
-    private T[] nonKeplerian;
+    private final T[] nonKeplerian;
 
     /** Drivers for the non-KEplerian evolution parameters. */
     private final List<ParameterDriver> drivers;
