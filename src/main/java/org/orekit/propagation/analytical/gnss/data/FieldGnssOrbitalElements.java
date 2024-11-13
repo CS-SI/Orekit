@@ -88,7 +88,7 @@ public class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>> impleme
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
      * @param cycleDuration   duration of the GNSS cycle in seconds
      * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for exmple in Rinex nav weeks
+     *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      * @param timeScales      known time scales
      * @param prn             PRN number of the satellite
