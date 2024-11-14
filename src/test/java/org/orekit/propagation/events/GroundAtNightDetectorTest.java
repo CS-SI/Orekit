@@ -27,7 +27,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
-import org.orekit.models.earth.EarthITU834AtmosphereRefraction;
+import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
@@ -54,7 +54,7 @@ public class GroundAtNightDetectorTest {
     public void testMidLatitudeCivilITURefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.CIVIL_DAWN_DUSK_ELEVATION,
-                      new EarthITU834AtmosphereRefraction(0.0), 43909.148);
+                      new ITURP834AtmosphericRefraction(0.0), 43909.148);
     }
 
     @Test
@@ -68,7 +68,7 @@ public class GroundAtNightDetectorTest {
     public void testMidLatitudeNauticalITURefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.NAUTICAL_DAWN_DUSK_ELEVATION,
-                      new EarthITU834AtmosphereRefraction(0.0), 39933.656);
+                      new ITURP834AtmosphericRefraction(0.0), 39933.656);
     }
 
     @Test
@@ -82,14 +82,14 @@ public class GroundAtNightDetectorTest {
     public void testMidLatitudeAstronomicalITURefraction() {
         checkDuration(FastMath.toRadians(43.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.ASTRONOMICAL_DAWN_DUSK_ELEVATION,
-                      new EarthITU834AtmosphereRefraction(0.0), 35991.314);
+                      new ITURP834AtmosphericRefraction(0.0), 35991.314);
     }
 
     @Test
     public void testHighLatitudeAstronomicalITURefraction() {
         checkDuration(FastMath.toRadians(84.0), FastMath.toRadians(0.0),
                       GroundAtNightDetector.ASTRONOMICAL_DAWN_DUSK_ELEVATION,
-                      new EarthITU834AtmosphereRefraction(0.0), Double.NaN);
+                      new ITURP834AtmosphericRefraction(0.0), Double.NaN);
     }
 
     private void checkDuration(double latitude, double longitude, double dawnDuskElevation,

@@ -24,15 +24,19 @@ import org.hipparchus.optim.univariate.UnivariateObjectiveFunction;
 import org.hipparchus.util.FastMath;
 import org.orekit.models.AtmosphericRefractionModel;
 
-/** Implementation of refraction model for Earth exponential atmosphere based on ITU-R P.834-9 recommendation.
- * <p>Refraction angle is computed according to the International Telecommunication Union recommendation formula.
- *  For reference, see <b>ITU-R P.834-9</b> (December 2017).</p>
+/** Implementation of refraction model for Earth exponential atmosphere based on ITU-R P.834 recommendation.
+ * <p>
+ * This class implements the ray bending part, i.e. section 1 of the recommendation.
+ * The excess radio path length part of the model, i.e. section 6 of the recommendation,
+ * is implemented in the {@link org.orekit.models.earth.troposphere.ITURP834PathDelay} class.
+ * </p>
  *
  * @author Thierry Ceolin
  * @since 7.1
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
  */
 
-public class EarthITU834AtmosphereRefraction implements AtmosphericRefractionModel {
+public class ITURP834AtmosphericRefraction implements AtmosphericRefractionModel {
 
     /** Altitude conversion factor. */
     private static final double KM_TO_M = 1000.0;
@@ -88,7 +92,7 @@ public class EarthITU834AtmosphereRefraction implements AtmosphericRefractionMod
     /** Creates a new default instance.
      * @param altitude altitude of the ground station from which measurement is performed (m)
      */
-    public EarthITU834AtmosphereRefraction(final double altitude) {
+    public ITURP834AtmosphericRefraction(final double altitude) {
         this.altitude = altitude;
         thetamin = getMinimalElevation(altitude);
         theta0   = thetamin - getTau(thetamin);
