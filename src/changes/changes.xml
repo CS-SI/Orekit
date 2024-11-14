@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="update" issue="1590">
+            Renamed EarthITU453AtmosphereRefraction into EarthITU834AtmosphereRefraction.
+        </action>
         <action dev="serrof" type="update" issue="1585">
             Add default implementation for theoreticalEvaluationWithoutDerivatives in AbstractMeasurement.
         </action>

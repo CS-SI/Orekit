@@ -70,7 +70,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
      * standard refraction model} does apply only for elevations above -2°. It is therefore
      * not suitable for used with {@link #CIVIL_DAWN_DUSK_ELEVATION} (-6°), {@link
      * #NAUTICAL_DAWN_DUSK_ELEVATION} (-12°) or {@link #ASTRONOMICAL_DAWN_DUSK_ELEVATION} (-18°).
-     * The {@link org.orekit.models.earth.EarthITU453AtmosphereRefraction ITU 453 refraction model}
+     * The {@link org.orekit.models.earth.EarthITU834AtmosphereRefraction ITU-R P.834 refraction model}
      * which can compute refraction at large negative elevations should be preferred.
      * </p>
      * @param groundLocation ground location to check

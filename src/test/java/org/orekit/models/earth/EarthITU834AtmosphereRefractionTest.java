@@ -28,7 +28,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-public class EarthITU453AtmosphereRefractionTest {
+public class EarthITU834AtmosphereRefractionTest {
 
     private final double onehundredth = 1e-2;
     private final double twohundredth = 2e-2;
@@ -49,20 +49,20 @@ public class EarthITU453AtmosphereRefractionTest {
 
     // Kiruna-2 ESTRACK Station (Sweden)
     private TopocentricFrame stationk;
-    private String namek = "Kiruna-2";
+    private final String namek = "Kiruna-2";
     // Hartebeesthoek IGS Station (South Africa)
     // lowest elevation angle that verify inequality number 11 : theta0 = -1.039 degree;
     private TopocentricFrame stationh;
-    private String nameh = "Hartebeesthoek";
+    private final String nameh = "Hartebeesthoek";
     // Everest Fake Station (China/Nepal)
     private TopocentricFrame statione;
-    private String namee = "Everest";
+    private final String namee = "Everest";
     // Dead Sea Fake Station (Israel)
     private TopocentricFrame stationd;
-    private String named = "Dead Sea";
+    private final String named = "Dead Sea";
     // Altitude0 Fake Station ()
     private TopocentricFrame stationa;
-    private String namea = "Alt0";
+    private final String namea = "Alt0";
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -112,7 +112,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = statione.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -127,7 +127,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationd.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -142,7 +142,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationk.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         final double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -163,7 +163,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationk.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -178,7 +178,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationk.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -193,7 +193,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationk.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -208,7 +208,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationk.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -223,7 +223,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationh.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         // refraction correction in degrees
         double refraction = FastMath.toDegrees(modelTropo.getRefraction(elevation));
@@ -235,7 +235,7 @@ public class EarthITU453AtmosphereRefractionTest {
 
         // Station altitude
         final double altitude = stationa.getPoint().getAltitude();
-        EarthITU453AtmosphereRefraction modelTropo = new EarthITU453AtmosphereRefraction(altitude);
+        EarthITU834AtmosphereRefraction modelTropo = new EarthITU834AtmosphereRefraction(altitude);
 
         for (int itab=0; itab<40; itab++) {
             // elevation angle of the space station under free-space propagation conditions
