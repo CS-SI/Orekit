@@ -987,26 +987,27 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(7.605422, a.getNorm(), 1.0e-6);
 
         // check velocity is the derivative of position
+        final double tolerance = 3e-10;
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getX()),
                             orbit.getPVCoordinates().getVelocity().getX(),
-                            3.0e-12 * v.getNorm());
+                            tolerance * v.getNorm());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getY()),
                             orbit.getPVCoordinates().getVelocity().getY(),
-                            3.0e-12 * v.getNorm());
+                            tolerance * v.getNorm());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPosition().getZ()),
                             orbit.getPVCoordinates().getVelocity().getZ(),
-                            3.0e-12 * v.getNorm());
+                            tolerance * v.getNorm());
 
         // check acceleration is the derivative of velocity
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getX()),
                             orbit.getPVCoordinates().getAcceleration().getX(),
-                            3.0e-12 * a.getNorm());
+                            tolerance * a.getNorm());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getY()),
                             orbit.getPVCoordinates().getAcceleration().getY(),
-                            3.0e-12 * a.getNorm());
+                            tolerance * a.getNorm());
         Assertions.assertEquals(differentiate(orbit, shifted -> shifted.getPVCoordinates().getVelocity().getZ()),
                             orbit.getPVCoordinates().getAcceleration().getZ(),
-                            3.0e-12 * a.getNorm());
+                            tolerance * a.getNorm());
 
         // check jerk is the derivative of acceleration
         final double r2 = p.getNormSq();
@@ -1022,24 +1023,15 @@ class KeplerianOrbitTest {
                             keplerianJerk.getZ(),
                             3.0e-12 * keplerianJerk.getNorm());
 
-        Assertions.assertTrue(Double.isNaN(orbit.getADot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEquinoctialExDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEquinoctialEyDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHxDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getHyDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getLvDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getLEDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getLMDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getIDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getPerigeeArgumentDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getRightAscensionOfAscendingNodeDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getTrueAnomalyDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEccentricAnomalyDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getMeanAnomalyDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngleType.TRUE)));
-        Assertions.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngleType.ECCENTRIC)));
-        Assertions.assertTrue(Double.isNaN(orbit.getAnomalyDot(PositionAngleType.MEAN)));
+        Assertions.assertEquals(0., orbit.getADot());
+        Assertions.assertEquals(0., orbit.getEquinoctialExDot());
+        Assertions.assertEquals(0., orbit.getEquinoctialEyDot());
+        Assertions.assertEquals(0., orbit.getHxDot());
+        Assertions.assertEquals(0., orbit.getHyDot());
+        Assertions.assertEquals(0., orbit.getEDot());
+        Assertions.assertEquals(0., orbit.getIDot());
+        Assertions.assertEquals(0., orbit.getPerigeeArgumentDot());
+        Assertions.assertEquals(0., orbit.getRightAscensionOfAscendingNodeDot());
 
     }
 
@@ -1302,7 +1294,7 @@ class KeplerianOrbitTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assertions.assertEquals(485, bos.size());
+        Assertions.assertEquals(533, bos.size());
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
@@ -1313,12 +1305,6 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(orbit.getPerigeeArgument(), deserialized.getPerigeeArgument(), 1.0e-10);
         Assertions.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
         Assertions.assertEquals(orbit.getTrueAnomaly(), deserialized.getTrueAnomaly(), 1.0e-10);
-        Assertions.assertTrue(Double.isNaN(orbit.getADot()) && Double.isNaN(deserialized.getADot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getEDot()) && Double.isNaN(deserialized.getEDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getIDot()) && Double.isNaN(deserialized.getIDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getPerigeeArgumentDot()) && Double.isNaN(deserialized.getPerigeeArgumentDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getRightAscensionOfAscendingNodeDot()) && Double.isNaN(deserialized.getRightAscensionOfAscendingNodeDot()));
-        Assertions.assertTrue(Double.isNaN(orbit.getTrueAnomalyDot()) && Double.isNaN(deserialized.getTrueAnomalyDot()));
         Assertions.assertEquals(orbit.getDate(), deserialized.getDate());
         Assertions.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
         Assertions.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
@@ -1396,7 +1382,7 @@ class KeplerianOrbitTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
         KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
-        Assertions.assertTrue(orbit.hasDerivatives());
+        Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
@@ -1404,9 +1390,9 @@ class KeplerianOrbitTest {
 
         for (OrbitType type : OrbitType.values()) {
             Orbit converted = type.convertType(orbit);
-            Assertions.assertTrue(converted.hasDerivatives());
+            Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
             KeplerianOrbit rebuilt = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converted);
-            Assertions.assertTrue(rebuilt.hasDerivatives());
+            Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
             Assertions.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
             Assertions.assertEquals(orbit.getEDot(),                             rebuilt.getEDot(),                             1.0e-15);
             Assertions.assertEquals(orbit.getIDot(),                             rebuilt.getIDot(),                             1.0e-15);
@@ -1426,7 +1412,7 @@ class KeplerianOrbitTest {
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity, acceleration);
         KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(),
                                                   date, Constants.EIGEN5C_EARTH_MU);
-        Assertions.assertTrue(orbit.hasDerivatives());
+        Assertions.assertTrue(orbit.hasNonKeplerianAcceleration());
         double r2 = position.getNormSq();
         double r  = FastMath.sqrt(r2);
         Vector3D keplerianAcceleration = new Vector3D(-orbit.getMu() / (r2 * r), position);
@@ -1434,9 +1420,9 @@ class KeplerianOrbitTest {
 
         OrbitType type = OrbitType.CARTESIAN;
         Orbit converted = type.convertType(orbit);
-        Assertions.assertTrue(converted.hasDerivatives());
+        Assertions.assertTrue(converted.hasNonKeplerianAcceleration());
         KeplerianOrbit rebuilt = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(converted);
-        Assertions.assertTrue(rebuilt.hasDerivatives());
+        Assertions.assertTrue(rebuilt.hasNonKeplerianAcceleration());
         Assertions.assertEquals(orbit.getADot(),                             rebuilt.getADot(),                             3.0e-13);
         Assertions.assertEquals(orbit.getEDot(),                             rebuilt.getEDot(),                             1.0e-15);
         Assertions.assertEquals(orbit.getIDot(),                             rebuilt.getIDot(),                             1.0e-15);
@@ -1457,17 +1443,16 @@ class KeplerianOrbitTest {
     }
 
     @Test
-    void testRemoveRates() {
+    void testWithKeplerianRates() {
         // GIVEN
         final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
         final KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getGCRF(), date, mu);
         // WHEN
-        final KeplerianOrbit orbitWithoutRates = orbit.removeRates();
+        final KeplerianOrbit orbitWithoutRates = orbit.withKeplerianRates();
         // THEN
-        Assertions.assertFalse(orbitWithoutRates.hasRates());
-        Assertions.assertTrue(Double.isNaN(orbitWithoutRates.getADot()));
+        Assertions.assertFalse(orbitWithoutRates.hasNonKeplerianRates());
         Assertions.assertEquals(orbit.getMu(), orbitWithoutRates.getMu());
         Assertions.assertEquals(orbit.getDate(), orbitWithoutRates.getDate());
         Assertions.assertEquals(orbit.getFrame(), orbitWithoutRates.getFrame());
@@ -1539,19 +1524,19 @@ class KeplerianOrbitTest {
                                           FramesFactory.getEME2000(), date, mu);
 
         KeplerianOrbit normalized1 = (KeplerianOrbit) OrbitType.KEPLERIAN.normalize(withoutDerivatives, ref);
-        Assertions.assertFalse(normalized1.hasDerivatives());
+        Assertions.assertFalse(normalized1.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized1.getA() - withoutDerivatives.getA(), 1.0e-6);
         Assertions.assertEquals(0.0, normalized1.getE() - withoutDerivatives.getE(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized1.getI() - withoutDerivatives.getI(), 1.0e-10);
         Assertions.assertEquals(-MathUtils.TWO_PI, normalized1.getPerigeeArgument()               - withoutDerivatives.getPerigeeArgument(),               1.0e-10);
         Assertions.assertEquals(+MathUtils.TWO_PI, normalized1.getRightAscensionOfAscendingNode() - withoutDerivatives.getRightAscensionOfAscendingNode(), 1.0e-10);
         Assertions.assertEquals(2 * MathUtils.TWO_PI, normalized1.getTrueAnomaly()                - withoutDerivatives.getTrueAnomaly(),                   1.0e-10);
-        Assertions.assertTrue(Double.isNaN(normalized1.getADot()));
-        Assertions.assertTrue(Double.isNaN(normalized1.getEDot()));
-        Assertions.assertTrue(Double.isNaN(normalized1.getIDot()));
-        Assertions.assertTrue(Double.isNaN(normalized1.getPerigeeArgumentDot()));
-        Assertions.assertTrue(Double.isNaN(normalized1.getRightAscensionOfAscendingNodeDot()));
-        Assertions.assertTrue(Double.isNaN(normalized1.getTrueAnomalyDot()));
+        Assertions.assertEquals(withoutDerivatives.getADot(), normalized1.getADot());
+        Assertions.assertEquals(withoutDerivatives.getEDot(), normalized1.getEDot());
+        Assertions.assertEquals(withoutDerivatives.getIDot(), normalized1.getIDot());
+        Assertions.assertEquals(withoutDerivatives.getPerigeeArgumentDot(), normalized1.getPerigeeArgumentDot());
+        Assertions.assertEquals(withoutDerivatives.getRightAscensionOfAscendingNodeDot(), normalized1.getRightAscensionOfAscendingNodeDot());
+        Assertions.assertEquals(withoutDerivatives.getTrueAnomalyDot(), normalized1.getTrueAnomalyDot());
 
         double[] p = new double[6];
         OrbitType.KEPLERIAN.mapOrbitToArray(withoutDerivatives, PositionAngleType.TRUE, p, null);
@@ -1562,7 +1547,7 @@ class KeplerianOrbitTest {
                                                                                               withoutDerivatives.getMu(),
                                                                                               withoutDerivatives.getFrame());
         KeplerianOrbit normalized2 = (KeplerianOrbit) OrbitType.KEPLERIAN.normalize(withDerivatives, ref);
-        Assertions.assertTrue(normalized2.hasDerivatives());
+        Assertions.assertTrue(normalized2.hasNonKeplerianAcceleration());
         Assertions.assertEquals(0.0, normalized2.getA() - withoutDerivatives.getA(), 1.0e-6);
         Assertions.assertEquals(0.0, normalized2.getE() - withoutDerivatives.getE(), 1.0e-10);
         Assertions.assertEquals(0.0, normalized2.getI() - withoutDerivatives.getI(), 1.0e-10);
@@ -1621,9 +1606,6 @@ class KeplerianOrbitTest {
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getTrueAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getEccentricAnomaly());
                 Assertions.assertEquals(expectedAnomaly, keplerianOrbit.getMeanAnomaly());
-                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getTrueAnomalyDot()));
-                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getEccentricAnomalyDot()));
-                Assertions.assertTrue(Double.isNaN(keplerianOrbit.getMeanAnomalyDot()));
             }
         }
     }

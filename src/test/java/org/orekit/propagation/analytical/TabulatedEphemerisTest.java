@@ -220,13 +220,13 @@ public class TabulatedEphemerisTest {
 
         AbsoluteDate tB = new AbsoluteDate(t0, 25 * 60);
         Vector3D pB = ephem.propagate(tB).getPosition(frame);
-        Assertions.assertEquals(2.646,
+        Assertions.assertEquals(2.822,
                             Vector3D.distance(pB, s1.shiftedBy(tB.durationFrom(s1.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(2.619,
+        Assertions.assertEquals(1.308,
                             Vector3D.distance(pB, s2.shiftedBy(tB.durationFrom(s2.getDate())).getPosition(frame)),
                             1.0e-3);
-        Assertions.assertEquals(2.632,
+        Assertions.assertEquals(1.320,
                             Vector3D.distance(pB, s3.shiftedBy(tB.durationFrom(s3.getDate())).getPosition(frame)),
                             1.0e-3);
 
