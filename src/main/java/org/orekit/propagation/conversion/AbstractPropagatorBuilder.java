@@ -213,7 +213,7 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
             final ParameterDriver muDriver = new ParameterDriver(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT,
                                                                  mu, MU_SCALE, 0, Double.POSITIVE_INFINITY);
             muDriver.addObserver(new ParameterObserver() {
-                /** {@inheridDoc} */
+                /** {@inheritDoc} */
                 @Override
                 public void valueChanged(final double previousValue, final ParameterDriver driver, final AbsoluteDate date) {
                     // getValue(), can be called without argument as mu driver should have only one span

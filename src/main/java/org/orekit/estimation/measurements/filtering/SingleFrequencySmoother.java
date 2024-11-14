@@ -19,6 +19,7 @@ package org.orekit.estimation.measurements.filtering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
@@ -101,7 +102,7 @@ public class SingleFrequencySmoother {
      * Get the map of the filtered data.
      * @return a map containing the filtered data.
      */
-    public HashMap<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
+    public Map<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
         return mapFilteredData;
     }
 
@@ -109,7 +110,7 @@ public class SingleFrequencySmoother {
      * Get the map storing the filters for each observation type.
      * @return the map storing the filters for each observation type
      */
-    public final HashMap<ObservationType, SingleFrequencyHatchFilter> getMapFilters() {
+    public final Map<ObservationType, SingleFrequencyHatchFilter> getMapFilters() {
         return mapFilters;
     }
 
