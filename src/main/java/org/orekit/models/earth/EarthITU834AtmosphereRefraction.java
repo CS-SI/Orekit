@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth;
 
-import org.hipparchus.analysis.UnivariateFunction;
 import org.hipparchus.optim.MaxEval;
 import org.hipparchus.optim.nonlinear.scalar.GoalType;
 import org.hipparchus.optim.univariate.BrentOptimizer;
