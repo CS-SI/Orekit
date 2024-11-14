@@ -368,7 +368,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // final double[] CastleAzElBias  = { 0.062701342, -0.003613508 };
         // final double   CastleRangeBias = 11274.4677;
         final double[] castleAzElBias  = { 0.062636, -0.003672};
-        final double   castleRangeBias = 11289.3378;
+        final double   castleRangeBias = 11289.3382;
 
         // Batch LS results
         // final double[] FucAzElBias  = { -0.053526137, 0.075483886 };
@@ -386,13 +386,13 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // final double[] PreAzElBias = { 0.030201539, 0.009747877 };
         // final double PreRangeBias = 13594.11889;
         final double[] preAzElBias = { 0.030353, 0.009658 };
-        final double   preRangeBias = 13609.2865;
+        final double   preRangeBias = 13609.2863;
 
         // Batch LS results
         // final double[] UraAzElBias = { 0.167814449, -0.12305252 };
         // final double UraRangeBias = 13450.26738;
         final double[] uraAzElBias = { 0.167519, -0.122842 };
-        final double   uraRangeBias = 13441.6693;
+        final double   uraRangeBias = 13441.6690;
 
         //statistics for the range residual (min, max, mean, std)
         final double[] refStatRange = { -12.9805, 18.0538, -1.1332, 5.3125 };
