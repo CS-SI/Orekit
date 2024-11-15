@@ -23,12 +23,13 @@ import org.hipparchus.optim.univariate.SearchInterval;
 import org.hipparchus.optim.univariate.UnivariateObjectiveFunction;
 import org.hipparchus.util.FastMath;
 import org.orekit.models.AtmosphericRefractionModel;
+import org.orekit.models.earth.troposphere.iturp834.ITURP834PathDelay;
 
 /** Implementation of refraction model for Earth exponential atmosphere based on ITU-R P.834 recommendation.
  * <p>
  * This class implements the ray bending part, i.e. section 1 of the recommendation.
  * The excess radio path length part of the model, i.e. section 6 of the recommendation,
- * is implemented in the {@link org.orekit.models.earth.troposphere.ITURP834PathDelay} class.
+ * is implemented in the {@link ITURP834PathDelay} class.
  * </p>
  *
  * @author Thierry Ceolin
