@@ -17,6 +17,7 @@
 package org.orekit.models.earth.troposphere.iturp834;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.ITURP834AtmosphericRefraction;
@@ -28,7 +29,6 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
@@ -49,8 +49,96 @@ import java.util.List;
  */
 public class ITURP834PathDelay implements TroposphericModel {
 
+    /** ITU-R P.834 data resources directory. */
+    private static final String ITU_R_P_834 = "/assets/org/orekit/ITU-R-P.834/";
+
+    /** Average of air total pressure at the Earth surface. */
+    private static final BilinearInterpolatingFunction AIR_TOTAL_PRESSURE_AVERAGE;
+
+    /** Seasonal fluctuation of air total pressure at the Earth surface. */
+    private static final BilinearInterpolatingFunction AIR_TOTAL_PRESSURE_SEASONAL;
+
+    /** Day of minimum of air total pressure at the Earth surface. */
+    private static final BilinearInterpolatingFunction AIR_TOTAL_PRESSURE_MINIMUM;
+
+    /** Average of water vapour partial pressure at the Earth surface. */
+    private static final BilinearInterpolatingFunction WATER_VAPOUR_PARTIAL_PRESSURE_AVERAGE;
+
+    /** Seasonal fluctuation of water vapour partial pressure at the Earth surface. */
+    private static final BilinearInterpolatingFunction WATER_VAPOUR_PARTIAL_PRESSURE_SEASONAL;
+
+    /** Day of minimum of water vapour partial pressure at the Earth surface. */
+    private static final BilinearInterpolatingFunction WATER_VAPOUR_PARTIAL_PRESSURE_MINIMUM;
+
+    /** Average of mean temperature of the water vapour column above the surface. */
+    private static final BilinearInterpolatingFunction MEAN_TEMPERATURE_AVERAGE;
+
+    /** Seasonal fluctuation of mean temperature of the water vapour column above the surface. */
+    private static final BilinearInterpolatingFunction MEAN_TEMPERATURE_SEASONAL;
+
+    /** Day of minimum of mean temperature of the water vapour column above the surface. */
+    private static final BilinearInterpolatingFunction MEAN_TEMPERATURE_MINIMUM;
+
+    /** Average of vapour pressure decrease factor. */
+    private static final BilinearInterpolatingFunction VAPOUR_PRESSURE_DECREASE_FACTOR_AVERAGE;
+
+    /** Seasonal fluctuation of vapour pressure decrease factor. */
+    private static final BilinearInterpolatingFunction VAPOUR_PRESSURE_DECREASE_FACTOR_SEASONAL;
+
+    /** Day of minimum of vapour pressure decrease factor. */
+    private static final BilinearInterpolatingFunction VAPOUR_PRESSURE_DECREASE_FACTOR_MINIMUM;
+
+    /** Average of lapse rate of mean temperature of water vapour from Earth surface. */
+    private static final BilinearInterpolatingFunction LAPSE_RATE_MEAN_TEMPERATURE_AVERAGE;
+
+    /** Seasonal fluctuation of lapse rate of mean temperature of water vapour from Earth surface. */
+    private static final BilinearInterpolatingFunction LAPSE_RATE_MEAN_TEMPERATURE_SEASONAL;
+
+    /** Day of minimum of lapse rate of mean temperature of water vapour from Earth surface. */
+    private static final BilinearInterpolatingFunction LAPSE_RATE_MEAN_TEMPERATURE_MINIMUM;
+
+    /** Average height of reference level with respect to mean seal level. */
+    private static final BilinearInterpolatingFunction AVERAGE_HEIGHT_REFERENCE_LEVEL;
+
+    // load all model data files
+    static {
+        final MeteorologicalParameterParser parser = new MeteorologicalParameterParser();
+        AIR_TOTAL_PRESSURE_AVERAGE =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.AIR_TOTAL_PRESSURE.getAverageValueFileName());
+        AIR_TOTAL_PRESSURE_SEASONAL =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.AIR_TOTAL_PRESSURE.getSeasonalFluctuationFileName());
+        AIR_TOTAL_PRESSURE_MINIMUM =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.AIR_TOTAL_PRESSURE.getDayMinimumFileName());
+        WATER_VAPOUR_PARTIAL_PRESSURE_AVERAGE =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.getAverageValueFileName());
+        WATER_VAPOUR_PARTIAL_PRESSURE_SEASONAL =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.getSeasonalFluctuationFileName());
+        WATER_VAPOUR_PARTIAL_PRESSURE_MINIMUM =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.getDayMinimumFileName());
+        MEAN_TEMPERATURE_AVERAGE =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.MEAN_TEMPERATURE.getAverageValueFileName());
+        MEAN_TEMPERATURE_SEASONAL =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.MEAN_TEMPERATURE.getSeasonalFluctuationFileName());
+        MEAN_TEMPERATURE_MINIMUM =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.MEAN_TEMPERATURE.getDayMinimumFileName());
+        VAPOUR_PRESSURE_DECREASE_FACTOR_AVERAGE =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.getAverageValueFileName());
+        VAPOUR_PRESSURE_DECREASE_FACTOR_SEASONAL =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.getSeasonalFluctuationFileName());
+        VAPOUR_PRESSURE_DECREASE_FACTOR_MINIMUM =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.getDayMinimumFileName());
+        LAPSE_RATE_MEAN_TEMPERATURE_AVERAGE =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.getAverageValueFileName());
+        LAPSE_RATE_MEAN_TEMPERATURE_SEASONAL =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.getSeasonalFluctuationFileName());
+        LAPSE_RATE_MEAN_TEMPERATURE_MINIMUM =
+            parser.parse(ITU_R_P_834 + MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.getDayMinimumFileName());
+        AVERAGE_HEIGHT_REFERENCE_LEVEL =
+            parser.parse(ITU_R_P_834 + "hreflev.dat");
+    }
+
     /** Computation engine for vertical excess path. */
-    private VerticalExcessPath verticalExcessPathComputer;
+    private final VerticalExcessPath verticalExcessPathComputer;
 
     /** Converter between pressure, temperature and humidity and relative humidity. */
     private final WaterVaporPressureProvider waterVaporPressureProvider;

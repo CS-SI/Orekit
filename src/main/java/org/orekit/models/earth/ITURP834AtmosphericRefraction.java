@@ -185,8 +185,8 @@ public class ITURP834AtmosphericRefraction implements AtmosphericRefractionModel
         return theta0;
     }
 
-    @Override
     /** {@inheritDoc} */
+    @Override
     public double getRefraction(final double elevation) {
         if (elevation < elev_star ) {
             return refrac_star;
