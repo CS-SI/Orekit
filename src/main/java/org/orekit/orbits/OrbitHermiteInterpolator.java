@@ -212,6 +212,12 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
     private Orbit interpolateCommon(final AbsoluteDate interpolationDate, final List<Orbit> orbits,
                                     final OrbitType orbitType) {
 
+        // First pass to check if derivatives are available throughout the sample
+        boolean useDerivatives = true;
+        for (final Orbit orbit : orbits) {
+            useDerivatives = useDerivatives && orbit.hasNonKeplerianAcceleration();
+        }
+
         // Use first entry gravitational parameter
         final double mu = orbits.get(0).getMu();
 
@@ -219,21 +225,21 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
         final double[][] interpolated;
         switch (orbitType) {
             case CIRCULAR:
-                interpolated = interpolateCircular(interpolationDate, orbits);
+                interpolated = interpolateCircular(interpolationDate, orbits, useDerivatives);
                 return new CircularOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                          interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                          interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                          interpolated[1][3], interpolated[1][4], interpolated[1][5],
                                          PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             case KEPLERIAN:
-                interpolated = interpolateKeplerian(interpolationDate, orbits);
+                interpolated = interpolateKeplerian(interpolationDate, orbits, useDerivatives);
                 return new KeplerianOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                           interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                           interpolated[1][0], interpolated[1][1], interpolated[1][2],
                                           interpolated[1][3], interpolated[1][4], interpolated[1][5],
                                           PositionAngleType.MEAN, getOutputInertialFrame(), interpolationDate, mu);
             case EQUINOCTIAL:
-                interpolated = interpolateEquinoctial(interpolationDate, orbits);
+                interpolated = interpolateEquinoctial(interpolationDate, orbits, useDerivatives);
                 return new EquinoctialOrbit(interpolated[0][0], interpolated[0][1], interpolated[0][2],
                                             interpolated[0][3], interpolated[0][4], interpolated[0][5],
                                             interpolated[1][0], interpolated[1][1], interpolated[1][2],
@@ -251,10 +257,12 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
      *
      * @param interpolationDate interpolation date
      * @param orbits orbits sample
+     * @param useDerivatives flag defining if derivatives are available throughout the sample
      *
      * @return interpolating functions for circular orbit parameters
      */
-    private double[][] interpolateCircular(final AbsoluteDate interpolationDate, final List<Orbit> orbits) {
+    private double[][] interpolateCircular(final AbsoluteDate interpolationDate, final List<Orbit> orbits,
+                                           final boolean useDerivatives) {
 
         // Set up an interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
@@ -280,7 +288,8 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
             previousDate   = circ.getDate();
             previousRAAN   = continuousRAAN;
             previousAlphaM = continuousAlphaM;
-            interpolator.addSamplePoint(circ.getDate().durationFrom(interpolationDate),
+            if (useDerivatives) {
+                interpolator.addSamplePoint(circ.getDate().durationFrom(interpolationDate),
                                             new double[] { circ.getA(),
                                                            circ.getCircularEx(),
                                                            circ.getCircularEy(),
@@ -293,6 +302,16 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
                                                            circ.getIDot(),
                                                            circ.getRightAscensionOfAscendingNodeDot(),
                                                            circ.getAlphaMDot() });
+            }
+            else {
+                interpolator.addSamplePoint(circ.getDate().durationFrom(interpolationDate),
+                                            new double[] { circ.getA(),
+                                                           circ.getCircularEx(),
+                                                           circ.getCircularEy(),
+                                                           circ.getI(),
+                                                           continuousRAAN,
+                                                           continuousAlphaM });
+            }
         }
 
         return interpolator.derivatives(0.0, 1);
@@ -303,10 +322,12 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
      *
      * @param interpolationDate interpolation date
      * @param orbits orbits sample
+     * @param useDerivatives flag defining if derivatives are available throughout the sample
      *
      * @return interpolating functions for keplerian orbit parameters
      */
-    private double[][] interpolateKeplerian(final AbsoluteDate interpolationDate, final List<Orbit> orbits) {
+    private double[][] interpolateKeplerian(final AbsoluteDate interpolationDate, final List<Orbit> orbits,
+                                            final boolean useDerivatives) {
 
         // Set up an interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
@@ -337,19 +358,30 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
             previousPA   = continuousPA;
             previousRAAN = continuousRAAN;
             previousM    = continuousM;
-            interpolator.addSamplePoint(kep.getDate().durationFrom(interpolationDate),
-                                        new double[] { kep.getA(),
-                                                       kep.getE(),
-                                                       kep.getI(),
-                                                       continuousPA,
-                                                       continuousRAAN,
-                                                       continuousM },
-                                        new double[] { kep.getADot(),
-                                                       kep.getEDot(),
-                                                       kep.getIDot(),
-                                                       kep.getPerigeeArgumentDot(),
-                                                       kep.getRightAscensionOfAscendingNodeDot(),
-                                                       kep.getMeanAnomalyDot() });
+            if (useDerivatives) {
+                interpolator.addSamplePoint(kep.getDate().durationFrom(interpolationDate),
+                                            new double[] { kep.getA(),
+                                                           kep.getE(),
+                                                           kep.getI(),
+                                                           continuousPA,
+                                                           continuousRAAN,
+                                                           continuousM },
+                                            new double[] { kep.getADot(),
+                                                           kep.getEDot(),
+                                                           kep.getIDot(),
+                                                           kep.getPerigeeArgumentDot(),
+                                                           kep.getRightAscensionOfAscendingNodeDot(),
+                                                           kep.getMeanAnomalyDot() });
+            }
+            else {
+                interpolator.addSamplePoint(kep.getDate().durationFrom(interpolationDate),
+                                            new double[] { kep.getA(),
+                                                           kep.getE(),
+                                                           kep.getI(),
+                                                           continuousPA,
+                                                           continuousRAAN,
+                                                           continuousM });
+            }
         }
 
         return interpolator.derivatives(0.0, 1);
@@ -360,10 +392,12 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
      *
      * @param interpolationDate interpolation date
      * @param orbits orbits sample
+     * @param useDerivatives flag defining if derivatives are available throughout the sample
      *
      * @return interpolating functions for equinoctial orbit parameters
      */
-    private double[][] interpolateEquinoctial(final AbsoluteDate interpolationDate, final List<Orbit> orbits) {
+    private double[][] interpolateEquinoctial(final AbsoluteDate interpolationDate, final List<Orbit> orbits,
+                                              final boolean useDerivatives) {
 
         // Set up an interpolator
         final HermiteInterpolator interpolator = new HermiteInterpolator();
@@ -384,7 +418,8 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
             }
             previousDate = equi.getDate();
             previousLm   = continuousLm;
-            interpolator.addSamplePoint(equi.getDate().durationFrom(interpolationDate),
+            if (useDerivatives) {
+                interpolator.addSamplePoint(equi.getDate().durationFrom(interpolationDate),
                                             new double[] { equi.getA(),
                                                            equi.getEquinoctialEx(),
                                                            equi.getEquinoctialEy(),
@@ -398,6 +433,16 @@ public class OrbitHermiteInterpolator extends AbstractOrbitInterpolator {
                                                     equi.getHxDot(),
                                                     equi.getHyDot(),
                                                     equi.getLMDot() });
+            }
+            else {
+                interpolator.addSamplePoint(equi.getDate().durationFrom(interpolationDate),
+                                            new double[] { equi.getA(),
+                                                           equi.getEquinoctialEx(),
+                                                           equi.getEquinoctialEy(),
+                                                           equi.getHx(),
+                                                           equi.getHy(),
+                                                           continuousLm });
+            }
         }
 
         return interpolator.derivatives(0.0, 1);
