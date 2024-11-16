@@ -1659,6 +1659,7 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      * (or 366.49999… on leap years) to 0.5
      * </p>
      * @param utc time scale to compute date components
+     * @return day of year, with day 1.0 occurring on January first at noon
      * @since 13.0
      */
     public T getDayOfYear(final TimeScale utc) {
