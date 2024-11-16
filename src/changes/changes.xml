@@ -75,8 +75,11 @@
         <action dev="luc" type="fix" issue="1548">
             Added toString to SatInSystem.
         </action>
-        <action dev="serrof" type="update" issue="1545">
+        <action dev="serrof" type="update" issue="1546">
             Use Keplerian rates by default in (Field)Orbit.
+        </action>
+        <action dev="serrof" type="fix" issue="1545">
+            Convert frame in resetOrbit of AbstractPropagatorBuilder.
         </action>
         <action dev="luc" type="fix" issue="1542">
             Use SatInSystem in SatelliteAntenna.
