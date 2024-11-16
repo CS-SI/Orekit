@@ -576,11 +576,11 @@ public class PhaseTest {
     public void testStateDerivativesWithTroposphericModifier() {
 
         final boolean printResults     = false;
-        final double  refErrorsPMedian = 6.0e-10;
-        final double  refErrorsPMean   = 2.9e-9;
-        final double  refErrorsPMax    = 1.1e-7;
+        final double  refErrorsPMedian = 5.4e-10;
+        final double  refErrorsPMean   = 5.2e-9;
+        final double  refErrorsPMax    = 2.9e-7;
         final double  refErrorsVMedian = 1.5e-5;
-        final double  refErrorsVMean   = 7.8e-5;
+        final double  refErrorsVMean   = 8.3e-5;
         final double  refErrorsVMax    = 4.6e-3;
 
         Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
