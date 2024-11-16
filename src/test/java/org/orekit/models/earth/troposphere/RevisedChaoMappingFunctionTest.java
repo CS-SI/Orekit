@@ -29,4 +29,9 @@ public class RevisedChaoMappingFunctionTest extends AbstractMappingFunctionTest 
         doTestMappingFactors(10.13, 11.05);
     }
 
+    @Test
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-100, 1.0e-100, 1.0e-100, 4.0e-8, 1.0e-100);
+    }
+
 }

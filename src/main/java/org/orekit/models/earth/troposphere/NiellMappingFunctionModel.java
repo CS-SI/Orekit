@@ -173,7 +173,7 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final double coef    = 2 * FastMath.PI * ((dofyear - t0) / 365.25);
+        final double coef    = 2 * FastMath.PI * ((date.getDayOfYear(utc) - t0) / 365.25);
         final double cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5

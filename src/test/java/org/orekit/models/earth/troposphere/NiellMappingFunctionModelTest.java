@@ -29,4 +29,9 @@ public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest {
         doTestMappingFactors(10.16, 10.75);
     }
 
+    @Test
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-15, 2.0e-17, 1.0e-100, 3.0e-8, 1.0e-100);
+    }
+
 }

@@ -34,4 +34,10 @@ public class DummyMappingFunctionTest extends AbstractMappingFunctionTest {
         // this function does *not* decrease with elevation
         // so we disable this test
     }
+
+    @Test
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100);
+    }
+
 }
