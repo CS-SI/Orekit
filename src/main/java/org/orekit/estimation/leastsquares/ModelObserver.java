@@ -30,6 +30,7 @@ import org.orekit.orbits.Orbit;
  * @author Luc Maisonobe
  * @since 8.0
  */
+@FunctionalInterface
 public interface ModelObserver {
 
     /** Notification callback for orbit changes.

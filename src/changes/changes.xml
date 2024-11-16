@@ -72,6 +72,9 @@
         <action dev="luc" type="fix" issue="1548">
             Added toString to SatInSystem.
         </action>
+        <action dev="serrof" type="update" issue="1545">
+            Use Keplerian rates by default in (Field)Orbit.
+        </action>
         <action dev="luc" type="fix" issue="1542">
             Use SatInSystem in SatelliteAntenna.
         </action>

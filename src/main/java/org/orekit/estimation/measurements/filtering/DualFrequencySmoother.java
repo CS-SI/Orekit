@@ -20,6 +20,7 @@ package org.orekit.estimation.measurements.filtering;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.files.rinex.observation.ObservationData;
 import org.orekit.files.rinex.observation.ObservationDataSet;
@@ -95,7 +96,7 @@ public class DualFrequencySmoother {
      * Get the map of the filtered data.
      * @return a map containing the filtered data.
      */
-    public HashMap<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
+    public Map<ObservationType, List<SmoothedObservationDataSet>> getFilteredDataMap() {
         return mapFilteredData;
     }
 
@@ -103,7 +104,7 @@ public class DualFrequencySmoother {
      * Get the map storing the filters for each observation type.
      * @return the map storing the filters for each observation type
      */
-    public final HashMap<ObservationType, DualFrequencyHatchFilter> getMapFilters() {
+    public final Map<ObservationType, DualFrequencyHatchFilter> getMapFilters() {
         return mapFilters;
     }
 
@@ -173,7 +174,7 @@ public class DualFrequencySmoother {
                             if (filterObject == null && obsDataPhaseF1 != null && obsDataPhaseF2 != null) {
                                 filterObject = createFilter(obsData, obsDataPhaseF1, obsDataPhaseF2, satSystem);
                                 mapFilters.put(obsTypeRange, filterObject);
-                                final List<SmoothedObservationDataSet> odList = new ArrayList<SmoothedObservationDataSet>();
+                                final List<SmoothedObservationDataSet> odList = new ArrayList<>();
                                 odList.add(new SmoothedObservationDataSet(obsData, obsSet));
                                 mapFilteredData.put(obsTypeRange, odList);
                             // If filter exist, check if a phase object is null, then reset the filter at the next step,

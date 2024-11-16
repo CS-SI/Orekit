@@ -243,7 +243,7 @@ public class FieldOrbitHermiteInterpolator<KK extends CalculusFieldElement<KK>> 
         // First pass to check if derivatives are available throughout the sample
         boolean useDerivatives = true;
         for (final FieldOrbit<KK> orbit : orbits) {
-            useDerivatives = useDerivatives && orbit.hasDerivatives();
+            useDerivatives = useDerivatives && orbit.hasNonKeplerianAcceleration();
         }
 
         // Use first entry gravitational parameter

@@ -496,8 +496,8 @@ public class PhaseTest {
                                           stationName, measurement.getDate(), date);
                     }
 
-                    for (int i = 0; i < drivers.length; ++i) {
-                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(drivers[i]);
+                    for (final ParameterDriver driver : drivers) {
+                        final double[] gradient  = measurement.estimate(0, 0, new SpacecraftState[] { state }).getParameterDerivatives(driver);
                         Assertions.assertEquals(1, measurement.getDimension());
                         Assertions.assertEquals(1, gradient.length);
 
@@ -511,8 +511,8 @@ public class PhaseTest {
                                                        estimateWithoutDerivatives(new SpacecraftState[] { state }).
                                                        getEstimatedValue()[0];
                                             }
-                                        }, 3, 20.0 * drivers[i].getScale());
-                        final double ref = dMkdP.value(drivers[i], date);
+                                        }, 3, 20.0 * driver.getScale());
+                        final double ref = dMkdP.value(driver, date);
 
                         if (printResults) {
                             System.out.format(Locale.US, "%10.3e  %10.3e  ", gradient[0]-ref, FastMath.abs((gradient[0]-ref)/ref));
@@ -520,7 +520,7 @@ public class PhaseTest {
 
                         final double relError = FastMath.abs((ref-gradient[0])/ref);
                         relErrorList.add(relError);
-//                        Assertions.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
+                        Assertions.assertEquals(ref, gradient[0], 6.1e-5 * FastMath.abs(ref));
                     }
                     if (printResults) {
                         System.out.format(Locale.US, "%n");

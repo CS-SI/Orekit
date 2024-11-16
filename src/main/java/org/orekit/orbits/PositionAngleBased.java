@@ -35,14 +35,16 @@ public interface PositionAngleBased {
      */
     PositionAngleType getCachedPositionAngleType();
 
-    /** Tells whether the instance holds rates (first-order time derivatives) for dependent variables.
-     * @return true if and only if holding rates
+    /** Tells whether the instance holds rates (first-order time derivatives) for dependent variables that are incompatible with Keplerian motion.
+     * @return true if and only if holding non-Keplerian rates
+     * @since 13.0
      */
-    boolean hasRates();
+    boolean hasNonKeplerianRates();
 
-    /** Create a new instance such that {@link #hasRates()} is false.
+    /** Create a new instance such that {@link #hasNonKeplerianRates()} is false.
      * @return new object without rates
+     * @since 13.0
      */
-    PositionAngleBased removeRates();
+    PositionAngleBased withKeplerianRates();
 
 }

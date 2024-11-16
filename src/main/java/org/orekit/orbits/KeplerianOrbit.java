@@ -147,7 +147,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
                           final Frame frame, final AbsoluteDate date, final double mu)
             throws IllegalArgumentException {
         this(a, e, i, pa, raan, anomaly,
-                Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
+                0., 0., 0., 0., 0., computeKeplerianAnomalyDot(type, a, e, mu, anomaly, type),
                 type, cachedPositionAngleType, frame, date, mu);
     }
 
@@ -227,14 +227,9 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
         this.raan    = raan;
         this.raanDot = raanDot;
 
-        if (hasDerivatives()) {
-            final UnivariateDerivative1 cachedAnomalyUD = initializeCachedAnomaly(anomaly, anomalyDot, type);
-            this.cachedAnomaly = cachedAnomalyUD.getValue();
-            this.cachedAnomalyDot = cachedAnomalyUD.getFirstDerivative();
-        } else {
-            this.cachedAnomaly = initializeCachedAnomaly(anomaly, type);
-            this.cachedAnomalyDot = Double.NaN;
-        }
+        final UnivariateDerivative1 cachedAnomalyUD = initializeCachedAnomaly(anomaly, anomalyDot, type);
+        this.cachedAnomaly = cachedAnomalyUD.getValue();
+        this.cachedAnomalyDot = cachedAnomalyUD.getFirstDerivative();
 
         // check true anomaly range
         if (!isElliptical()) {
@@ -412,13 +407,12 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
         } else {
             // acceleration is either almost zero or NaN,
             // we assume acceleration was not known
-            // we don't set up derivatives
-            aDot    = Double.NaN;
-            eDot    = Double.NaN;
-            iDot    = Double.NaN;
-            paDot   = Double.NaN;
-            raanDot = Double.NaN;
-            cachedAnomalyDot = Double.NaN;
+            aDot    = 0.;
+            eDot    = 0.;
+            iDot    = 0.;
+            paDot   = 0.;
+            raanDot = 0.;
+            cachedAnomalyDot = computeKeplerianAnomalyDot(cachedPositionAngleType, a, e, mu, cachedAnomaly, cachedPositionAngleType);
         }
 
     }
@@ -448,7 +442,14 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
      * @param op orbital parameters to copy
      */
     public KeplerianOrbit(final Orbit op) {
-        this(op.getPVCoordinates(), op.getFrame(), op.getMu(), op.hasDerivatives());
+        this(op.getPVCoordinates(), op.getFrame(), op.getMu(), op.hasNonKeplerianAcceleration());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean hasNonKeplerianAcceleration() {
+        return aDot != 0. || eDot != 0. || paDot != 0. || iDot != 0. || raanDot != 0. ||
+                FastMath.abs(cachedAnomalyDot - computeKeplerianAnomalyDot(cachedPositionAngleType, a, e, getMu(), cachedAnomaly, cachedPositionAngleType)) > TOLERANCE_POSITION_ANGLE_RATE;
     }
 
     /** {@inheritDoc} */
@@ -550,32 +551,28 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
      * @return true anomaly derivative (rad/s)
      */
     public double getTrueAnomalyDot() {
-        if (hasDerivatives()) {
-            switch (cachedPositionAngleType) {
-                case MEAN:
-                    final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
-                    final UnivariateDerivative1 MUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
-                    final UnivariateDerivative1 vUD = (a < 0) ?
-                            FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
-                            FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
-                    return vUD.getFirstDerivative();
+        switch (cachedPositionAngleType) {
+            case MEAN:
+                final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+                final UnivariateDerivative1 MUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
+                final UnivariateDerivative1 vUD = (a < 0) ?
+                        FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(eUD, MUD) :
+                        FieldKeplerianAnomalyUtility.ellipticMeanToTrue(eUD, MUD);
+                return vUD.getFirstDerivative();
 
-                case TRUE:
-                    return cachedAnomalyDot;
+            case TRUE:
+                return cachedAnomalyDot;
 
-                case ECCENTRIC:
-                    final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
-                    final UnivariateDerivative1 EUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
-                    final UnivariateDerivative1 vUD2 = (a < 0) ?
-                            FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD2, EUD) :
-                            FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD2, EUD);
-                    return vUD2.getFirstDerivative();
+            case ECCENTRIC:
+                final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
+                final UnivariateDerivative1 EUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
+                final UnivariateDerivative1 vUD2 = (a < 0) ?
+                        FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(eUD2, EUD) :
+                        FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(eUD2, EUD);
+                return vUD2.getFirstDerivative();
 
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        } else {
-            return Double.NaN;
+            default:
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -605,32 +602,28 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
      * @since 9.0
      */
     public double getEccentricAnomalyDot() {
-        if (hasDerivatives()) {
-            switch (cachedPositionAngleType) {
-                case ECCENTRIC:
-                    return cachedAnomalyDot;
+        switch (cachedPositionAngleType) {
+            case ECCENTRIC:
+                return cachedAnomalyDot;
 
-                case TRUE:
-                    final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
-                    final UnivariateDerivative1 vUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
-                    final UnivariateDerivative1 EUD = (a < 0) ?
-                            FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
-                            FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
-                    return EUD.getFirstDerivative();
+            case TRUE:
+                final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+                final UnivariateDerivative1 vUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
+                final UnivariateDerivative1 EUD = (a < 0) ?
+                        FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(eUD, vUD) :
+                        FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(eUD, vUD);
+                return EUD.getFirstDerivative();
 
-                case MEAN:
-                    final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
-                    final UnivariateDerivative1 MUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
-                    final UnivariateDerivative1 EUD2 = (a < 0) ?
-                            FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD2, MUD) :
-                            FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD2, MUD);
-                    return EUD2.getFirstDerivative();
+            case MEAN:
+                final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
+                final UnivariateDerivative1 MUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
+                final UnivariateDerivative1 EUD2 = (a < 0) ?
+                        FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(eUD2, MUD) :
+                        FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(eUD2, MUD);
+                return EUD2.getFirstDerivative();
 
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        } else {
-            return Double.NaN;
+            default:
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -656,32 +649,28 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
      * @since 9.0
      */
     public double getMeanAnomalyDot() {
-        if (hasDerivatives()) {
-            switch (cachedPositionAngleType) {
-                case MEAN:
-                    return cachedAnomalyDot;
+        switch (cachedPositionAngleType) {
+            case MEAN:
+                return cachedAnomalyDot;
 
-                case ECCENTRIC:
-                    final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
-                    final UnivariateDerivative1 EUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
-                    final UnivariateDerivative1 MUD = (a < 0) ?
-                            FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(eUD, EUD) :
-                            FieldKeplerianAnomalyUtility.ellipticEccentricToMean(eUD, EUD);
-                    return MUD.getFirstDerivative();
+            case ECCENTRIC:
+                final UnivariateDerivative1 eUD = new UnivariateDerivative1(e, eDot);
+                final UnivariateDerivative1 EUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
+                final UnivariateDerivative1 MUD = (a < 0) ?
+                        FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(eUD, EUD) :
+                        FieldKeplerianAnomalyUtility.ellipticEccentricToMean(eUD, EUD);
+                return MUD.getFirstDerivative();
 
-                case TRUE:
-                    final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
-                    final UnivariateDerivative1 vUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
-                    final UnivariateDerivative1 MUD2 = (a < 0) ?
-                            FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD2, vUD) :
-                            FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD2, vUD);
-                    return MUD2.getFirstDerivative();
+            case TRUE:
+                final UnivariateDerivative1 eUD2 = new UnivariateDerivative1(e, eDot);
+                final UnivariateDerivative1 vUD = new UnivariateDerivative1(cachedAnomaly, cachedAnomalyDot);
+                final UnivariateDerivative1 MUD2 = (a < 0) ?
+                        FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(eUD2, vUD) :
+                        FieldKeplerianAnomalyUtility.ellipticTrueToMean(eUD2, vUD);
+                return MUD2.getFirstDerivative();
 
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        } else {
-            return Double.NaN;
+            default:
+                throw new OrekitInternalError(null);
         }
     }
 
@@ -715,6 +704,9 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public double getEquinoctialExDot() {
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         final double paPraan = pa + raan;
         final SinCos sc      = FastMath.sinCos(paPraan);
         return eDot * sc.cos() - e * sc.sin() * (paDot + raanDot);
@@ -729,6 +721,9 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public double getEquinoctialEyDot() {
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         final double paPraan = pa + raan;
         final SinCos sc      = FastMath.sinCos(paPraan);
         return eDot * sc.sin() + e * sc.cos() * (paDot + raanDot);
@@ -751,6 +746,9 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
         }
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
+        }
         final SinCos sc      = FastMath.sinCos(raan);
         final double tan     = FastMath.tan(0.5 * i);
         return 0.5 * (1 + tan * tan) * sc.cos() * iDot - tan * sc.sin() * raanDot;
@@ -772,6 +770,9 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
             return Double.NaN;
+        }
+        if (!hasNonKeplerianAcceleration()) {
+            return 0.;
         }
         final SinCos sc      = FastMath.sinCos(raan);
         final double tan     = FastMath.tan(0.5 * i);
@@ -988,9 +989,6 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
-     * <p>
-     * This method should be called only when {@link #hasDerivatives()} returns true.
-     * </p>
      * @return non-Keplerian part of the acceleration
      */
     private Vector3D nonKeplerianAcceleration() {
@@ -1056,7 +1054,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
         // acceleration
         final double r2 = partialPV.getPosition().getNormSq();
         final Vector3D keplerianAcceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), partialPV.getPosition());
-        final Vector3D acceleration = hasDerivatives() ?
+        final Vector3D acceleration = hasNonKeplerianAcceleration() ?
                 keplerianAcceleration.add(nonKeplerianAcceleration()) :
                 keplerianAcceleration;
 
@@ -1081,7 +1079,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
                 getMeanAnomaly() + getKeplerianMeanMotion() * dtS, PositionAngleType.MEAN,
                 cachedPositionAngleType, getFrame(), getDate().shiftedBy(dt), getMu());
 
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration()) {
 
             // extract non-Keplerian acceleration from first time derivatives
             final Vector3D nonKeplerianAcceleration = nonKeplerianAcceleration();
@@ -1601,13 +1599,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasRates() {
-        return hasDerivatives();
+    public boolean hasNonKeplerianRates() {
+        return hasNonKeplerianAcceleration();
     }
 
     /** {@inheritDoc} */
     @Override
-    public KeplerianOrbit removeRates() {
+    public KeplerianOrbit withKeplerianRates() {
         final PositionAngleType positionAngleType = getCachedPositionAngleType();
         return new KeplerianOrbit(a, e, i, pa, raan, cachedAnomaly, positionAngleType, positionAngleType,
                 getFrame(), getDate(), getMu());
@@ -1648,7 +1646,7 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20240721L;
+        private static final long serialVersionUID = 20241114L;
 
         /** Seconds. */
         private final long seconds;
@@ -1676,23 +1674,13 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
             this.seconds     = orbit.getDate().getSeconds();
             this.attoseconds = orbit.getDate().getAttoSeconds();
 
-            if (orbit.hasDerivatives()) {
-                // we have derivatives
-                this.d = new double[] {
-                    orbit.getMu(),
-                    orbit.a, orbit.e, orbit.i,
-                    orbit.pa, orbit.raan, orbit.cachedAnomaly,
-                    orbit.aDot, orbit.eDot, orbit.iDot,
-                    orbit.paDot, orbit.raanDot, orbit.cachedAnomalyDot
-                };
-            } else {
-                // we don't have derivatives
-                this.d = new double[] {
-                    orbit.getMu(),
-                    orbit.a, orbit.e, orbit.i,
-                    orbit.pa, orbit.raan, orbit.cachedAnomaly
-                };
-            }
+            this.d = new double[] {
+                orbit.getMu(),
+                orbit.a, orbit.e, orbit.i,
+                orbit.pa, orbit.raan, orbit.cachedAnomaly,
+                orbit.aDot, orbit.eDot, orbit.iDot,
+                orbit.paDot, orbit.raanDot, orbit.cachedAnomalyDot
+            };
 
             this.frame = orbit.getFrame();
 
