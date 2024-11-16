@@ -29,9 +29,9 @@ import org.orekit.data.DataContext;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.Constants;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
@@ -167,9 +167,11 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
+
+        // Day of year computation, preserving continuity and putting day 1.0 on January first at noon
+        final int          year        = date.getComponents(utc).getDate().getYear();
+        final AbsoluteDate newYearsEve = new AbsoluteDate(year - 1, 12, 31, 12, 0, 0.0, utc);
+        final double       dofyear     = date.durationFrom(newYearsEve) / Constants.JULIAN_DAY;
 
         // Temporal factor
         double t0 = 28;
@@ -218,9 +220,11 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
+        // Day of year computation, preserving continuity and putting day 1.0 on January first at noon
+        final int                  year         = date.getComponents(utc).getDate().getYear();
+        final AbsoluteDate         newYearsEveD = new AbsoluteDate(year - 1, 12, 31, 12, 0, 0.0, utc);
+        final FieldAbsoluteDate<T> newYearsEveF = new FieldAbsoluteDate<>(date.getField(), newYearsEveD);
+        final T                    dofyear      = date.durationFrom(newYearsEveF).divide(Constants.JULIAN_DAY);
 
         // Temporal factor
         double t0 = 28;
@@ -228,7 +232,7 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef    = zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365.25);
+        final T coef    = zero.getPi().multiply(2.0).multiply((dofyear.subtract(t0)).divide(365.25));
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
