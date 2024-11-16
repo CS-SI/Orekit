@@ -19,6 +19,10 @@ package org.orekit.models.earth.troposphere.iturp834;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -28,6 +32,7 @@ import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
@@ -62,6 +67,30 @@ public class ITU834MappingFunction implements TroposphereMappingFunction {
 
     /** Grid step (degrees). */
     private static final double STEP    =   5.0;
+
+    /** Second coefficient for hydrostatic component. */
+    private static final double BH = 0.0029;
+
+    /** Constants for third coefficient for hydrostatic component, Northern hemisphere. */
+    private static final double[] CH_NORTH = { 0.062, 0.001, 0.005, 0.0 };
+
+    /** Constants for third coefficient for hydrostatic component, Southern hemisphere. */
+    private static final double[] CH_SOUTH = { 0.062, 0.002, 0.007, FastMath.PI };
+
+    /** Reference day of year for third coefficient for hydrostatic component. */
+    private static final double REF_DOY = 28;
+
+    /** Year length (in days). */
+    private static final double YEAR = 365.25;
+
+    /** Second coefficient for wet component. */
+    private static final double BW = 0.00146;
+
+    /** Third coefficient for wet component. */
+    private static final double CW = 0.04391;
+
+    /** Global factor to apply to first coefficient. */
+    private static final double FACTOR = 1.0e-3;
 
     /** Interpolator for constant hydrostatic coefficient. */
     private static final BilinearInterpolatingFunction A0H;
@@ -136,16 +165,16 @@ public class ITU834MappingFunction implements TroposphereMappingFunction {
                 final int latitudeIndex  = (int) FastMath.rint((numericFields[0] - MIN_LAT) / STEP);
 
                 // fill-in tables
-                a0h[longitudeIndex][latitudeIndex] = numericFields[ 2];
-                a1h[longitudeIndex][latitudeIndex] = numericFields[ 3];
-                b1h[longitudeIndex][latitudeIndex] = numericFields[ 4];
-                a2h[longitudeIndex][latitudeIndex] = numericFields[ 5];
-                b2h[longitudeIndex][latitudeIndex] = numericFields[ 6];
-                a0w[longitudeIndex][latitudeIndex] = numericFields[ 7];
-                a1w[longitudeIndex][latitudeIndex] = numericFields[ 8];
-                b1w[longitudeIndex][latitudeIndex] = numericFields[ 9];
-                a2w[longitudeIndex][latitudeIndex] = numericFields[10];
-                b2w[longitudeIndex][latitudeIndex] = numericFields[11];
+                a0h[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 2];
+                a1h[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 3];
+                b1h[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 4];
+                a2h[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 5];
+                b2h[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 6];
+                a0w[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 7];
+                a1w[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 8];
+                b1w[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 9];
+                a2w[longitudeIndex][latitudeIndex] = FACTOR * numericFields[10];
+                b2w[longitudeIndex][latitudeIndex] = FACTOR * numericFields[11];
 
             }
 
@@ -215,6 +244,16 @@ public class ITU834MappingFunction implements TroposphereMappingFunction {
         }
     }
 
+    /** UTC time scale. */
+    private final TimeScale utc;
+
+    /** Simple constructor.
+     * @param utc UTC time scale
+     */
+    public ITU834MappingFunction(final TimeScale utc) {
+        this.utc = utc;
+    }
+
     /** Create interpolation points coordinates.
      * @param min min angle in degrees (included)
      * @param max max angle in degrees (included)
@@ -232,8 +271,45 @@ public class ITU834MappingFunction implements TroposphereMappingFunction {
     @Override
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather, final AbsoluteDate date) {
-        // TODO
-        return new double[0];
+
+        final double doy = date.getDayOfYear(utc);
+
+        // compute third dry coefficient
+        // equation 28c in ITU-R P.834 recommendation
+        final double[] c    = point.getLatitude() >= 0.0 ? CH_NORTH : CH_SOUTH;
+        final double   cosL = FastMath.cos(point.getLatitude());
+        final double   cosD = FastMath.cos((doy - REF_DOY) * MathUtils.TWO_PI / YEAR + c[3]);
+        final double   ch   = c[0] + ((cosD + 1) * c[2] * 0.5 + c[1]) * (1 - cosL);
+
+        // compute first coefficient
+        final SinCos sc1 = FastMath.sinCos(MathUtils.TWO_PI * doy / YEAR);
+        final SinCos sc2 = SinCos.sum(sc1, sc1);
+
+        // equation 28d in ITU-R P.834 recommendation
+        final double ah  = A0H.value(point.getLongitude(), point.getLatitude()) +
+                           A1H.value(point.getLongitude(), point.getLatitude()) * sc1.cos() +
+                           B1H.value(point.getLongitude(), point.getLatitude()) * sc1.sin() +
+                           A2H.value(point.getLongitude(), point.getLatitude()) * sc2.cos() +
+                           B2H.value(point.getLongitude(), point.getLatitude()) * sc2.sin();
+
+        // equation 28e in ITU-R P.834 recommendation
+        final double aw  = A0W.value(point.getLongitude(), point.getLatitude()) +
+                           A1W.value(point.getLongitude(), point.getLatitude()) * sc1.cos() +
+                           B1W.value(point.getLongitude(), point.getLatitude()) * sc1.sin() +
+                           A2W.value(point.getLongitude(), point.getLatitude()) * sc2.cos() +
+                           B2W.value(point.getLongitude(), point.getLatitude()) * sc2.sin();
+
+        // mapping function, equations 28a and 28b in ITU-R P.834 recommendation
+        final double sinTheta = FastMath.sin(trackingCoordinates.getElevation());
+        final double mh = (1 + ah / (1 + BH / (1 + ch))) /
+                          (sinTheta + ah / (sinTheta + BH / (sinTheta + ch)));
+        final double mw = (1 + aw / (1 + BW / (1 + CW))) /
+                          (sinTheta + aw / (sinTheta + BW / (sinTheta + CW)));
+
+        return new double[] {
+            mh, mw
+        };
+
     }
 
     @Override
@@ -241,8 +317,46 @@ public class ITU834MappingFunction implements TroposphereMappingFunction {
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
-        // TODO
-        return null;
+
+        final T doy = date.getDayOfYear(utc);
+
+        // compute third dry coefficient
+        // equation 28c in ITU-R P.834 recommendation
+        final double[] c    = point.getLatitude().getReal() >= 0.0 ? CH_NORTH : CH_SOUTH;
+        final T        cosL = FastMath.cos(point.getLatitude());
+        final T        cosD = FastMath.cos(doy.subtract(REF_DOY).multiply(MathUtils.TWO_PI / YEAR).add(c[3]));
+        final T        ch   = cosD.add(1).multiply(c[2] * 0.5).add(c[1]).multiply(cosL.subtract(1).negate()).add(c[0]);
+
+        // compute first coefficient
+        final FieldSinCos<T> sc1 = FastMath.sinCos(doy.multiply(MathUtils.TWO_PI / YEAR));
+        final FieldSinCos<T> sc2 = FieldSinCos.sum(sc1, sc1);
+
+        // equation 28d in ITU-R P.834 recommendation
+        final T ah  =     A0H.value(point.getLongitude(), point.getLatitude()).
+                      add(A1H.value(point.getLongitude(), point.getLatitude()).multiply(sc1.cos())).
+                      add(B1H.value(point.getLongitude(), point.getLatitude()).multiply(sc1.sin())).
+                      add(A2H.value(point.getLongitude(), point.getLatitude()).multiply(sc2.cos())).
+                      add(B2H.value(point.getLongitude(), point.getLatitude()).multiply(sc2.sin()));
+
+        // equation 28e in ITU-R P.834 recommendation
+        final T aw  =     A0W.value(point.getLongitude(), point.getLatitude()).
+                      add(A1W.value(point.getLongitude(), point.getLatitude()).multiply(sc1.cos())).
+                      add(B1W.value(point.getLongitude(), point.getLatitude()).multiply(sc1.sin())).
+                      add(A2W.value(point.getLongitude(), point.getLatitude()).multiply(sc2.cos())).
+                      add(B2W.value(point.getLongitude(), point.getLatitude()).multiply(sc2.sin()));
+
+        // mapping function, equations 28a and 28b in ITU-R P.834 recommendation
+        final T sinTheta = FastMath.sin(trackingCoordinates.getElevation());
+        final T mh = ch.add(1).reciprocal().multiply(BH).add(1).reciprocal().multiply(ah).add(1).
+                     divide(ch.add(sinTheta).reciprocal().multiply(BH).add(sinTheta).reciprocal().multiply(ah).add(sinTheta));
+        final T mw = aw.divide(1 + BW / (1 + CW)).add(1).
+                     divide(sinTheta.add(CW).reciprocal().multiply(BW).add(sinTheta).reciprocal().multiply(aw).add(sinTheta));
+
+        final T[] m = MathArrays.buildArray(date.getField(), 2);
+        m[0] = mh;
+        m[1] = mw;
+        return m;
+
     }
 
 }

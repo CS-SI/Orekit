@@ -16,13 +16,7 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
-import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Binary64;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
@@ -31,8 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
-import org.orekit.models.earth.weather.FieldPressureTemperature;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
