@@ -60,6 +60,37 @@ class CircularOrbitTest {
     private double mu;
 
     @Test
+    void testWithFrameKeplerian() {
+        testTemplateWithFrame(Vector3D.ZERO);
+    }
+
+    @Test
+    void testWithFrameNonKeplerian() {
+        testTemplateWithFrame(Vector3D.PLUS_K);
+    }
+
+    private void testTemplateWithFrame(final Vector3D acceleration) {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final double muEarth = 3.9860047e14;
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, muEarth);
+        final CircularOrbit circularOrbit = new CircularOrbit(cartesianOrbit);
+        // WHEN
+        final CircularOrbit orbitWithOtherFrame = circularOrbit.withFrame(FramesFactory.getGCRF());
+        // THEN
+        Assertions.assertNotEquals(circularOrbit.getFrame(), orbitWithOtherFrame.getFrame());
+        Assertions.assertEquals(circularOrbit.getDate(), orbitWithOtherFrame.getDate());
+        Assertions.assertEquals(circularOrbit.getMu(), orbitWithOtherFrame.getMu());
+        final Vector3D relativePosition = circularOrbit.getPosition(orbitWithOtherFrame.getFrame()).subtract(
+                orbitWithOtherFrame.getPosition());
+        Assertions.assertEquals(0., relativePosition.getNorm(), 1e-6);
+        Assertions.assertEquals(circularOrbit.hasNonKeplerianAcceleration(),
+                orbitWithOtherFrame.hasNonKeplerianAcceleration());
+    }
+
+    @Test
     void testCircularToEquinoctialEll() {
 
         double ix = 1.200e-04;

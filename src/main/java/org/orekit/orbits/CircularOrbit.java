@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
@@ -1090,6 +1091,17 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
         return new TimeStampedPVCoordinates(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit withFrame(final Frame inertialFrame) {
+        if (hasNonKeplerianAcceleration()) {
+            return new CircularOrbit(getPVCoordinates(inertialFrame), inertialFrame, getMu());
+        } else {
+            final KinematicTransform transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            return new CircularOrbit(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
+        }
     }
 
     /** {@inheritDoc} */

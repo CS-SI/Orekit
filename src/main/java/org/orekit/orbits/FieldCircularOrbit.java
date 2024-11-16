@@ -26,6 +26,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -1080,6 +1081,17 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
         return new TimeStampedFieldPVCoordinates<>(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCircularOrbit<T> withFrame(final Frame inertialFrame) {
+        if (hasNonKeplerianAcceleration()) {
+            return new FieldCircularOrbit<>(getPVCoordinates(inertialFrame), inertialFrame, getMu());
+        } else {
+            final FieldKinematicTransform<T> transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            return new FieldCircularOrbit<>(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
+        }
     }
 
     /** {@inheritDoc} */

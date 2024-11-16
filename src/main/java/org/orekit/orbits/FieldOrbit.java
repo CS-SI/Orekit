@@ -566,6 +566,16 @@ public abstract class FieldOrbit<T extends CalculusFieldElement<T>>
      */
     protected abstract TimeStampedFieldPVCoordinates<T> initPVCoordinates();
 
+    /**
+     * Create a new object representing the same physical orbital state, but attached to a different reference frame.
+     * If the new frame is not inertial, an exception will be thrown.
+     *
+     * @param inertialFrame reference frame of output orbit
+     * @return orbit with different frame
+     * @since 13.0
+     */
+    public abstract FieldOrbit<T> withFrame(Frame inertialFrame);
+
     /** Get a time-shifted orbit.
      * <p>
      * The orbit can be slightly shifted to close dates. This shift is based on

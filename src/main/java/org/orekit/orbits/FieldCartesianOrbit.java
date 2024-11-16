@@ -25,6 +25,7 @@ import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathArrays;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -420,6 +421,17 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     protected TimeStampedFieldPVCoordinates<T> initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCartesianOrbit<T> withFrame(final Frame inertialFrame) {
+        if (hasNonKeplerianAcceleration()) {
+            return new FieldCartesianOrbit<>(getPVCoordinates(inertialFrame), inertialFrame, getMu());
+        } else {
+            final FieldKinematicTransform<T> transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            return new FieldCartesianOrbit<>(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
+        }
     }
 
     /** {@inheritDoc} */

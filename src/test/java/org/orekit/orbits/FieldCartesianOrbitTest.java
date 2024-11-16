@@ -35,10 +35,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.util.Binary64Field;
-import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,10 +46,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.*;
 
 
 public class FieldCartesianOrbitTest {
@@ -66,6 +60,38 @@ public class FieldCartesianOrbitTest {
         Utils.setDataRoot("regular-data");
         // Body mu
         mu = 3.9860047e14;
+    }
+
+    @Test
+    void testWithFrameNonKeplerian() {
+        testTemplateWithFrame(Vector3D.MINUS_J);
+    }
+
+    @Test
+    void testWithFrameKeplerian() {
+        testTemplateWithFrame(Vector3D.ZERO);
+    }
+
+    private void testTemplateWithFrame(final Vector3D acceleration) {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final double muEarth = 3.9860047e14;
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, muEarth);
+        final FieldCartesianOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), cartesianOrbit);
+        // WHEN
+        final FieldCartesianOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.withFrame(FramesFactory.getGCRF());
+        // THEN
+        Assertions.assertNotEquals(fieldOrbit.getFrame(), fieldOrbitWithOtherFrame.getFrame());
+        Assertions.assertEquals(fieldOrbit.getDate(), fieldOrbitWithOtherFrame.getDate());
+        Assertions.assertEquals(fieldOrbit.getMu(), fieldOrbitWithOtherFrame.getMu());
+        final FieldVector3D<Binary64> relativePosition = fieldOrbit.getPosition(fieldOrbitWithOtherFrame.getFrame()).subtract(
+                fieldOrbitWithOtherFrame.getPosition());
+        Assertions.assertEquals(0., relativePosition.getNorm().getReal(), 1e-6);
+        Assertions.assertEquals(fieldOrbit.hasNonKeplerianAcceleration(),
+                fieldOrbitWithOtherFrame.hasNonKeplerianAcceleration());
     }
 
     @Test

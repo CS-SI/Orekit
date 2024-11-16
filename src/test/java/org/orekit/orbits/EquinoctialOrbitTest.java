@@ -60,6 +60,37 @@ public class EquinoctialOrbitTest {
     private double mu;
 
     @Test
+    void testWithFrameKeplerian() {
+        testTemplateWithFrame(Vector3D.ZERO);
+    }
+
+    @Test
+    void testWithFrameNonKeplerian() {
+        testTemplateWithFrame(Vector3D.PLUS_K);
+    }
+
+    private void testTemplateWithFrame(final Vector3D acceleration) {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final double muEarth = 3.9860047e14;
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, muEarth);
+        final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(cartesianOrbit);
+        // WHEN
+        final EquinoctialOrbit orbitWithOtherFrame = equinoctialOrbit.withFrame(FramesFactory.getGCRF());
+        // THEN
+        Assertions.assertNotEquals(equinoctialOrbit.getFrame(), orbitWithOtherFrame.getFrame());
+        Assertions.assertEquals(equinoctialOrbit.getDate(), orbitWithOtherFrame.getDate());
+        Assertions.assertEquals(equinoctialOrbit.getMu(), orbitWithOtherFrame.getMu());
+        final Vector3D relativePosition = equinoctialOrbit.getPosition(orbitWithOtherFrame.getFrame()).subtract(
+                orbitWithOtherFrame.getPosition());
+        Assertions.assertEquals(0., relativePosition.getNorm(), 1e-6);
+        Assertions.assertEquals(equinoctialOrbit.hasNonKeplerianAcceleration(),
+                orbitWithOtherFrame.hasNonKeplerianAcceleration());
+    }
+
+    @Test
     void testEquinoctialToEquinoctialEll() {
 
         double ix = 1.200e-04;

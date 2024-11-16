@@ -39,6 +39,9 @@
         <action dev="serrof" type="update" issue="1582">
             Made LoggingWrapper in (Field)EventsLogger inherit from (Field)AdapterDetector rather than (Field)AbstractDetector.
         </action>
+        <action dev="serrof" type="add" issue="1581">
+            Add withFrame method in (Field)Orbit.
+        </action>
         <action dev="serrof" type="update" issue="1580">
             Moved (Field)AdaptableInterval.
         </action>
