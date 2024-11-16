@@ -37,6 +37,45 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public interface TargetProvider
 {
+    /**
+     * Create a new provider with direction flipped w.r.t. original.
+     * @param targetProvider original provider
+     * @return provider with flipped directions
+     * @since 13.0
+     */
+    static TargetProvider negate(final TargetProvider targetProvider) {
+        return new TargetProvider() {
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<FieldUnivariateDerivative2<T>> getDerivative2TargetDirection(final ExtendedPositionProvider sun,
+                                                                                                                                  final OneAxisEllipsoid earth,
+                                                                                                                                  final TimeStampedFieldPVCoordinates<T> pv,
+                                                                                                                                  final Frame frame) {
+                return targetProvider.getDerivative2TargetDirection(sun, earth, pv, frame).negate();
+            }
+
+            @Override
+            public FieldVector3D<UnivariateDerivative2> getDerivative2TargetDirection(final ExtendedPositionProvider sun,
+                                                                                      final OneAxisEllipsoid earth,
+                                                                                      final TimeStampedPVCoordinates pv,
+                                                                                      final Frame frame) {
+                return targetProvider.getDerivative2TargetDirection(sun, earth, pv, frame).negate();
+            }
+
+            @Override
+            public Vector3D getTargetDirection(final ExtendedPositionProvider sun, final OneAxisEllipsoid earth,
+                                               final TimeStampedPVCoordinates pv, final Frame frame) {
+                return targetProvider.getTargetDirection(sun, earth, pv, frame).negate();
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> getTargetDirection(final ExtendedPositionProvider sun,
+                                                                                           final OneAxisEllipsoid earth,
+                                                                                           final TimeStampedFieldPVCoordinates<T> pv,
+                                                                                           final Frame frame) {
+                return targetProvider.getTargetDirection(sun, earth, pv, frame).negate();
+            }
+        };
+    }
 
     /**
      * Get a target vector.

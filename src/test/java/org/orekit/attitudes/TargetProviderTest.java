@@ -2,6 +2,7 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -17,6 +18,44 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 class TargetProviderTest {
+
+    @Test
+    void testNegate() {
+        // GIVEN
+        final TestTargetProvider testTargetProvider = new TestTargetProvider();
+        final TimeStampedPVCoordinates pvCoordinates = new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH,
+                new PVCoordinates());
+        // WHEN
+        final TargetProvider targetProvider = TargetProvider.negate(testTargetProvider);
+        // THEN
+        final Vector3D expectedVector = testTargetProvider.getTargetDirection(null, null, pvCoordinates, null).negate();
+        final Vector3D actualVector = targetProvider.getTargetDirection(null, null, pvCoordinates, null);
+        Assertions.assertEquals(expectedVector, actualVector);
+        final FieldVector3D<UnivariateDerivative2> expectedFieldVector = testTargetProvider.getDerivative2TargetDirection(null, null, pvCoordinates, null).negate();
+        final FieldVector3D<UnivariateDerivative2> actualFieldVector = targetProvider.getDerivative2TargetDirection(null, null, pvCoordinates, null);
+        Assertions.assertEquals(expectedFieldVector, actualFieldVector);
+    }
+
+    @Test
+    void testNegateField() {
+        // GIVEN
+        final TestTargetProvider testTargetProvider = new TestTargetProvider();
+        final TimeStampedPVCoordinates pvCoordinates = new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH,
+                new PVCoordinates());
+        final TimeStampedFieldPVCoordinates<Complex> fieldPVCoordinates = new TimeStampedFieldPVCoordinates<Complex>(ComplexField.getInstance(),
+                pvCoordinates);
+        // WHEN
+        final TargetProvider negatedTargetProvider = TargetProvider.negate(testTargetProvider);
+        // THEN
+        final FieldVector3D<Complex> expectedVector = testTargetProvider.getTargetDirection(null, null, fieldPVCoordinates, null).negate();
+        final FieldVector3D<Complex> actualVector = negatedTargetProvider.getTargetDirection(null, null, fieldPVCoordinates, null);
+        Assertions.assertEquals(expectedVector, actualVector);
+        final FieldVector3D<FieldUnivariateDerivative2<Complex>> expectedUD2Vector = testTargetProvider
+                .getDerivative2TargetDirection(null, null, fieldPVCoordinates, null).negate();
+        final FieldVector3D<FieldUnivariateDerivative2<Complex>> actualUD2Vector = negatedTargetProvider
+                .getDerivative2TargetDirection(null, null, fieldPVCoordinates, null);
+        Assertions.assertEquals(expectedUD2Vector, actualUD2Vector);
+    }
 
     @Test
     void testGetTargetDirection() {
