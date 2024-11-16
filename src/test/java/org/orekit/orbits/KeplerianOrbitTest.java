@@ -60,6 +60,37 @@ class KeplerianOrbitTest {
     private double mu;
 
     @Test
+    void testWithFrameKeplerian() {
+        testTemplateWithFrame(Vector3D.ZERO);
+    }
+
+    @Test
+    void testWithFrameNonKeplerian() {
+        testTemplateWithFrame(Vector3D.PLUS_K);
+    }
+
+    private void testTemplateWithFrame(final Vector3D acceleration) {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final double muEarth = 3.9860047e14;
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, muEarth);
+        final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(cartesianOrbit);
+        // WHEN
+        final KeplerianOrbit orbitWithOtherFrame = keplerianOrbit.withFrame(FramesFactory.getGCRF());
+        // THEN
+        Assertions.assertNotEquals(keplerianOrbit.getFrame(), orbitWithOtherFrame.getFrame());
+        Assertions.assertEquals(keplerianOrbit.getDate(), orbitWithOtherFrame.getDate());
+        Assertions.assertEquals(keplerianOrbit.getMu(), orbitWithOtherFrame.getMu());
+        final Vector3D relativePosition = keplerianOrbit.getPosition(orbitWithOtherFrame.getFrame()).subtract(
+                orbitWithOtherFrame.getPosition());
+        Assertions.assertEquals(0., relativePosition.getNorm(), 1e-6);
+        Assertions.assertEquals(keplerianOrbit.hasNonKeplerianAcceleration(),
+                orbitWithOtherFrame.hasNonKeplerianAcceleration());
+    }
+
+    @Test
     void testKeplerianToKeplerian() {
 
         // elliptic orbit

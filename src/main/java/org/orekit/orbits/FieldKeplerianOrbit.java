@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -1112,6 +1113,17 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
 
         return new TimeStampedFieldPVCoordinates<>(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldKeplerianOrbit<T> withFrame(final Frame inertialFrame) {
+        if (hasNonKeplerianAcceleration()) {
+            return new FieldKeplerianOrbit<>(getPVCoordinates(inertialFrame), inertialFrame, getMu());
+        } else {
+            final FieldKinematicTransform<T> transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            return new FieldKeplerianOrbit<>(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
+        }
     }
 
     /** {@inheritDoc} */
