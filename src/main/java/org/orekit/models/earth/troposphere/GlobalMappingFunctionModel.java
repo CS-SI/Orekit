@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -29,7 +30,6 @@ import org.orekit.data.DataContext;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldLegendrePolynomials;
@@ -91,9 +91,6 @@ public class GlobalMappingFunctionModel implements TroposphereMappingFunction {
                                    final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
 
         // bh and ch constants (Boehm, J et al, 2006) | HYDROSTATIC PART
         final double bh  = 0.0029;
@@ -123,7 +120,7 @@ public class GlobalMappingFunctionModel implements TroposphereMappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final double coef = ((dofyear + 1 - t0) / 365.25) * 2 * FastMath.PI + psi;
+        final double coef = psi + ((date.getDayOfYear(utc) + 1 - t0) / 365.25) * MathUtils.TWO_PI;
         final double ch = c0h + ((FastMath.cos(coef) + 1) * (c11h / 2.0) + c10h) * (1.0 - FastMath.cos(latitude));
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART
@@ -188,9 +185,6 @@ public class GlobalMappingFunctionModel implements TroposphereMappingFunction {
                                                                   final FieldGeodeticPoint<T> point,
                                                                   final FieldPressureTemperatureHumidity<T> weather,
                                                                   final FieldAbsoluteDate<T> date) {
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
 
         final Field<T> field = date.getField();
         final T zero = field.getZero();
@@ -222,7 +216,7 @@ public class GlobalMappingFunctionModel implements TroposphereMappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef = psi.add(zero.getPi().multiply(2.0).multiply((dofyear + 1 - t0) / 365.25));
+        final T coef = psi.add(date.getDayOfYear(utc).add(1 - t0).divide(365.25).multiply(MathUtils.TWO_PI));
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.0)).add(c0h);
 
         // bw and cw constants (Boehm, J et al, 2006) | WET PART

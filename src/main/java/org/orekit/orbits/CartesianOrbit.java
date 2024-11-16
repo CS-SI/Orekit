@@ -129,7 +129,7 @@ public class CartesianOrbit extends Orbit {
      */
     public CartesianOrbit(final Orbit op) {
         super(op.getPVCoordinates(), op.getFrame(), op.getMu());
-        hasNonKeplerianAcceleration = op.hasDerivatives();
+        hasNonKeplerianAcceleration = op.hasNonKeplerianAcceleration();
         if (op instanceof EquinoctialOrbit) {
             equinoctial = (EquinoctialOrbit) op;
         } else if (op instanceof CartesianOrbit) {
@@ -147,7 +147,7 @@ public class CartesianOrbit extends Orbit {
     /** Lazy evaluation of equinoctial parameters. */
     private void initEquinoctial() {
         if (equinoctial == null) {
-            if (hasDerivatives()) {
+            if (hasNonKeplerianAcceleration()) {
                 // getPVCoordinates includes accelerations that will be interpreted as derivatives
                 equinoctial = new EquinoctialOrbit(getPVCoordinates(), getFrame(), getDate(), getMu());
             } else {
@@ -189,14 +189,14 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getADot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration) {
             final FieldPVCoordinates<UnivariateDerivative2> pv = getPVDerivatives();
             final UnivariateDerivative2 r  = pv.getPosition().getNorm();
             final UnivariateDerivative2 V2 = pv.getVelocity().getNormSq();
             final UnivariateDerivative2 a  = r.divide(r.multiply(V2).divide(getMu()).subtract(2).negate());
             return a.getDerivative(1);
         } else {
-            return Double.NaN;
+            return 0.;
         }
     }
 
@@ -220,7 +220,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getEDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration) {
             final FieldPVCoordinates<UnivariateDerivative2> pv = getPVDerivatives();
             final FieldVector3D<UnivariateDerivative2> pvP   = pv.getPosition();
             final FieldVector3D<UnivariateDerivative2> pvV   = pv.getVelocity();
@@ -233,7 +233,7 @@ public class CartesianOrbit extends Orbit {
             final UnivariateDerivative2 e       = eCE.multiply(eCE).add(eSE.multiply(eSE)).sqrt();
             return e.getDerivative(1);
         } else {
-            return Double.NaN;
+            return 0.;
         }
     }
 
@@ -244,14 +244,14 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getIDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration) {
             final FieldPVCoordinates<UnivariateDerivative2> pv = getPVDerivatives();
             final FieldVector3D<UnivariateDerivative2> momentum =
                             FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity());
             final UnivariateDerivative2 i = FieldVector3D.angle(Vector3D.PLUS_K, momentum);
             return i.getDerivative(1);
         } else {
-            return Double.NaN;
+            return 0.;
         }
     }
 
@@ -291,7 +291,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getHxDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration) {
             final FieldPVCoordinates<UnivariateDerivative2> pv = getPVDerivatives();
             final FieldVector3D<UnivariateDerivative2> w =
                             FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
@@ -305,7 +305,7 @@ public class CartesianOrbit extends Orbit {
             final UnivariateDerivative2 hx = w.getY().negate().divide(w.getZ().add(1));
             return hx.getDerivative(1);
         } else {
-            return Double.NaN;
+            return 0.;
         }
     }
 
@@ -321,7 +321,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     public double getHyDot() {
-        if (hasDerivatives()) {
+        if (hasNonKeplerianAcceleration) {
             final FieldPVCoordinates<UnivariateDerivative2> pv = getPVDerivatives();
             final FieldVector3D<UnivariateDerivative2> w =
                             FieldVector3D.crossProduct(pv.getPosition(), pv.getVelocity()).normalize();
@@ -335,7 +335,7 @@ public class CartesianOrbit extends Orbit {
             final UnivariateDerivative2 hy = w.getX().divide(w.getZ().add(1));
             return hy.getDerivative(1);
         } else {
-            return Double.NaN;
+            return 0.;
         }
     }
 
@@ -377,7 +377,7 @@ public class CartesianOrbit extends Orbit {
 
     /** {@inheritDoc} */
     @Override
-    public boolean hasDerivatives() {
+    public boolean hasNonKeplerianAcceleration() {
         return hasNonKeplerianAcceleration;
     }
 
@@ -518,7 +518,7 @@ public class CartesianOrbit extends Orbit {
     private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20240721L;
+        private static final long serialVersionUID = 20241114L;
 
         /** Seconds. */
         private final long seconds;
@@ -543,7 +543,7 @@ public class CartesianOrbit extends Orbit {
             this.seconds     = pv.getDate().getSeconds();
             this.attoseconds = pv.getDate().getAttoSeconds();
 
-            if (orbit.hasDerivatives()) {
+            if (orbit.hasNonKeplerianAcceleration()) {
                 this.d = new double[] {
                     orbit.getMu(),
                     pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),

@@ -32,7 +32,7 @@ class FieldNiellMappingFunctionModelTest extends AbstractFieldMappingFunctionTes
 
     @Test
     public void testMFStateDerivatives() {
-        doTestMFStateDerivatives(6.542e-12, 1.557e-11);
+        doTestMFStateDerivatives(2.1e-11, 1.6e-11);
     }
 
 }

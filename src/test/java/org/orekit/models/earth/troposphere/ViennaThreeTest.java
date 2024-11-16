@@ -31,7 +31,7 @@ import org.orekit.utils.TrackingCoordinates;
 
 public class ViennaThreeTest {
 
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     @BeforeAll
     public static void setUpGlobal() {
@@ -50,7 +50,7 @@ public class ViennaThreeTest {
         //           longitude: 277.5°
         //           height:    824 m
         //
-        // Date:     25 November 2018 at 0h UT
+        // Date:     25 November 2018 at 12h UT
         //
         // Values: ah  = 0.00123462
         //         aw  = 0.00047101
@@ -66,7 +66,7 @@ public class ViennaThreeTest {
         // http://vmf.geo.tuwien.ac.at/codes/
         //
 
-        final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, 12, 0, 0, TimeScalesFactory.getUTC());
 
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);
@@ -97,7 +97,7 @@ public class ViennaThreeTest {
         //           longitude: 277.5°
         //           height:    824 m
         //
-        // Date:     25 November 2018 at 0h UT
+        // Date:     25 November 2018 at 12h UT
         //
         // Values: ah  = 0.00123462
         //         aw  = 0.00047101
@@ -113,7 +113,7 @@ public class ViennaThreeTest {
         // http://vmf.geo.tuwien.ac.at/codes/
         //
 
-        final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2018, 11, 25, 12, 0, 0, TimeScalesFactory.getUTC());
 
         final double latitude     = FastMath.toRadians(37.5);
         final double longitude    = FastMath.toRadians(277.5);

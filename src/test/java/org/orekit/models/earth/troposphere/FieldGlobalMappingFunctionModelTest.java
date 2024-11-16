@@ -49,7 +49,6 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -81,7 +80,7 @@ public class FieldGlobalMappingFunctionModelTest {
         //                              longitude: -1.393397187 radians
         //                              height:    844.715 m
         //
-        // Date: MJD 55055 -> 12 August 2009 at 0h UT
+        // Date: MJD 55055 -> 12 August 2009 at 12h UT
         //
         // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
         //         IERS Technical Note No. 36, BKG (2010)
@@ -89,12 +88,14 @@ public class FieldGlobalMappingFunctionModelTest {
         // Expected mapping factors : hydrostatic -> 3.425246 (Ref)
         //                                    wet -> 3.449589 (Ref)
 
-        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createMJDDate(55055, zero, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> date = FieldAbsoluteDate.createMJDDate(55055,
+                                                                          field.getZero().newInstance(43200),
+                                                                          TimeScalesFactory.getUTC());
 
         final double latitude    = 0.6708665767;
         final double longitude   = -1.393397187;
         final double height      = 844.715;
-        final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<T>(zero.add(latitude), zero.add(longitude), zero.add(height));
+        final FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(latitude), zero.add(longitude), zero.add(height));
 
         final FieldTrackingCoordinates<T> trackingCoordinates =
                         new FieldTrackingCoordinates<>(zero,
@@ -126,7 +127,7 @@ public class FieldGlobalMappingFunctionModelTest {
         final FieldPressureTemperatureHumidity<T> weather =
                         new FieldPressureTemperatureHumidity<>(field,
                                                                TroposphericModelUtils.STANDARD_ATMOSPHERE);
-        FieldGeodeticPoint<T> point = new FieldGeodeticPoint<T>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(350.0));
+        FieldGeodeticPoint<T> point = new FieldGeodeticPoint<>(zero.add(FastMath.toRadians(45.0)), zero.add(FastMath.toRadians(45.0)), zero.add(350.0));
         final T[] lastFactors = MathArrays.buildArray(field, 2);
         lastFactors[0] = zero.add(Double.MAX_VALUE);
         lastFactors[1] = zero.add(Double.MAX_VALUE);
@@ -278,7 +279,7 @@ public class FieldGlobalMappingFunctionModelTest {
                                                      TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                      stateP4.getDate());
 
-            fillJacobianColumn(refMF, i, orbitType, angleType, steps[i],
+            fillJacobianColumn(refMF, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
@@ -289,8 +290,7 @@ public class FieldGlobalMappingFunctionModelTest {
         }
     }
 
-    private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
+    private void fillJacobianColumn(double[][] jacobian, int column, double h,
                                     double[] sM4h, double[] sM3h,
                                     double[] sM2h, double[] sM1h,
                                     double[] sP1h, double[] sP2h,
@@ -306,7 +306,7 @@ public class FieldGlobalMappingFunctionModelTest {
     private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType, angleType, true);
+        double[][] array = stateToArray(state, orbitType, angleType);
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
@@ -314,13 +314,10 @@ public class FieldGlobalMappingFunctionModelTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
-                                  boolean withMass) {
-        double[][] array = new double[2][withMass ? 7 : 6];
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType) {
+        double[][] array = new double[2][7];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
-        if (withMass) {
-            array[0][6] = state.getMass();
-        }
+        array[0][6] = state.getMass();
         return array;
     }
 

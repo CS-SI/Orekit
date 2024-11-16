@@ -48,7 +48,7 @@ public class GlobalMappingFunctionModelTest {
         //                              longitude: -1.393397187 radians
         //                              height:    844.715 m
         //
-        // Date: MJD 55055 -> 12 August 2009 at 0h UT
+        // Date: MJD 55055 -> 12 August 2009 at 12h UT
         //
         // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
         //         IERS Technical Note No. 36, BKG (2010)
@@ -56,7 +56,7 @@ public class GlobalMappingFunctionModelTest {
         // Expected mapping factors : hydrostatic -> 3.425246 (Ref)
         //                                    wet -> 3.449589 (Ref)
 
-        final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC());
+        final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 43200, TimeScalesFactory.getUTC());
 
         final double latitude    = 0.6708665767;
         final double longitude   = -1.393397187;

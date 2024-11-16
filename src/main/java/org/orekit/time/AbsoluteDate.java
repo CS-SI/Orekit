@@ -1534,4 +1534,27 @@ public class AbsoluteDate
     public double getJD(final TimeScale ts) {
         return this.getComponents(ts).offsetFrom(DateTimeComponents.JULIAN_EPOCH) / Constants.JULIAN_DAY;
     }
+
+    /** Get day of year, preserving continuity as much as possible.
+     * <p>
+     * This is a continuous extension of the integer value returned by
+     * {@link #getComponents(TimeZone) getComponents(utc)}{@link DateTimeComponents#getDate() .getDate()}{@link DateComponents#getDayOfYear() .getDayOfYear()}.
+     * In order to have it remain as close as possible to its integer counterpart,
+     * day 1.0 is considered to occur on January 1st at noon.
+     * </p>
+     * <p>
+     * Continuity is preserved from day to day within a year, but of course
+     * there is a discontinuity at year change, where it switches from 365.49999…
+     * (or 366.49999… on leap years) to 0.5
+     * </p>
+     * @param utc time scale to compute date components
+     * @return day of year, with day 1.0 occurring on January first at noon
+     * @since 13.0
+     */
+    public double getDayOfYear(final TimeScale utc) {
+        final int          year        = getComponents(utc).getDate().getYear();
+        final AbsoluteDate newYearsEve = new AbsoluteDate(year - 1, 12, 31, 12, 0, 0.0, utc);
+        return durationFrom(newYearsEve) / Constants.JULIAN_DAY;
+    }
+
 }

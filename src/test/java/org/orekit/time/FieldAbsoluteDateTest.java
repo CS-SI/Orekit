@@ -16,7 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.IOException;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -354,7 +353,11 @@ public class FieldAbsoluteDateTest {
     public void testNegativeOffsetShift() {
         doTestNegativeOffsetShift(Binary64Field.getInstance());
     }
-    
+
+    @Test
+    public void testGetDayOfYear() {
+        doTestGetDayOfYear(Binary64Field.getInstance());
+    }
     /** Test for method {@link FieldAbsoluteDate#hasZeroField()}.*/
     @Test
     public void testHasZeroField() {
@@ -1460,7 +1463,6 @@ public class FieldAbsoluteDateTest {
         MatcherAssert.assertThat(difference, CoreMatchers.is(Double.NaN));
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestNegativeOffsetConstructor(final Field<T> field) {
         FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field,
                                                             2019, 10, 11, 20, 40,
@@ -1473,7 +1475,6 @@ public class FieldAbsoluteDateTest {
         Assertions.assertEquals(Precision.EPSILON, after.durationFrom(date).getReal(), 1.0e-18);
     }
 
-    @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>> void doTestNegativeOffsetShift(final Field<T> field) {
         FieldAbsoluteDate<T> reference = new FieldAbsoluteDate<>(field, 2019, 10, 11, 20, 40, 1.6667019180022178E-7,
                                                                  TimeScalesFactory.getTAI());
@@ -1827,4 +1828,33 @@ public class FieldAbsoluteDateTest {
         Assertions.assertEquals(field.getOne(), shift.getFirstDerivative());
         Assertions.assertEquals(field.getZero(), shift.getSecondDerivative());
     }
+
+    private <T extends CalculusFieldElement<T>> void doTestGetDayOfYear(final Field<T> field) {
+        Assertions.assertEquals(0.501,
+                                new FieldAbsoluteDate<>(field,
+                                                        new AbsoluteDate(2004,  1,  1,  0,  0,  0.001, utc)).
+                                    getDayOfYear(utc).getReal(),
+                                1.0e-3);
+        Assertions.assertEquals(1.000,
+                                new FieldAbsoluteDate<>(field,
+                                                        new AbsoluteDate(2004,  1,  1, 12,  0,  0.000, utc)).
+                                    getDayOfYear(utc).getReal(),
+                                1.0e-3);
+        Assertions.assertEquals(366.0,
+                                new FieldAbsoluteDate<>(field,
+                                                        new AbsoluteDate(2004, 12, 31, 12,  0,  0.000, utc)).
+                                    getDayOfYear(utc).getReal(),
+                                1.0e-3);
+        Assertions.assertEquals(366.499999988426,
+                                new FieldAbsoluteDate<>(field,
+                                                        new AbsoluteDate(2004, 12, 31, 23, 59, 59.999, utc)).
+                                    getDayOfYear(utc).getReal(),
+                                1.0e-12);
+        Assertions.assertEquals(0.500000011574,
+                                new FieldAbsoluteDate<>(field,
+                                                        new AbsoluteDate(2004, 12, 31, 23, 59, 59.999, utc).shiftedBy(0.002)).
+                                    getDayOfYear(utc).getReal(),
+                                1.0e-12);
+    }
+
 }

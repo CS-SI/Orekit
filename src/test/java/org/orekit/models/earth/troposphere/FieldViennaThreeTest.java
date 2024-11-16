@@ -58,7 +58,7 @@ import org.orekit.utils.TrackingCoordinates;
 
 public class FieldViennaThreeTest {
 
-    private static double epsilon = 1e-6;
+    private static final double epsilon = 1e-6;
 
     @BeforeAll
     public static void setUpGlobal() {
@@ -83,7 +83,7 @@ public class FieldViennaThreeTest {
         //           longitude: 277.5°
         //           height:    824 m
         //
-        // Date:     25 November 2018 at 0h UT
+        // Date:     25 November 2018 at 12h UT
         //
         // Values: ah  = 0.00123462
         //         aw  = 0.00047101
@@ -99,14 +99,15 @@ public class FieldViennaThreeTest {
         // http://vmf.geo.tuwien.ac.at/codes/
         //
 
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 11, 25, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 11, 25, 12, 0, 0,
+                                                                  TimeScalesFactory.getUTC());
 
         final double latitude    = FastMath.toRadians(37.5);
         final double longitude   = FastMath.toRadians(277.5);
         final double height      = 824.0;
 
         final FieldTrackingCoordinates<T>  trackingCoordinates =
-                        new FieldTrackingCoordinates<T>(zero, zero.newInstance(FastMath.toRadians(38.0)), zero);
+                        new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(38.0)), zero);
         final double expectedHydro = 1.621024;
         final double expectedWet   = 1.623023;
 
@@ -139,7 +140,7 @@ public class FieldViennaThreeTest {
         //           longitude: 277.5°
         //           height:    824 m
         //
-        // Date:     25 November 2018 at 0h UT
+        // Date:     25 November 2018 at 12h UT
         //
         // Values: ah  = 0.00123462
         //         aw  = 0.00047101
@@ -155,7 +156,8 @@ public class FieldViennaThreeTest {
         // http://vmf.geo.tuwien.ac.at/codes/
         //
 
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 11, 25, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 11, 25, 12, 0, 0,
+                                                                  TimeScalesFactory.getUTC());
 
         final double latitude    = FastMath.toRadians(37.5);
         final double longitude   = FastMath.toRadians(277.5);
@@ -172,7 +174,7 @@ public class FieldViennaThreeTest {
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
-        final T[] computedMapping = model.mappingFactors(new FieldTrackingCoordinates<T>(zero, zero.newInstance(elevation), zero),
+        final T[] computedMapping = model.mappingFactors(new FieldTrackingCoordinates<>(zero, zero.newInstance(elevation), zero),
                                                          point,
                                                          new FieldPressureTemperatureHumidity<>(field,
                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
@@ -228,7 +230,7 @@ public class FieldViennaThreeTest {
                                                   new ConstantTroposphericModel(new TroposphericDelay(2.1993, 0.0690, 0, 0)),
                                                   TimeScalesFactory.getUTC());
 
-        final T[] computedMapping = model.mappingFactors(new FieldTrackingCoordinates<T>(zero, zero.newInstance(elevation), zero),
+        final T[] computedMapping = model.mappingFactors(new FieldTrackingCoordinates<>(zero, zero.newInstance(elevation), zero),
                                                          point,
                                                          new FieldPressureTemperatureHumidity<>(field,
                                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE),
@@ -310,7 +312,7 @@ public class FieldViennaThreeTest {
         T lastDelay = zero.add(Double.MAX_VALUE);
         // delay shall decline with increasing elevation angle
         for (double elev = 10d; elev < 90d; elev += 8d) {
-            final T delay = model.pathDelay(new FieldTrackingCoordinates<T>(zero, zero.newInstance(FastMath.toRadians(elev)), zero),
+            final T delay = model.pathDelay(new FieldTrackingCoordinates<>(zero, zero.newInstance(FastMath.toRadians(elev)), zero),
                                             point,
                                             new FieldPressureTemperatureHumidity<>(field, TroposphericModelUtils.STANDARD_ATMOSPHERE),
                                             model.getParameters(field), date).getDelay();
@@ -356,7 +358,7 @@ public class FieldViennaThreeTest {
         final DerivativeStructure zero = field.getZero();
 
         // Field Date
-        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, 2018, 11, 19, 18, 0, 0.0,
+        final FieldAbsoluteDate<DerivativeStructure> dsDate = new FieldAbsoluteDate<>(field, 2018, 11, 19, 12, 0, 0.0,
                                                                                       TimeScalesFactory.getUTC());
         // Field Orbit
         final Frame frame = FramesFactory.getEME2000();
@@ -446,18 +448,17 @@ public class FieldViennaThreeTest {
             double  delayP4 = model.pathDelay(trackingCoordinatesP4, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                               model.getParameters(), stateP4.getDate()).getDelay();
             
-            fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
+            fillJacobianColumn(refDeriv, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
 
         for (int i = 0; i < 6; i++) {
-            Assertions.assertEquals(compDelay[i + 1], refDeriv[0][i], 6.2e-12);
+            Assertions.assertEquals(compDelay[i + 1], refDeriv[0][i], 3.2e-11);
         }
     }
 
-    private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
+    private void fillJacobianColumn(double[][] jacobian, int column, double h,
                                     double sM4h, double sM3h,
                                     double sM2h, double sM1h,
                                     double sP1h, double sP2h,
@@ -473,7 +474,7 @@ public class FieldViennaThreeTest {
     private SpacecraftState shiftState(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
                                        double delta, int column) {
 
-        double[][] array = stateToArray(state, orbitType, angleType, true);
+        double[][] array = stateToArray(state, orbitType, angleType);
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, angleType, state.getFrame(), state.getDate(),
@@ -481,13 +482,10 @@ public class FieldViennaThreeTest {
 
     }
 
-    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType,
-                                  boolean withMass) {
-        double[][] array = new double[2][withMass ? 7 : 6];
+    private double[][] stateToArray(SpacecraftState state, OrbitType orbitType, PositionAngleType angleType) {
+        double[][] array = new double[2][7];
         orbitType.mapOrbitToArray(state.getOrbit(), angleType, array[0], array[1]);
-        if (withMass) {
-            array[0][6] = state.getMass();
-        }
+        array[0][6] = state.getMass();
         return array;
     }
 

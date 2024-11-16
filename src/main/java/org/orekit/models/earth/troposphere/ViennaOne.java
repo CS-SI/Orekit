@@ -16,13 +16,11 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
@@ -31,13 +29,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldTrackingCoordinates;
-import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
 
 /** The Vienna 1 tropospheric delay model for radio techniques.
  * The Vienna model data are given with a time interval of 6 hours
  * as well as on a global 2.5° * 2.0° grid.
- *
  * This version considered the height correction for the hydrostatic part
  * developed by Niell, 1996.
  *
@@ -76,7 +72,7 @@ public class ViennaOne extends AbstractVienna {
         final ViennaACoefficients a = getAProvider().getA(point, date);
 
         // Day of year computation
-        final int dofyear = getDayOfYear(date);
+        final double dofyear = getDayOfYear(date);
 
         // General constants | Hydrostatic part
         final double bh  = 0.0029;
@@ -106,7 +102,7 @@ public class ViennaOne extends AbstractVienna {
             t0 += 183;
         }
         // Compute hydrostatique coefficient c
-        final double coef = ((dofyear - t0) / 365) * 2 * FastMath.PI + psi;
+        final double coef = psi + ((dofyear - t0) / 365) * MathUtils.TWO_PI;
         final double ch = c0h + ((FastMath.cos(coef) + 1) * (c11h / 2) + c10h) * (1 - FastMath.cos(latitude));
 
         // General constants | Wet part
@@ -141,7 +137,7 @@ public class ViennaOne extends AbstractVienna {
         final FieldViennaACoefficients<T> a = getAProvider().getA(point, date);
 
         // Day of year computation
-        final int dofyear = getDayOfYear(date.toAbsoluteDate());
+        final T dofyear = getDayOfYear(date);
 
         // General constants | Hydrostatic part
         final T bh  = zero.newInstance(0.0029);
@@ -171,7 +167,7 @@ public class ViennaOne extends AbstractVienna {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef = psi.add(zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365));
+        final T coef = psi.add(dofyear.subtract(t0).divide(365).multiply(MathUtils.TWO_PI));
         final T ch = c11h.divide(2.0).multiply(FastMath.cos(coef).add(1.0)).add(c10h).multiply(FastMath.cos(latitude).negate().add(1.)).add(c0h);
 
         // General constants | Wet part
@@ -191,12 +187,6 @@ public class ViennaOne extends AbstractVienna {
         function[0] = function[0].add(correction);
 
         return function;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return Collections.emptyList();
     }
 
 }

@@ -16,6 +16,7 @@
  */
 package org.orekit.attitudes;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -31,6 +32,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,10 +43,8 @@ class AttitudeProviderModifierTest {
     @Test
     void testGetFrozenAttitudeProviderEventDetectors() {
         // GIVEN
-        final AttitudeProvider attitudeProvider = Mockito.mock(AttitudeProvider.class);
+        final AttitudeProvider attitudeProvider = new TestProvider(Rotation.IDENTITY);
         final List<ParameterDriver> drivers = new ArrayList<>();
-        Mockito.when(attitudeProvider.getEventDetectors()).thenCallRealMethod();
-        Mockito.when(attitudeProvider.getEventDetectors(drivers)).thenCallRealMethod();
         // WHEN
         final AttitudeProviderModifier frozenAttitudeProvider = AttitudeProviderModifier
                 .getFrozenAttitudeProvider(attitudeProvider);
@@ -57,13 +58,11 @@ class AttitudeProviderModifierTest {
     @Test
     void testGetFrozenAttitudeProvider() {
         // GIVEN
-        final AttitudeProvider attitudeProvider = Mockito.mock(AttitudeProvider.class);
-        Mockito.when(attitudeProvider.getEventDetectors()).thenCallRealMethod();
         final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
+        final AttitudeProvider attitudeProvider = new TestProvider(expectedRotation);
         final PVCoordinatesProvider mockedPVCoordinatesProvider = Mockito.mock(PVCoordinatesProvider.class);
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final Frame mockedFrame = Mockito.mock(Frame.class);
-        Mockito.when(attitudeProvider.getAttitudeRotation(mockedPVCoordinatesProvider, date, mockedFrame)).thenReturn(expectedRotation);
         // WHEN
         final AttitudeProviderModifier frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
         final Attitude attitude = frozenAttitudeProvider.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame);
@@ -79,14 +78,12 @@ class AttitudeProviderModifierTest {
     @Test
     void testGetFrozenAttitudeProviderField() {
         // GIVEN
-        final AttitudeProvider attitudeProvider = Mockito.mock(AttitudeProvider.class);
-        final ComplexField field = ComplexField.getInstance();
         final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
-        final FieldRotation<Complex> fieldRotation = new FieldRotation<>(field, expectedRotation);
+        final AttitudeProvider attitudeProvider = new TestProvider(expectedRotation);
+        final ComplexField field = ComplexField.getInstance();
         final FieldPVCoordinatesProvider<Complex> mockedPVCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
         final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
         final Frame mockedFrame = Mockito.mock(Frame.class);
-        Mockito.when(attitudeProvider.getAttitudeRotation(mockedPVCoordinatesProvider, date, mockedFrame)).thenReturn(fieldRotation);
         // WHEN
         final AttitudeProvider frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
         final FieldAttitude<Complex> attitude = frozenAttitudeProvider.getAttitude(mockedPVCoordinatesProvider, date,
@@ -101,11 +98,9 @@ class AttitudeProviderModifierTest {
     @Test
     void testGetFrozenAttitudeProviderFieldEventDetectors() {
         // GIVEN
-        final AttitudeProvider attitudeProvider = Mockito.mock(AttitudeProvider.class);
+        final AttitudeProvider attitudeProvider = new TestProvider(Rotation.IDENTITY);
         final ComplexField field = ComplexField.getInstance();
-        Mockito.when(attitudeProvider.getFieldEventDetectors(field)).thenCallRealMethod();
         final List<ParameterDriver> driverList = new ArrayList<>();
-        Mockito.when(attitudeProvider.getFieldEventDetectors(field, driverList)).thenCallRealMethod();
         // WHEN
         final AttitudeProvider frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
         // THEN
@@ -114,4 +109,29 @@ class AttitudeProviderModifierTest {
         Assertions.assertEquals(attitudeProvider.getFieldEventDetectors(field, driverList).count(),
                 frozenAttitudeProvider.getFieldEventDetectors(field, driverList).count());
     }
+
+    private static class TestProvider implements AttitudeProvider {
+
+        private final Rotation r;
+        TestProvider(final Rotation r) {
+            this.r = r;
+        }
+
+        @Override
+        public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+            return new Attitude(frame, new TimeStampedAngularCoordinates(date, r, Vector3D.ZERO, Vector3D.ZERO));
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(
+            final FieldPVCoordinatesProvider<T> pvProv, final FieldAbsoluteDate<T> date, final Frame frame) {
+            return new FieldAttitude<>(frame,
+                                       new TimeStampedFieldAngularCoordinates<>(date,
+                                                                                new FieldRotation<>(date.getField(), r),
+                                                                                FieldVector3D.getZero(date.getField()),
+                                                                                FieldVector3D.getZero(date.getField())));
+        }
+
+    }
+
 }
