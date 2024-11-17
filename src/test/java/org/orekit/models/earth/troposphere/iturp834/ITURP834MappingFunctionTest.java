@@ -18,13 +18,13 @@ package org.orekit.models.earth.troposphere.iturp834;
 
 import org.junit.jupiter.api.Test;
 import org.orekit.models.earth.troposphere.AbstractMappingFunctionTest;
-import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
 import org.orekit.time.TimeScalesFactory;
 
-public class ITU834MappingFunctionTest extends AbstractMappingFunctionTest {
+public class ITURP834MappingFunctionTest
+    extends AbstractMappingFunctionTest<ITURP834MappingFunction> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
-        return new ITU834MappingFunction(TimeScalesFactory.getUTC());
+    protected ITURP834MappingFunction buildMappingFunction() {
+        return new ITURP834MappingFunction(TimeScalesFactory.getUTC());
     }
 
     @Test

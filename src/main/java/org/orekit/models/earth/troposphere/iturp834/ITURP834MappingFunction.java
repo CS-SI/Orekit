@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
  * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
  * @since 13.0
  */
-public class ITU834MappingFunction implements TroposphereMappingFunction {
+public class ITURP834MappingFunction implements TroposphereMappingFunction {
 
     /** Name of data file. */
     private static final String MAPPING_FUNCTION_NAME = "/assets/org/orekit/ITU-R-P.834/p834_mf_coeff_v1.txt";
@@ -141,7 +141,7 @@ public class ITU834MappingFunction implements TroposphereMappingFunction {
         final double[][] b2w        = new double[longitudes.length][latitudes.length];
 
         final Pattern splitter = Pattern.compile("\\s+");
-        try (InputStream       is     = ITU834MappingFunction.class.getResourceAsStream(MAPPING_FUNCTION_NAME);
+        try (InputStream       is     = ITURP834MappingFunction.class.getResourceAsStream(MAPPING_FUNCTION_NAME);
              InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader    reader = new BufferedReader(isr)) {
             int lineNumber = 0;
@@ -250,7 +250,7 @@ public class ITU834MappingFunction implements TroposphereMappingFunction {
     /** Simple constructor.
      * @param utc UTC time scale
      */
-    public ITU834MappingFunction(final TimeScale utc) {
+    public ITURP834MappingFunction(final TimeScale utc) {
         this.utc = utc;
     }
 
