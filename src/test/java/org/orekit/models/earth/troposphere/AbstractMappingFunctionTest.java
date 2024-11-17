@@ -33,9 +33,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
-public abstract class AbstractMappingFunctionTest {
+public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFunction> {
 
-    protected abstract TroposphereMappingFunction buildMappingFunction();
+    protected abstract T buildMappingFunction();
 
     @Test
     public abstract void testMappingFactors();
@@ -56,7 +56,7 @@ public abstract class AbstractMappingFunctionTest {
 
         final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(5.0), 0.0);
 
-        final TroposphereMappingFunction model = buildMappingFunction();
+        final T model = buildMappingFunction();
 
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
@@ -70,7 +70,7 @@ public abstract class AbstractMappingFunctionTest {
     public void testFixedHeight() {
         final AbsoluteDate date = new AbsoluteDate();
         final GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        TroposphereMappingFunction model = buildMappingFunction();
+        T model = buildMappingFunction();
         double[] lastFactors = new double[] {
             Double.MAX_VALUE,
             Double.MAX_VALUE
@@ -97,7 +97,7 @@ public abstract class AbstractMappingFunctionTest {
                                      final double tolElevationDerivative,
                                      final double tolRangeDerivative) {
 
-        TroposphereMappingFunction model = buildMappingFunction();
+        T model = buildMappingFunction();
 
         final AbsoluteDate dateD = new AbsoluteDate(2004, 11, 16, 10, 54, 17.0, TimeScalesFactory.getUTC());
         final GeodeticPoint kuroishiD =
@@ -145,7 +145,7 @@ public abstract class AbstractMappingFunctionTest {
 
     }
 
-    private Gradient[] mappingFactorsGradient(final TroposphereMappingFunction model,
+    private Gradient[] mappingFactorsGradient(final T model,
                                               final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                               final PressureTemperatureHumidity weather, final AbsoluteDate date,
                                               final double dt, final double da, final double de, final double dr) {
@@ -163,7 +163,7 @@ public abstract class AbstractMappingFunctionTest {
         };
     }
 
-    private double[] mappingFactorsDerivative(final TroposphereMappingFunction model,
+    private double[] mappingFactorsDerivative(final T model,
                                               final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                               final PressureTemperatureHumidity weather, final AbsoluteDate date,
                                               final double delta, final int index) {
@@ -196,7 +196,7 @@ public abstract class AbstractMappingFunctionTest {
 
     }
 
-    private double[] shiftedMappingFactors(final TroposphereMappingFunction model,
+    private double[] shiftedMappingFactors(final T model,
                                            final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                            final PressureTemperatureHumidity weather, final AbsoluteDate date,
                                            final double dt, final double da, final double de, final double dr) {

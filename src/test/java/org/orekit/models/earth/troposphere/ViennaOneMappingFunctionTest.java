@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,21 +17,25 @@
 package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
+import org.orekit.time.TimeScalesFactory;
 
-public class RevisedChaoMappingFunctionTest extends AbstractMappingFunctionTest<RevisedChaoMappingFunction> {
+public class ViennaOneMappingFunctionTest extends AbstractMappingFunctionTest<ViennaOne> {
 
-    protected RevisedChaoMappingFunction buildMappingFunction() {
-        return new RevisedChaoMappingFunction();
+    protected ViennaOne buildMappingFunction() {
+        return new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                             new ConstantAzimuthalGradientProvider(null),
+                             new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
+                             TimeScalesFactory.getUTC());
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.13, 11.05);
+        doTestMappingFactors(3.425088, 3.448300);
     }
 
-    @Test
+    @Override
     public void testDerivatives() {
-        doTestDerivatives(1.0e-100, 1.0e-100, 1.0e-100, 4.0e-8, 1.0e-100);
+        doTestDerivatives(1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100);
     }
 
 }

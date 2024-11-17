@@ -18,9 +18,9 @@ package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
 
-public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest {
+public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest<NiellMappingFunctionModel> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
+    protected NiellMappingFunctionModel buildMappingFunction() {
         return new NiellMappingFunctionModel();
     }
 

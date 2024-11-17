@@ -18,9 +18,9 @@ package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
 
-public class DummyMappingFunctionTest extends AbstractMappingFunctionTest {
+public class DummyMappingFunctionTest extends AbstractMappingFunctionTest<DummyMappingFunction> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
+    protected DummyMappingFunction buildMappingFunction() {
         return new DummyMappingFunction();
     }
 
