@@ -53,7 +53,7 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field field used by default
      * @param occulted the body to be occulted
@@ -69,14 +69,14 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field field used by default
      * @param occultationEngine occultation engine
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
-        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
+        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(DEFAULT_MAX_CHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
              DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>(),
              occultationEngine, field.getZero(), true);
     }

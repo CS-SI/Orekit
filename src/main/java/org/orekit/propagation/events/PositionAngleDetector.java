@@ -67,7 +67,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param orbitType orbit type defining the angle type
      * @param positionAngleType type of position angle
@@ -77,7 +77,7 @@ public class PositionAngleDetector extends AbstractDetector<PositionAngleDetecto
     public PositionAngleDetector(final OrbitType orbitType, final PositionAngleType positionAngleType,
                                  final double angle)
         throws OrekitIllegalArgumentException {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, orbitType, positionAngleType, angle);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, orbitType, positionAngleType, angle);
     }
 
     /** Build a detector.

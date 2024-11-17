@@ -48,14 +48,14 @@ public class LongitudeRangeCrossingDetector extends AbstractDetector<LongitudeRa
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the longitude is defined
      * @param fromLongitude longitude to be crossed, lower range boundary
      * @param toLongitude longitude to be crossed, upper range boundary
      */
     public LongitudeRangeCrossingDetector(final OneAxisEllipsoid body, final double fromLongitude, final double toLongitude) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, fromLongitude, toLongitude);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, fromLongitude, toLongitude);
     }
 
     /** Build a detector.

@@ -48,14 +48,14 @@ public class LatitudeRangeCrossingDetector extends AbstractDetector<LatitudeRang
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the latitude is defined
      * @param fromLatitude latitude to be crossed, lower range boundary
      * @param toLatitude latitude to be crossed, upper range boundary
      */
     public LatitudeRangeCrossingDetector(final OneAxisEllipsoid body, final double fromLatitude, final double toLatitude) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, fromLatitude, toLatitude);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, fromLatitude, toLatitude);
     }
 
     /** Build a detector.

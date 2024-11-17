@@ -70,7 +70,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * <p>This constructor uses:
      * <ul>
      * <li>the {@link DataContext#getDefault() default data context}</li>
-     * <li>the {@link AbstractDetector#DEFAULT_MAXCHECK default value} for maximal checking interval</li>
+     * <li>the {@link AbstractDetector#DEFAULT_MAX_CHECK default value} for maximal checking interval</li>
      * <li>the {@link AbstractDetector#DEFAULT_THRESHOLD default value} for convergence threshold</li>
      * <li>the <code>atSeaLevel</code> switch set to false</li>
      * </ul>
@@ -82,7 +82,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      */
     @DefaultDataContext
     public MagneticFieldDetector(final double limit, final FieldModel model, final OneAxisEllipsoid body) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, model, body, false);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, limit, model, body, false);
     }
 
     /** Build a new detector.
@@ -90,7 +90,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
      * <p>This constructor uses:
      * <ul>
      * <li>the {@link DataContext#getDefault() default data context}</li>
-     * <li>the {@link AbstractDetector#DEFAULT_MAXCHECK default value} for maximal checking interval</li>
+     * <li>the {@link AbstractDetector#DEFAULT_MAX_CHECK default value} for maximal checking interval</li>
      * <li>the {@link AbstractDetector#DEFAULT_THRESHOLD default value} for convergence threshold </li>
      * </ul>
      *
@@ -103,7 +103,7 @@ public class MagneticFieldDetector extends AbstractDetector<MagneticFieldDetecto
     @DefaultDataContext
     public MagneticFieldDetector(final double limit, final FieldModel model,
                                  final OneAxisEllipsoid body, final boolean atSeaLevel) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, limit, model, body, atSeaLevel);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, limit, model, body, atSeaLevel);
     }
 
     /** Build a detector.

@@ -53,13 +53,13 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param field field to which elements belong
      * @param topo topocentric frame centered on ground point
      */
     public FieldElevationExtremumDetector(final Field<T> field, final TopocentricFrame topo) {
-        this(field.getZero().newInstance(DEFAULT_MAXCHECK),
+        this(field.getZero().newInstance(DEFAULT_MAX_CHECK),
              field.getZero().newInstance(DEFAULT_THRESHOLD),
              topo);
     }

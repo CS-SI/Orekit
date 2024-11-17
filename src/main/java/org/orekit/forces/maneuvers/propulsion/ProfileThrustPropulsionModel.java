@@ -48,9 +48,6 @@ import org.orekit.utils.TimeSpanMap;
  */
 public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
 
-    /** Accuracy of switching events datation (s). */
-    private static final double DATATION_ACCURACY = 1.0e-10;
-
     /** Thrust profile. */
     private final TimeSpanMap<PolynomialThrustSegment> profile;
 
