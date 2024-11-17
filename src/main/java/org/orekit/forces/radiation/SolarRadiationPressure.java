@@ -28,6 +28,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
@@ -95,7 +96,7 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
         this(D_REF, P_REF, sun, centralBody, spacecraft);
     }
 
-    /** Complete constructor.
+    /** Constructor with default eclipse detection settings.
      * <p>Note that reference solar radiation pressure <code>pRef</code> in
      * N/m² is linked to solar flux SF in W/m² using
      * formula pRef = SF/c where c is the speed of light (299792458 m/s). So
@@ -112,7 +113,29 @@ public class SolarRadiationPressure extends AbstractRadiationForceModel {
                                   final ExtendedPositionProvider sun,
                                   final OneAxisEllipsoid centralBody,
                                   final RadiationSensitive spacecraft) {
-        super(sun, centralBody);
+        this(dRef, pRef, sun, centralBody, spacecraft, getDefaultEclipseDetectionSettings());
+    }
+
+    /** Complete constructor.
+     * <p>Note that reference solar radiation pressure <code>pRef</code> in
+     * N/m² is linked to solar flux SF in W/m² using
+     * formula pRef = SF/c where c is the speed of light (299792458 m/s). So
+     * at 1UA a 1367 W/m² solar flux is a 4.56 10<sup>-6</sup>
+     * N/m² solar radiation pressure.</p>
+     * @param dRef reference distance for the solar radiation pressure (m)
+     * @param pRef reference solar radiation pressure at dRef (N/m²)
+     * @param sun Sun model
+     * @param centralBody central body shape model (for umbra/penumbra computation)
+     * @param spacecraft the object physical and geometrical information
+     * @param eclipseDetectionSettings event detection settings for penumbra and umbra
+     * @since 13.0
+     */
+    public SolarRadiationPressure(final double dRef, final double pRef,
+                                  final ExtendedPositionProvider sun,
+                                  final OneAxisEllipsoid centralBody,
+                                  final RadiationSensitive spacecraft,
+                                  final EventDetectionSettings eclipseDetectionSettings) {
+        super(sun, centralBody, eclipseDetectionSettings);
         this.kRef = pRef * dRef * dRef;
         this.sun  = sun;
         this.spacecraft = spacecraft;

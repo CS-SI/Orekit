@@ -32,8 +32,10 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldEclipseDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.utils.Constants;
@@ -69,17 +71,23 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
      */
     private final List<OccultationEngine> occultingBodies;
 
+    /** Eclipse detection settings. */
+    private final EventDetectionSettings eclipseDetectionSettings;
+
     /**
      * Default constructor.
      * Only central body is considered.
      * @param sun Sun model
      * @param centralBody central body shape model (for umbra/penumbra computation)
-     * @since 12.0
+     * @param eclipseDetectionSettings eclipse detection settings (warning: poor settings will miss eclipses)
+     * @since 13.0
      */
-    protected AbstractRadiationForceModel(final ExtendedPositionProvider sun, final OneAxisEllipsoid centralBody) {
+    protected AbstractRadiationForceModel(final ExtendedPositionProvider sun, final OneAxisEllipsoid centralBody,
+                                          final EventDetectionSettings eclipseDetectionSettings) {
         // in most cases, there will be only Earth, sometimes also Moon so an initial capacity of 2 is appropriate
         occultingBodies = new ArrayList<>(2);
         occultingBodies.add(new OccultationEngine(sun, Constants.SUN_RADIUS, centralBody));
+        this.eclipseDetectionSettings = eclipseDetectionSettings;
     }
 
     /** {@inheritDoc} */
@@ -91,19 +99,26 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
             detectors[2 * i]     = new EclipseDetector(occulting).
                                    withUmbra().
                                    withMargin(-ANGULAR_MARGIN).
-                                   withMaxCheck(ECLIPSE_MAX_CHECK).
-                                   withThreshold(ECLIPSE_THRESHOLD).
+                                   withDetectionSettings(eclipseDetectionSettings).
                                    withHandler(new ResetDerivativesOnEvent());
             detectors[2 * i + 1] = new EclipseDetector(occulting).
                                    withPenumbra().
                                    withMargin(ANGULAR_MARGIN).
-                                   withMaxCheck(ECLIPSE_MAX_CHECK).
-                                   withThreshold(ECLIPSE_THRESHOLD).
+                                   withDetectionSettings(eclipseDetectionSettings).
                                    withHandler(new ResetDerivativesOnEvent());
         }
         // Fusion between Date detector for parameter driver span change and
         // Detector for umbra / penumbra events
         return Stream.concat(Stream.of(detectors), RadiationForceModel.super.getEventDetectors());
+    }
+
+    /**
+     * Get the default eclipse detection settings.
+     * @return detection settings
+     * @since 13.0
+     */
+    public static EventDetectionSettings getDefaultEclipseDetectionSettings() {
+        return new EventDetectionSettings(ECLIPSE_MAX_CHECK, ECLIPSE_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER);
     }
 
     /** {@inheritDoc} */
@@ -118,14 +133,12 @@ public abstract class AbstractRadiationForceModel implements RadiationForceModel
             detectors[2 * i]     = new FieldEclipseDetector<>(field, occulting).
                                    withUmbra().
                                    withMargin(zero.newInstance(-ANGULAR_MARGIN)).
-                                   withMaxCheck(ECLIPSE_MAX_CHECK).
-                                   withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
+                                   withDetectionSettings(new FieldEventDetectionSettings<>(field, eclipseDetectionSettings)).
                                    withHandler(new FieldResetDerivativesOnEvent<>());
             detectors[2 * i + 1] = new FieldEclipseDetector<>(field, occulting).
                                    withPenumbra().
                                    withMargin(zero.newInstance(ANGULAR_MARGIN)).
-                                   withMaxCheck(ECLIPSE_MAX_CHECK).
-                                   withThreshold(zero.newInstance(ECLIPSE_THRESHOLD)).
+                                   withDetectionSettings(new FieldEventDetectionSettings<>(field, eclipseDetectionSettings)).
                                    withHandler(new FieldResetDerivativesOnEvent<>());
         }
         return Stream.concat(Stream.of(detectors), RadiationForceModel.super.getFieldEventDetectors(field));

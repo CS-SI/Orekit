@@ -27,6 +27,9 @@
         <action dev="luc" type="update" issue="1595">
             Added getDayOfYear to {Field}AbsoluteDate.
         </action>
+        <action dev="serrof" type="add" issue="1593">
+            Add custom eclipse detection settings in AbstractRadiationForceModel and inheritors.
+        </action>
         <action dev="luc" type="update" issue="1590">
             Renamed EarthITU453AtmosphereRefraction into EarthITU834AtmosphereRefraction.
         </action>
