@@ -51,21 +51,21 @@ enum MeteorologicalParameter {
     /** Get name of average value file.
      * @return name of average value file
      */
-    public String getAverageValueFileName() {
+    public String averageValue() {
         return prefix + "_gd_a1.dat";
     }
 
     /** Get name of seasonal fluctuation.
      * @return name of seasonal fluctuation file
      */
-    public String getSeasonalFluctuationFileName() {
+    public String seasonalFluctuation() {
         return prefix + "_gd_a2.dat";
     }
 
     /** Get name of day of minimum value file.
      * @return name of day of minimum value file
      */
-    public String getDayMinimumFileName() {
+    public String dayMinimum() {
         return prefix + "_gd_a3.dat";
     }
 

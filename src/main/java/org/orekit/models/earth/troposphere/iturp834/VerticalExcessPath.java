@@ -41,8 +41,8 @@ public enum VerticalExcessPath {
     /** All other areas. */
     NON_COASTAL_NON_EQUATORIAL(7.3e-4, 2.35e-2);
 
-    /** Base delay coefficient. */
-    private static final double L0 = 2.2768e-5;
+    /** Base delay coefficient (equation 19). */
+    private static final double L0 = 2.27e-5;
 
     /** Celsius temperature offset. */
     private static final double CELSIUS = 273.15;
@@ -70,14 +70,14 @@ public enum VerticalExcessPath {
     public double verticalExcessPath(final PressureTemperatureHumidity weather,
                                      final WaterVaporPressureProvider waterVaporPressureProvider) {
 
-        // contribution of pressure
+        // contribution of pressure, equation 19
         final double relativeHumidity =
             waterVaporPressureProvider.relativeHumidity(weather.getPressure(),
                                                         weather.getTemperature(),
                                                         weather.getWaterVaporPressure());
         final double pressureContribution = weather.getPressure() * L0;
 
-        // contribution of temperature (depends on point being close or far to water body).
+        // contribution of temperature (depends on point being close or far to water body), equation 20
         final double temperatureFunction = FastMath.pow(10.0, (weather.getTemperature() - CELSIUS) * b) * a;
 
         // compute vertical excess path
@@ -93,14 +93,14 @@ public enum VerticalExcessPath {
     public <T extends CalculusFieldElement<T>> T verticalExcessPath(final FieldPressureTemperatureHumidity<T> weather,
                                                                     final WaterVaporPressureProvider waterVaporPressureProvider) {
 
-        // contribution of pressure
+        // contribution of pressure, equation 19
         final T relativeHumidity =
             waterVaporPressureProvider.relativeHumidity(weather.getPressure(),
                                                         weather.getTemperature(),
                                                         weather.getWaterVaporPressure());
         final T pressureContribution = weather.getPressure().multiply(L0);
 
-        // contribution of temperature (depends on point being close or far to water body).
+        // contribution of temperature (depends on point being close or far to water body), equation 20
         final T temperatureFunction = FastMath.pow(relativeHumidity.newInstance(10.0),
                                                    weather.getTemperature().subtract(CELSIUS).multiply(b)).
                                       multiply(a);

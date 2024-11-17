@@ -17,11 +17,13 @@
 package org.orekit.models.earth.troposphere.iturp834;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.interpolation.BilinearInterpolatingFunction;
+import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.troposphere.FieldTroposphericDelay;
+import org.orekit.models.earth.troposphere.TroposphereMappingFunction;
 import org.orekit.models.earth.troposphere.TroposphericDelay;
 import org.orekit.models.earth.troposphere.TroposphericModel;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
@@ -29,6 +31,7 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.water.WaterVaporPressureProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TrackingCoordinates;
@@ -49,99 +52,41 @@ import java.util.List;
  */
 public class ITURP834PathDelay implements TroposphericModel {
 
-    /** ITU-R P.834 data resources directory. */
-    private static final String ITU_R_P_834 = "/assets/org/orekit/ITU-R-P.834/";
+    /** Average value of atmospheric refractivity extrapolated to sea level (from ITU-R P.453). */
+    private static final double NS = 315;
 
-    /** Average of air total pressure at the Earth surface. */
-    private static final BilinearInterpolatingFunction AIR_TOTAL_PRESSURE_AVERAGE;
+    /** Molar gas constant (J/mol K). */
+    private static final double R = 8.314;
 
-    /** Seasonal fluctuation of air total pressure at the Earth surface. */
-    private static final BilinearInterpolatingFunction AIR_TOTAL_PRESSURE_SEASONAL;
+    /** Dry air molar mass (kg/mol). */
+    private static final double MD = 0.0289644;
 
-    /** Day of minimum of air total pressure at the Earth surface. */
-    private static final BilinearInterpolatingFunction AIR_TOTAL_PRESSURE_MINIMUM;
+    /** Hydrostatic factor (K/hPa). */
+    private static final double K1 = 76.604;
 
-    /** Average of water vapour partial pressure at the Earth surface. */
-    private static final BilinearInterpolatingFunction WATER_VAPOUR_PARTIAL_PRESSURE_AVERAGE;
+    /** Wet factor (K²/hPa). */
+    private static final double K2 = 373900;
 
-    /** Seasonal fluctuation of water vapour partial pressure at the Earth surface. */
-    private static final BilinearInterpolatingFunction WATER_VAPOUR_PARTIAL_PRESSURE_SEASONAL;
+    /** Gravity factor. */
+    private static final double G = 9.784;
 
-    /** Day of minimum of water vapour partial pressure at the Earth surface. */
-    private static final BilinearInterpolatingFunction WATER_VAPOUR_PARTIAL_PRESSURE_MINIMUM;
+    /** Gravity latitude correction factor. */
+    private static final double GL = 0.00266;
 
-    /** Average of mean temperature of the water vapour column above the surface. */
-    private static final BilinearInterpolatingFunction MEAN_TEMPERATURE_AVERAGE;
-
-    /** Seasonal fluctuation of mean temperature of the water vapour column above the surface. */
-    private static final BilinearInterpolatingFunction MEAN_TEMPERATURE_SEASONAL;
-
-    /** Day of minimum of mean temperature of the water vapour column above the surface. */
-    private static final BilinearInterpolatingFunction MEAN_TEMPERATURE_MINIMUM;
-
-    /** Average of vapour pressure decrease factor. */
-    private static final BilinearInterpolatingFunction VAPOUR_PRESSURE_DECREASE_FACTOR_AVERAGE;
-
-    /** Seasonal fluctuation of vapour pressure decrease factor. */
-    private static final BilinearInterpolatingFunction VAPOUR_PRESSURE_DECREASE_FACTOR_SEASONAL;
-
-    /** Day of minimum of vapour pressure decrease factor. */
-    private static final BilinearInterpolatingFunction VAPOUR_PRESSURE_DECREASE_FACTOR_MINIMUM;
-
-    /** Average of lapse rate of mean temperature of water vapour from Earth surface. */
-    private static final BilinearInterpolatingFunction LAPSE_RATE_MEAN_TEMPERATURE_AVERAGE;
-
-    /** Seasonal fluctuation of lapse rate of mean temperature of water vapour from Earth surface. */
-    private static final BilinearInterpolatingFunction LAPSE_RATE_MEAN_TEMPERATURE_SEASONAL;
-
-    /** Day of minimum of lapse rate of mean temperature of water vapour from Earth surface. */
-    private static final BilinearInterpolatingFunction LAPSE_RATE_MEAN_TEMPERATURE_MINIMUM;
-
-    /** Average height of reference level with respect to mean seal level. */
-    private static final BilinearInterpolatingFunction AVERAGE_HEIGHT_REFERENCE_LEVEL;
-
-    // load all model data files
-    static {
-        final MeteorologicalParameterParser parser = new MeteorologicalParameterParser();
-        AIR_TOTAL_PRESSURE_AVERAGE =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.AIR_TOTAL_PRESSURE.getAverageValueFileName());
-        AIR_TOTAL_PRESSURE_SEASONAL =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.AIR_TOTAL_PRESSURE.getSeasonalFluctuationFileName());
-        AIR_TOTAL_PRESSURE_MINIMUM =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.AIR_TOTAL_PRESSURE.getDayMinimumFileName());
-        WATER_VAPOUR_PARTIAL_PRESSURE_AVERAGE =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.getAverageValueFileName());
-        WATER_VAPOUR_PARTIAL_PRESSURE_SEASONAL =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.getSeasonalFluctuationFileName());
-        WATER_VAPOUR_PARTIAL_PRESSURE_MINIMUM =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.getDayMinimumFileName());
-        MEAN_TEMPERATURE_AVERAGE =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.MEAN_TEMPERATURE.getAverageValueFileName());
-        MEAN_TEMPERATURE_SEASONAL =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.MEAN_TEMPERATURE.getSeasonalFluctuationFileName());
-        MEAN_TEMPERATURE_MINIMUM =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.MEAN_TEMPERATURE.getDayMinimumFileName());
-        VAPOUR_PRESSURE_DECREASE_FACTOR_AVERAGE =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.getAverageValueFileName());
-        VAPOUR_PRESSURE_DECREASE_FACTOR_SEASONAL =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.getSeasonalFluctuationFileName());
-        VAPOUR_PRESSURE_DECREASE_FACTOR_MINIMUM =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.getDayMinimumFileName());
-        LAPSE_RATE_MEAN_TEMPERATURE_AVERAGE =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.getAverageValueFileName());
-        LAPSE_RATE_MEAN_TEMPERATURE_SEASONAL =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.getSeasonalFluctuationFileName());
-        LAPSE_RATE_MEAN_TEMPERATURE_MINIMUM =
-            parser.parse(ITU_R_P_834 + MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.getDayMinimumFileName());
-        AVERAGE_HEIGHT_REFERENCE_LEVEL =
-            parser.parse(ITU_R_P_834 + "hreflev.dat");
-    }
+    /** Gravity altitude correction factor (rescaled for altitudes in meters). */
+    private static final double GH = 2.8e-7;
 
     /** Computation engine for vertical excess path. */
     private final VerticalExcessPath verticalExcessPathComputer;
 
+    /** Mapping function. */
+    private final TroposphereMappingFunction mappingFunction;
+
     /** Converter between pressure, temperature and humidity and relative humidity. */
     private final WaterVaporPressureProvider waterVaporPressureProvider;
+
+    /** Earth. */
+    private final OneAxisEllipsoid earth;
 
     /** Simple constructor.
      * <p>
@@ -164,11 +109,16 @@ public class ITURP834PathDelay implements TroposphericModel {
      * </p>
      * @param verticalExcessPathComputer computation engine for vertical excess path
      * @param waterVaporPressureProvider converter between pressure, temperature and humidity and relative humidity
+     * @param earth Earth model
+     * @param utc UTC time scale
      */
     public ITURP834PathDelay(final VerticalExcessPath verticalExcessPathComputer,
-                             final WaterVaporPressureProvider waterVaporPressureProvider) {
+                             final WaterVaporPressureProvider waterVaporPressureProvider,
+                             final OneAxisEllipsoid earth, final TimeScale utc) {
         this.verticalExcessPathComputer = verticalExcessPathComputer;
+        this.mappingFunction            = new ITURP834MappingFunction(utc);
         this.waterVaporPressureProvider = waterVaporPressureProvider;
+        this.earth                      = earth;
     }
 
     /** {@inheritDoc} */
@@ -180,12 +130,25 @@ public class ITURP834PathDelay implements TroposphericModel {
         // compute vertical excess path
         final double deltaLv = verticalExcessPathComputer.verticalExcessPath(weather, waterVaporPressureProvider);
 
-        // TODO: calculate the path delay
-        final double zh     = Double.NaN;
-        final double zw     = Double.NaN;
-        final double sh     = Double.NaN;
-        final double sw     = Double.NaN;
-        return new TroposphericDelay(zh, zw, sh, sw);
+        // corrective factor for exponential atmosphere, equations 21, 22, and 23
+        final double h0    = 1.0e6 * deltaLv / NS;
+        final double rs    = earth.transform(new GeodeticPoint(point.getLatitude(), point.getLongitude(), 0)).getNorm();
+        final double rh0   = earth.transform(new GeodeticPoint(point.getLatitude(), point.getLongitude(), h0)).getNorm();
+        final double ns    = Double.NaN; // TODO
+        final double nh0   = Double.NaN; // TODO
+        final double ratio = ns * rs / (nh0 * rh0);
+        final double k     = 1 - ratio * ratio;
+
+        // calculate path delay
+        final double gm       = G * (1 - GL * FastMath.cos(2 * point.getLatitude()) - GH * point.getAltitude());
+        final double deltaLvh = 1.0e-6 * R * K1 * weather.getPressure() / (MD * gm);
+        final double deltaLvw = 1.0e-6 * R * K2 * weather.getWaterVaporPressure() /
+                                (MD * gm * (1 + weather.getLambda()) * weather.getTm());
+
+        // apply mapping function
+        final double[] mapping = mappingFunction.mappingFactors(trackingCoordinates, point, weather, date);
+        return new TroposphericDelay(deltaLvh, deltaLvw,
+                                     mapping[0] * deltaLvh, mapping[1] * deltaLvw);
 
     }
 
@@ -197,13 +160,31 @@ public class ITURP834PathDelay implements TroposphericModel {
                                                                                    final T[] parameters, final FieldAbsoluteDate<T> date) {
         // compute vertical excess path
         final T deltaLv = verticalExcessPathComputer.verticalExcessPath(weather, waterVaporPressureProvider);
+        final T zero    = date.getField().getZero();
 
-        // TODO: calculate the path delay
-        final T zh     = deltaLv.newInstance(Double.NaN);
-        final T zw     = deltaLv.newInstance(Double.NaN);
-        final T sh     = deltaLv.newInstance(Double.NaN);
-        final T sw     = deltaLv.newInstance(Double.NaN);
-        return new FieldTroposphericDelay<>(zh, zw, sh, sw);
+        // corrective factor for exponential atmosphere, equations 21, 22, and 23
+        final T h0    = deltaLv.multiply(1.0e6 / NS);
+        final T rs    = earth.transform(new FieldGeodeticPoint<>(point.getLatitude(), point.getLongitude(), zero)).getNorm();
+        final T rh0   = earth.transform(new FieldGeodeticPoint<>(point.getLatitude(), point.getLongitude(), h0)).getNorm();
+        final T ns    = zero.newInstance(Double.NaN); // TODO
+        final T nh0   = zero.newInstance(Double.NaN); // TODO
+        final T ratio = ns.multiply(rs).divide(nh0.multiply(rh0));
+        final T k     = ratio.square().subtract(1).negate();
+
+        // calculate path delay
+        final T gm       = FastMath.cos(point.getLatitude().multiply(2)).multiply(-GL).
+                           add(1).
+                           subtract(point.getAltitude().multiply(GH)).
+                           multiply(G);
+        final T deltaLvh = weather.getPressure().multiply(1.0e-6 * R * K1).
+                           divide(gm.multiply(MD));
+        final T deltaLvw = weather.getWaterVaporPressure().multiply(1.0e-6 * R * K2).
+                           divide(weather.getTm().multiply(weather.getLambda().add(1)).multiply(gm).multiply(MD));
+
+        // apply mapping function
+        final T[] mapping = mappingFunction.mappingFactors(trackingCoordinates, point, weather, date);
+        return new FieldTroposphericDelay<>(deltaLvh, deltaLvw,
+                                            mapping[0].multiply(deltaLvh), mapping[1].multiply(deltaLvw));
 
     }
 
