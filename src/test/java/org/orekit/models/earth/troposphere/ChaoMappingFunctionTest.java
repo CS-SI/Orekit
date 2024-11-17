@@ -26,7 +26,8 @@ public class ChaoMappingFunctionTest extends AbstractMappingFunctionTest<ChaoMap
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.21, 11.05);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             10.205, 11.05);
     }
 
     @Test

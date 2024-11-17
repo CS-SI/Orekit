@@ -16,8 +16,12 @@
  */
 package org.orekit.models.earth.troposphere;
 
+import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.TrackingCoordinates;
 
 public class ViennaOneMappingFunctionTest extends AbstractMappingFunctionTest<ViennaOne> {
 
@@ -30,12 +34,38 @@ public class ViennaOneMappingFunctionTest extends AbstractMappingFunctionTest<Vi
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(3.425088, 3.448300);
+        // Site (NRAO, Green Bank, WV): latitude:  38°
+        //                              longitude: 280°
+        //                              height:    824.17 m
+        //
+        // Date: MJD 55055 -> 12 August 2009 at 0h UT
+        //
+        // Ref for the inputs:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
+        //                        IERS Technical Note No. 36, BKG (2010)
+        //
+        // Values: ah  = 0.00127683
+        //         aw  = 0.00060955
+        //         zhd = 2.0966 m
+        //         zwd = 0.2140 m
+        //
+        // Values taken from: http://vmf.geo.tuwien.ac.at/trop_products/GRID/2.5x2/VMF1/VMF1_OP/2009/VMFG_20090812.H00
+        //
+        // Expected mapping factors : hydrostatic -> 3.425088
+        //                                    wet -> 3.448300
+        //
+        // Expected outputs are obtained by performing the Matlab script vmf1_ht.m provided by TU WIEN:
+        // http://vmf.geo.tuwien.ac.at/codes/
+        //
+        doTestMappingFactors(AbsoluteDate.createMJDDate(55055, 0, TimeScalesFactory.getUTC()),
+                             new GeodeticPoint(FastMath.toRadians(38.0), FastMath.toRadians(280.0), 824.17),
+                             new TrackingCoordinates(0.0, 0.5 * FastMath.PI - 1.278564131, 0.0),
+                             3.425088, 3.448300);
     }
 
+    @Test
     @Override
     public void testDerivatives() {
-        doTestDerivatives(1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100, 1.0e-100);
+        doTestDerivatives(5.0e-16, 2.0e-19, 1.0e-100, 3.0e-8, 1.0e-100);
     }
 
 }

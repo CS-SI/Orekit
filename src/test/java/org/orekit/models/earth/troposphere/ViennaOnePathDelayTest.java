@@ -18,21 +18,30 @@ package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
+import org.orekit.time.TimeScalesFactory;
 
-class FieldNiellMappingFunctionModelTest extends AbstractFieldMappingFunctionTest {
+public class ViennaOnePathDelayTest extends AbstractPathDelayTest<ViennaOne> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
-        return new NiellMappingFunctionModel();
+    protected ViennaOne buildTroposphericModel() {
+        return new ViennaOne(new ConstantViennaAProvider(new ViennaACoefficients(0.00127683, 0.00060955)),
+                             new ConstantAzimuthalGradientProvider(null),
+                             new ConstantTroposphericModel(new TroposphericDelay(2.0966, 0.2140, 0, 0)),
+                             TimeScalesFactory.getUTC());
     }
 
     @Test
-    public void testMappingFactors() {
-        doTestMappingFactors(Binary64Field.getInstance(), 10.16, 10.75);
+    @Override
+    public void testDelay() {
+        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    2.0966, 0.2140, 3.3985, 0.3472, 3.7458);
     }
 
     @Test
-    public void testMFStateDerivatives() {
-        doTestMFStateDerivatives(2.1e-11, 1.6e-11);
+    @Override
+    public void testFieldDelay() {
+        doTestDelay(Binary64Field.getInstance(),
+                    defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    2.0966, 0.2140, 3.3985, 0.3472, 3.7458);
     }
 
 }

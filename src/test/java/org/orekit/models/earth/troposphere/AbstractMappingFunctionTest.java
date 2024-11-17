@@ -37,33 +37,23 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
 
     protected abstract T buildMappingFunction();
 
+    // default values for doTestMappingFactors
+    protected AbsoluteDate defaultDate;
+    protected GeodeticPoint defaultPoint;
+    protected TrackingCoordinates defaultTrackingCoordinates;
+
     @Test
     public abstract void testMappingFactors();
 
-    protected void doTestMappingFactors(final double expectedHydro,
-                                        final double expectedWet) {
-
-        // Site (Le Mans, France):      latitude:  48.0°
-        //                              longitude: 0.20°
-        //                              height:    68 m
-
-        final AbsoluteDate date = new AbsoluteDate(1994, 1, 1, TimeScalesFactory.getUTC());
-
-        final double latitude    = FastMath.toRadians(48.0);
-        final double longitude   = FastMath.toRadians(0.20);
-        final double height      = 68.0;
-        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
-
-        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(5.0), 0.0);
-
+    protected void doTestMappingFactors(final AbsoluteDate date, final GeodeticPoint point,
+                                        final TrackingCoordinates trackingCoordinates,
+                                        final double expectedHydro, final double expectedWet) {
         final T model = buildMappingFunction();
-
         final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
                                                               TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                                               date);
-        Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-2);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-2);
-
+        Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-3);
+        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-3);
     }
 
     @Test
@@ -219,6 +209,9 @@ public abstract class AbstractMappingFunctionTest<T extends TroposphereMappingFu
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
+        defaultDate                = new AbsoluteDate(1994, 1, 1, TimeScalesFactory.getUTC());
+        defaultPoint               = new GeodeticPoint(FastMath.toRadians(48.0), FastMath.toRadians(0.20), 68.0);
+        defaultTrackingCoordinates = new TrackingCoordinates(0.0, FastMath.toRadians(5.0), 0.0);
     }
 
 }

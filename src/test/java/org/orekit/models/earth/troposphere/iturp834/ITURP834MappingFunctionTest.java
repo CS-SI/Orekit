@@ -29,7 +29,8 @@ public class ITURP834MappingFunctionTest
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.15, 10.79);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             10.146, 10.794);
     }
 
     @Test

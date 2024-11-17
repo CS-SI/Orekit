@@ -26,7 +26,8 @@ public class NiellMappingFunctionModelTest extends AbstractMappingFunctionTest<N
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.16, 10.75);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             10.156, 10.748);
     }
 
     @Test

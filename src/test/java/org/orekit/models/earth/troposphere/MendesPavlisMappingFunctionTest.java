@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth.troposphere;
 
-import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
@@ -27,9 +26,9 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisModel> {
+public class MendesPavlisMappingFunctionTest extends AbstractMappingFunctionTest<MendesPavlisModel> {
 
-    protected MendesPavlisModel buildTroposphericModel() {
+    protected MendesPavlisModel buildMappingFunction() {
         final double height      = 2010.344;
         final double pressure    = TroposphericModelUtils.HECTO_PASCAL.toSI(798.4188);
         final double temperature = 300.15;
@@ -43,13 +42,12 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
     }
 
     @Test
-    @Override
-    public void testDelay() {
+    public void testMappingFactors() {
 
         // Site:   McDonald Observatory
         //         latitude:  30.67166667 °
         //         longitude: -104.0250 °
-        //         height:    2010.344 m
+        //         height:    2075 m
         //
         // Meteo:  pressure:            798.4188 hPa
         //         water vapor presure: 14.322 hPa
@@ -58,35 +56,17 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
         //
         // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
         //         IERS Technical Note No. 36, BKG (2010)
-
-        doTestDelay(new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC()),
-                    new GeodeticPoint(FastMath.toRadians(30.67166667), FastMath.toRadians(-104.0250), 2010.344), new TrackingCoordinates(0, FastMath.toRadians(38.0), 0),
-                    1.932992, 0.223375e-2, 3.1334, 0.00362, 3.136995);
+        doTestMappingFactors(new AbsoluteDate(2009, 8, 12, 12, 0, 0, TimeScalesFactory.getUTC()),
+                             new GeodeticPoint(FastMath.toRadians(30.67166667), FastMath.toRadians(-104.0250), 2075),
+                             new TrackingCoordinates(0.0, FastMath.toRadians(15.0), 0.0),
+                             3.8002, 3.8002);
 
     }
 
     @Test
     @Override
-    public void testFieldDelay() {
-
-        // Site:   McDonald Observatory
-        //         latitude:  30.67166667 °
-        //         longitude: -104.0250 °
-        //         height:    2010.344 m
-        //
-        // Meteo:  pressure:            798.4188 hPa
-        //         water vapor presure: 14.322 hPa
-        //         temperature:         300.15 K
-        //         humidity:            40 %
-        //
-        // Ref:    Petit, G. and Luzum, B. (eds.), IERS Conventions (2010),
-        //         IERS Technical Note No. 36, BKG (2010)
-
-        doTestDelay(Binary64Field.getInstance(),
-                    new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC()),
-                    new GeodeticPoint(FastMath.toRadians(30.67166667), FastMath.toRadians(-104.0250), 2010.344), new TrackingCoordinates(0, FastMath.toRadians(38.0), 0),
-                    1.932992, 0.223375e-2, 3.1334, 0.00362, 3.136995);
-
+    public void testDerivatives() {
+        doTestDerivatives(5.0e-16, 1.0e-100, 1.0e-100, 2.0e-8, 1.0e-100);
     }
 
 }

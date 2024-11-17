@@ -26,7 +26,8 @@ public class DummyMappingFunctionTest extends AbstractMappingFunctionTest<DummyM
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(1.0, 1.0);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             1.0, 1.0);
     }
 
     @Test
