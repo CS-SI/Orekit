@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
 public abstract class AbstractDetector<T extends AbstractDetector<T>> implements EventDetector {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = EventDetectionSettings.DEFAULT_MAXCHECK;
+    public static final double DEFAULT_MAX_CHECK = EventDetectionSettings.DEFAULT_MAX_CHECK;
 
     /** Default convergence threshold (s). */
     public static final double DEFAULT_THRESHOLD = EventDetectionSettings.DEFAULT_THRESHOLD;

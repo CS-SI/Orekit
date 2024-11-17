@@ -32,13 +32,13 @@ import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = 600;
+    public static final double DEFAULT_MAX_CHECK = EventDetectionSettings.DEFAULT_MAX_CHECK;
 
     /** Default convergence threshold (s). */
-    public static final double DEFAULT_THRESHOLD = 1.e-6;
+    public static final double DEFAULT_THRESHOLD = EventDetectionSettings.DEFAULT_THRESHOLD;
 
     /** Default maximum number of iterations in the event time search. */
-    public static final int DEFAULT_MAX_ITER = 100;
+    public static final int DEFAULT_MAX_ITER = EventDetectionSettings.DEFAULT_MAX_ITER;
 
     /** Adaptable interval for maximum time without event evaluation. */
     private final FieldAdaptableInterval<T> maxCheckInterval;

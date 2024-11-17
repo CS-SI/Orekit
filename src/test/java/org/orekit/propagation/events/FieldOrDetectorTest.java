@@ -130,10 +130,10 @@ public class FieldOrDetectorTest {
     public void testInit() {
         // setup
         FieldEventDetector<Binary64> a = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
         Mockito.when(a.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
         FieldEventDetector<Binary64> b = Mockito.mock(FieldEventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(FieldAdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
         Mockito.when(b.getThreshold()).thenReturn(new Binary64(AbstractDetector.DEFAULT_THRESHOLD));
         FieldEventHandler<Binary64> c = Mockito.mock(FieldEventHandler.class);
         FieldBooleanDetector<Binary64> or = FieldBooleanDetector.orCombine(a, b).withHandler(c);

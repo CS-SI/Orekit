@@ -44,13 +44,13 @@ public class AltitudeDetector extends AbstractDetector<AltitudeDetector> {
 
     /** Build a new altitude detector.
      * <p>This simple constructor takes default values for maximal checking
-     *  interval ({@link #DEFAULT_MAXCHECK}) and convergence threshold
+     *  interval ({@link #DEFAULT_MAX_CHECK}) and convergence threshold
      * ({@link #DEFAULT_THRESHOLD}).</p>
      * @param altitude threshold altitude value
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public AltitudeDetector(final double altitude, final BodyShape bodyShape) {
-        this(EventDetectionSettings.DEFAULT_MAXCHECK, altitude, bodyShape);
+        this(EventDetectionSettings.DEFAULT_MAX_CHECK, altitude, bodyShape);
     }
 
     /** Build a new altitude detector.

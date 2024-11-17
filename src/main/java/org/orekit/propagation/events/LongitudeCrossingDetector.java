@@ -45,13 +45,13 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the longitude is defined
      * @param longitude longitude to be crossed
      */
     public LongitudeCrossingDetector(final OneAxisEllipsoid body, final double longitude) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, longitude);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, longitude);
     }
 
     /** Build a detector.

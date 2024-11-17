@@ -53,17 +53,17 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     /** Default value for max check.
      * @since 12.0
      */
-    public static final double DEFAULT_MAX_CHECK = 1.0e10;
+    public static final double DEFAULT_MAX_CHECK = DateDetector.DEFAULT_MAX_CHECK;
 
     /** Default value for minimum gap between added dates.
      * @since 12.0
      */
-    public static final double DEFAULT_MIN_GAP = 1.0;
+    public static final double DEFAULT_MIN_GAP = DateDetector.DEFAULT_MIN_GAP;
 
     /** Default value for convergence threshold.
      * @since 12.0
      */
-    public static final double DEFAULT_THRESHOLD = 1.0e-13;
+    public static final double DEFAULT_THRESHOLD = DateDetector.DEFAULT_THRESHOLD;
 
     /** Minimum gap between added dates.
      * @since 12.0

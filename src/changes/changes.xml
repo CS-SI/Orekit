@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1598">
+            Uniform naming of DEFAULT_MAX_CHECK in event detectors.
+        </action>
         <action dev="luc" type="update" issue="1595">
             Added getDayOfYear to {Field}AbsoluteDate.
         </action>

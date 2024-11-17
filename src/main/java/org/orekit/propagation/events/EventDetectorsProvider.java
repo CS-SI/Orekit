@@ -47,7 +47,7 @@ import org.orekit.utils.ParameterDriver;
 public interface EventDetectorsProvider {
 
     /** Accuracy of switching events dates (s). */
-    double DATATION_ACCURACY = 1.0e-10;
+    double DATATION_ACCURACY = DateDetector.DEFAULT_THRESHOLD;
 
     /** Get the discrete events related to the model.
      *
@@ -98,7 +98,7 @@ public interface EventDetectorsProvider {
             transitionDates.sort(null);
 
             // Find shortest duration between 2 consecutive dates
-            double shortestDuration = AbstractDetector.DEFAULT_MAXCHECK;
+            double shortestDuration = DateDetector.DEFAULT_MAX_CHECK;
             for (int i = 1; i < transitionDates.size(); i++) {
                 // Duration from current to previous date
                 shortestDuration = FastMath.min(shortestDuration,
@@ -147,7 +147,7 @@ public interface EventDetectorsProvider {
             transitionDates.sort(null);
 
             // Find shortest duration between 2 consecutive dates
-            double shortestDuration = AbstractDetector.DEFAULT_MAXCHECK;
+            double shortestDuration = AbstractDetector.DEFAULT_MAX_CHECK;
             for (int i = 1; i < transitionDates.size(); i++) {
                 // Duration from current to previous date
                 shortestDuration = FastMath.min(shortestDuration,

@@ -45,7 +45,7 @@ public class FunctionalDetector extends AbstractDetector<FunctionalDetector> {
 
     /**
      * Create an event detector with the default values. These are {@link
-     * #DEFAULT_MAXCHECK}, {@link #DEFAULT_THRESHOLD}, {@link #DEFAULT_MAX_ITER}, {@link
+     * #DEFAULT_MAX_CHECK}, {@link #DEFAULT_THRESHOLD}, {@link #DEFAULT_MAX_ITER}, {@link
      * ContinueOnEvent}, and a g function that is identically unity.
      */
     public FunctionalDetector() {

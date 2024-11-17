@@ -47,13 +47,13 @@ public class FieldAltitudeDetector<T extends CalculusFieldElement<T>> extends Fi
 
     /** Build a new altitude detector.
      * <p>This simple constructor takes default values for maximal checking
-     *  interval ({@link #DEFAULT_MAXCHECK}) and convergence threshold
+     *  interval ({@link #DEFAULT_MAX_CHECK}) and convergence threshold
      * ({@link #DEFAULT_THRESHOLD}).</p>
      * @param altitude threshold altitude value
      * @param bodyShape body shape with respect to which altitude should be evaluated
      */
     public FieldAltitudeDetector(final T altitude, final BodyShape bodyShape) {
-        this(altitude.getField().getZero().newInstance(DEFAULT_MAXCHECK),
+        this(altitude.getField().getZero().newInstance(DEFAULT_MAX_CHECK),
              altitude.getField().getZero().newInstance(DEFAULT_THRESHOLD),
              altitude, bodyShape);
     }

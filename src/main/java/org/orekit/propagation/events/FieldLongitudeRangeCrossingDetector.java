@@ -60,7 +60,7 @@ public class FieldLongitudeRangeCrossingDetector <T extends CalculusFieldElement
     /**
      * Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param field        the type of numbers to use.
      * @param body          body on which the longitude is defined
