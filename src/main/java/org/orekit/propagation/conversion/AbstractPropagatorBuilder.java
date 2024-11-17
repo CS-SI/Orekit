@@ -447,7 +447,8 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         // Map the new orbit in an array of double
         final double[] orbitArray = new double[6];
-        orbitType.mapOrbitToArray(newOrbit, getPositionAngleType(), orbitArray, null);
+        final Orbit orbitInCorrectFrame = (newOrbit.getFrame() == frame) ? newOrbit : newOrbit.withFrame(frame);
+        orbitType.mapOrbitToArray(orbitInCorrectFrame, getPositionAngleType(), orbitArray, null);
 
         // Update all the orbital drivers, selected or unselected
         // Reset values and reference values
