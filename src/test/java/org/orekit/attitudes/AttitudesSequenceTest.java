@@ -63,6 +63,7 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.CountAndContinue;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -109,6 +110,7 @@ public class AttitudesSequenceTest {
                                             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                  0.0,
                                                                  FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
+                                withMaxCheck(600.).
                 withHandler(new ContinueOnEvent() {
                     public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
@@ -118,11 +120,12 @@ public class AttitudesSequenceTest {
         final EventDetector monitored = logger.monitorDetector(ed);
         final Handler dayToNightHandler = new Handler(dayObservationLaw, nightRestingLaw);
         final Handler nightToDayHandler = new Handler(nightRestingLaw, dayObservationLaw);
+        final double transitionTime = 300.;
         attitudesSequence.addSwitchingCondition(dayObservationLaw, nightRestingLaw,
-                                                monitored, false, true, 300.0,
+                                                monitored, false, true, transitionTime,
                                                 AngularDerivativesFilter.USE_RRA, dayToNightHandler);
         attitudesSequence.addSwitchingCondition(nightRestingLaw, dayObservationLaw,
-                                                monitored, true, false, 300.0,
+                                                monitored, true, false, transitionTime,
                                                 AngularDerivativesFilter.USE_RRA, nightToDayHandler);
         SpacecraftState initialState = new SpacecraftState(initialOrbit);
         initialState = initialState.addAdditionalState("fortyTwo", 42.0);
@@ -146,7 +149,7 @@ public class AttitudesSequenceTest {
         propagator.setStepHandler(60.0, currentState -> {
             // the Earth position in spacecraft frame should be along spacecraft Z axis
             // during night time and away from it during day time due to roll and pitch offsets
-            final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
+            final Vector3D earth = currentState.toStaticTransform().transformPosition(Vector3D.ZERO);
             final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
 
             // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
@@ -169,7 +172,7 @@ public class AttitudesSequenceTest {
         });
 
         // Propagate from the initial date for the fixed duration
-        propagator.propagate(initialDate.shiftedBy(12600.));
+        propagator.propagate(initialDate.shiftedBy(initialOrbit.getKeplerianPeriod() * 2));
 
         // as we have 2 switch events (even if they share the same underlying event detector),
         // and these events are triggered at both eclipse entry and exit, we get 8
@@ -212,16 +215,18 @@ public class AttitudesSequenceTest {
                                     new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          0.0,
                                                          FramesFactory.getGTOD(IERSConventions.IERS_2010, true))).
-                withHandler(new ContinueOnEvent() {
-                    int count = 0;
+                        withMaxCheck(600).
+                withHandler(new CountAndContinue(0) {
+                    @Override
                     public Action eventOccurred(final SpacecraftState s,
                                                              final EventDetector d,
                                                              final boolean increasing) {
                         setInEclipse(s.getDate(), !increasing);
-                        if (count++ == 7) {
+                        if (getCount() == 7) {
+                            increment();
                             return Action.STOP;
                         } else {
-                            switch (count % 3) {
+                            switch (getCount() % 3) {
                                 case 0 :
                                     return Action.CONTINUE;
                                 case 1 :
@@ -235,11 +240,12 @@ public class AttitudesSequenceTest {
         final EventDetector monitored = logger.monitorDetector(ed);
         final Handler dayToNightHandler = new Handler(dayObservationLaw, nightRestingLaw);
         final Handler nightToDayHandler = new Handler(nightRestingLaw, dayObservationLaw);
+        final double transitionTime = 300.;
         attitudesSequence.addSwitchingCondition(dayObservationLaw, nightRestingLaw,
-                                                monitored, false, true, 300.0,
+                                                monitored, false, true, transitionTime,
                                                 AngularDerivativesFilter.USE_RRA, dayToNightHandler);
         attitudesSequence.addSwitchingCondition(nightRestingLaw, dayObservationLaw,
-                                                monitored, true, false, 300.0,
+                                                monitored, true, false, transitionTime,
                                                 AngularDerivativesFilter.USE_RRA, nightToDayHandler);
         FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
         initialState = initialState.addAdditionalState("fortyTwo", field.getZero().add(42.0));

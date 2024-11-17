@@ -120,7 +120,8 @@ public class ECOM2 extends AbstractRadiationForceModel {
     @DefaultDataContext
     public ECOM2(final int nD, final int nB, final double value,
                  final ExtendedPositionProvider sun, final double equatorialRadius) {
-        super(sun, new OneAxisEllipsoid(equatorialRadius, 0.0, FramesFactory.getGCRF()));
+        super(sun, new OneAxisEllipsoid(equatorialRadius, 0.0, FramesFactory.getGCRF()),
+                getDefaultEclipseDetectionSettings());
         this.nB = nB;
         this.nD = nD;
         this.coefficients = new ArrayList<>(2 * (nD + nB) + 3);

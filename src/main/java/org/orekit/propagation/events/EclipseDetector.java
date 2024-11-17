@@ -21,7 +21,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
-import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -84,8 +83,7 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
      * @since 12.0
      */
     public EclipseDetector(final OccultationEngine occultationEngine) {
-        this(new EventDetectionSettings(AdaptableInterval.of(DEFAULT_MAX_CHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER),
-             new StopOnIncreasing(),
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing(),
              occultationEngine, 0.0, true);
     }
 
