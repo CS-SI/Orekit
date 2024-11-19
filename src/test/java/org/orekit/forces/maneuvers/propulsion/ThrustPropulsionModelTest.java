@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 
 class ThrustPropulsionModelTest {
@@ -152,5 +153,15 @@ class ThrustPropulsionModelTest {
 
         // Assert that returned direction is a zero vector
         Assertions.assertEquals(expectedDirection, returnedDirection);
+    }
+
+    @Test
+    void testGetExhaustVelocity() {
+        // GIVEN
+        final double isp = 2.;
+        // WHEN
+        final double exhaustVelocity = ThrustPropulsionModel.getExhaustVelocity(isp);
+        // THEN
+        Assertions.assertEquals(Constants.G0_STANDARD_GRAVITY * isp, exhaustVelocity);
     }
 }
