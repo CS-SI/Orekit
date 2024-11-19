@@ -27,7 +27,7 @@ import org.orekit.files.iirv.terms.base.IIRVVectorTerm;
  * @author Nick LaFarge
  * @since 13.0
  */
-public class IIRVTermUtils {
+public final class IIRVTermUtils {
 
     /** Private constructor. */
     private IIRVTermUtils() {
