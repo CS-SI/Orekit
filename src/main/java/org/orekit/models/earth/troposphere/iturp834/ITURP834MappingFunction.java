@@ -53,20 +53,23 @@ public class ITURP834MappingFunction implements TroposphereMappingFunction {
     /** Name of data file. */
     private static final String MAPPING_FUNCTION_NAME = "/assets/org/orekit/ITU-R-P.834/p834_mf_coeff_v1.txt";
 
-    /** Minimum longitude, including extra margin for dealing with boundaries (degrees). */
-    private static final double MIN_LON = -182.5;
-
-    /** Maximum longitude, including extra margin for dealing with boundaries (degrees). */
-    private static final double MAX_LON =  182.5;
-
     /** Minimum latitude, including extra margin for dealing with boundaries (degrees). */
     private static final double MIN_LAT = -92.5;
 
     /** Maximum latitude, including extra margin for dealing with boundaries (degrees). */
     private static final double MAX_LAT =  92.5;
 
-    /** Grid step (degrees). */
-    private static final double STEP    =   5.0;
+    /** Grid step in latitude (degrees). */
+    private static final double STEP_LAT =  5.0;
+
+    /** Minimum longitude, including extra margin for dealing with boundaries (degrees). */
+    private static final double MIN_LON = -182.5;
+
+    /** Maximum longitude, including extra margin for dealing with boundaries (degrees). */
+    private static final double MAX_LON =  182.5;
+
+    /** Grid step in longitude (degrees). */
+    private static final double STEP_LON =  5.0;
 
     /** Second coefficient for hydrostatic component. */
     private static final double BH = 0.0029;
@@ -127,8 +130,8 @@ public class ITURP834MappingFunction implements TroposphereMappingFunction {
 
         // create the various tables
         // we add extra lines and columns to the official files, for dealing with boundaries
-        final double[]   longitudes = interpolationPoints(MIN_LON, MAX_LON, STEP);
-        final double[]   latitudes  = interpolationPoints(MIN_LAT, MAX_LAT, STEP);
+        final double[]   longitudes = interpolationPoints(MIN_LON, MAX_LON, STEP_LON);
+        final double[]   latitudes  = interpolationPoints(MIN_LAT, MAX_LAT, STEP_LAT);
         final double[][] a0h        = new double[longitudes.length][latitudes.length];
         final double[][] a1h        = new double[longitudes.length][latitudes.length];
         final double[][] b1h        = new double[longitudes.length][latitudes.length];
@@ -161,8 +164,8 @@ public class ITURP834MappingFunction implements TroposphereMappingFunction {
                 }
 
                 // find indices in our extended grid
-                final int longitudeIndex = (int) FastMath.rint((numericFields[1] - MIN_LON) / STEP);
-                final int latitudeIndex  = (int) FastMath.rint((numericFields[0] - MIN_LAT) / STEP);
+                final int longitudeIndex = (int) FastMath.rint((numericFields[1] - MIN_LON) / STEP_LON);
+                final int latitudeIndex  = (int) FastMath.rint((numericFields[0] - MIN_LAT) / STEP_LAT);
 
                 // fill-in tables
                 a0h[longitudeIndex][latitudeIndex] = FACTOR * numericFields[ 2];

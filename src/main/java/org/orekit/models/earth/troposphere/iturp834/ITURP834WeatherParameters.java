@@ -19,29 +19,21 @@ package org.orekit.models.earth.troposphere.iturp834;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.GridAxis;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.models.earth.troposphere.TroposphericModelUtils;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.regex.Pattern;
+import org.orekit.utils.units.Unit;
 
 /** The ITU-R P.834 weather parameters.
  * <p>
  * This class implements the weather parameters part of the model,
- * i.e. equations 26a to 26 f in section 6 of the recommendation.
+ * i.e. equations 27b to 27j in section 6 of the recommendation.
  * </p>
  * @author Luc Maisonobe
  * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
@@ -52,32 +44,32 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
     /** ITU-R P.834 data resources directory. */
     private static final String ITU_R_P_834 = "/assets/org/orekit/ITU-R-P.834/";
 
-    /** Pattern for splitting fields. */
-    private static final Pattern SPLITTER = Pattern.compile("\\s+");
+    /** Prefix fo air total pressure at the Earth surface. */
+    private static final String AIR_TOTAL_PRESSURE_PREFIX = "pres";
 
-    /** Minimum longitude (degrees). */
-    private static final double MIN_LON = -180.0;
+    /** Prefix for water vapour partial pressure at the Earth surface. */
+    private static final String WATER_VAPOUR_PARTIAL_PRESSURE_PREFIX = "vapr";
 
-    /** Maximum longitude (degrees). */
-    private static final double MAX_LON =  180.0;
+    /** Prefix for mean temperature of the water vapour column above the surface. */
+    private static final String MEAN_TEMPERATURE_PREFIX = "tmpm";
 
-    /** Minimum latitude (degrees). */
-    private static final double MIN_LAT = -90.0;
+    /** Prefix for vapour pressure decrease factor. */
+    private static final String VAPOUR_PRESSURE_DECREASE_FACTOR_PREFIX = "lamd";
 
-    /** Maximum latitude (degrees). */
-    private static final double MAX_LAT =  90.0;
+    /** Prefix for lapse rate of mean temperature of water vapour from Earth surface. */
+    private static final String LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR_PREFIX = "alfm";
 
-    /** Grid step (degrees). */
-    private static final double STEP    =   1.5;
+    /** Suffix for average data.*/
+    private static final String AVERAGE_SUFFIX = "_gd_a1.dat";
 
-    /** Latitude grid axis. */
-    private static final GridAxis LATITUDE_AXIS;
+    /** Suffix for seasonal fluctuation.*/
+    public static final String SEASONAL_SUFFIX = "_gd_a2.dat";
 
-    /** Longitude grid axis. */
-    private static final GridAxis LONGITUDE_AXIS;
+    /** Suffix for day of minimum value. */
+    public static final String DAY_OF_MINIMUM_SUFFIX = "_gd_a3.dat";
 
-    /** Annual pulsation. */
-    private static final double OMEGA = MathUtils.TWO_PI / 365.25;
+    /** Name of height reference level. */
+    public static final String AVERAGE_HEIGHT_REFERENCE_LEVEL_NAME = "hreflev.dat";
 
     /** Gravity factor for equation 27g. */
     private static final double G_27G = 9.806;
@@ -106,59 +98,26 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
     /** R'd factor. **/
     private static final double R_PRIME_D = R / (1000 * MD);
 
-    /** Average of air total pressure at the Earth surface. */
-    private static final double[][] AIR_TOTAL_PRESSURE_AVERAGE;
+    /** Air total pressure at the Earth surface. */
+    private static final SeasonalGrid AIR_TOTAL_PRESSURE;
 
-    /** Seasonal fluctuation of air total pressure at the Earth surface. */
-    private static final double[][] AIR_TOTAL_PRESSURE_SEASONAL;
+    /** Water vapour partial pressure at the Earth surface. */
+    private static final SeasonalGrid WATER_VAPOUR_PARTIAL_PRESSURE;
 
-    /** Day of minimum of air total pressure at the Earth surface. */
-    private static final double[][] AIR_TOTAL_PRESSURE_MINIMUM;
+    /** Mean temperature of the water vapour column above the surface. */
+    private static final SeasonalGrid MEAN_TEMPERATURE;
 
-    /** Average of water vapour partial pressure at the Earth surface. */
-    private static final double[][] WATER_VAPOUR_PARTIAL_PRESSURE_AVERAGE;
+    /** Vapour pressure decrease factor. */
+    private static final SeasonalGrid VAPOUR_PRESSURE_DECREASE_FACTOR;
 
-    /** Seasonal fluctuation of water vapour partial pressure at the Earth surface. */
-    private static final double[][] WATER_VAPOUR_PARTIAL_PRESSURE_SEASONAL;
-
-    /** Day of minimum of water vapour partial pressure at the Earth surface. */
-    private static final double[][] WATER_VAPOUR_PARTIAL_PRESSURE_MINIMUM;
-
-    /** Average of mean temperature of the water vapour column above the surface. */
-    private static final double[][] MEAN_TEMPERATURE_AVERAGE;
-
-    /** Seasonal fluctuation of mean temperature of the water vapour column above the surface. */
-    private static final double[][] MEAN_TEMPERATURE_SEASONAL;
-
-    /** Day of minimum of mean temperature of the water vapour column above the surface. */
-    private static final double[][] MEAN_TEMPERATURE_MINIMUM;
-
-    /** Average of vapour pressure decrease factor. */
-    private static final double[][] VAPOUR_PRESSURE_DECREASE_FACTOR_AVERAGE;
-
-    /** Seasonal fluctuation of vapour pressure decrease factor. */
-    private static final double[][] VAPOUR_PRESSURE_DECREASE_FACTOR_SEASONAL;
-
-    /** Day of minimum of vapour pressure decrease factor. */
-    private static final double[][] VAPOUR_PRESSURE_DECREASE_FACTOR_MINIMUM;
-
-    /** Average of lapse rate of mean temperature of water vapour from Earth surface. */
-    private static final double[][] LAPSE_RATE_MEAN_TEMPERATURE_AVERAGE;
-
-    /** Seasonal fluctuation of lapse rate of mean temperature of water vapour from Earth surface. */
-    private static final double[][] LAPSE_RATE_MEAN_TEMPERATURE_SEASONAL;
-
-    /** Day of minimum of lapse rate of mean temperature of water vapour from Earth surface. */
-    private static final double[][] LAPSE_RATE_MEAN_TEMPERATURE_MINIMUM;
+    /** Lapse rate of mean temperature of water vapour from Earth surface. */
+    private static final SeasonalGrid LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR;
 
     /** Average height of reference level with respect to mean seal level. */
-    private static final double[][] AVERAGE_HEIGHT_REFERENCE_LEVEL;
+    private static final ConstantGrid AVERAGE_HEIGHT_REFERENCE_LEVEL;
 
-    /** Gravity at Earth surface (from equaiton 27g). */
-    private static final double[][] G;
-
-   /** Gravity at Earth surface (from equation 27j). */
-    private static final double[][] GM;
+    /** Gravity at Earth surface. */
+    private static final ConstantGrid G;
 
     /** UTC time scale to evaluate time-dependent tables. */
     private final TimeScale utc;
@@ -166,41 +125,40 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
     // load all model data files
     static {
 
-        // build axes
-        LATITUDE_AXIS  = buildAxis(MIN_LAT, MAX_LAT, STEP);
-        LONGITUDE_AXIS = buildAxis(MIN_LON, MAX_LON, STEP);
-
         // load data files
-        AIR_TOTAL_PRESSURE_AVERAGE               = parse(MeteorologicalParameter.AIR_TOTAL_PRESSURE.averageValue());
-        AIR_TOTAL_PRESSURE_SEASONAL              = parse(MeteorologicalParameter.AIR_TOTAL_PRESSURE.seasonalFluctuation());
-        AIR_TOTAL_PRESSURE_MINIMUM               = parse(MeteorologicalParameter.AIR_TOTAL_PRESSURE.dayMinimum());
-        WATER_VAPOUR_PARTIAL_PRESSURE_AVERAGE    = parse(MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.averageValue());
-        WATER_VAPOUR_PARTIAL_PRESSURE_SEASONAL   = parse(MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.seasonalFluctuation());
-        WATER_VAPOUR_PARTIAL_PRESSURE_MINIMUM    = parse(MeteorologicalParameter.WATER_VAPOUR_PARTIAL_PRESSURE.dayMinimum());
-        MEAN_TEMPERATURE_AVERAGE                 = parse(MeteorologicalParameter.MEAN_TEMPERATURE.averageValue());
-        MEAN_TEMPERATURE_SEASONAL                = parse(MeteorologicalParameter.MEAN_TEMPERATURE.seasonalFluctuation());
-        MEAN_TEMPERATURE_MINIMUM                 = parse(MeteorologicalParameter.MEAN_TEMPERATURE.dayMinimum());
-        VAPOUR_PRESSURE_DECREASE_FACTOR_AVERAGE  = parse(MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.averageValue());
-        VAPOUR_PRESSURE_DECREASE_FACTOR_SEASONAL = parse(MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.seasonalFluctuation());
-        VAPOUR_PRESSURE_DECREASE_FACTOR_MINIMUM  = parse(MeteorologicalParameter.VAPOUR_PRESSURE_DECREASE_FACTOR.dayMinimum());
-        LAPSE_RATE_MEAN_TEMPERATURE_AVERAGE      = parse(MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.averageValue());
-        LAPSE_RATE_MEAN_TEMPERATURE_SEASONAL     = parse(MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.seasonalFluctuation());
-        LAPSE_RATE_MEAN_TEMPERATURE_MINIMUM      = parse(MeteorologicalParameter.LAPSE_RATE_MEAN_TEMPERATURE.dayMinimum());
-        AVERAGE_HEIGHT_REFERENCE_LEVEL           = parse("hreflev.dat");
+        AIR_TOTAL_PRESSURE =
+                new SeasonalGrid(TroposphericModelUtils.HECTO_PASCAL,
+                                 ITU_R_P_834 + AIR_TOTAL_PRESSURE_PREFIX + AVERAGE_SUFFIX,
+                                 ITU_R_P_834 + AIR_TOTAL_PRESSURE_PREFIX + SEASONAL_SUFFIX,
+                                 ITU_R_P_834 + AIR_TOTAL_PRESSURE_PREFIX + DAY_OF_MINIMUM_SUFFIX);
+        WATER_VAPOUR_PARTIAL_PRESSURE =
+                new SeasonalGrid(TroposphericModelUtils.HECTO_PASCAL,
+                                 ITU_R_P_834 + WATER_VAPOUR_PARTIAL_PRESSURE_PREFIX + AVERAGE_SUFFIX,
+                                 ITU_R_P_834 + WATER_VAPOUR_PARTIAL_PRESSURE_PREFIX + SEASONAL_SUFFIX,
+                                 ITU_R_P_834 + WATER_VAPOUR_PARTIAL_PRESSURE_PREFIX + DAY_OF_MINIMUM_SUFFIX);
+        MEAN_TEMPERATURE =
+                new SeasonalGrid(Unit.NONE,
+                                 ITU_R_P_834 + MEAN_TEMPERATURE_PREFIX + AVERAGE_SUFFIX,
+                                 ITU_R_P_834 + MEAN_TEMPERATURE_PREFIX + SEASONAL_SUFFIX,
+                                 ITU_R_P_834 + MEAN_TEMPERATURE_PREFIX + DAY_OF_MINIMUM_SUFFIX);
+        VAPOUR_PRESSURE_DECREASE_FACTOR =
+                new SeasonalGrid(Unit.NONE,
+                                 ITU_R_P_834 + VAPOUR_PRESSURE_DECREASE_FACTOR_PREFIX + AVERAGE_SUFFIX,
+                                 ITU_R_P_834 + VAPOUR_PRESSURE_DECREASE_FACTOR_PREFIX + SEASONAL_SUFFIX,
+                                 ITU_R_P_834 + VAPOUR_PRESSURE_DECREASE_FACTOR_PREFIX + DAY_OF_MINIMUM_SUFFIX);
+        LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR =
+                new SeasonalGrid(Unit.parse("km⁻¹"),
+                                 ITU_R_P_834 + LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR_PREFIX + AVERAGE_SUFFIX,
+                                 ITU_R_P_834 + LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR_PREFIX + SEASONAL_SUFFIX,
+                                 ITU_R_P_834 + LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR_PREFIX + DAY_OF_MINIMUM_SUFFIX);
+        AVERAGE_HEIGHT_REFERENCE_LEVEL =
+                new ConstantGrid(Unit.METRE,
+                           ITU_R_P_834 + AVERAGE_HEIGHT_REFERENCE_LEVEL_NAME);
 
-        // precompute gravity at Earth surface throughout the grid
-        G  = new double[LATITUDE_AXIS.size()][LONGITUDE_AXIS.size()];
-        GM = new double[LATITUDE_AXIS.size()][LONGITUDE_AXIS.size()];
-        for (int i = 0; i < LATITUDE_AXIS.size(); i++) {
-            for (int j = 0; j < LONGITUDE_AXIS.size(); j++) {
-                final double cos = FastMath.cos(2 * LATITUDE_AXIS.node(i));
-                final double h   = AVERAGE_HEIGHT_REFERENCE_LEVEL[i][j];
-                // equation 27g
-                G[i][j]  = G_27G * ((1 - GL_27G * cos) - GH_27G * h);
-                // equation 27j
-                GM[i][j] = G_27J * ((1 - GL_27J * cos) - GH_27J * h);
-            }
-        }
+        // precompute gravity at Earth surface throughout the grid, using equation 27g
+        G   = AVERAGE_HEIGHT_REFERENCE_LEVEL.
+                apply((lat, lon, h) -> G_27G * ((1 - GL_27G * FastMath.cos(2 * lat)) - GH_27G * h));
+
     }
 
     /** Simple constructor.
@@ -214,81 +172,82 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
     @Override
     public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location, final AbsoluteDate date) {
 
-        // locate the point in the tables
-        final int    southIndex = LATITUDE_AXIS.interpolationIndex(location.getLatitude());
-        final int    westIndex  = LONGITUDE_AXIS.interpolationIndex(location.getLongitude());
-
         // evaluate grid points for current date at reference height
-        final double doy        = date.getDayOfYear(utc);
-        final Cell   pHRef      = new Cell(AIR_TOTAL_PRESSURE_AVERAGE,
-                                           AIR_TOTAL_PRESSURE_SEASONAL,
-                                           AIR_TOTAL_PRESSURE_MINIMUM,
-                                           southIndex, westIndex, doy);
-        final Cell   eHRef      = new Cell(WATER_VAPOUR_PARTIAL_PRESSURE_AVERAGE,
-                                           WATER_VAPOUR_PARTIAL_PRESSURE_SEASONAL,
-                                           WATER_VAPOUR_PARTIAL_PRESSURE_MINIMUM,
-                                           southIndex, westIndex, doy);
-        final Cell   tmHRef     = new Cell(MEAN_TEMPERATURE_AVERAGE,
-                                           MEAN_TEMPERATURE_SEASONAL,
-                                           MEAN_TEMPERATURE_MINIMUM,
-                                           southIndex, westIndex, doy);
-        final Cell   lambdaHRef = new Cell(VAPOUR_PRESSURE_DECREASE_FACTOR_AVERAGE,
-                                           VAPOUR_PRESSURE_DECREASE_FACTOR_SEASONAL,
-                                           VAPOUR_PRESSURE_DECREASE_FACTOR_MINIMUM,
-                                           southIndex, westIndex, doy);
-        final Cell   alphaHRef  = new Cell(LAPSE_RATE_MEAN_TEMPERATURE_AVERAGE,
-                                           LAPSE_RATE_MEAN_TEMPERATURE_SEASONAL,
-                                           LAPSE_RATE_MEAN_TEMPERATURE_MINIMUM,
-                                           southIndex, westIndex, doy);
-        // reference height
-        final Cell   hRef  = new Cell(AVERAGE_HEIGHT_REFERENCE_LEVEL, southIndex, westIndex);
-
-        // exponent
-        final Cell   g     = new Cell(G, southIndex, westIndex);
+        final double   doy        = date.getDayOfYear(utc);
+        final GridCell pHRef      = AIR_TOTAL_PRESSURE.getCell(location, doy);
+        final GridCell eHRef      = WATER_VAPOUR_PARTIAL_PRESSURE.getCell(location, doy);
+        final GridCell tmHRef     = MEAN_TEMPERATURE.getCell(location, doy);
+        final GridCell lambdaHRef = VAPOUR_PRESSURE_DECREASE_FACTOR.getCell(location, doy);
+        final GridCell alphaHRef  = LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR.getCell(location, doy);
+        final GridCell hRef       = AVERAGE_HEIGHT_REFERENCE_LEVEL.getCell(location, doy);
+        final GridCell g          = G.getCell(location, doy);
 
         // mean temperature at current height, equation 27b
-        final Cell dh              = new Cell(location.getAltitude() - hRef.nw,
-                                              location.getAltitude() - hRef.sw,
-                                              location.getAltitude() - hRef.se,
-                                              location.getAltitude() - hRef.ne);
-        final Cell meanTemperature = new Cell(tmHRef.nw - alphaHRef.nw * dh.nw,
-                                              tmHRef.sw - alphaHRef.sw * dh.sw,
-                                              tmHRef.se - alphaHRef.se * dh.se,
-                                              tmHRef.ne - alphaHRef.ne * dh.ne);
+        final GridCell tm    = new GridCell((ct, ca, ch) -> ct - ca * (location.getAltitude() - ch),
+                                            tmHRef, alphaHRef, hRef);
 
-        // lapse rate, equation 27f
-        final Cell lgRd     = new Cell((lambdaHRef.nw + 1) * g.nw / R_PRIME_D,
-                                       (lambdaHRef.sw + 1) * g.sw / R_PRIME_D,
-                                       (lambdaHRef.se + 1) * g.se / R_PRIME_D,
-                                       (lambdaHRef.ne + 1) * g.ne / R_PRIME_D);
-        final Cell alpha    = new Cell(0.5 * (lgRd.nw - FastMath.sqrt(lgRd.nw * (lgRd.nw - 4 * alphaHRef.nw))),
-                                       0.5 * (lgRd.sw - FastMath.sqrt(lgRd.sw * (lgRd.sw - 4 * alphaHRef.sw))),
-                                       0.5 * (lgRd.se - FastMath.sqrt(lgRd.se * (lgRd.se - 4 * alphaHRef.se))),
-                                       0.5 * (lgRd.ne - FastMath.sqrt(lgRd.ne * (lgRd.ne - 4 * alphaHRef.ne))));
+        // lapse rate of air temperature, equation 27f
+        final GridCell fraction = new GridCell((cl, cg) -> (cl + 1) * cg / R_PRIME_D,
+                                               lambdaHRef, g);
+        final GridCell alpha = new GridCell((cf, ca) -> 0.5 * (cf - FastMath.sqrt(cf * (cf - 4 * ca))),
+                                            fraction, alphaHRef);
 
         // temperature, equation 27e
-        final Cell t        = new Cell(tmHRef.nw / (1 - alpha.nw / lgRd.nw),
-                                       tmHRef.sw / (1 - alpha.sw / lgRd.sw),
-                                       tmHRef.se / (1 - alpha.se / lgRd.se),
-                                       tmHRef.ne / (1 - alpha.ne / lgRd.ne));
+        final GridCell t     = new GridCell((ct, ca, cf) -> ct / (1 - ca / cf),
+                                            tmHRef, alpha, fraction);
 
         // pressure at current height, equation 27c
-        final Cell pressure = new Cell(pHRef.nw * FastMath.pow(1 - alpha.nw * dh.nw / t.nw, g.nw / (alpha.nw * R_PRIME_D)),
-                                       pHRef.sw * FastMath.pow(1 - alpha.sw * dh.sw / t.sw, g.sw / (alpha.sw * R_PRIME_D)),
-                                       pHRef.se * FastMath.pow(1 - alpha.se * dh.se / t.se, g.se / (alpha.se * R_PRIME_D)),
-                                       pHRef.ne * FastMath.pow(1 - alpha.ne * dh.ne / t.ne, g.ne / (alpha.ne * R_PRIME_D)));
+        final GridCell p = new GridCell((cp, ca, ch, ct, cg) ->
+                                        cp * FastMath.pow(1 - ca * (location.getAltitude() - ch) / ct, cg / (ca * R_PRIME_D)),
+                                        pHRef, alpha, hRef, t, g);
 
-        // perform interpolation
-        final double dLatS = location.getLatitude()             - LATITUDE_AXIS.node(southIndex);
-        final double dLatN = LATITUDE_AXIS.node(southIndex + 1) - location.getLatitude();
-        final double dLonE = LONGITUDE_AXIS.node(westIndex + 1) - location.getLongitude();
-        final double dLonW = location.getLongitude()            - LONGITUDE_AXIS.node(westIndex);
+        // water vapour pressure et current height, equation 27d
+        final GridCell e = new GridCell((ce, cp, cpr, cl) ->
+                                        ce * FastMath.pow(cp / cpr, cl + 1),
+                                        eHRef, p, pHRef, lambdaHRef);
+
+        // gravity at point altitude
+        final GridAxis latitudeAxis  = G.getLatitudeAxis();
+        final int      southIndex    = latitudeAxis.interpolationIndex(location.getLatitude());
+        final double   northLatitude = latitudeAxis.node(southIndex + 1);
+        final double   southLatitude = latitudeAxis.node(southIndex);
+        final GridAxis longitudeAxis = G.getLongitudeAxis();
+        final int      westIndex     = longitudeAxis.interpolationIndex(location.getLongitude());
+        final double   westLongitude = longitudeAxis.node(westIndex);
+        final double   gNorth        = G_27J * ((1 - GL_27J * FastMath.cos(2 * northLatitude)) - GH_27J * location.getAltitude());
+        final double   gSouth        = G_27J * ((1 - GL_27J * FastMath.cos(2 * southLatitude)) - GH_27J * location.getAltitude());
+        final GridCell gm            = new GridCell(location.getLatitude()  - southLatitude,
+                                                    location.getLongitude() - westLongitude,
+                                                    G.getSizeLat(), G.getSizeLon(),
+                                                    gNorth, gSouth, gSouth, gNorth);
+
+        // the ITU-R P.834 recommendation calls for computing ΔLᵥ (both hydrostatic and wet versions)
+        // at the four corners of the cell using the weather parameters et each corner, and to perform
+        // bi-linear interpolation on the cell corners afterwards
+        // the TroposphericModel.pathDelay method, on the other hand, calls for a single weather parameter
+        // valid at the desired location, hence the bi-linear interpolation is performed on each weather
+        // parameter independently first, and they are combined afterwards to compute ΔLᵥ
+        // if we ignored these differences of algorithms, we would observe small differences between the
+        // recommendation and what Orekit computes, as one implementation would do weather parameters
+        // combination followed by bi-linear interpolation whereas the other would do bi-linear
+        // interpolation followed by weather parameters combination
+        // in order to reproduce exactly what is asked for in the recommendation, we set up
+        // scaling factors that compensate this effect, by very slightly changing the pressure
+        // parameter (for hydrostatic ΔLᵥ) and the water vapour pressure parameter (for wet ΔLᵥ)
+        final GridCell pOverG = new GridCell((cp, cg) -> cp / cg,
+                                             p, gm);
+        final double pressureInterpolationCompensation =
+                pOverG.evaluate() * gm.evaluate();
+        final GridCell eOverGLT = new GridCell((ce, cg, cl, ctm) -> ce / (cg * (cl + 1) * ctm),
+                                               e, gm, lambdaHRef, tm);
+        final double waterInterpolationCompensation =
+                eOverGLT.evaluate() * gm.evaluate() * (lambdaHRef.evaluate() + 1) * tm.evaluate();
         return new PressureTemperatureHumidity(location.getAltitude(),
-                                               pressure.interpolate(dLatS, dLatN, dLonE, dLonW),
-                                               t.interpolate(dLatS, dLatN, dLonE, dLonW),
-                                               eHRef.interpolate(dLatS, dLatN, dLonE, dLonW),
-                                               meanTemperature.interpolate(dLatS, dLatN, dLonE, dLonW),
-                                               lambdaHRef.interpolate(dLatS, dLatN, dLonE, dLonW));
+                                               p.evaluate() * pressureInterpolationCompensation,
+                                               t.evaluate(),
+                                               eHRef.evaluate() * waterInterpolationCompensation,
+                                               tm.evaluate(),
+                                               lambdaHRef.evaluate());
 
     }
 
@@ -298,160 +257,6 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
     getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
         // TODO
         return null;
-    }
-
-    /** Parse interpolating table from a file.
-     * @param fileName name of the file to parse
-     * @return parsec interpolating function
-     */
-    public static double[][] parse(final String fileName) {
-
-        // parse the file
-        final double[][] values = new double[LATITUDE_AXIS.size()][LONGITUDE_AXIS.size()];
-        try (InputStream is     = ITURP834WeatherParameters.class.getResourceAsStream(ITU_R_P_834 + fileName);
-             InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(isr)) {
-            for (int row = 0; row < LATITUDE_AXIS.size(); ++row) {
-
-                final String   line   = reader.readLine();
-                final String[] fields = SPLITTER.split(line.trim());
-                if (fields.length != LONGITUDE_AXIS.size()) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                              row + 1, fileName, line);
-                }
-
-                // distribute points in longitude
-                for (int col = 0; col < LONGITUDE_AXIS.size(); ++col) {
-                    // files are between 0° and 360° in longitude,  with last column (360°) equal to first column (0°)
-                    // our tables, on the other hand use canonical longitudes between -180° and +180°
-                    // col =   0 → base longitude =   0.0° → fixed longitude =    0.0° → longitudeIndex = 120
-                    // col =   1 → base longitude =   1.5° → fixed longitude =    1.5° → longitudeIndex = 121
-                    // …
-                    // col = 119 → base longitude = 178.5° → fixed longitude =  178.5° → longitudeIndex = 239
-                    // col = 120 → base longitude = 180.0° → fixed longitude =  180.0° → longitudeIndex = 240
-                    // col = 121 → base longitude = 181.5° → fixed longitude = -178.5° → longitudeIndex =   1
-                    // …
-                    // col = 239 → base longitude = 358.5° → fixed longitude =   -1.5° → longitudeIndex = 119
-                    // col = 240 → base longitude = 360.0° → fixed longitude =    0.0° → longitudeIndex = 120
-                    final double baseLongitude  = col * STEP;
-                    final double fixedLongitude = baseLongitude > 180 ? baseLongitude - 360 : baseLongitude;
-                    final int    longitudeIndex = (int) FastMath.rint((fixedLongitude - MIN_LON) / STEP);
-                    values[longitudeIndex][row] = Double.parseDouble(fields[col]);
-                }
-
-                // the loop above stored longitude 180° at index 240, but longitude -180° is missing
-                values[0][row] = values[LONGITUDE_AXIS.size() - 1][row];
-
-            }
-        } catch (IOException ioe) {
-            // this should never happen with the embedded data
-            throw new OrekitException(OrekitMessages.INTERNAL_ERROR, ioe);
-        }
-
-        // build the interpolating function
-        return values;
-
-    }
-
-    /** Build a grid axis for interpolating within a table.
-     * @param min min angle in degrees (included)
-     * @param max max angle in degrees (included)
-     * @param step step between points
-     * @return grid axis
-     */
-    private static GridAxis buildAxis(final double min, final double max, final double step) {
-        final double[] grid = new double[(int) FastMath.rint((max - min) / step) + 1];
-        for (int i = 0; i < grid.length; i++) {
-            grid[i] = FastMath.toRadians(min + i * step);
-        }
-        return new GridAxis(grid, 2);
-    }
-
-    /** Holder for one cell. */
-    private static class Cell {
-
-        /** North-West value. */
-        private final double nw;
-
-        /** South-West value. */
-        private final double sw;
-
-        /** South-East value. */
-        private final double se;
-
-        /** North-East value. */
-        private final double ne;
-
-        /** Simple constructor.
-         * @param average average value table
-         * @param seasonal seasonal fluctuation table
-         * @param min day of minimum table
-         * @param southIndex latitude index of South points
-         * @param westIndex longitude index of West points
-         * @param doy day of year
-         */
-        Cell(final double[][] average, final double[][] seasonal, final double[][] min,
-             final int southIndex, final int westIndex, final double doy) {
-            this.nw = evaluate(average, seasonal, min, southIndex + 1, westIndex,     doy);
-            this.sw = evaluate(average, seasonal, min, southIndex,     westIndex,     doy);
-            this.se = evaluate(average, seasonal, min, southIndex,     westIndex + 1, doy);
-            this.ne = evaluate(average, seasonal, min, southIndex + 1, westIndex + 1, doy);
-        }
-
-        /** Simple constructor.
-         * @param constant constant value table
-         * @param southIndex latitude index of South points
-         * @param westIndex longitude index of West points
-         */
-        Cell(final double[][] constant, final int southIndex, final int westIndex) {
-            this.nw = constant[southIndex + 1][westIndex];
-            this.sw = constant[southIndex    ][westIndex];
-            this.se = constant[southIndex    ][westIndex + 1];
-            this.ne = constant[southIndex + 1][westIndex + 1];
-        }
-
-        /** Simple constructor.
-         * @param nw North-West value
-         * @param sw South-West value
-         * @param se South-East value
-         * @param ne North-East value
-         */
-        Cell(final double nw, final double sw, final double se, final double ne) {
-            this.nw = nw;
-            this.sw = sw;
-            this.se = se;
-            this.ne = ne;
-        }
-
-        /** Perform bi-linear interpolation.
-         * @param dLatS latitude - latitude South
-         * @param dLatN latitude North - latitude
-         * @param dLonE longitude East - longitude
-         * @param dLonW longitude - longitude West
-         */
-        public double interpolate(final double dLatS, final double dLatN, final double dLonE, final double dLonW) {
-            // TODO: check signs
-            return (dLatS * (dLonW * ne + dLonE * nw) + dLatN * (dLonW * se + dLonE * sw)) /
-                   ((dLatN - dLatS) * (dLonE - dLonW));
-        }
-
-        /** Evaluate one table node for a given day.
-         * @param average average value table
-         * @param seasonal seasonal fluctuation table
-         * @param min day of minimum table
-         * @param latitudeIndex latitude index
-         * @param longitudeIndex longitude index
-         * @param doy day of year
-         * @return value of the tabulated function at the node
-         */
-        private static double evaluate(final double[][] average, final double[][] seasonal, final double[][] min,
-                                       final int latitudeIndex, final int longitudeIndex, final double doy) {
-            // equation 27a
-            return average[latitudeIndex][longitudeIndex] -
-                   seasonal[latitudeIndex][longitudeIndex] *
-                       FastMath.toRadians(OMEGA * (doy - min[latitudeIndex][longitudeIndex]));
-        }
-
     }
 
 }
