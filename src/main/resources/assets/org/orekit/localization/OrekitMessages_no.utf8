@@ -373,7 +373,7 @@ CCSDS_TDM_MISSING_RANGE_UNITS_CONVERTER = <MISSING TRANSLATION>
 # Time system should have already been set before line {0} of file {1}
 CCSDS_TIME_SYSTEM_NOT_READ_YET = <MISSING TRANSLATION>
 
-# line break(s) missing after vector number {1} in {2}
+# line break(s) missing after vector number {0} in {1}
 IIRV_MISSING_LINEBREAK_IN_FILE = <MISSING TRANSLATION>
 
 # line {0} in IIRV vector is not valid: "{1}"
@@ -385,7 +385,7 @@ IIRV_EXCEEDS_MAX_VECTORS = <MISSING TRANSLATION>
 # numeric value "{0}" exceeds the maximum length of {1} for string representation
 IIRV_VALUE_TOO_LARGE = <MISSING TRANSLATION>
 
-# invalid IIRV term value: {1}
+# invalid IIRV term value: {0}
 IIRV_INVALID_TERM_VALUE = <MISSING TRANSLATION>
 
 # the "{0}" term cannot change within an IIRV message file

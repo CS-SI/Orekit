@@ -442,7 +442,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_MISSING_SENSOR_INDEX("missing sensor index {0}"),
 
     /** IIRV_MISSING_LINEBREAK_IN_FILE. */
-    IIRV_MISSING_LINEBREAK_IN_FILE("line break(s) missing after vector number {1} in {2}"),
+    IIRV_MISSING_LINEBREAK_IN_FILE("line break(s) missing after vector number {0} in {1}"),
 
     /** IIRV_INVALID_VECTOR_FORMAT. */
     IIRV_INVALID_LINE_IN_VECTOR("line {0} in IIRV vector is not valid: \"{1}\""),
@@ -455,7 +455,7 @@ public enum OrekitMessages implements Localizable {
     IIRV_VALUE_TOO_LARGE("numeric value \"{0}\" exceeds the maximum length of {1} for string representation"),
 
     /** IIRV_INVALID_TERM_VALUE. */
-    IIRV_INVALID_TERM_VALUE("invalid IIRV term value: {1}"),
+    IIRV_INVALID_TERM_VALUE("invalid IIRV term value: {0}"),
 
     /** IIRV_TERM_CHANGES_WITHIN_FILE. */
     IIRV_TERM_CHANGES_WITHIN_FILE("the \"{0}\" term cannot change within an IIRV message file"),
