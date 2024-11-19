@@ -16,6 +16,9 @@ ALMOST_EQUATORIAL_ORBIT = fast äquatoriale Umlaufbahn (i = {0} degrees)
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = Umlaufbahn mit einer fast kritischen Inklination (i = {0} degrees)
 
+# unable to compute {0} mean parameters after {1} iterations
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS = die {0} Durchschnitt-Parameter können nicht berechnet werden nach {1} Iterationen
+
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = die Eckstein-Hechler Durchschnitt-Parameter können nicht berechnet werden nach {0} Iterationen
 

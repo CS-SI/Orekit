@@ -16,6 +16,9 @@ ALMOST_EQUATORIAL_ORBIT = nesten ekvatorialsk bane (i = {0} grader)
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk helning (i = {0} grader)
 
+# unable to compute {0} mean parameters after {1} iterations
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS = umulig å regne ut {0} middelsparameterene etter {1} iterasjoner
+
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = umulig å regne ut Eckstein-Hechlers middelsparameterene etter {0} iterasjoner
 

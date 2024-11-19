@@ -16,6 +16,9 @@ ALMOST_EQUATORIAL_ORBIT = òrbita quasi equatorial (i = {0} grados)
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = òrbita amb inclinació quasi crítica (i = {0} graus)
 
+# unable to compute {0} mean parameters after {1} iterations
+UNABLE_TO_COMPUTE_MEAN_PARAMETERS = després de {1} iteracions els paramètres mitjans de {0} no s''han aconseguit calcular
+
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = després de {0} iteracions els paramètres mitjans de Eckstein-Hechler no s''han aconseguit calcular
 
