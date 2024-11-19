@@ -97,7 +97,8 @@ public class IIRVFileWriter implements EphemerisFileWriter {
 
         final List<S> segments = satEphem.getSegments();
         if (segments.size() > 1) {
-            throw new OrekitInternalError(null); // This should never happen
+            // This should never happen
+            throw new OrekitInternalError(null);
         }
 
         final StreamingIIRVFileWriter streamingWriter = new StreamingIIRVFileWriter(writer, includeMessageMetadataSetting);

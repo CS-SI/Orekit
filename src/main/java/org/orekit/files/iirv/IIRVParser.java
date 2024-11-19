@@ -215,7 +215,7 @@ public class IIRVParser implements EphemerisFileParser<IIRVEphemerisFile> {
                     // Add metadata (if applicable)
                     if (!vectors.isEmpty() && line1Pattern == IIRVVector.LINE_1_PATTERN_METADATA_OMITTED) {
                         vectorLines.set(0, vectors.get(0).buildLine1(true));
-                        newVector = new IIRVVector(vectorLines, utc); // re-create with metadata included.
+                        newVector = new IIRVVector(vectorLines, utc);
                     }
 
                     vectors.add(newVector);

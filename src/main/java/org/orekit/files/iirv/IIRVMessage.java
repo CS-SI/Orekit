@@ -527,7 +527,8 @@ public class IIRVMessage {
             throw new OrekitIllegalStateException(OrekitMessages.IIRV_SEQUENCE_NUMBER_MUST_BE_INCREASING_BY_ONE, prevLineNumber, prev.getSequenceNumber().value(), prevLineNumber, v.getSequenceNumber().value());
         }
 
-        validateStaticValues(vectors); // Ensure all static values are still static
+        // Ensure the static values are consistent across all the vectors
+        validateStaticValues(vectors);
 
         this.vectors.add(v);
     }

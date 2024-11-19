@@ -217,11 +217,10 @@ public class IIRVBuilder {
         final ArrayList<IIRVVector> vectors = new ArrayList<>();
         int incrementalSequenceNumber = 0;
         for (TimeStampedPVCoordinates coordinates : timeStampedPVCoordinates) {
-
-            setSequenceNumber(incrementalSequenceNumber);  // Set the current sequence number
+            // Add coordinate to the list of vectors with the current sequence number
+            setSequenceNumber(incrementalSequenceNumber);
             vectors.add(buildVector(coordinates));
-
-            incrementalSequenceNumber++;  // Increment sequence number
+            incrementalSequenceNumber++;
         }
         return new IIRVMessage(vectors);
     }

@@ -335,7 +335,9 @@ public class IIRVVector implements Comparable<IIRVVector> {
             // trigger line-specific error
             validateLines(iirvLines, true);
             validateLines(iirvLines, false);
-            throw new OrekitInternalError(null); // this should never happen
+
+            // this should never happen; error should have been triggered by one of the calls above
+            throw new OrekitInternalError(null);
         }
 
         // Parse Line 1
@@ -367,16 +369,16 @@ public class IIRVVector implements Comparable<IIRVVector> {
         vectorEpoch = new VectorEpochTerm(line2.substring(16, 25));
         line2CheckSum = new CheckSumTerm(line2.substring(25, 28));
 
-        // Parse Line 3
-        xPosition = new PositionVectorComponentTerm(line3.substring(0, 13)); // [m]
-        yPosition = new PositionVectorComponentTerm(line3.substring(13, 26)); // [m]
-        zPosition = new PositionVectorComponentTerm(line3.substring(26, 39)); // [m]
+        // Parse Line 3 (position coordinates in meters)
+        xPosition = new PositionVectorComponentTerm(line3.substring(0, 13));
+        yPosition = new PositionVectorComponentTerm(line3.substring(13, 26));
+        zPosition = new PositionVectorComponentTerm(line3.substring(26, 39));
         line3CheckSum = new CheckSumTerm(line3.substring(39));
 
-        // Parse Line 4
-        xVelocity = new VelocityVectorComponentTerm(line4.substring(0, 13)); // [m/s]
-        yVelocity = new VelocityVectorComponentTerm(line4.substring(13, 26)); // [m/s]
-        zVelocity = new VelocityVectorComponentTerm(line4.substring(26, 39)); // [m/s]
+        // Parse Line 4 (velocity coordinates in m/s)
+        xVelocity = new VelocityVectorComponentTerm(line4.substring(0, 13));
+        yVelocity = new VelocityVectorComponentTerm(line4.substring(13, 26));
+        zVelocity = new VelocityVectorComponentTerm(line4.substring(26, 39));
         line4CheckSum = new CheckSumTerm(line4.substring(39));
 
         // Parse Line 5

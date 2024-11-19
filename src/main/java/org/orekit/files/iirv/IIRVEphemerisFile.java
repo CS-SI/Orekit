@@ -93,7 +93,8 @@ public class IIRVEphemerisFile implements EphemerisFile<TimeStampedPVCoordinates
      */
     public IIRVEphemeris getIIRVEphemeris() {
         if (satellites.size() != 1) {
-            throw new OrekitInternalError(null); // This should never happen
+            // This should never happen
+            throw new OrekitInternalError(null);
         }
         return satellites.values().iterator().next();
     }

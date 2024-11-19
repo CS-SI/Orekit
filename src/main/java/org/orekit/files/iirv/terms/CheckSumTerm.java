@@ -76,9 +76,8 @@ public class CheckSumTerm extends LongValuedIIRVTerm {
      * @return newly created CheckSum instance
      */
     public static CheckSumTerm fromIIRVTerms(final IIRVVectorTerm<?>... terms) {
-        final String lineString = IIRVTermUtils.iirvTermsToLineString(terms);  // Compute the line string for the inputs
-        final int checkSumValue = computeChecksum(lineString); // Compute the checksum value from the String
-        return new CheckSumTerm(checkSumValue);  // Create the CheckSumTerm object
+        final String lineString = IIRVTermUtils.iirvTermsToLineString(terms);
+        return new CheckSumTerm(computeChecksum(lineString));
     }
 
     /**
