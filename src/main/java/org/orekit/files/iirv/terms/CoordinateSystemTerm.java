@@ -16,13 +16,13 @@
  */
 package org.orekit.files.iirv.terms;
 
-import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.iirv.terms.base.LongValuedIIRVTerm;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -99,13 +99,14 @@ public class CoordinateSystemTerm extends LongValuedIIRVTerm {
     /**
      * Returns the {@link Frame} specified within the IIRV.
      *
+     * @param context data context used to retrieve frames
      * @return coordinate system
      */
-    public Frame getFrame() {
+    public Frame getFrame(final DataContext context) {
         final String encodedString = toEncodedString();
         switch (toEncodedString()) {
             case "1":
-                return FramesFactory.getGTOD(IERSConventions.IERS_2010, true);
+                return context.getFrames().getGTOD(IERSConventions.IERS_2010, true);
             case "2":
                 throw new OrekitException(OrekitMessages.IIRV_UNMAPPED_COORDINATE_SYSTEM,
                     encodedString, "Geocentric mean of 1950.0 (B1950.0)");
@@ -117,13 +118,23 @@ public class CoordinateSystemTerm extends LongValuedIIRVTerm {
                 throw new OrekitException(OrekitMessages.IIRV_UNMAPPED_COORDINATE_SYSTEM,
                     encodedString, "Reserved for JPL");
             case "6":
-                return FramesFactory.getEME2000();
+                return context.getFrames().getEME2000();
             case "7":
-                return CelestialBodyFactory.getSun().getInertiallyOrientedFrame();
+                return context.getCelestialBodies().getSun().getInertiallyOrientedFrame();
             default:
                 // this should never happen
                 throw new OrekitInternalError(null);
         }
-
     }
+
+    /**
+     * Returns the {@link Frame} specified within the IIRV using the {@link DataContext#getDefault() default data context}.
+     *
+     * @return coordinate system
+     */
+    @DefaultDataContext
+    public Frame getFrame() {
+        return getFrame(DataContext.getDefault());
+    }
+
 }
