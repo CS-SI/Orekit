@@ -16,6 +16,7 @@
  */
 package org.orekit.files.iirv.terms;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.files.iirv.terms.base.LongValuedIIRVTerm;
 
 /**
@@ -69,6 +70,6 @@ public class PositionVectorComponentTerm extends LongValuedIIRVTerm {
      * @param value value of the position vector component
      */
     public PositionVectorComponentTerm(final double value) {
-        super(POSITION_VECTOR_COMPONENT_TERM_PATTERN, Math.round(value), POSITION_VECTOR_COMPONENT_TERM_LENGTH, true);
+        super(POSITION_VECTOR_COMPONENT_TERM_PATTERN, FastMath.round(value), POSITION_VECTOR_COMPONENT_TERM_LENGTH, true);
     }
 }

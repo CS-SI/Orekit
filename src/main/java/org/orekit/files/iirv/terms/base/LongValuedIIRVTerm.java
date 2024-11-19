@@ -16,6 +16,7 @@
  */
 package org.orekit.files.iirv.terms.base;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
 
@@ -93,7 +94,7 @@ public class LongValuedIIRVTerm extends IIRVVectorTerm<Long> {
         }
 
         // Pad each string with zeros to reach the desired length
-        final String integerString = String.format("%0" + signAdjustedStringLength + "d", Math.abs(termValue));
+        final String integerString = String.format("%0" + signAdjustedStringLength + "d", FastMath.abs(termValue));
 
         return signCharacter + integerString;
     }
@@ -104,7 +105,7 @@ public class LongValuedIIRVTerm extends IIRVVectorTerm<Long> {
      * @return The value of the term as an int
      */
     public int toInt() {
-        return Math.toIntExact(value());
+        return FastMath.toIntExact(value());
     }
 
     /**
@@ -118,9 +119,9 @@ public class LongValuedIIRVTerm extends IIRVVectorTerm<Long> {
         final int n = isSigned ? length() - 1 : length();
 
         // If the value is greater than the maximum possible value, throw an error
-        final double maxPossibleValue = Math.pow(10, n);
-        if (Math.abs(value) >= maxPossibleValue) {
-            throw new OrekitIllegalArgumentException(OrekitMessages.IIRV_VALUE_TOO_LARGE, Math.abs(value), maxPossibleValue);
+        final double maxPossibleValue = FastMath.pow(10, n);
+        if (FastMath.abs(value) >= maxPossibleValue) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.IIRV_VALUE_TOO_LARGE, FastMath.abs(value), maxPossibleValue);
         }
 
         // Throw an error if the signs don't match up
