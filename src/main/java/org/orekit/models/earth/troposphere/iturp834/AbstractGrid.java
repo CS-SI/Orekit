@@ -16,8 +16,10 @@
  */
 package org.orekit.models.earth.troposphere.iturp834;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.GridAxis;
 import org.hipparchus.util.FastMath;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -128,11 +130,46 @@ abstract class AbstractGrid {
 
     }
 
+    /** Get one raw cell.
+     * @param <T> type of the field elements
+     * @param location point location on Earth
+     * @param rawData raww grid data
+     * @return raw cell
+     */
+    protected <T extends CalculusFieldElement<T>> FieldGridCell<T> getRawCell(final FieldGeodeticPoint<T> location,
+                                                                              final double[][] rawData) {
+
+        // locate the point
+        final int    southIndex    = latitudeAxis.interpolationIndex(location.getLatitude().getReal());
+        final double southLatitude = latitudeAxis.node(southIndex);
+        final int    westIndex     = longitudeAxis.interpolationIndex(location.getLongitude().getReal());
+        final double westLongitude = longitudeAxis.node(westIndex);
+
+        // build the cell
+        final T zero = location.getAltitude().getField().getZero();
+        return new FieldGridCell<>(location.getLatitude().subtract(southLatitude),
+                                   location.getLongitude().subtract(westLongitude),
+                                   STEP_LAT_RAD, STEP_LON_RAD,
+                                   zero.newInstance(rawData[southIndex + 1][westIndex]),
+                                   zero.newInstance(rawData[southIndex][westIndex]),
+                                   zero.newInstance(rawData[southIndex][westIndex + 1]),
+                                   zero.newInstance(rawData[southIndex + 1][westIndex + 1]));
+
+    }
+
     /** Get one cell.
      * @param location point location on Earth
      * @param dayOfYear day of year
      */
     public abstract GridCell getCell(GeodeticPoint location, double dayOfYear);
+
+    /** Get one cell.
+     * @param <T> type of the field elements
+     * @param location point location on Earth
+     * @param dayOfYear day of year
+     */
+    public abstract <T extends CalculusFieldElement<T>> FieldGridCell<T> getCell(FieldGeodeticPoint<T> location,
+                                                                                 T dayOfYear);
 
     /** Build a grid axis for interpolating within a table.
      * @param min min angle in degrees (included)

@@ -214,8 +214,9 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
         final GridAxis longitudeAxis = G.getLongitudeAxis();
         final int      westIndex     = longitudeAxis.interpolationIndex(location.getLongitude());
         final double   westLongitude = longitudeAxis.node(westIndex);
-        final double   gNorth        = G_27J * ((1 - GL_27J * FastMath.cos(2 * northLatitude)) - GH_27J * location.getAltitude());
-        final double   gSouth        = G_27J * ((1 - GL_27J * FastMath.cos(2 * southLatitude)) - GH_27J * location.getAltitude());
+        final double   mga           = -GH_27J * location.getAltitude();
+        final double   gNorth        = (mga + (1 - GL_27J * FastMath.cos(2 * northLatitude))) * G_27J;
+        final double   gSouth        = (mga + (1 - GL_27J * FastMath.cos(2 * southLatitude))) * G_27J;
         final GridCell gm            = new GridCell(location.getLatitude()  - southLatitude,
                                                     location.getLongitude() - westLongitude,
                                                     G.getSizeLat(), G.getSizeLon(),
@@ -255,8 +256,92 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
     @Override
     public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T>
     getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
-        // TODO
-        return null;
+
+        // evaluate grid points for current date at reference height
+        final T                doy        = date.getDayOfYear(utc);
+        final FieldGridCell<T> pHRef      = AIR_TOTAL_PRESSURE.getCell(location, doy);
+        final FieldGridCell<T> eHRef      = WATER_VAPOUR_PARTIAL_PRESSURE.getCell(location, doy);
+        final FieldGridCell<T> tmHRef     = MEAN_TEMPERATURE.getCell(location, doy);
+        final FieldGridCell<T> lambdaHRef = VAPOUR_PRESSURE_DECREASE_FACTOR.getCell(location, doy);
+        final FieldGridCell<T> alphaHRef  = LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR.getCell(location, doy);
+        final FieldGridCell<T> hRef       = AVERAGE_HEIGHT_REFERENCE_LEVEL.getCell(location, doy);
+        final FieldGridCell<T> g          = G.getCell(location, doy);
+
+        // mean temperature at current height, equation 27b
+        final FieldGridCell<T> tm    =
+            new FieldGridCell<>((ct, ca, ch) -> ct.subtract(ca.multiply(location.getAltitude().subtract(ch))),
+                                tmHRef, alphaHRef, hRef);
+
+        // lapse rate of air temperature, equation 27f
+        final FieldGridCell<T> fraction =
+            new FieldGridCell<>((cl, cg) -> cl.add(1).multiply(cg).divide(R_PRIME_D),
+                                lambdaHRef, g);
+        final FieldGridCell<T> alpha =
+            new FieldGridCell<>((cf, ca) -> cf.subtract(FastMath.sqrt(cf.multiply(cf.subtract(ca.multiply(4))))).multiply(0.5),
+                                fraction, alphaHRef);
+
+        // temperature, equation 27e
+        final FieldGridCell<T> t     =
+            new FieldGridCell<>((ct, ca, cf) -> ct.divide(ca.divide(cf).subtract(1).negate()),
+                                tmHRef, alpha, fraction);
+
+        // pressure at current height, equation 27c
+        final FieldGridCell<T> p =
+            new FieldGridCell<>((cp, ca, ch, ct, cg) ->
+                                cp.multiply(FastMath.pow(ca.multiply(location.getAltitude().subtract(ch)).divide(ct).subtract(1).negate(),
+                                                         cg.divide(ca.multiply(R_PRIME_D)))),
+                                pHRef, alpha, hRef, t, g);
+
+        // water vapour pressure et current height, equation 27d
+        final FieldGridCell<T> e =
+            new FieldGridCell<>((ce, cp, cpr, cl) ->
+                                ce.multiply(FastMath.pow(cp.divide(cpr), cl.add(1))),
+                                eHRef, p, pHRef, lambdaHRef);
+
+        // gravity at point altitude
+        final GridAxis latitudeAxis  = G.getLatitudeAxis();
+        final int      southIndex    = latitudeAxis.interpolationIndex(location.getLatitude().getReal());
+        final double   northLatitude = latitudeAxis.node(southIndex + 1);
+        final double   southLatitude = latitudeAxis.node(southIndex);
+        final GridAxis longitudeAxis = G.getLongitudeAxis();
+        final int      westIndex     = longitudeAxis.interpolationIndex(location.getLongitude().getReal());
+        final double   westLongitude = longitudeAxis.node(westIndex);
+        final T        mga           = location.getAltitude().multiply(GH_27J).negate();
+        final T        gNorth        = mga.add(1 - GL_27J * FastMath.cos(2 * northLatitude)).multiply(G_27J);
+        final T        gSouth        = mga.add(1 - GL_27J * FastMath.cos(2 * southLatitude)).multiply(G_27J);
+        final FieldGridCell<T> gm    =
+            new FieldGridCell<>(location.getLatitude().subtract(southLatitude),
+                                location.getLongitude().subtract(westLongitude),
+                                G.getSizeLat(), G.getSizeLon(),
+                                gNorth, gSouth, gSouth, gNorth);
+
+        // the ITU-R P.834 recommendation calls for computing ΔLᵥ (both hydrostatic and wet versions)
+        // at the four corners of the cell using the weather parameters et each corner, and to perform
+        // bi-linear interpolation on the cell corners afterwards
+        // the TroposphericModel.pathDelay method, on the other hand, calls for a single weather parameter
+        // valid at the desired location, hence the bi-linear interpolation is performed on each weather
+        // parameter independently first, and they are combined afterwards to compute ΔLᵥ
+        // if we ignored these differences of algorithms, we would observe small differences between the
+        // recommendation and what Orekit computes, as one implementation would do weather parameters
+        // combination followed by bi-linear interpolation whereas the other would do bi-linear
+        // interpolation followed by weather parameters combination
+        // in order to reproduce exactly what is asked for in the recommendation, we set up
+        // scaling factors that compensate this effect, by very slightly changing the pressure
+        // parameter (for hydrostatic ΔLᵥ) and the water vapour pressure parameter (for wet ΔLᵥ)
+        final FieldGridCell<T> pOverG = new FieldGridCell<>(CalculusFieldElement::divide, p, gm);
+        final T pressureInterpolationCompensation = pOverG.evaluate().multiply(gm.evaluate());
+        final FieldGridCell<T> eOverGLT =
+            new FieldGridCell<>((ce, cg, cl, ctm) -> ce.divide(cg.multiply(cl.add(1)).multiply(ctm)),
+                                e, gm, lambdaHRef, tm);
+        final T waterInterpolationCompensation =
+                eOverGLT.evaluate().multiply(gm.evaluate()).multiply(lambdaHRef.evaluate().add(1)).multiply(tm.evaluate());
+        return new FieldPressureTemperatureHumidity<>(location.getAltitude(),
+                                                      p.evaluate().multiply(pressureInterpolationCompensation),
+                                                      t.evaluate(),
+                                                      eHRef.evaluate().multiply(waterInterpolationCompensation),
+                                                      tm.evaluate(),
+                                                      lambdaHRef.evaluate());
+
     }
 
 }

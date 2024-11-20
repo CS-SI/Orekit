@@ -16,7 +16,9 @@
  */
 package org.orekit.models.earth.troposphere.iturp834;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.analysis.interpolation.GridAxis;
+import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.utils.units.Unit;
 
@@ -64,6 +66,13 @@ class ConstantGrid extends AbstractGrid {
     /** {@inheritDoc} */
     @Override
     public GridCell getCell(final GeodeticPoint location, final double ignored) {
+        return getRawCell(location, data);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldGridCell<T> getCell(final FieldGeodeticPoint<T> location,
+                                                                        final T ignored) {
         return getRawCell(location, data);
     }
 
