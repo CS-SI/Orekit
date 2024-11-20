@@ -38,6 +38,9 @@ import java.util.regex.Pattern;
  */
 abstract class AbstractGrid {
 
+    /** ITU-R P.834 data resources directory. */
+    private static final String ITU_R_P_834 = "/assets/org/orekit/ITU-R-P.834/";
+
     /** Pattern for splitting fields. */
     private static final Pattern SPLITTER = Pattern.compile("\\s+");
 
@@ -194,7 +197,7 @@ abstract class AbstractGrid {
 
         // parse the file
         final double[][] values = new double[latitudeAxis.size()][longitudeAxis.size()];
-        try (InputStream       is     = ITURP834WeatherParameters.class.getResourceAsStream(name);
+        try (InputStream       is     = ITURP834WeatherParameters.class.getResourceAsStream(ITU_R_P_834 + name);
              InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader    reader = new BufferedReader(isr)) {
             for (int row = 0; row < latitudeAxis.size(); ++row) {
@@ -221,11 +224,11 @@ abstract class AbstractGrid {
                     // col = 239 → base longitude = 358.5° → fixed longitude =   -1.5° → longitudeIndex = 119
                     // col = 240 → base longitude = 360.0° → fixed longitude =    0.0° → longitudeIndex = 120
                     final int longitudeIndex = col < 121 ? col + 120 : col - 120;
-                    values[longitudeIndex][row] = unit.toSI(Double.parseDouble(fields[col]));
+                    values[row][longitudeIndex] = unit.toSI(Double.parseDouble(fields[col]));
                 }
 
                 // the loop above stored longitude 180° at index 240, but longitude -180° is missing
-                values[0][row] = values[longitudeAxis.size() - 1][row];
+                values[row][0] = values[row][longitudeAxis.size() - 1];
 
             }
         } catch (IOException ioe) {
