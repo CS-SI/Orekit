@@ -44,6 +44,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 /** ITU-R P.834 mapping function.
+ * @see ITURP834PathDelay
+ * @see ITURP834WeatherParameters
  * @author Luc Maisonobe
  * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
  * @since 13.0
