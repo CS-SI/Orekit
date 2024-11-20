@@ -28,7 +28,11 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 
@@ -37,7 +41,7 @@ import java.util.stream.Stream;
  * from an date and position-velocity local provider.</p>
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface AttitudeProvider extends EventDetectorsProvider {
+public interface AttitudeProvider extends EventDetectorsProvider, ParameterDriversProvider {
 
     /** Compute the attitude corresponding to an orbital state.
      * @param pvProv local position-velocity provider around current date
@@ -89,7 +93,7 @@ public interface AttitudeProvider extends EventDetectorsProvider {
      */
     @Override
     default Stream<EventDetector> getEventDetectors() {
-        return Stream.empty();
+        return getEventDetectors(getParametersDrivers());
     }
 
     /** {@inheritDoc}
@@ -97,6 +101,14 @@ public interface AttitudeProvider extends EventDetectorsProvider {
      */
     @Override
     default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.empty();
+        return getFieldEventDetectors(field, getParametersDrivers());
+    }
+
+    /** {@inheritDoc}
+     * @since 13.0
+     */
+    @Override
+    default List<ParameterDriver> getParametersDrivers() {
+        return new ArrayList<>();
     }
 }
