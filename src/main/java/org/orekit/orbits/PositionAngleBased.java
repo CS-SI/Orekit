@@ -28,7 +28,7 @@ package org.orekit.orbits;
  * @author Romain Serra
  * @since 12.0
  */
-public interface PositionAngleBased {
+public interface PositionAngleBased<T> {
 
     /** Get the cached {@link PositionAngleType}.
      * @return cached type of position angle
@@ -41,10 +41,17 @@ public interface PositionAngleBased {
      */
     boolean hasNonKeplerianRates();
 
-    /** Create a new instance such that {@link #hasNonKeplerianRates()} is false.
+    /** Creates a new instance such that {@link #hasNonKeplerianRates()} is false.
      * @return new object without rates
      * @since 13.0
      */
-    PositionAngleBased withKeplerianRates();
+    T withKeplerianRates();
 
+    /**
+     * Creates a new instance with the provided type used for caching.
+     * @param positionAngleType position angle type to use for caching value
+     * @return new object
+     * @since 13.0
+     */
+    T withCachedPositionAngleType(PositionAngleType positionAngleType);
 }
