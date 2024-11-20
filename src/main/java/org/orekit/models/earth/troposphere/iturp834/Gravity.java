@@ -30,7 +30,7 @@ import org.orekit.utils.units.Unit;
  * </p>
  * @see ITURP834PathDelay
  * @see ITURP834MappingFunction
- * @see ITURP834WeatherParameters
+ * @see ITURP834WeatherParametersProvider
  * @author Luc Maisonobe
  * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
  * @since 13.0

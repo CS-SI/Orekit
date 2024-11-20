@@ -29,7 +29,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.units.Unit;
 
-/** The ITU-R P.834 weather parameters.
+/** Provider for the ITU-R P.834 weather parameters.
  * <p>
  * This class implements the weather parameters part of the model,
  * i.e. equations 27b to 27i in section 6 of the recommendation.
@@ -40,7 +40,7 @@ import org.orekit.utils.units.Unit;
  * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
  * @since 13.0
  */
-public class ITURP834WeatherParameters implements PressureTemperatureHumidityProvider {
+public class ITURP834WeatherParametersProvider implements PressureTemperatureHumidityProvider {
 
     /** Prefix fo air total pressure at the Earth surface. */
     private static final String AIR_TOTAL_PRESSURE_PREFIX = "pres";
@@ -135,7 +135,7 @@ public class ITURP834WeatherParameters implements PressureTemperatureHumidityPro
     /** Simple constructor.
      * @param utc UTC time scale to evaluate time-dependent tables
      */
-    public ITURP834WeatherParameters(final TimeScale utc) {
+    public ITURP834WeatherParametersProvider(final TimeScale utc) {
         this.utc = utc;
     }
 

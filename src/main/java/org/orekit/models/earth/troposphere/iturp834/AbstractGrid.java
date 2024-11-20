@@ -197,7 +197,7 @@ abstract class AbstractGrid {
 
         // parse the file
         final double[][] values = new double[latitudeAxis.size()][longitudeAxis.size()];
-        try (InputStream       is     = ITURP834WeatherParameters.class.getResourceAsStream(ITU_R_P_834 + name);
+        try (InputStream       is     = ITURP834WeatherParametersProvider.class.getResourceAsStream(ITU_R_P_834 + name);
              InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader    reader = new BufferedReader(isr)) {
             for (int row = 0; row < latitudeAxis.size(); ++row) {

@@ -60,16 +60,46 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
     @Test
     @Override
     public void testDelay() {
+        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
-                    10.15, 0, 0, 0, 0);
+                    2.9624, 5.5542, 4.8021, 9.0133, 13.8153);
     }
 
     @Test
     @Override
     public void testFieldDelay() {
+        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
         doTestDelay(Binary64Field.getInstance(),
                     defaultDate, defaultPoint, defaultTrackingCoordinates,
-                    10.15, 0, 0, 0, 0);
+                    2.9624, 5.5542, 4.8021, 9.0133, 13.8153);
+    }
+
+    @Test
+    @Override
+    public void testFixedElevation() {
+        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
+        super.testFixedElevation();
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedElevation() {
+        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
+        super.testFieldFixedElevation();
+    }
+
+    @Test
+    @Override
+    public void testFixedHeight() {
+        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
+        super.testFixedHeight();
+    }
+
+    @Test
+    @Override
+    public void testFieldFixedHeight() {
+        resetWeatherProvider(new ITURP834WeatherParametersProvider(TimeScalesFactory.getUTC()));
+        super.testFieldFixedHeight();
     }
 
     @Test
@@ -84,7 +114,7 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
             new HeightDependentPressureTemperatureHumidityConverter(new CIPM2007()).
                 convert(TroposphericModelUtils.STANDARD_ATMOSPHERE, defaultPoint.getAltitude());
         final PressureTemperatureHumidity pthITU =
-            new ITURP834WeatherParameters(utc).getWeatherParameters(point, date);
+            new ITURP834WeatherParametersProvider(utc).getWeatherParameters(point, date);
 
             final ProcessBuilder pb = new ProcessBuilder("gnuplot").
                             redirectOutput(ProcessBuilder.Redirect.INHERIT).
@@ -93,9 +123,10 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
             final Process gnuplot = pb.start();
             try (PrintStream out = new PrintStream(gnuplot.getOutputStream(), false, StandardCharsets.UTF_8.name())) {
                 out.format(Locale.US, "set terminal qt size %d, %d title 'path delay'%n", 1000, 1000);
+                //out.format(Locale.US, "set terminal pngcairo size %d, %d%n", 1000, 1000);
+                out.format(Locale.US, "set output '/tmp/itu-r.p834.png'%n");
                 out.format(Locale.US, "set xlabel 'elevation (°)'%n");
                 out.format(Locale.US, "set ylabel 'path delay (m)'%n");
-                out.format(Locale.US, "set title '%s'%n", "ITU-R P.834 validation");
                 print(buildTroposphericModel(), out, "$itu", 0, point, pthITU, date);
                 print(new CanonicalSaastamoinenModel(), out, "$canonical_saastamoinen", 0, point, pth, date);
                 print(new ModifiedSaastamoinenModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER), out, "$modified_saastamoinen", 0, point,
@@ -121,27 +152,49 @@ public class ITURP834PathDelayTest extends AbstractPathDelayTest<ITURP834PathDel
                 print(new MendesPavlisModel(TroposphericModelUtils.STANDARD_ATMOSPHERE_PROVIDER,
                                             0.532, TroposphericModelUtils.MICRO_M), out, "$mendes_pavlis", 0, point,
                       pth, date);
-                out.format(Locale.US, "plot $itu with linespoints pt 9 dt 3 title 'ITU-R P.834', \\%n");
-                out.format(Locale.US, "     $canonical_saastamoinen with lines dt 3 title 'canonical Saastamoinen', \\%n");
-                out.format(Locale.US, "     $modified_saastamoinen with lines dt 3 title 'modified Saastamoinen', \\%n");
-                out.format(Locale.US, "     $vienna_1 with lines dt 3 title 'Vienna 1', \\%n");
-                out.format(Locale.US, "     $vienna_3 with lines dt 3 title 'Vienna 3', \\%n");
-                out.format(Locale.US, "     $askne_nordius with lines dt 3 title 'Askne-Nordius', \\%n");
-                out.format(Locale.US, "     $tabulated with lines dt 3 title 'tabulated', \\%n");
-                out.format(Locale.US, "     $modified_hopfield with lines dt 3 title 'modified Hopfield', \\%n");
-                out.format(Locale.US, "     $marini_murray with lines dt 2 title 'Marini-Murray (optical at 694.3nm)', \\%n");
-                out.format(Locale.US, "     $mendes_pavlis with lines dt 2 title 'Mendes-Pavlis (optical at 532nm)'%n");
+                out.format(Locale.US, "set multiplot layout 2,1%n");
+                out.format(Locale.US, "set label 1 'slanted dry component' at graph 0.2, 0.7 font 'Helvetica,14' tc rgb 'sea-green'%n");
+                out.format(Locale.US, "plot $itu_d with linespoints pt 9 dt 3 title 'ITU-R P.834', \\%n");
+                out.format(Locale.US, "     $canonical_saastamoinen_d with lines dt 3 title 'canonical Saastamoinen', \\%n");
+                out.format(Locale.US, "     $modified_saastamoinen_d with lines dt 3 title 'modified Saastamoinen', \\%n");
+                out.format(Locale.US, "     $vienna_1_d with lines dt 3 title 'Vienna 1', \\%n");
+                out.format(Locale.US, "     $vienna_3_d with lines dt 3 title 'Vienna 3', \\%n");
+                out.format(Locale.US, "     $askne_nordius_d with lines dt 3 title 'Askne-Nordius', \\%n");
+                out.format(Locale.US, "     $tabulated_d with lines dt 3 title 'tabulated', \\%n");
+                out.format(Locale.US, "     $modified_hopfield_d with lines dt 3 title 'modified Hopfield', \\%n");
+                out.format(Locale.US, "     $marini_murray_d with lines dt 2 title 'Marini-Murray (optical at 694.3nm)', \\%n");
+                out.format(Locale.US, "     $mendes_pavlis_d with lines dt 2 title 'Mendes-Pavlis (optical at 532nm)'%n");
+                out.format(Locale.US, "unset label 1%n");
+                out.format(Locale.US, "set label 2 'slanted wet component' at graph 0.2, 0.7 font 'Helvetica,14' tc rgb 'sea-green'%n");
+                out.format(Locale.US, "plot $itu_w with linespoints pt 9 dt 3 title 'ITU-R P.834', \\%n");
+                out.format(Locale.US, "     $canonical_saastamoinen_w with lines dt 3 title 'canonical Saastamoinen', \\%n");
+                out.format(Locale.US, "     $modified_saastamoinen_w with lines dt 3 title 'modified Saastamoinen', \\%n");
+                out.format(Locale.US, "     $vienna_1_w with lines dt 3 title 'Vienna 1', \\%n");
+                out.format(Locale.US, "     $vienna_3_w with lines dt 3 title 'Vienna 3', \\%n");
+                out.format(Locale.US, "     $askne_nordius_w with lines dt 3 title 'Askne-Nordius', \\%n");
+                out.format(Locale.US, "     $tabulated_w with lines dt 3 title 'tabulated', \\%n");
+                out.format(Locale.US, "     $modified_hopfield_w with lines dt 3 title 'modified Hopfield', \\%n");
+                out.format(Locale.US, "     $marini_murray_w with lines dt 2 title 'Marini-Murray (optical at 694.3nm)', \\%n");
+                out.format(Locale.US, "     $mendes_pavlis_w with lines dt 2 title 'Mendes-Pavlis (optical at 532nm)'%n");
                 out.format(Locale.US, "pause mouse close%n");
             }
     }
     private void print(final TroposphericModel tm, final PrintStream out, final String name, final int index,
                        final GeodeticPoint point, final PressureTemperatureHumidity weather, final AbsoluteDate date) {
-        out.format(Locale.US, "%s <<EOD%n", name);
+        out.format(Locale.US, "%s_d <<EOD%n", name);
         for (double e = 0; e <= 20; e += 0.25) {
             out.format(Locale.US, "%.6f %.6f%n",
                        e,
                        tm.pathDelay(new TrackingCoordinates(0, FastMath.toRadians(e), 1.4e6), point, weather,
-                                    tm.getParameters(date), date).getDelay());
+                                    tm.getParameters(date), date).getSh());
+        }
+        out.format(Locale.US, "EOD%n");
+        out.format(Locale.US, "%s_w <<EOD%n", name);
+        for (double e = 0; e <= 20; e += 0.25) {
+            out.format(Locale.US, "%.6f %.6f%n",
+                       e,
+                       tm.pathDelay(new TrackingCoordinates(0, FastMath.toRadians(e), 1.4e6), point, weather,
+                                    tm.getParameters(date), date).getSw());
         }
         out.format(Locale.US, "EOD%n");
     }

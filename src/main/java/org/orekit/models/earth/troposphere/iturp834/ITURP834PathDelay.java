@@ -44,7 +44,7 @@ import java.util.List;
  * i.e. section 1 of the recommendation, is implemented in the
  * {@link ITURP834AtmosphericRefraction} class.
  * </p>
- * @see ITURP834WeatherParameters
+ * @see ITURP834WeatherParametersProvider
  * @see ITURP834MappingFunction
  * @author Luc Maisonobe
  * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
