@@ -185,10 +185,10 @@ abstract class AbstractGrid {
         return new GridAxis(grid, 2);
     }
 
-    /** Parse interpolating table from a file.
+    /** Parse interpolation table from a resource file.
      * @param unit unit of values in resource file
      * @param name name of the resource to parse
-     * @return parsec interpolating function
+     * @return parsed interpolation function
      */
     protected double[][] parse(final Unit unit, final String name) {
 
@@ -208,8 +208,9 @@ abstract class AbstractGrid {
 
                 // distribute points in longitude
                 for (int col = 0; col < longitudeAxis.size(); ++col) {
-                    // files are between 0° and 360° in longitude,  with last column (360°) equal to first column (0°)
-                    // our tables, on the other hand use canonical longitudes between -180° and +180°
+                    // files are between 0° and 360° in longitude, with last column (360°) equal to first column (0°)
+                    // our tables, on the other hand, use canonical longitudes between -180° and +180°
+                    // we have to redistribute indices
                     // col =   0 → base longitude =   0.0° → fixed longitude =    0.0° → longitudeIndex = 120
                     // col =   1 → base longitude =   1.5° → fixed longitude =    1.5° → longitudeIndex = 121
                     // …
@@ -219,9 +220,7 @@ abstract class AbstractGrid {
                     // …
                     // col = 239 → base longitude = 358.5° → fixed longitude =   -1.5° → longitudeIndex = 119
                     // col = 240 → base longitude = 360.0° → fixed longitude =    0.0° → longitudeIndex = 120
-                    final double baseLongitude  = col * STEP_LON;
-                    final double fixedLongitude = baseLongitude > 180 ? baseLongitude - 360 : baseLongitude;
-                    final int    longitudeIndex = (int) FastMath.rint((fixedLongitude - MIN_LON) / STEP_LON);
+                    final int longitudeIndex = col < 121 ? col + 120 : col - 120;
                     values[longitudeIndex][row] = unit.toSI(Double.parseDouble(fields[col]));
                 }
 
