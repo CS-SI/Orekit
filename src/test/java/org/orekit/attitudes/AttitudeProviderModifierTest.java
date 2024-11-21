@@ -110,6 +110,33 @@ class AttitudeProviderModifierTest {
                 frozenAttitudeProvider.getFieldEventDetectors(field, driverList).count());
     }
 
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final AttitudeProvider mockedProvider = Mockito.mock(AttitudeProvider.class);
+        final List<ParameterDriver> expectedDrivers = new ArrayList<>();
+        expectedDrivers.add(Mockito.mock(ParameterDriver.class));
+        Mockito.when(mockedProvider.getParametersDrivers()).thenReturn(expectedDrivers);
+        final AttitudeProviderModifier mockedProviderModifier = Mockito.mock(AttitudeProviderModifier.class);
+        Mockito.when(mockedProviderModifier.getUnderlyingAttitudeProvider()).thenReturn(mockedProvider);
+        Mockito.when(mockedProviderModifier.getParametersDrivers()).thenCallRealMethod();
+        // WHEN
+        final List<ParameterDriver> actualDrivers = mockedProviderModifier.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(expectedDrivers.size(), actualDrivers.size());
+    }
+
+    @Test
+    void testGetFrozenAttitudeProviderGetParametersDrivers() {
+        // GIVEN
+        final AttitudeProvider attitudeProvider = new TestProvider(Rotation.IDENTITY);
+        final AttitudeProviderModifier frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
+        // WHEN
+        final List<ParameterDriver> drivers = frozenAttitudeProvider.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(attitudeProvider.getParametersDrivers().size(), drivers.size());
+    }
+
     private static class TestProvider implements AttitudeProvider {
 
         private final Rotation r;

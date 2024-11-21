@@ -18,7 +18,9 @@ package org.orekit.attitudes;
 
 import java.util.Collection;
 import java.util.Map.Entry;
+import java.util.ArrayList;
 import java.util.NavigableMap;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -39,6 +41,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 /**
  * A {@link BoundedAttitudeProvider} that covers a larger time span from several constituent
@@ -99,7 +102,8 @@ public class AggregateBoundedAttitudeProvider implements BoundedAttitudeProvider
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
+                                                                            final FieldAbsoluteDate<T> date,
+                                                                            final Frame frame) {
 
         // Get the attitude provider for the given date
         final BoundedAttitudeProvider provider = getAttitudeProvider(date.toAbsoluteDate());
@@ -152,18 +156,25 @@ public class AggregateBoundedAttitudeProvider implements BoundedAttitudeProvider
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        final DateDetector detector = new DateDetector().withHandler(new ResetDerivativesOnEvent())
-                .withDetectionSettings(DateDetector.DEFAULT_DETECTION_SETTINGS);
+        final DateDetector detector = new DateDetector().withHandler(new ResetDerivativesOnEvent());
         providers.navigableKeySet().forEach(detector::addEventDate);
-        return Stream.of(detector);
+        return Stream.concat(Stream.of(detector), getEventDetectors(getParametersDrivers()));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        final FieldDateDetector<T> detector = new FieldDateDetector<>(field).withHandler(new FieldResetDerivativesOnEvent<>())
-                .withDetectionSettings(FieldDateDetector.getDefaultDetectionSettings(field));
+        final FieldDateDetector<T> detector = new FieldDateDetector<>(field)
+                .withHandler(new FieldResetDerivativesOnEvent<>());
         providers.navigableKeySet().forEach(date -> detector.addEventDate(new FieldAbsoluteDate<>(field, date)));
-        return Stream.of(detector);
+        return Stream.concat(Stream.of(detector), getFieldEventDetectors(field, getParametersDrivers()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        providers.values().forEach(provider -> drivers.addAll(provider.getParametersDrivers()));
+        return drivers;
     }
 }

@@ -27,11 +27,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 class AttitudeProviderTest {
 
@@ -62,6 +68,28 @@ class AttitudeProviderTest {
         final Rotation expectedRotation = attitudeProvider.getAttitude(mockPvCoordinatesProvider, date, REFERENCE_FRAME)
                 .getRotation();
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+    }
+
+    @Test
+    void testGetEventDetectors() {
+        // GIVEN
+        final AttitudeProvider mockedProvider = Mockito.mock(AttitudeProvider.class);
+        Mockito.when(mockedProvider.getParametersDrivers()).thenReturn(new ArrayList<>());
+        // WHEN
+        final Stream<EventDetector> detectorStream = mockedProvider.getEventDetectors();
+        // THEN
+        Assertions.assertEquals(0, detectorStream.count());
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final AttitudeProvider mockedProvider = Mockito.mock(AttitudeProvider.class);
+        Mockito.when(mockedProvider.getParametersDrivers()).thenCallRealMethod();
+        // WHEN
+        final List<ParameterDriver> driverList = mockedProvider.getParametersDrivers();
+        // THEN
+        Assertions.assertTrue(driverList.isEmpty());
     }
 
     @Test

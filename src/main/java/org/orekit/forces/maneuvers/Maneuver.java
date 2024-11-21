@@ -52,9 +52,9 @@ import org.orekit.utils.ParameterDriver;
  *  - An attitude override, this is the attitude used during the maneuver, it can be different from the one
  *    used for propagation;
  *  - A maneuver triggers object from the trigger sub-package. It defines the triggers used to start and stop the maneuvers (dates or events for example).
- *  - A propulsion model from sub-package propulsion. It defines the thrust or ΔV, isp, flow rate etc..
- * Both the propulsion model and the maneuver triggers can contain parameter drivers (for estimation).
- * The convention here is that the propulsion model drivers are given before the maneuver triggers when calling the
+ *  - A propulsion model from sub-package propulsion. It defines the thrust or ΔV, isp, flow rate etc.
+ * Both the propulsion model and the maneuver triggers can contain parameter drivers (for estimation), as well as the attitude override if set.
+ * The convention here is the following: drivers from propulsion model first, then maneuver triggers and if any the attitude override when calling the
  * method {@link #getParametersDrivers()}
  * @author Maxime Journot
  * @since 10.2
@@ -269,22 +269,20 @@ public class Maneuver implements ForceModel {
 
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-
-        // Extract parameter drivers from propulsion model and maneuver triggers
-        final List<ParameterDriver> propulsionModelDrivers  = propulsionModel.getParametersDrivers();
-        final List<ParameterDriver> maneuverTriggersDrivers = maneuverTriggers.getParametersDrivers();
-        final int propulsionModelDriversLength  = propulsionModelDrivers.size();
-        final int maneuverTriggersDriversLength = maneuverTriggersDrivers.size();
-
         // Prepare final drivers' array
-        final List<ParameterDriver> drivers = new ArrayList<>(propulsionModelDriversLength + maneuverTriggersDriversLength);
+        final List<ParameterDriver> drivers = new ArrayList<>();
 
         // Convention: Propulsion drivers are given before maneuver triggers drivers
         // Add propulsion drivers first
-        drivers.addAll(0, propulsionModelDrivers);
+        drivers.addAll(0, propulsionModel.getParametersDrivers());
 
         // Then maneuver triggers' drivers
-        drivers.addAll(propulsionModelDriversLength, maneuverTriggersDrivers);
+        drivers.addAll(drivers.size(), maneuverTriggers.getParametersDrivers());
+
+        // Then attitude override' drivers if defined
+        if (attitudeOverride != null) {
+            drivers.addAll(attitudeOverride.getParametersDrivers());
+        }
 
         // Return full drivers' array
         return drivers;
