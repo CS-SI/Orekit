@@ -202,11 +202,13 @@ abstract class AbstractGrid {
              BufferedReader    reader = new BufferedReader(isr)) {
             for (int row = 0; row < latitudeAxis.size(); ++row) {
 
+                // the ITU-files are sorted in decreasing latitude order, from +90° to -90°…
+                final int latitudeIndex = latitudeAxis.size() - 1 - row;
+
                 final String   line   = reader.readLine();
                 final String[] fields = SPLITTER.split(line.trim());
                 if (fields.length != longitudeAxis.size()) {
-                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                            row + 1, name, line);
+                    throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, row + 1, name, line);
                 }
 
                 // distribute points in longitude
@@ -224,11 +226,11 @@ abstract class AbstractGrid {
                     // col = 239 → base longitude = 358.5° → fixed longitude =   -1.5° → longitudeIndex = 119
                     // col = 240 → base longitude = 360.0° → fixed longitude =    0.0° → longitudeIndex = 120
                     final int longitudeIndex = col < 121 ? col + 120 : col - 120;
-                    values[row][longitudeIndex] = unit.toSI(Double.parseDouble(fields[col]));
+                    values[latitudeIndex][longitudeIndex] = unit.toSI(Double.parseDouble(fields[col]));
                 }
 
                 // the loop above stored longitude 180° at index 240, but longitude -180° is missing
-                values[row][0] = values[row][longitudeAxis.size() - 1];
+                values[latitudeIndex][0] = values[latitudeIndex][longitudeAxis.size() - 1];
 
             }
         } catch (IOException ioe) {
