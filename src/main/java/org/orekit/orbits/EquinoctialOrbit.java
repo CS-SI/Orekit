@@ -73,7 +73,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
+public class EquinoctialOrbit extends Orbit implements PositionAngleBased<EquinoctialOrbit> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20170414L;
@@ -766,16 +766,6 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
 
     }
 
-    /** Initialize cached argument of longitude.
-     * @param l input argument of longitude
-     * @param positionAngleType position angle type passed as input
-     * @return argument of longitude to cache
-     * @since 12.1
-     */
-    private double initializeCachedL(final double l, final PositionAngleType positionAngleType) {
-        return EquinoctialLongitudeArgumentUtility.convertL(positionAngleType, l, ex, ey, cachedPositionAngleType);
-    }
-
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
      * @return non-Keplerian part of the acceleration
      */
@@ -859,12 +849,26 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public EquinoctialOrbit withFrame(final Frame inertialFrame) {
+        final PVCoordinates pvCoordinates;
         if (hasNonKeplerianAcceleration()) {
-            return new EquinoctialOrbit(getPVCoordinates(inertialFrame), inertialFrame, getMu());
+            pvCoordinates = getPVCoordinates(inertialFrame);
         } else {
             final KinematicTransform transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
-            return new EquinoctialOrbit(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
+            pvCoordinates = transform.transformOnlyPV(getPVCoordinates());
         }
+        final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(pvCoordinates, inertialFrame, getDate(), getMu());
+        if (equinoctialOrbit.getCachedPositionAngleType() == getCachedPositionAngleType()) {
+            return equinoctialOrbit;
+        } else {
+            return equinoctialOrbit.withCachedPositionAngleType(getCachedPositionAngleType());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EquinoctialOrbit withCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        return new EquinoctialOrbit(a, ex, ey, hx, hy, getL(positionAngleType), aDot, exDot, eyDot, hxDot, hyDot,
+                getLDot(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */

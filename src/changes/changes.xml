@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1601">
+            Add withCachedPositionAngleType in PositionAngleBased.
+        </action>
         <action dev="serrof" type="add" issue="1600">
             Add static getExhaustVelocity method in ThrustPropulsionModel.
         </action>

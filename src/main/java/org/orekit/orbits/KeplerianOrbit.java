@@ -74,7 +74,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class KeplerianOrbit extends Orbit implements PositionAngleBased {
+public class KeplerianOrbit extends Orbit implements PositionAngleBased<KeplerianOrbit> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20231217L;
@@ -892,16 +892,6 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
 
     }
 
-    /** Initialize cached anomaly.
-     * @param anomaly input anomaly
-     * @param inputType position angle type passed as input
-     * @return anomaly to cache
-     * @since 12.1
-     */
-    private double initializeCachedAnomaly(final double anomaly, final PositionAngleType inputType) {
-        return KeplerianAnomalyUtility.convertAnomaly(inputType, anomaly, e, cachedPositionAngleType);
-    }
-
     /** Compute reference axes.
      * @return reference axes
      * @since 12.0
@@ -1066,12 +1056,26 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased {
     /** {@inheritDoc} */
     @Override
     public KeplerianOrbit withFrame(final Frame inertialFrame) {
+        final PVCoordinates pvCoordinates;
         if (hasNonKeplerianAcceleration()) {
-            return new KeplerianOrbit(getPVCoordinates(inertialFrame), inertialFrame, getMu());
+            pvCoordinates = getPVCoordinates(inertialFrame);
         } else {
             final KinematicTransform transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
-            return new KeplerianOrbit(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
+            pvCoordinates = transform.transformOnlyPV(getPVCoordinates());
         }
+        final KeplerianOrbit keplerianOrbit = new KeplerianOrbit(pvCoordinates, inertialFrame, getDate(), getMu());
+        if (keplerianOrbit.getCachedPositionAngleType() == getCachedPositionAngleType()) {
+            return keplerianOrbit;
+        } else {
+            return keplerianOrbit.withCachedPositionAngleType(getCachedPositionAngleType());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public KeplerianOrbit withCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        return new KeplerianOrbit(a, e, i, pa, raan, getAnomaly(positionAngleType), aDot, eDot, iDot, paDot, raanDot,
+                getAnomalyDot(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */
