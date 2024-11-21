@@ -37,8 +37,12 @@ import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
+import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.ParameterDriver;
@@ -156,16 +160,22 @@ public class AggregateBoundedAttitudeProvider implements BoundedAttitudeProvider
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        final DateDetector detector = new DateDetector().withHandler(new ResetDerivativesOnEvent());
-        providers.navigableKeySet().forEach(detector::addEventDate);
+        final List<AbsoluteDate> dates = new ArrayList<>(providers.navigableKeySet());
+        final AdaptableInterval maxCheck = DateDetectionAdaptableIntervalFactory.getDatesDetectionConstantInterval(
+                dates.stream().map(AbsoluteDate::getDate).toArray(TimeStamped[]::new));
+        final DateDetector detector = new DateDetector().withHandler(new ResetDerivativesOnEvent()).withMaxCheck(maxCheck);
+        dates.forEach(detector::addEventDate);
         return Stream.concat(Stream.of(detector), getEventDetectors(getParametersDrivers()));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        final AdaptableInterval adaptableInterval = DateDetectionAdaptableIntervalFactory.getDatesDetectionConstantInterval(
+                providers.navigableKeySet().stream().map(AbsoluteDate::getDate).toArray(TimeStamped[]::new));
         final FieldDateDetector<T> detector = new FieldDateDetector<>(field)
-                .withHandler(new FieldResetDerivativesOnEvent<>());
+                .withHandler(new FieldResetDerivativesOnEvent<>())
+                .withMaxCheck(FieldAdaptableInterval.of(adaptableInterval));
         providers.navigableKeySet().forEach(date -> detector.addEventDate(new FieldAbsoluteDate<>(field, date)));
         return Stream.concat(Stream.of(detector), getFieldEventDetectors(field, getParametersDrivers()));
     }

@@ -27,7 +27,7 @@ class FieldAdaptableIntervalTest {
     @SuppressWarnings("unchecked")
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
-    void testOf(final boolean isForward) {
+    void testOfDouble(final boolean isForward) {
         // GIVEN
         final double expectedValue = 1.;
         // WHEN
@@ -37,4 +37,17 @@ class FieldAdaptableIntervalTest {
         Assertions.assertEquals(expectedValue, actualValue);
     }
 
+    @SuppressWarnings("unchecked")
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testOf(final boolean isForward) {
+        // GIVEN
+        final double expectedValue = 1.;
+        final AdaptableInterval adaptableInterval = AdaptableInterval.of(expectedValue);
+        // WHEN
+        final FieldAdaptableInterval<?> fieldAdaptableInterval = FieldAdaptableInterval.of(adaptableInterval);
+        // THEN
+        final double actualValue = fieldAdaptableInterval.currentInterval(Mockito.mock(FieldSpacecraftState.class), isForward);
+        Assertions.assertEquals(expectedValue, actualValue);
+    }
 }
