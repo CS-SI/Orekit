@@ -56,7 +56,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the geographic zone is defined
      * @param zone geographic zone to consider
@@ -64,7 +64,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      */
     public GeographicZoneDetector(final BodyShape body,
                                   final SphericalPolygonsSet zone,  final double margin) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, zone, margin);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, zone, margin);
     }
 
     /** Build a detector.

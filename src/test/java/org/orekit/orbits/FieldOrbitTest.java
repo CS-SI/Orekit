@@ -253,6 +253,11 @@ class FieldOrbitTest {
         }
 
         @Override
+        public FieldOrbit<Complex> withFrame(Frame inertialFrame) {
+            return null;
+        }
+
+        @Override
         public FieldOrbit<Complex> shiftedBy(Complex dt) {
             return shiftedBy(dt.getReal());
         }

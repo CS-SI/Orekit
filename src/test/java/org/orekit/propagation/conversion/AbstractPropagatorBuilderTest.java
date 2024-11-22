@@ -24,6 +24,7 @@ import org.orekit.estimation.EstimationTestUtils;
 import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
 import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -70,13 +71,14 @@ public class AbstractPropagatorBuilderTest {
 
         // Shift the orbit of a minute
         // Reset the builder and check the orbits value
-        final Orbit newOrbit = initialOrbit.shiftedBy(60.);
+        final Orbit newOrbit = initialOrbit.shiftedBy(60.).withFrame(FramesFactory.getTOD(true));
         propagatorBuilder.resetOrbit(newOrbit);
 
         // Check that the new orbit was properly set in the builder and
         Assertions.assertEquals(0., propagatorBuilder.getInitialOrbitDate().durationFrom(newOrbit.getDate()), 0.);
         final double[] stateVector = new double[6];
-        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit, PositionAngleType.TRUE, stateVector, null);
+        propagatorBuilder.getOrbitType().mapOrbitToArray(newOrbit.withFrame(context.initialOrbit.getFrame()),
+                PositionAngleType.TRUE, stateVector, null);
         int i = 0;
         for (DelegatingDriver driver : propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
             final double expectedValue = stateVector[i++];

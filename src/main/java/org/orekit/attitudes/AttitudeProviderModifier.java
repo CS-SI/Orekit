@@ -50,20 +50,8 @@ public interface AttitudeProviderModifier extends AttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    default Stream<EventDetector> getEventDetectors() {
-        return getUnderlyingAttitudeProvider().getEventDetectors();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     default Stream<EventDetector> getEventDetectors(final List<ParameterDriver> parameterDrivers) {
         return getUnderlyingAttitudeProvider().getEventDetectors(parameterDrivers);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return getUnderlyingAttitudeProvider().getFieldEventDetectors(field);
     }
 
     /** {@inheritDoc} */
@@ -71,6 +59,12 @@ public interface AttitudeProviderModifier extends AttitudeProvider {
     default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field,
                                                                                                      final List<ParameterDriver> parameterDrivers) {
         return getUnderlyingAttitudeProvider().getFieldEventDetectors(field, parameterDrivers);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default List<ParameterDriver> getParametersDrivers() {
+        return getUnderlyingAttitudeProvider().getParametersDrivers();
     }
 
     /**

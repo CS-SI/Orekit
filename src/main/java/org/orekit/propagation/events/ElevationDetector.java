@@ -57,7 +57,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * Creates an instance of Elevation detector based on passed in topocentric frame
      * and the minimum elevation angle.
      * <p>
-     * uses default values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * uses default values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param topo reference to a topocentric model
      * @see #withConstantElevation(double)
@@ -65,7 +65,7 @@ public class ElevationDetector extends AbstractDetector<ElevationDetector> {
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public ElevationDetector(final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, topo);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, topo);
     }
 
     /**

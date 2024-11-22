@@ -59,7 +59,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     /** Default value for convergence threshold.
      * @since 12.0
      */
-    public static final double DEFAULT_THRESHOLD = 1.0e-13;
+    public static final double DEFAULT_THRESHOLD = 1.0e-10;
 
     /** Default detection settings.
      * @since 13.0

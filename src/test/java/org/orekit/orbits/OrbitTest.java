@@ -20,6 +20,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
@@ -199,6 +200,11 @@ class OrbitTest {
         @Override
         protected TimeStampedPVCoordinates initPVCoordinates() {
             return new TimeStampedPVCoordinates(getDate(), new PVCoordinates(initPosition(), Vector3D.ZERO));
+        }
+
+        @Override
+        public Orbit withFrame(Frame inertialFrame) {
+            return null;
         }
 
         @Override

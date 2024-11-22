@@ -34,7 +34,7 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
     implements FieldEventDetector<T> {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = FieldEventDetectionSettings.DEFAULT_MAXCHECK;
+    public static final double DEFAULT_MAX_CHECK = FieldEventDetectionSettings.DEFAULT_MAX_CHECK;
 
     /** Default convergence threshold (s). */
     public static final double DEFAULT_THRESHOLD = FieldEventDetectionSettings.DEFAULT_THRESHOLD;

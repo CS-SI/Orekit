@@ -38,7 +38,6 @@ import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
-import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -47,9 +46,6 @@ import org.orekit.utils.TimeSpanMap;
  * @since 12.0
  */
 public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
-
-    /** Accuracy of switching events datation (s). */
-    private static final double DATATION_ACCURACY = 1.0e-10;
 
     /** Thrust profile. */
     private final TimeSpanMap<PolynomialThrustSegment> profile;
@@ -99,7 +95,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final SpacecraftState s) {
-        return -control3DVectorCostType.evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * isp);
+        return -control3DVectorCostType.evaluate(getThrustVector(s)) / ThrustPropulsionModel.getExhaustVelocity(isp);
     }
 
     /** {@inheritDoc}
@@ -138,7 +134,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * </p>
      */
     public <T extends CalculusFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s, final T[] parameters) {
-        return control3DVectorCostType.evaluate(getThrustVector(s, parameters)).divide(-Constants.G0_STANDARD_GRAVITY * isp);
+        return control3DVectorCostType.evaluate(getThrustVector(s, parameters)).divide(-ThrustPropulsionModel.getExhaustVelocity(isp));
     }
 
     /** {@inheritDoc}.

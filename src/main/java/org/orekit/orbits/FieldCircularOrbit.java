@@ -26,6 +26,7 @@ import org.hipparchus.util.MathArrays;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.FieldKinematicTransform;
 import org.orekit.frames.Frame;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldPVCoordinates;
@@ -72,7 +73,8 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @param <T> type of the field elements
  */
 
-public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T> implements PositionAngleBased {
+public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends FieldOrbit<T>
+        implements PositionAngleBased<FieldCircularOrbit<T>> {
 
     /** Semi-major axis (m). */
     private final T a;
@@ -975,16 +977,6 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
     }
 
-    /** Initialize cached alpha.
-     * @param alpha input alpha
-     * @param positionAngleType position angle type passed as input
-     * @return alpha to cache
-     * @since 12.1
-     */
-    private T initializeCachedAlpha(final T alpha, final PositionAngleType positionAngleType) {
-        return FieldCircularLatitudeArgumentUtility.convertAlpha(positionAngleType, alpha, ex, ey, cachedPositionAngleType);
-    }
-
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
      * @return non-Keplerian part of the acceleration
      */
@@ -1080,6 +1072,31 @@ public class FieldCircularOrbit<T extends CalculusFieldElement<T>> extends Field
 
         return new TimeStampedFieldPVCoordinates<>(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCircularOrbit<T> withFrame(final Frame inertialFrame) {
+        final FieldPVCoordinates<T> fieldPVCoordinates;
+        if (hasNonKeplerianAcceleration()) {
+            fieldPVCoordinates = getPVCoordinates(inertialFrame);
+        } else {
+            final FieldKinematicTransform<T> transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            fieldPVCoordinates = transform.transformOnlyPV(getPVCoordinates());
+        }
+        final FieldCircularOrbit<T> fieldOrbit = new FieldCircularOrbit<>(fieldPVCoordinates, inertialFrame, getDate(), getMu());
+        if (fieldOrbit.getCachedPositionAngleType() == getCachedPositionAngleType()) {
+            return fieldOrbit;
+        } else {
+            return fieldOrbit.withCachedPositionAngleType(getCachedPositionAngleType());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldCircularOrbit<T> withCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        return new FieldCircularOrbit<>(a, ex, ey, i, raan, getAlpha(positionAngleType), aDot, exDot, eyDot, iDot, raanDot,
+                getAlphaDot(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */

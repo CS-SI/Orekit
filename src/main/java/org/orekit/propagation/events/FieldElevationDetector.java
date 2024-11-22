@@ -60,7 +60,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * Creates an instance of Elevation detector based on passed in topocentric frame
      * and the minimum elevation angle.
      * <p>
-     * uses default values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * uses default values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field type of the elements
      * @param topo reference to a topocentric model

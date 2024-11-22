@@ -26,6 +26,7 @@ import org.hipparchus.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.FieldMatrixPreservingVisitor;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.Binary64;
@@ -36,6 +37,8 @@ import org.hipparchus.util.MathUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -47,9 +50,9 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
-import java.util.Objects;
 import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
@@ -67,6 +70,65 @@ class FieldEquinoctialOrbitTest {
 
         // Body mu
         mu = 3.9860047e14;
+    }
+
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testWithCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        final double muEarth = 3.9860047e14;
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), AbsoluteDate.ARBITRARY_EPOCH, muEarth);
+        final EquinoctialOrbit equinoctialOrbit = new EquinoctialOrbit(cartesianOrbit);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldEquinoctialOrbit<Binary64> fieldOrbit = new FieldEquinoctialOrbit<>(field, equinoctialOrbit);
+        // WHEN
+        final FieldEquinoctialOrbit<Binary64> orbit = fieldOrbit.withCachedPositionAngleType(positionAngleType);
+        // THEN
+        Assertions.assertEquals(fieldOrbit.getFrame(), orbit.getFrame());
+        Assertions.assertEquals(fieldOrbit.getDate(), orbit.getDate());
+        Assertions.assertEquals(fieldOrbit.getMu(), orbit.getMu());
+        final Vector3D relativePosition = fieldOrbit.getPosition(orbit.getFrame()).subtract(
+                orbit.getPosition()).toVector3D();
+        Assertions.assertEquals(0., relativePosition.getNorm(), 1e-6);
+        Assertions.assertEquals(fieldOrbit.hasNonKeplerianAcceleration(),
+                orbit.hasNonKeplerianAcceleration());
+    }
+
+    @Test
+    void testWithFrameNonKeplerian() {
+        testTemplateWithFrame(Vector3D.MINUS_J, PositionAngleType.TRUE);
+    }
+
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testWithFrameKeplerian(final PositionAngleType positionAngleType) {
+        testTemplateWithFrame(Vector3D.ZERO, positionAngleType);
+    }
+
+    private void testTemplateWithFrame(final Vector3D acceleration, final PositionAngleType positionAngleType) {
+        // GIVEN
+        final Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        final Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        final PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
+        final double muEarth = 3.9860047e14;
+        final CartesianOrbit cartesianOrbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, muEarth);
+        final FieldEquinoctialOrbit<Binary64> fieldOrbit = new FieldEquinoctialOrbit<>(Binary64Field.getInstance(),
+                cartesianOrbit).withCachedPositionAngleType(positionAngleType);
+        // WHEN
+        final FieldEquinoctialOrbit<Binary64> fieldOrbitWithOtherFrame = fieldOrbit.withFrame(FramesFactory.getGCRF());
+        // THEN
+        Assertions.assertNotEquals(fieldOrbit.getFrame(), fieldOrbitWithOtherFrame.getFrame());
+        Assertions.assertEquals(fieldOrbit.getDate(), fieldOrbitWithOtherFrame.getDate());
+        Assertions.assertEquals(fieldOrbit.getMu(), fieldOrbitWithOtherFrame.getMu());
+        final FieldVector3D<Binary64> relativePosition = fieldOrbit.getPosition(fieldOrbitWithOtherFrame.getFrame()).subtract(
+                fieldOrbitWithOtherFrame.getPosition());
+        Assertions.assertEquals(0., relativePosition.getNorm().getReal(), 1e-6);
+        Assertions.assertEquals(fieldOrbit.hasNonKeplerianAcceleration(),
+                fieldOrbitWithOtherFrame.hasNonKeplerianAcceleration());
     }
 
     @Test

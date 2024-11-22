@@ -21,12 +21,27 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
-        <action dev="luc" type="add" issue="1591">
-            Added ITU-R P.834 tropospheric model
-            (including path delay, weather parameters and mapping function).
+        <action dev="serrof" type="add" issue="1602">
+            Make AttitudeProvider inherit from ParametersDriversProvider.
+        </action>
+        <action dev="serrof" type="add" issue="1601">
+            Add withCachedPositionAngleType in PositionAngleBased.
+        </action>
+        <action dev="serrof" type="add" issue="1600">
+            Add static getExhaustVelocity method in ThrustPropulsionModel.
+        </action>
+        <action dev="serrof" type="update" issue="1598">
+            Uniform naming of DEFAULT_MAX_CHECK in event detectors.
         </action>
         <action dev="luc" type="update" issue="1595">
             Added getDayOfYear to {Field}AbsoluteDate.
+        </action>
+        <action dev="serrof" type="add" issue="1593">
+            Add custom eclipse detection settings in AbstractRadiationForceModel and inheritors.
+        </action>
+        <action dev="luc" type="add" issue="1591">
+            Added ITU-R P.834 tropospheric model
+            (including path delay, weather parameters and mapping function).
         </action>
         <action dev="luc" type="update" issue="1590">
             Renamed EarthITU453AtmosphereRefraction into EarthITU834AtmosphereRefraction.
@@ -42,6 +57,9 @@
         </action>
         <action dev="serrof" type="update" issue="1582">
             Made LoggingWrapper in (Field)EventsLogger inherit from (Field)AdapterDetector rather than (Field)AbstractDetector.
+        </action>
+        <action dev="serrof" type="add" issue="1581">
+            Add withFrame method in (Field)Orbit.
         </action>
         <action dev="serrof" type="update" issue="1580">
             Moved (Field)AdaptableInterval.
@@ -76,8 +94,11 @@
         <action dev="luc" type="fix" issue="1548">
             Added toString to SatInSystem.
         </action>
-        <action dev="serrof" type="update" issue="1545">
+        <action dev="serrof" type="update" issue="1546">
             Use Keplerian rates by default in (Field)Orbit.
+        </action>
+        <action dev="serrof" type="fix" issue="1545">
+            Convert frame in resetOrbit of AbstractPropagatorBuilder.
         </action>
         <action dev="luc" type="fix" issue="1542">
             Use SatInSystem in SatelliteAntenna.

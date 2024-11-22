@@ -23,7 +23,6 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
-import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 
@@ -46,14 +45,14 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
     private final OccultationEngine occultationEngine;
 
     /** Umbra, if true, or penumbra, if false, detection flag. */
-    private boolean totalEclipse;
+    private final boolean totalEclipse;
 
     /** Margin to apply to eclipse angle. */
     private final T margin;
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field field used by default
      * @param occulted the body to be occulted
@@ -69,16 +68,15 @@ public class FieldEclipseDetector<T extends CalculusFieldElement<T>> extends Fie
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field field used by default
      * @param occultationEngine occultation engine
      * @since 12.0
      */
     public FieldEclipseDetector(final Field<T> field, final OccultationEngine occultationEngine) {
-        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(DEFAULT_MAXCHECK), field.getZero().newInstance(DEFAULT_THRESHOLD),
-             DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>(),
-             occultationEngine, field.getZero(), true);
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
+                new FieldStopOnIncreasing<>(), occultationEngine, field.getZero(), true);
     }
 
     /** Protected constructor with full parameters.

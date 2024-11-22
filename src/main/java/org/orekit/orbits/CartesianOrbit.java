@@ -25,6 +25,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.utils.FieldPVCoordinates;
@@ -391,6 +392,17 @@ public class CartesianOrbit extends Orbit {
     protected TimeStampedPVCoordinates initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the Cartesian ones
         return getPVCoordinates();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CartesianOrbit withFrame(final Frame inertialFrame) {
+        if (hasNonKeplerianAcceleration()) {
+            return new CartesianOrbit(getPVCoordinates(inertialFrame), inertialFrame, getMu());
+        } else {
+            final KinematicTransform transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            return new CartesianOrbit(transform.transformOnlyPV(getPVCoordinates()), inertialFrame, getDate(), getMu());
+        }
     }
 
     /** {@inheritDoc} */

@@ -239,12 +239,12 @@ public class AttitudesSequence implements AttitudeProvider {
 
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return switches.stream().map(Switch.class::cast);
+        return Stream.concat(switches.stream().map(Switch.class::cast), getEventDetectors(getParametersDrivers()));
     }
 
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return switches.stream().map(sw -> new FieldEventDetector<T>() {
+        final Stream<FieldEventDetector<T>> switchesStream = switches.stream().map(sw -> new FieldEventDetector<T>() {
 
             /** {@inheritDoc} */
             @Override
@@ -286,6 +286,7 @@ public class AttitudesSequence implements AttitudeProvider {
             }
 
         });
+        return Stream.concat(switchesStream, getFieldEventDetectors(field, getParametersDrivers()));
     }
 
     /**

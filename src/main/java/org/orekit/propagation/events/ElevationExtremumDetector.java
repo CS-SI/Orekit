@@ -48,12 +48,12 @@ public class ElevationExtremumDetector extends AbstractDetector<ElevationExtremu
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param topo topocentric frame centered on ground point
      */
     public ElevationExtremumDetector(final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, topo);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, topo);
     }
 
     /** Build a detector.

@@ -30,6 +30,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
@@ -45,8 +46,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.ParameterDriver;
 
 import java.util.ArrayList;
+import java.util.List;
 
 class ManeuverTest {
 
@@ -65,6 +68,22 @@ class ManeuverTest {
         final String actualName = maneuver.getName();
         // THEN
         Assertions.assertEquals(expectedName, actualName);
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final ManeuverTriggers mockedTriggers = Mockito.mock(ManeuverTriggers.class);
+        final PropulsionModel mockedPropulsion = Mockito.mock(PropulsionModel.class);
+        final AttitudeProvider mocedkAttitudeProvider = Mockito.mock(AttitudeProvider.class);
+        final List<ParameterDriver> driverList = new ArrayList<>();
+        driverList.add(Mockito.mock(ParameterDriver.class));
+        Mockito.when(mocedkAttitudeProvider.getParametersDrivers()).thenReturn(driverList);
+        // WHEN
+        final Maneuver maneuver = new Maneuver(mocedkAttitudeProvider, mockedTriggers, mockedPropulsion);
+        final List<ParameterDriver> actualDrivers = maneuver.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(driverList.size(), actualDrivers.size());
     }
 
     @Test

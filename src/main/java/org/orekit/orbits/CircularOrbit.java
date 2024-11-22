@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
+import org.orekit.frames.KinematicTransform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeOffset;
 import org.orekit.utils.PVCoordinates;
@@ -72,7 +73,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class CircularOrbit extends Orbit implements PositionAngleBased {
+public class CircularOrbit extends Orbit implements PositionAngleBased<CircularOrbit> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20231217L;
@@ -998,16 +999,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
     }
 
-    /** Initialize cached alpha.
-     * @param alpha input alpha
-     * @param positionAngleType position angle type passed as input
-     * @return alpha to cache
-     * @since 12.1
-     */
-    private double initializeCachedAlpha(final double alpha, final PositionAngleType positionAngleType) {
-        return CircularLatitudeArgumentUtility.convertAlpha(positionAngleType, alpha, ex, ey, cachedPositionAngleType);
-    }
-
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
      * @return non-Keplerian part of the acceleration
      */
@@ -1090,6 +1081,31 @@ public class CircularOrbit extends Orbit implements PositionAngleBased {
 
         return new TimeStampedPVCoordinates(getDate(), partialPV.getPosition(), partialPV.getVelocity(), acceleration);
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit withFrame(final Frame inertialFrame) {
+        final PVCoordinates pvCoordinates;
+        if (hasNonKeplerianAcceleration()) {
+            pvCoordinates = getPVCoordinates(inertialFrame);
+        } else {
+            final KinematicTransform transform = getFrame().getKinematicTransformTo(inertialFrame, getDate());
+            pvCoordinates = transform.transformOnlyPV(getPVCoordinates());
+        }
+        final CircularOrbit circularOrbit = new CircularOrbit(pvCoordinates, inertialFrame, getDate(), getMu());
+        if (circularOrbit.getCachedPositionAngleType() == getCachedPositionAngleType()) {
+            return circularOrbit;
+        } else {
+            return circularOrbit.withCachedPositionAngleType(getCachedPositionAngleType());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public CircularOrbit withCachedPositionAngleType(final PositionAngleType positionAngleType) {
+        return new CircularOrbit(a, ex, ey, i, raan, getAlpha(positionAngleType), aDot, exDot, eyDot, iDot, raanDot,
+                getAlphaDot(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
     }
 
     /** {@inheritDoc} */

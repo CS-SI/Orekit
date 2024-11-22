@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.empirical;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -143,7 +144,11 @@ public class ParametricAcceleration implements ForceModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return accelerationModel.getParametersDrivers();
+        final List<ParameterDriver> parameterDrivers = new ArrayList<>(accelerationModel.getParametersDrivers());
+        if (attitudeOverride != null) {
+            parameterDrivers.addAll(attitudeOverride.getParametersDrivers());
+        }
+        return parameterDrivers;
     }
 
     /** {@inheritDoc} */
