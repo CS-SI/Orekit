@@ -163,15 +163,15 @@ abstract class AbstractGrid {
     /** Get one cell.
      * @param location     point location on Earth
      * @param secondOfYear second of year
+     * @return cell at location
      */
     public abstract GridCell getCell(GeodeticPoint location, double secondOfYear);
 
-    /**
-     * Get one cell.
-     *
+    /** Get one cell.
      * @param <T>          type of the field elements
      * @param location     point location on Earth
      * @param secondOfYear second of year
+     * @return cell at location
      */
     public abstract <T extends CalculusFieldElement<T>> FieldGridCell<T> getCell(FieldGeodeticPoint<T> location,
                                                                                  T secondOfYear);

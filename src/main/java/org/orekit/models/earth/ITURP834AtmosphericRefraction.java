@@ -34,7 +34,7 @@ import org.orekit.models.earth.troposphere.iturp834.ITURP834PathDelay;
  *
  * @author Thierry Ceolin
  * @since 7.1
- * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</a>
  */
 
 public class ITURP834AtmosphericRefraction implements AtmosphericRefractionModel {

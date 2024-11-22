@@ -61,8 +61,8 @@ class FieldGridCell<T extends CalculusFieldElement<T>> {
      * @param se         South-East value
      * @param ne         North-East value
      */
-    public FieldGridCell(final T deltaSouth, final T deltaWest, final double sizeLat, final double sizeLon,
-                         final T nw, final T sw, final T se, final T ne) {
+     FieldGridCell(final T deltaSouth, final T deltaWest, final double sizeLat, final double sizeLon,
+                   final T nw, final T sw, final T se, final T ne) {
         this.deltaSouth = deltaSouth;
         this.deltaWest  = deltaWest;
         this.sizeLat    = sizeLat;
@@ -84,8 +84,8 @@ class FieldGridCell<T extends CalculusFieldElement<T>> {
      * @param cell1 first cell
      * @param cell2 second cell
      */
-    public FieldGridCell(final BiFunction<T> function,
-                         final FieldGridCell<T> cell1, final FieldGridCell<T> cell2) {
+     FieldGridCell(final BiFunction<T> function,
+                   final FieldGridCell<T> cell1, final FieldGridCell<T> cell2) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -108,8 +108,8 @@ class FieldGridCell<T extends CalculusFieldElement<T>> {
      * @param cell2 second cell
      * @param cell3 third cell
      */
-    public FieldGridCell(final TriFunction<T> function,
-                         final FieldGridCell<T> cell1, final FieldGridCell<T> cell2, final FieldGridCell<T> cell3) {
+     FieldGridCell(final TriFunction<T> function,
+                   final FieldGridCell<T> cell1, final FieldGridCell<T> cell2, final FieldGridCell<T> cell3) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -133,9 +133,9 @@ class FieldGridCell<T extends CalculusFieldElement<T>> {
      * @param cell3 third cell
      * @param cell4 fourth cell
      */
-    public FieldGridCell(final QuarticFunction<T> function,
-                         final FieldGridCell<T> cell1, final FieldGridCell<T> cell2,
-                         final FieldGridCell<T> cell3, final FieldGridCell<T> cell4) {
+     FieldGridCell(final QuarticFunction<T> function,
+                   final FieldGridCell<T> cell1, final FieldGridCell<T> cell2,
+                   final FieldGridCell<T> cell3, final FieldGridCell<T> cell4) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -160,9 +160,9 @@ class FieldGridCell<T extends CalculusFieldElement<T>> {
      * @param cell4 fourth cell
      * @param cell5 fifth cell
      */
-    public FieldGridCell(final QuinticFunction<T> function,
-                         final FieldGridCell<T> cell1, final FieldGridCell<T> cell2, final FieldGridCell<T> cell3,
-                         final FieldGridCell<T> cell4, final FieldGridCell<T> cell5) {
+     FieldGridCell(final QuinticFunction<T> function,
+                   final FieldGridCell<T> cell1, final FieldGridCell<T> cell2, final FieldGridCell<T> cell3,
+                   final FieldGridCell<T> cell4, final FieldGridCell<T> cell5) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -179,9 +179,9 @@ class FieldGridCell<T extends CalculusFieldElement<T>> {
     public T evaluate() {
         final T deltaNorth = deltaSouth.negate().add(sizeLat);
         final T deltaEast  = deltaWest.negate().add(sizeLon);
-         return     deltaSouth.multiply(deltaWest.multiply(ne).add(deltaEast.multiply(nw))).
-                add(deltaNorth.multiply(deltaWest.multiply(se).add(deltaEast.multiply(sw)))).
-                divide(sizeLat * sizeLon);
+        return     deltaSouth.multiply(deltaWest.multiply(ne).add(deltaEast.multiply(nw))).
+               add(deltaNorth.multiply(deltaWest.multiply(se).add(deltaEast.multiply(sw)))).
+               divide(sizeLat * sizeLon);
     }
 
     /** Interface for function that can be applied to the corners of two cells. */

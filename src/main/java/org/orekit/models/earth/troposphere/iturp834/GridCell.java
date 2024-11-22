@@ -58,8 +58,8 @@ class GridCell {
      * @param se         South-East value
      * @param ne         North-East value
      */
-    public GridCell(final double deltaSouth, final double deltaWest, final double sizeLat, final double sizeLon,
-                    final double nw, final double sw, final double se, final double ne) {
+    GridCell(final double deltaSouth, final double deltaWest, final double sizeLat, final double sizeLon,
+             final double nw, final double sw, final double se, final double ne) {
         this.deltaSouth = deltaSouth;
         this.deltaWest  = deltaWest;
         this.sizeLat    = sizeLat;
@@ -81,8 +81,8 @@ class GridCell {
      * @param cell1 first cell
      * @param cell2 second cell
      */
-    public GridCell(final BiFunction function,
-                    final GridCell cell1, final GridCell cell2) {
+     GridCell(final BiFunction function,
+              final GridCell cell1, final GridCell cell2) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -105,8 +105,8 @@ class GridCell {
      * @param cell2 second cell
      * @param cell3 third cell
      */
-    public GridCell(final TriFunction function,
-                    final GridCell cell1, final GridCell cell2, final GridCell cell3) {
+    GridCell(final TriFunction function,
+             final GridCell cell1, final GridCell cell2, final GridCell cell3) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -130,9 +130,9 @@ class GridCell {
      * @param cell3 third cell
      * @param cell4 fourth cell
      */
-    public GridCell(final QuarticFunction function,
-                    final GridCell cell1, final GridCell cell2,
-                    final GridCell cell3, final GridCell cell4) {
+     GridCell(final QuarticFunction function,
+              final GridCell cell1, final GridCell cell2,
+              final GridCell cell3, final GridCell cell4) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -157,9 +157,9 @@ class GridCell {
      * @param cell4 fourth cell
      * @param cell5 fifth cell
      */
-    public GridCell(final QuinticFunction function,
-                    final GridCell cell1, final GridCell cell2, final GridCell cell3,
-                    final GridCell cell4, final GridCell cell5) {
+     GridCell(final QuinticFunction function,
+              final GridCell cell1, final GridCell cell2, final GridCell cell3,
+              final GridCell cell4, final GridCell cell5) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -176,9 +176,9 @@ class GridCell {
     public double evaluate() {
         final double deltaNorth = sizeLat - deltaSouth;
         final double deltaEast  = sizeLon - deltaWest;
-         return (deltaSouth * (deltaWest * ne + deltaEast * nw) +
-                 deltaNorth * (deltaWest * se + deltaEast * sw)) /
-                (sizeLat * sizeLon);
+        return (deltaSouth * (deltaWest * ne + deltaEast * nw) +
+                deltaNorth * (deltaWest * se + deltaEast * sw)) /
+               (sizeLat * sizeLon);
     }
 
     /** Interface for function that can be applied to the corners of two cells. */

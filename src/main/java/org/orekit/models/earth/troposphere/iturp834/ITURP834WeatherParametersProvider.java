@@ -38,7 +38,7 @@ import org.orekit.utils.units.Unit;
  * @see ITURP834PathDelay
  * @see ITURP834MappingFunction
  * @author Luc Maisonobe
- * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</a>
  * @since 13.0
  */
 public class ITURP834WeatherParametersProvider implements PressureTemperatureHumidityProvider {
@@ -62,13 +62,13 @@ public class ITURP834WeatherParametersProvider implements PressureTemperatureHum
     private static final String AVERAGE_SUFFIX = "_gd_a1.dat";
 
     /** Suffix for seasonal fluctuation.*/
-    public static final String SEASONAL_SUFFIX = "_gd_a2.dat";
+    private static final String SEASONAL_SUFFIX = "_gd_a2.dat";
 
     /** Suffix for day of minimum value. */
-    public static final String DAY_OF_MINIMUM_SUFFIX = "_gd_a3.dat";
+    private static final String DAY_OF_MINIMUM_SUFFIX = "_gd_a3.dat";
 
     /** Name of height reference level. */
-    public static final String AVERAGE_HEIGHT_REFERENCE_LEVEL_NAME = "hreflev.dat";
+    private static final String AVERAGE_HEIGHT_REFERENCE_LEVEL_NAME = "hreflev.dat";
 
     /** Molar gas constant (J/mol K). */
     private static final double R = 8.314;
@@ -209,7 +209,7 @@ public class ITURP834WeatherParametersProvider implements PressureTemperatureHum
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldPressureTemperatureHumidity<T>
-    getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
+        getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
 
         // evaluate grid points for current date at reference height
         final T                soy        = date.getDayOfYear(utc).multiply(Constants.JULIAN_DAY);

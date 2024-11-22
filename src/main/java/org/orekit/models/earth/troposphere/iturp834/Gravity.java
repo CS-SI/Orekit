@@ -32,13 +32,16 @@ import org.orekit.utils.units.Unit;
  * @see ITURP834MappingFunction
  * @see ITURP834WeatherParametersProvider
  * @author Luc Maisonobe
- * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</a>
  * @since 13.0
  */
 class Gravity {
 
     /** Name of height reference level. */
     public static final String AVERAGE_HEIGHT_REFERENCE_LEVEL_NAME = "hreflev.dat";
+
+    /** Unit per km. */
+    private static final Unit UNIT_PER_KM = Unit.parse("km⁻¹");
 
     /** Gravity factor for equation 27g. */
     private static final double G_27G = 9.806;
@@ -47,7 +50,7 @@ class Gravity {
     private static final double GL_27G = 0.002637;
 
     /** Gravity altitude correction factor for equation 27g. */
-    private static final double GH_27G = Unit.parse("km⁻¹").toSI(0.00031);
+    private static final double GH_27G = UNIT_PER_KM.toSI(0.00031);
 
     /** Gravity factor for equation 27j. */
     private static final double G_27J = 9.784;
@@ -56,7 +59,7 @@ class Gravity {
     private static final double GL_27J = 0.00266;
 
     /** Gravity altitude correction factor for equation 27j. */
-    private static final double GH_27J = Unit.parse("km⁻¹").toSI(0.00028);
+    private static final double GH_27J = UNIT_PER_KM.toSI(0.00028);
 
     /** Gravity at Earth surface. */
     private static final ConstantGrid GS =
@@ -78,6 +81,7 @@ class Gravity {
     }
 
     /** Get gravity at surface.
+     * @param <T> type of the field elements
      * @param location point location on Earth
      * @return gravity model over one cell
      */
@@ -107,6 +111,7 @@ class Gravity {
     }
 
     /** Get gravity at point altitude.
+     * @param <T> type of the field elements
      * @param location point location on Earth
      * @return gravity model over one cell
      */

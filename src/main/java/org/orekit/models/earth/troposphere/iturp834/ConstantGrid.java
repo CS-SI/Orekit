@@ -35,7 +35,7 @@ class ConstantGrid extends AbstractGrid {
      * @param unit unit of values in resource file
      * @param name name of the resource holding the data
      */
-    public ConstantGrid(final Unit unit, final String name) {
+    ConstantGrid(final Unit unit, final String name) {
         data = parse(unit, name);
     }
 

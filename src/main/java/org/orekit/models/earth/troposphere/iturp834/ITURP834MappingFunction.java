@@ -47,7 +47,7 @@ import java.util.regex.Pattern;
  * @see ITURP834PathDelay
  * @see ITURP834WeatherParametersProvider
  * @author Luc Maisonobe
- * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</a>
  * @since 13.0
  */
 public class ITURP834MappingFunction implements TroposphereMappingFunction {

@@ -47,7 +47,7 @@ import java.util.List;
  * @see ITURP834WeatherParametersProvider
  * @see ITURP834MappingFunction
  * @author Luc Maisonobe
- * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</a>
  * @since 13.0
  */
 public class ITURP834PathDelay implements TroposphericModel {
@@ -58,11 +58,14 @@ public class ITURP834PathDelay implements TroposphericModel {
     /** Dry air molar mass (kg/mol). */
     private static final double MD = Unit.GRAM.toSI(28.9644);
 
+    /** Kelvin per hecto-Pascal. */
+    private static final Unit K_PER_HPA = Unit.parse("hPa⁻¹");
+
     /** Hydrostatic factor (K/Pa). */
-    private static final double K1 = Unit.parse("hPa⁻¹").toSI(76.604);
+    private static final double K1 = K_PER_HPA.toSI(76.604);
 
     /** Wet factor (K²/Pa). */
-    private static final double K2 = Unit.parse("hPa⁻¹").toSI(373900);
+    private static final double K2 = K_PER_HPA.toSI(373900);
 
     /** Mapping function. */
     private final TroposphereMappingFunction mappingFunction;

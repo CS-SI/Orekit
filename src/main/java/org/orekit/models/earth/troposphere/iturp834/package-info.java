@@ -16,7 +16,7 @@
  */
 /** This package contains class for the troposphere model OTU-4 P.834.
  * @author Luc Maisonobe
- * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</>
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</a>
  * @since 13.0
  */
 package org.orekit.models.earth.troposphere.iturp834;
