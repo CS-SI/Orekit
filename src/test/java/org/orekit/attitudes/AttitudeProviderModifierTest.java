@@ -41,6 +41,49 @@ import java.util.List;
 class AttitudeProviderModifierTest {
 
     @Test
+    void testGetAttitude() {
+        // GIVEN
+        final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
+        final AttitudeProvider attitudeProvider = new TestProvider(expectedRotation);
+        final AttitudeProviderModifier mockedModifier = Mockito.mock(AttitudeProviderModifier.class);
+        Mockito.when(mockedModifier.getUnderlyingAttitudeProvider()).thenReturn(attitudeProvider);
+        final PVCoordinatesProvider mockedPVCoordinatesProvider = Mockito.mock(PVCoordinatesProvider.class);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        Mockito.when(mockedModifier.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame)).thenCallRealMethod();
+        // WHEN
+        final Attitude actualAttitude = mockedModifier.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame);
+        // THEN
+        final Attitude expectedAttitude = attitudeProvider.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame);
+        Assertions.assertEquals(0, Rotation.distance(expectedRotation, actualAttitude.getRotation()));
+        Assertions.assertEquals(expectedAttitude.getSpin(), actualAttitude.getSpin());
+        Assertions.assertEquals(expectedAttitude.getRotationAcceleration(), actualAttitude.getRotationAcceleration());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testGetFieldAttitude() {
+        // GIVEN
+        final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
+        final AttitudeProvider attitudeProvider = new TestProvider(expectedRotation);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldPVCoordinatesProvider<Complex> mockedPVCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        final AttitudeProviderModifier mockedModifier = Mockito.mock(AttitudeProviderModifier.class);
+        Mockito.when(mockedModifier.getUnderlyingAttitudeProvider()).thenReturn(attitudeProvider);
+        Mockito.when(mockedModifier.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame)).thenCallRealMethod();
+        // WHEN
+        final FieldAttitude<Complex> attitude = mockedModifier.getAttitude(mockedPVCoordinatesProvider, date,
+                mockedFrame);
+        // THEN
+        final Rotation actualRotation = attitude.getRotation().toRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getRotationAcceleration());
+        Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getSpin());
+    }
+
+    @Test
     void testGetFrozenAttitudeProviderEventDetectors() {
         // GIVEN
         final AttitudeProvider attitudeProvider = new TestProvider(Rotation.IDENTITY);
@@ -72,6 +115,8 @@ class AttitudeProviderModifierTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
         Assertions.assertEquals(Vector3D.ZERO, attitude.getRotationAcceleration());
         Assertions.assertEquals(Vector3D.ZERO, attitude.getSpin());
+        final Rotation rotation = frozenAttitudeProvider.getAttitudeRotation(mockedPVCoordinatesProvider, date, mockedFrame);
+        Assertions.assertEquals(0., Rotation.distance(rotation, actualRotation));
     }
 
     @SuppressWarnings("unchecked")
@@ -93,6 +138,9 @@ class AttitudeProviderModifierTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
         Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getRotationAcceleration());
         Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getSpin());
+        final Rotation rotation = frozenAttitudeProvider.getAttitudeRotation(mockedPVCoordinatesProvider, date,
+                mockedFrame).toRotation();
+        Assertions.assertEquals(0., Rotation.distance(rotation, actualRotation));
     }
 
     @Test
