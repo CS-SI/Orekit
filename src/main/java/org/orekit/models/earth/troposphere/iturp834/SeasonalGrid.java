@@ -20,16 +20,17 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.utils.Constants;
 import org.orekit.utils.units.Unit;
 
-/** AbstractGrid data with harmonic seasonal fluctuation.
+/** Grid data with harmonic seasonal fluctuation.
  * @author Luc Maisonobe
  * @since 13.0
  */
 class SeasonalGrid extends AbstractGrid {
 
     /** Annual pulsation. */
-    private static final double OMEGA = MathUtils.TWO_PI / 365.25;
+    private static final double OMEGA = MathUtils.TWO_PI / Constants.JULIAN_YEAR;
 
     /** Average data. */
     private final double[][] average;
@@ -37,8 +38,8 @@ class SeasonalGrid extends AbstractGrid {
     /** Seasonal fluctuation data. */
     private final double[][] seasonal;
 
-    /** Day of minimum data. */
-    private final double[][] minDay;
+    /** Second of minimum data. */
+    private final double[][] minSecond;
 
     /** Build a grid by parsing three resource files.
      * @param unit unit of the average and seasonal fluctuation values in resource files
@@ -48,28 +49,29 @@ class SeasonalGrid extends AbstractGrid {
      */
     public SeasonalGrid(final Unit unit,
                         final String averageName, final String seasonalName, final String minDayName) {
-        average  = parse(unit, averageName);
-        seasonal = parse(unit, seasonalName);
-        minDay   = parse(unit, minDayName);
+        average   = parse(unit,     averageName);
+        seasonal  = parse(unit,     seasonalName);
+        // we convert from days to SI units (i.e. seconds) upon reading
+        minSecond = parse(Unit.DAY, minDayName);
     }
 
     /** {@inheritDoc} */
     @Override
-    public GridCell getCell(final GeodeticPoint location, final double dayOfYear) {
-        return new GridCell((a, s, m) -> a - s * OMEGA * (dayOfYear - m),
+    public GridCell getCell(final GeodeticPoint location, final double secondOfYear) {
+        return new GridCell((a, s, m) -> a - s * OMEGA * (secondOfYear - m),
                             getRawCell(location, average),
                             getRawCell(location, seasonal),
-                            getRawCell(location, minDay));
+                            getRawCell(location, minSecond));
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldGridCell<T> getCell(final FieldGeodeticPoint<T> location,
-                                                                        final T dayOfYear) {
-        return new FieldGridCell<>((a, s, m) -> a.subtract(s.multiply(OMEGA).multiply(dayOfYear.subtract(m))),
+                                                                        final T secondOfYear) {
+        return new FieldGridCell<>((a, s, m) -> a.subtract(s.multiply(OMEGA).multiply(secondOfYear.subtract(m))),
                                    getRawCell(location, average),
                                    getRawCell(location, seasonal),
-                                   getRawCell(location, minDay));
+                                   getRawCell(location, minSecond));
     }
 
 }

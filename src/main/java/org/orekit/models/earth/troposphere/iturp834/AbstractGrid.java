@@ -161,18 +161,20 @@ abstract class AbstractGrid {
     }
 
     /** Get one cell.
-     * @param location point location on Earth
-     * @param dayOfYear day of year
+     * @param location     point location on Earth
+     * @param secondOfYear second of year
      */
-    public abstract GridCell getCell(GeodeticPoint location, double dayOfYear);
+    public abstract GridCell getCell(GeodeticPoint location, double secondOfYear);
 
-    /** Get one cell.
-     * @param <T> type of the field elements
-     * @param location point location on Earth
-     * @param dayOfYear day of year
+    /**
+     * Get one cell.
+     *
+     * @param <T>          type of the field elements
+     * @param location     point location on Earth
+     * @param secondOfYear second of year
      */
     public abstract <T extends CalculusFieldElement<T>> FieldGridCell<T> getCell(FieldGeodeticPoint<T> location,
-                                                                                 T dayOfYear);
+                                                                                 T secondOfYear);
 
     /** Build a grid axis for interpolating within a table.
      * @param min min angle in degrees (included)

@@ -27,6 +27,7 @@ import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
+import org.orekit.utils.Constants;
 import org.orekit.utils.units.Unit;
 
 /** Provider for the ITU-R P.834 weather parameters.
@@ -144,13 +145,13 @@ public class ITURP834WeatherParametersProvider implements PressureTemperatureHum
     public PressureTemperatureHumidity getWeatherParameters(final GeodeticPoint location, final AbsoluteDate date) {
 
         // evaluate grid points for current date at reference height
-        final double   doy        = date.getDayOfYear(utc);
-        final GridCell pHRef      = AIR_TOTAL_PRESSURE.getCell(location, doy);
-        final GridCell eHRef      = WATER_VAPOUR_PARTIAL_PRESSURE.getCell(location, doy);
-        final GridCell tmHRef     = MEAN_TEMPERATURE.getCell(location, doy);
-        final GridCell lambdaHRef = VAPOUR_PRESSURE_DECREASE_FACTOR.getCell(location, doy);
-        final GridCell alphaHRef  = LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR.getCell(location, doy);
-        final GridCell hRef       = AVERAGE_HEIGHT_REFERENCE_LEVEL.getCell(location, doy);
+        final double   soy        = date.getDayOfYear(utc) * Constants.JULIAN_DAY;
+        final GridCell pHRef      = AIR_TOTAL_PRESSURE.getCell(location, soy);
+        final GridCell eHRef      = WATER_VAPOUR_PARTIAL_PRESSURE.getCell(location, soy);
+        final GridCell tmHRef     = MEAN_TEMPERATURE.getCell(location, soy);
+        final GridCell lambdaHRef = VAPOUR_PRESSURE_DECREASE_FACTOR.getCell(location, soy);
+        final GridCell alphaHRef  = LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR.getCell(location, soy);
+        final GridCell hRef       = AVERAGE_HEIGHT_REFERENCE_LEVEL.getCell(location, soy);
         final GridCell g          = Gravity.getGravityAtSurface(location);
 
         // mean temperature at current height, equation 27b
@@ -211,13 +212,13 @@ public class ITURP834WeatherParametersProvider implements PressureTemperatureHum
     getWeatherParameters(final FieldGeodeticPoint<T> location, final FieldAbsoluteDate<T> date) {
 
         // evaluate grid points for current date at reference height
-        final T                doy        = date.getDayOfYear(utc);
-        final FieldGridCell<T> pHRef      = AIR_TOTAL_PRESSURE.getCell(location, doy);
-        final FieldGridCell<T> eHRef      = WATER_VAPOUR_PARTIAL_PRESSURE.getCell(location, doy);
-        final FieldGridCell<T> tmHRef     = MEAN_TEMPERATURE.getCell(location, doy);
-        final FieldGridCell<T> lambdaHRef = VAPOUR_PRESSURE_DECREASE_FACTOR.getCell(location, doy);
-        final FieldGridCell<T> alphaHRef  = LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR.getCell(location, doy);
-        final FieldGridCell<T> hRef       = AVERAGE_HEIGHT_REFERENCE_LEVEL.getCell(location, doy);
+        final T                soy        = date.getDayOfYear(utc).multiply(Constants.JULIAN_DAY);
+        final FieldGridCell<T> pHRef      = AIR_TOTAL_PRESSURE.getCell(location, soy);
+        final FieldGridCell<T> eHRef      = WATER_VAPOUR_PARTIAL_PRESSURE.getCell(location, soy);
+        final FieldGridCell<T> tmHRef     = MEAN_TEMPERATURE.getCell(location, soy);
+        final FieldGridCell<T> lambdaHRef = VAPOUR_PRESSURE_DECREASE_FACTOR.getCell(location, soy);
+        final FieldGridCell<T> alphaHRef  = LAPSE_RATE_MEAN_TEMPERATURE_WATER_VAPOUR.getCell(location, soy);
+        final FieldGridCell<T> hRef       = AVERAGE_HEIGHT_REFERENCE_LEVEL.getCell(location, soy);
         final FieldGridCell<T> g          = Gravity.getGravityAtSurface(location);
 
         // mean temperature at current height, equation 27b
