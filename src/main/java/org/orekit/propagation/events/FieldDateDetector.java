@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 
@@ -84,7 +85,8 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      * @since 13.0
      */
     public FieldDateDetector(final FieldAbsoluteDate<T> fieldAbsoluteDate) {
-        this(fieldAbsoluteDate.getField(), fieldAbsoluteDate);
+        this(new FieldEventDetectionSettings<>(DEFAULT_MAX_CHECK, fieldAbsoluteDate.getField().getZero().newInstance(DEFAULT_THRESHOLD),
+                        DEFAULT_MAX_ITER), new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, fieldAbsoluteDate);
     }
 
     /** Build a new instance.
@@ -97,7 +99,8 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     @SafeVarargs
     public FieldDateDetector(final Field<T> field, final FieldTimeStamped<T>... dates) {
-        this(getDefaultDetectionSettings(field), new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
+        this(new FieldEventDetectionSettings<>(DateDetectionAdaptableIntervalFactory.getDatesDetectionFieldConstantInterval(dates),
+                field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER), new FieldStopOnEvent<>(), DEFAULT_MIN_GAP, dates);
     }
 
     /** Protected constructor with full parameters.
@@ -123,17 +126,6 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
             addEventDate(ts.getDate());
         }
         this.minGap        = minGap;
-    }
-
-    /** Get default detection settings.
-     * @param <T> field type
-     * @param field field
-     * @return default detection settings
-     * @since 13.0
-     * */
-    public static <T extends CalculusFieldElement<T>> FieldEventDetectionSettings<T> getDefaultDetectionSettings(final Field<T> field) {
-        return new FieldEventDetectionSettings<>(field, new EventDetectionSettings(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD,
-                EventDetectionSettings.DEFAULT_MAX_ITER));
     }
 
     /**

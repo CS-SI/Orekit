@@ -26,6 +26,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -49,7 +50,7 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
     /** Default value for max check.
      * @since 12.0
      */
-    public static final double DEFAULT_MAX_CHECK = 1.0e10;
+    public static final double DEFAULT_MAX_CHECK = DateDetectionAdaptableIntervalFactory.DEFAULT_MAX_CHECK;
 
     /** Default value for minimum gap between added dates.
      * @since 12.0
@@ -60,12 +61,6 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      * @since 12.0
      */
     public static final double DEFAULT_THRESHOLD = 1.0e-10;
-
-    /** Default detection settings.
-     * @since 13.0
-     * */
-    public static final EventDetectionSettings DEFAULT_DETECTION_SETTINGS = new EventDetectionSettings(DEFAULT_MAX_CHECK,
-            DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER);
 
     /** Minimum gap between added dates.
      * @since 12.0
@@ -83,13 +78,26 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
 
     /** Build a new instance.
      * <p>First event dates are set here, but others can be
-     * added later with {@link #addEventDate(AbsoluteDate)}.</p>
+     * added later with {@link #addEventDate(AbsoluteDate)}, although the max. check should probably be changed then.</p>
      * @param dates list of event dates
      * @see #addEventDate(AbsoluteDate)
      * @since 12.0
      */
     public DateDetector(final TimeStamped... dates) {
-        this(DEFAULT_DETECTION_SETTINGS, new StopOnEvent(), DEFAULT_MIN_GAP, dates);
+        this(new EventDetectionSettings(DateDetectionAdaptableIntervalFactory.getDatesDetectionConstantInterval(dates),
+                        DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER),
+                new StopOnEvent(), DEFAULT_MIN_GAP, dates);
+    }
+
+    /** Build a new instance from a single time.
+     * <p>First event dates are set here, but others can be
+     * added later with {@link #addEventDate(AbsoluteDate)}, although the max. check should probably be changed then.</p>
+     * @param date event date
+     * @see #addEventDate(AbsoluteDate)
+     * @since 13.0
+     */
+    public DateDetector(final AbsoluteDate date) {
+        this((TimeStamped) date);
     }
 
     /** Protected constructor with full parameters.
