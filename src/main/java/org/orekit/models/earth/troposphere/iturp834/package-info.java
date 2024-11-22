@@ -14,25 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.troposphere;
-
-import org.hipparchus.util.Binary64Field;
-import org.junit.jupiter.api.Test;
-
-public class FieldChaoMappingFunctionTest extends AbstractFieldMappingFunctionTest {
-
-    protected TroposphereMappingFunction buildMappingFunction() {
-        return new ChaoMappingFunction();
-    }
-
-    @Test
-    public void testMappingFactors() {
-        doTestMappingFactors(Binary64Field.getInstance(), 10.21, 11.05);
-    }
-
-    @Test
-    public void testMFStateDerivatives() {
-        doTestMFStateDerivatives(2.2e-11, 9.2e-12);
-    }
-
-}
+/** This package contains class for the troposphere model OTU-4 P.834.
+ * @author Luc Maisonobe
+ * @see <a href="https://www.itu.int/rec/R-REC-P.834/en">P.834 : Effects of tropospheric refraction on radiowave propagation</a>
+ * @since 13.0
+ */
+package org.orekit.models.earth.troposphere.iturp834;

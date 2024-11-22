@@ -14,25 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.troposphere;
+package org.orekit.models.earth.troposphere.iturp834;
 
-import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Test;
+import org.orekit.models.earth.troposphere.AbstractMappingFunctionTest;
+import org.orekit.time.TimeScalesFactory;
 
-public class FieldRevisedChaoMappingFunctionTest extends AbstractFieldMappingFunctionTest {
+public class ITURP834MappingFunctionTest
+    extends AbstractMappingFunctionTest<ITURP834MappingFunction> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
-        return new RevisedChaoMappingFunction();
+    protected ITURP834MappingFunction buildMappingFunction() {
+        return new ITURP834MappingFunction(TimeScalesFactory.getUTC());
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(Binary64Field.getInstance(), 10.13, 11.05);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             10.146, 10.794);
     }
 
     @Test
-    public void testMFStateDerivatives() {
-        doTestMFStateDerivatives(3.2e-11, 9.2e-12);
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-100, 2.0e-17, 1.0e-100, 3.0e-8, 1.0e-100);
     }
 
 }
