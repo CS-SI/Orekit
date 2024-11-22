@@ -20,12 +20,21 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Test;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataSource;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
+import org.orekit.models.earth.weather.GlobalPressureTemperature3;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
+import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.water.CIPM2007;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
+import org.orekit.utils.units.Unit;
+
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisModel> {
 
@@ -84,9 +93,25 @@ public class MendesPavlisModelTest extends AbstractPathDelayTest<MendesPavlisMod
 
         doTestDelay(Binary64Field.getInstance(),
                     new AbsoluteDate(2009, 8, 12, TimeScalesFactory.getUTC()),
-                    new GeodeticPoint(FastMath.toRadians(30.67166667), FastMath.toRadians(-104.0250), 2010.344), new TrackingCoordinates(0, FastMath.toRadians(38.0), 0),
+                    new GeodeticPoint(FastMath.toRadians(30.67166667),
+                                      FastMath.toRadians(-104.0250),
+                                      2010.344),
+                    new TrackingCoordinates(0, FastMath.toRadians(38.0), 0),
                     1.932992, 0.223375e-2, 3.1334, 0.00362, 3.136995);
 
+    }
+
+    @Test
+    public void testVsMariniMurray() throws IOException, URISyntaxException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final URL url = ModifiedSaastamoinenModelTest.class.getClassLoader().getResource("gpt-grid/gpt3_5.grd");
+        final PressureTemperatureHumidityProvider provider =
+            new GlobalPressureTemperature3(new DataSource(url.toURI()), utc);
+        final double lambda = 0.532;
+        final Unit lambdaUnits = TroposphericModelUtils.MICRO_M;
+        doTestVsOtherModel(new MariniMurray(lambda, lambdaUnits), provider,
+                           new MendesPavlisModel(provider, lambda, lambdaUnits), provider,
+                           1.2e-3, 6.7e-5, 0.18, 3.3e-4);
     }
 
 }

@@ -26,17 +26,24 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.models.earth.weather.ConstantPressureTemperatureHumidityProvider;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
+import org.orekit.models.earth.weather.GlobalPressureTemperature3;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidityProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.TrackingCoordinates;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<ModifiedSaastamoinenModel> {
 
@@ -389,6 +396,17 @@ public class ModifiedSaastamoinenModelTest extends AbstractPathDelayTest<Modifie
                                                     null, FieldAbsoluteDate.getJ2000Epoch(field)).getDelay().getReal(),
                                     1.e-10);
         }
+    }
+
+    @Test
+    public void testVsCanonicalSaastamoinen() throws IOException, URISyntaxException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final URL url = ModifiedSaastamoinenModelTest.class.getClassLoader().getResource("gpt-grid/gpt3_5.grd");
+        final PressureTemperatureHumidityProvider provider =
+            new GlobalPressureTemperature3(new DataSource(url.toURI()), utc);
+        doTestVsOtherModel(new CanonicalSaastamoinenModel(), provider,
+                           buildTroposphericModel(), provider,
+                           1.9e-3, 5.5e-6, 2.2e-3, 0.12);
     }
 
     @BeforeEach

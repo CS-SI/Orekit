@@ -17,6 +17,7 @@
 package org.orekit.models.earth.troposphere.iturp834;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -58,7 +59,7 @@ class SeasonalGrid extends AbstractGrid {
     /** {@inheritDoc} */
     @Override
     public GridCell getCell(final GeodeticPoint location, final double secondOfYear) {
-        return new GridCell((a, s, m) -> a - s * OMEGA * (secondOfYear - m),
+        return new GridCell((a, s, m) -> a - s * FastMath.cos(OMEGA * (secondOfYear - m)),
                             getRawCell(location, average),
                             getRawCell(location, seasonal),
                             getRawCell(location, minSecond));
@@ -68,7 +69,7 @@ class SeasonalGrid extends AbstractGrid {
     @Override
     public <T extends CalculusFieldElement<T>> FieldGridCell<T> getCell(final FieldGeodeticPoint<T> location,
                                                                         final T secondOfYear) {
-        return new FieldGridCell<>((a, s, m) -> a.subtract(s.multiply(OMEGA).multiply(secondOfYear.subtract(m))),
+        return new FieldGridCell<>((a, s, m) -> a.subtract(s.multiply(FastMath.cos(secondOfYear.subtract(m).multiply(OMEGA)))),
                                    getRawCell(location, average),
                                    getRawCell(location, seasonal),
                                    getRawCell(location, minSecond));

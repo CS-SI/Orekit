@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -214,6 +215,42 @@ public abstract class AbstractPathDelayTest<T extends TroposphericModel> {
             Assertions.assertTrue(delay.getReal() < lastDelay.getReal() + 0.0001);
             lastDelay = delay;
         }
+    }
+
+    protected void doTestVsOtherModel(final TroposphericModel referenceModel,
+                                      final PressureTemperatureHumidityProvider referenceWeatherProvider,
+                                      final TroposphericModel testedModel,
+                                      final PressureTemperatureHumidityProvider testedWeatherProvider,
+                                      final double tolZh, final double tolZw, final double tolSh, final double tolSw) {
+        double maxErrorZh = 0;
+        double maxErrorZw = 0;
+        double maxErrorSh = 0;
+        double maxErrorSw = 0;
+        for (double elevation = FastMath.toRadians(5.0); elevation < MathUtils.SEMI_PI; elevation += 0.01) {
+            final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(2.75, elevation, 1.4e6);
+            final PressureTemperatureHumidity referencePTH =
+                referenceWeatherProvider.getWeatherParameters(defaultPoint, defaultDate);
+            final TroposphericDelay referenceDelay = referenceModel.pathDelay(trackingCoordinates, defaultPoint,
+                                                                              referencePTH,
+                                                                              referenceModel.getParameters(defaultDate),
+                                                                              defaultDate);
+             final PressureTemperatureHumidity testedPTH =
+                testedWeatherProvider.getWeatherParameters(defaultPoint, defaultDate);
+            final TroposphericDelay testedDelay = testedModel.pathDelay(trackingCoordinates, defaultPoint,
+                                                                        testedPTH,
+                                                                        testedModel.getParameters(defaultDate),
+                                                                        defaultDate);
+            maxErrorZh = FastMath.max(maxErrorZh, FastMath.abs(testedDelay.getZh() - referenceDelay.getZh()));
+            maxErrorZw = FastMath.max(maxErrorZw, FastMath.abs(testedDelay.getZw() - referenceDelay.getZw()));
+            maxErrorSh = FastMath.max(maxErrorSh, FastMath.abs(testedDelay.getSh() - referenceDelay.getSh()));
+            maxErrorSw = FastMath.max(maxErrorSw, FastMath.abs(testedDelay.getSw() - referenceDelay.getSw()));
+        }
+
+        Assertions.assertEquals(0.0, maxErrorZh, tolZh);
+        Assertions.assertEquals(0.0, maxErrorZw, tolZw);
+        Assertions.assertEquals(0.0, maxErrorSh, tolSh);
+        Assertions.assertEquals(0.0, maxErrorSw, tolSw);
+
     }
 
 }

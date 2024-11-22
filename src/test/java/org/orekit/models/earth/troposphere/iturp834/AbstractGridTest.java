@@ -77,12 +77,12 @@ public abstract class AbstractGridTest<T extends AbstractGrid> {
     protected void doTestGradient(final T grid, final GeodeticPoint point, final double soy,
                                   final double tolVal, final double tolDer) {
 
-        final Gradient                     doyG   = Gradient.variable(4, 0, soy);
+        final Gradient                     soyG   = Gradient.variable(4, 0, soy);
         final FieldGeodeticPoint<Gradient> pointG =
             new FieldGeodeticPoint<>(Gradient.variable(4, 1, point.getLatitude()),
                                      Gradient.variable(4, 2, point.getLongitude()),
                                      Gradient.variable(4, 3, point.getAltitude()));
-        final Gradient gradient = grid.getCell(pointG, doyG).evaluate();
+        final Gradient gradient = grid.getCell(pointG, soyG).evaluate();
 
         Assertions.assertEquals(grid.getCell(point, soy).evaluate(), gradient.getValue(), tolVal);
         Assertions.assertEquals(cellDerivative(grid, point, soy, 60.0,   0), gradient.getPartialDerivative(0), tolDer);
