@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1591">
+            Added ITU-R P.834 tropospheric model
+            (including path delay, weather parameters and mapping function).
+        </action>
         <action dev="luc" type="update" issue="1595">
             Added getDayOfYear to {Field}AbsoluteDate.
         </action>
