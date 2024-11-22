@@ -52,6 +52,9 @@ import java.util.regex.Pattern;
  */
 public class ITURP834MappingFunction implements TroposphereMappingFunction {
 
+    /** Splitter for fields in lines. */
+    private static final Pattern SPLITTER = Pattern.compile("\\s+");
+
     /** Name of data file. */
     private static final String MAPPING_FUNCTION_NAME = "/assets/org/orekit/ITU-R-P.834/p834_mf_coeff_v1.txt";
 
@@ -145,14 +148,17 @@ public class ITURP834MappingFunction implements TroposphereMappingFunction {
         final double[][] a2w        = new double[longitudes.length][latitudes.length];
         final double[][] b2w        = new double[longitudes.length][latitudes.length];
 
-        final Pattern splitter = Pattern.compile("\\s+");
         try (InputStream       is     = ITURP834MappingFunction.class.getResourceAsStream(MAPPING_FUNCTION_NAME);
-             InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader    reader = new BufferedReader(isr)) {
+             InputStreamReader isr    = is  == null ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader    reader = isr == null ? null : new BufferedReader(isr)) {
+            if (reader == null) {
+                // this should never happen with embedded data
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, MAPPING_FUNCTION_NAME);
+            }
             int lineNumber = 0;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++lineNumber;
-                final String[] fields = splitter.split(line.trim());
+                final String[] fields = SPLITTER.split(line.trim());
                 if (fields.length != 12) {
                     // this should never happen with the embedded data
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
