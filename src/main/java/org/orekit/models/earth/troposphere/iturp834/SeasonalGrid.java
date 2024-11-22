@@ -48,8 +48,8 @@ class SeasonalGrid extends AbstractGrid {
      * @param seasonalName name of the resource holding the seasonal fluctuation data
      * @param minDayName name of the resource holding the day of minimum data
      */
-     SeasonalGrid(final Unit unit,
-                  final String averageName, final String seasonalName, final String minDayName) {
+    SeasonalGrid(final Unit unit,
+                 final String averageName, final String seasonalName, final String minDayName) {
         average   = parse(unit,     averageName);
         seasonal  = parse(unit,     seasonalName);
         // we convert from days to SI units (i.e. seconds) upon reading

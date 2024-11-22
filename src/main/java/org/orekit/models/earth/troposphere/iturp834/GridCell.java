@@ -81,8 +81,8 @@ class GridCell {
      * @param cell1 first cell
      * @param cell2 second cell
      */
-     GridCell(final BiFunction function,
-              final GridCell cell1, final GridCell cell2) {
+    GridCell(final BiFunction function,
+             final GridCell cell1, final GridCell cell2) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -130,9 +130,9 @@ class GridCell {
      * @param cell3 third cell
      * @param cell4 fourth cell
      */
-     GridCell(final QuarticFunction function,
-              final GridCell cell1, final GridCell cell2,
-              final GridCell cell3, final GridCell cell4) {
+    GridCell(final QuarticFunction function,
+             final GridCell cell1, final GridCell cell2,
+             final GridCell cell3, final GridCell cell4) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
@@ -157,9 +157,9 @@ class GridCell {
      * @param cell4 fourth cell
      * @param cell5 fifth cell
      */
-     GridCell(final QuinticFunction function,
-              final GridCell cell1, final GridCell cell2, final GridCell cell3,
-              final GridCell cell4, final GridCell cell5) {
+    GridCell(final QuinticFunction function,
+             final GridCell cell1, final GridCell cell2, final GridCell cell3,
+             final GridCell cell4, final GridCell cell5) {
         this.deltaSouth = cell1.deltaSouth;
         this.deltaWest  = cell1.deltaWest;
         this.sizeLat    = cell1.sizeLat;
