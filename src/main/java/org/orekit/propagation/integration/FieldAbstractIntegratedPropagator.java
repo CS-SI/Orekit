@@ -1249,7 +1249,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
 
             // create the ephemeris
             ephemeris = new FieldIntegratedEphemeris<>(startDate, minDate, maxDate,
-                                                       stateMapper, propagationType, model,
+                                                       stateMapper, getAttitudeProvider(), propagationType, model,
                                                        unmanaged, getAdditionalStateProviders(),
                                                        names, dimensions);
 
