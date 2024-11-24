@@ -24,7 +24,7 @@ import org.orekit.propagation.SpacecraftState;
  * notified when an attitude switch occurs.
  * </p>
  * @since 13.0
- * @see AbstractAttitudesSequence
+ * @see AbstractSwitchingAttitudeProvider
  */
 @FunctionalInterface
 public interface AttitudeSwitchHandler {

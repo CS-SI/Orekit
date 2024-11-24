@@ -19,7 +19,7 @@ import org.orekit.utils.TimeSpanMap;
 
 import static org.mockito.Mockito.mock;
 
-class AbstractAttitudesSequenceTest {
+class AbstractSwitchingAttitudeProviderTest {
 
     @Test
     void testResetActiveProvider() {
@@ -71,7 +71,7 @@ class AbstractAttitudesSequenceTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
     }
 
-    private static class TestAttitudesSequence extends AbstractAttitudesSequence {}
+    private static class TestAttitudesSequence extends AbstractSwitchingAttitudeProvider {}
 
     private static class TestAttitudeProvider implements AttitudeProvider {
 

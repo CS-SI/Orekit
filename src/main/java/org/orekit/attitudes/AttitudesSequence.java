@@ -48,8 +48,9 @@ import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
  * in turn according to switching events. It includes non-zero transition durations between subsequent modes.
  * @author Luc Maisonobe
  * @since 5.1
+ * @see AttitudesSwitcher
  */
-public class AttitudesSequence extends AbstractAttitudesSequence {
+public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
 
     /** Switching events list. */
     private final List<Switch> switches;
@@ -176,7 +177,7 @@ public class AttitudesSequence extends AbstractAttitudesSequence {
         return new ArrayList<>(switches);
     }
 
-    /** Switch specification. */
+    /** Switch specification. Handles the transition. */
     public class Switch extends AbstractAttitudeSwitch {
 
         /** Duration of the transition between the past and future attitude laws. */
