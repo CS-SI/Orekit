@@ -23,21 +23,14 @@ import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.ode.events.Action;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
@@ -46,51 +39,17 @@ import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinatesHermiteInterpolator;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinatesHermiteInterpolator;
 
 /** This classes manages a sequence of different attitude providers that are activated
- * in turn according to switching events.
- * <p>Only one attitude provider in the sequence is in an active state. When one of
- * the switch event associated with the active provider occurs, the active provider becomes
- * the one specified with the event. A simple example is a provider for the sun lighted part
- * of the orbit and another provider for the eclipse time. When the sun lighted provider is active,
- * the eclipse entry event is checked and when it occurs the eclipse provider is activated.
- * When the eclipse provider is active, the eclipse exit event is checked and when it occurs
- * the sun lighted provider is activated again. This sequence is a simple loop.</p>
- * <p>An active attitude provider may have several switch events and next provider settings, leading
- * to different activation patterns depending on which events are triggered first. An example
- * of this feature is handling switches to safe mode if some contingency condition is met, in
- * addition to the nominal switches that correspond to proper operations. Another example
- * is handling of maneuver mode.
- * <p>
- * Note that this attitude provider is stateful, it keeps in memory the sequence of active
- * underlying providers with their switch dates and the transitions from one provider to
- * the other. This implies that this provider should <em>not</em> be shared among different
- * propagators at the same time, each propagator should use its own instance of this provider.
- * <p>
- * The sequence kept in memory is reset when {@link #resetActiveProvider(AttitudeProvider)}
- * is called, and only the specify provider is kept. The sequence is also partially
- * reset each time a propagation starts. If a new propagation is started after a first
- * propagation has been run, all the already computed switches that occur after propagation
- * start for forward propagation or before propagation start for backward propagation will
- * be erased. New switches will be computed and applied properly according to the new
- * propagation settings. The already computed switches that are not in covered are kept
- * in memory. This implies that if a propagation is interrupted and restarted in the
- * same direction, then attitude switches will remain in place, ensuring that even if the
- * interruption occurred in the middle of an attitude transition the second propagation will
- * properly complete the transition that was started by the first propagator.
- * </p>
+ * in turn according to switching events. It includes non-zero transition durations between subsequent modes.
  * @author Luc Maisonobe
  * @since 5.1
  */
-public class AttitudesSequence implements AttitudeProvider {
-
-    /** Providers that have been activated. */
-    private TimeSpanMap<AttitudeProvider> activated;
+public class AttitudesSequence extends AbstractAttitudesSequence {
 
     /** Switching events list. */
     private final List<Switch> switches;
@@ -98,20 +57,8 @@ public class AttitudesSequence implements AttitudeProvider {
     /** Constructor for an initially empty sequence.
      */
     public AttitudesSequence() {
-        activated = null;
-        switches  = new ArrayList<>();
-    }
-
-    /** Reset the active provider.
-     * <p>
-     * Calling this method clears all already seen switch history,
-     * so it should <em>not</em> be used during the propagation itself,
-     * it is intended to be used only at start
-     * </p>
-     * @param provider provider to activate
-     */
-    public void resetActiveProvider(final AttitudeProvider provider) {
-        activated = new TimeSpanMap<>(provider);
+        super();
+        switches = new ArrayList<>();
     }
 
     /** Add a switching condition between two attitude providers.
@@ -179,9 +126,9 @@ public class AttitudesSequence implements AttitudeProvider {
      * @param transitionTime duration of the transition between the past and future attitude laws
      * @param transitionFilter specification of transition law time derivatives that
      * should match past and future attitude laws
-     * @param handler handler to call for notifying when switch occurs (may be null)
+     * @param switchHandler handler to call for notifying when switch occurs (may be null)
      * @param <T> class type for the switch event
-     * @since 7.1
+     * @since 13.0
      */
     public <T extends EventDetector> void addSwitchingCondition(final AttitudeProvider past,
                                                                 final AttitudeProvider future,
@@ -190,7 +137,7 @@ public class AttitudesSequence implements AttitudeProvider {
                                                                 final boolean switchOnDecrease,
                                                                 final double transitionTime,
                                                                 final AngularDerivativesFilter transitionFilter,
-                                                                final SwitchHandler handler) {
+                                                                final AttitudeSwitchHandler switchHandler) {
 
         // safety check, for ensuring attitude continuity
         if (transitionTime < switchEvent.getThreshold()) {
@@ -199,42 +146,14 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         // if it is the first switching condition, assume first active law is the past one
-        if (activated == null) {
+        if (getActivated() == null) {
             resetActiveProvider(past);
         }
 
         // add the switching condition
         switches.add(new Switch(switchEvent, switchOnIncrease, switchOnDecrease,
-                                past, future, transitionTime, transitionFilter, handler));
+                                past, future, transitionTime, transitionFilter, switchHandler));
 
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame) {
-        return activated.get(date).getAttitude(pvProv, date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                            final FieldAbsoluteDate<T> date,
-                                                                            final Frame frame) {
-        return activated.get(date.toAbsoluteDate()).getAttitude(pvProv, date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
-        return activated.get(date).getAttitudeRotation(pvProv, date, frame);
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                    final FieldAbsoluteDate<T> date,
-                                                                                    final Frame frame) {
-        return activated.get(date.toAbsoluteDate()).getAttitudeRotation(pvProv, date, frame);
     }
 
     @Override
@@ -244,48 +163,7 @@ public class AttitudesSequence implements AttitudeProvider {
 
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        final Stream<FieldEventDetector<T>> switchesStream = switches.stream().map(sw -> new FieldEventDetector<T>() {
-
-            /** {@inheritDoc} */
-            @Override
-            public void init(final FieldSpacecraftState<T> s0,
-                             final FieldAbsoluteDate<T> t) {
-                sw.init(s0.toSpacecraftState(), t.toAbsoluteDate());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public T g(final FieldSpacecraftState<T> s) {
-                return field.getZero().newInstance(sw.g(s.toSpacecraftState()));
-            }
-
-            @Override
-            public FieldEventDetectionSettings<T> getDetectionSettings() {
-                return new FieldEventDetectionSettings<>(field, sw.getDetectionSettings());
-            }
-
-            /** {@inheritDoc} */
-            @Override
-            public FieldEventHandler<T> getHandler() {
-                return new FieldEventHandler<T>() {
-                    /** {@inheritDoc} */
-                    @Override
-                    public Action eventOccurred(final FieldSpacecraftState<T> s,
-                                                final FieldEventDetector<T> detector,
-                                                final boolean increasing) {
-                        return sw.eventOccurred(s.toSpacecraftState(), sw, increasing);
-                    }
-
-                    /** {@inheritDoc} */
-                    @Override
-                    public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector,
-                                                              final FieldSpacecraftState<T> oldState) {
-                        return new FieldSpacecraftState<>(field, sw.resetState(sw, oldState.toSpacecraftState()));
-                    }
-                };
-            }
-
-        });
+        final Stream<FieldEventDetector<T>> switchesStream = switches.stream().map(sw -> getFieldEventDetector(field, sw));
         return Stream.concat(switchesStream, getFieldEventDetectors(field, getParametersDrivers()));
     }
 
@@ -299,31 +177,13 @@ public class AttitudesSequence implements AttitudeProvider {
     }
 
     /** Switch specification. */
-    public class Switch implements EventDetector, EventHandler {
-
-        /** Event. */
-        private final EventDetector event;
-
-        /** Event direction triggering the switch. */
-        private final boolean switchOnIncrease;
-
-        /** Event direction triggering the switch. */
-        private final boolean switchOnDecrease;
-
-        /** Attitude provider applicable for times in the switch event occurrence past. */
-        private final AttitudeProvider past;
-
-        /** Attitude provider applicable for times in the switch event occurrence future. */
-        private final AttitudeProvider future;
+    public class Switch extends AbstractAttitudeSwitch {
 
         /** Duration of the transition between the past and future attitude laws. */
         private final double transitionTime;
 
         /** Order at which the transition law time derivatives should match past and future attitude laws. */
         private final AngularDerivativesFilter transitionFilter;
-
-        /** Handler to call for notifying when switch occurs (may be null). */
-        private final SwitchHandler switchHandler;
 
         /** Propagation direction. */
         private boolean forward;
@@ -344,114 +204,89 @@ public class AttitudesSequence implements AttitudeProvider {
          */
         private Switch(final EventDetector event, final boolean switchOnIncrease, final boolean switchOnDecrease,
                        final AttitudeProvider past, final AttitudeProvider future, final double transitionTime,
-                       final AngularDerivativesFilter transitionFilter, final SwitchHandler switchHandler) {
-            this.event            = event;
-            this.switchOnIncrease = switchOnIncrease;
-            this.switchOnDecrease = switchOnDecrease;
-            this.past             = past;
-            this.future           = future;
+                       final AngularDerivativesFilter transitionFilter, final AttitudeSwitchHandler switchHandler) {
+            super(event, switchOnIncrease, switchOnDecrease, past, future, switchHandler);
             this.transitionTime   = transitionTime;
             this.transitionFilter = transitionFilter;
-            this.switchHandler    = switchHandler;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public EventDetectionSettings getDetectionSettings() {
-            return event.getDetectionSettings();
         }
 
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            super.init(s0, t);
 
             // reset the transition parameters (this will be done once for each switch,
             //  despite doing it only once would have sufficient; it's not really a problem)
             forward = t.durationFrom(s0.getDate()) >= 0.0;
-            if (activated.getSpansNumber() > 1) {
+            if (getActivated().getSpansNumber() > 1) {
                 // remove transitions that will be overridden during upcoming propagation
                 if (forward) {
-                    activated = activated.extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime));
+                    setActivated(getActivated().extractRange(AbsoluteDate.PAST_INFINITY, s0.getDate().shiftedBy(transitionTime)));
                 } else {
-                    activated = activated.extractRange(s0.getDate().shiftedBy(-transitionTime), AbsoluteDate.FUTURE_INFINITY);
+                    setActivated(getActivated().extractRange(s0.getDate().shiftedBy(-transitionTime), AbsoluteDate.FUTURE_INFINITY));
                 }
             }
-
-            // initialize the underlying event
-            event.init(s0, t);
 
         }
 
         /** {@inheritDoc} */
         public double g(final SpacecraftState s) {
-            return event.g(forward ? s : s.shiftedBy(-transitionTime));
-        }
-
-        /** {@inheritDoc} */
-        public EventHandler getHandler() {
-            return this;
+            return getDetector().g(forward ? s : s.shiftedBy(-transitionTime));
         }
 
         /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector, final boolean increasing) {
 
             final AbsoluteDate date = s.getDate();
-            if (activated.get(date) == (forward ? past : future) &&
-                (increasing && switchOnIncrease || !increasing && switchOnDecrease)) {
+            if (getActivated().get(date) == (forward ? getPast() : getFuture()) &&
+                (increasing && isSwitchOnIncrease() || !increasing && isSwitchOnDecrease())) {
 
                 if (forward) {
 
                     // prepare transition
                     final AbsoluteDate transitionEnd = date.shiftedBy(transitionTime);
-                    activated.addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date, false);
+                    getActivated().addValidAfter(new TransitionProvider(s.getAttitude(), transitionEnd), date, false);
 
                     // prepare future law after transition
-                    activated.addValidAfter(future, transitionEnd, false);
+                    getActivated().addValidAfter(getFuture(), transitionEnd, false);
 
                     // notify about the switch
-                    if (switchHandler != null) {
-                        switchHandler.switchOccurred(past, future, s);
+                    if (getSwitchHandler() != null) {
+                        getSwitchHandler().switchOccurred(getPast(), getFuture(), s);
                     }
 
-                    return event.getHandler().eventOccurred(s, event, increasing);
+                    return getDetector().getHandler().eventOccurred(s, getDetector(), increasing);
 
                 } else {
 
                     // estimate state at transition start, according to the past attitude law
                     final Orbit     sOrbit    = s.getOrbit().shiftedBy(-transitionTime);
-                    final Attitude  sAttitude = past.getAttitude(sOrbit, sOrbit.getDate(), sOrbit.getFrame());
+                    final Attitude  sAttitude = getPast().getAttitude(sOrbit, sOrbit.getDate(), sOrbit.getFrame());
                     SpacecraftState sState    = new SpacecraftState(sOrbit, sAttitude, s.getMass());
                     for (final DoubleArrayDictionary.Entry entry : s.getAdditionalStatesValues().getData()) {
                         sState = sState.addAdditionalState(entry.getKey(), entry.getValue());
                     }
 
                     // prepare transition
-                    activated.addValidBefore(new TransitionProvider(sAttitude, date), date, false);
+                    getActivated().addValidBefore(new TransitionProvider(sAttitude, date), date, false);
 
                     // prepare past law before transition
-                    activated.addValidBefore(past, sOrbit.getDate(), false);
+                    getActivated().addValidBefore(getPast(), sOrbit.getDate(), false);
 
                     // notify about the switch
-                    if (switchHandler != null) {
-                        switchHandler.switchOccurred(future, past, sState);
+                    if (getSwitchHandler() != null) {
+                        getSwitchHandler().switchOccurred(getFuture(), getPast(), sState);
                     }
 
-                    return event.getHandler().eventOccurred(sState, event, increasing);
+                    return getDetector().getHandler().eventOccurred(sState, getDetector(), increasing);
 
                 }
 
             } else {
                 // trigger the underlying event despite no attitude switch occurred
-                return event.getHandler().eventOccurred(s, event, increasing);
+                return getDetector().getHandler().eventOccurred(s, getDetector(), increasing);
             }
 
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public SpacecraftState resetState(final EventDetector detector, final SpacecraftState oldState) {
-            // delegate to underlying event
-            return event.getHandler().resetState(event, oldState);
         }
 
         /** Provider for transition phases.
@@ -482,7 +317,7 @@ public class AttitudesSequence implements AttitudeProvider {
                 final TimeStampedAngularCoordinates start =
                         transitionPreceding.withReferenceFrame(frame).getOrientation();
                 final TimeStampedAngularCoordinates end =
-                        future.getAttitude(pvProv, transitionEnd, frame).getOrientation();
+                        getFuture().getAttitude(pvProv, transitionEnd, frame).getOrientation();
                 final List<TimeStampedAngularCoordinates> sample =  Arrays.asList(start, end);
 
                 // Create interpolator
@@ -498,15 +333,15 @@ public class AttitudesSequence implements AttitudeProvider {
 
             /** {@inheritDoc} */
             public <S extends CalculusFieldElement<S>> FieldAttitude<S> getAttitude(final FieldPVCoordinatesProvider<S> pvProv,
-                                                                                final FieldAbsoluteDate<S> date,
-                                                                                final Frame frame) {
+                                                                                    final FieldAbsoluteDate<S> date,
+                                                                                    final Frame frame) {
 
                 // create sample
                 final TimeStampedFieldAngularCoordinates<S> start =
                         new TimeStampedFieldAngularCoordinates<>(date.getField(),
                                                                  transitionPreceding.withReferenceFrame(frame).getOrientation());
                 final TimeStampedFieldAngularCoordinates<S> end =
-                        future.getAttitude(pvProv,
+                        getFuture().getAttitude(pvProv,
                                            new FieldAbsoluteDate<>(date.getField(), transitionEnd),
                                            frame).getOrientation();
                 final List<TimeStampedFieldAngularCoordinates<S>> sample = Arrays.asList(start, end);
@@ -522,28 +357,6 @@ public class AttitudesSequence implements AttitudeProvider {
             }
 
         }
-
-    }
-
-    /** Interface for attitude switch notifications.
-     * <p>
-     * This interface is intended to be implemented by users who want to be
-     * notified when an attitude switch occurs.
-     * </p>
-     * @since 7.1
-     */
-    public interface SwitchHandler {
-
-        /** Method called when attitude is switched from one law to another law.
-         * @param preceding attitude law used preceding the switch (i.e. in the past
-         * of the switch event for a forward propagation, or in the future
-         * of the switch event for a backward propagation)
-         * @param following attitude law used following the switch (i.e. in the future
-         * of the switch event for a forward propagation, or in the past
-         * of the switch event for a backward propagation)
-         * @param state state at switch time (with attitude computed using the {@code preceding} law)
-         */
-        void switchOccurred(AttitudeProvider preceding, AttitudeProvider following, SpacecraftState state);
 
     }
 
