@@ -200,8 +200,12 @@ abstract class AbstractGrid {
         // parse the file
         final double[][] values = new double[latitudeAxis.size()][longitudeAxis.size()];
         try (InputStream       is     = ITURP834WeatherParametersProvider.class.getResourceAsStream(ITU_R_P_834 + name);
-             InputStreamReader isr    = new InputStreamReader(is, StandardCharsets.UTF_8);
-             BufferedReader    reader = new BufferedReader(isr)) {
+             InputStreamReader isr    = is  == null ? null : new InputStreamReader(is, StandardCharsets.UTF_8);
+             BufferedReader    reader = isr == null ? null : new BufferedReader(isr)) {
+            if (reader == null) {
+                // this should never happen with embedded data
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
+            }
             for (int row = 0; row < latitudeAxis.size(); ++row) {
 
                 // the ITU-files are sorted in decreasing latitude order, from +90° to -90°…

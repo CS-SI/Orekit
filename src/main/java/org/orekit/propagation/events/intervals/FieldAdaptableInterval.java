@@ -50,4 +50,16 @@ public interface FieldAdaptableInterval<T extends CalculusFieldElement<T>> {
     static <T extends CalculusFieldElement<T>> FieldAdaptableInterval<T> of(final double constantInterval) {
         return (state, isForward) -> constantInterval;
     }
+
+    /**
+     * Method creating a interval provider from a non-Field one.
+     * @param <T> field type
+     * @param adaptableInterval non-Field interval
+     * @return adaptable interval ready to be added to an event detector
+     * @since 13.0
+     */
+    static <T extends CalculusFieldElement<T>> FieldAdaptableInterval<T> of(final AdaptableInterval adaptableInterval) {
+        return (state, isForward) -> adaptableInterval.currentInterval(state.toSpacecraftState(), isForward);
+    }
 }
+

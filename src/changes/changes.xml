@@ -21,6 +21,15 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1607">
+            Extract switch handler from AttitudesSequence.
+        </action>
+        <action dev="serrof" type="update" issue="1605">
+            Modify constructor of (Field)IntegratedEphemeris to explicitly pass original AttitudeProvider.
+        </action>
+        <action dev="serrof" type="update" issue="1604">
+            Have AttitudeModifierProvider wrap underlying provider by default.
+        </action>
         <action dev="serrof" type="add" issue="1602">
             Make AttitudeProvider inherit from ParametersDriversProvider.
         </action>
@@ -190,6 +199,9 @@
         </action>
         <action dev="serrof" type="update" issue="1382">
           Add direction of propagation as argument in (Field)AdaptableInterval.
+        </action>
+        <action dev="serrof" type="add" issue="1377">
+            Add adaptable interval for (Field)DateDetector.
         </action>
         <action dev="serrof" type="update" issue="1373">
             Change default position angle type to ECCENTRIC in (Field)NumericalPropagator.
