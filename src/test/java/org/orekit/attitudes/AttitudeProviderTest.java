@@ -84,8 +84,7 @@ class AttitudeProviderTest {
     @Test
     void testGetParametersDrivers() {
         // GIVEN
-        final AttitudeProvider mockedProvider = Mockito.mock(AttitudeProvider.class);
-        Mockito.when(mockedProvider.getParametersDrivers()).thenCallRealMethod();
+        final AttitudeProvider mockedProvider = new TestAttitudeProvider();
         // WHEN
         final List<ParameterDriver> driverList = mockedProvider.getParametersDrivers();
         // THEN

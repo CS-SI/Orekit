@@ -113,13 +113,10 @@ class AttitudeProviderModifierTest {
     @Test
     void testGetParametersDrivers() {
         // GIVEN
-        final AttitudeProvider mockedProvider = Mockito.mock(AttitudeProvider.class);
+        final AttitudeProvider mockedProvider = new TestProvider(Rotation.IDENTITY);
         final List<ParameterDriver> expectedDrivers = new ArrayList<>();
-        expectedDrivers.add(Mockito.mock(ParameterDriver.class));
-        Mockito.when(mockedProvider.getParametersDrivers()).thenReturn(expectedDrivers);
         final AttitudeProviderModifier mockedProviderModifier = Mockito.mock(AttitudeProviderModifier.class);
         Mockito.when(mockedProviderModifier.getUnderlyingAttitudeProvider()).thenReturn(mockedProvider);
-        Mockito.when(mockedProviderModifier.getParametersDrivers()).thenCallRealMethod();
         // WHEN
         final List<ParameterDriver> actualDrivers = mockedProviderModifier.getParametersDrivers();
         // THEN
