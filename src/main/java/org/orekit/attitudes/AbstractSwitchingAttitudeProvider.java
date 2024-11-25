@@ -72,14 +72,14 @@ import org.orekit.utils.TimeSpanMap;
  * @author Romain Serra
  * @since 13.0
  */
-abstract class AbstractAttitudesSequence implements AttitudeProvider {
+abstract class AbstractSwitchingAttitudeProvider implements AttitudeProvider {
 
     /** Providers that have been activated. */
     private TimeSpanMap<AttitudeProvider> activated;
 
     /** Constructor for an initially empty sequence.
      */
-    protected AbstractAttitudesSequence() {
+    protected AbstractSwitchingAttitudeProvider() {
         activated = null;
     }
 
