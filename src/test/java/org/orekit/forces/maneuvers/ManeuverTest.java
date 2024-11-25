@@ -24,15 +24,14 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.FieldAttitude;
-import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.attitudes.*;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.ThrustPropulsionModel;
@@ -141,9 +140,11 @@ class ManeuverTest {
         
         // THEN
         final Maneuver maneuverWithoutOverride = new Maneuver(null, mockedTriggers, mockedPropulsion);
-        final FieldVector3D<Complex> expectedAcceleration = maneuverWithoutOverride.acceleration(fieldState, fieldParameters);
         Assertions.assertNotEquals(0., actualAcceleration.toVector3D().getNorm());
-        Assertions.assertEquals(expectedAcceleration, actualAcceleration);
+        final Vector3D expectedAcceleration = maneuverWithoutOverride.acceleration(fieldState.toSpacecraftState(),
+                new double[fieldParameters.length]);
+        Assertions.assertEquals(expectedAcceleration, actualAcceleration.toVector3D());
+        Assertions.assertEquals(returnedVector, actualAcceleration.toVector3D());
     }
 
     @Test
@@ -199,4 +200,49 @@ class ManeuverTest {
         return new FieldSpacecraftState<>(field, state);
     }
 
+    @Test
+    void testGetAttitudeModelParametersNull() {
+        final double[] parameters = new double[] {1};
+        final Maneuver maneuver = new Maneuver(null, null, null);
+        final double[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
+        Assertions.assertArrayEquals(new double[0], actualDrivers);
+    }
+
+    @Test
+    void testGetAttitudeModelParameters() {
+        final AttitudeRotationModel mockedRotationModel = Mockito.mock(AttitudeRotationModel.class);
+        final double[] parameters = new double[] {1};
+        Mockito.when(mockedRotationModel.getParameters()).thenReturn(parameters);
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        drivers.add(Mockito.mock(ParameterDriver.class));
+        Mockito.when(mockedRotationModel.getParametersDrivers()).thenReturn(drivers);
+        final Maneuver maneuver = new Maneuver(mockedRotationModel, null, null);
+        final double[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
+        Assertions.assertArrayEquals(parameters, actualDrivers);
+    }
+
+    @Test
+    void testGetAttitudeModelParametersFieldNull() {
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64[] parameters = MathArrays.buildArray(field, 1);
+        parameters[0] = Binary64.ONE;
+        final Maneuver maneuver = new Maneuver(null, null, null);
+        final Binary64[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
+        Assertions.assertEquals(0, actualDrivers.length);
+    }
+
+    @Test
+    void testGetAttitudeModelParametersField() {
+        final AttitudeRotationModel mockedRotationModel = Mockito.mock(AttitudeRotationModel.class);
+        final Binary64Field field = Binary64Field.getInstance();
+        final Binary64[] parameters = MathArrays.buildArray(field, 1);
+        parameters[0] = Binary64.ONE;
+        Mockito.when(mockedRotationModel.getParameters(field)).thenReturn(parameters);
+        final List<ParameterDriver> drivers = new ArrayList<>();
+        drivers.add(Mockito.mock(ParameterDriver.class));
+        Mockito.when(mockedRotationModel.getParametersDrivers()).thenReturn(drivers);
+        final Maneuver maneuver = new Maneuver(mockedRotationModel, null, null);
+        final Binary64[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
+        Assertions.assertArrayEquals(parameters, actualDrivers);
+    }
 }
