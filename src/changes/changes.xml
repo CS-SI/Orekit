@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1611">
+            Fixed loxodrome computation in perfect East-West direction.
+        </action>
         <action dev="serrof" type="add" issue="1609">
             Add AttitudeRotationModel and use it in Maneuver.
         </action>

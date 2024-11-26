@@ -18,6 +18,7 @@ package org.orekit.bodies;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.SinCos;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,6 +65,22 @@ public class LoxodromeTest {
     public void verifyLongDistance() {
         executeTest("new york - london", newYork, london, FastMath.toRadians(78.09), 30., 6_000.);
         executeTest("berlin - perth", berlin, perth, FastMath.toRadians(132.89), 90., 35_000.);
+    }
+
+    @Test
+    public void verifyParallel() {
+        executeTest("perfect parallel",
+                    berlin,
+                    new GeodeticPoint(berlin.getLatitude(), berlin.getLongitude() + 0.125, berlin.getAltitude()),
+                    MathUtils.SEMI_PI, 0.1, 1.0e-20);
+    }
+
+    @Test
+    public void verifyMeridian() {
+        executeTest("perfect meridian",
+                    berlin,
+                    new GeodeticPoint(berlin.getLatitude() + 0.125, berlin.getLongitude(), berlin.getAltitude()),
+                    0.0, 8.0, 0.003);
     }
 
     void executeTest(final String header, final GeodeticPoint start, final GeodeticPoint stop, final double expectedAzimuth, final double numericalError, final double pointError) {
