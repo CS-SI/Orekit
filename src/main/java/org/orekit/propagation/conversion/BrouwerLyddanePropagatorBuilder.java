@@ -60,7 +60,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<BrouwerLyddanePropagator> {
 
     /** Parameters scaling factor.
      * <p>

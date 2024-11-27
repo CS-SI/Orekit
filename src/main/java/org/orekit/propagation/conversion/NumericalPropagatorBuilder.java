@@ -42,7 +42,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class NumericalPropagatorBuilder extends AbstractPropagatorBuilder {
+public class NumericalPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<NumericalPropagator> {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;

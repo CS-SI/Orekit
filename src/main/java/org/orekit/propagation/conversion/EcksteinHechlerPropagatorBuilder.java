@@ -31,7 +31,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
+public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<EcksteinHechlerPropagator> {
 
     /** Provider for un-normalized coefficients. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -193,7 +193,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractAnalyticalPropagat
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    public EcksteinHechlerPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         final EcksteinHechlerPropagator propagator = new EcksteinHechlerPropagator(createInitialOrbit(), getAttitudeProvider(),
             getMass(), provider);
