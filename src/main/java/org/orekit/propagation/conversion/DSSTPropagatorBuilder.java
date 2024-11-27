@@ -44,7 +44,7 @@ import java.util.List;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
+public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<DSSTPropagator> {
 
     /** First order integrator builder for propagation. */
     private final ODEIntegratorBuilder builder;

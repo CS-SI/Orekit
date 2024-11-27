@@ -37,7 +37,7 @@ import java.util.List;
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<TLEPropagator> {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;

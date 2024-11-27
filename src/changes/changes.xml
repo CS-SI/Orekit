@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1612">
+            Introduced generic for abstract propagator builders.
+        </action>
         <action dev="luc" type="fix" issue="1611">
             Fixed loxodrome computation in perfect East-West direction.
         </action>
