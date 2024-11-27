@@ -178,6 +178,9 @@
         <action dev="serrof" type="update" issue="1241">
             Use Field date in Sun's position for atmosphere when applicable.
         </action>
+        <action dev="serrof" type="fix" issue="1428">
+            Compute rotation rate in LOF transform.
+        </action>
         <action dev="serrof" type="update" issue="1421">
             Use UnivariateDerivative2 instead of DerivativeStructure in OneAxisEllispoid.
         </action>
