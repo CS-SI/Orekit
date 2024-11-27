@@ -150,6 +150,7 @@ public class FieldLongitudeCrossingDetector <T extends CalculusFieldElement<T>>
     */
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        super.init(s0, t);
         filtering.init(s0, t);
     }
 

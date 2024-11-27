@@ -71,14 +71,14 @@ public interface EventDetector {
      * if needed.
      * </p>
      * <p>
-     * The default implementation does nothing
+     * The default implementation initializes the handler.
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
      *
      */
     default void init(SpacecraftState s0, AbsoluteDate t) {
-        // nothing by default
+        getHandler().init(s0, t, this);
     }
 
     /** Compute the value of the switching function.

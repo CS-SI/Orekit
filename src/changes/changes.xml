@@ -94,6 +94,9 @@
         <action dev="serrof" type="update" issue="1574">
             Deprecate tolerances in (Field)NumericalPropagator and (Field)DSSTPropagator.
         </action>
+        <action dev="serrof" type="update" issue="1569">
+            Moved initizaliztion of (Field)Handler in (Field)EventDetector.
+        </action>
         <action dev="luc" type="fix" issue="1567">
             Fixed interpolation of phase center variations in Antex files.
         </action>

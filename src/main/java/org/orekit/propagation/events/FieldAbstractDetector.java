@@ -77,10 +77,9 @@ public abstract class FieldAbstractDetector<D extends FieldAbstractDetector<D, T
 
     /** {@inheritDoc} */
     @Override
-    public void init(final FieldSpacecraftState<T> s0,
-                     final FieldAbsoluteDate<T> t) {
+    public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        FieldEventDetector.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()).getReal() >= 0.0;
-        getHandler().init(s0, t, this);
     }
 
     /** {@inheritDoc} */

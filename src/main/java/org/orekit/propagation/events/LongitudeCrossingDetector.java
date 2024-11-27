@@ -118,6 +118,7 @@ public class LongitudeCrossingDetector extends AbstractDetector<LongitudeCrossin
     /**  {@inheritDoc} */
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        super.init(s0, t);
         filtering.init(s0, t);
     }
 
