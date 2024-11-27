@@ -18,8 +18,8 @@ package org.orekit.control.indirect.shooting.propagation;
 
 import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
-import org.hipparchus.ode.AbstractFieldIntegrator;
-import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.junit.jupiter.api.Assertions;
@@ -44,7 +44,7 @@ class ClassicalRungeKuttaIntegrationSettingsTest {
         final ODEIntegratorBuilder builder = integrationSettings.getIntegratorBuilder();
         // THEN
         Assertions.assertInstanceOf(ClassicalRungeKuttaIntegratorBuilder.class, builder);
-        final AbstractIntegrator integrator = builder.buildIntegrator(Mockito.mock(Orbit.class),
+        final ODEIntegrator integrator = builder.buildIntegrator(Mockito.mock(Orbit.class),
                 Mockito.mock(OrbitType.class));
         Assertions.assertEquals(expectedStep, ((ClassicalRungeKuttaIntegrator) integrator).getDefaultStep());
     }
@@ -59,7 +59,7 @@ class ClassicalRungeKuttaIntegrationSettingsTest {
         // THEN
         Assertions.assertInstanceOf(ClassicalRungeKuttaFieldIntegratorBuilder.class, builder);
         final FieldOrbit<Complex> mockedFieldOrbit = mockFieldOrbit();
-        final AbstractFieldIntegrator<Complex> integrator = builder.buildIntegrator(mockedFieldOrbit, Mockito.mock(OrbitType.class));
+        final FieldODEIntegrator<Complex> integrator = builder.buildIntegrator(mockedFieldOrbit, Mockito.mock(OrbitType.class));
         Assertions.assertEquals(expectedStep, ((ClassicalRungeKuttaFieldIntegrator<Complex>) integrator).getDefaultStep().getReal());
     }
 

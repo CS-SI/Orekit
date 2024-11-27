@@ -1,7 +1,8 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
@@ -37,14 +38,14 @@ class AbstractVariableStepFieldIntegratorBuilderTest {
         Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
     }
 
-    private static class TestIntegratorBuilder extends AbstractVariableStepFieldIntegratorBuilder {
+    private static class TestIntegratorBuilder extends AbstractVariableStepFieldIntegratorBuilder<Binary64, DormandPrince54FieldIntegrator<Binary64>> {
 
         protected TestIntegratorBuilder(double minStep, double maxStep, ToleranceProvider toleranceProvider) {
             super(minStep, maxStep, toleranceProvider);
         }
 
         @Override
-        protected AbstractFieldIntegrator buildIntegrator(Field field, double[][] tolerances) {
+        protected DormandPrince54FieldIntegrator<Binary64> buildIntegrator(Field field, double[][] tolerances) {
             return null;
         }
 

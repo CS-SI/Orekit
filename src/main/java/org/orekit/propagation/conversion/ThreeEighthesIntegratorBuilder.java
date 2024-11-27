@@ -25,7 +25,7 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class ThreeEighthesIntegratorBuilder implements ODEIntegratorBuilder {
+public class ThreeEighthesIntegratorBuilder extends AbstractIntegratorBuilder<ThreeEighthesIntegrator> {
 
     /** Step size (s). */
     private final double step;

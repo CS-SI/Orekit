@@ -25,7 +25,7 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class EulerIntegratorBuilder implements ODEIntegratorBuilder {
+public class EulerIntegratorBuilder extends AbstractIntegratorBuilder<EulerIntegrator> {
 
     /** Step size (s). */
     private final double step;
