@@ -56,6 +56,9 @@ import org.orekit.utils.IERSConventions;
  */
 public class CPFParser implements EphemerisFileParser<CPF> {
 
+    /** Default number of sample for interpolating data (See: reference documents). */
+    public static final int DEFAULT_INTERPOLATION_SAMPLE = 10;
+
     /** File format. */
     private static final String FILE_FORMAT = "CPF";
 
@@ -64,9 +67,6 @@ public class CPFParser implements EphemerisFileParser<CPF> {
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
-
-    /** Default number of sample for interpolating data (See: reference documents. */
-    private static final int DEFAULT_INTERPOLATION_SAMPLE = 10;
 
     /** Standard gravitational parameter in m^3 / s^2. */
     private final double mu;
