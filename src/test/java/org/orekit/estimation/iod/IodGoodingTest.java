@@ -23,15 +23,14 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.AngularAzEl;
-import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
-import org.orekit.estimation.measurements.AngularRaDec;
-import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
-import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PVMeasurementCreator;
+import org.orekit.estimation.measurements.*;
 import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -39,6 +38,10 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.Month;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /**
  *
@@ -49,6 +52,77 @@ import org.orekit.time.AbsoluteDate;
  *
  */
 public class IodGoodingTest extends AbstractIodTest {
+
+    /** Based on example provided in forum thread:
+     * <a href="https://forum.orekit.org/t/iodgooging-orbit-got-from-three-angular-observations/2749">IodGooding</a> */
+    @Test
+    public void testIssue1166RaDec() {
+        AbsoluteDate t1 = new AbsoluteDate(2023, Month.JUNE, 9, 17, 4,59.10, TimeScalesFactory.getUTC());
+        AbsoluteDate t2 = new AbsoluteDate(2023, Month.JUNE, 9, 17, 10,50.66, TimeScalesFactory.getUTC());
+        AbsoluteDate t3 = new AbsoluteDate(2023, Month.JUNE, 9, 17, 16,21.09, TimeScalesFactory.getUTC());
+
+        Vector3D RA = new Vector3D((15.* (16. + 5./60. + 51.20/3600.)),
+                (15.*(16.+ 11./60. + 43.73/3600.)), (15.*(16.+ 17./60. + 15.1/3600. )));
+
+        Vector3D DEC = new Vector3D((-(6.+ 31./60. + 44.22/3600.)),
+                (-(6. + 31./60. + 52.36/3600.)),
+                (-(6. +32./60. + 0.03/3600.)));
+
+        Frame ITRF = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS ,Constants.WGS84_EARTH_FLATTENING, ITRF);
+        GeodeticPoint stationCoord = new GeodeticPoint(FastMath.toRadians(43.05722), FastMath.toRadians(76.971667), 2735.0);
+        TopocentricFrame stationFrame = new TopocentricFrame(earth, stationCoord, "N42");
+        GroundStation ground_station = new GroundStation(stationFrame);
+
+        double[] angular1 = {FastMath.toRadians(RA.getX()), FastMath.toRadians(DEC.getX())};
+        double[] angular2 = {FastMath.toRadians(RA.getY()), FastMath.toRadians(DEC.getY())};
+        double[] angular3 = {FastMath.toRadians(RA.getZ()), FastMath.toRadians(DEC.getZ())};
+
+        AngularRaDec raDec1 = new AngularRaDec(ground_station, FramesFactory.getEME2000(), t1,
+                angular1, new double[] {1.0, 1.0}, new double[] {1.0, 1.0}, new ObservableSatellite(1));
+        AngularRaDec raDec2 = new AngularRaDec(ground_station, FramesFactory.getEME2000(), t2,
+                angular2, new double[] {1.0, 1.0}, new double[] {1.0, 1.0}, new ObservableSatellite(1));
+        AngularRaDec raDec3 = new AngularRaDec(ground_station, FramesFactory.getEME2000(), t3,
+                angular3, new double[] {1.0, 1.0}, new double[] {1.0, 1.0}, new ObservableSatellite(1));
+
+        // Gauss: {a: 4.238973764054024E7; e: 0.004324857593564294; i: 0.09157752601786696; pa: 170.725916897286; raan: 91.00902931155805; v: -19.971524129451392;}
+        // Laplace: {a: 4.2394495034863256E7; e: 0.004440883687182993; i: 0.09000218139994348; pa: 173.17005925268154; raan: 91.20208239937111; v: -22.60862919684909;}
+        // BEFORE the fix -> Gooding: {a: 6.993021221010809E7; e: 0.3347390725866758; i: 0.5890565053278204; pa: -108.07120996868652; raan: -12.64337508041537; v: 2.587189785272028;}
+        // AFTER the fix -> Gooding: {a:  4.2394187540973224E7; e: 0.004411368860770379; i: 0.09185983299662298; pa: 169.74389246605776; raan: 90.92874061328043; v: -18.909215663128727;}
+        Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, raDec1,raDec2,raDec3);
+        KeplerianOrbit orbitGooding = new KeplerianOrbit(estimated_orbit_Gooding);
+        Assertions.assertEquals(4.2394187540973224E7, orbitGooding.getA(), 1.0e-10);
+        Assertions.assertEquals(0.004411368860770379, orbitGooding.getE(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(0.09185983299662298), orbitGooding.getI(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(169.74389246605776), orbitGooding.getPerigeeArgument(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(90.92874061328043), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(-18.909215663128727), orbitGooding.getTrueAnomaly(), 1.0e-10);
+    }
+
+    @Test
+    public void testIssue1166AzEl() {
+        // Generate measurements
+        final Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        final NumericalPropagatorBuilder propagatorBuilder = context.createBuilder(OrbitType.KEPLERIAN, PositionAngleType.TRUE, true, 1.0e-6, 60.0, 0.001);
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,  propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements = EstimationTestUtils.createMeasurements(propagator,
+                                                                                                 new AngularAzElMeasurementCreator(context),
+                                                                                                 0.0, 1.0, 60.0);
+        final AngularAzEl azEl1 = (AngularAzEl) measurements.get(0);
+        final AngularAzEl azEl2 = (AngularAzEl) measurements.get(20);
+        final AngularAzEl azEl3 = (AngularAzEl) measurements.get(40);
+
+        // Gauss: {a: 1.4240687661878748E7; e: 0.16505257340554763; i: 71.54945520547201; pa: 21.27193872599194; raan: 78.78440298193975; v: -163.45049044435925;}
+        // AFTER the fix -> Gooding: {a: 1.4197961507698055E7; e: 0.16923654961240223; i: 71.52638181160407; pa: 21.450082668672675; raan: 78.76324220205018; v: -163.62886990452034;}
+        Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, azEl1,azEl2,azEl3);
+        KeplerianOrbit orbitGooding = new KeplerianOrbit(estimated_orbit_Gooding);
+        Assertions.assertEquals(1.4197961507698055E7, orbitGooding.getA(), 1.0e-10);
+        Assertions.assertEquals(0.16923654961240223, orbitGooding.getE(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(71.52638181160407), orbitGooding.getI(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(21.450082668672675), orbitGooding.getPerigeeArgument(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(78.76324220205018), orbitGooding.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assertions.assertEquals(FastMath.toRadians(-163.62886990452034), orbitGooding.getTrueAnomaly(), 1.0e-10);
+    }
 
     @Test
     public void testGooding() {
