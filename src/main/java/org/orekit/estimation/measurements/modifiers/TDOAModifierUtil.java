@@ -63,8 +63,7 @@ class TDOAModifierUtil {
         final double          primeDelay  = modelEffect.evaluate(primeStation, state);
         final double          secondDelay = modelEffect.evaluate(secondStation, state);
 
-        // Update estimated value taking into account the ionospheric delay for each downlink.
-        // The ionospheric time delay is directly applied to the TDOA.
+        // Update estimated value taking into account the delay for each downlink. The time delay is directly applied to the TDOA.
         final double[] newValue = oldValue.clone();
         newValue[0] += primeDelay;
         newValue[0] -= secondDelay;
@@ -114,7 +113,7 @@ class TDOAModifierUtil {
             if (driver.isSelected()) {
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
 
-                    // update estimated derivatives with derivative of the modification wrt ionospheric parameters
+                    // update estimated derivatives with derivative of the modification wrt modifier parameters
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += primeDerivatives[index + converter.getFreeStateParameters()];
                     parameterDerivative -= secondDerivatives[index + converter.getFreeStateParameters()];
@@ -157,8 +156,7 @@ class TDOAModifierUtil {
             }
         }
 
-        // Update estimated value taking into account the ionospheric delay for each downlink.
-        // The ionospheric time delay is directly applied to the TDOA.
+        // Update estimated value taking into account the delay for each downlink.  The time delay is directly applied to the TDOA.
         final double[] newValue = oldValue.clone();
         newValue[0] += primeGDelay.getReal();
         newValue[0] -= secondGDelay.getReal();
