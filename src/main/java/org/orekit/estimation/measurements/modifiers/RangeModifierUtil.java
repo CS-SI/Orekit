@@ -60,8 +60,7 @@ public class RangeModifierUtil {
         final SpacecraftState state    = estimated.getStates()[0];
         final double[]        oldValue = estimated.getEstimatedValue();
 
-        // update estimated value taking into account the ionospheric delay.
-        // The ionospheric delay is directly added to the range.
+        // update estimated value taking into account the delay. The delay is directly added to the range.
         final double[] newValue = oldValue.clone();
         final double delay = modelEffect.evaluate(station, state);
         newValue[0] = newValue[0] + delay;
@@ -104,7 +103,7 @@ public class RangeModifierUtil {
         int index = 0;
         for (final ParameterDriver driver : parametricModel.getParametersDrivers()) {
             if (driver.isSelected()) {
-                // update estimated derivatives with derivative of the modification wrt ionospheric parameters
+                // update estimated derivatives with derivative of the modification wrt modifier parameters
                 for (Span<String> span = driver.getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
                     double parameterDerivative = estimated.getParameterDerivatives(driver, span.getStart())[0];
                     parameterDerivative += derivatives[index + converter.getFreeStateParameters()];
@@ -130,7 +129,7 @@ public class RangeModifierUtil {
             }
         }
 
-        // update estimated value taking into account the ionospheric delay.
+        // update estimated value taking into account the delay
         modifyWithoutDerivatives(estimated, station, modelEffect, modifier);
 
     }

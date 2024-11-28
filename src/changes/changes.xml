@@ -51,6 +51,9 @@
         <action dev="serrof" type="add" issue="1600">
             Add static getExhaustVelocity method in ThrustPropulsionModel.
         </action>
+        <action dev="bryan" type="fix" issue="1599">
+            Fixed typo in measurement modifiers.
+        </action>
         <action dev="serrof" type="update" issue="1598">
             Uniform naming of DEFAULT_MAX_CHECK in event detectors.
         </action>
