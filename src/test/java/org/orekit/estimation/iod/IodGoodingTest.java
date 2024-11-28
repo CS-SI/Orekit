@@ -89,7 +89,7 @@ public class IodGoodingTest extends AbstractIodTest {
         // Laplace: {a: 4.2394495034863256E7; e: 0.004440883687182993; i: 0.09000218139994348; pa: 173.17005925268154; raan: 91.20208239937111; v: -22.60862919684909;}
         // BEFORE the fix -> Gooding: {a: 6.993021221010809E7; e: 0.3347390725866758; i: 0.5890565053278204; pa: -108.07120996868652; raan: -12.64337508041537; v: 2.587189785272028;}
         // AFTER the fix -> Gooding: {a:  4.2394187540973224E7; e: 0.004411368860770379; i: 0.09185983299662298; pa: 169.74389246605776; raan: 90.92874061328043; v: -18.909215663128727;}
-        Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, raDec1,raDec2,raDec3, 0, true);
+        Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, raDec1,raDec2,raDec3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimated_orbit_Gooding);
         Assertions.assertEquals(4.2394187540973224E7, orbitGooding.getA(), 1.0e-10);
         Assertions.assertEquals(0.004411368860770379, orbitGooding.getE(), 1.0e-10);
@@ -114,7 +114,7 @@ public class IodGoodingTest extends AbstractIodTest {
 
         // Gauss: {a: 1.4240687661878748E7; e: 0.16505257340554763; i: 71.54945520547201; pa: 21.27193872599194; raan: 78.78440298193975; v: -163.45049044435925;}
         // AFTER the fix -> Gooding: {a: 1.4197961507698055E7; e: 0.16923654961240223; i: 71.52638181160407; pa: 21.450082668672675; raan: 78.76324220205018; v: -163.62886990452034;}
-        Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, azEl1,azEl2,azEl3, 0, true);
+        Orbit estimated_orbit_Gooding = new IodGooding(mu).estimate(eme2000, azEl1,azEl2,azEl3);
         KeplerianOrbit orbitGooding = new KeplerianOrbit(estimated_orbit_Gooding);
         Assertions.assertEquals(1.4197961507698055E7, orbitGooding.getA(), 1.0e-10);
         Assertions.assertEquals(0.16923654961240223, orbitGooding.getE(), 1.0e-10);
