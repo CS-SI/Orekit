@@ -150,9 +150,9 @@ public class DateDetectionAdaptableIntervalFactory {
     }
 
     /**
-     * Compute min. gap between dated objects.
+     * Compute min. gap between dated objects if applicable. It ignores duplicates.
      * @param timeStampeds time stamped objects
-     * @return minimym gap
+     * @return minimum gap
      */
     private static double getMinGap(final TimeStamped... timeStampeds) {
         double minGap = DEFAULT_MAX_CHECK;

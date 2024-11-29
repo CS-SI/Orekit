@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1615">
+            Add option for custom detection settings in DateBasedManeuverTrigger.
+        </action>
         <action dev="bryan" type="update" issue="1614">
             Updated default interpolation samples of ephemeris files parser to be public.
         </action>
