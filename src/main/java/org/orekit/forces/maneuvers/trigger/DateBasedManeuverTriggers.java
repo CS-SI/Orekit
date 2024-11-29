@@ -23,6 +23,8 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
+import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
 import org.orekit.propagation.events.ParameterDrivenDateIntervalDetector;
@@ -63,7 +65,21 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
      * @since 11.1
      */
     public DateBasedManeuverTriggers(final String name, final AbsoluteDate date, final double duration) {
-        super(createDetector(name, date, duration));
+        this(name, date, duration, new EventDetectionSettings(FastMath.max(MIN_MAX_CHECK, FastMath.abs(duration) / 2.),
+                DateDetector.DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER));
+    }
+
+    /** Simple constructor.
+     * @param name name of the trigger (used as prefix for start and stop parameters drivers)
+     * @param date start (or end) data of the maneuver
+     * @param duration maneuver duration (if positive, maneuver is from date to date + duration,
+     * if negative, maneuver will be from date - duration to date)
+     * @param detectionSettings date detection settings (warning: choose with care, as poor settings might miss the maneuver)
+     * @since 13.0
+     */
+    public DateBasedManeuverTriggers(final String name, final AbsoluteDate date, final double duration,
+                                     final EventDetectionSettings detectionSettings) {
+        super(createDetector(name, date, duration, detectionSettings));
         this.name = name;
     }
 
@@ -72,16 +88,19 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
      * @param date start (or end) data of the maneuver
      * @param duration maneuver duration (if positive, maneuver is from date to date + duration,
      * if negative, maneuver will be from date - duration to date)
+     * @param detectionSettings event detection settings
      * @return date detector
-     * @since 11.1
+     * @since 13.0
      */
-    private static ParameterDrivenDateIntervalDetector createDetector(final String prefix, final AbsoluteDate date, final double duration) {
+    private static ParameterDrivenDateIntervalDetector createDetector(final String prefix, final AbsoluteDate date,
+                                                                      final double duration,
+                                                                      final EventDetectionSettings detectionSettings) {
         if (duration >= 0) {
             return new ParameterDrivenDateIntervalDetector(prefix, date, date.shiftedBy(duration)).
-                            withMaxCheck(FastMath.max(MIN_MAX_CHECK, duration));
+                    withDetectionSettings(detectionSettings);
         } else {
             return new ParameterDrivenDateIntervalDetector(prefix, date.shiftedBy(duration), date).
-                            withMaxCheck(FastMath.max(MIN_MAX_CHECK, -duration));
+                    withDetectionSettings(detectionSettings);
         }
     }
 
@@ -119,7 +138,7 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
                                                                                                                                              final ParameterDrivenDateIntervalDetector detector) {
 
         final FieldParameterDrivenDateIntervalDetector<S> fd =
-                        new FieldParameterDrivenDateIntervalDetector<S>(field, "",
+                        new FieldParameterDrivenDateIntervalDetector<>(field, "",
                                         detector.getStartDriver().getBaseDate(),
                                         detector.getStopDriver().getBaseDate());
         fd.getStartDriver().setName(detector.getStartDriver().getName());
