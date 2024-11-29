@@ -22,8 +22,6 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
-import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldAbstractDetector;
 import org.orekit.propagation.events.FieldParameterDrivenDateIntervalDetector;
@@ -39,11 +37,6 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
 
     /** Default name for trigger. */
     public static final String DEFAULT_NAME = "";
-
-    /** Minimum max check interval (avoids infinite loops if duration is zero).
-     * @since 11.2
-     */
-    private static final double MIN_MAX_CHECK = 1.0e-3;
 
     /** Name of the trigger (used as prefix for start and stop parameters drivers). */
     private final String name;
@@ -65,8 +58,7 @@ public class DateBasedManeuverTriggers extends IntervalEventTrigger<ParameterDri
      * @since 11.1
      */
     public DateBasedManeuverTriggers(final String name, final AbsoluteDate date, final double duration) {
-        this(name, date, duration, new EventDetectionSettings(FastMath.max(MIN_MAX_CHECK, FastMath.abs(duration) / 2.),
-                DateDetector.DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER));
+        this(name, date, duration, ParameterDrivenDateIntervalDetector.getDefaultDetectionSettings(date, date.shiftedBy(duration)));
     }
 
     /** Simple constructor.

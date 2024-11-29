@@ -102,6 +102,18 @@ class DateDetectionAdaptableIntervalFactoryTest {
         Assertions.assertEquals(FastMath.abs(otherDate.durationFrom(date)) / 2, actualMaxCheck);
     }
 
+    @Test
+    void testGetDatesDetectionConstantIntervalSameDates() {
+        // GIVEN
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        // WHEN
+        final AdaptableInterval adaptableInterval = DateDetectionAdaptableIntervalFactory.getDatesDetectionConstantInterval(date, date);
+        // THEN
+        final double actualMaxCheck = adaptableInterval.currentInterval(mockedState, false);
+        Assertions.assertNotEquals(0., actualMaxCheck);
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void testGetSingleDateDetectionFieldAdaptableInterval(final boolean isForward) {
@@ -150,6 +162,19 @@ class DateDetectionAdaptableIntervalFactoryTest {
         // THEN
         final double actualMaxCheck = adaptableInterval.currentInterval(null, false);
         Assertions.assertEquals(FastMath.abs(otherDate.durationFrom(date)).getReal() / 2, actualMaxCheck);
+    }
+
+    @Test
+    void testGetDatesDetectionIntervalSameDates() {
+        // GIVEN
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        // WHEN
+        final AdaptableInterval adaptableInterval = DateDetectionAdaptableIntervalFactory.getDatesDetectionInterval(date, date);
+        // THEN
+        final double actualMaxCheck = adaptableInterval.currentInterval(mockedState, false);
+        Assertions.assertNotEquals(0., actualMaxCheck);
     }
 
     @ParameterizedTest
