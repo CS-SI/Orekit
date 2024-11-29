@@ -53,6 +53,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -894,10 +895,84 @@ public class UnscentedKalmanEstimatorTest {
 
     }
 
+    /**
+     * Test that the states passed to the process noise covariance calculation are the previous and predicted.
+     */
+    @Test
+    public void testProcessNoiseStates() {
+
+        // Create context
+        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create initial orbit and propagator builder
+        final OrbitType     orbitType     = OrbitType.CARTESIAN;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+        final boolean       perfectStart  = true;
+        final double        minStep       = 1.e-6;
+        final double        maxStep       = 60.;
+        final double        dP            = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        minStep, maxStep, dP);
+
+        // Create perfect PV measurements
+        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
+                propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                UnscentedEstimationTestUtils.createMeasurements(propagator,
+                        new PVMeasurementCreator(),
+                        0.0, 1.0, 300.0);
+
+        // Process noise
+        ProcessNoise processNoise = new ProcessNoise();
+
+        // Build the Kalman filter
+        final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
+                addPropagationConfiguration(propagatorBuilder, processNoise).
+                unscentedTransformProvider(new MerweUnscentedTransform(6)).
+                build();
+
+        // Single estimation step on the 10th measurement
+        kalman.estimationStep(measurements.get(10));
+
+        // Make sure previous and current are not the same
+        Assertions.assertEquals(measurements.get(0).getDate(), processNoise.getPrevious().getDate());
+        Assertions.assertEquals(measurements.get(10).getDate(), processNoise.getCurrent().getDate());
+        Assertions.assertNotEquals(processNoise.getPrevious().getPosition().getX(),
+                                   processNoise.getCurrent().getPosition().getX());
+    }
+
     private static class DummyException extends OrekitException {
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);
+        }
+    }
+
+
+    private static class ProcessNoise implements CovarianceMatrixProvider {
+
+        private SpacecraftState previous;
+        private SpacecraftState current;
+
+        public SpacecraftState getPrevious() {
+            return previous;
+        }
+
+        public SpacecraftState getCurrent() {
+            return current;
+        }
+
+        @Override
+        public RealMatrix getInitialCovarianceMatrix(SpacecraftState initial) {
+            return MatrixUtils.createRealMatrix(6, 6);
+        }
+
+        @Override
+        public RealMatrix getProcessNoiseMatrix(SpacecraftState previous, SpacecraftState current) {
+            this.previous = previous;
+            this.current = current;
+            return MatrixUtils.createRealMatrix(6, 6);
         }
     }
 

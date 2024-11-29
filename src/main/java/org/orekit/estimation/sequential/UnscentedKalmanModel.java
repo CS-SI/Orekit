@@ -138,11 +138,41 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
             d += 1;
         }
 
-        // compute process noise matrix
-        final RealMatrix normalizedProcessNoise = getNormalizedProcessNoise(sigmaPoints[0].getDimension());
-
         // Return
-        return new UnscentedEvolution(measurement.getTime(), predictedSigmaPoints, normalizedProcessNoise);
+        return new UnscentedEvolution(measurement.getTime(), predictedSigmaPoints);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getProcessNoiseMatrix(final double previousTime, final RealVector predictedState,
+                                            final MeasurementDecorator measurement) {
+        // Set parameters from predicted state
+        final RealVector predictedStateCopy = predictedState.copy();
+        updateParameters(predictedStateCopy);
+
+        // Get propagators
+        Propagator[] propagators = getEstimatedPropagators();
+
+        // "updateParameters" sets the correct orbital info, but doesn't reset the time.
+        for (int k = 0; k < propagators.length; ++k) {
+            final SpacecraftState predicted = propagators[k].getInitialState();
+            final Orbit predictedOrbit = getBuilders().get(k).getOrbitType().convertType(
+                    new CartesianOrbit(predicted.getPVCoordinates(),
+                            predicted.getFrame(),
+                            measurement.getObservedMeasurement().getDate(),
+                            predicted.getMu()
+                    )
+            );
+            getBuilders().get(k).resetOrbit(predictedOrbit);
+        }
+        propagators = getEstimatedPropagators();
+
+        // Predicted states
+        for (int k = 0; k < propagators.length; ++k) {
+            setPredictedSpacecraftState(propagators[k].getInitialState(), k);
+        }
+
+        return getNormalizedProcessNoise(predictedState.getDimension());
     }
 
     /** {@inheritDoc} */
@@ -205,35 +235,9 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
     @Override
     public RealVector getInnovation(final MeasurementDecorator measurement, final RealVector predictedMeas,
                                     final RealVector predictedState, final RealMatrix innovationCovarianceMatrix) {
-        // Set parameters from predicted state
-        final RealVector predictedStateCopy = predictedState.copy();
-        updateParameters(predictedStateCopy);
-
         // Standard deviation as a vector
         final RealVector theoreticalStandardDeviation =
                 MatrixUtils.createRealVector(measurement.getObservedMeasurement().getTheoreticalStandardDeviation());
-
-        // Get propagators
-        Propagator[] propagators = getEstimatedPropagators();
-
-        // "updateParameters" sets the correct orbital info, but doesn't reset the time.
-        for (int k = 0; k < propagators.length; ++k) {
-            final SpacecraftState predicted = propagators[k].getInitialState();
-            final Orbit predictedOrbit = getBuilders().get(k).getOrbitType().convertType(
-                    new CartesianOrbit(predicted.getPVCoordinates(),
-                            predicted.getFrame(),
-                            measurement.getObservedMeasurement().getDate(),
-                            predicted.getMu()
-                    )
-            );
-            getBuilders().get(k).resetOrbit(predictedOrbit);
-        }
-        propagators = getEstimatedPropagators();
-
-        // Predicted states
-        for (int k = 0; k < propagators.length; ++k) {
-            setPredictedSpacecraftState(propagators[k].getInitialState(), k);
-        }
 
         // set estimated value to the predicted value from the filter
         final EstimatedMeasurement<?> predictedMeasurement =
