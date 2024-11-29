@@ -25,7 +25,7 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class ClassicalRungeKuttaIntegratorBuilder implements ODEIntegratorBuilder {
+public class ClassicalRungeKuttaIntegratorBuilder extends AbstractIntegratorBuilder<ClassicalRungeKuttaIntegrator> {
 
     /** Step size (s). */
     private final double step;

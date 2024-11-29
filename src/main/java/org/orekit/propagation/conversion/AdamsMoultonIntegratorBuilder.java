@@ -23,7 +23,7 @@ import org.orekit.propagation.ToleranceProvider;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class AdamsMoultonIntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+public class AdamsMoultonIntegratorBuilder extends AbstractVariableStepIntegratorBuilder<AdamsMoultonIntegrator> {
 
     /** Number of steps. */
     private final int nSteps;

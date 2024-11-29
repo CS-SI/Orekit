@@ -23,7 +23,7 @@ import org.orekit.propagation.ToleranceProvider;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class GraggBulirschStoerIntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+public class GraggBulirschStoerIntegratorBuilder extends AbstractVariableStepIntegratorBuilder<GraggBulirschStoerIntegrator> {
 
     /** Build a new instance using a default integration tolerance provider.
      * @param minStep minimum step size (s)

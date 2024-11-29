@@ -25,7 +25,7 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class GillIntegratorBuilder implements ODEIntegratorBuilder {
+public class GillIntegratorBuilder extends AbstractIntegratorBuilder<GillIntegrator> {
 
     /** Step size (s). */
     private final double step;

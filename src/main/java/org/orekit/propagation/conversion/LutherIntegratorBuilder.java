@@ -25,7 +25,7 @@ import org.orekit.orbits.PositionAngleType;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class LutherIntegratorBuilder implements ODEIntegratorBuilder {
+public class LutherIntegratorBuilder extends AbstractIntegratorBuilder<LutherIntegrator> {
 
     /** Step size (s). */
     private final double step;

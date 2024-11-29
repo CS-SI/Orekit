@@ -25,7 +25,7 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class MidpointIntegratorBuilder implements ODEIntegratorBuilder {
+public class MidpointIntegratorBuilder extends AbstractIntegratorBuilder<MidpointIntegrator> {
 
     /** Step size (s). */
     private final double step;

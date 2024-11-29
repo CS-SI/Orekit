@@ -17,6 +17,7 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.ode.MultistepFieldIntegrator;
 import org.orekit.propagation.ToleranceProvider;
 
 /**
@@ -26,8 +27,8 @@ import org.orekit.propagation.ToleranceProvider;
  *
  * @author Vincent Cucchietti
  */
-public abstract class AbstractLimitedVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractVariableStepFieldIntegratorBuilder<T> {
+public abstract class AbstractLimitedVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W extends MultistepFieldIntegrator<T>>
+        extends AbstractVariableStepFieldIntegratorBuilder<T, W> {
 
     /** Number of steps. */
     private final int nSteps;

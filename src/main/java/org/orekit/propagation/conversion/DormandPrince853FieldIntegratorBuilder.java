@@ -30,7 +30,7 @@ import org.orekit.propagation.ToleranceProvider;
  * @param <T> type of the field elements
  */
 public class DormandPrince853FieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractVariableStepFieldIntegratorBuilder<T> {
+        extends AbstractVariableStepFieldIntegratorBuilder<T, DormandPrince853FieldIntegrator<T>> {
 
     /**
      * Build a new instance using default integration tolerances.

@@ -32,7 +32,7 @@ import org.orekit.orbits.PositionAngleType;
  * @param <T> type of the field elements
  */
 public class GillFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractFixedStepFieldIntegratorBuilder<T> {
+        extends AbstractFixedStepFieldIntegratorBuilder<T, GillFieldIntegrator<T>> {
 
     /**
      * Constructor.

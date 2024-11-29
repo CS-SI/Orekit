@@ -24,6 +24,9 @@
         <action dev="bryan" type="update" issue="1614">
             Updated default interpolation samples of ephemeris files parser to be public.
         </action>
+        <action dev="serrof" type="update" issue="1613">
+            Introduced generic for abstract integrator builders.
+        </action>
         <action dev="serrof" type="update" issue="1612">
             Introduced generic for abstract propagator builders.
         </action>

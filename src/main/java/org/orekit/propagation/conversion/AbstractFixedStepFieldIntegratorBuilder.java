@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
+import org.hipparchus.ode.AbstractFieldIntegrator;
 
 /**
  * Abstract class for integrator builder using fixed step size.
@@ -28,8 +29,8 @@ import org.hipparchus.exception.MathIllegalArgumentException;
  *
  * @author Vincent Cucchietti
  */
-public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        implements FieldODEIntegratorBuilder<T> {
+public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W  extends AbstractFieldIntegrator<T>>
+        extends FieldAbstractIntegratorBuilder<T, W> {
 
     /** Step size (s). */
     private final double step;
@@ -57,7 +58,7 @@ public abstract class AbstractFixedStepFieldIntegratorBuilder<T extends Calculus
      *
      * @param step step size (s)
      */
-    AbstractFixedStepFieldIntegratorBuilder(final T step) {
+    protected AbstractFixedStepFieldIntegratorBuilder(final T step) {
         this(step.getReal());
         this.fieldStep = step;
     }
