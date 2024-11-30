@@ -254,13 +254,14 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> implements 
 
             final FieldImpulseManeuver<T> im = (FieldImpulseManeuver<T>) detector;
             final FieldAbsoluteDate<T> date = oldState.getDate();
+            final boolean isStateOrbitDefined = oldState.isOrbitDefined();
             final FieldRotation<T> rotation;
 
             if (im.getAttitudeOverride() == null) {
                 rotation = oldState.getAttitude().getRotation();
             } else {
-                rotation = im.attitudeOverride.getAttitudeRotation(oldState.getOrbit(), date,
-                        oldState.getFrame());
+                rotation = im.attitudeOverride.getAttitudeRotation(isStateOrbitDefined ? oldState.getOrbit() : oldState.getAbsPVA(),
+                        date, oldState.getFrame());
             }
 
             // convert velocity increment in inertial frame
@@ -282,7 +283,7 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> implements 
 
             // pack everything in a new state
             FieldSpacecraftState<T> newState;
-            if (oldState.isOrbitDefined()) {
+            if (isStateOrbitDefined) {
                 newState = new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit,
                         oldState.getOrbit()), oldState.getAttitude(), newMass);
             } else {

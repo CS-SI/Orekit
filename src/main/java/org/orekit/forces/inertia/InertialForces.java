@@ -64,7 +64,7 @@ import org.orekit.utils.ParameterDriver;
 public class InertialForces implements ForceModel {
 
     /** Reference inertial frame to use to compute inertial forces. */
-    private Frame referenceInertialFrame;
+    private final Frame referenceInertialFrame;
 
     /** Simple constructor.
      * @param referenceInertialFrame the pseudo-inertial frame to use as reference for the inertial forces

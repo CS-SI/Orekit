@@ -198,24 +198,45 @@ class FieldImpulseManeuverTest {
     }
 
     @Test
+    void testResetStateAttitudeOverride() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new Vector3D(1., 2, 3), new Vector3D(4, 5, 6));
+        final FieldSpacecraftState<Binary64> expectedState = new FieldSpacecraftState<>(field, new SpacecraftState(pvCoordinates));
+        final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector,
+                new FrameAlignedProvider(pvCoordinates.getFrame()), FieldVector3D.getZero(field), Binary64.ONE);
+        // WHEN
+        final FieldSpacecraftState<Binary64> actualState = fieldImpulseManeuver.getHandler().resetState(fieldImpulseManeuver, expectedState);
+        // THEN
+        compareStates(expectedState, actualState);
+    }
+
+    @Test
     void testResetState() {
         // GIVEN
         final Binary64Field field = Binary64Field.getInstance();
         final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(field);
         final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
                 AbsoluteDate.ARBITRARY_EPOCH, new Vector3D(1., 2, 3), new Vector3D(4, 5, 6));
-        final FieldSpacecraftState<Binary64> expectedSTate = new FieldSpacecraftState<>(field, new SpacecraftState(pvCoordinates));
+        final FieldSpacecraftState<Binary64> expectedState = new FieldSpacecraftState<>(field, new SpacecraftState(pvCoordinates));
         final FieldImpulseManeuver<Binary64> fieldImpulseManeuver = new FieldImpulseManeuver<>(fieldDateDetector,
                 FieldVector3D.getZero(field), Binary64.ONE);
         // WHEN
-        final FieldSpacecraftState<Binary64> actualSTate = fieldImpulseManeuver.getHandler().resetState(fieldImpulseManeuver, expectedSTate);
+        final FieldSpacecraftState<Binary64> actualState = fieldImpulseManeuver.getHandler().resetState(fieldImpulseManeuver, expectedState);
         // THEN
-        Assertions.assertEquals(expectedSTate.getDate(), actualSTate.getDate());
-        Assertions.assertEquals(expectedSTate.getMass(), actualSTate.getMass());
-        Assertions.assertEquals(expectedSTate.getAttitude(), actualSTate.getAttitude());
-        Assertions.assertEquals(expectedSTate.getPosition(), actualSTate.getPosition());
-        Assertions.assertEquals(expectedSTate.getPVCoordinates().getVelocity(),
-                actualSTate.getPVCoordinates().getVelocity());
+        compareStates(expectedState, actualState);
+    }
+
+    private static <T extends CalculusFieldElement<T>> void compareStates(final FieldSpacecraftState<T> expectedState,
+                                                                          final FieldSpacecraftState<T> actualState) {
+        Assertions.assertEquals(expectedState.getDate(), actualState.getDate());
+        Assertions.assertEquals(expectedState.getMass(), actualState.getMass());
+        Assertions.assertEquals(expectedState.getAttitude(), actualState.getAttitude());
+        Assertions.assertEquals(expectedState.getPosition(), actualState.getPosition());
+        Assertions.assertEquals(expectedState.getPVCoordinates().getVelocity(),
+                actualState.getPVCoordinates().getVelocity());
     }
 
     @Test

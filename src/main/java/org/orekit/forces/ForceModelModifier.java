@@ -24,6 +24,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
@@ -44,6 +46,18 @@ public interface ForceModelModifier extends ForceModel {
      * @return underlying model
      */
     ForceModel getUnderlyingModel();
+
+    /** {@inheritDoc} */
+    @Override
+    default void init(SpacecraftState initialState, AbsoluteDate target) {
+        getUnderlyingModel().init(initialState, target);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default <T extends CalculusFieldElement<T>> void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> target) {
+        getUnderlyingModel().init(initialState, target);
+    }
 
     /** {@inheritDoc} */
     @Override

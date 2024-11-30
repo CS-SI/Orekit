@@ -149,6 +149,20 @@ public class ImpulseManeuverTest {
     }
 
     @Test
+    void testResetStateAttitudeOverride() {
+        // GIVEN
+        final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
+                AbsoluteDate.ARBITRARY_EPOCH, new Vector3D(1., 2, 3), new Vector3D(4, 5, 6));
+        final ImpulseManeuver impulseManeuver = new ImpulseManeuver(new DateDetector(),
+                new FrameAlignedProvider(pvCoordinates.getFrame()), Vector3D.ZERO, 1.);
+        final SpacecraftState expectedSTate = new SpacecraftState(pvCoordinates);
+        // WHEN
+        final SpacecraftState actualSTate = impulseManeuver.getHandler().resetState(impulseManeuver, expectedSTate);
+        // THEN
+        compareStates(expectedSTate, actualSTate);
+    }
+
+    @Test
     void testResetState() {
         // GIVEN
         final AbsolutePVCoordinates pvCoordinates = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
@@ -158,12 +172,16 @@ public class ImpulseManeuverTest {
         // WHEN
         final SpacecraftState actualSTate = impulseManeuver.getHandler().resetState(impulseManeuver, expectedSTate);
         // THEN
-        Assertions.assertEquals(expectedSTate.getDate(), actualSTate.getDate());
-        Assertions.assertEquals(expectedSTate.getMass(), actualSTate.getMass());
-        Assertions.assertEquals(expectedSTate.getAttitude(), actualSTate.getAttitude());
-        Assertions.assertEquals(expectedSTate.getPosition(), actualSTate.getPosition());
-        Assertions.assertEquals(expectedSTate.getPVCoordinates().getVelocity(),
-                actualSTate.getPVCoordinates().getVelocity());
+        compareStates(expectedSTate, actualSTate);
+    }
+
+    private static void compareStates(final SpacecraftState expectedState, final SpacecraftState actualState) {
+        Assertions.assertEquals(expectedState.getDate(), actualState.getDate());
+        Assertions.assertEquals(expectedState.getMass(), actualState.getMass());
+        Assertions.assertEquals(expectedState.getAttitude(), actualState.getAttitude());
+        Assertions.assertEquals(expectedState.getPosition(), actualState.getPosition());
+        Assertions.assertEquals(expectedState.getPVCoordinates().getVelocity(),
+                actualState.getPVCoordinates().getVelocity());
     }
 
     @Test

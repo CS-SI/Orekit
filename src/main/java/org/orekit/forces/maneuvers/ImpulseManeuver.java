@@ -247,12 +247,14 @@ public class ImpulseManeuver implements EventDetector {
             final ImpulseManeuver im = (ImpulseManeuver) detector;
             final AbsoluteDate date = oldState.getDate();
             final AttitudeProvider override = im.getAttitudeOverride();
+            final boolean isStateOrbitDefined = oldState.isOrbitDefined();
             final Rotation rotation;
 
             if (override == null) {
                 rotation = oldState.getAttitude().getRotation();
             } else {
-                rotation = override.getAttitudeRotation(oldState.getOrbit(), date, oldState.getFrame());
+                rotation = override.getAttitudeRotation(isStateOrbitDefined ? oldState.getOrbit() : oldState.getAbsPVA(),
+                        date, oldState.getFrame());
             }
 
             // convert velocity increment in inertial frame
@@ -273,7 +275,7 @@ public class ImpulseManeuver implements EventDetector {
 
             // pack everything in a new state
             SpacecraftState newState;
-            if (oldState.isOrbitDefined()) {
+            if (isStateOrbitDefined) {
                 newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
                         oldState.getAttitude(), newMass);
             } else {
