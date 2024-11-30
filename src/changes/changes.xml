@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1616">
+            Add way to construct (Field)AdaptableInterval from other instances.
+        </action>
         <action dev="serrof" type="add" issue="1615">
             Add option for custom detection settings in DateBasedManeuverTrigger.
         </action>

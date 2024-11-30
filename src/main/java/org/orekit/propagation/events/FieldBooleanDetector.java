@@ -30,6 +30,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 
 /**
@@ -138,13 +139,8 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.AND,
-                                          new FieldEventDetectionSettings<>((s, isForward) -> {
-                                              double minInterval = Double.POSITIVE_INFINITY;
-                                              for (final FieldEventDetector<T> detector : detectors) {
-                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
-                                              }
-                                              return minInterval;
-                                          },
+                                          new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
+                                                  .map(FieldEventDetector::getMaxCheckInterval).toArray(FieldAdaptableInterval[]::new)),
                                           detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
                                           detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                                           new FieldContinueOnEvent<>());
@@ -199,13 +195,8 @@ public class FieldBooleanDetector<T extends CalculusFieldElement<T>> extends Fie
 
         return new FieldBooleanDetector<>(new ArrayList<>(detectors), // copy for immutability
                                           Operator.OR,
-                                          new FieldEventDetectionSettings<>((s, isForward) -> {
-                                              double minInterval = Double.POSITIVE_INFINITY;
-                                              for (final FieldEventDetector<T> detector : detectors) {
-                                                  minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
-                                              }
-                                              return minInterval;
-                                          },
+                                          new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
+                                                  .map(FieldEventDetector::getMaxCheckInterval).toArray(FieldAdaptableInterval[]::new)),
                                           detectors.stream().map(FieldEventDetector::getThreshold).min(new FieldComparator<>()).get(),
                                           detectors.stream().map(FieldEventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                                           new FieldContinueOnEvent<>());

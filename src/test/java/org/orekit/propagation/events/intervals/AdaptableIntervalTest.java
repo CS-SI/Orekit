@@ -36,4 +36,18 @@ class AdaptableIntervalTest {
         Assertions.assertEquals(expectedValue, actualValue);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void testAdaptableIntervalOf(final boolean isForward) {
+        // GIVEN
+        final double expectedValue = 1;
+        final AdaptableInterval interval1 = AdaptableInterval.of(expectedValue);
+        final AdaptableInterval interval2 = AdaptableInterval.of(expectedValue + 1);
+        // WHEN
+        final AdaptableInterval adaptableInterval = AdaptableInterval.of(Double.POSITIVE_INFINITY, interval1, interval2);
+        // THEN
+        final double actualValue = adaptableInterval.currentInterval(Mockito.mock(SpacecraftState.class), isForward);
+        Assertions.assertEquals(expectedValue, actualValue);
+    }
+
 }
