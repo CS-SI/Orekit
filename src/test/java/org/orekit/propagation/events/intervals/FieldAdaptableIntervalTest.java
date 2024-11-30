@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events.intervals;
 
+import org.hipparchus.util.Binary64;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -50,4 +51,20 @@ class FieldAdaptableIntervalTest {
         final double actualValue = fieldAdaptableInterval.currentInterval(Mockito.mock(FieldSpacecraftState.class), isForward);
         Assertions.assertEquals(expectedValue, actualValue);
     }
+
+    @ParameterizedTest
+    @SuppressWarnings("unchecked")
+    @ValueSource(booleans = {true, false})
+    void testAdaptableIntervalOf(final boolean isForward) {
+        // GIVEN
+        final double expectedValue = 1;
+        final FieldAdaptableInterval<Binary64> interval1 = FieldAdaptableInterval.of(expectedValue);
+        final FieldAdaptableInterval<Binary64> interval2 = FieldAdaptableInterval.of(expectedValue + 1);
+        // WHEN
+        final FieldAdaptableInterval<Binary64> adaptableInterval = FieldAdaptableInterval.of(Double.POSITIVE_INFINITY, interval1, interval2);
+        // THEN
+        final double actualValue = adaptableInterval.currentInterval(Mockito.mock(FieldSpacecraftState.class), isForward);
+        Assertions.assertEquals(expectedValue, actualValue);
+    }
 }
+

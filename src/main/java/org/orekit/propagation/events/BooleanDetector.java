@@ -27,6 +27,7 @@ import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -129,13 +130,8 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.AND,
-                new EventDetectionSettings((s, isForward) -> {
-                    double minInterval = Double.POSITIVE_INFINITY;
-                    for (final EventDetector detector : detectors) {
-                        minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
-                    }
-                    return minInterval;
-                },
+                new EventDetectionSettings(AdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
+                        .map(EventDetector::getMaxCheckInterval).toArray(AdaptableInterval[]::new)),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                 new ContinueOnEvent());
@@ -187,13 +183,8 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
 
         return new BooleanDetector(new ArrayList<>(detectors), // copy for immutability
                 Operator.OR,
-                new EventDetectionSettings((s, isForward) -> {
-                    double minInterval = Double.POSITIVE_INFINITY;
-                    for (final EventDetector detector : detectors) {
-                        minInterval = FastMath.min(minInterval, detector.getMaxCheckInterval().currentInterval(s, isForward));
-                    }
-                    return minInterval;
-                },
+                new EventDetectionSettings(AdaptableInterval.of(Double.POSITIVE_INFINITY, detectors.stream()
+                        .map(EventDetector::getMaxCheckInterval).toArray(AdaptableInterval[]::new)),
                 detectors.stream().map(EventDetector::getThreshold).min(Double::compareTo).get(),
                 detectors.stream().map(EventDetector::getMaxIterationCount).min(Integer::compareTo).get()),
                 new ContinueOnEvent());
