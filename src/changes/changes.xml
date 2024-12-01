@@ -252,6 +252,9 @@
         <action dev="bryan" type="fix" issue="1166">
             Added a new IOD Gooding algorithm without the need of range initial guesses.
         </action>
+        <action dev="bryan" type="add" issue="1039">
+            Added optional name for ObservableSatellite.
+        </action>
     </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
