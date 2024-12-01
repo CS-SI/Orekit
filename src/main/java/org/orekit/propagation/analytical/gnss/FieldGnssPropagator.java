@@ -195,7 +195,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // Corrected Inclination
         final FieldUnivariateDerivative2<T> ik  = tk.multiply(parameters[GNSSOrbitalElements.I_DOT_INDEX]).
                                                   add(orbitalElements.getI0()).add(dik);
-        final FieldUnivariateDerivative2<T> cik = ik.cos();
+        final FieldSinCos<FieldUnivariateDerivative2<T>> csik = FastMath.sinCos(ik);
         // Positions in orbital plane
         final FieldUnivariateDerivative2<T> xk = csuk.cos().multiply(rk);
         final FieldUnivariateDerivative2<T> yk = csuk.sin().multiply(rk);
@@ -207,9 +207,9 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
                             subtract(parameters[GNSSOrbitalElements.TIME_INDEX].multiply(orbitalElements.getAngularVelocity())));
         // returns the Earth-fixed coordinates
         final FieldVector3D<FieldUnivariateDerivative2<T>> positionWithDerivatives =
-                        new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(cik)),
-                                            xk.multiply(csomk.sin()).add(yk.multiply(csomk.cos()).multiply(cik)),
-                                            yk.multiply(ik.sin()));
+                        new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(csik.cos())),
+                                            xk.multiply(csomk.sin()).add(yk.multiply(csomk.cos()).multiply(csik.cos())),
+                                            yk.multiply(csik.sin()));
         return new FieldPVCoordinates<>(positionWithDerivatives);
 
     }

@@ -25,6 +25,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,6 +36,7 @@ import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.MatricesHarvester;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.CommonGnssData;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
@@ -405,6 +408,12 @@ public class GPSPropagatorTest {
 
     @Test
     public void testRebuildModel() {
+
+        final Frame            eci              = FramesFactory.getEME2000();
+        final Frame            ecef             = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        final double           mass             = Propagator.DEFAULT_MASS;
+        final AttitudeProvider attitudeProvider = FrameAlignedProvider.of(eci);
+
         // Initial GPS orbital elements (Ref: IGS)
         final GPSLegacyNavigationMessage goe = new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(),
                                                                               SatelliteSystem.GPS);
@@ -426,7 +435,8 @@ public class GPSPropagatorTest {
         goe.setCrs(87.03125);
         goe.setCic(3.203749656677246E-7);
         goe.setCis(4.0978193283081055E-8);
-        GNSSPropagator propagator = goe.getPropagator();
+        GNSSPropagator propagator = goe.getPropagator(DataContext.getDefault().getFrames(),
+                                                      attitudeProvider, eci, ecef, mass);
 
         final GNSSPropagator rebuilt = new GNSSPropagator(propagator.getInitialState(),
                                                           goe.getAngularVelocity(), goe.getSystem(),
@@ -437,8 +447,7 @@ public class GPSPropagatorTest {
                                                           goe.getCuc(), goe.getCus(),
                                                           goe.getCrc(), goe.getCrs(),
                                                           goe.getCic(), goe.getCis(),
-                                                          FramesFactory.getITRF(IERSConventions.IERS_2010, false),
-                                                          Utils.defaultLaw());
+                                                          ecef, attitudeProvider, mass);
         final GNSSOrbitalElements oe2 = rebuilt.getOrbitalElements();
         Assertions.assertEquals(0, goe.getDate().durationFrom(oe2),               1.0e-15);
 
