@@ -35,6 +35,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
 import org.orekit.time.TimeInterpolator;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinatesProvider;
@@ -231,6 +232,7 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
         }
 
         /** {@inheritDoc} */
+        @Override
         public double g(final SpacecraftState s) {
             return getDetector().g(forward ? s : s.shiftedBy(-transitionTime));
         }
@@ -261,18 +263,27 @@ public class AttitudesSequence extends AbstractSwitchingAttitudeProvider {
                 } else {
 
                     // estimate state at transition start, according to the past attitude law
-                    final Orbit     sOrbit    = s.getOrbit().shiftedBy(-transitionTime);
-                    final Attitude  sAttitude = getPast().getAttitude(sOrbit, sOrbit.getDate(), sOrbit.getFrame());
-                    SpacecraftState sState    = new SpacecraftState(sOrbit, sAttitude, s.getMass());
+                    final double dt = -transitionTime;
+                    final AbsoluteDate shiftedDate = date.shiftedBy(dt);
+                    SpacecraftState sState;
+                    if (s.isOrbitDefined()) {
+                        final Orbit     sOrbit    = s.getOrbit().shiftedBy(dt);
+                        final Attitude  sAttitude = getPast().getAttitude(sOrbit, shiftedDate, s.getFrame());
+                        sState    = new SpacecraftState(sOrbit, sAttitude, s.getMass());
+                    } else {
+                        final AbsolutePVCoordinates sAPV    = s.getAbsPVA().shiftedBy(dt);
+                        final Attitude  sAttitude = getPast().getAttitude(sAPV, shiftedDate, s.getFrame());
+                        sState    = new SpacecraftState(sAPV, sAttitude, s.getMass());
+                    }
                     for (final DoubleArrayDictionary.Entry entry : s.getAdditionalStatesValues().getData()) {
                         sState = sState.addAdditionalState(entry.getKey(), entry.getValue());
                     }
 
                     // prepare transition
-                    getActivated().addValidBefore(new TransitionProvider(sAttitude, date), date, false);
+                    getActivated().addValidBefore(new TransitionProvider(sState.getAttitude(), date), date, false);
 
                     // prepare past law before transition
-                    getActivated().addValidBefore(getPast(), sOrbit.getDate(), false);
+                    getActivated().addValidBefore(getPast(), shiftedDate, false);
 
                     // notify about the switch
                     if (getSwitchHandler() != null) {

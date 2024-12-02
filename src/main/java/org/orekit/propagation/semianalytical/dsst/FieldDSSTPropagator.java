@@ -349,7 +349,7 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      */
     public void setSelectedCoefficients(final Set<String> selectedCoefficients) {
         mapper.setSelectedCoefficients(selectedCoefficients == null ?
-                                       null : new HashSet<String>(selectedCoefficients));
+                                       null : new HashSet<>(selectedCoefficients));
     }
 
     /** Get the selected short periodic coefficients that must be stored as additional states.
@@ -1097,7 +1097,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit) {
         // estimate the scalar velocity error
         final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
@@ -1126,7 +1128,9 @@ public class FieldDSSTPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
      * @since 10.3
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
                                                                             final FieldOrbit<T> orbit) {
         return ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal(), dV.getReal(),
