@@ -524,7 +524,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
 
                 maneuverTriggers.getEventDetectors().
-                        filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
+                        filter(ParameterDrivenDateIntervalDetector.class::isInstance).
                         map(d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
                             TriggerDate start;
@@ -1079,7 +1079,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
         return ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
