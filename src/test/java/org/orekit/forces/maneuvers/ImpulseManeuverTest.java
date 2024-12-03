@@ -55,7 +55,7 @@ import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-public class ImpulseManeuverTest {
+class ImpulseManeuverTest {
 
     @ParameterizedTest
     @EnumSource(Action.class)
@@ -63,7 +63,7 @@ public class ImpulseManeuverTest {
         final Orbit initialOrbit =
             new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0 + 4 * FastMath.PI,
                                PositionAngleType.MEAN, FramesFactory.getEME2000(),
-                               new AbsoluteDate(new DateComponents(2008, 06, 23),
+                               new AbsoluteDate(new DateComponents(2008, 6, 23),
                                                 new TimeComponents(14, 18, 37),
                                                 TimeScalesFactory.getUTC()),
                                3.986004415e14);
@@ -84,7 +84,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testInertialManeuver() {
+    void testInertialManeuver() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;
@@ -115,7 +115,6 @@ public class ImpulseManeuverTest {
                                                                               RotationConvention.VECTOR_OPERATOR,
                                                                               0, 0, 0));
         ImpulseManeuver burnAtEpoch = new ImpulseManeuver(dateDetector.withThreshold(driftTimeInSec/4), attitudeOverride, deltaV, isp);
-        Assertions.assertEquals(0.0, Vector3D.distance(deltaV, burnAtEpoch.getDeltaVSat()), 1.0e-15);
         Assertions.assertEquals(isp, burnAtEpoch.getIsp(), 1.0e-15);
         Assertions.assertSame(dateDetector.getClass(), burnAtEpoch.getTrigger().getClass());
         propagator.addEventDetector(burnAtEpoch);
@@ -185,7 +184,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
 
         final AbsoluteDate iniDate = new AbsoluteDate(2003, 5, 1, 17, 30, 0.0, TimeScalesFactory.getUTC());
         final Orbit initialOrbit = new KeplerianOrbit(7e6, 1.0e-4, FastMath.toRadians(98.5),
@@ -212,7 +211,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testBackAndForth() {
+    void testBackAndForth() {
 
         final AttitudeProvider lof = new LofOffset(FramesFactory.getEME2000(), LOFType.VNC);
         final double mu = Constants.EIGEN5C_EARTH_MU;
@@ -253,7 +252,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStateKeplerian() {
+    void testAdditionalStateKeplerian() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;
@@ -296,7 +295,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testAdditionalStateNumerical() {
+    void testAdditionalStateNumerical() {
         final double mu = CelestialBodyFactory.getEarth().getGM();
 
         final double initialX = 7100e3;
@@ -364,13 +363,13 @@ public class ImpulseManeuverTest {
      * https://forum.orekit.org/t/python-error-using-impulsemaneuver-with-positionangledetector/771
      */
     @Test
-    public void testIssue663() {
+    void testIssue663() {
 
         // Initial orbit
         final Orbit initialOrbit =
                         new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
                                            PositionAngleType.MEAN, FramesFactory.getEME2000(),
-                                           new AbsoluteDate(new DateComponents(2008, 06, 23),
+                                           new AbsoluteDate(new DateComponents(2008, 6, 23),
                                                             new TimeComponents(14, 18, 37),
                                                             TimeScalesFactory.getUTC()),
                                            3.986004415e14);
@@ -395,7 +394,7 @@ public class ImpulseManeuverTest {
     }
 
     @Test
-    public void testControl3DVectorCostType() {
+    void testControl3DVectorCostType() {
 
         // GIVEN
         // Initial orbit
@@ -415,25 +414,26 @@ public class ImpulseManeuverTest {
         // Thrust configuration
         final DateDetector     dateDetector       = new DateDetector(date.shiftedBy(1000.));
         final AbsoluteDate     endPropagationDate = dateDetector.getDate().shiftedBy(10000.);
-        final AttitudeProvider provider           = new FrameAlignedProvider(gcrf);
+        final AttitudeProvider attitudeProvider = new FrameAlignedProvider(gcrf);
         final Vector3D         deltaV             = new Vector3D(2., -1., 0.5);
+        final ImpulseProvider impulseProvider = ImpulseProvider.of(deltaV);
         final double           initialMass        = 1000.;
         final double           isp                = 100.;
 
         // Building propagators
-        final KeplerianPropagator propagatorNone    = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
-        final KeplerianPropagator propagatorNorm1   = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
-        final KeplerianPropagator propagatorNorm2   = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
-        final KeplerianPropagator propagatorNormInf = new KeplerianPropagator(orbit, provider, orbit.getMu(), initialMass);
+        final KeplerianPropagator propagatorNone    = new KeplerianPropagator(orbit, attitudeProvider, orbit.getMu(), initialMass);
+        final KeplerianPropagator propagatorNorm1   = new KeplerianPropagator(orbit, attitudeProvider, orbit.getMu(), initialMass);
+        final KeplerianPropagator propagatorNorm2   = new KeplerianPropagator(orbit, attitudeProvider, orbit.getMu(), initialMass);
+        final KeplerianPropagator propagatorNormInf = new KeplerianPropagator(orbit, attitudeProvider, orbit.getMu(), initialMass);
 
         // Add impulse maneuvers
-        propagatorNone.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+        propagatorNone.addEventDetector(new ImpulseManeuver(dateDetector, attitudeProvider, impulseProvider, isp,
                 Control3DVectorCostType.NONE));
-        propagatorNorm1.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+        propagatorNorm1.addEventDetector(new ImpulseManeuver(dateDetector, attitudeProvider, impulseProvider, isp,
                 Control3DVectorCostType.ONE_NORM));
-        propagatorNorm2.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+        propagatorNorm2.addEventDetector(new ImpulseManeuver(dateDetector, attitudeProvider, impulseProvider, isp,
                 Control3DVectorCostType.TWO_NORM));
-        propagatorNormInf.addEventDetector(new ImpulseManeuver(dateDetector, provider, deltaV, isp,
+        propagatorNormInf.addEventDetector(new ImpulseManeuver(dateDetector, attitudeProvider, impulseProvider, isp,
                 Control3DVectorCostType.INF_NORM));
 
         // WHEN
@@ -456,6 +456,68 @@ public class ImpulseManeuverTest {
         Assertions.assertEquals(initialMass * FastMath.exp(deltaV.getNormInf() * factorExponential), finalMassWithNormInf);
     }
 
+    @Deprecated
+    @Test
+    void testDeprecatedConstructor() {
+        // GIVEN
+        final double expectedIsp = 10;
+        // WHEN
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(), null, Vector3D.ZERO,
+                expectedIsp, Control3DVectorCostType.NONE);
+        // THEN
+        Assertions.assertEquals(expectedIsp, maneuver.getIsp());
+    }
+
+    @Test
+    void testMultipleDates() {
+        // GIVEN
+        final Orbit initialOrbit = getOrbit();
+        final KeplerianPropagator propagator = new KeplerianPropagator(initialOrbit);
+        final AbsoluteDate[] dates = new AbsoluteDate[10];
+        for (int i = 0; i < dates.length; i++) {
+            dates[i] = initialOrbit.getDate().shiftedBy(i * 10 + 1);
+        }
+        final double isp = Double.POSITIVE_INFINITY;
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(dates).withMaxCheck(5), null, new GrowingImpulseProvider(), isp,
+                Control3DVectorCostType.NONE);
+        propagator.addEventDetector(maneuver);
+        // WHEN
+        final SpacecraftState actualState = propagator.propagate(dates[dates.length - 1].shiftedBy(1));
+        // THEN
+        propagator.resetInitialState(new SpacecraftState(initialOrbit));
+        propagator.clearEventsDetectors();
+        for (int i = 0; i < dates.length; i++) {
+            propagator.addEventDetector(new ImpulseManeuver(new DateDetector(dates[i]), Vector3D.PLUS_I.scalarMultiply(i + 1), isp));
+        }
+        final SpacecraftState expectedState = propagator.propagate(actualState.getDate());
+        final Vector3D relativePosition = expectedState.getPosition().subtract(actualState.getPosition());
+        Assertions.assertEquals(0., relativePosition.getNorm(), 1e-4);
+    }
+
+    private static class GrowingImpulseProvider implements ImpulseProvider {
+        int count = 0;
+
+        @Override
+        public Vector3D getImpulse(SpacecraftState state, boolean isForward, AttitudeProvider attitudeOverride) {
+            count++;
+            return Vector3D.PLUS_I.scalarMultiply(count);
+        }
+    }
+
+    private static CartesianOrbit getOrbit() {
+        final double mu = CelestialBodyFactory.getEarth().getGM();
+        final double initialX = 7100e3;
+        final double initialY = 0.0;
+        final double initialZ = 1300e3;
+        final double initialVx = 0;
+        final double initialVy = 8000;
+        final double initialVz = 1000;
+        final Vector3D position = new Vector3D(initialX, initialY, initialZ);
+        final Vector3D velocity = new Vector3D(initialVx, initialVy, initialVz);
+        final AbsoluteDate epoch = new AbsoluteDate(2010, 1, 1, 0, 0, 0, TimeScalesFactory.getUTC());
+        final TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(epoch, position, velocity, Vector3D.ZERO);
+        return new CartesianOrbit(pv, FramesFactory.getEME2000(), mu);
+    }
 
     @BeforeEach
     public void setUp() {
