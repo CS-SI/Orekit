@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 9.2
  */
-class KalmanEstimationCommon implements KalmanEstimation {
+abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, SequentialModel {
 
     /** Builders for propagators. */
     private final List<PropagatorBuilder> builders;
@@ -120,10 +120,10 @@ class KalmanEstimationCommon implements KalmanEstimation {
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    protected KalmanEstimationCommon(final List<PropagatorBuilder> propagatorBuilders,
-                                     final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                     final ParameterDriversList estimatedMeasurementParameters,
-                                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+    protected AbstractKalmanEstimationCommon(final List<PropagatorBuilder> propagatorBuilders,
+                                             final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                             final ParameterDriversList estimatedMeasurementParameters,
+                                             final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;

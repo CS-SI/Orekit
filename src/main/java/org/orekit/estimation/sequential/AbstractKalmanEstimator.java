@@ -33,7 +33,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Luc Maisonobe
  * @since 11.3
  */
-public abstract class AbstractKalmanEstimator {
+abstract class AbstractKalmanEstimator {
 
     /** List of propagator builder. */
     private final List<? extends PropagatorBuilder> builders;
@@ -135,6 +135,10 @@ public abstract class AbstractKalmanEstimator {
      */
     public ParameterDriversList getEstimatedMeasurementsParameters() {
         return getKalmanEstimation().getEstimatedMeasurementsParameters();
+    }
+
+    protected List<? extends PropagatorBuilder> getBuilders() {
+        return builders;
     }
 
     /** Get the provider for kalman filter estimations.

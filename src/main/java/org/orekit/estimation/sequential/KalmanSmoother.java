@@ -16,11 +16,8 @@
  */
 package org.orekit.estimation.sequential;
 
-import java.util.List;
-
 import org.hipparchus.filtering.kalman.KalmanFilter;
-import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
-import org.hipparchus.linear.MatrixDecomposer;
+import org.hipparchus.filtering.kalman.KalmanFilterSmoother;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.Ephemeris;
@@ -30,8 +27,6 @@ import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
-
 
 /**
  * Implementation of a Kalman filter to perform orbit determination.
@@ -71,55 +66,37 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class KalmanEstimator extends AbstractSequentialEstimator {
+public class KalmanSmoother extends AbstractSequentialEstimator {
 
-    /** Kalman filter process model. */
-    private final KalmanModel processModel;
+    /** Underlying estimator. */
+    private final AbstractSequentialEstimator estimator;
 
-    /** Filter. */
-    private final KalmanFilter<MeasurementDecorator> filter;
+    /** Smoother. */
+    private final KalmanFilterSmoother<MeasurementDecorator> smoother;
 
-    /** Kalman filter estimator constructor (package private).
-     * @param decomposer decomposer to use for the correction phase
-     * @param propagatorBuilders propagators builders used to evaluate the orbit.
-     * @param processNoiseMatricesProviders providers for process noise matrices
-     * @param estimatedMeasurementParameters measurement parameters to estimate
-     * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
-     * @since 10.3
+    /** Constructor.
+     * @param estimator the underlying (forward) Kalman or unscented estimator
      */
-    KalmanEstimator(final MatrixDecomposer decomposer,
-                    final List<PropagatorBuilder> propagatorBuilders,
-                    final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
-                    final ParameterDriversList estimatedMeasurementParameters,
-                    final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        super(decomposer, propagatorBuilders);
+    public KalmanSmoother(final AbstractSequentialEstimator estimator) {
+        super(estimator.getMatrixDecomposer(), estimator.getBuilders());
 
-        // Build the process model and measurement model
-        this.processModel = new KalmanModel(propagatorBuilders,
-                                            processNoiseMatricesProviders,
-                                            estimatedMeasurementParameters,
-                                            measurementProcessNoiseMatrix);
-
-        this.filter = new ExtendedKalmanFilter<>(decomposer, processModel, processModel.getEstimate());
-
+        this.estimator = estimator;
+        this.smoother = new KalmanFilterSmoother<>(estimator.getKalmanFilter(), getMatrixDecomposer());
     }
 
-    /** {@inheritDoc}. */
-    @Override
-    protected KalmanEstimation getKalmanEstimation() {
-        return processModel;
-    }
-
-    /** {@inheritDoc}. */
     @Override
     protected KalmanFilter<MeasurementDecorator> getKalmanFilter() {
-        return filter;
+        return smoother;
     }
 
-    /** {@inheritDoc}. */
     @Override
     protected SequentialModel getProcessModel() {
-        return processModel;
+        return estimator.getProcessModel();
+    }
+
+    @Override
+    protected KalmanEstimation getKalmanEstimation() {
+        return estimator.getKalmanEstimation();
     }
 
 }
