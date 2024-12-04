@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1621">
+            Add get(Field)DateDetector in EventDetectorsProvider.
+        </action>
         <action dev="serrof" type="update" issue="1619">
             Generalize (Field)ImpulseManeuver.
         </action>
