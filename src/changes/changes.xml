@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1619">
+            Generalize (Field)ImpulseManeuver.
+        </action>
         <action dev="serrof" type="update" issue="1618">
             Made all force models compatible with AbsolutePVCoordinates.
         </action>
