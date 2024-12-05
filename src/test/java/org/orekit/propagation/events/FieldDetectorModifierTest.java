@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
@@ -26,7 +27,7 @@ import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
 import org.orekit.time.FieldAbsoluteDate;
 
-class FieldAdapterDetectorTest {
+class FieldDetectorModifierTest {
 
     @Test
     @SuppressWarnings("unchecked")
@@ -35,9 +36,9 @@ class FieldAdapterDetectorTest {
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
         final FieldEventDetectionSettings detectionSettings = Mockito.mock(FieldEventDetectionSettings.class);
         Mockito.when(detector.getDetectionSettings()).thenReturn(detectionSettings);
-        final FieldAdapterDetector<?> adapterDetector = new FieldAdapterDetector<>(detector);
+        final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
-        final FieldEventDetectionSettings<?> actualSettings = adapterDetector.getDetectionSettings();
+        final FieldEventDetectionSettings<?> actualSettings = modifierDetector.getDetectionSettings();
         // THEN
         Assertions.assertEquals(detectionSettings, actualSettings);
     }
@@ -50,9 +51,9 @@ class FieldAdapterDetectorTest {
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
         final FieldEventHandler handler = Mockito.mock(FieldEventHandler.class);
         Mockito.when(detector.getHandler()).thenReturn(handler);
-        final FieldAdapterDetector<?> adapterDetector = new FieldAdapterDetector<>(detector);
+        final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
-        final FieldEventHandler<?> actualHandler = adapterDetector.getHandler();
+        final FieldEventHandler<?> actualHandler = modifierDetector.getHandler();
         // THEN
         Assertions.assertEquals(handler, actualHandler);
     }
@@ -65,9 +66,9 @@ class FieldAdapterDetectorTest {
         Mockito.when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
         final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
         final FieldAbsoluteDate mockedDate = Mockito.mock(FieldAbsoluteDate.class);
-        final FieldAdapterDetector<?> adapterDetector = new FieldAdapterDetector<>(detector);
+        final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
-        adapterDetector.init(mockedState, mockedDate);
+        modifierDetector.init(mockedState, mockedDate);
         // THEN
         Mockito.verify(detector).init(mockedState, mockedDate);
     }
@@ -81,9 +82,9 @@ class FieldAdapterDetectorTest {
         final FieldEventDetector<Binary64> detector = new FieldDateDetector<>(date);
         final FieldSpacecraftState<Binary64> mockedState = Mockito.mock(FieldSpacecraftState.class);
         Mockito.when(mockedState.getDate()).thenReturn(date);
-        final FieldAdapterDetector<Binary64> adapterDetector = new FieldAdapterDetector<>(detector);
+        final TestFieldDetector<Binary64> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
-        final double actualG = adapterDetector.g(mockedState).getReal();
+        final double actualG = modifierDetector.g(mockedState).getReal();
         // THEN
         Assertions.assertEquals(detector.g(mockedState).getReal(), actualG);
     }
@@ -95,10 +96,36 @@ class FieldAdapterDetectorTest {
         final FieldEventDetector<?> detector = Mockito.mock(FieldEventDetector.class);
         Mockito.when(detector.getHandler()).thenReturn(new FieldStopOnEvent<>());
         final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
-        final FieldAdapterDetector<?> adapterDetector = new FieldAdapterDetector<>(detector);
+        final TestFieldDetector<?> modifierDetector = new TestFieldDetector<>(detector);
         // WHEN
-        adapterDetector.finish(mockedState);
+        modifierDetector.finish(mockedState);
         // THEN
         Mockito.verify(detector).finish(mockedState);
+    }
+
+    @Deprecated
+    @Test
+    void testAdapterDetector() {
+        // GIVEN
+        final FieldDateDetector<Binary64> detector = new FieldDateDetector<>(Binary64Field.getInstance());
+        // WHEN
+        final FieldAdapterDetector<Binary64> adapterDetector = new FieldAdapterDetector<>(detector);
+        // THEN
+        final TestFieldDetector<Binary64> detectorModifier = new TestFieldDetector<>(detector);
+        Assertions.assertEquals(detectorModifier.getDetector(), adapterDetector.getDetector());
+    }
+
+    private static class TestFieldDetector<T extends CalculusFieldElement<T>> implements FieldDetectorModifier<T> {
+
+        private final FieldEventDetector<T> detector;
+
+        TestFieldDetector(final FieldEventDetector<T> detector) {
+            this.detector = detector;
+        }
+
+        @Override
+        public FieldEventDetector<T> getDetector() {
+            return detector;
+        }
     }
 }

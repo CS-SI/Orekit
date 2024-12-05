@@ -24,6 +24,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.forces.maneuvers.propulsion.ThrustPropulsionModel;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
@@ -66,7 +67,7 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver extends AbstractImpulseManeuver implements EventDetector {
+public class ImpulseManeuver extends AbstractImpulseManeuver implements DetectorModifier {
 
     /** Triggering event. */
     private final EventDetector trigger;
@@ -170,23 +171,14 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements EventDet
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        EventDetector.super.init(s0, t);
+        DetectorModifier.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()) >= 0;
-        // Initialize the triggering event
-        trigger.init(s0, t);
     }
 
     /** {@inheritDoc} */
     @Override
-    public double g(final SpacecraftState s) {
-        return trigger.g(s);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void finish(final SpacecraftState state) {
-        EventDetector.super.finish(state);
-        trigger.finish(state);
+    public EventDetector getDetector() {
+        return getTrigger();
     }
 
     /** {@inheritDoc} */
