@@ -136,7 +136,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
      */
     public FieldDateDetector<T> withMinGap(final double newMinGap) {
         @SuppressWarnings("unchecked")
-        final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
+        final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[0]);
         return new FieldDateDetector<>(getDetectionSettings(), getHandler(), newMinGap, dates);
     }
 
@@ -145,7 +145,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     protected FieldDateDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                           final FieldEventHandler<T> newHandler) {
         @SuppressWarnings("unchecked")
-        final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[eventDateList.size()]);
+        final FieldTimeStamped<T>[] dates = eventDateList.toArray(new FieldEventDate[0]);
         return new FieldDateDetector<>(detectionSettings, newHandler, minGap, dates);
     }
 

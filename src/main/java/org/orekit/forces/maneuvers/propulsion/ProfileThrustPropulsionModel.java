@@ -17,7 +17,7 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -26,7 +26,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -34,10 +33,8 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -146,17 +143,13 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     @Override
     public Stream<EventDetector> getEventDetectors() {
 
-        final double shortest = shortestSegmentDuration();
-        final DateDetector detector = new DateDetector().
-                                      withMaxCheck(0.5 * shortest).
-                                      withMinGap(0.5 * shortest).
-                                      withThreshold(DATATION_ACCURACY).
-                                      withHandler(new ResetDerivativesOnEvent());
+        final List<AbsoluteDate> transitionDates = new ArrayList<>();
         for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
-             transition != null;
-             transition = transition.next()) {
-            detector.addEventDate(transition.getDate());
+            transition != null;
+            transition = transition.next()) {
+            transitionDates.add(transition.getDate());
         }
+        final DateDetector detector = getDateDetector(transitionDates.toArray(new TimeStamped[0]));
         return Stream.of(detector);
     }
 
@@ -168,33 +161,14 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        final double shortest = shortestSegmentDuration();
-        @SuppressWarnings("unchecked")
-        final FieldDateDetector<T> detector = new FieldDateDetector<>(field,
-                                                                      (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
-                                              withMaxCheck(0.5 * shortest).
-                                              withMinGap(0.5 * shortest).
-                                              withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
-                                              withHandler(new FieldResetDerivativesOnEvent<>());
+        final List<AbsoluteDate> transitionDates = new ArrayList<>();
         for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
-             transition != null;
-             transition = transition.next()) {
-            detector.addEventDate(new FieldAbsoluteDate<>(field, transition.getDate()));
+            transition != null;
+            transition = transition.next()) {
+            transitionDates.add(transition.getDate());
         }
+        final FieldDateDetector<T> detector = getFieldDateDetector(field, transitionDates.toArray(new AbsoluteDate[0]));
         return Stream.of(detector);
-    }
-
-    /** Compute the duration of the shortest segment.
-     * @return duration of the shortest segment
-     */
-    private double shortestSegmentDuration() {
-        double shortest = Double.POSITIVE_INFINITY;
-        for (TimeSpanMap.Span<PolynomialThrustSegment> span = profile.getFirstSpan();
-             span != null;
-             span = span.next()) {
-            shortest = FastMath.min(shortest, span.getEnd().durationFrom(span.getStart()));
-        }
-        return shortest;
     }
 
     @Override

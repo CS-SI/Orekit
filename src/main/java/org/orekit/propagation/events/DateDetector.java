@@ -117,11 +117,15 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
         super(detectionSettings, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
-        this.eventDateList = new ArrayList<>(dates.length);
-        for (final TimeStamped ts : dates) {
-            addEventDate(ts.getDate());
-        }
+        this.eventDateList = new ArrayList<>();
         this.minGap        = minGap;
+        for (final TimeStamped ts : dates) {
+            final AbsoluteDate date = ts.getDate();
+            final boolean notPresentYet = eventDateList.stream().noneMatch(d -> d.getDate().isEqualTo(date));
+            if (notPresentYet) {
+                addEventDate(date);
+            }
+        }
     }
 
     /**
@@ -132,14 +136,14 @@ public class DateDetector extends AbstractDetector<DateDetector> implements Time
      */
     public DateDetector withMinGap(final double newMinGap) {
         return new DateDetector(getDetectionSettings(), getHandler(), newMinGap,
-                                eventDateList.toArray(new EventDate[eventDateList.size()]));
+                                eventDateList.toArray(new EventDate[0]));
     }
 
     /** {@inheritDoc} */
     @Override
     protected DateDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
         return new DateDetector(detectionSettings, newHandler, minGap,
-                                eventDateList.toArray(new EventDate[eventDateList.size()]));
+                                eventDateList.toArray(new EventDate[0]));
     }
 
     /** Get all event dates currently managed, in chronological order.
