@@ -73,6 +73,13 @@ public abstract class AbstractSequentialEstimator extends AbstractKalmanEstimato
         return decomposer;
     }
 
+    /** Get the reference date.
+     * @return the date
+     */
+    protected AbsoluteDate getReferenceDate() {
+        return referenceDate;
+    }
+
     /** Process a single measurement.
      * <p>
      * Update the filter with the new measurement by calling the estimate method.
@@ -106,8 +113,14 @@ public abstract class AbstractSequentialEstimator extends AbstractKalmanEstimato
         return propagators;
     }
 
+    /** Get the Hipparchus filter.
+     * @return the filter
+     */
     protected abstract KalmanFilter<MeasurementDecorator> getKalmanFilter();
 
+    /** Get the process model.
+     * @return the process model
+     */
     protected abstract SequentialModel getProcessModel();
 
 }

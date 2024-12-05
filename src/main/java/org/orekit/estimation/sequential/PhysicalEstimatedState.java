@@ -18,6 +18,8 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.errors.OrekitIllegalArgumentException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -38,6 +40,15 @@ public class PhysicalEstimatedState implements TimeStamped {
         this.date = date;
         this.state = state;
         this.covarianceMatrix = covarianceMatrix;
+
+        final int dim = state.getDimension();
+        if (!covarianceMatrix.isSquare()) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.COVARIANCE_MUST_BE_SQUARE);
+        }
+        if (covarianceMatrix.getRowDimension() != dim) {
+            throw new OrekitIllegalArgumentException(OrekitMessages.INCONSISTENT_STATE_DIMENSIONS,
+                    dim, covarianceMatrix.getRowDimension());
+        }
     }
 
     /** {@inheritDoc}. */
@@ -53,7 +64,7 @@ public class PhysicalEstimatedState implements TimeStamped {
         return state;
     }
 
-    /** Get the physical covariance.
+    /** Get the physical covariance matrix.
      * @return the state covariance
      */
     public RealMatrix getCovarianceMatrix() {

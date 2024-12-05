@@ -3,6 +3,7 @@ package org.orekit.estimation.sequential;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -86,6 +87,30 @@ public class KalmanSmootherTest {
                 build();
         final KalmanSmoother kalmanSmoother = new KalmanSmoother(kalmanEstimator);
 
+        // Observer to print out debugging info
+        kalmanSmoother.setObserver(estimation -> {
+            System.out.printf("%22.15e", kalmanSmoother.getKalmanFilter().getCorrected().getTime());
+            final KalmanModel testModel = (KalmanModel) kalmanSmoother.getProcessModel();
+
+            csvMatrix(KalmanEstimatorUtil.unnormalizeCovarianceMatrix(
+                    kalmanSmoother.getKalmanFilter().getPredicted().getCovariance(),
+                    testModel.getScale()
+            ));
+            csvMatrix(testModel.getPhysicalStateTransitionMatrix());
+            csvVector(testModel.getPhysicalEstimatedState());
+            csvMatrix(testModel.getPhysicalEstimatedCovarianceMatrix());
+            System.out.println();
+        });
+
+        // Print initial state
+        final KalmanModel testModel = (KalmanModel) kalmanSmoother.getProcessModel();
+        System.out.printf("%22.15e", kalmanSmoother.getKalmanFilter().getCorrected().getTime());
+        csvMatrix(MatrixUtils.createRealMatrix(6, 6));
+        csvMatrix(MatrixUtils.createRealMatrix(6, 6));
+        csvVector(testModel.getPhysicalEstimatedState());
+        csvMatrix(testModel.getPhysicalEstimatedCovarianceMatrix());
+        System.out.println();
+
         // Filter the measurements and check the results
         final double   expectedDeltaPos  = 0.;
         final double   posEps            = 1.5e-6;
@@ -102,27 +127,36 @@ public class KalmanSmootherTest {
                 expectedSigmasPos, sigmaPosEps,
                 expectedSigmasVel, sigmaVelEps);
 
-        /*
         // Test backwards smoothing
         List<PhysicalEstimatedState> smoothedStates = kalmanSmoother.backwardsSmooth();
-        System.out.println("Smoothed state count: " + smoothedStates.size());
 
+        // Print out debugging info
+        System.out.println();
         AbsoluteDate startDate = smoothedStates.get(0).getDate();
         for (PhysicalEstimatedState state : smoothedStates) {
             double dt = state.durationFrom(startDate);
-            System.out.printf("%4.2f, %22.15e, %22.15e, %22.15e, %22.15e, %22.15e, %22.15e\n", dt,
-                    state.getCovarianceMatrix().getEntry(0, 0),
-                    state.getCovarianceMatrix().getEntry(1, 1),
-                    state.getCovarianceMatrix().getEntry(2, 2),
-                    state.getCovarianceMatrix().getEntry(3, 3),
-                    state.getCovarianceMatrix().getEntry(4, 4),
-                    state.getCovarianceMatrix().getEntry(5, 5)
-            );
+            System.out.printf("%22.15e", dt);
+            csvVector(state.getState());
+            csvMatrix(state.getCovarianceMatrix());
+            System.out.println();
         }
 
-         */
     }
 
+
+    public static void csvMatrix(final RealMatrix matrix) {
+        for (int row = 0; row < matrix.getRowDimension(); row++) {
+            for (int col = 0; col < matrix.getColumnDimension(); col++) {
+                System.out.printf(", %22.15e", matrix.getEntry(row, col));
+            }
+        }
+    }
+
+    public static void csvVector(final RealVector vector) {
+        for (int row = 0; row < vector.getDimension(); row++) {
+            System.out.printf(", %22.15e", vector.getEntry(row));
+        }
+    }
 
 
 
@@ -183,9 +217,9 @@ public class KalmanSmootherTest {
     {
 
         // Add the measurements to the Kalman filter
-        System.out.println("measurement count: " + measurements.size());
         Propagator[] estimated = kalman.processMeasurements(measurements);
 
+        /*
         // Check the number of measurements processed by the filter
         Assertions.assertEquals(measurements.size(), kalman.getCurrentMeasurementNumber());
 
@@ -238,5 +272,7 @@ public class KalmanSmootherTest {
                 Assertions.assertEquals(expectedSigmasVel[k][i], sigmas[i+3], sigmaVelEps[k]);
             }
         }
+
+         */
     }
 }

@@ -593,7 +593,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, Seque
     /** Getter for the scale.
      * @return the scale
      */
-    protected double[] getScale() {
+    public double[] getScale() {
         return scale;
     }
 

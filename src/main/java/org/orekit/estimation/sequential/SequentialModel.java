@@ -33,4 +33,6 @@ public interface SequentialModel {
      * @return propagators based on the current values in the builder
      */
     Propagator[] getEstimatedPropagators();
+
+    double[] getScale();
 }

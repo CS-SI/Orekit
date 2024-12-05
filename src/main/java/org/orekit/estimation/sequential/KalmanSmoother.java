@@ -18,53 +18,15 @@ package org.orekit.estimation.sequential;
 
 import org.hipparchus.filtering.kalman.KalmanFilter;
 import org.hipparchus.filtering.kalman.KalmanFilterSmoother;
-import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.analytical.Ephemeris;
-import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.utils.ParameterDriver;
+import org.hipparchus.filtering.kalman.ProcessEstimate;
+import org.orekit.time.AbsoluteDate;
 
-/**
- * Implementation of a Kalman filter to perform orbit determination.
- * <p>
- * The filter uses a {@link PropagatorBuilder} to initialize its reference trajectory.
- * The Kalman estimator can be used with a {@link NumericalPropagator}, {@link TLEPropagator},
- * {@link BrouwerLyddanePropagator}, {@link EcksteinHechlerPropagator}, {@link KeplerianPropagator},
- * or {@link Ephemeris}.
- * </p>
- * <p>
- * Kalman estimation using a {@link DSSTPropagator semi-analytical orbit propagator} must be done using
- * the {@link SemiAnalyticalKalmanEstimator}.
- * </p>
- * <p>
- * The estimated parameters are driven by {@link ParameterDriver} objects. They are of 3 different types:<ol>
- *   <li><b>Orbital parameters</b>:The position and velocity of the spacecraft, or, more generally, its orbit.<br>
- *       These parameters are retrieved from the reference trajectory propagator builder when the filter is initialized.</li>
- *   <li><b>Propagation parameters</b>: Some parameters modelling physical processes (SRP or drag coefficients etc...).<br>
- *       They are also retrieved from the propagator builder during the initialization phase.</li>
- *   <li><b>Measurements parameters</b>: Parameters related to measurements (station biases, positions etc...).<br>
- *       They are passed down to the filter in its constructor.</li>
- * </ol>
- * <p>
- * The total number of estimated parameters is m, the size of the state vector.
- * </p>
- * <p>
- * The Kalman filter implementation used is provided by the underlying mathematical library Hipparchus.
- * All the variables seen by Hipparchus (states, covariances, measurement matrices...) are normalized
- * using a specific scale for each estimated parameters or standard deviation noise for each measurement components.
- * </p>
+import java.util.List;
+import java.util.stream.Collectors;
+
+/** Implementation of a Kalman smoother to perform orbit determination.
  *
- * <p>A {@link KalmanEstimator} object is built using the {@link KalmanEstimatorBuilder#build() build}
- * method of a {@link KalmanEstimatorBuilder}.</p>
- *
- * @author Romain Gerbaud
- * @author Maxime Journot
- * @author Luc Maisonobe
- * @since 9.2
+ * @author Mark Rutten
  */
 public class KalmanSmoother extends AbstractSequentialEstimator {
 
@@ -99,4 +61,24 @@ public class KalmanSmoother extends AbstractSequentialEstimator {
         return estimator.getKalmanEstimation();
     }
 
+    public List<PhysicalEstimatedState> backwardsSmooth() {
+
+        // Backwards smoothing step
+        final List<ProcessEstimate> normalisedStates = smoother.backwardsSmooth();
+
+        // Reference date
+        final AbsoluteDate referenceDate = estimator.getReferenceDate();
+
+        // Covariance scaling factors
+        final double[] covarianceScale = getProcessModel().getScale();
+
+        // Convert to physical states
+        return normalisedStates.stream()
+                .map(state -> new PhysicalEstimatedState(
+                        referenceDate.shiftedBy(state.getTime()),
+                        state.getState(),
+                        KalmanEstimatorUtil.unnormalizeCovarianceMatrix(state.getCovariance(), covarianceScale)
+                ))
+                .collect(Collectors.toList());
+    }
 }
