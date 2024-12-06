@@ -16,14 +16,23 @@
  */
 package org.orekit.files.ccsds.ndm.odm.ocm;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
+import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
 import org.orekit.files.ccsds.ndm.ParsedUnitsBehavior;
 import org.orekit.files.ccsds.ndm.ParserBuilder;
 import org.orekit.files.ccsds.ndm.WriterBuilder;
 import org.orekit.files.ccsds.ndm.odm.OdmHeader;
 import org.orekit.files.ccsds.section.Segment;
+import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.utils.Constants;
+import sun.misc.IOUtils;
 
 public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMetadata, OcmData>, Ocm> {
 
@@ -76,6 +85,35 @@ public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMeta
     @Test
     public void testWriteExample5Geodetic() {
         doTest("/ccsds/odm/ocm/OCMExample5Geodetic.txt");
+    }
+
+    /**
+     * Check that reading an OCM and writing it out doesn't add a bunch of optional fields
+     * without default values.
+     *
+     * @throws IOException on error.
+     */
+    @Test
+    public void testWriteMinimal1623() throws IOException {
+        // setup
+        // this file has every OCM section with all required values
+        String name = "/ccsds/odm/ocm/OCMMinimal.txt";
+        // this file also has the default values defined
+        String expectedName = "/ccsds/odm/ocm/OCMMinimalExpected.txt";
+        Ocm parsed = getParser().parse(
+                new DataSource(name, () -> this.getClass().getResourceAsStream(name)));
+        StringWriter buffer = new StringWriter();
+        Generator generator = new KvnGenerator(buffer, 0, "memory", 0, 0);
+
+        // action
+        getWriter().writeMessage(generator, parsed);
+
+        // verify
+        String expected = new String(
+                IOUtils.readAllBytes(this.getClass().getResourceAsStream(expectedName)),
+                StandardCharsets.UTF_8);
+        String actual = buffer.toString();
+        assertThat(actual, is(expected));
     }
 
 }

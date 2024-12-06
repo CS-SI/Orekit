@@ -86,10 +86,15 @@ public class CommonPhysicalProperties extends CommentsContainer {
      */
     public CommonPhysicalProperties() {
 
-        oebParentFrame           = new FrameFacade(null, null, OrbitRelativeFrame.RIC, null,
-                                                   OrbitRelativeFrame.RIC.name());
-        oebParentFrameEpoch      = AbsoluteDate.ARBITRARY_EPOCH;
-        oebQ                     = new double[4];
+        // 502.0-B-3 (page 6-23) says the default is RSW_ROTATING, but also says,
+        // "This keyword shall be provided if OEB_Q1,2,3,4 are specified".
+        // Which means it must be specified in the file any time it would be used,
+        // which leaves the default without any effect.
+        oebParentFrame           = new FrameFacade(null, null, null, null, null);
+        // 502.0-B-3 (page 6-23) says the default is EPOCH_TZERO from the OCM metadata.
+        oebParentFrameEpoch      = null;
+        // 502.0-B-3 (page 6-23) says these four values are optional.
+        oebQ                     = new double[]{Double.NaN, Double.NaN, Double.NaN, Double.NaN};
         oebMax                   = Double.NaN;
         oebIntermediate          = Double.NaN;
         oebMin                   = Double.NaN;

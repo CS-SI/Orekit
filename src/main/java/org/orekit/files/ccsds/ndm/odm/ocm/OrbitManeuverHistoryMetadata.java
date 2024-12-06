@@ -139,7 +139,8 @@ public class OrbitManeuverHistoryMetadata extends CommentsContainer {
     public OrbitManeuverHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        manBasis            = ManBasis.PLANNED;
+        // In 502.0-B-3 (p. 6-39) MAN_BASIS is optional and has no default
+        manBasis            = null;
         manReferenceFrame   = new FrameFacade(null, null,
                                               OrbitRelativeFrame.TNW_INERTIAL, null,
                                               OrbitRelativeFrame.TNW_INERTIAL.name());

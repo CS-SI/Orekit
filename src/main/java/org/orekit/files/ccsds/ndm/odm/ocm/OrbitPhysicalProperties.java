@@ -20,6 +20,7 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hipparchus.linear.DefaultRealMatrixChangingVisitor;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.orekit.files.ccsds.ndm.CommonPhysicalProperties;
@@ -105,7 +106,7 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
     private double remainingDv;
 
     /** Inertia matrix. */
-    private RealMatrix inertiaMatrix;
+    private final RealMatrix inertiaMatrix;
 
     /** Simple constructor.
      * @param epochT0 T0 epoch from file metadata
@@ -118,9 +119,14 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
         dockedWith                     = new ArrayList<>();
+        // 502.0-B-3 (page 6-22) says these drag values are optional.
         dragConstantArea               = Double.NaN;
         dragCoefficient                = Double.NaN;
-        dragUncertainty                = 0.0;
+        dragUncertainty                = Double.NaN;
+        // 502.0-B-3 (page 6-25) says these SRP values are optional.
+        srpCoefficient                 = Double.NaN;
+        srpConstantArea                = Double.NaN;
+        srpUncertainty                 = Double.NaN;
         initialWetMass                 = Double.NaN;
         wetMass                        = Double.NaN;
         dryMass                        = Double.NaN;
@@ -134,7 +140,15 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
         maxThrust                      = Double.NaN;
         bolDv                          = Double.NaN;
         remainingDv                    = Double.NaN;
+        // 502.0-B-3 (page 6-27) says these inertia values are optional.
         inertiaMatrix                  = MatrixUtils.createRealMatrix(3, 3);
+        // set all values to NaN
+        inertiaMatrix.walkInOptimizedOrder(new DefaultRealMatrixChangingVisitor() {
+            @Override
+            public double visit(int i, int i1, double v) {
+                return Double.NaN;
+            }
+        });
     }
 
     /** Get manufacturer name.
