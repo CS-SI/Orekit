@@ -39,4 +39,10 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage {
               timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected QZSSCivilianNavigationMessage uninitializedCopy() {
+        return new QZSSCivilianNavigationMessage(isCnv2(), getTimeScales(), getSystem());
+    }
+
 }

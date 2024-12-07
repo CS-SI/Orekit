@@ -108,6 +108,12 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
         this.radioWave = radioWave;
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected BeidouCivilianNavigationMessage uninitializedCopy() {
+        return new BeidouCivilianNavigationMessage(radioWave, getTimeScales(), getSystem());
+    }
+
     /**
      * Getter for radio wave.
      * @return radio wave on which navigation signal is sent

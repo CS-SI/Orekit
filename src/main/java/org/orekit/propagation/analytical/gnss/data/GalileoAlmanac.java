@@ -61,6 +61,12 @@ public class GalileoAlmanac extends AbstractAlmanac {
         super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected GalileoAlmanac uninitializedCopy() {
+        return new GalileoAlmanac(getTimeScales(), getSystem());
+    }
+
     /**
      * Sets the difference between the square root of the semi-major axis
      * and the square root of the nominal semi-major axis.

@@ -46,6 +46,12 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
               timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected IRNSSNavigationMessage uninitializedCopy() {
+        return new IRNSSNavigationMessage(getTimeScales(), getSystem());
+    }
+
     /**
      * Getter for the Issue Of Data Ephemeris and Clock (IODEC).
      * @return the Issue Of Data Ephemeris and Clock (IODEC)

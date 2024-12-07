@@ -37,4 +37,10 @@ public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage {
               timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected QZSSLegacyNavigationMessage uninitializedCopy() {
+        return new QZSSLegacyNavigationMessage(getTimeScales(), getSystem());
+    }
+
 }

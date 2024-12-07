@@ -62,6 +62,13 @@ public abstract class AbstractNavigationMessage extends AbstractAlmanac {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected void copyNonKeplerian(final GNSSOrbitalElements original) {
+        super.copyNonKeplerian(original);
+        setDeltaN(((AbstractNavigationMessage) original).getDeltaN());
+    }
+
     /**
      * Getter for Square Root of Semi-Major Axis (√m).
      * @return Square Root of Semi-Major Axis (√m)

@@ -45,6 +45,12 @@ public class QZSSAlmanac extends AbstractAlmanac {
         super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected QZSSAlmanac uninitializedCopy() {
+        return new QZSSAlmanac(getTimeScales(), getSystem());
+    }
+
     /**
      * Setter for the Square Root of Semi-Major Axis (m^1/2).
      * <p>

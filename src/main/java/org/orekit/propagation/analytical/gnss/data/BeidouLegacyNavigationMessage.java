@@ -59,6 +59,12 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage {
               timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected BeidouLegacyNavigationMessage uninitializedCopy() {
+        return new BeidouLegacyNavigationMessage(getTimeScales(), getSystem());
+    }
+
     /**
      * Getter for the Age Of Data Clock (AODC).
      * @return the Age Of Data Clock (AODC)

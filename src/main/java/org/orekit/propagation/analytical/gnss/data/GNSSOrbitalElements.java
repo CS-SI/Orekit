@@ -130,6 +130,11 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     /** Mean angular velocity of the Earth for the GNSS model. */
     private final double angularVelocity;
 
+    /** Duration of the GNSS cycle in weeks.
+     * @since 13.0
+     */
+    private final int weeksInCycle;
+
     /** Duration of the GNSS cycle in seconds. */
     private final double cycleDuration;
 
@@ -206,6 +211,7 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
         // immutable fields
         this.mu              = mu;
         this.angularVelocity = angularVelocity;
+        this.weeksInCycle    = weeksInCycle;
         this.cycleDuration   = GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
         this.system          = system;
         this.timeScales      = timeScales;
@@ -254,6 +260,39 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     protected static ParameterDriver createDriver(final String name) {
         return new ParameterDriver(name, 0, FastMath.scalb(1.0, -30),
                                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+    }
+
+    /** Create a copy with only the non-Keplerian elements initialized.
+     * @return copy of the instance with only the non-Keplerian elements initialized
+     */
+    public GNSSOrbitalElements copyNonKeplerian() {
+        final GNSSOrbitalElements copy = uninitializedCopy();
+        copy.copyNonKeplerian(this);
+        return copy;
+    }
+
+    /** Create an uninitialized copy.
+     * @return uninitialized copy of the instance
+     */
+    protected GNSSOrbitalElements uninitializedCopy() {
+        return new GNSSOrbitalElements(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Copy the non-Keplerian elements from another instance.
+     * @param original instance providing the non-Keplerian elements
+     */
+    protected void copyNonKeplerian(final GNSSOrbitalElements original) {
+        setPRN(original.getPRN());
+        setWeek(original.getWeek());
+        setTime(original.getTime());
+        setIDot(original.getIDot());
+        setOmegaDot(original.getOmegaDot());
+        setCuc(original.getCuc());
+        setCus(original.getCus());
+        setCrc(original.getCrc());
+        setCrs(original.getCrs());
+        setCic(original.getCic());
+        setCis(original.getCis());
     }
 
     /** Get satellite system.
@@ -309,22 +348,30 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
         return date;
     }
 
-    /** Get the driver for the Earth's universal gravitational parameter.
-     * @return driver for the Earth's universal gravitational parameter
+    /** Get the Earth's universal gravitational parameter.
+     * @return the Earth's universal gravitational parameter
      */
     public double getMu() {
         return mu;
     }
 
-    /** Get the driver for the mean angular velocity of the Earth of the GNSS model.
-     * @return driver for the mean angular velocity of the Earth of the GNSS model
+    /** Get the mean angular velocity of the Earth of the GNSS model.
+     * @return mean angular velocity of the Earth of the GNSS model
      */
     public double getAngularVelocity() {
         return angularVelocity;
     }
 
-    /** Get the driver for the duration of the GNSS cycle in seconds.
-     * @return driver for the duration of the GNSS cycle in seconds
+    /** Get for the duration of the GNSS cycle in weeks.
+     * @return the duration of the GNSS cycle in weeks
+     * @since 13.0
+     */
+    public int getWeeksInCycle() {
+        return weeksInCycle;
+    }
+
+    /** Get for the duration of the GNSS cycle in seconds.
+     * @return the duration of the GNSS cycle in seconds
      */
     public double getCycleDuration() {
         return cycleDuration;

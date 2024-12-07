@@ -57,6 +57,12 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage {
               timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected GalileoNavigationMessage uninitializedCopy() {
+        return new GalileoNavigationMessage(getTimeScales(), getSystem());
+    }
+
     /**
      * Getter for the the Issue Of Data (IOD).
      * @return the Issue Of Data (IOD)

@@ -58,6 +58,12 @@ public class GPSAlmanac extends AbstractAlmanac {
         super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected GPSAlmanac uninitializedCopy() {
+        return new GPSAlmanac(getTimeScales(), getSystem());
+    }
+
     /**
      * Setter for the Square Root of Semi-Major Axis (m^1/2).
      * <p>

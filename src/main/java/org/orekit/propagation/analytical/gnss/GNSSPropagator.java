@@ -32,7 +32,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
 import org.orekit.orbits.KeplerianAnomalyUtility;
@@ -45,9 +44,6 @@ import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
-import org.orekit.time.GNSSDate.GNSSDateType;
-import org.orekit.time.TimeScales;
 import org.orekit.utils.DoubleArrayDictionary;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
@@ -57,7 +53,6 @@ import org.orekit.utils.TimeSpanMap.Span;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 /** Common handling of {@link AbstractAnalyticalPropagator} methods for GNSS propagators.
  * <p>
@@ -68,13 +63,29 @@ import java.util.Locale;
  */
 public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
-    /** Maximum number of iterations for internal loops. */
+    /** Maximum number of iterations for internal loops.
+     * @since 13.0
+     */
     private static final int MAX_ITER = 100;
 
-    /** Number of free parameters for orbital elements. */
+    /** Tolerance on position for rebuilding orbital elements from initial state.
+     * @since 13.0
+     */
+    private static final double TOL_P = 1.0e-6;
+
+    /** Tolerance on velocity for rebuilding orbital elements from initial state.
+     * @since 13.0
+     */
+    private static final double TOL_V = 1.0e-9;
+
+    /** Number of free parameters for orbital elements.
+     * @since 13.0
+     */
     private static final int FREE_PARAMETERS = 6;
 
-    /** Convergence parameter. */
+    /** Convergence parameter.
+     * @since 13.0
+     */
     private static final double EPS = 1.0e-12;
 
     /** The GNSS propagation model used. */
@@ -120,36 +131,22 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /**
-     * Build a new instance.
-     *
-     * @param initialState    initial state
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param system          satellite system to consider for interpreting week number (may be different from real
-     *                        system, for example in Rinex nav weeks are always according to GPS)
-     * @param timeScales      known time scales
-     * @param prn             PRN number of the satellite
-     * @param iDot            inclination rate (rad/s)
-     * @param dom             rate of right ascension (rad/s)
-     * @param cuc             amplitude of the cosine harmonic correction term to the argument of latitude
-     * @param cus             amplitude of the sine harmonic correction term to the argument of latitude
-     * @param crc             amplitude of the cosine harmonic correction term to the orbit radius
-     * @param crs             amplitude of the sine harmonic correction term to the orbit radius
-     * @param cic             amplitude of the cosine harmonic correction term to the inclination
-     * @param cis             amplitude of the sine harmonic correction term to the inclination
-     * @param ecef            Earth Centered Earth Fixed frame
-     * @param provider        attitude provider
-     * @param mass            spacecraft mass
+     * Build a new instance from an initial state.
+     * <p>
+     * The Keplerian elements already present in the {@code nonKeplerianElements} argument
+     * will be ignored as it is the {@code initialState} argument that will be used to
+     * build the complete {@link #getOrbitalElements() orbital elements} of the propagator
+     * </p>
+     * @param initialState         initial state
+     * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be ignored)
+     * @param ecef                 Earth Centered Earth Fixed frame
+     * @param provider             attitude provider
+     * @param mass                 spacecraft mass
      * @since 13.0
      */
-    GNSSPropagator(final SpacecraftState initialState, final double angularVelocity,
-                   final SatelliteSystem system, final TimeScales timeScales,
-                   final int prn, final double iDot, final double dom,
-                   final double cuc, final double cus,
-                   final double crc, final double crs,
-                   final double cic, final double cis,
+    GNSSPropagator(final SpacecraftState initialState, final GNSSOrbitalElements nonKeplerianElements,
                    final Frame ecef, final AttitudeProvider provider, final double mass) {
-        this(buildOrbitalElements(initialState, angularVelocity, system, timeScales, prn,
-                                  iDot, dom, cuc, cus, crc, crs, cic, cis, ecef, provider, mass),
+        this(buildOrbitalElements(initialState, nonKeplerianElements, ecef, provider, mass),
              initialState.getFrame(), ecef, provider, initialState.getMass());
     }
 
@@ -282,19 +279,6 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
                         new FieldVector3D<>(xk.multiply(csomk.cos()).subtract(yk.multiply(csomk.sin()).multiply(csik.cos())),
                                             xk.multiply(csomk.sin()).add(yk.multiply(csomk.cos()).multiply(csik.cos())),
                                             yk.multiply(csik.sin()));
-        System.out.format(Locale.US, "input: mk     = %.9f%n", mk.getValue());
-        System.out.format(Locale.US, "input: e      = %.9f%n", e.getValue());
-        System.out.format(Locale.US, "input: ek     = %.9f%n", ek.getValue());
-        System.out.format(Locale.US, "input: vk     = %.9f%n", vk.getValue());
-        System.out.format(Locale.US, "input: phik   = %.9f%n", phik.getValue());
-        System.out.format(Locale.US, "input: cs2phi = %.9f, %.9f%n", cs2phi.cos().getValue(), cs2phi.sin().getValue());
-        System.out.format(Locale.US, "input: dphik  = %.9f%n", dphik.getValue());
-        System.out.format(Locale.US, "input: drk    = %.9f%n", drk.getValue());
-        System.out.format(Locale.US, "input: dik    = %.9f%n", dik.getValue());
-        System.out.format(Locale.US, "input: ik     = %.9f%n", ik.getValue());
-        System.out.format(Locale.US, "input: csik   = %.9f, %.9f%n", csik.cos().getValue(), csik.sin().getValue());
-        System.out.format(Locale.US, "input: xk     = %.9f%n", xk.getValue());
-        System.out.format(Locale.US, "input: yk     = %.9f%n", yk.getValue());
         return new PVCoordinates(positionWithDerivatives);
     }
 
@@ -351,19 +335,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * </p>
      *
      * @param initialState    initial state
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param system          satellite system to consider for interpreting week number (may be different from real
-     *                        system, for example in Rinex nav weeks are always according to GPS)
-     * @param timeScales      known time scales
-     * @param prn             PRN number of the satellite
-     * @param iDot            inclination rate (rad/s)
-     * @param dom             rate of right ascension (rad/s)
-     * @param cuc             amplitude of the cosine harmonic correction term to the argument of latitude
-     * @param cus             amplitude of the sine harmonic correction term to the argument of latitude
-     * @param crc             amplitude of the cosine harmonic correction term to the orbit radius
-     * @param crs             amplitude of the sine harmonic correction term to the orbit radius
-     * @param cic             amplitude of the cosine harmonic correction term to the inclination
-     * @param cis             amplitude of the sine harmonic correction term to the inclination
+     * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be ignored)
      * @param ecef            Earth Centered Earth Fixed frame
      * @param provider        attitude provider
      * @param mass            satellite mass (kg)
@@ -371,50 +343,23 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @since 13.0
      */
     private static GNSSOrbitalElements buildOrbitalElements(final SpacecraftState initialState,
-                                                            final double angularVelocity,
-                                                            final SatelliteSystem system, final TimeScales timeScales,
-                                                            final int prn, final double iDot, final double dom,
-                                                            final double cuc, final double cus,
-                                                            final double crc, final double crs,
-                                                            final double cic, final double cis,
+                                                            final GNSSOrbitalElements nonKeplerianElements,
                                                             final Frame ecef, final AttitudeProvider provider,
                                                             final double mass) {
 
         // build the elements with immutable parts
-        final GNSSOrbitalElements elements = new GNSSOrbitalElements(initialState.getMu(),
-                                                                     angularVelocity,
-                                                                     GNSSDateType.getRollOverWeek(system),
-                                                                     timeScales,
-                                                                     system);
-
-        // set satellite identifier
-        elements.setPRN(prn);
-
-        // set GNSS date
-        final GNSSDate gnssDate = new GNSSDate(initialState.getDate(), system, timeScales);
-        elements.setWeek(gnssDate.getWeekNumber());
-        elements.setTime(gnssDate.getSecondsInWeek());
-
-        // set non-Keplerian evolution parameters
-        elements.setIDot(iDot);
-        elements.setOmegaDot(dom);
-        elements.setCuc(cuc);
-        elements.setCus(cus);
-        elements.setCrc(crc);
-        elements.setCrs(crs);
-        elements.setCic(cic);
-        elements.setCis(cis);
+        final GNSSOrbitalElements elements = nonKeplerianElements.copyNonKeplerian();
 
         // get approximate initial orbit
         final Frame frozenEcef = ecef.getFrozenFrame(initialState.getFrame(), initialState.getDate(), "frozen");
-        KeplerianOrbit orbit = approximateInitialOrbit(initialState, frozenEcef, angularVelocity,
-                                                       gnssDate.getSecondsInWeek(), cuc, cus, cic, cis);
+        KeplerianOrbit orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
 
+        // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssOrbitalElements<Gradient> gElements = convert(elements, orbit, timeScales);
+            final FieldGnssOrbitalElements<Gradient> gElements = convert(elements, orbit);
             final FieldGnssPropagator<Gradient> gPropagator =
                 new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
                                           gElements.getMu().newInstance(mass));
@@ -447,14 +392,16 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
                                        orbit.getRightAscensionOfAscendingNode() + correction.getEntry(4),
                                        orbit.getMeanAnomaly()                   + correction.getEntry(5),
                                        PositionAngleType.MEAN, PositionAngleType.MEAN,
-                                       initialState.getFrame(), initialState.getDate(), initialState.getMu());
+                                       frozenEcef, initialState.getDate(), initialState.getMu());
 
             final double deltaP = FastMath.sqrt(residuals.getEntry(0) * residuals.getEntry(0) +
                                                 residuals.getEntry(1) * residuals.getEntry(1) +
                                                 residuals.getEntry(2) * residuals.getEntry(2));
+            final double deltaV = FastMath.sqrt(residuals.getEntry(3) * residuals.getEntry(3) +
+                                                residuals.getEntry(4) * residuals.getEntry(4) +
+                                                residuals.getEntry(5) * residuals.getEntry(5));
 
-            System.out.format(Locale.US, "%i %f%n", i, deltaP);
-            if (deltaP < 1.0e-6) {
+            if (deltaP < TOL_P && deltaV < TOL_V) {
                 break;
             }
 
@@ -473,22 +420,15 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Compute approximate initial orbit.
-     * @param initialState    initial state
-     * @param frozenEcef      inertial frame aligned with Earth Centered Earth Fixed frame at orbit date
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param time            reference time of the orbit
-     * @param cuc             amplitude of the cosine harmonic correction term to the argument of latitude
-     * @param cus             amplitude of the sine harmonic correction term to the argument of latitude
-     * @param cic             amplitude of the cosine harmonic correction term to the inclination
-     * @param cis             amplitude of the sine harmonic correction term to the inclination
+     * @param initialState         initial state
+     * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be ignored)
+     * @param frozenEcef           inertial frame aligned with Earth Centered Earth Fixed frame at orbit date
      * @return approximate initial orbit that generate a state close to {@code initialState}
      * @since 13.0
      */
     private static KeplerianOrbit approximateInitialOrbit(final SpacecraftState initialState,
-                                                          final Frame frozenEcef,
-                                                          final double angularVelocity, final double time,
-                                                          final double cuc, final double cus,
-                                                          final double cic, final double cis) {
+                                                          final GNSSOrbitalElements nonKeplerianElements,
+                                                          final Frame frozenEcef) {
 
         // rotate the state to a frame that is inertial but aligned with Earth frame,
         // as analytical model is expressed in Earth frame
@@ -519,7 +459,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         for (int i = 0; i < MAX_ITER; ++i) {
             final double previous = phi;
             final SinCos cs2Phi = FastMath.sinCos(2 * phi);
-            phi = uk - (cs2Phi.cos() * cuc + cs2Phi.sin() * cus);
+            phi = uk - (cs2Phi.cos() * nonKeplerianElements.getCuc() + cs2Phi.sin() * nonKeplerianElements.getCus());
             if (FastMath.abs(phi - previous) <= EPS) {
                 break;
             }
@@ -528,8 +468,9 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
         // recover plane orientation before correction
         // here, we know that tk = 0 since our orbital elements will be at initial state date
-        final double i0  = ik - (cs2phi.cos() * cic + cs2phi.sin() * cis);
-        final double om0 = FastMath.atan2(sin, cos) + angularVelocity * time;
+        final double i0  = ik - (cs2phi.cos() * nonKeplerianElements.getCic() + cs2phi.sin() * nonKeplerianElements.getCis());
+        final double om0 = FastMath.atan2(sin, cos) +
+                           nonKeplerianElements.getAngularVelocity() * nonKeplerianElements.getTime();
 
         // recover eccentricity and anomaly
         final double rV2OMu           = rk * v.getNormSq() / initialState.getMu();
@@ -539,10 +480,10 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         final double e                = FastMath.hypot(eCosE, eSinE);
         final double eccentricAnomaly = FastMath.atan2(eSinE, eCosE);
         final double aop              = phi - eccentricAnomaly;
-        final double meanAnomaly      = KeplerianAnomalyUtility.ellipticEccentricToMean(e, e);
+        final double meanAnomaly      = KeplerianAnomalyUtility.ellipticEccentricToMean(e, eccentricAnomaly);
 
         return new KeplerianOrbit(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN,
-                                  PositionAngleType.MEAN, initialState.getFrame(),
+                                  PositionAngleType.MEAN, frozenEcef,
                                   initialState.getDate(), initialState.getMu());
 
     }
@@ -550,13 +491,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     /** Convert orbital elements to gradient.
      * @param elements   primitive double elements
      * @param orbit      Keplerian orbit
-     * @param timeScales known time scales
      * @return converted elements, set up as gradient relative to Keplerian orbit
      * @since 13.0
      */
     private static FieldGnssOrbitalElements<Gradient> convert(final GNSSOrbitalElements elements,
-                                                              final KeplerianOrbit orbit,
-                                                              final TimeScales timeScales) {
+                                                              final KeplerianOrbit orbit) {
 
         // non-Keplerian evolution parameters
         final double[] parameters = elements.getParameters();
@@ -568,7 +507,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         // build the converted elements
         return new FieldGnssOrbitalElements<>(Gradient.constant(FREE_PARAMETERS, elements.getMu()),
                                               elements.getAngularVelocity(), elements.getCycleDuration(),
-                                              elements.getSystem(), timeScales,
+                                              elements.getSystem(), elements.getTimeScales(),
                                               elements.getPRN(), elements.getWeek(),
                                               Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()),
                                               Gradient.variable(FREE_PARAMETERS, 1, orbit.getE()),

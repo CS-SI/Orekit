@@ -45,6 +45,12 @@ public class BeidouAlmanac extends AbstractAlmanac {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected BeidouAlmanac uninitializedCopy() {
+        return new BeidouAlmanac(getTimeScales(), getSystem());
+    }
+
     /**
      * Sets the Square Root of Semi-Major Axis (m^1/2).
      * <p>

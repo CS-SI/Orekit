@@ -39,4 +39,10 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage {
               timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected GPSCivilianNavigationMessage uninitializedCopy() {
+        return new GPSCivilianNavigationMessage(isCnv2(), getTimeScales(), getSystem());
+    }
+
 }

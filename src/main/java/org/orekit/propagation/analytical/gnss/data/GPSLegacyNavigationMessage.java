@@ -37,4 +37,10 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage {
               timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected GPSLegacyNavigationMessage uninitializedCopy() {
+        return new GPSLegacyNavigationMessage(getTimeScales(), getSystem());
+    }
+
 }

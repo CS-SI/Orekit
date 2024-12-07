@@ -42,6 +42,12 @@ public class IRNSSAlmanac extends AbstractAlmanac {
         super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
     }
 
+    /**  {@inheritDoc} */
+    @Override
+    protected IRNSSAlmanac uninitializedCopy() {
+        return new IRNSSAlmanac(getTimeScales(), getSystem());
+    }
+
     /**
      * Setter for the Square Root of Semi-Major Axis (m^1/2).
      * <p>
