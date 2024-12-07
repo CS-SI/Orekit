@@ -20,7 +20,6 @@ import org.hipparchus.util.FastMath;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.events.AdaptableInterval;
 
 /**
  * Factory class for {@link AdaptableInterval} suitable for elevation detection on eccentric orbits.

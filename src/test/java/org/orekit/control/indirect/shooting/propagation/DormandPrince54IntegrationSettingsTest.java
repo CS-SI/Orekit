@@ -25,6 +25,7 @@ import org.hipparchus.ode.nonstiff.DormandPrince54FieldIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.conversion.DormandPrince54FieldIntegratorBuilder;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
@@ -35,7 +36,7 @@ class DormandPrince54IntegrationSettingsTest {
     void testFieldGetIntegratorBuilder() {
         // GIVEN
         final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(1., 10.,
-                1e-6, 1e-9);
+                ToleranceProvider.of(1, 2));
         final ComplexField field = ComplexField.getInstance();
         // WHEN
         final DormandPrince54FieldIntegratorBuilder<Complex> builder = integrationSettings.getFieldIntegratorBuilder(field);

@@ -104,7 +104,7 @@ public class DateDetectorTest {
         // THEN
         Assertions.assertEquals(DateDetector.DEFAULT_MAX_ITER, detector.getDetectionSettings().getMaxIterationCount());
         Assertions.assertEquals(DateDetector.DEFAULT_THRESHOLD, detector.getDetectionSettings().getThreshold());
-        Assertions.assertEquals(DateDetector.DEFAULT_DETECTION_SETTINGS.getMaxCheckInterval().currentInterval(mockedState, true),
+        Assertions.assertEquals(DateDetector.DEFAULT_MAX_CHECK,
                 detector.getMaxCheckInterval().currentInterval(mockedState, true));
     }
 

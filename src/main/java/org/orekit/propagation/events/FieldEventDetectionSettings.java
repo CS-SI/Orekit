@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 /**
  * Class containing parameters for event detection.
@@ -31,13 +32,13 @@ import org.orekit.propagation.FieldSpacecraftState;
 public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
 
     /** Default maximum checking interval (s). */
-    public static final double DEFAULT_MAXCHECK = 600;
+    public static final double DEFAULT_MAX_CHECK = EventDetectionSettings.DEFAULT_MAX_CHECK;
 
     /** Default convergence threshold (s). */
-    public static final double DEFAULT_THRESHOLD = 1.e-6;
+    public static final double DEFAULT_THRESHOLD = EventDetectionSettings.DEFAULT_THRESHOLD;
 
     /** Default maximum number of iterations in the event time search. */
-    public static final int DEFAULT_MAX_ITER = 100;
+    public static final int DEFAULT_MAX_ITER = EventDetectionSettings.DEFAULT_MAX_ITER;
 
     /** Adaptable interval for maximum time without event evaluation. */
     private final FieldAdaptableInterval<T> maxCheckInterval;
@@ -80,7 +81,7 @@ public class FieldEventDetectionSettings <T extends CalculusFieldElement<T>> {
      * @param eventDetectionSettings non-Field detection settings
      */
     public FieldEventDetectionSettings(final Field<T> field, final EventDetectionSettings eventDetectionSettings) {
-        this((state, isForward) -> eventDetectionSettings.getMaxCheckInterval().currentInterval(state.toSpacecraftState(), isForward),
+        this(FieldAdaptableInterval.of(eventDetectionSettings.getMaxCheckInterval()),
             field.getZero().newInstance(eventDetectionSettings.getThreshold()), eventDetectionSettings.getMaxIterationCount());
     }
 

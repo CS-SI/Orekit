@@ -60,7 +60,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<BrouwerLyddanePropagator> {
 
     /** Parameters scaling factor.
      * <p>
@@ -226,7 +226,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagato
                                     final UnnormalizedSphericalHarmonicsProvider provider,
                                     final PositionAngleType positionAngleType) {
         final double[] parameters    = new double[6];
-        final double[] parametersDot = templateOrbit.hasDerivatives() ? new double[6] : null;
+        final double[] parametersDot = parameters.clone();
         templateOrbit.getType().mapOrbitToArray(templateOrbit, positionAngleType, parameters, parametersDot);
         return templateOrbit.getType().mapArrayToOrbit(parameters, parametersDot, positionAngleType,
                                                        templateOrbit.getDate(),

@@ -68,8 +68,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      */
     public EventShifter(final EventDetector detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
-        this(detector.getMaxCheckInterval(), detector.getThreshold(),
-             detector.getMaxIterationCount(), new LocalHandler(),
+        this(detector.getDetectionSettings(), new LocalHandler(),
              detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
@@ -79,9 +78,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
@@ -90,13 +87,12 @@ public class EventShifter extends AbstractDetector<EventShifter> {
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
-     * @since 6.1
+     * @since 13.0
      */
-    protected EventShifter(final AdaptableInterval maxCheck, final double threshold,
-                           final int maxIter, final EventHandler handler,
+    protected EventShifter(final EventDetectionSettings detectionSettings, final EventHandler handler,
                            final EventDetector detector, final boolean useShiftedStates,
                            final double increasingTimeShift, final double decreasingTimeShift) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;
@@ -105,9 +101,8 @@ public class EventShifter extends AbstractDetector<EventShifter> {
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler newHandler) {
-        return new EventShifter(newMaxCheck, newThreshold, newMaxIter, newHandler,
+    protected EventShifter create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new EventShifter(detectionSettings, newHandler,
                                 detector, useShiftedStates, -increasingOffset, -decreasingOffset);
     }
 

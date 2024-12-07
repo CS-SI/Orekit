@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -119,10 +120,10 @@ public class AndDetectorTest {
     public void testInit() {
         // setup
         EventDetector a = Mockito.mock(EventDetector.class);
-        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
+        Mockito.when(a.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
         Mockito.when(a.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventDetector b = Mockito.mock(EventDetector.class);
-        Mockito.when(b.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK));
+        Mockito.when(b.getMaxCheckInterval()).thenReturn(AdaptableInterval.of(AbstractDetector.DEFAULT_MAX_CHECK));
         Mockito.when(b.getThreshold()).thenReturn(AbstractDetector.DEFAULT_THRESHOLD);
         EventHandler c = Mockito.mock(EventHandler.class);
         BooleanDetector and = BooleanDetector.andCombine(a, b).withHandler(c);
@@ -169,18 +170,8 @@ public class AndDetectorTest {
         }
 
         @Override
-        public double getThreshold() {
-            return AbstractDetector.DEFAULT_THRESHOLD;
-        }
-
-        @Override
-        public AdaptableInterval getMaxCheckInterval() {
-            return AdaptableInterval.of(AbstractDetector.DEFAULT_MAXCHECK);
-        }
-
-        @Override
-        public int getMaxIterationCount() {
-            return 0;
+        public EventDetectionSettings getDetectionSettings() {
+            return EventDetectionSettings.getDefaultEventDetectionSettings();
         }
 
         @Override

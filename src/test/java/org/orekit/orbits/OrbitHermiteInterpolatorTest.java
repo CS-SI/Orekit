@@ -19,8 +19,10 @@ package org.orekit.orbits;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -33,6 +35,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 class OrbitHermiteInterpolatorTest {
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     public void testCartesianInterpolationWithDerivatives() {

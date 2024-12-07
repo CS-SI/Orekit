@@ -1139,12 +1139,12 @@ class NRLMSISE00Test {
             this.j2000 = j2000;
         }
         @Override
-        public TimeStampedPVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame) {
-            return new TimeStampedPVCoordinates(date, sunPosition, Vector3D.ZERO);
+        public Vector3D getPosition(AbsoluteDate date, Frame frame) {
+            return sunPosition;
         }
         @Override
-        public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getPVCoordinates(FieldAbsoluteDate<T> date, Frame frame) {
-            return new TimeStampedFieldPVCoordinates<T>(date, date.getField().getOne(), getPVCoordinates(date.toAbsoluteDate(), frame));
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date, Frame frame) {
+            return new FieldVector3D<>(date.getField(), getPosition(date.toAbsoluteDate(), frame));
         }
         @Override
         public String getName() { return "SUN"; }

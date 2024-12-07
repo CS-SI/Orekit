@@ -132,7 +132,7 @@ class OrbitTypeTest {
 
     static <T extends CalculusFieldElement<T>> void compareFieldCartesian(final FieldCartesianOrbit<T> expectedFieldOrbit,
                                                                           final FieldCartesianOrbit<T> actualFieldOrbit) {
-        Assertions.assertEquals(expectedFieldOrbit.hasDerivatives(), actualFieldOrbit.hasDerivatives());
+        Assertions.assertEquals(expectedFieldOrbit.hasNonKeplerianAcceleration(), actualFieldOrbit.hasNonKeplerianAcceleration());
         Assertions.assertEquals(expectedFieldOrbit.getFrame(), actualFieldOrbit.getFrame());
         Assertions.assertEquals(expectedFieldOrbit.getMu(), actualFieldOrbit.getMu());
         Assertions.assertEquals(expectedFieldOrbit.getDate(), actualFieldOrbit.getDate());

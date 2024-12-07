@@ -30,7 +30,6 @@ import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.Utils;
@@ -45,10 +44,12 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -84,20 +85,28 @@ public class EventDetectorTest {
         }
     }
 
-    private static class DummyDetector
-        extends AbstractDetector<DummyDetector> {
+    private static class DummyDetector implements EventDetector {
+
+        private final EventDetectionSettings detectionSettings;
+        private final EventHandler handler;
 
         public DummyDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
-            super(detectionSettings, handler);
+            this.detectionSettings = detectionSettings;
+            this.handler = handler;
+        }
+
+        @Override
+        public EventDetectionSettings getDetectionSettings() {
+            return detectionSettings;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return handler;
         }
 
         public double g(final SpacecraftState s) {
             return 0;
-        }
-
-        protected DummyDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler newHandler) {
-            return new DummyDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
         }
 
     }
@@ -240,13 +249,13 @@ public class EventDetectorTest {
 
         public GCallsCounter(final AdaptableInterval maxCheck, final double threshold,
                              final int maxIter, final EventHandler handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
             count = 0;
         }
 
-        protected GCallsCounter create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                       final int newMaxIter, final EventHandler newHandler) {
-            return new GCallsCounter(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        protected GCallsCounter create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+            return new GCallsCounter(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler);
         }
 
         public int getCount() {
@@ -278,9 +287,8 @@ public class EventDetectorTest {
                 new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008912.4039522274, -3155453.3125615157, -5044297.6484738905),
                                                                                new Vector3D(-5012.5883854112530, 1920.6332221785074, -5172.2177085540500)),
                                                              eme2000, initialDate, Constants.WGS84_EARTH_MU));
-        k2.addEventDetector(new CloseApproachDetector((s, isForward) -> 2015.243454166727, 0.0001, 100,
-                                                      new ContinueOnEvent(),
-                                                      k1));
+        k2.addEventDetector(new CloseApproachDetector(new EventDetectionSettings(AdaptableInterval.of(2015.243454166727), 0.0001, 100),
+                                                      new ContinueOnEvent(), k1));
         k2.addEventDetector(new DateDetector(interruptDate).
                             withMaxCheck(Constants.JULIAN_DAY).
                             withThreshold(1.0e-6));
@@ -292,10 +300,9 @@ public class EventDetectorTest {
 
         private final PVCoordinatesProvider provider;
 
-        public CloseApproachDetector(AdaptableInterval maxCheck, double threshold,
-                                     final int maxIter, final EventHandler handler,
+        public CloseApproachDetector(EventDetectionSettings detectionSettings, final EventHandler handler,
                                      PVCoordinatesProvider provider) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(detectionSettings, handler);
             this.provider = provider;
         }
 
@@ -307,10 +314,9 @@ public class EventDetectorTest {
             return Vector3D.dotProduct(deltaP.normalize(), deltaV);
         }
 
-        protected CloseApproachDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                               final int newMaxIter,
+        protected CloseApproachDetector create(final EventDetectionSettings detectionSettings,
                                                final EventHandler newHandler) {
-            return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, provider);
+            return new CloseApproachDetector(detectionSettings, newHandler, provider);
         }
 
     }
@@ -356,18 +362,8 @@ public class EventDetectorTest {
         EventDetector dummyDetector = new EventDetector() {
 
             @Override
-            public double getThreshold() {
-                return 1.0e-10;
-            }
-
-            @Override
-            public int getMaxIterationCount() {
-                return 100;
-            }
-
-            @Override
-            public AdaptableInterval getMaxCheckInterval() {
-                return AdaptableInterval.of(60.);
+            public EventDetectionSettings getDetectionSettings() {
+                return new EventDetectionSettings(60, 1e-10, 100);
             }
 
             @Override
@@ -439,7 +435,7 @@ public class EventDetectorTest {
 
     private Propagator buildNumerical(final Orbit orbit) {
         OrbitType           type       = OrbitType.CARTESIAN;
-        double[][]          tol        = NumericalPropagator.tolerances(0.0001, orbit, type);
+        double[][]          tol        = ToleranceProvider.getDefaultToleranceProvider(0.0001).getTolerances(orbit, type);
         ODEIntegrator       integrator = new DormandPrince853Integrator(0.0001, 10.0, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(type);
@@ -515,20 +511,32 @@ public class EventDetectorTest {
 
     }
 
-    // TODO: temporarily disabling test that fails when run with maven
-    @Disabled
     @Test
     void testGetDetectionSettings() {
         // GIVEN
-        final AdaptableInterval mockedInterval = Mockito.mock(AdaptableInterval.class);
-        final EventDetectionSettings settings = new EventDetectionSettings(mockedInterval, 10, 19);
-        final EventDetector detector = new DummyDetector(settings, null);
+        final EventDetector detector = new TestDetector();
         // WHEN
         final EventDetectionSettings actualSettings = detector.getDetectionSettings();
         // THEN
-        Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
-        Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
-        Assertions.assertEquals(settings.getThreshold(), actualSettings.getThreshold());
+        final EventDetectionSettings expectedSettings = EventDetectionSettings.getDefaultEventDetectionSettings();
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Assertions.assertEquals(expectedSettings.getMaxCheckInterval().currentInterval(mockedState, true),
+                actualSettings.getMaxCheckInterval().currentInterval(mockedState, true));
+        Assertions.assertEquals(expectedSettings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
+        Assertions.assertEquals(expectedSettings.getThreshold(), actualSettings.getThreshold());
+    }
+
+    private static class TestDetector implements EventDetector {
+
+        @Override
+        public double g(SpacecraftState s) {
+            return 0;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return null;
+        }
     }
 
     @BeforeEach

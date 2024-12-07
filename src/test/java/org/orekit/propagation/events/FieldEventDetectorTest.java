@@ -50,10 +50,12 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.sampling.FieldOrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -102,9 +104,8 @@ public class FieldEventDetectorTest {
             return s.getDate().getField().getZero();
         }
 
-        protected DummyDetector create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                       final int newMaxIter, final FieldEventHandler<T> newHandler) {
-            return new DummyDetector(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        protected DummyDetector create(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> newHandler) {
+            return new DummyDetector(detectionSettings, newHandler);
         }
 
     }
@@ -304,14 +305,14 @@ public class FieldEventDetectorTest {
 
         public GCallsCounter(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                              final int maxIter, final FieldEventHandler<T> handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
             count = 0;
         }
 
-        protected GCallsCounter<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                          final int newMaxIter,
+        protected GCallsCounter<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                           final FieldEventHandler<T> newHandler) {
-            return new GCallsCounter<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            return new GCallsCounter<>(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler);
         }
 
         public int getCount() {
@@ -378,7 +379,7 @@ public class FieldEventDetectorTest {
         public FieldCloseApproachDetector(FieldAdaptableInterval<T> maxCheck, T threshold,
                                           final int maxIter, final FieldEventHandler<T> handler,
                                           FieldPVCoordinatesProvider<T> provider) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
             this.provider = provider;
         }
 
@@ -391,11 +392,10 @@ public class FieldEventDetectorTest {
             return radialVelocity;
         }
 
-        protected FieldCloseApproachDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                       final int newMaxIter,
+        protected FieldCloseApproachDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                        final FieldEventHandler<T> newHandler) {
-            return new FieldCloseApproachDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                                    provider);
+            return new FieldCloseApproachDetector<>(detectionSettings.getMaxCheckInterval(), detectionSettings.getThreshold(),
+                    detectionSettings.getMaxIterationCount(), newHandler, provider);
         }
 
     }
@@ -454,18 +454,8 @@ public class FieldEventDetectorTest {
         FieldEventDetector<T> dummyDetector = new FieldEventDetector<T>() {
 
             @Override
-            public T getThreshold() {
-                return field.getZero().add(1.0e-10);
-            }
-
-            @Override
-            public int getMaxIterationCount() {
-                return 100;
-            }
-
-            @Override
-            public FieldAdaptableInterval<T> getMaxCheckInterval() {
-                return FieldAdaptableInterval.of(60.);
+            public FieldEventDetectionSettings<T> getDetectionSettings() {
+                return new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(60), field.getZero().newInstance(1e-10), 100);
             }
 
             @Override
@@ -523,8 +513,7 @@ public class FieldEventDetectorTest {
     private <T extends CalculusFieldElement<T>> FieldPropagator<T> buildNumerical(final FieldOrbit<T> orbit) {
         Field<T>            field      = orbit.getDate().getField();
         OrbitType           type       = OrbitType.CARTESIAN;
-        double[][]          tol        = FieldNumericalPropagator.tolerances(field.getZero().newInstance(0.0001),
-                                                                             orbit, type);
+        double[][]          tol        = ToleranceProvider.getDefaultToleranceProvider(0.0001).getTolerances(orbit, type);
         FieldODEIntegrator<T> integrator = new DormandPrince853FieldIntegrator<>(field, 0.0001, 10.0, tol[0], tol[1]);
         FieldNumericalPropagator<T> propagator = new FieldNumericalPropagator<>(field, integrator);
         propagator.setOrbitType(type);

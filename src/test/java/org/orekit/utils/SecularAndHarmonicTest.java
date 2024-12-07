@@ -58,6 +58,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
@@ -329,7 +330,7 @@ public class SecularAndHarmonicTest {
 
     private NumericalPropagator createPropagator(CircularOrbit orbit) {
         OrbitType type = OrbitType.CIRCULAR;
-        double[][] tolerances = NumericalPropagator.tolerances(0.1, orbit, type);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(orbit, type);
         DormandPrince853Integrator integrator =
                 new DormandPrince853Integrator(1.0, 600, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(60.0);

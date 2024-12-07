@@ -29,7 +29,6 @@ import org.orekit.data.DataContext;
 import org.orekit.models.earth.weather.FieldPressureTemperatureHumidity;
 import org.orekit.models.earth.weather.PressureTemperatureHumidity;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.FieldTrackingCoordinates;
@@ -167,9 +166,6 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
     public double[] mappingFactors(final TrackingCoordinates trackingCoordinates, final GeodeticPoint point,
                                    final PressureTemperatureHumidity weather,
                                    final AbsoluteDate date) {
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
 
         // Temporal factor
         double t0 = 28;
@@ -177,7 +173,7 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final double coef    = 2 * FastMath.PI * ((dofyear - t0) / 365.25);
+        final double coef    = 2 * FastMath.PI * ((date.getDayOfYear(utc) - t0) / 365.25);
         final double cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5
@@ -218,17 +214,13 @@ public class NiellMappingFunctionModel implements TroposphereMappingFunction {
         final Field<T> field = date.getField();
         final T zero = field.getZero();
 
-        // Day of year computation
-        final DateTimeComponents dtc = date.getComponents(utc);
-        final int dofyear = dtc.getDate().getDayOfYear();
-
         // Temporal factor
         double t0 = 28;
         if (point.getLatitude().getReal() < 0) {
             // southern hemisphere: t0 = 28 + an integer half of year
             t0 += 183;
         }
-        final T coef    = zero.getPi().multiply(2.0).multiply((dofyear - t0) / 365.25);
+        final T coef    = zero.getPi().multiply(2.0).multiply((date.getDayOfYear(utc).subtract(t0)).divide(365.25));
         final T cosCoef = FastMath.cos(coef);
 
         // Compute ah, bh and ch Eq. 5

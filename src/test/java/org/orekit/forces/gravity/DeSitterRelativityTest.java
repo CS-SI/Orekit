@@ -45,6 +45,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -142,7 +143,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                    FastMath.toRadians(40.), PositionAngleType.MEAN,
                                    frame, date, gm
                 );
-        double[][] tol = NumericalPropagator.tolerances(0.1, orbit, OrbitType.KEPLERIAN);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.1).getTolerances(orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1, 3600, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(OrbitType.CARTESIAN);
@@ -179,7 +180,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
                                          0, PositionAngleType.MEAN, FramesFactory.getEME2000(), date,
                                          Constants.EIGEN5C_EARTH_MU);
         OrbitType integrationType = OrbitType.CARTESIAN;
-        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, integrationType);
 
         NumericalPropagator propagator =
                 new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
@@ -207,7 +208,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         DeSitterRelativity relativity = new DeSitterRelativity();
         Assertions.assertFalse(relativity.dependsOnPositionOnly());
-        final String name = relativity.getSun().getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
+        final String name = relativity.getSun().getName() + DeSitterRelativity.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
     }
@@ -240,7 +241,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         SpacecraftState iSR = initialState.toSpacecraftState();
         OrbitType type = OrbitType.KEPLERIAN;
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, FKO.toOrbit(), type);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(FKO.toOrbit(), type);
 
 
         AdaptiveStepsizeFieldIntegrator<Gradient> integrator =

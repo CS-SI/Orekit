@@ -25,6 +25,7 @@ import org.orekit.propagation.SpacecraftState;
  * @author Luc Maisonobe
  * @since 8.0
  */
+@FunctionalInterface
 public interface StateJacobian {
 
     /** Evaluate the Jacobian of the function.

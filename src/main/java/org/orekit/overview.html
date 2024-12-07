@@ -398,21 +398,23 @@
             with lift component</li>
           <li>support for CSSI space weather data</li>
           <li>support for SOLFSMY and DTC data for JB2008 atmospheric model</li>
-          <li>tropospheric delay (modified Saastamoinen, estimated, fixed)</li>
-          <li>tropospheric mapping functions (Vienna 1, Vienna 3, Global, Niell)</li>
-          <li>tropospheric refraction correction angle (Recommendation ITU-R P.834-7 and
-            Saemundssen's formula quoted by Meeus)</li>
-          <li>tropospheric model for laser ranging (Marini-Murray, Mendes-Pavlis)</li>
+          <li>tropospheric delay for radio propagation (canonical Saastamoinen, modified Saastamoinen,
+            Askne-Nordius, modified Hopfield, ITU-R P.834, Vienna 1, Vienna 3, estimated, fixed)</li>
+          <li>tropospheric delay for laser ranging (Marini-Murray, Mendes-Pavlis)</li>
+          <li>tropospheric refraction correction angle (ITU-R P.834 and Saemundssen's formula quoted by Meeus)</li>
+          <li>tropospheric mapping functions (Chao, revised Chao, Global Mapping Function, ITU-R P.834,
+            Vienna 1, Vienna 3, Niell, Mendes-Pavlis)</li>
           <li>Klobuchar ionospheric model (including parsing α and β coefficients from University of
             Bern Astronomical Institute files)</li>
           <li>Global Ionospheric Map (GIM) model</li>
-          <li>NeQuick ionospheric model</li>
+          <li>NeQuick-G ionospheric model</li>
           <li>VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping
             function</li>
-          <li>Global Pressure and Temperature models (GPT, GPT2, GPT2w, GPT3)</li>
+          <li>Pressure, Temperature and Humidity models (GPT, GPT2, GPT2w, GPT3, ITU-R P.834)</li>
+          <li>Water Vapor pressure evolution (CIPM-2007, NBS-SRC, Wang 1988)</li>
           <li>geomagnetic field (WMM, IGRF)</li>
           <li>geoid model from any gravity field</li>
-          <li>displacement of ground points due to tides</li>
+          <li>displacement of ground points (tides, ocean loading, Post-Seismic Deformation, tectonics plates)</li>
           <li>tessellation of zones of interest as tiles</li>
           <li>sampling of zones of interest as grids of points</li>
           <li>construction of trajectories using loxodromes (commonly, a rhumb line)</li>

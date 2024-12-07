@@ -113,7 +113,7 @@ public interface FieldStaticTransform<T extends CalculusFieldElement<T>> extends
      * @return transformed position
      */
     default FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
-        return getRotation().applyTo(position.add(getTranslation()));
+        return getRotation().applyTo(getTranslation().add(position));
     }
 
     /**

@@ -44,7 +44,7 @@ import org.orekit.estimation.measurements.gnss.Phase;
 import org.orekit.estimation.measurements.gnss.PhaseMeasurementCreator;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.gnss.PredefinedGnssSignal;
-import org.orekit.models.earth.EarthITU453AtmosphereRefraction;
+import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.troposphere.EstimatedModel;
 import org.orekit.models.earth.troposphere.ModifiedSaastamoinenModel;
 import org.orekit.models.earth.troposphere.NiellMappingFunctionModel;
@@ -732,7 +732,7 @@ public class TropoModifierTest {
             // get the altitude of the station (in kilometers)
             final double altitude = angular.getStation().getBaseFrame().getPoint().getAltitude() / 1000.;
 
-            final AngularRadioRefractionModifier modifier = new AngularRadioRefractionModifier(new EarthITU453AtmosphereRefraction(altitude));
+            final AngularRadioRefractionModifier modifier = new AngularRadioRefractionModifier(new ITURP834AtmosphericRefraction(altitude));
             // add modifier
             angular.addModifier(modifier);
             //

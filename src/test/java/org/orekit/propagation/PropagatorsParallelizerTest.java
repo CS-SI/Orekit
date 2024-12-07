@@ -91,7 +91,7 @@ public class PropagatorsParallelizerTest {
 
 
         // Propagator
-        final double[][] tol = DSSTPropagator.tolerances(0.01, orbit);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(orbit, OrbitType.EQUINOCTIAL);
         final DSSTPropagator propagator = new DSSTPropagator(new DormandPrince853Integrator(0.01, 600.0, tol[0], tol[1]), PropagationType.OSCULATING);
 
         // Force models
@@ -444,7 +444,7 @@ public class PropagatorsParallelizerTest {
         OrbitType type = OrbitType.CARTESIAN;
         double minStep = 0.001;
         double maxStep = 300;
-        double[][] tolerances = NumericalPropagator.tolerances(10.0, orbit, type);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(orbit, type);
         ODEIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         NumericalPropagator numericalPropagator = new NumericalPropagator(integrator);
         ForceModel gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),

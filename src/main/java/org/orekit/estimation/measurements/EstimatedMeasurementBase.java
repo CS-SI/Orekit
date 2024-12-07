@@ -21,6 +21,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 import java.util.IdentityHashMap;
+import java.util.Map;
 
 /** Class holding an estimated theoretical value associated to an {@link ObservedMeasurement observed measurement}.
  * @param <T> the type of the measurement
@@ -164,7 +165,7 @@ public class EstimatedMeasurementBase<T extends ObservedMeasurement<T>> implemen
      * @return applied modifier effects
      * @since 12.1
      */
-    public IdentityHashMap<EstimationModifier<T>, double[]> getAppliedEffects() {
+    public Map<EstimationModifier<T>, double[]> getAppliedEffects() {
         return appliedEffects;
     }
 

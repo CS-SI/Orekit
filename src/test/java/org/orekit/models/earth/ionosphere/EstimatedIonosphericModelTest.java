@@ -46,6 +46,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -296,7 +297,7 @@ public class EstimatedIonosphericModelTest {
         final OrbitType orbitType = OrbitType.KEPLERIAN;
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
         for (int i = 0; i < 6; i++) {
             SpacecraftState stateM4 = shiftState(state, orbitType, angleType, -4 * steps[i], i);
             final Vector3D positionM4 = stateM4.getPosition();

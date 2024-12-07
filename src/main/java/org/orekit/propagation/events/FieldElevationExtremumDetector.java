@@ -53,13 +53,13 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param field field to which elements belong
      * @param topo topocentric frame centered on ground point
      */
     public FieldElevationExtremumDetector(final Field<T> field, final TopocentricFrame topo) {
-        this(field.getZero().newInstance(DEFAULT_MAXCHECK),
+        this(field.getZero().newInstance(DEFAULT_MAX_CHECK),
              field.getZero().newInstance(DEFAULT_THRESHOLD),
              topo);
     }
@@ -71,7 +71,7 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      */
     public FieldElevationExtremumDetector(final T maxCheck, final T threshold,
                                           final TopocentricFrame topo) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
+        this(new FieldEventDetectionSettings<>(maxCheck.getReal(), threshold, DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>(),
              topo);
     }
 
@@ -81,25 +81,22 @@ public class FieldElevationExtremumDetector<T extends CalculusFieldElement<T>>
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param topo topocentric frame centered on ground point
      */
-    protected FieldElevationExtremumDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                             final int maxIter, final FieldEventHandler<T> handler,
+    protected FieldElevationExtremumDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                             final FieldEventHandler<T> handler,
                                              final TopocentricFrame topo) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.topo = topo;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldElevationExtremumDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                       final int newMaxIter,
+    protected FieldElevationExtremumDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                        final FieldEventHandler<T> newHandler) {
-        return new FieldElevationExtremumDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, topo);
+        return new FieldElevationExtremumDetector<>(detectionSettings, newHandler, topo);
     }
 
     /**

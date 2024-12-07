@@ -52,6 +52,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.AbstractMatricesHarvester;
 import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -65,7 +66,6 @@ import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.ParameterDriversList.DelegatingDriver;
@@ -141,7 +141,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * final double minStep  = 0.001;
  * final double maxStep  = 500;
  * final double initStep = 60;
- * final double[][] tolerance = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+ * final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.EQUINOCTIAL);
  * AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
  * propagator = new NumericalPropagator(integrator);
@@ -524,7 +524,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
 
                 maneuverTriggers.getEventDetectors().
-                        filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
+                        filter(ParameterDrivenDateIntervalDetector.class::isInstance).
                         map(d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
                             TriggerDate start;
@@ -1042,38 +1042,16 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     }
 
-    /**
-     * Get default tolerance providers. Matches < 13.0 values.
-     * @param dP expected position error
-     * @param dV expected velocity error
-     * @return tolerances
-     * @since 13.0
-     */
-    private static ToleranceProvider getDefaultToleranceProvider(final double dP, final double dV) {
-        return ToleranceProvider.of((position, velocity) -> {
-            final double[] absTol = new double[7];
-            final double[] relTol = new double[7];
-            Arrays.fill(absTol, 0, 3, dP);
-            Arrays.fill(absTol, 3, 6, dV);
-            absTol[6] = 1e-6;
-            Arrays.fill(relTol, dP / position.getNorm());
-            return new double[][] {absTol, relTol};
-        });
-    }
-
     /** Estimate tolerance vectors for integrators when propagating in absolute position-velocity-acceleration.
      * @param dP user specified position error
      * @param absPva reference absolute position-velocity-acceleration
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final AbsolutePVCoordinates absPva) {
-
-        final double relative = dP / absPva.getPosition().getNorm();
-        final double dV = relative * absPva.getVelocity().getNorm();
-
-        return getDefaultToleranceProvider(dP, dV).getTolerances(absPva);
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP)).getTolerances(absPva);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -1101,16 +1079,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
-
-        // estimate the scalar velocity error
-        final PVCoordinates pv = orbit.getPVCoordinates();
-        final double r2 = pv.getPosition().getNormSq();
-        final double v  = pv.getVelocity().getNorm();
-        final double dV = orbit.getMu() * dP / (v * r2);
-
-        return getDefaultToleranceProvider(dP, dV).getTolerances(orbit, type, PositionAngleType.TRUE);
+        return ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -1131,11 +1104,14 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @since 10.3
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final double dV,
                                         final Orbit orbit, final OrbitType type) {
 
-        return getDefaultToleranceProvider(dP, dV).getTolerances(orbit, type, PositionAngleType.TRUE);
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP, dV, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
+                .getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** {@inheritDoc} */

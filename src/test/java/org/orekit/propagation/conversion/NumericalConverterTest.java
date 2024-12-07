@@ -41,6 +41,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -417,7 +418,7 @@ public class NumericalConverterTest {
         orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                      FramesFactory.getEME2000(), initDate, mu);
 
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.CARTESIAN);
         propagator = new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);

@@ -37,12 +37,12 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the latitude is defined
      */
     public LatitudeExtremumDetector(final OneAxisEllipsoid body) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body);
     }
 
     /** Build a detector.
@@ -52,8 +52,7 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      */
     public LatitudeExtremumDetector(final double maxCheck, final double threshold,
                                     final OneAxisEllipsoid body) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
-             body);
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(), body);
     }
 
     /** Protected constructor with full parameters.
@@ -62,25 +61,21 @@ public class LatitudeExtremumDetector extends AbstractDetector<LatitudeExtremumD
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      */
-    protected LatitudeExtremumDetector(final AdaptableInterval maxCheck, final double threshold,
-                                       final int maxIter, final EventHandler handler,
+    protected LatitudeExtremumDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                        final OneAxisEllipsoid body) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.body = body;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected LatitudeExtremumDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                              final int newMaxIter,
+    protected LatitudeExtremumDetector create(final EventDetectionSettings detectionSettings,
                                               final EventHandler newHandler) {
-        return new LatitudeExtremumDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, body);
+        return new LatitudeExtremumDetector(detectionSettings, newHandler, body);
     }
 
     /** Get the body on which the geographic zone is defined.

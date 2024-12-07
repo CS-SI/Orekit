@@ -58,8 +58,8 @@ class FieldRelativeDistanceDetectorTest {
                 mockProvider(), distanceThreshold);
         final FieldStopOnDecreasing<Complex> expectedHandler = new FieldStopOnDecreasing<>();
         // WHEN
-        final FieldRelativeDistanceDetector<Complex> detector = distanceDetector.create(distanceDetector.getMaxCheckInterval(),
-                distanceDetector.getThreshold(), distanceDetector.getMaxIterationCount(), expectedHandler);
+        final FieldRelativeDistanceDetector<Complex> detector = distanceDetector.create(distanceDetector.getDetectionSettings(),
+                expectedHandler);
         // THEN
         Assertions.assertEquals(expectedHandler, detector.getHandler());
     }

@@ -19,6 +19,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.RecordAndContinue;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.*;
 
@@ -36,8 +37,7 @@ class CylindricalShadowEclipseDetectorTest {
         final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();
         // WHEN
         final CylindricalShadowEclipseDetector detector = new CylindricalShadowEclipseDetector(Mockito.mock(PVCoordinatesProvider.class),
-                1., settings.getMaxCheckInterval(), settings.getThreshold(), settings.getMaxIterationCount(),
-                Mockito.mock(EventHandler.class));
+                1., settings, Mockito.mock(EventHandler.class));
         // THEN
         Assertions.assertEquals(settings.getMaxIterationCount(), detector.getDetectionSettings().getMaxIterationCount());
         Assertions.assertEquals(settings.getThreshold(), detector.getDetectionSettings().getThreshold());
@@ -148,7 +148,7 @@ class CylindricalShadowEclipseDetectorTest {
         propagator.clearEventsDetectors();
         propagator.resetInitialState(new SpacecraftState(initialOrbit));
         final RecordAndContinue recordAndContinue2 = new RecordAndContinue();
-        final EclipseDetector eclipseDetector = new EclipseDetector(getExtendedPVCoordinatesProvider(positionProvider),
+        final EclipseDetector eclipseDetector = new EclipseDetector(positionProvider,
                 Constants.SUN_RADIUS, new OneAxisEllipsoid(cylindricalShadowEclipseDetector.getOccultingBodyRadius(), 0., FramesFactory.getGTOD(false)));
         propagator.addEventDetector(eclipseDetector.withPenumbra().withHandler(recordAndContinue2));
         propagator.propagate(targetDate);
@@ -158,10 +158,6 @@ class CylindricalShadowEclipseDetectorTest {
             Assertions.assertEquals(0., recordAndContinue.getEvents().get(i).getState().durationFrom(recordAndContinue2.getEvents().get(i).getState()),
                     10.);
         }
-    }
-
-    private static ExtendedPVCoordinatesProvider getExtendedPVCoordinatesProvider(final ExtendedPositionProvider positionProvider) {
-        return positionProvider::getPVCoordinates;
     }
 
     private static KeplerianOrbit getOrbit() {

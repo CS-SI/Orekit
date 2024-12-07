@@ -27,6 +27,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
@@ -67,8 +68,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
      * @since 10.3
      */
     public NodeDetector(final Frame frame) {
-        this(new EventDetectionSettings(AdaptableInterval.of(DEFAULT_MAX_CHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER),
-             new StopOnIncreasing(), frame);
+        this(new EventDetectionSettings(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER),
+                new StopOnIncreasing(), frame);
     }
 
     /** Build a new instance.
@@ -143,9 +144,8 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected NodeDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                  final int newMaxIter, final EventHandler newHandler) {
-        return new NodeDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler, frame);
+    protected NodeDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new NodeDetector(detectionSettings, newHandler, frame);
     }
 
     /** Find time separation between nodes.

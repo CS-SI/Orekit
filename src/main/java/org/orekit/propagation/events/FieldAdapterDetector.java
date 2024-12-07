@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Base class for adapting an existing detector.
@@ -54,6 +55,7 @@ public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements 
     /** {@inheritDoc} */
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
+        FieldEventDetector.super.init(s0, t);
         detector.init(s0, t);
     }
 
@@ -90,6 +92,7 @@ public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements 
     /** {@inheritDoc} */
     @Override
     public void finish(final FieldSpacecraftState<T> state) {
+        FieldEventDetector.super.finish(state);
         detector.finish(state);
     }
 

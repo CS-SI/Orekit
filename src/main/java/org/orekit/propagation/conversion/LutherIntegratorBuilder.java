@@ -16,16 +16,16 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.LutherIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /** Builder for LutherIntegrator.
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class LutherIntegratorBuilder implements ODEIntegratorBuilder {
+public class LutherIntegratorBuilder extends AbstractIntegratorBuilder<LutherIntegrator> {
 
     /** Step size (s). */
     private final double step;
@@ -39,7 +39,9 @@ public class LutherIntegratorBuilder implements ODEIntegratorBuilder {
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
+    @Override
+    public LutherIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+                                            final PositionAngleType angleType) {
         return new LutherIntegrator(step);
     }
 

@@ -48,6 +48,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -77,6 +79,7 @@ import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.propagation.integration.*;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
@@ -87,11 +90,7 @@ import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.*;
 
 public class FieldNumericalPropagatorTest {
 
@@ -435,6 +434,52 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(initialVelocity.getY().getReal(), finalVelocity.getY().getReal(), 1.0e-10);
         Assertions.assertEquals(initialVelocity.getZ().getReal(), finalVelocity.getZ().getReal(), 1.0e-10);
 
+    }
+
+    @Deprecated
+    @ParameterizedTest
+    @EnumSource(OrbitType.class)
+    void testTolerancesOrbit(final OrbitType orbitType) {
+        // GIVEN
+        final Binary64 zero = Binary64.ZERO;
+        final double dP = 1e-3;
+        final double dV = 1e-6;
+        final FieldVector3D<Binary64> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<Binary64> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position.toVector3D(),
+                velocity.toVector3D(), Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final double[][] actualTolerances = FieldNumericalPropagator.tolerances(zero.add(dP), zero.add(dV), fieldOrbit, orbitType);
+        // THEN
+        final double[][] expectedTolerances = ToleranceProvider.of(CartesianToleranceProvider.of(dP, dV, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))
+                .getTolerances(orbit, orbitType, PositionAngleType.TRUE);
+        Assertions.assertArrayEquals(expectedTolerances[0], actualTolerances[0]);
+        Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
+    }
+
+    @Deprecated
+    @Test
+    void testTolerances() {
+        // GIVEN
+        final Binary64 zero = Binary64.ZERO;
+        final double dP = 1e-3;
+        final double dV = 1e-6;
+        final FieldVector3D<Binary64> position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
+        final FieldVector3D<Binary64> velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position.toVector3D(),
+                velocity.toVector3D(), Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(Binary64Field.getInstance(), orbit);
+        // WHEN
+        final double[][] orbitTolerances = FieldNumericalPropagator.tolerances(zero.add(dP), zero.add(dV), fieldOrbit,
+                OrbitType.CARTESIAN);
+        // THEN
+        final double[][] pvTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(new AbsolutePVCoordinates(orbit.getFrame(),
+                new TimeStampedPVCoordinates(orbit.getDate(), position.toVector3D(), velocity.toVector3D())));
+        for (int i = 0; i < 3; i++) {
+            Assertions.assertEquals(pvTolerances[0][i], orbitTolerances[0][i]);
+            Assertions.assertEquals(pvTolerances[1][i], orbitTolerances[1][i]);
+        }
     }
 
     @Test
@@ -1019,10 +1064,9 @@ public class FieldNumericalPropagatorTest {
             super(detectionSettings, handler);
         }
 
-        protected AdditionalStateLinearDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                          final int newMaxIter,
+        protected AdditionalStateLinearDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
                                                           final FieldEventHandler<T> newHandler) {
-            return new AdditionalStateLinearDetector<>(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+            return new AdditionalStateLinearDetector<>(detectionSettings, newHandler);
         }
 
         public T g(FieldSpacecraftState<T> s) {
@@ -1278,47 +1322,6 @@ public class FieldNumericalPropagatorTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, oe.getSpecifier());
         }
-    }
-
-    @Test
-    void testIssue704() {
-        doTestIssue704(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestIssue704(final Field<T> field) {
-
-        T zero = field.getZero();
-
-        // Coordinates
-        final FieldAbsoluteDate<T> initDate = FieldAbsoluteDate.getJ2000Epoch(field);
-        final FieldVector3D<T>     position = new FieldVector3D<>(zero.add(7.0e6), zero.add(1.0e6), zero.add(4.0e6));
-        final FieldVector3D<T>     velocity = new FieldVector3D<>(zero.add(-500.0), zero.add(8000.0), zero.add(1000.0));
-        final FieldOrbit<T>        orbit    = new FieldEquinoctialOrbit<>(new FieldPVCoordinates<>(position,  velocity),
-                                                                          FramesFactory.getEME2000(), initDate, zero.add(mu));
-        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
-
-        // dP
-        final T dP = zero.add(10.0);
-
-        // Computes dV
-        final T r2 = pv.getPosition().getNormSq();
-        final T v  = pv.getVelocity().getNorm();
-        final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
-
-        // Verify: Cartesian case
-        final double[][] tolCart1 = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
-        final double[][] tolCart2 = FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
-        for (int i = 0; i < tolCart1.length; i++) {
-            Assertions.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
-        }
-
-        // Verify: Non cartesian case
-        final double[][] tolKep1 = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
-        final double[][] tolKep2 = FieldNumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
-        for (int i = 0; i < tolCart1.length; i++) {
-            Assertions.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
-        }
-
     }
 
     @Test
@@ -2176,7 +2179,7 @@ public class FieldNumericalPropagatorTest {
         @Override
         public Stream<EventDetector> getEventDetectors() {
             return Arrays.stream(dates).map(DateDetector::new)
-                    .map(d -> d.withHandler((a, b, c) -> Action.RESET_DERIVATIVES));
+                    .map(d -> d.withHandler(new ResetDerivativesOnEvent()));
         }
 
         @Override

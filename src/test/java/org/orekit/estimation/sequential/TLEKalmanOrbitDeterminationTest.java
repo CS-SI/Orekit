@@ -56,6 +56,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEConstants;
 import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
@@ -411,7 +412,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final SpacecraftState initState = new SpacecraftState(initOrbit);
 
         // Numerical propagator initialization
-        double[][] tolerance = NumericalPropagator.tolerances(0.001, initOrbit, OrbitType.CARTESIAN);
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(initOrbit, OrbitType.CARTESIAN);
         AdaptiveStepsizeIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);

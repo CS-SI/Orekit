@@ -47,6 +47,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
@@ -72,25 +74,12 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.models.earth.atmosphere.DTM2000;
 import org.orekit.models.earth.atmosphere.data.MarshallSolarActivityFutureEstimation;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.KeplerianOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.orekit.orbits.*;
 import org.orekit.propagation.*;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.AdaptableInterval;
-import org.orekit.propagation.events.ApsideDetector;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.RecordAndContinue;
-import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.events.*;
+import org.orekit.propagation.events.handlers.*;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
@@ -103,14 +92,7 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.Constants;
-import org.orekit.utils.FieldPVCoordinatesProvider;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.*;
 
 class NumericalPropagatorTest {
 
@@ -179,6 +161,62 @@ class NumericalPropagatorTest {
     }
 
     @Test
+    @Deprecated
+    void testTolerancesOrbitdV() {
+        // GIVEN
+        final double dP = 1e-3;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
+                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        // WHEN
+        final double[][] tolerancesWithDv = NumericalPropagator.tolerances(dP, 1e-6, orbit, OrbitType.CARTESIAN);
+        // THEN
+        final double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.CARTESIAN);
+        for (int i = 0; i < 3; i++) {
+            Assertions.assertEquals(tolerances[0][i], tolerancesWithDv[0][i]);
+        }
+    }
+
+    @Deprecated
+    @ParameterizedTest
+    @EnumSource(OrbitType.class)
+    void testTolerancesOrbit(final OrbitType orbitType) {
+        // GIVEN
+        final double dP = 1e-3;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
+                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        // WHEN
+        final double[][] actualTolerances = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        // THEN
+        final double[][] expectedTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
+        Assertions.assertArrayEquals(expectedTolerances[0], actualTolerances[0]);
+        Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
+    }
+
+    @Deprecated
+    @Test
+    void testTolerances() {
+        // GIVEN
+        final double dP = 1e-3;
+        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Orbit orbit = new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.ARBITRARY_EPOCH, position,
+                velocity, Vector3D.ZERO), FramesFactory.getGCRF(), Constants.EGM96_EARTH_MU);
+        // WHEN
+        final double[][] orbitTolerances = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
+        // THEN
+        final double[][] pvTolerances = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(new AbsolutePVCoordinates(orbit.getFrame(),
+                new TimeStampedPVCoordinates(orbit.getDate(), position, velocity)));
+        for (int i = 0; i < 3; i++) {
+            Assertions.assertEquals(pvTolerances[0][i], orbitTolerances[0][i]);
+            Assertions.assertEquals(pvTolerances[1][i], orbitTolerances[1][i]);
+        }
+    }
+
+    @Test
     void testEphemerisModeWithHandler() {
         // setup
         AbsoluteDate end = initDate.shiftedBy(90 * 60);
@@ -209,7 +247,7 @@ class NumericalPropagatorTest {
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
-        CountingHandler handler = new CountingHandler();
+        CountAndContinue handler = new CountAndContinue();
         DateDetector detector = new DateDetector(end).
                                 withMaxCheck(10).
                                 withThreshold(1e-9).
@@ -224,7 +262,7 @@ class NumericalPropagatorTest {
 
         //verify
         Assertions.assertEquals(actual.getDate().durationFrom(end), 0.0, 0.0);
-        Assertions.assertEquals(1, handler.eventCount);
+        Assertions.assertEquals(1, handler.getCount());
     }
 
     /** test for issue #238 */
@@ -237,7 +275,7 @@ class NumericalPropagatorTest {
         final EphemerisGenerator generator = propagator.getEphemerisGenerator();
         propagator.propagate(end);
         BoundedPropagator ephemeris = generator.getGeneratedEphemeris();
-        CountingHandler handler = new CountingHandler();
+        CountAndContinue handler = new CountAndContinue();
         // events directly on propagation start date are not triggered,
         // so move the event date slightly after
         AbsoluteDate eventDate = initDate.shiftedBy(FastMath.ulp(100.0) / 10.0);
@@ -254,31 +292,7 @@ class NumericalPropagatorTest {
         Assertions.assertEquals(ephemeris.propagate(end).getDate().durationFrom(end), 0.0, 0.0);
         // propagate backward
         Assertions.assertEquals(ephemeris.propagate(initDate).getDate().durationFrom(initDate), 0.0, 0.0);
-        Assertions.assertEquals(2, handler.eventCount);
-    }
-
-    /** Counts the number of events that have occurred. */
-    private static class CountingHandler implements EventHandler {
-
-        /**
-         * number of calls to {@link #eventOccurred(SpacecraftState,
-         * EventDetector, boolean)}.
-         */
-        private int eventCount = 0;
-
-        @Override
-        public Action eventOccurred(SpacecraftState s,
-                                    EventDetector detector,
-                                    boolean increasing) {
-            eventCount++;
-            return Action.CONTINUE;
-        }
-
-        @Override
-        public SpacecraftState resetState(EventDetector detector,
-                                          SpacecraftState oldState) {
-            return null;
-        }
+        Assertions.assertEquals(2, handler.getCount());
     }
 
     /**
@@ -775,7 +789,8 @@ class NumericalPropagatorTest {
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
         CheckingHandler checking = new CheckingHandler(Action.STOP);
-        propagator.addEventDetector(new AdditionalStateLinearDetector(10.0, 1.0e-8).withHandler(checking));
+        propagator.addEventDetector(new AdditionalStateLinearDetector(new EventDetectionSettings(10.0, 1.0e-8, EventDetectionSettings.DEFAULT_MAX_ITER),
+                checking));
 
         final double dt = 3200;
         checking.assertEvent(false);
@@ -787,23 +802,29 @@ class NumericalPropagatorTest {
 
     }
 
-    private static class AdditionalStateLinearDetector extends AbstractDetector<AdditionalStateLinearDetector> {
+    private static class AdditionalStateLinearDetector implements EventDetector {
 
-        public AdditionalStateLinearDetector(double maxCheck, double threshold) {
-            this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnEvent());
-        }
+        private final EventHandler eventHandler;
+        private final EventDetectionSettings detectionSettings;
 
-        private AdditionalStateLinearDetector(AdaptableInterval maxCheck, double threshold, int maxIter, EventHandler handler) {
-            super(maxCheck, threshold, maxIter, handler);
-        }
-
-        protected AdditionalStateLinearDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                                       final int newMaxIter, final EventHandler newHandler) {
-            return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        AdditionalStateLinearDetector(final EventDetectionSettings detectionSettings,
+                                      final EventHandler eventHandler) {
+            this.detectionSettings = detectionSettings;
+            this.eventHandler = eventHandler;
         }
 
         public double g(SpacecraftState s) {
             return s.getAdditionalState("linear")[0] - 3.0;
+        }
+
+        @Override
+        public EventDetectionSettings getDetectionSettings() {
+            return detectionSettings;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return eventHandler;
         }
 
     }
@@ -833,7 +854,8 @@ class NumericalPropagatorTest {
             }
         };
 
-        propagator.addEventDetector(new AdditionalStateLinearDetector(10.0, 1.0e-8).withHandler(checking));
+        propagator.addEventDetector(new AdditionalStateLinearDetector(new EventDetectionSettings(10.0, 1.0e-8, EventDetectionSettings.DEFAULT_MAX_ITER),
+                checking));
 
         final double dt = 3200;
         checking.assertEvent(false);
@@ -1040,37 +1062,6 @@ class NumericalPropagatorTest {
             final DateDetector detector = new DateDetector(interruptingDate).withHandler(new StopOnEvent());
             return Stream.of(detector);
         }
-    }
-
-    @Test
-    void testIssue704() {
-
-        // Coordinates
-        final Orbit         orbit = initialState.getOrbit();
-        final PVCoordinates pv    = orbit.getPVCoordinates();
-
-        // dP
-        final double dP = 10.0;
-
-        // Computes dV
-        final double r2 = pv.getPosition().getNormSq();
-        final double v  = pv.getVelocity().getNorm();
-        final double dV = orbit.getMu() * dP / (v * r2);
-
-        // Verify: Cartesian case
-        final double[][] tolCart1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
-        final double[][] tolCart2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.CARTESIAN);
-        for (int i = 0; i < tolCart1.length; i++) {
-            Assertions.assertArrayEquals(tolCart1[i], tolCart2[i], Double.MIN_VALUE);
-        }
-
-        // Verify: Non cartesian case
-        final double[][] tolKep1 = NumericalPropagator.tolerances(dP, orbit, OrbitType.KEPLERIAN);
-        final double[][] tolKep2 = NumericalPropagator.tolerances(dP, dV, orbit, OrbitType.KEPLERIAN);
-        for (int i = 0; i < tolCart1.length; i++) {
-            Assertions.assertArrayEquals(tolKep1[i], tolKep2[i], Double.MIN_VALUE);
-        }
-
     }
 
     private static class CheckingHandler implements EventHandler {
@@ -1592,7 +1583,8 @@ class NumericalPropagatorTest {
         final Orbit initialOrbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit, new DormandPrince853IntegratorBuilder(0.02, 0.2, 1., 0.0001), PositionAngleType.TRUE, 10);
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit,
+                new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.), PositionAngleType.TRUE, 10);
         NumericalPropagator propagator = (NumericalPropagator) builder.buildPropagator();
 
         IntStream.

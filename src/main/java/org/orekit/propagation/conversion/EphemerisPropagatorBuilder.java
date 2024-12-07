@@ -24,7 +24,6 @@ import org.orekit.estimation.leastsquares.ModelObserver;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.SpacecraftStateInterpolator;
 import org.orekit.propagation.StateCovariance;
@@ -43,7 +42,7 @@ import java.util.List;
  * @author Vincent Cucchietti
  * @since 11.3
  */
-public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
+public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder<Ephemeris> {
 
     /** Default position scale (not used for ephemeris based estimation). */
     private static final double DEFAULT_SCALE = 10.0;
@@ -159,7 +158,7 @@ public class EphemerisPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** {@inheritDoc}. */
     @Override
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    public Ephemeris buildPropagator(final double[] normalizedParameters) {
         if (!covariances.isEmpty() && covarianceInterpolator != null) {
             return new Ephemeris(states, stateInterpolator, covariances, covarianceInterpolator, provider);
         }

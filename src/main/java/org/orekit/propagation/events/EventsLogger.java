@@ -158,40 +158,13 @@ public class EventsLogger {
     }
 
     /** Internal wrapper for events detectors. */
-    private class LoggingWrapper extends AbstractDetector<LoggingWrapper> {
-
-        /** Wrapped events detector. */
-        private final EventDetector detector;
+    private class LoggingWrapper extends AdapterDetector {
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
         LoggingWrapper(final EventDetector detector) {
-            this(detector.getDetectionSettings(), null, detector);
-        }
-
-        /** Private constructor with full parameters.
-         * <p>
-         * This constructor is private as users are expected to use the builder
-         * API with the various {@code withXxx()} methods to set up the instance
-         * in a readable manner without using a huge amount of parameters.
-         * </p>
-         * @param detectionSettings detection settings
-         * @param handler event handler to call at event occurrences
-         * @param detector events detector to wrap
-         * @since 6.1
-         */
-        private LoggingWrapper(final EventDetectionSettings detectionSettings, final EventHandler handler,
-                               final EventDetector detector) {
-            super(detectionSettings, handler);
-            this.detector = detector;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        protected LoggingWrapper create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                        final int newMaxIter, final EventHandler newHandler) {
-            return new LoggingWrapper(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler, detector);
+            super(detector);
         }
 
         /** Log an event.
@@ -199,46 +172,26 @@ public class EventsLogger {
          * @param increasing indicator if the event switching function was increasing
          */
         public void logEvent(final SpacecraftState state, final boolean increasing) {
-            log.add(new LoggedEvent(detector, state, increasing));
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void init(final SpacecraftState s0,
-                         final AbsoluteDate t) {
-            super.init(s0, t);
-            detector.init(s0, t);
-        }
-
-        /** {@inheritDoc} */
-        public double g(final SpacecraftState s) {
-            return detector.g(s);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void finish(final SpacecraftState state) {
-            detector.finish(state);
+            log.add(new LoggedEvent(getDetector(), state, increasing));
         }
 
         /** {@inheritDoc} */
         @Override
         public EventHandler getHandler() {
-
-            final EventHandler handler = detector.getHandler();
+            final EventHandler handler = getDetector().getHandler();
 
             return new EventHandler() {
 
                 /** {@inheritDoc} */
                 public Action eventOccurred(final SpacecraftState s, final EventDetector d, final boolean increasing) {
                     logEvent(s, increasing);
-                    return handler.eventOccurred(s, detector, increasing);
+                    return handler.eventOccurred(s, getDetector(), increasing);
                 }
 
                 /** {@inheritDoc} */
                 @Override
                 public SpacecraftState resetState(final EventDetector d, final SpacecraftState oldState) {
-                    return handler.resetState(detector, oldState);
+                    return handler.resetState(getDetector(), oldState);
                 }
 
             };

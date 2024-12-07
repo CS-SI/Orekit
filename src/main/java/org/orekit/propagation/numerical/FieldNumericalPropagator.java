@@ -41,6 +41,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.CartesianToleranceProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
@@ -51,7 +52,6 @@ import org.orekit.propagation.integration.FieldStateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterObserver;
 import org.orekit.utils.TimeSpanMap;
@@ -121,7 +121,7 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * final T          minStep   = zero.add(0.001);
  * final T          maxStep   = zero.add(500);
  * final T          initStep  = zero.add(60);
- * final double[][] tolerance = FieldNumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+ * final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, OrbitType.EQUINOCTIAL);
  * AdaptiveStepsizeFieldIntegrator&lt;T&gt; integrator = new DormandPrince853FieldIntegrator&lt;&gt;(field, minStep, maxStep, tolerance[0], tolerance[1]);
  * integrator.setInitialStepSize(initStep);
  * propagator = new FieldNumericalPropagator&lt;&gt;(field, integrator);
@@ -625,25 +625,6 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
 
     }
 
-    /**
-     * Get default tolerance providers. Matches < 13.0 values.
-     * @param dP expected position error
-     * @param dV expected velocity error
-     * @return tolerances
-     * @since 13.0
-     */
-    private static ToleranceProvider getDefaultToleranceProvider(final double dP, final double dV) {
-        return ToleranceProvider.of((position, velocity) -> {
-            final double[] absTol = new double[7];
-            final double[] relTol = new double[7];
-            Arrays.fill(absTol, 0, 3, dP);
-            Arrays.fill(absTol, 3, 6, dV);
-            absTol[6] = 1e-6;
-            Arrays.fill(relTol, dP / position.getNorm());
-            return new double[][] {absTol, relTol};
-        });
-    }
-
     /** Estimate tolerance vectors for integrators.
      * <p>
      * The errors are estimated from partial derivatives properties of orbits,
@@ -669,17 +650,13 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @param <T> elements type
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
-    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit, final OrbitType type) {
+    @Deprecated
+    public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit,
+                                                                            final OrbitType type) {
 
-        // estimate the scalar velocity error
-        final FieldPVCoordinates<T> pv = orbit.getPVCoordinates();
-        final T r2 = pv.getPosition().getNormSq();
-        final T v  = pv.getVelocity().getNorm();
-        final T dV = dP.multiply(orbit.getMu()).divide(v.multiply(r2));
-
-        return getDefaultToleranceProvider(dP.getReal(), dV.getReal()).getTolerances(orbit, type, PositionAngleType.TRUE);
-
+        return ToleranceProvider.getDefaultToleranceProvider(dP.getReal()).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
     /** Estimate tolerance vectors for integrators when propagating in orbits.
@@ -701,12 +678,15 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @since 10.3
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final T dV,
                                                                             final FieldOrbit<T> orbit,
                                                                             final OrbitType type) {
 
-        return getDefaultToleranceProvider(dP.getReal(), dV.getReal()).getTolerances(orbit, type, PositionAngleType.TRUE);
+        return ToleranceProvider.of(CartesianToleranceProvider.of(dP.getReal(), dV.getReal(),
+                CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)).getTolerances(orbit, type, PositionAngleType.TRUE);
     }
 
 }

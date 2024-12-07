@@ -36,7 +36,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -103,7 +103,7 @@ public class BrouwerLyddaneStateTransitionMatrixTest {
         // compute reference state Jacobian using finite differences
         double[][] dYdY0Ref = new double[6][6];
         BrouwerLyddanePropagator propagator2;
-        double[] steps = NumericalPropagator.tolerances(10, initialState.getOrbit(), OrbitType.CARTESIAN)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialState.getOrbit(), OrbitType.CARTESIAN)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2 = new BrouwerLyddanePropagator(shiftState(initialState, OrbitType.CARTESIAN, -4 * steps[i], i).getOrbit(), provider, M2);
             SpacecraftState sM4h = propagator2.propagate(target);

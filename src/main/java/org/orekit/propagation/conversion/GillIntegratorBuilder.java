@@ -16,16 +16,16 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.GillIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /** Builder for GillIntegrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class GillIntegratorBuilder implements ODEIntegratorBuilder {
+public class GillIntegratorBuilder extends AbstractIntegratorBuilder<GillIntegrator> {
 
     /** Step size (s). */
     private final double step;
@@ -39,7 +39,8 @@ public class GillIntegratorBuilder implements ODEIntegratorBuilder {
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
+    public GillIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+                                          final PositionAngleType angleType) {
         return new GillIntegrator(step);
     }
 

@@ -83,11 +83,8 @@ class CartesianToleranceProviderTest {
         Arrays.fill(absoluteTolerances, 1.);
         final double[] relativeTolerances = new double[7];
         Arrays.fill(relativeTolerances, 2.);
-        final CartesianToleranceProvider mockedProvider = Mockito.mock(CartesianToleranceProvider.class);
-        Mockito.when(mockedProvider.getTolerances(Mockito.any(Vector3D.class), Mockito.any(Vector3D.class)))
-                .thenReturn(new double[][] {absoluteTolerances, relativeTolerances});
+        final CartesianToleranceProvider mockedProvider = new TestProvider(absoluteTolerances, relativeTolerances);
         final CartesianOrbit mockedOrbit = mockOrbit();
-        Mockito.when(mockedProvider.getTolerances(mockedOrbit)).thenCallRealMethod();
         // WHEN
         final double[][] actualTolerances = mockedProvider.getTolerances(mockedOrbit);
         // THEN
@@ -102,12 +99,8 @@ class CartesianToleranceProviderTest {
         Arrays.fill(absoluteTolerances, 1.);
         final double[] relativeTolerances = new double[7];
         Arrays.fill(relativeTolerances, 2.);
-        final CartesianToleranceProvider mockedProvider = Mockito.mock(CartesianToleranceProvider.class);
-        Mockito.when(mockedProvider.getTolerances(Mockito.any(Vector3D.class), Mockito.any(Vector3D.class)))
-                .thenReturn(new double[][] {absoluteTolerances, relativeTolerances});
+        final CartesianToleranceProvider mockedProvider = new TestProvider(absoluteTolerances, relativeTolerances);
         final FieldCartesianOrbit<Binary64> mockedOrbit = mockFieldOrbit();
-        Mockito.when(mockedProvider.getTolerances(Mockito.any(CartesianOrbit.class))).thenCallRealMethod();
-        Mockito.when(mockedProvider.getTolerances(mockedOrbit)).thenCallRealMethod();
         // WHEN
         final double[][] actualTolerances = mockedProvider.getTolerances(mockedOrbit);
         // THEN
@@ -137,11 +130,8 @@ class CartesianToleranceProviderTest {
         Arrays.fill(absoluteTolerances, 1.);
         final double[] relativeTolerances = new double[7];
         Arrays.fill(relativeTolerances, 2.);
-        final CartesianToleranceProvider mockedProvider = Mockito.mock(CartesianToleranceProvider.class);
-        Mockito.when(mockedProvider.getTolerances(Mockito.any(Vector3D.class), Mockito.any(Vector3D.class)))
-                .thenReturn(new double[][] {absoluteTolerances, relativeTolerances});
+        final CartesianToleranceProvider mockedProvider = new TestProvider(absoluteTolerances, relativeTolerances);
         final AbsolutePVCoordinates mockedPV = mockPV();
-        Mockito.when(mockedProvider.getTolerances(mockedPV)).thenCallRealMethod();
         // WHEN
         final double[][] actualTolerances = mockedProvider.getTolerances(mockedPV);
         // THEN
@@ -156,12 +146,8 @@ class CartesianToleranceProviderTest {
         Arrays.fill(absoluteTolerances, 1.);
         final double[] relativeTolerances = new double[7];
         Arrays.fill(relativeTolerances, 2.);
-        final CartesianToleranceProvider mockedProvider = Mockito.mock(CartesianToleranceProvider.class);
-        Mockito.when(mockedProvider.getTolerances(Mockito.any(Vector3D.class), Mockito.any(Vector3D.class)))
-                .thenReturn(new double[][] {absoluteTolerances, relativeTolerances});
+        final CartesianToleranceProvider mockedProvider = new TestProvider(absoluteTolerances, relativeTolerances);
         final FieldAbsolutePVCoordinates<Binary64> mockedFieldPV = mockFieldPV();
-        Mockito.when(mockedProvider.getTolerances(Mockito.any(AbsolutePVCoordinates.class))).thenCallRealMethod();
-        Mockito.when(mockedProvider.getTolerances(mockedFieldPV)).thenCallRealMethod();
         // WHEN
         final double[][] actualTolerances = mockedProvider.getTolerances(mockedFieldPV);
         // THEN
@@ -183,4 +169,20 @@ class CartesianToleranceProviderTest {
         Mockito.when(mockedFieldPV.toAbsolutePVCoordinates()).thenReturn(mockedPV);
         return mockedFieldPV;
     }
+
+    private static class TestProvider implements CartesianToleranceProvider {
+        private final double[] absoluteTolerances;
+        private final double[] relativeTolerances;
+        TestProvider(final double[] absoluteTolerances, final double[] relativeTolerances) {
+            this.absoluteTolerances = absoluteTolerances;
+            this.relativeTolerances = relativeTolerances;
+        }
+        @Override
+        public double[][] getTolerances(final Vector3D position, final Vector3D velocity) {
+            return new double[][] {
+                absoluteTolerances, relativeTolerances
+            };
+        }
+    }
+
 }

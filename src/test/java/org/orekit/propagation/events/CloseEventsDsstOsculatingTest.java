@@ -19,9 +19,11 @@ package org.orekit.propagation.events;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.utils.Constants;
@@ -34,7 +36,7 @@ public class CloseEventsDsstOsculatingTest extends CloseEventsAbstractTest {
 
     @Override
     public Propagator getPropagator(double stepSize) {
-        double[][] tol = DSSTPropagator.tolerances(1, initialOrbit);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1).getTolerances(initialOrbit, OrbitType.EQUINOCTIAL);
         ODEIntegrator integrator = new DormandPrince853Integrator(stepSize, stepSize, tol[0], tol[1]);
         DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.OSCULATING);
         propagator.setInitialState(new SpacecraftState(initialOrbit));

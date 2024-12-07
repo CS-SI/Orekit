@@ -21,6 +21,7 @@ import org.hipparchus.Field;
 import org.hipparchus.ode.nonstiff.MidpointFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /**
  * Builder for MidpointFieldIntegrator.
@@ -31,7 +32,7 @@ import org.orekit.orbits.OrbitType;
  * @param <T> type of the field elements
  */
 public class MidpointFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractFixedStepFieldIntegratorBuilder<T> {
+        extends AbstractFixedStepFieldIntegratorBuilder<T, MidpointFieldIntegrator<T>> {
 
     /**
      * Constructor.
@@ -60,10 +61,12 @@ public class MidpointFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    public MidpointFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
+    public MidpointFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit,
+                                                      final OrbitType orbitType, final PositionAngleType angleType) {
         return new MidpointFieldIntegrator<>(field, getFieldStep(field));
     }
 
+    /** {@inheritDoc} */
     @Override
     public MidpointIntegratorBuilder toODEIntegratorBuilder() {
         return new MidpointIntegratorBuilder(getStep());

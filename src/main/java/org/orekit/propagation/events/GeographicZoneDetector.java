@@ -56,7 +56,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param body body on which the geographic zone is defined
      * @param zone geographic zone to consider
@@ -64,7 +64,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      */
     public GeographicZoneDetector(final BodyShape body,
                                   final SphericalPolygonsSet zone,  final double margin) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, body, zone, margin);
+        this(DEFAULT_MAX_CHECK, DEFAULT_THRESHOLD, body, zone, margin);
     }
 
     /** Build a detector.
@@ -77,7 +77,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
     public GeographicZoneDetector(final double maxCheck, final double threshold,
                                   final BodyShape body,
                                   final SphericalPolygonsSet zone,  final double margin) {
-        this(AdaptableInterval.of(maxCheck), threshold, DEFAULT_MAX_ITER, new StopOnIncreasing(),
+        this(new EventDetectionSettings(maxCheck, threshold, DEFAULT_MAX_ITER), new StopOnIncreasing(),
              body, zone, zone.getEnclosingCap(), margin);
     }
 
@@ -87,22 +87,20 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the geographic zone is defined
      * @param zone geographic zone to consider
      * @param cap spherical cap surrounding the zone
      * @param margin angular margin to apply to the zone
+     * @since 13.0
      */
-    protected GeographicZoneDetector(final AdaptableInterval maxCheck, final double threshold,
-                                     final int maxIter, final EventHandler handler,
+    protected GeographicZoneDetector(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                      final BodyShape body,
                                      final SphericalPolygonsSet zone,
                                      final EnclosingBall<Sphere2D, S2Point> cap,
                                      final double margin) {
-        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.body   = body;
         this.zone   = zone;
         this.cap    = cap;
@@ -111,9 +109,8 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
 
     /** {@inheritDoc} */
     @Override
-    protected GeographicZoneDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                            final int newMaxIter, final EventHandler newHandler) {
-        return new GeographicZoneDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+    protected GeographicZoneDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new GeographicZoneDetector(detectionSettings, newHandler,
                                           body, zone, cap, margin);
     }
 
@@ -123,8 +120,7 @@ public class GeographicZoneDetector extends AbstractDetector<GeographicZoneDetec
      * @return a new detector with updated configuration (the instance is not changed)
      */
     public GeographicZoneDetector withMargin(final double newMargin) {
-        return new GeographicZoneDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
-                                          body, zone, cap, newMargin);
+        return new GeographicZoneDetector(getDetectionSettings(), getHandler(), body, zone, cap, newMargin);
     }
 
     /** Get the body on which the geographic zone is defined.

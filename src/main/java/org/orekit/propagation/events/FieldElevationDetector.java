@@ -60,7 +60,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * Creates an instance of Elevation detector based on passed in topocentric frame
      * and the minimum elevation angle.
      * <p>
-     * uses default values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * uses default values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param field type of the elements
      * @param topo reference to a topocentric model
@@ -69,8 +69,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public FieldElevationDetector(final Field<T> field, final TopocentricFrame topo) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-             field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER,
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
              new FieldStopOnDecreasing<>(),
              0.0, null, null, topo);
     }
@@ -86,9 +85,8 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public FieldElevationDetector(final T maxCheck, final T threshold, final TopocentricFrame topo) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER,
-             new FieldStopOnDecreasing<>(),
-             0.0, null, null, topo);
+        this(new FieldEventDetectionSettings<>(maxCheck.getReal(), threshold, DEFAULT_MAX_ITER),
+             new FieldStopOnDecreasing<>(), 0.0, null, null, topo);
     }
 
     /** Protected constructor with full parameters.
@@ -116,35 +114,11 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
         this.topo            = topo;
     }
 
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
-     * @param minElevation minimum elevation in radians (rad)
-     * @param mask reference to elevation mask
-     * @param refractionModel reference to refraction model
-     * @param topo reference to a topocentric model
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected FieldElevationDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                     final int maxIter, final FieldEventHandler<T> handler,
-                                     final double minElevation, final ElevationMask mask,
-                                     final AtmosphericRefractionModel refractionModel, final TopocentricFrame topo) {
-        this(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler, minElevation, mask, refractionModel, topo);
-    }
-
     /** {@inheritDoc} */
     @Override
-    protected FieldElevationDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                               final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldElevationDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+    protected FieldElevationDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                               final FieldEventHandler<T> newHandler) {
+        return new FieldElevationDetector<>(detectionSettings, newHandler,
                                             minElevation, elevationMask, refractionModel, topo);
     }
 
@@ -225,7 +199,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @since 6.1
      */
     public FieldElevationDetector<T> withConstantElevation(final double newMinElevation) {
-        return new FieldElevationDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+        return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
                                             newMinElevation, null, refractionModel, topo);
     }
 
@@ -237,7 +211,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @see #getElevationMask()
      */
     public FieldElevationDetector<T> withElevationMask(final ElevationMask newElevationMask) {
-        return new FieldElevationDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+        return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
                                             Double.NaN, newElevationMask, refractionModel, topo);
     }
 
@@ -254,7 +228,7 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @see #getRefractionModel()
      */
     public FieldElevationDetector<T> withRefraction(final AtmosphericRefractionModel newRefractionModel) {
-        return new FieldElevationDetector<>(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
+        return new FieldElevationDetector<>(getDetectionSettings(), getHandler(),
                                             minElevation, elevationMask, newRefractionModel, topo);
     }
 

@@ -42,11 +42,7 @@ import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.*;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.PropagatorsParallelizer;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.MultiSatStepHandler;
@@ -135,7 +131,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                                                    initialOrbit.getFrame()),
                                                            mass);
 
-        double[][] tolerance = NumericalPropagator.tolerances(10, initialOrbit, initialOrbit.getType());
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
 
         // propagator 0 uses a maneuver that is so efficient it does not consume any fuel
         // (hence mass remains constant)
@@ -246,7 +242,7 @@ public class PolynomialAccelerationModelTest extends AbstractForceModelTest {
                                                                                                                       initialOrbit.getFrame()),
                                                                                               mass));
 
-        double[][] tolerance = FieldNumericalPropagator.tolerances(field.getZero().add(10),
+        double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10).getTolerances(
                                                                    initialState.getOrbit(),
                                                                    initialState.getOrbit().getType());
 

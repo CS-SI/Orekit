@@ -52,6 +52,7 @@ public class AdapterDetector implements EventDetector {
     /** {@inheritDoc} */
     @Override
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        EventDetector.super.init(s0, t);
         detector.init(s0, t);
     }
 
@@ -63,24 +64,6 @@ public class AdapterDetector implements EventDetector {
 
     /** {@inheritDoc} */
     @Override
-    public double getThreshold() {
-        return detector.getThreshold();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public AdaptableInterval getMaxCheckInterval() {
-        return detector.getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public int getMaxIterationCount() {
-        return detector.getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public EventHandler getHandler() {
         return detector.getHandler();
     }
@@ -88,6 +71,7 @@ public class AdapterDetector implements EventDetector {
     /** {@inheritDoc} */
     @Override
     public void finish(final SpacecraftState state) {
+        EventDetector.super.finish(state);
         detector.finish(state);
     }
 

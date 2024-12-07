@@ -29,6 +29,7 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
@@ -74,8 +75,8 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
      */
     public FieldNodeDetector(final T threshold, final FieldOrbit<T> orbit, final Frame frame) {
-        this(FieldAdaptableInterval.of(orbit.getA().getField().getZero().newInstance(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3).getReal()),
-            threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(), frame);
+        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(orbit.getA().getField().getZero().newInstance(2 * estimateNodesTimeSeparation(orbit.toOrbit()) / 3).getReal()),
+            threshold, DEFAULT_MAX_ITER), new FieldStopOnIncreasing<>(), frame);
     }
 
     /** Protected constructor with full parameters.
@@ -84,27 +85,24 @@ public class FieldNodeDetector<T extends CalculusFieldElement<T>> extends FieldA
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param frame frame in which the equator is defined (typical
      * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
      * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
-     * @since 6.1
+     * @since 13.0
      */
-    protected FieldNodeDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
-                                final int maxIter, final FieldEventHandler<T> handler,
-                                final Frame frame) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+    protected FieldNodeDetector(final FieldEventDetectionSettings<T> detectionSettings,
+                                final FieldEventHandler<T> handler, final Frame frame) {
+        super(detectionSettings, handler);
         this.frame = frame;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected FieldNodeDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                          final int newMaxIter, final FieldEventHandler<T> newHandler) {
-        return new FieldNodeDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
+    protected FieldNodeDetector<T> create(final FieldEventDetectionSettings<T> detectionSettings,
+                                          final FieldEventHandler<T> newHandler) {
+        return new FieldNodeDetector<>(detectionSettings, newHandler, frame);
     }
 
     /** Find time separation between nodes.

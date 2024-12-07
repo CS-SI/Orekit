@@ -21,6 +21,112 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1621">
+            Add get(Field)DateDetector in EventDetectorsProvider.
+        </action>
+        <action dev="serrof" type="update" issue="1619">
+            Generalize (Field)ImpulseManeuver.
+        </action>
+        <action dev="serrof" type="update" issue="1618">
+            Made all force models compatible with AbsolutePVCoordinates.
+        </action>
+        <action dev="serrof" type="add" issue="1617">
+            Add ForceModelModifier.
+        </action>
+        <action dev="serrof" type="add" issue="1616">
+            Add way to construct (Field)AdaptableInterval from other instances.
+        </action>
+        <action dev="serrof" type="add" issue="1615">
+            Add option for custom detection settings in DateBasedManeuverTrigger.
+        </action>
+        <action dev="bryan" type="update" issue="1614">
+            Updated default interpolation samples of ephemeris files parser to be public.
+        </action>
+        <action dev="serrof" type="update" issue="1613">
+            Introduced generic for abstract integrator builders.
+        </action>
+        <action dev="serrof" type="update" issue="1612">
+            Introduced generic for abstract propagator builders.
+        </action>
+        <action dev="luc" type="fix" issue="1611">
+            Fixed loxodrome computation in perfect East-West direction.
+        </action>
+        <action dev="serrof" type="add" issue="1609">
+            Add AttitudeRotationModel and use it in Maneuver.
+        </action>
+        <action dev="serrof" type="add" issue="1608">
+            Add AttitudesSwitcher (like AttitudesSequence but with instantaneous switches).
+        </action>
+        <action dev="serrof" type="update" issue="1607">
+            Extract switch handler from AttitudesSequence.
+        </action>
+        <action dev="serrof" type="update" issue="1605">
+            Modify constructor of (Field)IntegratedEphemeris to explicitly pass original AttitudeProvider.
+        </action>
+        <action dev="serrof" type="update" issue="1604">
+            Have AttitudeModifierProvider wrap underlying provider by default.
+        </action>
+        <action dev="serrof" type="add" issue="1602">
+            Make AttitudeProvider inherit from ParametersDriversProvider.
+        </action>
+        <action dev="serrof" type="add" issue="1601">
+            Add withCachedPositionAngleType in PositionAngleBased.
+        </action>
+        <action dev="serrof" type="add" issue="1600">
+            Add static getExhaustVelocity method in ThrustPropulsionModel.
+        </action>
+        <action dev="bryan" type="fix" issue="1599">
+            Fixed typo in measurement modifiers.
+        </action>
+        <action dev="serrof" type="update" issue="1598">
+            Uniform naming of DEFAULT_MAX_CHECK in event detectors.
+        </action>
+        <action dev="luc" type="update" issue="1595">
+            Added getDayOfYear to {Field}AbsoluteDate.
+        </action>
+        <action dev="serrof" type="add" issue="1593">
+            Add custom eclipse detection settings in AbstractRadiationForceModel and inheritors.
+        </action>
+        <action dev="luc" type="add" issue="1591">
+            Added ITU-R P.834 tropospheric model
+            (including path delay, weather parameters and mapping function).
+        </action>
+        <action dev="luc" type="update" issue="1590">
+            Renamed EarthITU453AtmosphereRefraction into EarthITU834AtmosphereRefraction.
+        </action>
+        <action dev="serrof" type="update" issue="1585">
+            Add default implementation for theoreticalEvaluationWithoutDerivatives in AbstractMeasurement.
+        </action>
+        <action dev="serrof" type="add" issue="1584">
+            Add fuel cost for Cartesian adjoint dynamics.
+        </action>
+        <action dev="serrof" type="add" issue="1583">
+            Add counting event handler.
+        </action>
+        <action dev="serrof" type="update" issue="1582">
+            Made LoggingWrapper in (Field)EventsLogger inherit from (Field)AdapterDetector rather than (Field)AbstractDetector.
+        </action>
+        <action dev="serrof" type="add" issue="1581">
+            Add withFrame method in (Field)Orbit.
+        </action>
+        <action dev="serrof" type="update" issue="1580">
+            Moved (Field)AdaptableInterval.
+        </action>
+        <action dev="serrof" type="update" issue="1577">
+            Simplify use of AttitudesSequence.
+        </action>
+        <action dev="serrof" type="update" issue="1576">
+            Deprecate ExtentedPVCoordinatesProvider.
+        </action>
+        <action dev="serrof" type="update" issue="1575">
+            Revamp (Field)ImpulseManeuver.
+        </action>
+        <action dev="serrof" type="update" issue="1574">
+            Deprecate tolerances in (Field)NumericalPropagator and (Field)DSSTPropagator.
+        </action>
+        <action dev="serrof" type="update" issue="1569">
+            Moved initizaliztion of (Field)Handler in (Field)EventDetector.
+        </action>
         <action dev="luc" type="fix" issue="1567">
             Fixed interpolation of phase center variations in Antex files.
         </action>
@@ -39,8 +145,17 @@
         <action dev="luc" type="fix" issue="1548">
             Added toString to SatInSystem.
         </action>
+        <action dev="serrof" type="update" issue="1546">
+            Use Keplerian rates by default in (Field)Orbit.
+        </action>
+        <action dev="serrof" type="fix" issue="1545">
+            Convert frame in resetOrbit of AbstractPropagatorBuilder.
+        </action>
         <action dev="luc" type="fix" issue="1542">
             Use SatInSystem in SatelliteAntenna.
+        </action>
+        <action dev="serrof" type="update" issue="1541">
+            Removed deprecated signature of create in (Field)AbstractDetector.
         </action>
         <action dev="serrof" type="add" issue="1540">
             New interface for integration tolerances.
@@ -90,8 +205,14 @@
             Renamed signalTimeOfFlight → signalTimeOfFlightAdjustableEmitter and
             added signalTimeOfFlightAdjustableReceiver.
         </action>
+        <action dev="serrof" type="add" issue="1440">
+            Add some getters in PropagatorBuilder.
+        </action>
         <action dev="serrof" type="update" issue="1241">
             Use Field date in Sun's position for atmosphere when applicable.
+        </action>
+        <action dev="serrof" type="fix" issue="1428">
+            Compute rotation rate in LOF transform.
         </action>
         <action dev="serrof" type="update" issue="1421">
             Use UnivariateDerivative2 instead of DerivativeStructure in OneAxisEllispoid.
@@ -124,6 +245,9 @@
         <action dev="serrof" type="update" issue="1382">
           Add direction of propagation as argument in (Field)AdaptableInterval.
         </action>
+        <action dev="serrof" type="add" issue="1377">
+            Add adaptable interval for (Field)DateDetector.
+        </action>
         <action dev="serrof" type="update" issue="1373">
             Change default position angle type to ECCENTRIC in (Field)NumericalPropagator.
         </action>
@@ -133,6 +257,12 @@
         </action>
         <action dev="serrof" type="update" issue="1270">
           Rename getEventsDetectors as getEventDetectors in (Field)Propagator.
+        </action>
+        <action dev="bryan" type="fix" issue="1166">
+            Added a new IOD Gooding algorithm without the need of range initial guesses.
+        </action>
+        <action dev="bryan" type="add" issue="1039">
+            Added optional name for ObservableSatellite.
         </action>
     </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.

@@ -33,6 +33,16 @@ import org.orekit.utils.Constants;
  */
 public interface ThrustPropulsionModel extends PropulsionModel {
 
+    /**
+     * Method computing the effective exhaust velocity from the specific impulse.
+     * @param isp specific impulse (s)
+     * @return effective exhaust velocity (m/s)
+     * @since 13.0
+     */
+    static double getExhaustVelocity(final double isp) {
+        return Constants.G0_STANDARD_GRAVITY * isp;
+    }
+
     /** Get the specific impulse (s).
      * @param s current spacecraft state
      * @return specific impulse (s).

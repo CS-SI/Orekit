@@ -64,6 +64,9 @@ import org.orekit.utils.Constants;
  */
 public class SP3Parser implements EphemerisFileParser<SP3> {
 
+    /** Default number of samples to use when interpolating SP3 coordinates. */
+    public static final int DEFAULT_INTERPOLATION_SAMPLES = 7;
+
     /** Spaces delimiters. */
     private static final String SPACES = "\\s+";
 
@@ -83,13 +86,15 @@ public class SP3Parser implements EphemerisFileParser<SP3> {
      * Create an SP3 parser using default values.
      *
      * <p>This constructor uses the {@link DataContext#getDefault() default data context}.
+     * It also uses a {@link #DEFAULT_INTERPOLATION_SAMPLES default number of samples} to
+     * interpolate coordinates.
      *
      * @see #SP3Parser(double, int, Function)
      * @see IGSUtils#guessFrame(String)
      */
     @DefaultDataContext
     public SP3Parser() {
-        this(Constants.EIGEN5C_EARTH_MU, 7, IGSUtils::guessFrame);
+        this(Constants.EIGEN5C_EARTH_MU, DEFAULT_INTERPOLATION_SAMPLES, IGSUtils::guessFrame);
     }
 
     /**

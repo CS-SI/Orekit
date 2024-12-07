@@ -25,40 +25,32 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
 public class ExtendedPVCoordinatesTest {
 
     @Test
+    @Deprecated
     public void testConversion() {
-        final ExtendedPVCoordinatesProvider provider = new ExtendedPVCoordinatesProvider() {
+        final ExtendedPositionProvider provider = new ExtendedPositionProvider() {
 
             @Override
-            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame) {
-                return null;
+            public <T extends CalculusFieldElement<T>> FieldVector3D<T> getPosition(FieldAbsoluteDate<T> date, Frame frame) {
+                return FieldVector3D.getPlusI(date.getField());
             }
-
-            @Override
-            public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-                getPVCoordinates(final FieldAbsoluteDate<T> date, final Frame frame) {
-                return new TimeStampedFieldPVCoordinates<>(date,
-                                                           FieldVector3D.getPlusI(date.getField()),
-                                                           FieldVector3D.getPlusJ(date.getField()),
-                                                           FieldVector3D.getPlusK(date.getField()));
-            }
-        };
+        }.toExtendedPVCoordinatesProvider();
 
         Field<Binary64> field = Binary64Field.getInstance();
         final FieldPVCoordinatesProvider<Binary64> converted = provider.toFieldPVCoordinatesProvider(field);
-
-        FieldVector3D<Binary64> p = converted.getPosition(FieldAbsoluteDate.getJ2000Epoch(field), FramesFactory.getGCRF());
+        final FieldAbsoluteDate<Binary64> date = FieldAbsoluteDate.getJ2000Epoch(field);
+        final Frame frame = FramesFactory.getGCRF();
+        FieldVector3D<Binary64> p = converted.getPosition(date, frame);
         Assertions.assertEquals(0.0, FieldVector3D.distance(p, FieldVector3D.getPlusI(field)).getReal(), 1.0e-15);
 
-        FieldPVCoordinates<Binary64> pv = converted.getPVCoordinates(FieldAbsoluteDate.getJ2000Epoch(field), FramesFactory.getGCRF());
+        FieldPVCoordinates<Binary64> pv = converted.getPVCoordinates(date, frame);
         Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getPosition(),     FieldVector3D.getPlusI(field)).getReal(), 1.0e-15);
-        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getVelocity(),     FieldVector3D.getPlusJ(field)).getReal(), 1.0e-15);
-        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getAcceleration(), FieldVector3D.getPlusK(field)).getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getVelocity(),     provider.getPVCoordinates(date, frame).getVelocity()).getReal(), 1.0e-15);
+        Assertions.assertEquals(0.0, FieldVector3D.distance(pv.getAcceleration(), provider.getPVCoordinates(date, frame).getAcceleration()).getReal(), 1.0e-15);
 
     }
 

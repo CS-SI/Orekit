@@ -23,15 +23,16 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
 /**
  * Class for bounded energy cost with Cartesian coordinates.
+ * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
+ * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
  * Here, the control vector is chosen as the thrust force divided by the maximum thrust magnitude and expressed in the propagation frame.
  * It has a unit Euclidean norm.
+ *
  * @author Romain Serra
  * @see UnboundedCartesianEnergyNeglectingMass
  * @since 12.2
@@ -99,8 +100,8 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
     @Override
     public Stream<EventDetector> getEventDetectors() {
         final EventDetectionSettings detectionSettings = getEventDetectionSettings();
-        return Stream.of(new SingularityDetector(detectionSettings, new ResetDerivativesOnEvent(), 0.),
-            new SingularityDetector(detectionSettings, new ResetDerivativesOnEvent(), maximumThrustMagnitude));
+        return Stream.of(new SingularityDetector(detectionSettings, 0.),
+            new SingularityDetector(detectionSettings, maximumThrustMagnitude));
     }
 
     /** {@inheritDoc} */
@@ -109,8 +110,8 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
         final FieldEventDetectionSettings<T> detectionSettings = new FieldEventDetectionSettings<>(field, getEventDetectionSettings());
         final T zero = field.getZero();
         final T maximumThrustMagnitudeForEvent = zero.newInstance(maximumThrustMagnitude);
-        return Stream.of(new FieldSingularityDetector<>(detectionSettings, new FieldResetDerivativesOnEvent<>(), zero),
-            new FieldSingularityDetector<>(detectionSettings, new FieldResetDerivativesOnEvent<>(), maximumThrustMagnitudeForEvent));
+        return Stream.of(new FieldSingularityDetector<>(detectionSettings, zero),
+            new FieldSingularityDetector<>(detectionSettings, maximumThrustMagnitudeForEvent));
     }
 
 }

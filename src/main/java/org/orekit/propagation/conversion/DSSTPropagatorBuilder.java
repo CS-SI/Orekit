@@ -44,16 +44,10 @@ import java.util.List;
  * @author Bryan Cazabonne
  * @since 10.0
  */
-public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
-
-    /** First order integrator builder for propagation. */
-    private final ODEIntegratorBuilder builder;
+public class DSSTPropagatorBuilder extends AbstractIntegratedPropagatorBuilder<DSSTPropagator> {
 
     /** Force models used during the extrapolation of the orbit. */
     private final List<DSSTForceModel> forceModels;
-
-    /** Type of the orbit used for the propagation.*/
-    private PropagationType propagationType;
 
     /** Type of the elements used to define the orbital state.*/
     private PropagationType stateType;
@@ -111,18 +105,9 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                  final PropagationType propagationType,
                                  final PropagationType stateType,
                                  final AttitudeProvider attitudeProvider) {
-        super(referenceOrbit, PositionAngleType.MEAN, positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
-        this.builder           = builder;
+        super(referenceOrbit, builder, PositionAngleType.MEAN, positionScale, propagationType, attitudeProvider, Propagator.DEFAULT_MASS);
         this.forceModels       = new ArrayList<>();
-        this.propagationType   = propagationType;
         this.stateType         = stateType;
-    }
-
-    /** Get the type of the orbit used for the propagation (mean or osculating).
-     * @return the type of the orbit used for the propagation
-     */
-    public PropagationType getPropagationType() {
-        return propagationType;
     }
 
     /** Get the type of the elements used to define the orbital state (mean or osculating).
@@ -130,14 +115,6 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
      */
     public PropagationType getStateType() {
         return stateType;
-    }
-
-    /** Get the integrator builder.
-     * @return the integrator builder
-     */
-    public ODEIntegratorBuilder getIntegratorBuilder()
-    {
-        return builder;
     }
 
     /** Get the list of all force models.
@@ -196,9 +173,8 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
         final SpacecraftState  state    = new SpacecraftState(orbit, attitude, getMass());
 
         final DSSTPropagator propagator = new DSSTPropagator(
-                builder.buildIntegrator(orbit, OrbitType.EQUINOCTIAL),
-                propagationType,
-                getAttitudeProvider());
+                getIntegratorBuilder().buildIntegrator(orbit, OrbitType.EQUINOCTIAL, PositionAngleType.MEAN),
+                getPropagationType(), getAttitudeProvider());
 
         // Configure force models
         if (!hasNewtonianAttraction()) {
@@ -230,7 +206,7 @@ public class DSSTPropagatorBuilder extends AbstractPropagatorBuilder {
                                     measurements,
                                     estimatedMeasurementsParameters,
                                     observer,
-                                    propagationType);
+                                    getPropagationType());
     }
 
     /** Check if Newtonian attraction force model is available.

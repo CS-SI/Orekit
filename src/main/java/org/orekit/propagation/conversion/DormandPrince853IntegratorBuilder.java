@@ -16,49 +16,43 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.ToleranceProvider;
 
 /** Builder for DormandPrince853Integrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class DormandPrince853IntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+public class DormandPrince853IntegratorBuilder extends AbstractVariableStepIntegratorBuilder<DormandPrince853Integrator> {
 
-    /** Build a new instance. Should only use this constructor with {@link Orbit}.
+    /**
+     * Build a new instance using default integration tolerances.
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
      * @param dP position error (m)
      * @see DormandPrince853Integrator
-     * @see NumericalPropagator#tolerances(double, Orbit, OrbitType)
      */
     public DormandPrince853IntegratorBuilder(final double minStep, final double maxStep, final double dP) {
-        super(minStep, maxStep, dP);
+        super(minStep, maxStep, getDefaultToleranceProvider(dP));
     }
 
     /** Build a new instance.
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
-     * @param dP position error (m)
-     * @param dV velocity error (m/s)
+     * @param toleranceProvider integration tolerance provider
      *
-     * @since 12.2
+     * @since 13.0
      * @see DormandPrince853Integrator
-     * @see NumericalPropagator#tolerances(double, double, Orbit, OrbitType)
      */
-    public DormandPrince853IntegratorBuilder(final double minStep, final double maxStep, final double dP,
-                                             final double dV) {
-        super(minStep, maxStep, dP, dV);
+    public DormandPrince853IntegratorBuilder(final double minStep, final double maxStep,
+                                             final ToleranceProvider toleranceProvider) {
+        super(minStep, maxStep, toleranceProvider);
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = getTolerances(orbit, orbitType);
-        return new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+    protected DormandPrince853Integrator buildIntegrator(final double[][] tolerances) {
+        return new DormandPrince853Integrator(getMinStep(), getMaxStep(), tolerances[0], tolerances[1]);
     }
 
 }

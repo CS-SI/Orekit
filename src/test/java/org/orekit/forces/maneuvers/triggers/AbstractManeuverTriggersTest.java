@@ -47,6 +47,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -311,7 +312,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     private NumericalPropagator buildPropagator(final AttitudeProvider attitudeProvider, final SpacecraftState initialState,
                                                 final Maneuver maneuver) {
         OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        double[][] tol = NumericalPropagator.tolerances(1.0e-3, initialState.getOrbit(), orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
@@ -327,7 +328,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
                                                                                             final FieldSpacecraftState<S> initialState,
                                                                                             final Maneuver maneuver) {
         OrbitType orbitType = OrbitType.EQUINOCTIAL;
-        double[][] tol = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-3), initialState.getOrbit(), orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeFieldIntegrator<S> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final FieldNumericalPropagator<S> propagator = new FieldNumericalPropagator<>(field, integrator);

@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 class FieldAbstractDetectorTest {
 
@@ -51,9 +52,8 @@ class FieldAbstractDetectorTest {
         }
 
         @Override
-        protected TestFieldDetector create(FieldAdaptableInterval<Complex> newMaxCheck, Complex newThreshold,
-                                                                       int newMaxIter, FieldEventHandler<Complex> newHandler) {
-            return new TestFieldDetector(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        protected TestFieldDetector create(FieldEventDetectionSettings<Complex> detectionSettings, FieldEventHandler<Complex> newHandler) {
+            return new TestFieldDetector(detectionSettings, newHandler);
         }
 
         @Override

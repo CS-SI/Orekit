@@ -1241,7 +1241,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // create the ephemeris
             ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                stateMapper, propagationType, model,
+                                                stateMapper, getAttitudeProvider(), propagationType, model,
                                                 unmanaged, getAdditionalStateProviders(),
                                                 names, dimensions);
 

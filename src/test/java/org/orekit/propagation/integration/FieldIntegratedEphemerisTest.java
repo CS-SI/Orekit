@@ -23,9 +23,11 @@ import java.util.List;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +35,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.TestUtils;
 import org.orekit.Utils;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.AttitudeProviderModifier;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -40,11 +46,9 @@ import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.FieldAdditionalStateProvider;
-import org.orekit.propagation.FieldBoundedPropagator;
-import org.orekit.propagation.FieldEphemerisGenerator;
-import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
@@ -128,6 +132,34 @@ public class FieldIntegratedEphemerisTest {
 
         Assertions.assertEquals(0, kepPosition.subtract(numPosition).getNorm().getReal(), 3.0e-3);
 
+    }
+
+    @Test
+    void testGetAttitudeProvider() {
+        // GIVEN
+        final Binary64Field field = Binary64Field.getInstance();
+        final AttitudeProvider attitudeProvider = new FrameAlignedProvider(FramesFactory.getGCRF());
+        final FieldNumericalPropagator<Binary64> fieldPropagator = createPropagator(field);
+        fieldPropagator.setAttitudeProvider(attitudeProvider);
+        final FieldOrbit<Binary64> fieldOrbit = createOrbit(field);
+        fieldPropagator.setInitialState(new FieldSpacecraftState<>(fieldOrbit));
+        final FieldEphemerisGenerator<Binary64> generator = fieldPropagator.getEphemerisGenerator();
+        fieldPropagator.propagate(fieldPropagator.getInitialState().getDate().shiftedBy(10));
+        // WHEN
+        final FieldBoundedPropagator<Binary64> boundedPropagator = generator.getGeneratedEphemeris();
+        // THEN
+        final AttitudeProvider ephemerisAttitudeProvider = boundedPropagator.getAttitudeProvider();
+        Assertions.assertInstanceOf(AttitudeProviderModifier.class, ephemerisAttitudeProvider);
+        final AttitudeProviderModifier providerModifier = (AttitudeProviderModifier) ephemerisAttitudeProvider;
+        Assertions.assertEquals(attitudeProvider, providerModifier.getUnderlyingAttitudeProvider());
+        Assertions.assertEquals(0, ephemerisAttitudeProvider.getEventDetectors().count());
+        Assertions.assertEquals(0, ephemerisAttitudeProvider.getFieldEventDetectors(Binary64Field.getInstance()).count());
+        final Orbit orbit = fieldOrbit.toOrbit();
+        final Attitude expectedAttitude = attitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        final Attitude actualAttitude = ephemerisAttitudeProvider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        Assertions.assertEquals(expectedAttitude.getSpin(), actualAttitude.getSpin());
+        Assertions.assertEquals(expectedAttitude.getRotationAcceleration(), actualAttitude.getRotationAcceleration());
+        Assertions.assertEquals(0., Rotation.distance(expectedAttitude.getRotation(), actualAttitude.getRotation()));
     }
 
     private <T extends CalculusFieldElement<T>>  void doTestGetFrame(Field<T> field) {
@@ -232,7 +264,7 @@ public class FieldIntegratedEphemerisTest {
 
         final FieldOrbit<T> initialOrbit = createOrbit(field);
         FieldAbsoluteDate<T> finalDate = initialOrbit.getDate().shiftedBy(10.0);
-        double[][] tolerances = FieldNumericalPropagator.tolerances(field.getZero().newInstance(1.0e-3),
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(
                                                                     initialOrbit, OrbitType.CARTESIAN);
         DormandPrince853FieldIntegrator<T> integrator =
                         new DormandPrince853FieldIntegrator<>(field, 1.0e-6, 10.0, tolerances[0], tolerances[1]);

@@ -23,6 +23,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnIncreasing;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 
 /** Detector for geographic latitude crossing.
  * <p>This detector identifies when a spacecraft crosses a fixed
@@ -36,14 +37,14 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
         extends FieldAbstractDetector<FieldLatitudeCrossingDetector<T>, T> {
 
     /** Body on which the latitude is defined. */
-    private OneAxisEllipsoid body;
+    private final OneAxisEllipsoid body;
 
     /** Fixed latitude to be crossed. */
     private final double latitude;
 
     /** Build a new detector.
      * <p>The new instance uses default values for maximal checking interval
-     * ({@link #DEFAULT_MAXCHECK}) and convergence threshold ({@link
+     * ({@link #DEFAULT_MAX_CHECK}) and convergence threshold ({@link
      * #DEFAULT_THRESHOLD}).</p>
      * @param field the type of numbers to use.
      * @param body body on which the latitude is defined
@@ -52,10 +53,8 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
     public FieldLatitudeCrossingDetector(final Field<T> field,
                                          final OneAxisEllipsoid body,
                                          final double latitude) {
-        this(FieldAdaptableInterval.of(DEFAULT_MAXCHECK),
-                field.getZero().newInstance(DEFAULT_THRESHOLD), DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
-                body,
-                latitude);
+        this(new FieldEventDetectionSettings<>(field, EventDetectionSettings.getDefaultEventDetectionSettings()),
+                new FieldStopOnIncreasing<>(), body, latitude);
     }
 
     /** Build a detector.
@@ -68,8 +67,8 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
                                          final T threshold,
                                          final OneAxisEllipsoid body,
                                          final double latitude) {
-        this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnIncreasing<>(),
-             body, latitude);
+        this(new FieldEventDetectionSettings<>(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER),
+                new FieldStopOnIncreasing<>(), body, latitude);
     }
 
     /** Protected constructor with full parameters.
@@ -78,21 +77,18 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param detectionSettings event detection settings
      * @param handler event handler to call at event occurrences
      * @param body body on which the latitude is defined
      * @param latitude latitude to be crossed
+     * @since 13.0
      */
     protected FieldLatitudeCrossingDetector(
-            final FieldAdaptableInterval<T> maxCheck,
-            final T threshold,
-            final int maxIter,
+            final FieldEventDetectionSettings<T> detectionSettings,
             final FieldEventHandler<T> handler,
             final OneAxisEllipsoid body,
             final double latitude) {
-        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
+        super(detectionSettings, handler);
         this.body     = body;
         this.latitude = latitude;
     }
@@ -100,12 +96,9 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
     /** {@inheritDoc} */
     @Override
     protected FieldLatitudeCrossingDetector<T> create(
-            final FieldAdaptableInterval<T> newMaxCheck,
-            final T newThreshold,
-            final int newMaxIter,
+            final FieldEventDetectionSettings<T> detectionSettings,
             final FieldEventHandler<T> newHandler) {
-        return new FieldLatitudeCrossingDetector<>(
-                newMaxCheck, newThreshold, newMaxIter, newHandler, body, latitude);
+        return new FieldLatitudeCrossingDetector<>(detectionSettings, newHandler, body, latitude);
     }
 
     /** Get the body on which the geographic zone is defined.

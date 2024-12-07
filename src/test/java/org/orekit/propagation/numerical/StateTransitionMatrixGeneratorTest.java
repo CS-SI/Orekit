@@ -64,11 +64,7 @@ import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.*;
-import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.MatricesHarvester;
-import org.orekit.propagation.PropagatorsParallelizer;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
@@ -473,7 +469,7 @@ class StateTransitionMatrixGeneratorTest {
         OrbitType type = OrbitType.CARTESIAN;
         double minStep = 0.0001;
         double maxStep = 60;
-        double[][] tolerances = NumericalPropagator.tolerances(0.001, orbit, type);
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(orbit, type);
         AdaptiveStepsizeIntegrator integrator0 = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         integrator0.setInitialStepSize(1.0);
         NumericalPropagator p0 = new NumericalPropagator(integrator0);
@@ -602,7 +598,7 @@ class StateTransitionMatrixGeneratorTest {
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setOrbitType(orbitType);
@@ -620,7 +616,7 @@ class StateTransitionMatrixGeneratorTest {
         double[][] dYdY0Ref = new double[6][6];
         AbstractIntegratedPropagator propagator2 = setUpPropagator(initialOrbit, dP, orbitType, angleType, models);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialOrbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(initialOrbit, orbitType)[0];
         for (int i = 0; i < 6; ++i) {
             propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));
             SpacecraftState sM4h = propagator2.propagate(initialState.getDate().shiftedBy(dt));
@@ -657,7 +653,7 @@ class StateTransitionMatrixGeneratorTest {
         final double f        = 420;
         PropulsionModel propulsionModel = new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM");
 
-        double[][] tol = NumericalPropagator.tolerances(0.01, initialState.getOrbit(), orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(0.01).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
         integrator.setInitialStepSize(60);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);

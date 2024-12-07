@@ -28,7 +28,8 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -71,7 +72,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      * </p>
      * @param prototypeFiringIntervalDetector prototype detector for firing interval
      */
-    public IntervalEventTrigger(final T prototypeFiringIntervalDetector) {
+    protected IntervalEventTrigger(final T prototypeFiringIntervalDetector) {
         this.firingIntervalDetector = prototypeFiringIntervalDetector.withHandler(new Handler());
         this.cached                 = new HashMap<>();
     }
@@ -156,10 +157,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
      */
     private <D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> D convertAndSetUpHandler(final Field<S> field) {
         final FieldAbstractDetector<D, S> converted = convertIntervalDetector(field, firingIntervalDetector);
-        final FieldAdaptableInterval<S>   maxCheck  = (s, isForward) -> firingIntervalDetector.getMaxCheckInterval().currentInterval(s.toSpacecraftState(), isForward);
-        return converted.
-               withMaxCheck(maxCheck).
-               withThreshold(field.getZero().newInstance(firingIntervalDetector.getThreshold())).
+        return converted.withDetectionSettings(new FieldEventDetectionSettings<>(field, firingIntervalDetector.getDetectionSettings())).
                withHandler(new FieldHandler<>());
     }
 
@@ -232,7 +230,7 @@ public abstract class IntervalEventTrigger<T extends AbstractDetector<T>> extend
     /** Local handler for both start and stop triggers.
      * @param <S> type of the field elements
      */
-    private class FieldHandler<D extends FieldAbstractDetector<D, S>, S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
+    private class FieldHandler<S extends CalculusFieldElement<S>> implements FieldEventHandler<S> {
 
         /** Propagation direction. */
         private boolean forward;

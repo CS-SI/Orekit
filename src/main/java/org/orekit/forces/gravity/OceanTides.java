@@ -17,36 +17,27 @@
 package org.orekit.forces.gravity;
 
 import java.util.List;
-import java.util.stream.Stream;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.ForceModelModifier;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFields;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 import org.orekit.frames.Frame;
-import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.TimeScales;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
-import org.orekit.utils.ParameterDriver;
 
 /** Ocean tides force model.
  * @since 6.1
  * @author Luc Maisonobe
  */
-public class OceanTides implements ForceModel {
+public class OceanTides implements ForceModelModifier {
 
     /** Default step for tides field sampling (seconds). */
     public static final double DEFAULT_STEP = 600.0;
@@ -162,47 +153,9 @@ public class OceanTides implements ForceModel {
 
     }
 
-    /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return attractionModel.dependsOnPositionOnly();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Vector3D acceleration(final SpacecraftState s, final double[] parameters) {
-        // delegate to underlying model
-        return attractionModel.acceleration(s, parameters);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> s,
-                                                                         final T[] parameters) {
-        // delegate to underlying model
-        return attractionModel.acceleration(s, parameters);
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventDetectors() {
-        // delegate to underlying attraction model
-        return attractionModel.getEventDetectors();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        // delegate to underlying attraction model
-        return attractionModel.getFieldEventDetectors(field);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        // delegate to underlying attraction model
-        return attractionModel.getParametersDrivers();
+    public ForceModel getUnderlyingModel() {
+        return attractionModel;
     }
 
 }

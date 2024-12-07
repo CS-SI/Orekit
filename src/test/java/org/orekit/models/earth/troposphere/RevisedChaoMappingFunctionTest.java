@@ -18,15 +18,21 @@ package org.orekit.models.earth.troposphere;
 
 import org.junit.jupiter.api.Test;
 
-public class RevisedChaoMappingFunctionTest extends AbstractMappingFunctionTest {
+public class RevisedChaoMappingFunctionTest extends AbstractMappingFunctionTest<RevisedChaoMappingFunction> {
 
-    protected TroposphereMappingFunction buildMappingFunction() {
+    protected RevisedChaoMappingFunction buildMappingFunction() {
         return new RevisedChaoMappingFunction();
     }
 
     @Test
     public void testMappingFactors() {
-        doTestMappingFactors(10.13, 11.05);
+        doTestMappingFactors(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                             10.133, 11.05);
+    }
+
+    @Test
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-100, 1.0e-100, 1.0e-100, 4.0e-8, 1.0e-100);
     }
 
 }

@@ -236,7 +236,7 @@ class FieldOrbitTest {
         }
 
         @Override
-        public boolean hasDerivatives() {
+        public boolean hasNonKeplerianAcceleration() {
             return false;
         }
 
@@ -250,6 +250,11 @@ class FieldOrbitTest {
             final FieldPVCoordinates<Complex> fieldPVCoordinates = new FieldPVCoordinates<>(initPosition(),
                     FieldVector3D.getZero(getField()));
             return new TimeStampedFieldPVCoordinates<>(getDate(), fieldPVCoordinates);
+        }
+
+        @Override
+        public FieldOrbit<Complex> withFrame(Frame inertialFrame) {
+            return null;
         }
 
         @Override

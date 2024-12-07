@@ -83,15 +83,13 @@ public class AbstractRelativisticJ2ClockModifier {
     protected double relativisticJ2Correction(final EstimatedMeasurementBase<?> estimated) {
 
         // Extracting the state of the receiver to determine the frame and mu
-        /**
-         * The satellite states are stored at the creation of the estimated measurements
-         * and can contain up to 2 elements. In most cases, only the receiver's state and
-         * therefore frame is stored, with the emitter's frame corresponding to the receiver's.
-         * Still, in the InterSatellites case, the states of the 2 spacecrafts are stored,
-         * and can contain different frames. This case is treated by looking at the length
-         * of SpacecraftState stored in the Estimated Measurements, with the only length 2
-         * case is the InterSatellites case.
-         */
+        //
+        // The satellite states are stored at the creation of the estimated measurements
+        // and can contain up to 2 elements. In most cases, only the receiver's state and
+        // therefore frame is stored, with the emitter's frame corresponding to the receiver's.// Still, in the InterSatellites case, the states of the 2 spacecrafts are stored, // and can contain different frames. This case is treated by looking at the length
+        // of SpacecraftState stored in the Estimated Measurements, with the only length 2
+        // case is the InterSatellites case.
+        //
         final SpacecraftState[] states = estimated.getStates();
         final SpacecraftState state =  (states.length < 2) ? states[0] : states[1];
 

@@ -16,23 +16,16 @@
  */
 package org.orekit.forces.empirical;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.forces.ForceModel;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 /** This class implements a parametric acceleration.
@@ -64,16 +57,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Bryan Cazabonne
  * @author Melina Vanel
  */
-public class ParametricAcceleration implements ForceModel {
-
-    /** Direction of the acceleration in defining frame. */
-    private final Vector3D direction;
-
-    /** Flag for inertial acceleration direction. */
-    private final boolean isInertial;
-
-    /** The attitude to override, if set. */
-    private final AttitudeProvider attitudeOverride;
+public class ParametricAcceleration extends AbstractParametricAcceleration {
 
     /** Acceleration model. */
     private final AccelerationModel accelerationModel;
@@ -128,22 +112,18 @@ public class ParametricAcceleration implements ForceModel {
                                    final boolean isInertial,
                                    final AttitudeProvider attitudeOverride,
                                    final AccelerationModel accelerationModel) {
-        this.direction         = direction;
-        this.isInertial        = isInertial;
-        this.attitudeOverride  = attitudeOverride;
+        super(direction, isInertial, attitudeOverride);
         this.accelerationModel = accelerationModel;
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean dependsOnPositionOnly() {
-        return isInertial;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public List<ParameterDriver> getParametersDrivers() {
-        return accelerationModel.getParametersDrivers();
+        final List<ParameterDriver> parameterDrivers = new ArrayList<>(accelerationModel.getParametersDrivers());
+        if (getAttitudeOverride() != null) {
+            parameterDrivers.addAll(getAttitudeOverride().getParametersDrivers());
+        }
+        return parameterDrivers;
     }
 
     /** {@inheritDoc} */
@@ -156,25 +136,7 @@ public class ParametricAcceleration implements ForceModel {
     @Override
     public Vector3D acceleration(final SpacecraftState state,
                                  final double[] parameters) {
-
-        // Date
-        final AbsoluteDate date = state.getDate();
-
-        final Vector3D inertialDirection;
-        if (isInertial) {
-            // the acceleration direction is already defined in the inertial frame
-            inertialDirection = direction;
-        } else {
-            final Rotation rotation;
-            if (attitudeOverride == null) {
-                // the acceleration direction is defined in spacecraft frame as set by the propagator
-                rotation = state.getAttitude().getRotation();
-            } else {
-                // the acceleration direction is defined in a dedicated frame
-                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
-            }
-            inertialDirection = rotation.applyInverseTo(direction);
-        }
+        final Vector3D inertialDirection = getAccelerationDirection(state);
 
         // Call the acceleration model to compute the acceleration
         return new Vector3D(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
@@ -184,43 +146,12 @@ public class ParametricAcceleration implements ForceModel {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> acceleration(final FieldSpacecraftState<T> state,
-                                                                         final T[] parameters) {
-
-        // Date
-        final FieldAbsoluteDate<T> date = state.getDate();
-
-        final FieldVector3D<T> inertialDirection;
-        if (isInertial) {
-            // the acceleration direction is already defined in the inertial frame
-            inertialDirection = new FieldVector3D<>(date.getField(), direction);
-        } else {
-            final FieldRotation<T> rotation;
-            if (attitudeOverride == null) {
-                // the acceleration direction is defined in spacecraft frame as set by the propagator
-                rotation = state.getAttitude().getRotation();
-            } else {
-                // the acceleration direction is defined in a dedicated frame
-                rotation = attitudeOverride.getAttitudeRotation(state.getOrbit(), date, state.getFrame());
-            }
-            inertialDirection = rotation.applyInverseTo(direction);
-        }
+                                                                             final T[] parameters) {
+        final FieldVector3D<T> inertialDirection = getAccelerationDirection(state);
 
         // Call the acceleration model to compute the acceleration
         return new FieldVector3D<>(accelerationModel.signedAmplitude(state, parameters), inertialDirection);
 
-    }
-
-
-    /** {@inheritDoc} */
-    @Override
-    public Stream<EventDetector> getEventDetectors() {
-        return Stream.empty();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.empty();
     }
 
 }

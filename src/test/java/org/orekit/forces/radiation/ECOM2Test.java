@@ -54,6 +54,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -63,11 +64,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
-import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.IERSConventions;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.*;
 
 import java.io.FileNotFoundException;
 import java.text.ParseException;
@@ -89,7 +86,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         final double minStep = 0.001;
         final double maxStep = 1000;
 
-        double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        double[][] tol = ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, orbitType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
         propagator.setOrbitType(orbitType);
@@ -193,7 +190,7 @@ public class ECOM2Test extends AbstractForceModelTest {
         final OrbitType     orbitType = orbit.getType();
         final PositionAngleType angleType = PositionAngleType.MEAN;
         double dP = 0.001;
-        double[] steps = NumericalPropagator.tolerances(1000000 * dP, orbit, orbitType)[0];
+        double[] steps = ToleranceProvider.getDefaultToleranceProvider(1000000 * dP).getTolerances(orbit, orbitType)[0];
         AbstractIntegratedPropagator propagator = setUpPropagator(orbit, dP, orbitType, angleType, gravityField, forceModel);
 
         //Compute derivatives with finite-difference method
@@ -467,7 +464,7 @@ public class ECOM2Test extends AbstractForceModelTest {
                                            0.1, PositionAngleType.TRUE, FramesFactory.getEME2000(), date, Constants.WGS84_EARTH_MU);
         final double period = orbit.getKeplerianPeriod();
         Assertions.assertEquals(86164, period, 1);
-        ExtendedPVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
 
         // creation of the force model
         OneAxisEllipsoid earth =

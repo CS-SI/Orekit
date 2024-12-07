@@ -26,7 +26,9 @@ import org.orekit.time.FieldAbsoluteDate;
 ** Interface for PV coordinates providers that also support fields.
  * @since 9.2
  * @author Luc Maisonobe
+ * @deprecated since 13.0. Use {@link ExtendedPositionProvider} instead.
  */
+@Deprecated
 public interface ExtendedPVCoordinatesProvider extends ExtendedPositionProvider {
 
     /** Get the position of the body in the selected frame.

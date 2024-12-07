@@ -65,6 +65,9 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public abstract class Orbit
     implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
 
+    /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
+    protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
+
     /** Serializable UID. */
     private static final long serialVersionUID = 438733454597999578L;
 
@@ -237,7 +240,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return semi-major axis  derivative (m/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getADot();
@@ -252,7 +254,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the equinoctial eccentricity vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEquinoctialExDot();
@@ -267,7 +268,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the equinoctial eccentricity vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEquinoctialEyDot();
@@ -282,7 +282,7 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return first component of the inclination vector derivative
-     * @see #hasDerivatives()
+
      * @since 9.0
      */
     public abstract double getHxDot();
@@ -297,7 +297,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return second component of the inclination vector derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getHyDot();
@@ -312,7 +311,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(E + ω + Ω)/dt eccentric longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLEDot();
@@ -327,7 +325,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(v + ω + Ω)/dt true longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLvDot();
@@ -342,7 +339,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return d(M + ω + Ω)/dt mean longitude argument derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getLMDot();
@@ -359,7 +355,6 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return eccentricity derivative
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getEDot();
@@ -374,13 +369,12 @@ public abstract class Orbit
      * If the orbit was created without derivatives, the value returned is {@link Double#NaN}.
      * </p>
      * @return inclination derivative (rad/s)
-     * @see #hasDerivatives()
      * @since 9.0
      */
     public abstract double getIDot();
 
-    /** Check if orbit includes derivatives.
-     * @return true if orbit includes derivatives
+    /** Check if orbit includes non-Keplerian rates.
+     * @return true if orbit includes non-Keplerian derivatives
      * @see #getADot()
      * @see #getEquinoctialExDot()
      * @see #getEquinoctialEyDot()
@@ -391,10 +385,10 @@ public abstract class Orbit
      * @see #getLMDot()
      * @see #getEDot()
      * @see #getIDot()
-     * @since 9.0
+     * @since 13.0
      */
-    public boolean hasDerivatives() {
-        return !Double.isNaN(getADot());
+    public boolean hasNonKeplerianAcceleration() {
+        return hasNonKeplerianAcceleration(getPVCoordinates(), getMu());
     }
 
     /** Get the central acceleration constant.
@@ -527,6 +521,16 @@ public abstract class Orbit
      * @return computed position/velocity coordinates
      */
     protected abstract TimeStampedPVCoordinates initPVCoordinates();
+
+    /**
+     * Create a new object representing the same physical orbital state, but attached to a different reference frame.
+     * If the new frame is not inertial, an exception will be thrown.
+     *
+     * @param inertialFrame reference frame of output orbit
+     * @return orbit with different frame
+     * @since 13.0
+     */
+    public abstract Orbit withFrame(Frame inertialFrame);
 
     /** Get a time-shifted orbit.
      * <p>

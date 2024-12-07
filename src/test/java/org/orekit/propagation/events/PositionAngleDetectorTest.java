@@ -39,10 +39,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
-import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.EphemerisGenerator;
-import org.orekit.propagation.Propagator;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.*;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
@@ -194,7 +191,7 @@ public class PositionAngleDetectorTest {
         double positionTolerance = 10.0;
         OrbitType propagationType = OrbitType.KEPLERIAN;
         double[][] tolerances =
-                        NumericalPropagator.tolerances(positionTolerance, initialOrbit, propagationType);
+                ToleranceProvider.getDefaultToleranceProvider(positionTolerance).getTolerances(initialOrbit, propagationType);
         AdaptiveStepsizeIntegrator integrator =
                         new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 

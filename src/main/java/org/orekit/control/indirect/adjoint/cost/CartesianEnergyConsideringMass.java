@@ -22,22 +22,25 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.AdaptableInterval;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
+import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 /**
  * Abstract class for energy cost with Cartesian coordinates and non-zero mass flow rate.
+ * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
+ * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
+ *
  * @author Romain Serra
- * @see AbstractCartesianEnergy
+ * @see AbstractCartesianCost
  * @since 12.2
  */
-abstract class CartesianEnergyConsideringMass extends AbstractCartesianEnergy {
+abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
 
     /** Detection settings for singularity detection. */
     private final EventDetectionSettings eventDetectionSettings;
@@ -143,20 +146,20 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianEnergy {
     /**
      * Event detector for singularities in adjoint dynamics.
      */
-    class SingularityDetector extends AbstractDetector<SingularityDetector> {
+    class SingularityDetector implements EventDetector {
 
         /** Value to detect. */
         private final double detectionValue;
+        /** Event detection settings. */
+        private final EventDetectionSettings eventDetectionSettings;
 
         /**
          * Constructor.
          * @param eventDetectionSettings detection settings
-         * @param handler event handler
          * @param detectionValue value to detect
          */
-        SingularityDetector(final EventDetectionSettings eventDetectionSettings, final EventHandler handler,
-                            final double detectionValue) {
-            super(eventDetectionSettings, handler);
+        SingularityDetector(final EventDetectionSettings eventDetectionSettings, final double detectionValue) {
+            this.eventDetectionSettings = eventDetectionSettings;
             this.detectionValue = detectionValue;
         }
 
@@ -179,31 +182,34 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianEnergy {
         }
 
         @Override
-        protected SingularityDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                             final int newMaxIter, final EventHandler newHandler) {
-            return new SingularityDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler,
-                detectionValue);
+        public EventDetectionSettings getDetectionSettings() {
+            return eventDetectionSettings;
+        }
+
+        @Override
+        public EventHandler getHandler() {
+            return new ResetDerivativesOnEvent();
         }
     }
 
     /**
      * Field event detector for singularities in adjoint dynamics.
      */
-    class FieldSingularityDetector<T extends CalculusFieldElement<T>>
-        extends FieldAbstractDetector<FieldSingularityDetector<T>, T> {
+    class FieldSingularityDetector<T extends CalculusFieldElement<T>> implements FieldEventDetector<T> {
 
         /** Value to detect. */
         private final T detectionValue;
+        /** Event detection settings. */
+        private final FieldEventDetectionSettings<T> eventDetectionSettings;
 
         /**
          * Constructor.
          * @param eventDetectionSettings detection settings
-         * @param handler event handler
          * @param detectionValue value to detect
          */
-        protected FieldSingularityDetector(final FieldEventDetectionSettings<T> eventDetectionSettings,
-                                           final FieldEventHandler<T> handler, final T detectionValue) {
-            super(eventDetectionSettings, handler);
+        FieldSingularityDetector(final FieldEventDetectionSettings<T> eventDetectionSettings,
+                                           final T detectionValue) {
+            this.eventDetectionSettings = eventDetectionSettings;
             this.detectionValue = detectionValue;
         }
 
@@ -226,10 +232,13 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianEnergy {
         }
 
         @Override
-        protected FieldSingularityDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
-                                                     final int newMaxIter, final FieldEventHandler<T> newHandler) {
-            return new FieldSingularityDetector<>(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter),
-                newHandler, detectionValue);
+        public FieldEventDetectionSettings<T> getDetectionSettings() {
+            return eventDetectionSettings;
+        }
+
+        @Override
+        public FieldEventHandler<T> getHandler() {
+            return new FieldResetDerivativesOnEvent<>();
         }
     }
 }

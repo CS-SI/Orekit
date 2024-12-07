@@ -31,6 +31,7 @@ import org.orekit.data.UnixCompressFilter;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ilrs.CPFParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.ITRFVersion;
@@ -53,6 +54,11 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeSpanMap;
 
 public class SP3ParserTest {
+
+    @Test
+    public void testIssue1614() {
+        Assertions.assertEquals(7, SP3Parser.DEFAULT_INTERPOLATION_SAMPLES);
+    }
 
     @Test
     public void testParseSP3a1() {

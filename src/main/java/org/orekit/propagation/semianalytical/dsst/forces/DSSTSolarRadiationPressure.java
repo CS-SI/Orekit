@@ -34,7 +34,7 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.FieldAuxiliaryElements;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.ParameterDriver;
 
 /** Solar radiation pressure contribution to the
@@ -65,7 +65,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     private static final String PREFIX = "DSST-SRP-";
 
     /** Sun model. */
-    private final ExtendedPVCoordinatesProvider sun;
+    private final ExtendedPositionProvider sun;
 
     /** Central Body radius. */
     private final double                ae;
@@ -94,7 +94,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double cr, final double area,
-                                      final ExtendedPVCoordinatesProvider sun,
+                                      final ExtendedPositionProvider sun,
                                       final OneAxisEllipsoid centralBody,
                                       final double mu) {
         this(D_REF, P_REF, cr, area, sun, centralBody, mu);
@@ -116,7 +116,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param mu central attraction coefficient
      * @since 12.0
      */
-    public DSSTSolarRadiationPressure(final ExtendedPVCoordinatesProvider sun,
+    public DSSTSolarRadiationPressure(final ExtendedPositionProvider sun,
                                       final OneAxisEllipsoid centralBody,
                                       final RadiationSensitive spacecraft,
                                       final double mu) {
@@ -143,7 +143,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
                                       final double cr, final double area,
-                                      final ExtendedPVCoordinatesProvider sun,
+                                      final ExtendedPositionProvider sun,
                                       final OneAxisEllipsoid centralBody,
                                       final double mu) {
 
@@ -172,7 +172,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @since 12.0
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
-                                      final ExtendedPVCoordinatesProvider sun,
+                                      final ExtendedPositionProvider sun,
                                       final OneAxisEllipsoid centralBody,
                                       final RadiationSensitive spacecraft,
                                       final double mu) {

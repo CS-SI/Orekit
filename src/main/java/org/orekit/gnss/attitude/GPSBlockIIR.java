@@ -21,7 +21,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
@@ -58,7 +58,7 @@ public class GPSBlockIIR extends AbstractGNSSAttitudeProvider {
      */
     public GPSBlockIIR(final double yawRate,
                        final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                       final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
+                       final ExtendedPositionProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
         this.yawRate = yawRate;
     }

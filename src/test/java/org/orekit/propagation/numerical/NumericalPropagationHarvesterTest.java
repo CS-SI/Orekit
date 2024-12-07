@@ -37,6 +37,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.Constants;
@@ -152,7 +153,7 @@ public class NumericalPropagationHarvesterTest {
                                            Constants.EIGEN5C_EARTH_MU);
         double minStep = 0.0001;
         double maxStep = 60;
-        double[][] tolerances = NumericalPropagator.tolerances(0.001, initialOrbit, initialOrbit.getType());
+        double[][] tolerances = ToleranceProvider.getDefaultToleranceProvider(0.001).getTolerances(initialOrbit, initialOrbit.getType());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0);
         propagator = new NumericalPropagator(integrator);

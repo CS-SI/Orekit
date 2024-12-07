@@ -24,6 +24,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
@@ -31,6 +32,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -46,6 +48,73 @@ public class AdapterDetectorTest {
     private Orbit iniOrbit;
     private AbsoluteDate iniDate;
     private NumericalPropagator propagator;
+
+    @Test
+    void testGetDetectionSettings() {
+        // GIVEN
+        final EventDetector detector = Mockito.mock(EventDetector.class);
+        final EventDetectionSettings detectionSettings = Mockito.mock(EventDetectionSettings.class);
+        Mockito.when(detector.getDetectionSettings()).thenReturn(detectionSettings);
+        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        // WHEN
+        final EventDetectionSettings actualSettings = adapterDetector.getDetectionSettings();
+        // THEN
+        Assertions.assertEquals(detectionSettings, actualSettings);
+    }
+
+    @Test
+    void testGetHandler() {
+        // GIVEN
+        final EventDetector detector = Mockito.mock(EventDetector.class);
+        final EventHandler handler = Mockito.mock(EventHandler.class);
+        Mockito.when(detector.getHandler()).thenReturn(handler);
+        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        // WHEN
+        final EventHandler actualHandler = adapterDetector.getHandler();
+        // THEN
+        Assertions.assertEquals(handler, actualHandler);
+    }
+
+    @Test
+    void testInit() {
+        // GIVEN
+        final EventDetector detector = Mockito.mock(EventDetector.class);
+        Mockito.when(detector.getHandler()).thenReturn(new StopOnEvent());
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final AbsoluteDate mockedDate = Mockito.mock(AbsoluteDate.class);
+        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        // WHEN
+        adapterDetector.init(mockedState, mockedDate);
+        // THEN
+        Mockito.verify(detector).init(mockedState, mockedDate);
+    }
+
+    @Test
+    void testG() {
+        // GIVEN
+        final EventDetector detector = Mockito.mock(EventDetector.class);
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final double expectedG = 10.;
+        Mockito.when(detector.g(mockedState)).thenReturn(expectedG);
+        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        // WHEN
+        final double actualG = adapterDetector.g(mockedState);
+        // THEN
+        Assertions.assertEquals(expectedG, actualG);
+    }
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final EventDetector detector = Mockito.mock(EventDetector.class);
+        Mockito.when(detector.getHandler()).thenReturn(new StopOnEvent());
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        // WHEN
+        adapterDetector.finish(mockedState);
+        // THEN
+        Mockito.verify(detector).finish(mockedState);
+    }
 
     @Test
     public void testSimpleTimer() {

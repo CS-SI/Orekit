@@ -29,6 +29,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 8.0
  */
+@FunctionalInterface
 public interface BatchLSObserver {
 
     /** Notification callback for the end of each evaluation.

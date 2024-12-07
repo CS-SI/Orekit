@@ -79,7 +79,7 @@ public class ViennaThree extends AbstractVienna {
         final ViennaACoefficients a = getAProvider().getA(point, date);
 
         // Day of year computation
-        final int dofyear = getDayOfYear(date);
+        final double dofyear = getDayOfYear(date);
 
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
@@ -180,7 +180,7 @@ public class ViennaThree extends AbstractVienna {
         final FieldViennaACoefficients<T> a = getAProvider().getA(point, date);
 
         // Day of year computation
-        final int dofyear = getDayOfYear(date.toAbsoluteDate());
+        final T dofyear = getDayOfYear(date);
 
         // Compute Legendre Polynomials Pnm(cos(0.5 * pi - phi))
         final int degree = 12;
@@ -278,7 +278,7 @@ public class ViennaThree extends AbstractVienna {
      * @param B2 Semi-annual amplitude of the coefficient
      * @return the mapping function coefficient at a given day.
      */
-    private double computeSeasonalFit(final int doy, final double A0, final double A1,
+    private double computeSeasonalFit(final double doy, final double A0, final double A1,
                                       final double A2, final double B1, final double B2) {
 
         final double coef = (doy / 365.25) * 2 * FastMath.PI;
@@ -301,9 +301,9 @@ public class ViennaThree extends AbstractVienna {
      * @param B2 Semi-annual amplitude of the coefficient
      * @return the mapping function coefficient at a given day.
      */
-    private <T extends CalculusFieldElement<T>> T computeSeasonalFit(final int doy, final T A0, final T A1,
-                                                                 final T A2, final T B1, final T B2) {
-        final T coef = A0.getPi().multiply(2.0).multiply(doy / 365.25);
+    private <T extends CalculusFieldElement<T>> T computeSeasonalFit(final T doy, final T A0, final T A1,
+                                                                     final T A2, final T B1, final T B2) {
+        final T coef = A0.getPi().multiply(2.0).multiply(doy.divide(365.25));
         final FieldSinCos<T> sc1  = FastMath.sinCos(coef);
         final FieldSinCos<T> sc2  = FastMath.sinCos(coef.multiply(2.0));
 

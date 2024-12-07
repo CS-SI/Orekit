@@ -1683,6 +1683,25 @@ public class AbsoluteDateTest {
                                 new AbsoluteDate("1960-12-31T23:59:61.4", utc));
     }
 
+    @Test
+    public void testGetDayOfYear() {
+        Assertions.assertEquals(0.501,
+                                new AbsoluteDate(2004,  1,  1,  0,  0,  0.001, utc).getDayOfYear(utc),
+                                1.0e-3);
+        Assertions.assertEquals(1.000,
+                                new AbsoluteDate(2004,  1,  1, 12,  0,  0.000, utc).getDayOfYear(utc),
+                                1.0e-3);
+        Assertions.assertEquals(366.0,
+                                new AbsoluteDate(2004, 12, 31, 12,  0,  0.000, utc).getDayOfYear(utc),
+                                1.0e-3);
+        Assertions.assertEquals(366.499999988426,
+                                new AbsoluteDate(2004, 12, 31, 23, 59, 59.999, utc).getDayOfYear(utc),
+                                1.0e-12);
+        Assertions.assertEquals(0.500000011574,
+                                new AbsoluteDate(2004, 12, 31, 23, 59, 59.999, utc).shiftedBy(0.002).getDayOfYear(utc),
+                                1.0e-12);
+    }
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");

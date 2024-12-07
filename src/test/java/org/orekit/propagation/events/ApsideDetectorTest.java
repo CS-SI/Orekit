@@ -33,6 +33,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.propagation.events.intervals.ApsideDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;

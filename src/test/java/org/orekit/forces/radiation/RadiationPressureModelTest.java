@@ -6,8 +6,8 @@ import org.hipparchus.complex.Complex;
 import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.FieldODEIntegrator;
+import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
@@ -38,7 +38,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -231,7 +231,7 @@ class RadiationPressureModelTest {
                                                    final double radius, final AbsoluteDate terminalDate) {
         final NumericalPropagator propagator = createPropagator(radius);
         final AbstractSolarLightFluxModel lightFluxModel = (AbstractSolarLightFluxModel) radiationPressureModel.getLightFluxModel();
-        final SolarRadiationPressure solarRadiationPressure = new SolarRadiationPressure((ExtendedPVCoordinatesProvider) lightFluxModel.getOccultedBody(),
+        final SolarRadiationPressure solarRadiationPressure = new SolarRadiationPressure((ExtendedPositionProvider) lightFluxModel.getOccultedBody(),
                 new OneAxisEllipsoid(lightFluxModel.getOccultingBodyRadius(), 0., FramesFactory.getGTOD(false)),
                 radiationPressureModel.getRadiationSensitive());
         propagator.addForceModel(solarRadiationPressure);
@@ -251,7 +251,7 @@ class RadiationPressureModelTest {
         final SpacecraftState initialState = createState(radius);
         final Orbit initialOrbit = initialState.getOrbit();
         final ODEIntegratorBuilder integratorBuilder = new DormandPrince54IntegratorBuilder(1e-3, 1e2, 1e-3);
-        final AbstractIntegrator integrator = integratorBuilder.buildIntegrator(initialOrbit, initialOrbit.getType());
+        final ODEIntegrator integrator = integratorBuilder.buildIntegrator(initialOrbit, initialOrbit.getType());
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setOrbitType(initialOrbit.getType());
         propagator.setInitialState(initialState);

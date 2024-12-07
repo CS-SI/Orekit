@@ -16,16 +16,16 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngleType;
 
 /** Builder for ClassicalRungeKuttaIntegrator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class ClassicalRungeKuttaIntegratorBuilder implements ODEIntegratorBuilder {
+public class ClassicalRungeKuttaIntegratorBuilder extends AbstractIntegratorBuilder<ClassicalRungeKuttaIntegrator> {
 
     /** Step size (s). */
     private final double step;
@@ -39,7 +39,9 @@ public class ClassicalRungeKuttaIntegratorBuilder implements ODEIntegratorBuilde
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType) {
+    @Override
+    public ClassicalRungeKuttaIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+                                                         final PositionAngleType angleType) {
         return new ClassicalRungeKuttaIntegrator(step);
     }
 

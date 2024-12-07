@@ -29,6 +29,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -46,7 +47,7 @@ public class OsculatingToMeanElementsConverterTest {
                                                date, Constants.WGS84_EARTH_MU);
         final SpacecraftState initialState = new SpacecraftState(orbit1);
         // Set up the numerical propagator
-        final double[][] tol = NumericalPropagator.tolerances(1.0, initialState.getOrbit(), initialState.getOrbit().getType());
+        final double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1.).getTolerances(initialState.getOrbit(), initialState.getOrbit().getType());
         final double minStep = 1.;
         final double maxStep = 200.;
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);

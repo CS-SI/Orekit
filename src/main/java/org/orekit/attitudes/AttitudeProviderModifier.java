@@ -50,8 +50,16 @@ public interface AttitudeProviderModifier extends AttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    default Stream<EventDetector> getEventDetectors() {
-        return getUnderlyingAttitudeProvider().getEventDetectors();
+    default Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+        return getUnderlyingAttitudeProvider().getAttitude(pvProv, date, frame);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                             final FieldAbsoluteDate<T> date,
+                                                                             final Frame frame) {
+        return getUnderlyingAttitudeProvider().getAttitude(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
@@ -62,15 +70,15 @@ public interface AttitudeProviderModifier extends AttitudeProvider {
 
     /** {@inheritDoc} */
     @Override
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return getUnderlyingAttitudeProvider().getFieldEventDetectors(field);
+    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field,
+                                                                                                     final List<ParameterDriver> parameterDrivers) {
+        return getUnderlyingAttitudeProvider().getFieldEventDetectors(field, parameterDrivers);
     }
 
     /** {@inheritDoc} */
     @Override
-    default <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field,
-                                                                                                     final List<ParameterDriver> parameterDrivers) {
-        return getUnderlyingAttitudeProvider().getFieldEventDetectors(field, parameterDrivers);
+    default List<ParameterDriver> getParametersDrivers() {
+        return getUnderlyingAttitudeProvider().getParametersDrivers();
     }
 
     /**
@@ -84,16 +92,28 @@ public interface AttitudeProviderModifier extends AttitudeProvider {
         return new AttitudeProviderModifier() {
             @Override
             public Attitude getAttitude(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
-                final Rotation rotation = attitudeProvider.getAttitudeRotation(pvProv, date, frame);
+                final Rotation rotation = getAttitudeRotation(pvProv, date, frame);
                 final AngularCoordinates angularCoordinates = new AngularCoordinates(rotation, Vector3D.ZERO);
                 return new Attitude(date, frame, angularCoordinates);
             }
 
             @Override
+            public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv, final AbsoluteDate date, final Frame frame) {
+                return attitudeProvider.getAttitudeRotation(pvProv, date, frame);
+            }
+
+            @Override
             public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv, final FieldAbsoluteDate<T> date, final Frame frame) {
-                final FieldRotation<T> rotation = attitudeProvider.getAttitudeRotation(pvProv, date, frame);
+                final FieldRotation<T> rotation = getAttitudeRotation(pvProv, date, frame);
                 final FieldAngularCoordinates<T> angularCoordinates = new FieldAngularCoordinates<>(rotation, FieldVector3D.getZero(date.getField()));
                 return new FieldAttitude<>(date, frame, angularCoordinates);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
+                                                                                            final FieldAbsoluteDate<T> date,
+                                                                                            final Frame frame) {
+                return attitudeProvider.getAttitudeRotation(pvProv, date, frame);
             }
 
             @Override

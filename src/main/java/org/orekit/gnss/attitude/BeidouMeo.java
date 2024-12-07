@@ -22,7 +22,7 @@ import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedFieldAngularCoordinates;
 
@@ -46,7 +46,7 @@ public class BeidouMeo extends AbstractGNSSAttitudeProvider {
      * @param inertialFrame inertial frame where velocity are computed
      */
     public BeidouMeo(final AbsoluteDate validityStart, final AbsoluteDate validityEnd,
-                     final ExtendedPVCoordinatesProvider sun, final Frame inertialFrame) {
+                     final ExtendedPositionProvider sun, final Frame inertialFrame) {
         super(validityStart, validityEnd, sun, inertialFrame);
     }
 

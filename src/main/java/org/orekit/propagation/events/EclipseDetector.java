@@ -21,7 +21,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
-import org.orekit.utils.ExtendedPVCoordinatesProvider;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.OccultationEngine;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -63,52 +63,28 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param occulted the body to be occulted
      * @param occultedRadius the radius of the body to be occulted (m)
      * @param occulting the occulting body
      * @since 12.0
      */
-    public EclipseDetector(final ExtendedPVCoordinatesProvider occulted,  final double occultedRadius,
+    public EclipseDetector(final ExtendedPositionProvider occulted, final double occultedRadius,
                            final OneAxisEllipsoid occulting) {
         this(new OccultationEngine(occulted, occultedRadius, occulting));
     }
 
     /** Build a new eclipse detector.
      * <p>The new instance is a total eclipse (umbra) detector with default
-     * values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
+     * values for maximal checking interval ({@link #DEFAULT_MAX_CHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param occultationEngine occultation engine
      * @since 12.0
      */
     public EclipseDetector(final OccultationEngine occultationEngine) {
-        this(new EventDetectionSettings(AdaptableInterval.of(DEFAULT_MAXCHECK), DEFAULT_THRESHOLD, DEFAULT_MAX_ITER),
-             new StopOnIncreasing(),
+        this(EventDetectionSettings.getDefaultEventDetectionSettings(), new StopOnIncreasing(),
              occultationEngine, 0.0, true);
-    }
-
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
-     * @param occultationEngine occultation engine
-     * @param margin to apply to eclipse angle (rad)
-     * @param totalEclipse umbra (true) or penumbra (false) detection flag
-     * @since 12.0
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected EclipseDetector(final AdaptableInterval maxCheck, final double threshold,
-                              final int maxIter, final EventHandler handler,
-                              final OccultationEngine occultationEngine, final double margin, final boolean totalEclipse) {
-        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, occultationEngine, margin, totalEclipse);
     }
 
     /** Protected constructor with full parameters.
@@ -134,10 +110,8 @@ public class EclipseDetector extends AbstractDetector<EclipseDetector> {
 
     /** {@inheritDoc} */
     @Override
-    protected EclipseDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
-                                     final int nawMaxIter, final EventHandler newHandler) {
-        return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
-                                   occultationEngine, margin, totalEclipse);
+    protected EclipseDetector create(final EventDetectionSettings detectionSettings, final EventHandler newHandler) {
+        return new EclipseDetector(detectionSettings, newHandler, occultationEngine, margin, totalEclipse);
     }
 
     /**

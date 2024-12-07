@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
@@ -70,14 +71,14 @@ public interface EventDetector {
      * if needed.
      * </p>
      * <p>
-     * The default implementation does nothing
+     * The default implementation initializes the handler.
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
      *
      */
     default void init(SpacecraftState s0, AbsoluteDate t) {
-        // nothing by default
+        getHandler().init(s0, t, this);
     }
 
     /** Compute the value of the switching function.
@@ -91,17 +92,23 @@ public interface EventDetector {
     /** Get the convergence threshold in the event time search.
      * @return convergence threshold (s)
      */
-    double getThreshold();
+    default double getThreshold() {
+        return getDetectionSettings().getThreshold();
+    }
 
     /** Get maximal time interval between switching function checks.
      * @return maximal time interval (s) between switching function checks
      */
-    AdaptableInterval getMaxCheckInterval();
+    default AdaptableInterval getMaxCheckInterval() {
+        return getDetectionSettings().getMaxCheckInterval();
+    }
 
     /** Get maximal number of iterations in the event time search.
      * @return maximal number of iterations in the event time search
      */
-    int getMaxIterationCount();
+    default int getMaxIterationCount() {
+        return getDetectionSettings().getMaxIterationCount();
+    }
 
     /** Get the handler.
      * @return event handler to call at event occurrences
@@ -124,6 +131,6 @@ public interface EventDetector {
      * @since 12.2
      */
     default EventDetectionSettings getDetectionSettings() {
-        return new EventDetectionSettings(getMaxCheckInterval(), getThreshold(), getMaxIterationCount());
+        return EventDetectionSettings.getDefaultEventDetectionSettings();
     }
 }

@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 
 class AbstractDetectorTest {
 
@@ -46,8 +47,8 @@ class AbstractDetectorTest {
         }
 
         @Override
-        protected TestDetector create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter, EventHandler newHandler) {
-            return new TestDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        protected TestDetector create(EventDetectionSettings detectionSettings, EventHandler newHandler) {
+            return new TestDetector(detectionSettings, newHandler);
         }
 
         @Override

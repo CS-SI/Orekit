@@ -40,7 +40,6 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
-     * for constant default values)
      * @param parameters tropospheric model parameters
      * @param date current date
      * @return the path delay due to the troposphere
@@ -56,7 +55,6 @@ public interface TroposphericModel extends ParameterDriversProvider {
      * @param trackingCoordinates tracking coordinates of the satellite
      * @param point station location
      * @param weather weather parameters
-     * for constant default values)
      * @param parameters tropospheric model parameters at current date
      * @param date current date
      * @return the path delay due to the troposphere
