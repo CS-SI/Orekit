@@ -30,7 +30,7 @@ import org.orekit.time.TimeScales;
  * @since 8.0
  *
  */
-public class GPSAlmanac extends AbstractAlmanac {
+public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
 
     /** Source of the almanac. */
     private String src;

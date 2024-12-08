@@ -29,7 +29,7 @@ import org.orekit.time.TimeScales;
  * @since 10.0
  *
  */
-public class BeidouAlmanac extends AbstractAlmanac {
+public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
 
     /** Health status. */
     private int health;

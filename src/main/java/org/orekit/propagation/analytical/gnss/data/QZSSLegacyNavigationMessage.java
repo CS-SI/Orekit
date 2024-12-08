@@ -24,7 +24,7 @@ import org.orekit.time.TimeScales;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage {
+public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLegacyNavigationMessage> {
 
     /** Constructor.
      * @param timeScales known time scales

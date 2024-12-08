@@ -24,7 +24,7 @@ import org.orekit.time.TimeScales;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class GalileoNavigationMessage extends AbstractNavigationMessage {
+public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoNavigationMessage> {
 
     /** Issue of Data of the navigation batch. */
     private int iodNav;

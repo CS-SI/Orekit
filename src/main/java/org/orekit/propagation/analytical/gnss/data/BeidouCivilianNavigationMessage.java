@@ -25,7 +25,7 @@ import org.orekit.time.TimeScales;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
+public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<BeidouCivilianNavigationMessage> {
 
     /** Identifier for Beidou-3 B1C message type. */
     public static final String CNV1 = "CNV1";

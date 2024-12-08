@@ -21,10 +21,13 @@ import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
+ * @param <T> type of the orbital elements
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class LegacyNavigationMessage extends AbstractNavigationMessage implements GNSSClockElements {
+public abstract class LegacyNavigationMessage<T extends LegacyNavigationMessage<T>>
+    extends AbstractNavigationMessage<T>
+    implements GNSSClockElements {
 
     /** Identifier for message type. */
     public static final String LNAV = "LNAV";

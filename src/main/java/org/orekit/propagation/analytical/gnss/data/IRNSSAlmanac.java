@@ -29,7 +29,7 @@ import org.orekit.time.TimeScales;
  * @since 10.1
  *
  */
-public class IRNSSAlmanac extends AbstractAlmanac {
+public class IRNSSAlmanac extends AbstractAlmanac<IRNSSAlmanac> {
 
     /**
      * Constructor.

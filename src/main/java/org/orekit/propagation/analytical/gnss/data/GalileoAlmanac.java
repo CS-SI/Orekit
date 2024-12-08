@@ -30,7 +30,7 @@ import org.orekit.time.TimeScales;
  * @since 10.0
  *
  */
-public class GalileoAlmanac extends AbstractAlmanac {
+public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
     private static final double I0 = FastMath.toRadians(56.0);

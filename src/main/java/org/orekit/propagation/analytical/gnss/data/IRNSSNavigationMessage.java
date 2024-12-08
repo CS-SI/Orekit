@@ -24,7 +24,7 @@ import org.orekit.time.TimeScales;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class IRNSSNavigationMessage extends AbstractNavigationMessage  {
+public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavigationMessage>  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;

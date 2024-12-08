@@ -28,10 +28,11 @@ import org.orekit.time.TimeScales;
 
 /**
  * Base class for GNSS almanacs.
+ * @param <T> type of the orbital elements
  * @author Pascal Parraud
  * @since 11.0
  */
-public abstract class AbstractAlmanac extends CommonGnssData {
+public abstract class AbstractAlmanac<T extends AbstractAlmanac<T>> extends CommonGnssData<T> {
 
     /**
      * Constructor.

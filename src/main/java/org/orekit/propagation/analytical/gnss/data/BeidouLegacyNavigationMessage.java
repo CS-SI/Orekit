@@ -24,7 +24,7 @@ import org.orekit.time.TimeScales;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage {
+public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<BeidouLegacyNavigationMessage> {
 
     /** Identifier for message type. */
     public static final String D1 = "D1";

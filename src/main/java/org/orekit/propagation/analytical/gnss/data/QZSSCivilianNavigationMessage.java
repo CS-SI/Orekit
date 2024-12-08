@@ -24,7 +24,7 @@ import org.orekit.time.TimeScales;
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage {
+public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZSSCivilianNavigationMessage> {
 
     /** Constructor.
      * @param cnv2 indicator for CNV2 messages

@@ -26,7 +26,7 @@ import org.orekit.time.TimeScales;
  * @since 10.0
  *
  */
-public class QZSSAlmanac extends AbstractAlmanac {
+public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
 
     /** Source of the almanac. */
     private String src;

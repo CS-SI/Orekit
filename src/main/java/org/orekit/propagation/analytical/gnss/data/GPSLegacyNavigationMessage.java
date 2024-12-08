@@ -24,7 +24,7 @@ import org.orekit.time.TimeScales;
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class GPSLegacyNavigationMessage extends LegacyNavigationMessage {
+public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegacyNavigationMessage> {
 
     /** Constructor.
      * @param timeScales known time scales

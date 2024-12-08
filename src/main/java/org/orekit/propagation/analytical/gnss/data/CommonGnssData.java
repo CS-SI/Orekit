@@ -21,10 +21,11 @@ import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
 
 /** Container for common GNSS data contained in almanac and navigation messages.
+ * @param <T> type of the orbital elements
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class CommonGnssData extends GNSSOrbitalElements implements GNSSClockElements {
+public abstract class CommonGnssData<T extends CommonGnssData<T>> extends GNSSOrbitalElements<T> implements GNSSClockElements {
 
     /** Name for zero-th order clock correction parameter.
      * @since 13.0
@@ -66,8 +67,8 @@ public class CommonGnssData extends GNSSOrbitalElements implements GNSSClockElem
      *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      */
-    public CommonGnssData(final double mu, final double angularVelocity, final int weeksInCycle,
-                          final TimeScales timeScales, final SatelliteSystem system) {
+    protected CommonGnssData(final double mu, final double angularVelocity, final int weeksInCycle,
+                             final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
         this.af0Driver = createDriver(AF0);
         this.af1Driver = createDriver(AF1);

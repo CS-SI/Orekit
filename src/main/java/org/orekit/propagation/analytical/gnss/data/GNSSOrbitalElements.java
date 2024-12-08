@@ -40,11 +40,13 @@ import java.util.List;
  * be accessed independently. These groups ensure proper separate computation of
  * state transition matrix and Jacobian matrix by {@link GNSSPropagator}.
  * </p>
+ * @param <T> type of the orbital elements
  * @since 13.0
  * @author Pascal Parraud
  * @author Luc Maisonobe
 */
-public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvider {
+public abstract class GNSSOrbitalElements<T extends GNSSOrbitalElements<T>>
+    implements TimeStamped, ParameterDriversProvider {
 
     /** Name for semi major axis parameter. */
     public static final String SEMI_MAJOR_AXIS = "GnssSemiMajorAxis";
@@ -121,19 +123,11 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     /** Size of parameters array. */
     public static final int SIZE = CIS_INDEX + 1;
 
-    /** Reference epoch. */
-    private AbsoluteDate date;
-
     /** Earth's universal gravitational parameter. */
     private final double mu;
 
     /** Mean angular velocity of the Earth for the GNSS model. */
     private final double angularVelocity;
-
-    /** Duration of the GNSS cycle in weeks.
-     * @since 13.0
-     */
-    private final int weeksInCycle;
 
     /** Duration of the GNSS cycle in seconds. */
     private final double cycleDuration;
@@ -143,6 +137,9 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
 
     /** Known time scales. */
     private final TimeScales timeScales;
+
+    /** Reference epoch. */
+    private AbsoluteDate date;
 
     /** PRN number of the satellite. */
     private int prn;
@@ -205,13 +202,12 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
      *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      */
-    public GNSSOrbitalElements(final double mu, final double angularVelocity, final int weeksInCycle,
-                               final TimeScales timeScales, final SatelliteSystem system) {
+    protected GNSSOrbitalElements(final double mu, final double angularVelocity, final int weeksInCycle,
+                                  final TimeScales timeScales, final SatelliteSystem system) {
 
         // immutable fields
         this.mu              = mu;
         this.angularVelocity = angularVelocity;
-        this.weeksInCycle    = weeksInCycle;
         this.cycleDuration   = GNSSConstants.GNSS_WEEK_IN_SECONDS * weeksInCycle;
         this.system          = system;
         this.timeScales      = timeScales;
@@ -265,34 +261,32 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
     /** Create a copy with only the non-Keplerian elements initialized.
      * @return copy of the instance with only the non-Keplerian elements initialized
      */
-    public GNSSOrbitalElements copyNonKeplerian() {
-        final GNSSOrbitalElements copy = uninitializedCopy();
-        copy.copyNonKeplerian(this);
+    public T copyNonKeplerian() {
+        final T copy = uninitializedCopy();
+        copyNonKeplerianTo(copy);
         return copy;
     }
 
     /** Create an uninitialized copy.
      * @return uninitialized copy of the instance
      */
-    protected GNSSOrbitalElements uninitializedCopy() {
-        return new GNSSOrbitalElements(mu, angularVelocity, weeksInCycle, timeScales, system);
-    }
+    protected abstract T uninitializedCopy();
 
     /** Copy the non-Keplerian elements from another instance.
-     * @param original instance providing the non-Keplerian elements
+     * @param destination instance where to copy non-Keplerian elements
      */
-    protected void copyNonKeplerian(final GNSSOrbitalElements original) {
-        setPRN(original.getPRN());
-        setWeek(original.getWeek());
-        setTime(original.getTime());
-        setIDot(original.getIDot());
-        setOmegaDot(original.getOmegaDot());
-        setCuc(original.getCuc());
-        setCus(original.getCus());
-        setCrc(original.getCrc());
-        setCrs(original.getCrs());
-        setCic(original.getCic());
-        setCis(original.getCis());
+    protected void copyNonKeplerianTo(final T destination) {
+        destination.setPRN(getPRN());
+        destination.setWeek(getWeek());
+        destination.setTime(getTime());
+        destination.setIDot(getIDot());
+        destination.setOmegaDot(getOmegaDot());
+        destination.setCuc(getCuc());
+        destination.setCus(getCus());
+        destination.setCrc(getCrc());
+        destination.setCrs(getCrs());
+        destination.setCic(getCic());
+        destination.setCis(getCis());
     }
 
     /** Get satellite system.
@@ -360,14 +354,6 @@ public class GNSSOrbitalElements implements TimeStamped, ParameterDriversProvide
      */
     public double getAngularVelocity() {
         return angularVelocity;
-    }
-
-    /** Get for the duration of the GNSS cycle in weeks.
-     * @return the duration of the GNSS cycle in weeks
-     * @since 13.0
-     */
-    public int getWeeksInCycle() {
-        return weeksInCycle;
     }
 
     /** Get for the duration of the GNSS cycle in seconds.

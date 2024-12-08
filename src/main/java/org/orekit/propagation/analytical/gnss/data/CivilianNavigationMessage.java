@@ -21,10 +21,11 @@ import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
+ * @param <T> type of the orbital elements
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class CivilianNavigationMessage extends AbstractNavigationMessage implements GNSSClockElements {
+public abstract class CivilianNavigationMessage<T extends CivilianNavigationMessage<T>> extends AbstractNavigationMessage<T> implements GNSSClockElements {
 
     /** Identifier for message type. */
     public static final String CNAV = "CNAV";

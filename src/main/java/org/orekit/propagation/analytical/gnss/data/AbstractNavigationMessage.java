@@ -22,6 +22,7 @@ import org.orekit.time.TimeScales;
 
 /**
  * Base class for GNSS navigation messages.
+ * @param <T> type of the orbital elements
  * @author Bryan Cazabonne
  * @since 11.0
  *
@@ -31,7 +32,7 @@ import org.orekit.time.TimeScales;
  * @see QZSSLegacyNavigationMessage
  * @see IRNSSNavigationMessage
  */
-public abstract class AbstractNavigationMessage extends AbstractAlmanac {
+public abstract class AbstractNavigationMessage<T extends AbstractNavigationMessage<T>> extends AbstractAlmanac<T> {
 
     /** Square root of a. */
     private double sqrtA;
@@ -57,16 +58,16 @@ public abstract class AbstractNavigationMessage extends AbstractAlmanac {
      *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      */
-    public AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                     final TimeScales timeScales, final SatelliteSystem system) {
+    protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
+                                        final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
     }
 
     /**  {@inheritDoc} */
     @Override
-    protected void copyNonKeplerian(final GNSSOrbitalElements original) {
-        super.copyNonKeplerian(original);
-        setDeltaN(((AbstractNavigationMessage) original).getDeltaN());
+    protected void copyNonKeplerianTo(final T destination) {
+        super.copyNonKeplerianTo(destination);
+        destination.setDeltaN(getDeltaN());
     }
 
     /**
