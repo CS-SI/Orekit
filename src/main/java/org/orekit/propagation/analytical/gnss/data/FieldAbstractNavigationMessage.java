@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,39 +17,37 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScales;
 
 /**
  * Base class for GNSS navigation messages.
+ * @param <T> type of the field elements
  * @param <O> type of the orbital elements
- * @author Bryan Cazabonne
- * @since 11.0
+ * @author Luc Maisonobe
+ * @since 13.0
  *
- * @see GPSLegacyNavigationMessage
- * @see GalileoNavigationMessage
- * @see BeidouLegacyNavigationMessage
- * @see QZSSLegacyNavigationMessage
- * @see IRNSSNavigationMessage
+ * @see FieldGPSLegacyNavigationMessage
+ * @see FieldGalileoNavigationMessage
+ * @see FieldBeidouLegacyNavigationMessage
+ * @see FieldQZSSLegacyNavigationMessage
+ * @see FieldIRNSSNavigationMessage
  */
-public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>> extends AbstractAlmanac<O> {
+public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>, O extends FieldAbstractNavigationMessage<T, O>>
+    extends FieldAbstractAlmanac<T, O> {
 
     /** Square root of a. */
-    private double sqrtA;
+    private T sqrtA;
 
     /** Mean Motion Difference from Computed Value. */
-    private double deltaN;
+    private T deltaN;
 
     /** Time of clock epoch. */
-    private AbsoluteDate epochToc;
+    private FieldAbsoluteDate<T> epochToc;
 
-    /** Transmission time.
-     * @since 12.0
-     */
-    private double transmissionTime;
+    /** Transmission time. */
+    private T transmissionTime;
 
     /**
      * Constructor.
@@ -61,8 +59,8 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      */
-    protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                        final TimeScales timeScales, final SatelliteSystem system) {
+    protected FieldAbstractNavigationMessage(final T mu, final double angularVelocity, final int weeksInCycle,
+                                             final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
     }
 
@@ -70,28 +68,16 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     @Override
     protected void copyNonKeplerianTo(final GNSSOrbitalElementsDriversProvider<?> destination) {
         super.copyNonKeplerianTo(destination);
-        final AbstractNavigationMessage<?> converted = (AbstractNavigationMessage<?>) destination;
-        converted.setDeltaN(getDeltaN());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
         @SuppressWarnings("unchecked")
-        final FieldAbstractNavigationMessage<T, ?> converted = (FieldAbstractNavigationMessage<T, ?>) fielded;
-        converted.setSqrtA(field.getZero().newInstance(sqrtA));
-        converted.setDeltaN(field.getZero().newInstance(deltaN));
-        converted.setEpochToc(new FieldAbsoluteDate<>(field, epochToc));
-        converted.setTransmissionTime(field.getZero().newInstance(transmissionTime));
+        final FieldAbstractNavigationMessage<T, ?> converted = (FieldAbstractNavigationMessage<T, ?>) destination;
+        converted.setDeltaN(getDeltaN());
     }
 
     /**
      * Getter for Square Root of Semi-Major Axis (√m).
      * @return Square Root of Semi-Major Axis (√m)
      */
-    public double getSqrtA() {
+    public T getSqrtA() {
         return sqrtA;
     }
 
@@ -102,22 +88,22 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * </p>
      * @param sqrtA the Square Root of Semi-Major Axis (√m)
      */
-    public void setSqrtA(final double sqrtA) {
+    public void setSqrtA(final T sqrtA) {
         this.sqrtA = sqrtA;
-        getSmaDriver().setValue(sqrtA * sqrtA);
+        setSma(sqrtA.square());
     }
 
     /** {@inheritDoc} */
     @Override
-    public double getMeanMotion() {
-        return super.getMeanMotion() + deltaN;
+    public T getMeanMotion() {
+        return super.getMeanMotion().add(deltaN);
     }
 
     /**
      * Getter for the delta of satellite mean motion.
      * @return delta of satellite mean motion
      */
-    public double getDeltaN() {
+    public T getDeltaN() {
         return deltaN;
     }
 
@@ -125,7 +111,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * Setter for the delta of satellite mean motion.
      * @param deltaN the value to set
      */
-    public void setDeltaN(final double deltaN) {
+    public void setDeltaN(final T deltaN) {
         this.deltaN = deltaN;
     }
 
@@ -133,7 +119,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * Getter for the time of clock epoch.
      * @return the time of clock epoch
      */
-    public AbsoluteDate getEpochToc() {
+    public FieldAbsoluteDate<T> getEpochToc() {
         return epochToc;
     }
 
@@ -141,25 +127,23 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * Setter for the time of clock epoch.
      * @param epochToc the epoch to set
      */
-    public void setEpochToc(final AbsoluteDate epochToc) {
+    public void setEpochToc(final FieldAbsoluteDate<T> epochToc) {
         this.epochToc = epochToc;
     }
 
     /**
      * Getter for transmission time.
      * @return transmission time
-     * @since 12.0
      */
-    public double getTransmissionTime() {
+    public T getTransmissionTime() {
         return transmissionTime;
     }
 
     /**
      * Setter for transmission time.
      * @param transmissionTime transmission time
-     * @since 12.0
      */
-    public void setTransmissionTime(final double transmissionTime) {
+    public void setTransmissionTime(final T transmissionTime) {
         this.transmissionTime = transmissionTime;
     }
 

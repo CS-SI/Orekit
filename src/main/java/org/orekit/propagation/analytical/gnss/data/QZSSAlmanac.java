@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
@@ -37,15 +39,33 @@ public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
     /**
      * Constructor.
      * @param timeScales known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav weeks
-     *                        are always according to GPS)
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav weeks
+     *                   are always according to GPS)
      */
     public QZSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
         super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>>
+        FieldQZSSAlmanac<T> uninitializedField(Field<T> field) {
+        return new FieldQZSSAlmanac<>(field, getTimeScales(), getSystem());
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>>
+        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
+        super.fillUp(field, fielded);
+        @SuppressWarnings("unchecked")
+        final FieldQZSSAlmanac<T> converted = (FieldQZSSAlmanac<T>) fielded;
+        converted.setSource(getSource());
+        converted.setHealth(getHealth());
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected QZSSAlmanac uninitializedCopy() {
         return new QZSSAlmanac(getTimeScales(), getSystem());

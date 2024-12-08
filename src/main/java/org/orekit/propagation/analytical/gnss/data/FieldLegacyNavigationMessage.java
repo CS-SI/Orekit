@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,22 +17,19 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
+ * @param <T> type of the field elements
  * @param <O> type of the orbital elements
- * @author Bryan Cazabonne
- * @since 11.0
+ * @author Luc Maisonobe
+ * @since 13.0
  */
-public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<O>>
-    extends AbstractNavigationMessage<O>
-    implements GNSSClockElements {
-
-    /** Identifier for message type. */
-    public static final String LNAV = "LNAV";
+public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>, O extends FieldLegacyNavigationMessage<T, O>>
+    extends FieldAbstractNavigationMessage<T, O>
+    implements FieldGNSSClockElements<T> {
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -41,43 +38,27 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
     private int iodc;
 
     /** The user SV accuracy (m). */
-    private double svAccuracy;
+    private T svAccuracy;
 
     /** Satellite health status. */
     private int svHealth;
 
-    /** Fit interval.
-     * @since 12.0
-     */
+    /** Fit interval. */
     private int fitInterval;
 
     /**
      * Constructor.
      * @param mu Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle number of weeks in the GNSS cycle
-     * @param timeScales known time scales
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
      * @param system          satellite system to consider for interpreting week number
      *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      */
-    protected LegacyNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
-                                      final TimeScales timeScales, final SatelliteSystem system) {
+    protected FieldLegacyNavigationMessage(final T mu, final double angularVelocity, final int weeksInCycle,
+                                           final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldLegacyNavigationMessage<T, ?> converted = (FieldLegacyNavigationMessage<T, ?>) fielded;
-        converted.setIODE(field.getZero().newInstance(getIODE()));
-        converted.setIODC(getIODC());
-        converted.setSvAccuracy(field.getZero().newInstance(getSvAccuracy()));
-        converted.setSvHealth(getSvHealth());
-        converted.setFitInterval(getFitInterval());
     }
 
     /**
@@ -92,9 +73,9 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      * Setter for the Issue of Data Ephemeris.
      * @param value the IODE to set
      */
-    public void setIODE(final double value) {
+    public void setIODE(final T value) {
         // The value is given as a floating number in the navigation message
-        this.iode = (int) value;
+        this.iode = (int) value.getReal();
     }
 
     /**
@@ -117,7 +98,7 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      * Getter for the user SV accuray (meters).
      * @return the user SV accuracy
      */
-    public double getSvAccuracy() {
+    public T getSvAccuracy() {
         return svAccuracy;
     }
 
@@ -125,7 +106,7 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
      * Setter for the user SV accuracy.
      * @param svAccuracy the value to set
      */
-    public void setSvAccuracy(final double svAccuracy) {
+    public void setSvAccuracy(final T svAccuracy) {
         this.svAccuracy = svAccuracy;
     }
 
@@ -148,7 +129,6 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
     /**
      * Getter for the fit interval.
      * @return the fit interval
-     * @since 12.0
      */
     public int getFitInterval() {
         return fitInterval;
@@ -157,7 +137,6 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
     /**
      * Setter for the fit interval.
      * @param fitInterval fit interval
-     * @since 12.0
      */
     public void setFitInterval(final int fitInterval) {
         this.fitInterval = fitInterval;

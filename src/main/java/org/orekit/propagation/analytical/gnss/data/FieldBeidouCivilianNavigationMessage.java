@@ -24,28 +24,21 @@ import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
- * @since 12.0
+ * @since 13.0
  */
-public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<BeidouCivilianNavigationMessage> {
-
-    /** Identifier for Beidou-3 B1C message type. */
-    public static final String CNV1 = "CNV1";
-
-    /** Identifier for Beidou-3 B2A message type. */
-    public static final String CNV2 = "CNV2";
-
-    /** Identifier for Beidou-3 B2B message type. */
-    public static final String CNV3 = "CNV3";
+public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement<T>>
+    extends FieldAbstractNavigationMessage<T, FieldBeidouCivilianNavigationMessage<T>> {
 
     /** Radio wave on which navigation signal is sent. */
     private final RadioWave radioWave;
 
     /** Change rate in semi-major axis (m/s). */
-    private double aDot;
+    private T aDot;
 
     /** Change rate in Δn₀. */
-    private double deltaN0Dot;
+    private T deltaN0Dot;
 
     /** Issue of Data, Ephemeris. */
     private int iode;
@@ -54,13 +47,13 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     private int iodc;
 
     /** Inter Signal Delay for B1 CD. */
-    private double iscB1CD;
+    private T iscB1CD;
 
     /** Inter Signal Delay for B1 CP. */
-    private double iscB1CP;
+    private T iscB1CP;
 
     /** Inter Signal Delay for B2 AD. */
-    private double iscB2AD;
+    private T iscB2AD;
 
     /** Signal In Space Accuracy Index (along track and across track). */
     private int sisaiOe;
@@ -84,69 +77,38 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     private int integrityFlags;
 
     /** B1/B3 Group Delay Differential (s). */
-    private double tgdB1Cp;
+    private T tgdB1Cp;
 
     /** B2 AP Group Delay Differential (s). */
-    private double tgdB2ap;
+    private T tgdB2ap;
 
     /** B2B_i / B3I Group Delay Differential (s). */
-    private double tgdB2bI;
+    private T tgdB2bI;
 
     /** Satellite type. */
     private BeidouSatelliteType satelliteType;
 
     /**
      * Constructor.
+     * @param field      field to which elements belong
      * @param radioWave  radio wave on which navigation signal is sent
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public BeidouCivilianNavigationMessage(final RadioWave radioWave,
-                                           final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+    public FieldBeidouCivilianNavigationMessage(final Field<T> field,
+                                                final RadioWave radioWave,
+                                                final TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
               timeScales, system);
         this.radioWave = radioWave;
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldBeidouCivilianNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldBeidouCivilianNavigationMessage<>(field, radioWave, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldBeidouCivilianNavigationMessage<T> converted = (FieldBeidouCivilianNavigationMessage<T>) fielded;
-        converted.setADot(field.getZero().newInstance(getADot()));
-        converted.setDeltaN0Dot(field.getZero().newInstance(getDeltaN0Dot()));
-        converted.setIODE(getIODE());
-        converted.setIODC(getIODC());
-        converted.setIscB1CD(field.getZero().newInstance(getIscB1CD()));
-        converted.setIscB1CP(field.getZero().newInstance(getIscB1CP()));
-        converted.setIscB2AD(field.getZero().newInstance(getIscB2AD()));
-        converted.setSisaiOe(getSisaiOe());
-        converted.setSisaiOcb(getSisaiOcb());
-        converted.setSisaiOc1(getSisaiOc1());
-        converted.setSisaiOc2(getSisaiOc2());
-        converted.setSismai(getSismai());
-        converted.setHealth(getHealth());
-        converted.setIntegrityFlags(getIntegrityFlags());
-        converted.setTgdB1Cp(field.getZero().newInstance(getTgdB1Cp()));
-        converted.setTgdB2ap(field.getZero().newInstance(getTgdB2ap()));
-        converted.setTgdB2bI(field.getZero().newInstance(getTgdB2bI()));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected BeidouCivilianNavigationMessage uninitializedCopy() {
-        return new BeidouCivilianNavigationMessage(radioWave, getTimeScales(), getSystem());
+    protected FieldBeidouCivilianNavigationMessage<T> uninitializedCopy() {
+        return new FieldBeidouCivilianNavigationMessage<>(getMu().getField(), radioWave, getTimeScales(), getSystem());
     }
 
     /**
@@ -161,7 +123,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for the change rate in semi-major axis.
      * @return the change rate in semi-major axis
      */
-    public double getADot() {
+    public T getADot() {
         return aDot;
     }
 
@@ -169,7 +131,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for the change rate in semi-major axis.
      * @param value the change rate in semi-major axis
      */
-    public void setADot(final double value) {
+    public void setADot(final T value) {
         this.aDot = value;
     }
 
@@ -177,7 +139,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for change rate in Δn₀.
      * @return change rate in Δn₀
      */
-    public double getDeltaN0Dot() {
+    public T getDeltaN0Dot() {
         return deltaN0Dot;
     }
 
@@ -185,7 +147,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for change rate in Δn₀.
      * @param deltaN0Dot change rate in Δn₀
      */
-    public void setDeltaN0Dot(final double deltaN0Dot) {
+    public void setDeltaN0Dot(final T deltaN0Dot) {
         this.deltaN0Dot = deltaN0Dot;
     }
 
@@ -225,7 +187,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for inter Signal Delay for B1 CD.
      * @return inter signal delay
      */
-    public double getIscB1CD() {
+    public T getIscB1CD() {
         return iscB1CD;
     }
 
@@ -233,7 +195,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for inter Signal Delay for B1 CD.
      * @param delay delay to set
      */
-    public void setIscB1CD(final double delay) {
+    public void setIscB1CD(final T delay) {
         this.iscB1CD = delay;
     }
 
@@ -241,7 +203,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for inter Signal Delay for B2 AD.
      * @return inter signal delay
      */
-    public double getIscB2AD() {
+    public T getIscB2AD() {
         return iscB2AD;
     }
 
@@ -249,7 +211,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for inter Signal Delay for B2 AD.
      * @param delay delay to set
      */
-    public void setIscB2AD(final double delay) {
+    public void setIscB2AD(final T delay) {
         this.iscB2AD = delay;
     }
 
@@ -257,7 +219,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for inter Signal Delay for B1 CP.
      * @return inter signal delay
      */
-    public double getIscB1CP() {
+    public T getIscB1CP() {
         return iscB1CP;
     }
 
@@ -265,7 +227,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for inter Signal Delay for B1 CP.
      * @param delay delay to set
      */
-    public void setIscB1CP(final double delay) {
+    public void setIscB1CP(final T delay) {
         this.iscB1CP = delay;
     }
 
@@ -385,7 +347,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for B1/B3 Group Delay Differential (s).
      * @return B1/B3 Group Delay Differential (s)
      */
-    public double getTgdB1Cp() {
+    public T getTgdB1Cp() {
         return tgdB1Cp;
     }
 
@@ -393,7 +355,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for B1/B3 Group Delay Differential (s).
      * @param tgdB1Cp B1/B3 Group Delay Differential (s)
      */
-    public void setTgdB1Cp(final double tgdB1Cp) {
+    public void setTgdB1Cp(final T tgdB1Cp) {
         this.tgdB1Cp = tgdB1Cp;
     }
 
@@ -401,7 +363,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for B2 AP Group Delay Differential (s).
      * @return B2 AP Group Delay Differential (s)
      */
-    public double getTgdB2ap() {
+    public T getTgdB2ap() {
         return tgdB2ap;
     }
 
@@ -409,7 +371,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for B2 AP Group Delay Differential (s).
      * @param tgdB2ap B2 AP Group Delay Differential (s)
      */
-    public void setTgdB2ap(final double tgdB2ap) {
+    public void setTgdB2ap(final T tgdB2ap) {
         this.tgdB2ap = tgdB2ap;
     }
 
@@ -417,7 +379,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Getter for B2B_i / B3I Group Delay Differential (s).
      * @return B2B_i / B3I Group Delay Differential (s)
      */
-    public double getTgdB2bI() {
+    public T getTgdB2bI() {
         return tgdB2bI;
     }
 
@@ -425,7 +387,7 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
      * Setter for B2B_i / B3I Group Delay Differential (s).
      * @param tgdB2bI B2B_i / B3I Group Delay Differential (s)
      */
-    public void setTgdB2bI(final double tgdB2bI) {
+    public void setTgdB2bI(final T tgdB2bI) {
         this.tgdB2bI = tgdB2bI;
     }
 

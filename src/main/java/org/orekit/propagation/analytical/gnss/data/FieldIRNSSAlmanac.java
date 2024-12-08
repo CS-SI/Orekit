@@ -22,36 +22,47 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
- * Container for data contained in a QZSS navigation message.
+ * Class for IRNSS almanac.
+ *
+ * @see "Indian Regional Navigation Satellite System, Signal In Space ICD
+ *       for standard positioning service, version 1.1 - Table 28"
+ *
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
- * @since 12.0
+ * @since 13.0
+ *
  */
-public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZSSCivilianNavigationMessage> {
+public class FieldIRNSSAlmanac<T extends CalculusFieldElement<T>>
+    extends FieldAbstractAlmanac<T, FieldIRNSSAlmanac<T>> {
 
-    /** Constructor.
-     * @param cnv2       indicator for CNV2 messages
+    /**
+     * Constructor.
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public QZSSCivilianNavigationMessage(final boolean cnv2,
-                                         final TimeScales timeScales, final SatelliteSystem system) {
-        super(cnv2, GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
-              timeScales, system);
+    public FieldIRNSSAlmanac(final Field<T> field,
+                              final TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.IRNSS_MU), GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldQZSSCivilianNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldQZSSCivilianNavigationMessage<>(field, isCnv2(), getTimeScales(), getSystem());
+    protected FieldIRNSSAlmanac<T> uninitializedCopy() {
+        return new FieldIRNSSAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected QZSSCivilianNavigationMessage uninitializedCopy() {
-        return new QZSSCivilianNavigationMessage(isCnv2(), getTimeScales(), getSystem());
+    /**
+     * Setter for the Square Root of Semi-Major Axis (m^1/2).
+     * <p>
+     * In addition, this method set the value of the Semi-Major Axis.
+     * </p>
+     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
+     */
+    public void setSqrtA(final T sqrtA) {
+        setSma(sqrtA.square());
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,16 +23,12 @@ import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a BeiDou navigation message.
- * @author Bryan Cazabonne
- * @since 11.0
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  */
-public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<BeidouLegacyNavigationMessage> {
-
-    /** Identifier for message type. */
-    public static final String D1 = "D1";
-
-    /** Identifier for message type. */
-    public static final String D2 = "D2";
+public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T>>
+    extends FieldAbstractNavigationMessage<T, FieldBeidouLegacyNavigationMessage<T>> {
 
     /** Age of Data, Ephemeris. */
     private int aode;
@@ -41,51 +37,32 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     private int aodc;
 
     /** B1/B3 Group Delay Differential (s). */
-    private double tgd1;
+    private T tgd1;
 
     /** B2/B3 Group Delay Differential (s). */
-    private double tgd2;
+    private T tgd2;
 
     /** The user SV accuracy (m). */
-    private double svAccuracy;
+    private T svAccuracy;
 
     /** Constructor.
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public BeidouLegacyNavigationMessage(final TimeScales timeScales,
-                                         final SatelliteSystem system) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+    public FieldBeidouLegacyNavigationMessage(final Field<T> field,
+                                              final TimeScales timeScales,
+                                              final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldBeidouLegacyNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldBeidouLegacyNavigationMessage<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldBeidouLegacyNavigationMessage<T> converted = (FieldBeidouLegacyNavigationMessage<T>) fielded;
-        converted.setAODE(field.getZero().newInstance(getAODE()));
-        converted.setAODC(field.getZero().newInstance(getAODC()));
-        converted.setTGD1(field.getZero().newInstance(getTGD1()));
-        converted.setTGD2(field.getZero().newInstance(getTGD2()));
-        converted.setSvAccuracy(field.getZero().newInstance(getSvAccuracy()));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected BeidouLegacyNavigationMessage uninitializedCopy() {
-        return new BeidouLegacyNavigationMessage(getTimeScales(), getSystem());
+    protected FieldBeidouLegacyNavigationMessage<T> uninitializedCopy() {
+        return new FieldBeidouLegacyNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
     /**
@@ -100,9 +77,9 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * Setter for the age of data clock.
      * @param aod the age of data to set
      */
-    public void setAODC(final double aod) {
+    public void setAODC(final T aod) {
         // The value is given as a floating number in the navigation message
-        this.aodc = (int) aod;
+        this.aodc = (int) aod.getReal();
     }
 
     /**
@@ -117,16 +94,16 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * Setter for the age of data ephemeris.
      * @param aod the age of data to set
      */
-    public void setAODE(final double aod) {
+    public void setAODE(final T aod) {
         // The value is given as a floating number in the navigation message
-        this.aode = (int) aod;
+        this.aode = (int) aod.getReal();
     }
 
     /**
      * Getter for the estimated group delay differential TGD1 for B1I signal.
      * @return the estimated group delay differential TGD1 for B1I signal (s)
      */
-    public double getTGD1() {
+    public T getTGD1() {
         return tgd1;
     }
 
@@ -134,7 +111,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * Setter for the B1/B3 Group Delay Differential (s).
      * @param tgd the group delay differential to set
      */
-    public void setTGD1(final double tgd) {
+    public void setTGD1(final T tgd) {
         this.tgd1 = tgd;
     }
 
@@ -142,7 +119,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * Getter for the estimated group delay differential TGD for B2I signal.
      * @return the estimated group delay differential TGD2 for B2I signal (s)
      */
-    public double getTGD2() {
+    public T getTGD2() {
         return tgd2;
     }
 
@@ -150,7 +127,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * Setter for the B2/B3 Group Delay Differential (s).
      * @param tgd the group delay differential to set
      */
-    public void setTGD2(final double tgd) {
+    public void setTGD2(final T tgd) {
         this.tgd2 = tgd;
     }
 
@@ -158,7 +135,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * Getter for the user SV accuray (meters).
      * @return the user SV accuracy
      */
-    public double getSvAccuracy() {
+    public T getSvAccuracy() {
         return svAccuracy;
     }
 
@@ -166,7 +143,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
      * Setter for the user SV accuracy.
      * @param svAccuracy the value to set
      */
-    public void setSvAccuracy(final double svAccuracy) {
+    public void setSvAccuracy(final T svAccuracy) {
         this.svAccuracy = svAccuracy;
     }
 

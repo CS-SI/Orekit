@@ -23,35 +23,30 @@ import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a QZSS navigation message.
+ * @param <T> type of the field elements
  * @author Luc Maisonobe
- * @since 12.0
+ * @since 13.0
  */
-public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZSSCivilianNavigationMessage> {
+public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
+    extends FieldLegacyNavigationMessage<T, FieldQZSSLegacyNavigationMessage<T>> {
 
     /** Constructor.
-     * @param cnv2       indicator for CNV2 messages
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public QZSSCivilianNavigationMessage(final boolean cnv2,
-                                         final TimeScales timeScales, final SatelliteSystem system) {
-        super(cnv2, GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
+    public FieldQZSSLegacyNavigationMessage(final Field<T> field,
+                                            TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.QZSS_MU), GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldQZSSCivilianNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldQZSSCivilianNavigationMessage<>(field, isCnv2(), getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected QZSSCivilianNavigationMessage uninitializedCopy() {
-        return new QZSSCivilianNavigationMessage(isCnv2(), getTimeScales(), getSystem());
+    protected FieldQZSSLegacyNavigationMessage<T> uninitializedCopy() {
+        return new FieldQZSSLegacyNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
 }

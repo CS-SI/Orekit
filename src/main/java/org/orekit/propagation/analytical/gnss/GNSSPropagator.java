@@ -16,7 +16,9 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -359,7 +361,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssOrbitalElements<Gradient> gElements = convert(elements, orbit);
+            final FieldGnssOrbitalElements<Gradient, ?> gElements = convert(elements, orbit);
             final FieldGnssPropagator<Gradient> gPropagator =
                 new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
                                           gElements.getMu().newInstance(mass));
@@ -494,29 +496,21 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return converted elements, set up as gradient relative to Keplerian orbit
      * @since 13.0
      */
-    private static FieldGnssOrbitalElements<Gradient> convert(final GNSSOrbitalElements<?> elements,
-                                                              final KeplerianOrbit orbit) {
+    private static FieldGnssOrbitalElements<Gradient, ?> convert(final GNSSOrbitalElements<?> elements,
+                                                                 final KeplerianOrbit orbit) {
 
-        // non-Keplerian evolution parameters
-        final double[] parameters = elements.getParameters();
-        final Gradient[] gParameters = new Gradient[parameters.length];
-        for (int i = 0; i < parameters.length; ++i) {
-            gParameters[i] = Gradient.constant(FREE_PARAMETERS, parameters[i]);
-        }
+        final Field<Gradient> field = GradientField.getField(FREE_PARAMETERS);
+        final FieldGnssOrbitalElements<Gradient, ?> gElements = elements.toField(field);
 
-        // build the converted elements
-        return new FieldGnssOrbitalElements<>(Gradient.constant(FREE_PARAMETERS, elements.getMu()),
-                                              elements.getAngularVelocity(), elements.getCycleDuration(),
-                                              elements.getSystem(), elements.getTimeScales(),
-                                              elements.getPRN(), elements.getWeek(),
-                                              Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()),
-                                              Gradient.variable(FREE_PARAMETERS, 1, orbit.getE()),
-                                              Gradient.variable(FREE_PARAMETERS, 2, orbit.getI()),
-                                              Gradient.variable(FREE_PARAMETERS, 3, orbit.getPerigeeArgument()),
-                                              Gradient.variable(FREE_PARAMETERS, 4, orbit.getRightAscensionOfAscendingNode()),
-                                              Gradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly()),
-                                              gParameters);
+        // Keplerian parameters
+        gElements.setSma(Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()));
+        gElements.setE(Gradient.variable(FREE_PARAMETERS, 1, orbit.getE()));
+        gElements.setI0(Gradient.variable(FREE_PARAMETERS, 2, orbit.getI()));
+        gElements.setPa(Gradient.variable(FREE_PARAMETERS, 3, orbit.getPerigeeArgument()));
+        gElements.setOmega0(Gradient.variable(FREE_PARAMETERS, 4, orbit.getRightAscensionOfAscendingNode()));
+        gElements.setM0(Gradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly()));
 
+        return gElements;
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,73 +22,68 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
- * Class for BeiDou almanac.
+ * This class holds a QZSS almanac as read from YUMA files.
  *
- * @see "BeiDou Navigation Satellite System, Signal In Space, Interface Control Document,
- *      Version 2.1, Table 5-12"
- *
- * @author Bryan Cazabonne
- * @since 10.0
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  *
  */
-public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
+public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
+    extends FieldAbstractAlmanac<T, FieldQZSSAlmanac<T>> {
+
+    /** Source of the almanac. */
+    private String src;
 
     /** Health status. */
     private int health;
 
     /**
-     * Build a new almanac.
+     * Constructor.
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public BeidouAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
+    public FieldQZSSAlmanac(final Field<T> field,
+                              final TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.QZSS_MU), GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldBeidouAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldBeidouAlmanac<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldBeidouAlmanac<T> converted = (FieldBeidouAlmanac<T>) fielded;
-        converted.setHealth(getHealth());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected BeidouAlmanac uninitializedCopy() {
-        return new BeidouAlmanac(getTimeScales(), getSystem());
+    protected FieldQZSSAlmanac<T> uninitializedCopy() {
+        return new FieldQZSSAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
     /**
-     * Sets the Square Root of Semi-Major Axis (m^1/2).
+     * Setter for the Square Root of Semi-Major Axis (m^1/2).
      * <p>
      * In addition, this method set the value of the Semi-Major Axis.
      * </p>
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
+    public void setSqrtA(final T sqrtA) {
+        setSma(sqrtA.square());
     }
 
     /**
-     * Sets the Inclination Angle at Reference Time (rad).
+     * Gets the source of this QZSS almanac.
      *
-     * @param inc the orbit reference inclination
-     * @param dinc the correction of orbit reference inclination at reference time
+     * @return the source of this QZSS almanac
      */
-    public void setI0(final double inc, final double dinc) {
-        setI0(inc + dinc);
+    public String getSource() {
+        return src;
+    }
+
+    /**
+     * Sets the source of this GPS almanac.
+     *
+     * @param source the source of this GPS almanac
+     */
+    public void setSource(final String source) {
+        this.src = source;
     }
 
     /**

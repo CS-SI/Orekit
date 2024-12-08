@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,47 +27,34 @@ import org.orekit.time.TimeScales;
  * @see "BeiDou Navigation Satellite System, Signal In Space, Interface Control Document,
  *      Version 2.1, Table 5-12"
  *
- * @author Bryan Cazabonne
- * @since 10.0
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  *
  */
-public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
+public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
+    extends FieldAbstractAlmanac<T, FieldBeidouAlmanac<T>> {
 
     /** Health status. */
     private int health;
 
     /**
      * Build a new almanac.
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public BeidouAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
+    public FieldBeidouAlmanac(final Field<T> field,
+                              final TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldBeidouAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldBeidouAlmanac<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldBeidouAlmanac<T> converted = (FieldBeidouAlmanac<T>) fielded;
-        converted.setHealth(getHealth());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected BeidouAlmanac uninitializedCopy() {
-        return new BeidouAlmanac(getTimeScales(), getSystem());
+    protected FieldBeidouAlmanac<T> uninitializedCopy() {
+        return new FieldBeidouAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
     /**
@@ -77,8 +64,8 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
      * </p>
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
+    public void setSqrtA(final T sqrtA) {
+        setSma(sqrtA.square());
     }
 
     /**
@@ -87,8 +74,8 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
      * @param inc the orbit reference inclination
      * @param dinc the correction of orbit reference inclination at reference time
      */
-    public void setI0(final double inc, final double dinc) {
-        setI0(inc + dinc);
+    public void setI0(final T inc, final T dinc) {
+        setI0(inc.add(dinc));
     }
 
     /**

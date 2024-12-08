@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -23,33 +24,26 @@ import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
+import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.utils.IERSConventions;
 
 /**
- * This nested class aims at building a GNSSPropagator.
+ * This nested class aims at building a {@link FieldGnssPropagator}.
  * <p>It implements the classical builder pattern.</p>
- * @author Pascal Parraud
- * @since 11.0
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  */
-public class GNSSPropagatorBuilder {
-
-    //////////
-    // Required parameter
-    //////////
+public class FieldGnssPropagatorBuilder<T extends CalculusFieldElement<T>> {
 
     /** The GNSS propagation model orbital elements. */
-    private final GNSSOrbitalElements<?> orbitalElements;
-
-    ///////////
-    // Optional parameters
-    //////////
+    private final FieldGnssOrbitalElements<T, ?> orbitalElements;
 
     /** The attitude provider. */
     private AttitudeProvider attitudeProvider;
 
     /** The mass. */
-    private double mass;
+    private T mass;
 
     /** The ECI frame. */
     private Frame eci;
@@ -62,7 +56,7 @@ public class GNSSPropagatorBuilder {
      * <p>The GNSS orbital elements is the only requested parameter to build a GNSSPropagator.</p>
      * <p>The attitude provider is set by default to be aligned with the EME2000 frame.<br>
      * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     *  {@link Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
      * The ECI frame is set by default to the
      *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
      *  context.<br>
@@ -77,12 +71,12 @@ public class GNSSPropagatorBuilder {
      *
      * @param orbitalElements the GNSS orbital elements to be used by the propagator.
      * @see #attitudeProvider(AttitudeProvider provider)
-     * @see #mass(double mass)
+     * @see #mass(CalculusFieldElement mass)
      * @see #eci(Frame inertial)
      * @see #ecef(Frame bodyFixed)
      */
     @DefaultDataContext
-    public GNSSPropagatorBuilder(final GNSSOrbitalElements<?> orbitalElements) {
+    public FieldGnssPropagatorBuilder(final FieldGnssOrbitalElements<T, ?> orbitalElements) {
         this(orbitalElements, DataContext.getDefault().getFrames());
     }
 
@@ -90,7 +84,7 @@ public class GNSSPropagatorBuilder {
      * <p>The GNSS orbital elements is the only requested parameter to build a GNSSPropagator.</p>
      * <p>The attitude provider is set by default to be aligned with the EME2000 frame.<br>
      * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     *  {@link Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
      * The ECI frame is set by default to the
      *  {@link Frames#getEME2000() EME2000 frame}.<br>
      * The ECEF frame is set by default to the
@@ -100,13 +94,13 @@ public class GNSSPropagatorBuilder {
      * @see #attitudeProvider(AttitudeProvider provider)
      * @param frames set of frames to use.
      * @see #attitudeProvider(AttitudeProvider provider)
-     * @see #mass(double mass)
+     * @see #mass(CalculusFieldElement mass)
      * @see #eci(Frame inertial)
      * @see #ecef(Frame bodyFixed)
      */
-    public GNSSPropagatorBuilder(final GNSSOrbitalElements<?> orbitalElements, final Frames frames) {
+    public FieldGnssPropagatorBuilder(final FieldGnssOrbitalElements<T, ?> orbitalElements, final Frames frames) {
         this.orbitalElements  = orbitalElements;
-        this.mass             = Propagator.DEFAULT_MASS;
+        this.mass             = orbitalElements.getMu().newInstance(Propagator.DEFAULT_MASS);
         this.eci              = frames.getEME2000();
         this.ecef             = frames.getITRF(IERSConventions.IERS_2010, true);
         this.attitudeProvider = FrameAlignedProvider.of(this.eci);
@@ -117,7 +111,7 @@ public class GNSSPropagatorBuilder {
      * @param userProvider the attitude provider
      * @return the updated builder
      */
-    public GNSSPropagatorBuilder attitudeProvider(final AttitudeProvider userProvider) {
+    public FieldGnssPropagatorBuilder<T> attitudeProvider(final AttitudeProvider userProvider) {
         this.attitudeProvider = userProvider;
         return this;
     }
@@ -127,7 +121,7 @@ public class GNSSPropagatorBuilder {
      * @param userMass the mass (in kg)
      * @return the updated builder
      */
-    public GNSSPropagatorBuilder mass(final double userMass) {
+    public FieldGnssPropagatorBuilder<T> mass(final T userMass) {
         this.mass = userMass;
         return this;
     }
@@ -137,7 +131,7 @@ public class GNSSPropagatorBuilder {
      * @param inertial the ECI frame
      * @return the updated builder
      */
-    public GNSSPropagatorBuilder eci(final Frame inertial) {
+    public FieldGnssPropagatorBuilder<T> eci(final Frame inertial) {
         this.eci = inertial;
         return this;
     }
@@ -147,7 +141,7 @@ public class GNSSPropagatorBuilder {
      * @param bodyFixed the ECEF frame
      * @return the updated builder
      */
-    public GNSSPropagatorBuilder ecef(final Frame bodyFixed) {
+    public FieldGnssPropagatorBuilder<T> ecef(final Frame bodyFixed) {
         this.ecef = bodyFixed;
         return this;
     }
@@ -156,8 +150,8 @@ public class GNSSPropagatorBuilder {
      *
      * @return the built GNSSPropagator
      */
-    public GNSSPropagator build() {
-        return new GNSSPropagator(orbitalElements, eci, ecef, attitudeProvider, mass);
+    public FieldGnssPropagator<T> build() {
+        return new FieldGnssPropagator<>(orbitalElements, eci, ecef, attitudeProvider, mass);
     }
 
 }

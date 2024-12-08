@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,11 +28,13 @@ import org.orekit.time.TimeScales;
  * An almanac read from a YUMA file doesn't hold SVN number, average URA and satellite
  * configuration.</p>
  *
- * @author Pascal Parraud
- * @since 8.0
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  *
  */
-public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
+public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
+    extends FieldAbstractAlmanac<T, FieldGPSAlmanac<T>> {
 
     /** Source of the almanac. */
     private String src;
@@ -51,40 +53,20 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
 
     /**
      * Constructor.
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public GPSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
+    public FieldGPSAlmanac(final Field<T> field, final TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.GPS_MU), GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldGPSAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldGPSAlmanac<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldGPSAlmanac<T> converted = (FieldGPSAlmanac<T>) fielded;
-        converted.setSource(getSource());
-        converted.setSVN(getSVN());
-        converted.setHealth(getHealth());
-        converted.setURA(getURA());
-        converted.setSatConfiguration(getSatConfiguration());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected GPSAlmanac uninitializedCopy() {
-        return new GPSAlmanac(getTimeScales(), getSystem());
+    protected FieldGPSAlmanac<T> uninitializedCopy() {
+        return new FieldGPSAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
     /**
@@ -94,8 +76,8 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
      * </p>
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
-    public void setSqrtA(final double sqrtA) {
-        setSma(sqrtA * sqrtA);
+    public void setSqrtA(final T sqrtA) {
+        setSma(sqrtA.square());
     }
 
     /**

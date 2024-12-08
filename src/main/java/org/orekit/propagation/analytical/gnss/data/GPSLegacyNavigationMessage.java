@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
@@ -28,16 +30,23 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
 
     /** Constructor.
      * @param timeScales known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav weeks
-     *                        are always according to GPS)
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav weeks
+     *                   are always according to GPS)
      */
     public GPSLegacyNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
         super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
               timeScales, system);
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>>
+        FieldGPSLegacyNavigationMessage<T> uninitializedField(Field<T> field) {
+        return new FieldGPSLegacyNavigationMessage<>(field, getTimeScales(), getSystem());
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected GPSLegacyNavigationMessage uninitializedCopy() {
         return new GPSLegacyNavigationMessage(getTimeScales(), getSystem());

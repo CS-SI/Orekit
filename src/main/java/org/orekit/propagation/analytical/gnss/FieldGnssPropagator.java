@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -52,7 +52,7 @@ import java.util.List;
 public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     /** The GNSS propagation model used. */
-    private final FieldGnssOrbitalElements<T> orbitalElements;
+    private final FieldGnssOrbitalElements<T, ?> orbitalElements;
 
     /** The spacecraft mass (kg). */
     private final T mass;
@@ -71,7 +71,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param provider Attitude provider
      * @param mass Satellite mass (kg)
      */
-    FieldGnssPropagator(final FieldGnssOrbitalElements<T> orbitalElements,
+    FieldGnssPropagator(final FieldGnssOrbitalElements<T, ?> orbitalElements,
                         final Frame eci, final Frame ecef,
                         final AttitudeProvider provider, final T mass) {
         super(orbitalElements.getDate().getField(), provider);
@@ -87,15 +87,15 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         this.ecef = ecef;
         // Sets initial state
         final T[] parameters = MathArrays.buildArray(orbitalElements.getDate().getField(), GNSSOrbitalElements.SIZE);
-        parameters[GNSSOrbitalElements.TIME_INDEX]      = orbitalElements.getTime();
-        parameters[GNSSOrbitalElements.I_DOT_INDEX]     = orbitalElements.getIDot();
-        parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX] = orbitalElements.getOmegaDot();
-        parameters[GNSSOrbitalElements.CUC_INDEX]       = orbitalElements.getCuc();
-        parameters[GNSSOrbitalElements.CUS_INDEX]       = orbitalElements.getCus();
-        parameters[GNSSOrbitalElements.CRC_INDEX]       = orbitalElements.getCrc();
-        parameters[GNSSOrbitalElements.CRS_INDEX]       = orbitalElements.getCrs();
-        parameters[GNSSOrbitalElements.CIC_INDEX]       = orbitalElements.getCic();
-        parameters[GNSSOrbitalElements.CIS_INDEX]       = orbitalElements.getCis();
+        parameters[GNSSOrbitalElements.TIME_INDEX]      = mass.newInstance(orbitalElements.getTime());
+        parameters[GNSSOrbitalElements.I_DOT_INDEX]     = mass.newInstance(orbitalElements.getIDot());
+        parameters[GNSSOrbitalElements.OMEGA_DOT_INDEX] = mass.newInstance(orbitalElements.getOmegaDot());
+        parameters[GNSSOrbitalElements.CUC_INDEX]       = mass.newInstance(orbitalElements.getCuc());
+        parameters[GNSSOrbitalElements.CUS_INDEX]       = mass.newInstance(orbitalElements.getCus());
+        parameters[GNSSOrbitalElements.CRC_INDEX]       = mass.newInstance(orbitalElements.getCrc());
+        parameters[GNSSOrbitalElements.CRS_INDEX]       = mass.newInstance(orbitalElements.getCrs());
+        parameters[GNSSOrbitalElements.CIC_INDEX]       = mass.newInstance(orbitalElements.getCic());
+        parameters[GNSSOrbitalElements.CIS_INDEX]       = mass.newInstance(orbitalElements.getCis());
         final FieldOrbit<T> orbit = propagateOrbit(getStartDate(), parameters);
         final FieldAttitude<T> attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
@@ -243,7 +243,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
     /** {@inheritDoc} */
     @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
-        return getInitialState().getMass();
+        return mass;
     }
 
     /** {@inheritDoc} */

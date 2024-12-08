@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,10 +23,12 @@ import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a Galileo navigation message.
- * @author Bryan Cazabonne
- * @since 11.0
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  */
-public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoNavigationMessage> {
+public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
+    extends FieldAbstractNavigationMessage<T, FieldGalileoNavigationMessage<T>> {
 
     /** Issue of Data of the navigation batch. */
     private int iodNav;
@@ -37,54 +39,34 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     private int dataSource;
 
     /** E1/E5a broadcast group delay (s). */
-    private double bgbE1E5a;
+    private T bgbE1E5a;
 
     /** E5b/E1 broadcast group delay (s). */
-    private double bgdE5bE1;
+    private T bgdE5bE1;
 
     /** Signal in space accuracy. */
-    private double sisa;
+    private T sisa;
 
     /** Satellite health status. */
-    private double svHealth;
+    private T svHealth;
 
     /** Constructor.
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public GalileoNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
+    public FieldGalileoNavigationMessage(final Field<T> field,
+                                         TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.GALILEO_MU), GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldGalileoNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldGalileoNavigationMessage<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldGalileoNavigationMessage<T> converted = (FieldGalileoNavigationMessage<T>) fielded;
-        converted.setIODNav(getIODNav());
-        converted.setDataSource(getDataSource());
-        converted.setBGDE1E5a(field.getZero().newInstance(getBGDE1E5a()));
-        converted.setBGDE5bE1(field.getZero().newInstance(getBGDE5bE1()));
-        converted.setSisa(field.getZero().newInstance(getSisa()));
-        converted.setSvHealth(field.getZero().newInstance(getSvHealth()));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected GalileoNavigationMessage uninitializedCopy() {
-        return new GalileoNavigationMessage(getTimeScales(), getSystem());
+    protected FieldGalileoNavigationMessage<T> uninitializedCopy() {
+        return new FieldGalileoNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
     /**
@@ -106,7 +88,6 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     /**
      * Getter for the the data source.
      * @return the data source
-     * @since 12.0
      */
     public int getDataSource() {
         return dataSource;
@@ -115,7 +96,6 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     /**
      * Setter for the data source.
      * @param dataSource data source
-     * @since 12.0
      */
     public void setDataSource(final int dataSource) {
         this.dataSource = dataSource;
@@ -125,7 +105,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Getter for the E1/E5a broadcast group delay.
      * @return the E1/E5a broadcast group delay (s)
      */
-    public double getBGDE1E5a() {
+    public T getBGDE1E5a() {
         return bgbE1E5a;
     }
 
@@ -133,7 +113,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Setter for the E1/E5a broadcast group delay (s).
      * @param bgd the E1/E5a broadcast group delay to set
      */
-    public void setBGDE1E5a(final double bgd) {
+    public void setBGDE1E5a(final T bgd) {
         this.bgbE1E5a = bgd;
     }
 
@@ -141,7 +121,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Setter for the E5b/E1 broadcast group delay (s).
      * @param bgd the E5b/E1 broadcast group delay to set
      */
-    public void setBGDE5bE1(final double bgd) {
+    public void setBGDE5bE1(final T bgd) {
         this.bgdE5bE1 = bgd;
     }
 
@@ -149,7 +129,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Getter for the the Broadcast Group Delay E5b/E1.
      * @return the Broadcast Group Delay E5b/E1 (s)
      */
-    public double getBGDE5bE1() {
+    public T getBGDE5bE1() {
         return bgdE5bE1;
     }
 
@@ -157,7 +137,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Getter for the signal in space accuracy (m).
      * @return the signal in space accuracy
      */
-    public double getSisa() {
+    public T getSisa() {
         return sisa;
     }
 
@@ -165,7 +145,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Setter for the signal in space accuracy.
      * @param sisa the sisa to set
      */
-    public void setSisa(final double sisa) {
+    public void setSisa(final T sisa) {
         this.sisa = sisa;
     }
 
@@ -173,7 +153,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Getter for the SV health status.
      * @return the SV health status
      */
-    public double getSvHealth() {
+    public T getSvHealth() {
         return svHealth;
     }
 
@@ -181,7 +161,7 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
      * Setter for the SV health status.
      * @param svHealth the SV health status to set
      */
-    public void setSvHealth(final double svHealth) {
+    public void setSvHealth(final T svHealth) {
         this.svHealth = svHealth;
     }
 

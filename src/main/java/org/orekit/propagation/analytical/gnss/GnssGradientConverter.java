@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
@@ -55,32 +56,17 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
     @Override
     public FieldGnssPropagator<Gradient> getPropagator() {
 
-        final GNSSOrbitalElements oe = propagator.getOrbitalElements();
+        final GNSSOrbitalElements<?> oe = propagator.getOrbitalElements();
 
         // bootstrap model, with canonical derivatives with respect to orbital parameters only
         final int bootstrapParameters = 6;
-        final Gradient[] nonKeplerianParameters = new Gradient[GNSSOrbitalElements.SIZE];
-        nonKeplerianParameters[GNSSOrbitalElements.TIME_INDEX]      = Gradient.constant(bootstrapParameters, oe.getTime());
-        nonKeplerianParameters[GNSSOrbitalElements.I_DOT_INDEX]     = Gradient.constant(bootstrapParameters, oe.getIDot());
-        nonKeplerianParameters[GNSSOrbitalElements.OMEGA_DOT_INDEX] = Gradient.constant(bootstrapParameters, oe.getOmegaDot());
-        nonKeplerianParameters[GNSSOrbitalElements.CUC_INDEX]       = Gradient.constant(bootstrapParameters, oe.getCuc());
-        nonKeplerianParameters[GNSSOrbitalElements.CUS_INDEX]       = Gradient.constant(bootstrapParameters, oe.getCus());
-        nonKeplerianParameters[GNSSOrbitalElements.CRC_INDEX]       = Gradient.constant(bootstrapParameters, oe.getCrc());
-        nonKeplerianParameters[GNSSOrbitalElements.CRS_INDEX]       = Gradient.constant(bootstrapParameters, oe.getCrs());
-        nonKeplerianParameters[GNSSOrbitalElements.CIC_INDEX]       = Gradient.constant(bootstrapParameters, oe.getCic());
-        nonKeplerianParameters[GNSSOrbitalElements.CIS_INDEX]       = Gradient.constant(bootstrapParameters, oe.getCis());
-        final FieldGnssOrbitalElements<Gradient> bootstrapElements =
-            new FieldGnssOrbitalElements<>(Gradient.constant(bootstrapParameters, oe.getMu()),
-                                           oe.getAngularVelocity(), oe.getCycleDuration(),
-                                           oe.getSystem(), oe.getTimeScales(),
-                                           oe.getPRN(), oe.getWeek(),
-                                           Gradient.variable(bootstrapParameters, 0, oe.getSma()),
-                                           Gradient.variable(bootstrapParameters, 1, oe.getE()),
-                                           Gradient.variable(bootstrapParameters, 2, oe.getI0()),
-                                           Gradient.variable(bootstrapParameters, 3, oe.getPa()),
-                                           Gradient.variable(bootstrapParameters, 4, oe.getOmega0()),
-                                           Gradient.variable(bootstrapParameters, 5, oe.getM0()),
-                                           nonKeplerianParameters);
+        final FieldGnssOrbitalElements<Gradient, ?> bootstrapElements = oe.toField(GradientField.getField(bootstrapParameters));
+        bootstrapElements.setSma(Gradient.variable(bootstrapParameters,    0, oe.getSma()));
+        bootstrapElements.setE(Gradient.variable(bootstrapParameters,      1, oe.getE()));
+        bootstrapElements.setI0(Gradient.variable(bootstrapParameters,     2, oe.getI0()));
+        bootstrapElements.setPa(Gradient.variable(bootstrapParameters,     3, oe.getPa()));
+        bootstrapElements.setOmega0(Gradient.variable(bootstrapParameters, 4, oe.getOmega0()));
+        bootstrapElements.setM0(Gradient.variable(bootstrapParameters,     5, oe.getM0()));
         final Gradient bootstrapMass = Gradient.constant(bootstrapParameters,
                                                          propagator.getMass(propagator.getInitialState().getDate()));
         final FieldGnssPropagator<Gradient> bootstrapPropagator =
@@ -127,23 +113,24 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
                                                  Gradient.constant(freeParameters, driver.getValue());
         }
 
-        final FieldGnssOrbitalElements<Gradient> convertedElements =
-            new FieldGnssOrbitalElements<>(Gradient.constant(freeParameters, oe.getMu()),
-                                           oe.getAngularVelocity(), oe.getCycleDuration(),
-                                           oe.getSystem(), oe.getTimeScales(),
-                                           oe.getPRN(), oe.getWeek(),
-                                           convertedSma, convertedE, convertedI0,
-                                           convertedPa, convertedOmega0, convertedM0,
-                                           convertedNonKeplerianParameters);
+        final int totalParameters = bootstrapParameters + freeParameters;
+        final FieldGnssOrbitalElements<Gradient, ?> convertedElements = oe.toField(convertedSma.getField());
+        convertedElements.setSma(Gradient.variable(totalParameters,    0, oe.getSma()));
+        convertedElements.setE(Gradient.variable(totalParameters,      1, oe.getE()));
+        convertedElements.setI0(Gradient.variable(totalParameters,     2, oe.getI0()));
+        convertedElements.setPa(Gradient.variable(totalParameters,     3, oe.getPa()));
+        convertedElements.setOmega0(Gradient.variable(totalParameters, 4, oe.getOmega0()));
+        convertedElements.setM0(Gradient.variable(totalParameters,     5, oe.getM0()));
         final Gradient convertedMass =
-            Gradient.constant(freeParameters, propagator.getMass(propagator.getInitialState().getDate()));
+            Gradient.constant(totalParameters, propagator.getMass(propagator.getInitialState().getDate()));
 
         // build a propagator with derivatives set up with respect to model Keplerian orbital parameters
         // that still has identity state Jacobian with respect to initial position-velocity
-        final FieldGnssPropagator gPropagator = new FieldGnssPropagator<>(convertedElements,
-                                                                          propagator.getECI(), propagator.getECEF(),
-                                                                          propagator.getAttitudeProvider(),
-                                                                          convertedMass);
+        final FieldGnssPropagator<Gradient> gPropagator = new FieldGnssPropagator<>(convertedElements,
+                                                                                    propagator.getECI(),
+                                                                                    propagator.getECEF(),
+                                                                                    propagator.getAttitudeProvider(),
+                                                                                    convertedMass);
 
         // set selection status as in the original propagator
         final List<ParameterDriver> gDrivers = gPropagator.getParametersDrivers();

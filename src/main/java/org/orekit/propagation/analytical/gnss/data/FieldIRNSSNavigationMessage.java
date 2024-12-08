@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,54 +23,39 @@ import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in an IRNSS navigation message.
- * @author Bryan Cazabonne
- * @since 11.0
+ * @param <T> type of the field elements
+ * @author Luc Maisonobe
+ * @since 13.0
  */
-public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavigationMessage>  {
+public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
+    extends FieldAbstractNavigationMessage<T, FieldIRNSSNavigationMessage<T>>  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;
 
     /** User range accuracy (m). */
-    private double ura;
+    private T ura;
 
     /** Satellite health status. */
-    private double svHealth;
+    private T svHealth;
 
     /** Constructor.
+     * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
      *                   (may be different from real system, for example in Rinex nav weeks
      *                   are always according to GPS)
      */
-    public IRNSSNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
-        super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB,
+    public FieldIRNSSNavigationMessage(final Field<T> field,
+                                       final TimeScales timeScales, final SatelliteSystem system) {
+        super(field.getZero().newInstance(GNSSConstants.IRNSS_MU), GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB,
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
+    /**  {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldIRNSSNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldIRNSSNavigationMessage<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldIRNSSNavigationMessage<T> converted = (FieldIRNSSNavigationMessage<T>) fielded;
-        converted.setIODEC(field.getZero().newInstance(getIODEC()));
-        converted.setURA(field.getZero().newInstance(getURA()));
-        converted.setSvHealth(field.getZero().newInstance(getSvHealth()));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected IRNSSNavigationMessage uninitializedCopy() {
-        return new IRNSSNavigationMessage(getTimeScales(), getSystem());
+    protected FieldIRNSSNavigationMessage<T> uninitializedCopy() {
+        return new FieldIRNSSNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
     }
 
     /**
@@ -85,16 +70,16 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
      * Setter for the Issue of Data, Ephemeris and Clock.
      * @param value the IODEC to set
      */
-    public void setIODEC(final double value) {
+    public void setIODEC(final T value) {
         // The value is given as a floating number in the navigation message
-        this.iodec = (int) value;
+        this.iodec = (int) value.getReal();
     }
 
     /**
      * Getter for the user range accuray (meters).
      * @return the user range accuracy
      */
-    public double getURA() {
+    public T getURA() {
         return ura;
     }
 
@@ -102,7 +87,7 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
      * Setter for the user range accuracy.
      * @param accuracy the value to set
      */
-    public void setURA(final double accuracy) {
+    public void setURA(final T accuracy) {
         this.ura = accuracy;
     }
 
@@ -110,7 +95,7 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
      * Getter for the satellite health status.
      * @return the satellite health status
      */
-    public double getSvHealth() {
+    public T getSvHealth() {
         return svHealth;
     }
 
@@ -118,7 +103,7 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
      * Setter for the satellite health status.
      * @param svHealth the value to set
      */
-    public void setSvHealth(final double svHealth) {
+    public void setSvHealth(final T svHealth) {
         this.svHealth = svHealth;
     }
 

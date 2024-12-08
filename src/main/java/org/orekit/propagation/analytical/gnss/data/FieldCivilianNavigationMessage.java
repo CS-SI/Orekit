@@ -17,56 +17,52 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
+ * @param <T> type of the field elements
  * @param <O> type of the orbital elements
  * @author Luc Maisonobe
- * @since 12.0
+ * @since 13.0
  */
-public abstract class CivilianNavigationMessage<O extends CivilianNavigationMessage<O>> extends AbstractNavigationMessage<O> implements GNSSClockElements {
-
-    /** Identifier for message type. */
-    public static final String CNAV = "CNAV";
-
-    /** Identifier for message type. */
-    public static final String CNV2 = "CNV2";
+public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElement<T>, O extends FieldCivilianNavigationMessage<T, O>>
+    extends FieldAbstractNavigationMessage<T, O>
+    implements FieldGNSSClockElements<T> {
 
     /** Indicator for CNV 2 messages. */
     private final boolean cnv2;
 
     /** Change rate in semi-major axis (m/s). */
-    private double aDot;
+    private T aDot;
 
     /** Change rate in Δn₀. */
-    private double deltaN0Dot;
+    private T deltaN0Dot;
 
     /** The user SV accuracy (m). */
-    private double svAccuracy;
+    private T svAccuracy;
 
     /** Satellite health status. */
     private int svHealth;
 
     /** Inter Signal Delay for L1 C/A. */
-    private double iscL1CA;
+    private T iscL1CA;
 
     /** Inter Signal Delay for L1 CD. */
-    private double iscL1CD;
+    private T iscL1CD;
 
     /** Inter Signal Delay for L1 CP. */
-    private double iscL1CP;
+    private T iscL1CP;
 
     /** Inter Signal Delay for L2 C. */
-    private double iscL2C;
+    private T iscL2C;
 
     /** Inter Signal Delay for L5I. */
-    private double iscL5I5;
+    private T iscL5I5;
 
     /** Inter Signal Delay for L5Q. */
-    private double iscL5Q5;
+    private T iscL5Q5;
 
     /** Elevation-Dependent User Range Accuracy. */
     private int uraiEd;
@@ -91,34 +87,11 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      */
-    protected CivilianNavigationMessage(final boolean cnv2,
-                                        final double mu, final double angularVelocity, final int weeksInCycle,
-                                        final TimeScales timeScales, final SatelliteSystem system) {
+    protected FieldCivilianNavigationMessage(final boolean cnv2,
+                                             final T mu, final double angularVelocity, final int weeksInCycle,
+                                             final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
         this.cnv2 = cnv2;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldCivilianNavigationMessage<T, ?> converted = (FieldCivilianNavigationMessage<T, ?>) fielded;
-        converted.setADot(field.getZero().newInstance(getADot()));
-        converted.setDeltaN0Dot(field.getZero().newInstance(getDeltaN0Dot()));
-        converted.setSvAccuracy(field.getZero().newInstance(getSvAccuracy()));
-        converted.setSvHealth(getSvHealth());
-        converted.setIscL1CA(field.getZero().newInstance(getIscL1CA()));
-        converted.setIscL1CD(field.getZero().newInstance(getIscL1CD()));
-        converted.setIscL1CP(field.getZero().newInstance(getIscL1CP()));
-        converted.setIscL2C(field.getZero().newInstance(getIscL2C()));
-        converted.setIscL5I5(field.getZero().newInstance(getIscL5I5()));
-        converted.setIscL5Q5(field.getZero().newInstance(getIscL5Q5()));
-        converted.setUraiEd(getUraiEd());
-        converted.setUraiNed0(getUraiNed0());
-        converted.setUraiNed1(getUraiNed1());
-        converted.setUraiNed2(getUraiNed2());
     }
 
     /** Check it message is a CNV2 message.
@@ -132,7 +105,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for the change rate in semi-major axis.
      * @return the change rate in semi-major axis
      */
-    public double getADot() {
+    public T getADot() {
         return aDot;
     }
 
@@ -140,7 +113,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for the change rate in semi-major axis.
      * @param value the change rate in semi-major axis
      */
-    public void setADot(final double value) {
+    public void setADot(final T value) {
         this.aDot = value;
     }
 
@@ -148,7 +121,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for change rate in Δn₀.
      * @return change rate in Δn₀
      */
-    public double getDeltaN0Dot() {
+    public T getDeltaN0Dot() {
         return deltaN0Dot;
     }
 
@@ -156,7 +129,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for change rate in Δn₀.
      * @param deltaN0Dot change rate in Δn₀
      */
-    public void setDeltaN0Dot(final double deltaN0Dot) {
+    public void setDeltaN0Dot(final T deltaN0Dot) {
         this.deltaN0Dot = deltaN0Dot;
     }
 
@@ -164,7 +137,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for the user SV accuray (meters).
      * @return the user SV accuracy
      */
-    public double getSvAccuracy() {
+    public T getSvAccuracy() {
         return svAccuracy;
     }
 
@@ -172,7 +145,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for the user SV accuracy.
      * @param svAccuracy the value to set
      */
-    public void setSvAccuracy(final double svAccuracy) {
+    public void setSvAccuracy(final T svAccuracy) {
         this.svAccuracy = svAccuracy;
     }
 
@@ -196,7 +169,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for inter Signal Delay for L1 C/A.
      * @return inter signal delay
      */
-    public double getIscL1CA() {
+    public T getIscL1CA() {
         return iscL1CA;
     }
 
@@ -204,7 +177,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for inter Signal Delay for L1 C/A.
      * @param delay delay to set
      */
-    public void setIscL1CA(final double delay) {
+    public void setIscL1CA(final T delay) {
         this.iscL1CA = delay;
     }
 
@@ -212,7 +185,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for inter Signal Delay for L1 CD.
      * @return inter signal delay
      */
-    public double getIscL1CD() {
+    public T getIscL1CD() {
         return iscL1CD;
     }
 
@@ -220,7 +193,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for inter Signal Delay for L1 CD.
      * @param delay delay to set
      */
-    public void setIscL1CD(final double delay) {
+    public void setIscL1CD(final T delay) {
         this.iscL1CD = delay;
     }
 
@@ -228,7 +201,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for inter Signal Delay for L1 CP.
      * @return inter signal delay
      */
-    public double getIscL1CP() {
+    public T getIscL1CP() {
         return iscL1CP;
     }
 
@@ -236,7 +209,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for inter Signal Delay for L1 CP.
      * @param delay delay to set
      */
-    public void setIscL1CP(final double delay) {
+    public void setIscL1CP(final T delay) {
         this.iscL1CP = delay;
     }
 
@@ -244,7 +217,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for inter Signal Delay for L2 C.
      * @return inter signal delay
      */
-    public double getIscL2C() {
+    public T getIscL2C() {
         return iscL2C;
     }
 
@@ -252,7 +225,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for inter Signal Delay for L2 C.
      * @param delay delay to set
      */
-    public void setIscL2C(final double delay) {
+    public void setIscL2C(final T delay) {
         this.iscL2C = delay;
     }
 
@@ -260,7 +233,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for inter Signal Delay for L5I.
      * @return inter signal delay
      */
-    public double getIscL5I5() {
+    public T getIscL5I5() {
         return iscL5I5;
     }
 
@@ -268,7 +241,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for inter Signal Delay for L5I.
      * @param delay delay to set
      */
-    public void setIscL5I5(final double delay) {
+    public void setIscL5I5(final T delay) {
         this.iscL5I5 = delay;
     }
 
@@ -276,7 +249,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Getter for inter Signal Delay for L5Q.
      * @return inter signal delay
      */
-    public double getIscL5Q5() {
+    public T getIscL5Q5() {
         return iscL5Q5;
     }
 
@@ -284,7 +257,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * Setter for inter Signal Delay for L5Q.
      * @param delay delay to set
      */
-    public void setIscL5Q5(final double delay) {
+    public void setIscL5Q5(final T delay) {
         this.iscL5Q5 = delay;
     }
 

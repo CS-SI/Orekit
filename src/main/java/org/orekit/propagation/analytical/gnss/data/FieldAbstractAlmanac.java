@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2024 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,23 +16,26 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.gnss.SatelliteSystem;
-import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.propagation.analytical.gnss.FieldGnssPropagator;
+import org.orekit.propagation.analytical.gnss.FieldGnssPropagatorBuilder;
 import org.orekit.time.TimeScales;
 
 /**
  * Base class for GNSS almanacs.
+ * @param <T> type of the field elements
  * @param <O> type of the orbital elements
- * @author Pascal Parraud
- * @since 11.0
+ * @author Luc Maisonobe
+ * @since 13.0
  */
-public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends CommonGnssData<O> {
+public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>, O extends FieldAbstractAlmanac<T, O>>
+    extends FieldCommonGnssData<T, O> {
 
     /**
      * Constructor.
@@ -44,8 +47,8 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      *                        (may be different from real system, for example in Rinex nav weeks
      *                        are always according to GPS)
      */
-    public AbstractAlmanac(final double mu, final double angularVelocity, final int weeksInCycle,
-                           final TimeScales timeScales, final SatelliteSystem system) {
+    public FieldAbstractAlmanac(final T mu, final double angularVelocity, final int weeksInCycle,
+                                final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
     }
 
@@ -66,12 +69,12 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      * </p>
      * @return the propagator corresponding to the navigation message
      * @see #getPropagator(Frames)
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
+     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, CalculusFieldElement)
      * @since 12.0
      */
     @DefaultDataContext
-    public GNSSPropagator getPropagator() {
-        return new GNSSPropagatorBuilder(this).build();
+    public FieldGnssPropagator<T> getPropagator() {
+        return new FieldGnssPropagatorBuilder<>(this).build();
     }
 
     /**
@@ -90,11 +93,11 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      * @param frames set of frames to use
      * @return the propagator corresponding to the navigation message
      * @see #getPropagator()
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
+     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, CalculusFieldElement)
      * @since 13.0
      */
-    public GNSSPropagator getPropagator(final Frames frames) {
-        return new GNSSPropagatorBuilder(this, frames).build();
+    public FieldGnssPropagator<T> getPropagator(final Frames frames) {
+        return new FieldGnssPropagatorBuilder<>(this, frames).build();
     }
 
     /**
@@ -109,13 +112,14 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
      * @see #getPropagator(Frames)
      * @since 13.0
      */
-    public GNSSPropagator getPropagator(final Frames frames, final AttitudeProvider provider,
-                                        final Frame inertial, final Frame bodyFixed, final double mass) {
-        return new GNSSPropagatorBuilder(this, frames).attitudeProvider(provider)
-                                                      .eci(inertial)
-                                                      .ecef(bodyFixed)
-                                                      .mass(mass)
-                                                      .build();
+    public FieldGnssPropagator<T> getPropagator(final Frames frames, final AttitudeProvider provider,
+                                                final Frame inertial, final Frame bodyFixed, final T mass) {
+        return new FieldGnssPropagatorBuilder<>(this, frames).
+               attitudeProvider(provider).
+               eci(inertial).
+               ecef(bodyFixed).
+               mass(mass).
+               build();
     }
 
 }

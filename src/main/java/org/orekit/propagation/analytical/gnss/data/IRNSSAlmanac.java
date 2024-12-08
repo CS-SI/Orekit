@@ -16,13 +16,15 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
  * Class for IRNSS almanac.
  *
- * @see "Indian Regiona Navigation Satellite System, Signal In Space ICD
+ * @see "Indian Regional Navigation Satellite System, Signal In Space ICD
  *       for standard positioning service, version 1.1 - Table 28"
  *
  * @author Bryan Cazabonne
@@ -34,15 +36,22 @@ public class IRNSSAlmanac extends AbstractAlmanac<IRNSSAlmanac> {
     /**
      * Constructor.
      * @param timeScales known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav weeks
-     *                        are always according to GPS)
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav weeks
+     *                   are always according to GPS)
      */
     public IRNSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
         super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>>
+        FieldIRNSSAlmanac<T> uninitializedField(Field<T> field) {
+        return new FieldIRNSSAlmanac<>(field, getTimeScales(), getSystem());
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected IRNSSAlmanac uninitializedCopy() {
         return new IRNSSAlmanac(getTimeScales(), getSystem());

@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
@@ -27,11 +29,11 @@ import org.orekit.time.TimeScales;
 public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSCivilianNavigationMessage> {
 
     /** Constructor.
-     * @param cnv2 indicator for CNV2 messages
+     * @param cnv2       indicator for CNV2 messages
      * @param timeScales known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav weeks
-     *                        are always according to GPS)
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav weeks
+     *                   are always according to GPS)
      */
     public GPSCivilianNavigationMessage(final boolean cnv2,
                                         final TimeScales timeScales, final SatelliteSystem system) {
@@ -39,7 +41,14 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
               timeScales, system);
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
+    @Override
+    protected <T extends CalculusFieldElement<T>>
+        FieldGPSCivilianNavigationMessage<T> uninitializedField(Field<T> field) {
+        return new FieldGPSCivilianNavigationMessage<>(field, isCnv2(), getTimeScales(), getSystem());
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected GPSCivilianNavigationMessage uninitializedCopy() {
         return new GPSCivilianNavigationMessage(isCnv2(), getTimeScales(), getSystem());
