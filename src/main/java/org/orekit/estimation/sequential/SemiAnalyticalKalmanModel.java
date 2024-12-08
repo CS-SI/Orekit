@@ -626,6 +626,11 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         this.nominalMeanSpacecraftState = nominal;
         // Update the builder with the nominal mean elements orbit
         builder.resetOrbit(nominal.getOrbit(), PropagationType.MEAN);
+
+        // Additionally, update the builder with the predicted mass value.
+        // If any mass changes have occurred during this estimation step, such as maneuvers,
+        // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
+        builder.setMass(nominal.getMass());
     }
 
     /** Update the reference trajectories using the propagator as input.
