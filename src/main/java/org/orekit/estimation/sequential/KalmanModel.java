@@ -29,6 +29,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -396,6 +397,13 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
             // Update the builder with the predicted orbit
             // This updates the orbital drivers with the values of the predicted orbit
             getBuilders().get(k).resetOrbit(predictedSpacecraftState.getOrbit());
+
+            // Additionally, for PropagatorBuilders which use mass, update the builder with the predicted mass value.
+            // If any mass changes have occurred during this estimation step, such as maneuvers,
+            // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
+            if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
+                ((AbstractPropagatorBuilder) (getBuilders().get(k))).setMass(predictedSpacecraftState.getMass());
+            }
 
             // The orbital parameters in the state vector are replaced with their predicted values
             // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
