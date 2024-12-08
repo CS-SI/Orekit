@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2.1" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="1620">
+        Fixed computation time regression by removing HashMap from (Field)TLEPropagator.
+      </action>
     </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
