@@ -24,12 +24,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.control.indirect.adjoint.cost.CartesianCost;
-import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
+import org.orekit.control.indirect.adjoint.cost.FieldCartesianCost;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
 import org.orekit.control.indirect.shooting.boundary.NormBasedCartesianConditionChecker;
-import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProvider;
+import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
+import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProviderFactory;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.control.indirect.shooting.propagation.ClassicalRungeKuttaIntegrationSettings;
 import org.orekit.frames.FramesFactory;
@@ -58,8 +59,7 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
                 AbsoluteDate.ARBITRARY_EPOCH, Vector3D.PLUS_I, Vector3D.MINUS_J);
         final FixedTimeCartesianBoundaryStates boundaryStates = new FixedTimeCartesianBoundaryStates(initialCondition,
                 initialCondition);
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergyNeglectingMass(adjointName);
-        final TestSingleShooting testSingleShooting = new TestSingleShooting(buildPropagationSettings(cartesianCost), boundaryStates,
+        final TestSingleShooting testSingleShooting = new TestSingleShooting(buildPropagationSettings(), boundaryStates,
                 new NormBasedCartesianConditionChecker(10, 1, 1));
         final double[] initialGuess = new double[6];
         // WHEN
@@ -68,9 +68,10 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
         Assertions.assertArrayEquals(initialGuess, boundarySolution.getInitialState().getAdditionalState(adjointName));
     }
 
-    private static ShootingPropagationSettings buildPropagationSettings(final CartesianCost cost) {
+    private static ShootingPropagationSettings buildPropagationSettings() {
         final ClassicalRungeKuttaIntegrationSettings integrationSettings = new ClassicalRungeKuttaIntegrationSettings(10.);
-        final CartesianAdjointDynamicsProvider derivativesProvider = new CartesianAdjointDynamicsProvider(cost);
+        final AdjointDynamicsProvider derivativesProvider = CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider("adjoint",
+                0.);
         return new ShootingPropagationSettings(new ArrayList<>(), derivativesProvider, integrationSettings);
     }
 
@@ -79,8 +80,7 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
         // GIVEN
         final Field<Gradient> field = GradientField.getField(1);
         final FixedTimeBoundaryOrbits boundaryOrbits = createBoundaries();
-        final CartesianCost mockedCost = mockCost(field);
-        final TestSingleShooting testShooting = new TestSingleShooting(buildPropagationSettings(mockedCost),
+        final TestSingleShooting testShooting = new TestSingleShooting(buildPropagationSettings(),
                 boundaryOrbits, null);
         final SpacecraftState state = new SpacecraftState(boundaryOrbits.getInitialOrbit());
         final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(field, state);
@@ -89,26 +89,14 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
         // THEN
         final NumericalPropagator propagator = testShooting.buildPropagator(state);
         final int actualSize = fieldPropagator.getEventDetectors().size();
-        Assertions.assertNotEquals(0, actualSize);
         Assertions.assertEquals(propagator.getEventDetectors().size(), actualSize);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static CartesianCost mockCost(final Field<Gradient> field) {
-        final CartesianCost mockedCost = Mockito.mock(CartesianCost.class);
-        Mockito.when(mockedCost.getAdjointName()).thenReturn("");
-        Mockito.when(mockedCost.getEventDetectors()).thenReturn(Stream.of(Mockito.mock(EventDetector.class)));
-        Mockito.when(mockedCost.getFieldEventDetectors(field)).thenReturn(Stream.of(Mockito.mock(FieldEventDetector.class)));
-        return mockedCost;
     }
 
     @Test
     void testSolveImpossibleTolerance() {
         // GIVEN
-        final String adjointName = "adjoint";
         final double impossibleTolerance = 0.;
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergyNeglectingMass(adjointName);
-        final TestSingleShooting testSingleShooting = new TestSingleShooting(buildPropagationSettings(cartesianCost),
+        final TestSingleShooting testSingleShooting = new TestSingleShooting(buildPropagationSettings(),
                 createBoundaries(), new NormBasedCartesianConditionChecker(10,  impossibleTolerance, impossibleTolerance));
         final double[] initialGuess = new double[6];
         // WHEN

@@ -16,9 +16,12 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.FieldEventDetector;
 
 import java.util.stream.Stream;
 
@@ -29,14 +32,16 @@ import java.util.stream.Stream;
  * Here, the control vector is chosen as the thrust force divided by the maximum thrust magnitude and expressed in the propagation frame.
  * It has a unit Euclidean norm.
  *
+ * @param <T> field type
  * @author Romain Serra
- * @see UnboundedCartesianEnergy
- * @since 12.2
+ * @see FieldUnboundedCartesianEnergy
+ * @see BoundedCartesianEnergy
+ * @since 13.0
  */
-public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
+public class FieldBoundedCartesianEnergy<T extends CalculusFieldElement<T>> extends FieldCartesianEnergyConsideringMass<T> {
 
     /** Maximum value of thrust force Euclidean norm. */
-    private final double maximumThrustMagnitude;
+    private final T maximumThrustMagnitude;
 
     /**
      * Constructor.
@@ -45,9 +50,9 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
      * @param maximumThrustMagnitude maximum thrust magnitude
      * @param eventDetectionSettings singularity event detection settings
      */
-    public BoundedCartesianEnergy(final String name, final double massFlowRateFactor,
-                                  final double maximumThrustMagnitude,
-                                  final EventDetectionSettings eventDetectionSettings) {
+    public FieldBoundedCartesianEnergy(final String name, final T massFlowRateFactor,
+                                       final T maximumThrustMagnitude,
+                                       final FieldEventDetectionSettings<T> eventDetectionSettings) {
         super(name, massFlowRateFactor, eventDetectionSettings);
         this.maximumThrustMagnitude = FastMath.abs(maximumThrustMagnitude);
     }
@@ -58,34 +63,47 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
      * @param massFlowRateFactor mass flow rate factor
      * @param maximumThrustMagnitude maximum thrust magnitude
      */
-    public BoundedCartesianEnergy(final String name, final double massFlowRateFactor,
-                                  final double maximumThrustMagnitude) {
-        this(name, massFlowRateFactor, maximumThrustMagnitude, EventDetectionSettings.getDefaultEventDetectionSettings());
+    public FieldBoundedCartesianEnergy(final String name, final T massFlowRateFactor,
+                                       final T maximumThrustMagnitude) {
+        this(name, massFlowRateFactor, maximumThrustMagnitude, new FieldEventDetectionSettings<>(massFlowRateFactor.getField(),
+                EventDetectionSettings.getDefaultEventDetectionSettings()));
     }
 
     /** Getter for maximum thrust magnitude.
      * @return maximum thrust
-     * @since 13.0
      */
-    public double getMaximumThrustMagnitude() {
+    public T getMaximumThrustMagnitude() {
         return maximumThrustMagnitude;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected double getThrustForceNorm(final double[] adjointVariables, final double mass) {
-        final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
-        final double factor = adjointVelocityNorm / mass - getMassFlowRateFactor() * adjointVariables[6];
-        if (factor > maximumThrustMagnitude) {
+    protected T getFieldThrustForceNorm(final T[] adjointVariables, final T mass) {
+        final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
+        final T factor = adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        final double factorReal = factor.getReal();
+        final T zero = mass.getField().getZero();
+        if (factorReal > maximumThrustMagnitude.getReal()) {
             return maximumThrustMagnitude;
+        } else if (factorReal < 0.) {
+            return zero;
         } else {
-            return FastMath.max(0., factor);
+            return factor;
         }
     }
 
     /** {@inheritDoc} */
     @Override
-    public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new SingularityDetector(0.), new SingularityDetector(maximumThrustMagnitude));
+    public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
+        final T zero = field.getZero();
+        return Stream.of(new FieldSingularityDetector(zero), new FieldSingularityDetector(maximumThrustMagnitude));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public BoundedCartesianEnergy toCartesianCost() {
+        return new BoundedCartesianEnergy(getAdjointName(), getMassFlowRateFactor().getReal(), maximumThrustMagnitude.getReal(),
+                getEventDetectionSettings().toEventDetectionSettings());
+    }
+
 }

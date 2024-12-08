@@ -40,10 +40,13 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @since 12.2
  */
-public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjointDerivativesProvider implements AdditionalDerivativesProvider {
+public class CartesianAdjointDerivativesProvider implements AdditionalDerivativesProvider {
 
     /** Contributing terms to the adjoint equation. */
     private final CartesianAdjointEquationTerm[] adjointEquationTerms;
+
+    /** Cost function. */
+    private final CartesianCost cost;
 
     /**
      * Constructor.
@@ -52,8 +55,29 @@ public class CartesianAdjointDerivativesProvider extends AbstractCartesianAdjoin
      */
     public CartesianAdjointDerivativesProvider(final CartesianCost cost,
                                                final CartesianAdjointEquationTerm... adjointEquationTerms) {
-        super(cost);
+        this.cost = cost;
         this.adjointEquationTerms = adjointEquationTerms;
+    }
+
+    /**
+     * Getter for the cost.
+     * @return cost
+     */
+    public CartesianCost getCost() {
+        return cost;
+    }
+
+    /** Getter for the name.
+     * @return name */
+    public String getName() {
+        return cost.getAdjointName();
+    }
+
+    /** Getter for the dimension.
+     * @return dimension
+     */
+    public int getDimension() {
+        return cost.getAdjointDimension();
     }
 
     /** {@inheritDoc} */
