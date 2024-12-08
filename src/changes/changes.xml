@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="12.2.1" date="TBD" description="TBD">
+    </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
              optimal control (indirect). It implements several methods that were missing in field
