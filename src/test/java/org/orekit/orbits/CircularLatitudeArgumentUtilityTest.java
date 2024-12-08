@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -90,6 +91,14 @@ class CircularLatitudeArgumentUtilityTest {
         // WHEN & THEN
         Assertions.assertThrows(OrekitException.class, () -> CircularLatitudeArgumentUtility.meanToEccentric(EX, EY,
                 nanLatitudeArgument), OrekitMessages.UNABLE_TO_COMPUTE_ECCENTRIC_LATITUDE_ARGUMENT.toString());
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {1e3, 5e3, 1e4, 1e5, 5e5})
+    void testIssue1525(final double alphaM) {
+        final double ex = 0.44940492906694396;
+        final double ey = 0.56419162961687;
+        Assertions.assertDoesNotThrow(() -> CircularLatitudeArgumentUtility.meanToEccentric(ex, ey, alphaM));
     }
 
 }
