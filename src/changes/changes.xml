@@ -24,6 +24,18 @@
       <action dev="serrof" type="fix" issue="1620">
         Fixed computation time regression by removing HashMap from (Field)TLEPropagator.
       </action>
+      <action dev="derekkayhan" type="fix" issue="1587">
+        Fixed mass depletions not carried between measurements in KalmanModels.
+      </action>
+      <action dev="serrof" type="fix" issue="1551">
+        Fixed normalization exception in ThrustPropulsionModel with Field.
+      </action>
+      <action dev="serrof" type="fix" issue="1525">
+        Fixed conversion error with large values for arguments of longitude and latitude.
+      </action>
+      <action dev="serrof" type="fix" issue="1418">
+        Fixed ClockOffsetDriver not modifying the value of BistaticRange.
+      </action>
     </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
