@@ -32,10 +32,12 @@
     package time #DDEBD8 {
       interface TimeStamped
       interface "TimeShiftable<T>" as TimeShiftable_T_
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_
     }
 
     package frames #DDEBD8 {
+
+    interface StaticTransform
+    interface KinematicTransform
 
     class Frame {
       +String getName()
@@ -117,9 +119,10 @@
 
   }
 
-  TimeStamped         <|-- Transform
+  StaticTransform <|-- KinematicTransform
+  TimeStamped         <|-right- StaticTransform
   TimeShiftable_T_    <|-- Transform
-  TimeInterpolable_T_ <|-- Transform
+  KinematicTransform <|-- Transform
 
     package utils #DDEBD8 {
       enum IERSConventions {

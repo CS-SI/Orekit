@@ -27,6 +27,9 @@
       <action dev="derekkayhan" type="fix" issue="1587">
         Fixed mass depletions not carried between measurements in KalmanModels.
       </action>
+      <action dev="vcucchie" type="update" issue="1563">
+        Updated design UML diagrams.
+      </action>
       <action dev="serrof" type="fix" issue="1551">
         Fixed normalization exception in ThrustPropulsionModel with Field.
       </action>
