@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,11 @@
  */
 package org.orekit.propagation.events;
 
-/** Base class for adapting an existing detector.
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.time.AbsoluteDate;
+
+/** Base class for modifying an existing detector.
  * <p>
  * This class is intended to be a base class for changing behaviour
  * of a wrapped existing detector. This base class delegates all
@@ -24,26 +28,45 @@ package org.orekit.propagation.events;
  * therefore override only the methods they want to change.
  * </p>
  * @author Luc Maisonobe
- * @since 9.3
- * @deprecated since 13.0. Use {@link DetectorModifier} instead.
+ * @author Romain Serra
+ * @since 13.0
  */
-@Deprecated
-public class AdapterDetector implements DetectorModifier {
-
-    /** Wrapped detector. */
-    private final EventDetector detector;
-
-    /** Build an adaptor wrapping an existing detector.
-     * @param detector detector to wrap
-     */
-    public AdapterDetector(final EventDetector detector) {
-        this.detector = detector;
-    }
+public interface DetectorModifier extends EventDetector {
 
     /** Get the wrapped detector.
      * @return wrapped detector
      */
-    public EventDetector getDetector() {
-        return detector;
+    EventDetector getDetector();
+
+    /** {@inheritDoc} */
+    @Override
+    default void init(final SpacecraftState s0, final AbsoluteDate t) {
+        EventDetector.super.init(s0, t);
+        getDetector().init(s0, t);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default double g(final SpacecraftState s) {
+        return getDetector().g(s);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default EventHandler getHandler() {
+        return getDetector().getHandler();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default void finish(final SpacecraftState state) {
+        EventDetector.super.finish(state);
+        getDetector().finish(state);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    default EventDetectionSettings getDetectionSettings() {
+        return getDetector().getDetectionSettings();
     }
 }

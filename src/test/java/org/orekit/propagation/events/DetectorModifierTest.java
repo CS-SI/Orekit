@@ -40,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class AdapterDetectorTest {
+class DetectorModifierTest {
 
     private double maxCheck;
     private double threshold;
@@ -55,9 +55,9 @@ public class AdapterDetectorTest {
         final EventDetector detector = Mockito.mock(EventDetector.class);
         final EventDetectionSettings detectionSettings = Mockito.mock(EventDetectionSettings.class);
         Mockito.when(detector.getDetectionSettings()).thenReturn(detectionSettings);
-        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        final DetectorModifier detectorModifier = new TestDetectorModifier(detector);
         // WHEN
-        final EventDetectionSettings actualSettings = adapterDetector.getDetectionSettings();
+        final EventDetectionSettings actualSettings = detectorModifier.getDetectionSettings();
         // THEN
         Assertions.assertEquals(detectionSettings, actualSettings);
     }
@@ -68,9 +68,9 @@ public class AdapterDetectorTest {
         final EventDetector detector = Mockito.mock(EventDetector.class);
         final EventHandler handler = Mockito.mock(EventHandler.class);
         Mockito.when(detector.getHandler()).thenReturn(handler);
-        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        final DetectorModifier detectorModifier = new TestDetectorModifier(detector);
         // WHEN
-        final EventHandler actualHandler = adapterDetector.getHandler();
+        final EventHandler actualHandler = detectorModifier.getHandler();
         // THEN
         Assertions.assertEquals(handler, actualHandler);
     }
@@ -82,9 +82,9 @@ public class AdapterDetectorTest {
         Mockito.when(detector.getHandler()).thenReturn(new StopOnEvent());
         final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
         final AbsoluteDate mockedDate = Mockito.mock(AbsoluteDate.class);
-        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        final DetectorModifier detectorModifier = new TestDetectorModifier(detector);
         // WHEN
-        adapterDetector.init(mockedState, mockedDate);
+        detectorModifier.init(mockedState, mockedDate);
         // THEN
         Mockito.verify(detector).init(mockedState, mockedDate);
     }
@@ -96,9 +96,9 @@ public class AdapterDetectorTest {
         final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
         final double expectedG = 10.;
         Mockito.when(detector.g(mockedState)).thenReturn(expectedG);
-        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        final DetectorModifier detectorModifier = new TestDetectorModifier(detector);
         // WHEN
-        final double actualG = adapterDetector.g(mockedState);
+        final double actualG = detectorModifier.g(mockedState);
         // THEN
         Assertions.assertEquals(expectedG, actualG);
     }
@@ -109,19 +109,19 @@ public class AdapterDetectorTest {
         final EventDetector detector = Mockito.mock(EventDetector.class);
         Mockito.when(detector.getHandler()).thenReturn(new StopOnEvent());
         final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
-        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        final DetectorModifier detectorModifier = new TestDetectorModifier(detector);
         // WHEN
-        adapterDetector.finish(mockedState);
+        detectorModifier.finish(mockedState);
         // THEN
         Mockito.verify(detector).finish(mockedState);
     }
 
     @Test
-    public void testSimpleTimer() {
+    void testSimpleTimer() {
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
                                     withMaxCheck(maxCheck).
                                     withThreshold(threshold);
-        AdapterDetector adapter = new AdapterDetector(dateDetector);
+        DetectorModifier adapter = new TestDetectorModifier(dateDetector);
         Assertions.assertSame(dateDetector, adapter.getDetector());
         Assertions.assertEquals(2 * dt, dateDetector.getDate().durationFrom(iniDate), 1.0e-10);
         propagator.addEventDetector(adapter);
@@ -131,12 +131,12 @@ public class AdapterDetectorTest {
     }
 
     @Test
-    public void testOverrideHandler() {
+    void testOverrideHandler() {
         AtomicInteger count = new AtomicInteger(0);
         DateDetector dateDetector = new DateDetector(iniDate.shiftedBy(2.0*dt)).
                                     withMaxCheck(maxCheck).
                                     withThreshold(threshold);
-        AdapterDetector adapter = new AdapterDetector(dateDetector) {
+        DetectorModifier adapter = new TestDetectorModifier(dateDetector) {
             /** {@inheritDoc} */
             @Override
             public EventHandler getHandler() {
@@ -158,6 +158,32 @@ public class AdapterDetectorTest {
         Assertions.assertEquals(1, count.get());
 
         Assertions.assertEquals(100.0*dt, finalState.getDate().durationFrom(iniDate), threshold);
+    }
+
+    @Deprecated
+    @Test
+    void testAdapterDetector() {
+        // GIVEN
+        final DateDetector detector = new DateDetector();
+        // WHEN
+        final AdapterDetector adapterDetector = new AdapterDetector(detector);
+        // THEN
+        final TestDetectorModifier detectorModifier = new TestDetectorModifier(detector);
+        Assertions.assertEquals(detectorModifier.getDetector(), adapterDetector.getDetector());
+    }
+    
+    private static class TestDetectorModifier implements DetectorModifier {
+
+        private final EventDetector detector;
+
+        TestDetectorModifier(final EventDetector detector) {
+            this.detector = detector;
+        }
+
+        @Override
+        public EventDetector getDetector() {
+            return detector;
+        }
     }
 
     @BeforeEach

@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1622">
+            Add (Field)DetectorModifier interface, deprecating (Field)AdapterDetector.
+        </action>
         <action dev="serrof" type="add" issue="1621">
             Add get(Field)DateDetector in EventDetectorsProvider.
         </action>

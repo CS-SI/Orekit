@@ -158,13 +158,16 @@ public class EventsLogger {
     }
 
     /** Internal wrapper for events detectors. */
-    private class LoggingWrapper extends AdapterDetector {
+    private class LoggingWrapper implements DetectorModifier {
+
+        /** Wrapped event detector. */
+        private final EventDetector detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
         LoggingWrapper(final EventDetector detector) {
-            super(detector);
+            this.detector = detector;
         }
 
         /** Log an event.
@@ -173,6 +176,12 @@ public class EventsLogger {
          */
         public void logEvent(final SpacecraftState state, final boolean increasing) {
             log.add(new LoggedEvent(getDetector(), state, increasing));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public EventDetector getDetector() {
+            return detector;
         }
 
         /** {@inheritDoc} */

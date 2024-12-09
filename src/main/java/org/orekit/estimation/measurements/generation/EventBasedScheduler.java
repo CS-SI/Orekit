@@ -20,7 +20,7 @@ import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdapterDetector;
+import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
@@ -68,7 +68,7 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
     /** Simple constructor.
      * <p>
      * The event detector instance should <em>not</em> be already bound to the propagator.
-     * It will be wrapped in an {@link AdapterDetector adapter} in order to manage time
+     * It will be wrapped in an {@link DetectorModifier adapter} in order to manage time
      * ranges when measurements are feasible. The wrapping adapter will be automatically
      * {@link Propagator#addEventDetector(EventDetector) added} to the propagator by this
      * constructor.
@@ -100,7 +100,7 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
     /** Simple constructor.
      * <p>
      * The event detector instance should <em>not</em> be already bound to the propagator.
-     * It will be wrapped in an {@link AdapterDetector adapter} in order to manage time
+     * It will be wrapped in an {@link DetectorModifier adapter} in order to manage time
      * ranges when measurements are feasible. The wrapping adapter will be automatically
      * {@link Propagator#addEventDetector(EventDetector) added} to the propagator by this
      * constructor.
@@ -128,7 +128,7 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
         this.signSemantic = signSemantic;
         this.feasibility  = new TimeSpanMap<>(Boolean.FALSE);
         this.forward      = true;
-        propagator.addEventDetector(new FeasibilityAdapter(detector));
+        propagator.addEventDetector(new FeasibilityModifier(detector));
     }
 
     /** {@inheritDoc} */
@@ -138,19 +138,28 @@ public class EventBasedScheduler<T extends ObservedMeasurement<T>> extends Abstr
     }
 
     /** Adapter for managing feasibility status changes. */
-    private class FeasibilityAdapter extends AdapterDetector {
+    private class FeasibilityModifier implements DetectorModifier {
+
+        /** Wrapped event detector. */
+        private final EventDetector eventDetector;
 
         /** Build an adaptor wrapping an existing detector.
-         * @param detector detector to wrap
+         * @param eventDetector detector to wrap
          */
-        FeasibilityAdapter(final EventDetector detector) {
-            super(detector);
+        FeasibilityModifier(final EventDetector eventDetector) {
+            this.eventDetector = eventDetector;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public EventDetector getDetector() {
+            return eventDetector;
         }
 
         /** {@inheritDoc} */
         @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            super.init(s0, t);
+            DetectorModifier.super.init(s0, t);
             forward     = t.compareTo(s0.getDate()) > 0;
             feasibility = new TimeSpanMap<>(signSemantic.measurementIsFeasible(g(s0)));
         }
