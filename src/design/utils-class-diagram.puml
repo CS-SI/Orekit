@@ -36,7 +36,8 @@
       interface "TimeShiftable<T>" as TimeShiftable_T_ {
         +T shiftedBy(double dt)
       }
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
+      interface "TimeInterpolator<T extends TimeStamped>" as TimeInterpolable_T_ {
+        +T interpolate(AbsoluteDate date, Stream<T> sample)
         +T interpolate(AbsoluteDate date, Collection<T> sample)
       }
     }
@@ -50,7 +51,7 @@
         provides thread-safety
       end note
       TimeStamped <--* TimeStamptedCache_T_
-       TimeStamptedCache_T_ <|-- GenericTimeStampedCache  
+       TimeStamptedCache_T_ <|-- GenericTimeStampedCache
        TimeStamptedCache_T_ <|-- ImmutableTimeStampedCache
 
       class PVCoordinates {
@@ -58,7 +59,6 @@
         +Vector3D getPosition()
         +Vector3D getVelocity()
         +Vector3D getMomentum()
-        +{static} PVCoordinates interpolate(...)
       }
 
       interface PVCoordinatesProvider {
