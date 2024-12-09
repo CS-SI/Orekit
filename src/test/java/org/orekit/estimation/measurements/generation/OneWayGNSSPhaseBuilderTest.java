@@ -83,6 +83,7 @@ public class OneWayGNSSPhaseBuilderTest {
 
     @Deprecated
     @Test
+    @SuppressWarnings("unchecked")
     public void testDeprecated() {
     final QuadraticClockModel refQuadratic = new QuadraticClockModel(AbsoluteDate.GALILEO_EPOCH,
                                                                    1.0e-16, 2.0e-17, -7.0e-18);
