@@ -27,6 +27,9 @@
       <action dev="derekkayhan" type="fix" issue="1587">
         Fixed mass depletions not carried between measurements in KalmanModels.
       </action>
+        <action dev="vcucchie" type="fix" issue="1565">
+            Fixed unchecked conversion warnings in tests after 12.2 release.
+        </action>
       <action dev="vcucchie" type="update" issue="1563">
         Updated design UML diagrams.
       </action>

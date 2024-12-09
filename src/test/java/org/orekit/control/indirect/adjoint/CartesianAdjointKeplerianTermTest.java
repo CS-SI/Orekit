@@ -36,6 +36,7 @@ import org.orekit.utils.Constants;
 class CartesianAdjointKeplerianTermTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     void testGetPositionAdjointContribution() {
         // GIVEN
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(Constants.EGM96_EARTH_MU);

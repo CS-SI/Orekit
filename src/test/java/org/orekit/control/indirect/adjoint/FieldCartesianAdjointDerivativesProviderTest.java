@@ -44,15 +44,16 @@ import org.orekit.utils.PVCoordinates;
 class FieldCartesianAdjointDerivativesProviderTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     void testInitException() {
         // GIVEN
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
         final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
                 new UnboundedCartesianEnergyNeglectingMass(name), new CartesianAdjointKeplerianTerm(mu));
-        final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
+        final FieldSpacecraftState<Binary64> mockedState = Mockito.mock(FieldSpacecraftState.class);
         Mockito.when(mockedState.isOrbitDefined()).thenReturn(true);
-        final FieldOrbit mockedOrbit = Mockito.mock(FieldOrbit.class);
+        final FieldOrbit<Binary64> mockedOrbit = Mockito.mock(FieldOrbit.class);
         Mockito.when(mockedOrbit.getType()).thenReturn(OrbitType.EQUINOCTIAL);
         Mockito.when(mockedState.getOrbit()).thenReturn(mockedOrbit);
         // WHEN
