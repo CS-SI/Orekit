@@ -18,7 +18,6 @@ package org.orekit.files.ccsds.ndm;
 
 import org.hipparchus.complex.Quaternion;
 import org.orekit.files.ccsds.definitions.FrameFacade;
-import org.orekit.files.ccsds.definitions.OrbitRelativeFrame;
 import org.orekit.files.ccsds.ndm.cdm.AdditionalParameters;
 import org.orekit.files.ccsds.ndm.odm.ocm.OrbitPhysicalProperties;
 import org.orekit.files.ccsds.section.CommentsContainer;
@@ -94,7 +93,7 @@ public class CommonPhysicalProperties extends CommentsContainer {
         // 502.0-B-3 (page 6-23) says the default is EPOCH_TZERO from the OCM metadata.
         oebParentFrameEpoch      = null;
         // 502.0-B-3 (page 6-23) says these four values are optional.
-        oebQ                     = new double[]{Double.NaN, Double.NaN, Double.NaN, Double.NaN};
+        oebQ                     = new double[] {Double.NaN, Double.NaN, Double.NaN, Double.NaN};
         oebMax                   = Double.NaN;
         oebIntermediate          = Double.NaN;
         oebMin                   = Double.NaN;

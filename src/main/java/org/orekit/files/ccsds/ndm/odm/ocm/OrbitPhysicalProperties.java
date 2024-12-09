@@ -145,7 +145,7 @@ public class OrbitPhysicalProperties extends CommonPhysicalProperties {
         // set all values to NaN
         inertiaMatrix.walkInOptimizedOrder(new DefaultRealMatrixChangingVisitor() {
             @Override
-            public double visit(int i, int i1, double v) {
+            public double visit(final int i, final int j, final double v) {
                 return Double.NaN;
             }
         });
