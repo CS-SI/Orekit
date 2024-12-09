@@ -32,7 +32,6 @@
     package time #DDEBD8 {
       interface TimeStamped
       interface "TimeShiftable<T>" as TimeShiftable_T_
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_
     }
 
     package orbit #DDEBD8 {
@@ -83,6 +82,5 @@
 
   TimeStamped         <|.. Orbit
   TimeShiftable_T_    <|.. Orbit
-  TimeInterpolable_T_ <|.. Orbit
 
 @enduml

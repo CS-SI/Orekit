@@ -1,0 +1,80 @@
+' Copyright 2002-2024 CS GROUP
+' Licensed to CS GROUP (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
+  skinparam linetype              ortho
+
+  package org.orekit.time #ECEBD8 {
+
+    interface "TimeInterpolator<T extends TimeStamped>" as TimeInterpolator_T_ {
+      +T interpolate(AbsoluteDate date, Stream<T> sample)
+      +T interpolate(AbsoluteDate date, Collection<T> sample)
+    }
+
+    abstract class "AbstractTimeInterpolator<T extends TimeStamped>" as AbstractTimeInterpolator_T_ implements TimeInterpolator_T_ {
+        {static} + checkInterpolatorCompatibilityWithSampleSize()
+        + List<TimeInterpolator<? extends TimeStamped>> getSubInterpolators()
+        + int getNbInterpolationPoints()
+        + double getExtrapolationThreshold()
+                # interpolate(TimeInterpolationData)
+
+    }
+
+    class "...Interpolator" as XXXInterpolator
+       note bottom
+         this box represents any interpolator
+       end note
+
+    class TimeInterpolationData {
+        - AbsoluteDate interpolationDate;
+        - List<T> neighborList;
+    }
+    note right
+    Container used to make the use
+    of interpolator thread-safe
+    end note
+
+    class TimeStampedDouble implements TimeStamped
+    class TimeStampedPair implements TimeStamped
+
+    class SpacecraftStateInterpolator
+    class TimeStampedDoubleHermiteInterpolator
+    abstract class AbstractStateCovarianceInterpolator
+    class StateCovarianceKeplerianHermiteInterpolator extends AbstractStateCovarianceInterpolator
+    class StateCovarianceBlender extends AbstractStateCovarianceInterpolator
+
+
+
+
+    TimeInterpolationData --+ AbstractTimeInterpolator_T_
+    SpacecraftStateInterpolator -up-|> AbstractTimeInterpolator_T_
+    XXXInterpolator -up-|> AbstractTimeInterpolator_T_
+    TimeStampedDoubleHermiteInterpolator -up-|> AbstractTimeInterpolator_T_
+    AbstractStateCovarianceInterpolator -up-|> AbstractTimeInterpolator_T_
+
+
+  }
+@enduml
