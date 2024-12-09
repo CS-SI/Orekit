@@ -16,9 +16,11 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
-import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.FieldEventDetector;
 
 import java.util.stream.Stream;
 
@@ -26,12 +28,11 @@ import java.util.stream.Stream;
  * Interface to definite cost function in the frame of Pontryagin's Maximum Principle using Cartesian coordinates.
  * It provides the link between the optimal control and the adjoint variables. This relationship is obtained by maximizing the Hamiltonian.
  * The choice of control vector impacts on it.
- * Both standard (double type) and (Calculus)Field versions are to be implemented by inheritors.
  * @author Romain Serra
  * @see CartesianAdjointDerivativesProvider
- * @since 12.2
+ * @since 13.0
  */
-public interface CartesianCost {
+public interface FieldCartesianCost<T extends CalculusFieldElement<T>> {
 
     /** Getter for adjoint vector name.
      * @return adjoint vector name
@@ -49,7 +50,7 @@ public interface CartesianCost {
      * The fact that it is a constant means that the exhaust speed is assumed to be independent of time.
      * @return mass flow rate factor
      */
-    double getMassFlowRateFactor();
+    T getMassFlowRateFactor();
 
     /**
      * Computes the thrust acceleration vector in propagation frame from the adjoint variables and the mass.
@@ -57,7 +58,7 @@ public interface CartesianCost {
      * @param mass mass
      * @return thrust vector
      */
-    Vector3D getThrustAccelerationVector(double[] adjointVariables, double mass);
+    FieldVector3D<T> getFieldThrustAccelerationVector(T[] adjointVariables, T mass);
 
     /**
      * Update the adjoint derivatives if necessary.
@@ -66,7 +67,7 @@ public interface CartesianCost {
      * @param mass               mass
      * @param adjointDerivatives derivatives to update
      */
-    void updateAdjointDerivatives(double[] adjointVariables, double mass, double[] adjointDerivatives);
+    void updateFieldAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives);
 
     /**
      * Computes the Hamiltonian contribution of the cost function.
@@ -74,13 +75,20 @@ public interface CartesianCost {
      * @param mass mass
      * @return contribution to Hamiltonian
      */
-    double getHamiltonianContribution(double[] adjointVariables, double mass);
+    T getFieldHamiltonianContribution(T[] adjointVariables, T mass);
 
     /**
      * Get the detectors needed for propagation.
+     * @param field field
      * @return event detectors
      */
-    default Stream<EventDetector> getEventDetectors() {
+    default Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return Stream.of();
     }
+
+    /**
+     * Method returning equivalent in non-Field.
+     * @return cost function for non-Field applications
+     */
+    CartesianCost toCartesianCost();
 }

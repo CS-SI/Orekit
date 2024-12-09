@@ -16,9 +16,11 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
 
-public class TestCost implements CartesianCost {
+public class TestFieldCost implements FieldCartesianCost<Binary64> {
 
     @Override
     public String getAdjointName() {
@@ -26,23 +28,27 @@ public class TestCost implements CartesianCost {
     }
 
     @Override
-    public double getMassFlowRateFactor() {
-        return 10.;
+    public Binary64 getMassFlowRateFactor() {
+        return Binary64.ONE.multiply(10);
     }
 
     @Override
-    public Vector3D getThrustAccelerationVector(double[] adjointVariables, double mass) {
-        return new Vector3D(1, 2, 3);
+    public FieldVector3D<Binary64> getFieldThrustAccelerationVector(Binary64[] adjointVariables, Binary64 mass) {
+        return new FieldVector3D<>(mass.getField(), new Vector3D(1, 2, 3));
     }
 
     @Override
-    public void updateAdjointDerivatives(double[] adjointVariables, double mass, double[] adjointDerivatives) {
+    public void updateFieldAdjointDerivatives(Binary64[] adjointVariables, Binary64 mass, Binary64[] adjointDerivatives) {
 
     }
 
     @Override
-    public double getHamiltonianContribution(double[] adjointVariables, double mass) {
-        return 0;
+    public Binary64 getFieldHamiltonianContribution(Binary64[] adjointVariables, Binary64 mass) {
+        return mass.getField().getZero();
     }
 
+    @Override
+    public CartesianCost toCartesianCost() {
+        return new TestCost();
+    }
 }
