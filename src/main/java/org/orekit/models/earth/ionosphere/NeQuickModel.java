@@ -56,7 +56,7 @@ public class NeQuickModel implements IonosphericModel {
     static final double RE = 6371200.0;
 
     /** NeQuick resources base directory. */
-    static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
+    static final String NEQUICK_BASE = "/assets/org/orekit/nequick";
 
     /** Meters to kilometers converter. */
     private static final double M_TO_KM = 0.001;
@@ -110,7 +110,7 @@ public class NeQuickModel implements IonosphericModel {
         this.flattenF2  = null;
         this.flattenFm3 = null;
         // Read modip grid
-        final MODIPLoader parser = new MODIPLoader();
+        final MODIP parser = new MODIP();
         parser.loadMODIPGrid();
         this.stModip = parser.getMODIPGrid();
         // Ionisation level coefficients

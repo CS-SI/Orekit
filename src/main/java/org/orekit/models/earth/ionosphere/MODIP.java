@@ -16,7 +16,10 @@
  */
 package org.orekit.models.earth.ionosphere;
 
+import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathUtils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 
 import java.io.BufferedReader;
@@ -26,8 +29,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-/**
- * Parser for Modified Dip Latitude (MODIP) grid file.
+/** Modified Dip Latitude (MODIP) grid.
  * <p>
  * The MODIP grid allows to estimate MODIP μ [deg] at a given point (φ,λ) by interpolation of the relevant values
  * contained in the support file.
@@ -36,24 +38,37 @@ import java.util.regex.Pattern;
  * step in latitude and from 180°W to 180°E with a 10-degree in longitude.
  * </p>
  * @author Bryan Cazabonne
+ * @author Luc Maisonobe
  * @since 13.0
  */
-class MODIPLoader {
-
-    /** Supported name for MODIP grid. */
-    private static final String SUPPORTED_NAME = NeQuickModel.NEQUICK_BASE + "modipNeQG_wrapped.asc";
+class MODIP {
 
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
-    /** MODIP grid. */
-    private double[][] grid;
+    /** Longitude step. */
+    private final double lonStep;
 
-    /**
-     * Build a new instance.
+    /** Latitude step. */
+    private final double latStep;
+
+    /** MODIP grid. */
+    private final double[][] grid;
+
+    /** Build a new MODIP grid.
+     * @param version version of NeQuick model
      */
-    MODIPLoader() {
-        this.grid = null;
+    MODIP(final NeQuickVersion version) {
+        lonStep = MathUtils.TWO_PI / version.getcellsLon();
+        latStep = FastMath.PI      / version.getcellsLat();
+        grid    = new double[version.getcellsLat() + 2][version.getcellsLon() + 3];
+        final String fileName = String.format("%s/%s", NeQuickModel.NEQUICK_BASE, version.getResourceName());
+        try (InputStream in = MODIP.class.getResourceAsStream(fileName)) {
+            loadData(in, fileName, !version.isWrappingAlreadyIncluded());
+        } catch (IOException e) {
+            throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
+        }
+
     }
 
     /**
@@ -66,39 +81,22 @@ class MODIPLoader {
     }
 
     /**
-     * Load the data using supported names.
-     */
-    public void loadMODIPGrid() {
-        try (InputStream in = MODIPLoader.class.getResourceAsStream(SUPPORTED_NAME)) {
-            loadData(in, SUPPORTED_NAME);
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-        }
-
-        // Throw an exception if MODIP grid was not loaded properly
-        if (grid == null) {
-            throw new OrekitException(OrekitMessages.MODIP_GRID_NOT_LOADED, SUPPORTED_NAME);
-        }
-    }
-
-    /**
      * Load data from a stream.
      *
      * @param input input stream
      * @param name  name of the file
+     * @param addWrapping if true, wrapping should be added to loaded data
      * @exception IOException if data can't be read
      */
-    private void loadData(final InputStream input, final String name) throws IOException {
+    private void loadData(final InputStream input, final String name, final boolean addWrapping) throws IOException {
 
-        // Grid size
-        final int size = 39;
-
-        // Initialize array
-        final double[][] array = new double[size][size];
+        // if we must add wrapping, we must keep some empty rows and columns that will be filled later on
+        int first = addWrapping ? 1 : 0;
 
         // Open stream and parse data
         int lineNumber = 0;
         String line = null;
+        int row = first;
         try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
              BufferedReader br = new BufferedReader(isr)) {
 
@@ -107,11 +105,13 @@ class MODIPLoader {
                 line = line.trim();
 
                 // Read grid data
-                if (!line.isEmpty()) {
-                    final String[] modip_line = SEPARATOR.split(line);
-                    for (int column = 0; column < modip_line.length; column++) {
-                        array[lineNumber - 1][column] = Double.parseDouble(modip_line[column]);
+                final String[] fields = SEPARATOR.split(line);
+                if (fields.length == (addWrapping ? grid[row].length : grid[row].length - 2)) {
+                    // this should be a regular data line (i.e. not a header line)
+                    for (int i = 0; i < fields.length; i++) {
+                        grid[row][first + i] = FastMath.toRadians(Double.parseDouble(fields[i]));
                     }
+                    ++row;
                 }
 
             }
@@ -120,8 +120,27 @@ class MODIPLoader {
             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
         }
 
-        // Clone parsed grid
-        grid = array.clone();
+        if (addWrapping) {
+
+            // we must copy columns to wrap around Earth in longitude
+            // the first three columns must be identical to the last three columns
+            // the columns 1 and gi.length - 2 are already identical in the original resource file
+            for (int i = 1; i < grid.length - 1; ++i) {
+                final double[] gi = grid[i];
+                gi[0]             = gi[gi.length - 3];
+                gi[gi.length - 1] = gi[2];
+            }
+
+            // we must add rows phased 180° in longitude after poles, for the sake of interpolation
+            // TODO
+
+        }
+
+        // Throw an exception if MODIP grid was not loaded properly
+        if (row != grid.length) {
+            throw new OrekitException(OrekitMessages.MODIP_GRID_NOT_LOADED, name);
+        }
 
     }
+
 }

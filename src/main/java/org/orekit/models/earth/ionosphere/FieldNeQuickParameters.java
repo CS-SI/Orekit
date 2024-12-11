@@ -81,18 +81,18 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
      * @param alpha effective ionisation level coefficients
-     * @param modipGrip modip grid
+     * @param modipGrid modip grid
      */
     FieldNeQuickParameters(final DateTimeComponents dateTime,
                            final double[] flattenF2, final double[] flattenFm3,
                            final T latitude, final T longitude,
-                           final double[] alpha, final double[][] modipGrip) {
+                           final double[] alpha, final double[][] modipGrid) {
 
         // Zero
         final T zero = latitude.getField().getZero();
 
         // MODIP in degrees
-        final T modip = computeMODIP(latitude, longitude, modipGrip);
+        final T modip = computeMODIP(latitude, longitude, modipGrid);
         // Effective ionisation level Az
         final T az = computeAz(modip, alpha);
         // Effective sunspot number (Eq. 19)

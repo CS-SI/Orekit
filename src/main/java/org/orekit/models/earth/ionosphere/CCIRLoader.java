@@ -46,9 +46,6 @@ import java.util.regex.Pattern;
  */
 class CCIRLoader {
 
-    /** Default supported files name pattern. */
-    public static final String DEFAULT_SUPPORTED_NAME = "ccir**.asc";
-
     /** Total number of F2 coefficients contained in the file. */
     private static final int NUMBER_F2_COEFFICIENTS = 1976;
 
@@ -70,9 +67,6 @@ class CCIRLoader {
     /** Depth of Fm3 array. */
     private static final int DEPTH_FM3 = 9;
 
-    /** Regular expression for supported file name. */
-    private String supportedName;
-
     /** F2 coefficients used for the computation of the F2 layer critical frequency. */
     private double[][][] f2Loader;
 
@@ -83,7 +77,6 @@ class CCIRLoader {
      * Build a new instance.
      */
     CCIRLoader() {
-        this.supportedName = DEFAULT_SUPPORTED_NAME;
         this.f2Loader = null;
         this.fm3Loader = null;
     }
@@ -115,15 +108,15 @@ class CCIRLoader {
 
         // The files are named ccirXX.asc where XX substitute the month of the year + 10
         final int currentMonth = dateComponents.getMonth();
-        this.supportedName = NeQuickModel.NEQUICK_BASE + String.format("ccir%02d.asc", currentMonth + 10);
-        try (InputStream in = CCIRLoader.class.getResourceAsStream(supportedName)) {
-            loadData(in, supportedName);
+        final String fileName = String.format("%s/ccir%02d.asc", NeQuickModel.NEQUICK_BASE, currentMonth + 10);
+        try (InputStream in = CCIRLoader.class.getResourceAsStream(fileName)) {
+            loadData(in, fileName);
         } catch (IOException e) {
             throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
         }
         // Throw an exception if F2 or Fm3 were not loaded properly
         if (f2Loader == null || fm3Loader == null) {
-            throw new OrekitException(OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, supportedName);
+            throw new OrekitException(OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, fileName);
         }
 
     }
