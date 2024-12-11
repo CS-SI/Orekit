@@ -221,9 +221,8 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
      * @param newMaxIter maximum number of iterations in the event time search
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
-     * @deprecated as of 12.2. Will be removed in 13.0 and only the other signature shall remain
+     * WARNING: this method will be removed in 13.0. It doesn't have the deprecated annotation because the method is abstract and shall be implemented
      */
-    @Deprecated
     protected abstract T create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter,
                                 EventHandler newHandler);
 
