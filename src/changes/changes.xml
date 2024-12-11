@@ -97,6 +97,9 @@
         <action dev="luc" type="update" issue="1590">
             Renamed EarthITU453AtmosphereRefraction into EarthITU834AtmosphereRefraction.
         </action>
+        <action dev="serrof" type="update" issue="1586">
+            Add reference inertial frame in AlignedAndConstrained.
+        </action>
         <action dev="serrof" type="update" issue="1585">
             Add default implementation for theoreticalEvaluationWithoutDerivatives in AbstractMeasurement.
         </action>
