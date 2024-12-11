@@ -16,21 +16,13 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.MathArrays;
-import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
@@ -60,14 +52,11 @@ import org.orekit.utils.ParameterDriver;
  */
 public class NeQuickModel implements IonosphericModel {
 
-    /** NeQuick resources base directory. */
-    private static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
-
-    /** Pattern for delimiting regular expressions. */
-    private static final Pattern SEPARATOR = Pattern.compile("\\s+");
-
     /** Mean Earth radius in m (Ref Table 2.5.2). */
-    private static final double RE = 6371200.0;
+    static final double RE = 6371200.0;
+
+    /** NeQuick resources base directory. */
+    static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
 
     /** Meters to kilometers converter. */
     private static final double M_TO_KM = 0.001;
@@ -115,8 +104,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param utc UTC time scale.
      * @since 10.1
      */
-    public NeQuickModel(final double[] alpha,
-                        final TimeScale utc) {
+    public NeQuickModel(final double[] alpha, final TimeScale utc) {
         // F2 layer values
         this.month      = 0;
         this.flattenF2  = null;
@@ -130,6 +118,7 @@ public class NeQuickModel implements IonosphericModel {
         this.utc = utc;
     }
 
+    /** {@inheritDoc} */
     @Override
     public double pathDelay(final SpacecraftState state, final TopocentricFrame baseFrame,
                             final double frequency, final double[] parameters) {
@@ -141,7 +130,8 @@ public class NeQuickModel implements IonosphericModel {
         // Reference body shape
         final BodyShape ellipsoid = baseFrame.getParentShape();
         // Satellite geodetic coordinates
-        final GeodeticPoint satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()), ellipsoid.getBodyFrame(), state.getDate());
+        final GeodeticPoint satPoint = ellipsoid.transform(state.getPosition(ellipsoid.getBodyFrame()),
+                                                           ellipsoid.getBodyFrame(), state.getDate());
 
         // Total Electron Content
         final double tec = stec(date, recPoint, satPoint);
@@ -151,9 +141,12 @@ public class NeQuickModel implements IonosphericModel {
         return factor * tec;
     }
 
+    /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state, final TopocentricFrame baseFrame,
-                                                       final double frequency, final T[] parameters) {
+    public <T extends CalculusFieldElement<T>> T pathDelay(final FieldSpacecraftState<T> state,
+                                                           final TopocentricFrame baseFrame,
+                                                           final double frequency,
+                                                           final T[] parameters) {
         // Date
         final FieldAbsoluteDate<T> date = state.getDate();
         // Point
@@ -173,6 +166,7 @@ public class NeQuickModel implements IonosphericModel {
         return tec.multiply(factor);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();
@@ -246,8 +240,8 @@ public class NeQuickModel implements IonosphericModel {
      * @return the STEC in TECUnits
      */
     public <T extends CalculusFieldElement<T>> T stec(final FieldAbsoluteDate<T> date,
-                                                  final FieldGeodeticPoint<T> recP,
-                                                  final FieldGeodeticPoint<T> satP) {
+                                                      final FieldGeodeticPoint<T> recP,
+                                                      final FieldGeodeticPoint<T> satP) {
 
         // Field
         final Field<T> field = date.getField();
@@ -374,8 +368,8 @@ public class NeQuickModel implements IonosphericModel {
      * @return electron density [m^-3]
      */
     private <T extends CalculusFieldElement<T>> T electronDensity(final Field<T> field,
-                                                              final T h,
-                                                              final FieldNeQuickParameters<T> parameters) {
+                                                                  final T h,
+                                                                  final FieldNeQuickParameters<T> parameters) {
         // Convert height in kilometers
         final T hInKm = h.multiply(M_TO_KM);
         // Electron density
@@ -468,8 +462,8 @@ public class NeQuickModel implements IonosphericModel {
      * @return the electron density N in m-3
      */
     private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final Field<T> field,
-                                                                    final T h,
-                                                                    final FieldNeQuickParameters<T> parameters) {
+                                                                        final T h,
+                                                                        final FieldNeQuickParameters<T> parameters) {
 
         // Zero and One
         final T zero = field.getZero();
@@ -576,8 +570,8 @@ public class NeQuickModel implements IonosphericModel {
      * @return the electron density N in m-3
      */
     private <T extends CalculusFieldElement<T>> T topElectronDensity(final Field<T> field,
-                                                                 final T h,
-                                                                 final FieldNeQuickParameters<T> parameters) {
+                                                                     final T h,
+                                                                     final FieldNeQuickParameters<T> parameters) {
 
         // Constant parameters (Eq. 122 and 123)
         final double g = 0.125;
@@ -647,7 +641,7 @@ public class NeQuickModel implements IonosphericModel {
      * A clipped exponential function.
      * <p>
      * This function, describe in section F.2.12.2 of the reference document, is
-     * recommanded for the computation of exponential values.
+     * recommended for the computation of exponential values.
      * </p>
      * @param power power for exponential function
      * @return clipped exponential value
@@ -666,7 +660,7 @@ public class NeQuickModel implements IonosphericModel {
      * A clipped exponential function.
      * <p>
      * This function, describe in section F.2.12.2 of the reference document, is
-     * recommanded for the computation of exponential values.
+     * recommended for the computation of exponential values.
      * </p>
      * @param <T> type of the elements
      * @param field field of the elements
@@ -681,934 +675,6 @@ public class NeQuickModel implements IonosphericModel {
             return zero.newInstance(1.8049E-35);
         } else {
             return FastMath.exp(power);
-        }
-    }
-
-    /** Get a data stream.
-     * @param name file name of the resource stream
-     * @return stream
-     */
-    private static InputStream getStream(final String name) {
-        return NeQuickModel.class.getResourceAsStream(name);
-    }
-
-    /**
-     * Parser for Modified Dip Latitude (MODIP) grid file.
-     * <p>
-     * The MODIP grid allows to estimate MODIP μ [deg] at a given point (φ,λ)
-     * by interpolation of the relevant values contained in the support file.
-     * </p> <p>
-     * The file contains the values of MODIP (expressed in degrees) on a geocentric grid
-     * from 90°S to 90°N with a 5-degree step in latitude and from 180°W to 180°E with a
-     * 10-degree in longitude.
-     * </p>
-     */
-    private static class MODIPLoader {
-
-        /** Supported name for MODIP grid. */
-        private static final String SUPPORTED_NAME = NEQUICK_BASE + "modipNeQG_wrapped.asc";
-
-        /** MODIP grid. */
-        private double[][] grid;
-
-        /**
-         * Build a new instance.
-         */
-        MODIPLoader() {
-            this.grid = null;
-        }
-
-        /** Returns the MODIP grid array.
-         * @return the MODIP grid array
-         */
-        public double[][] getMODIPGrid() {
-            return grid.clone();
-        }
-
-        /**
-         * Load the data using supported names.
-         */
-        public void loadMODIPGrid() {
-            try (InputStream in = getStream(SUPPORTED_NAME)) {
-                loadData(in, SUPPORTED_NAME);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
-
-            // Throw an exception if MODIP grid was not loaded properly
-            if (grid == null) {
-                throw new OrekitException(OrekitMessages.MODIP_GRID_NOT_LOADED, SUPPORTED_NAME);
-            }
-        }
-
-        /**
-         * Load data from a stream.
-         * @param input input stream
-         * @param name name of the file
-         * @throws IOException if data can't be read
-         */
-        public void loadData(final InputStream input, final String name)
-            throws IOException {
-
-            // Grid size
-            final int size = 39;
-
-            // Initialize array
-            final double[][] array = new double[size][size];
-
-            // Open stream and parse data
-            int   lineNumber = 0;
-            String line      = null;
-            try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
-                 BufferedReader    br = new BufferedReader(isr)) {
-
-                for (line = br.readLine(); line != null; line = br.readLine()) {
-                    ++lineNumber;
-                    line = line.trim();
-
-                    // Read grid data
-                    if (!line.isEmpty()) {
-                        final String[] modip_line = SEPARATOR.split(line);
-                        for (int column = 0; column < modip_line.length; column++) {
-                            array[lineNumber - 1][column] = Double.parseDouble(modip_line[column]);
-                        }
-                    }
-
-                }
-
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
-            }
-
-            // Clone parsed grid
-            grid = array.clone();
-
-        }
-    }
-
-    /**
-     * Parser for CCIR files.
-     * <p>
-     * Numerical grid maps which describe the regular variation of the ionosphere.
-     * They are used to derive other variables such as critical frequencies and transmission factors.
-     * </p> <p>
-     * The coefficients correspond to low and high solar activity conditions.
-     * </p> <p>
-     * The CCIR file naming convention is ccirXX.asc where each XX means month + 10.
-     * </p> <p>
-     * Coefficients are store into tow arrays, F2 and Fm3. F2 coefficients are used for the computation
-     * of the F2 layer critical frequency. Fm3 for the computation of the F2 layer maximum usable frequency factor.
-     * The size of these two arrays is fixed and discussed into the section 2.5.3.2
-     * of the reference document.
-     * </p>
-     */
-    private static class CCIRLoader {
-
-        /** Default supported files name pattern. */
-        public static final String DEFAULT_SUPPORTED_NAME = "ccir**.asc";
-
-        /** Total number of F2 coefficients contained in the file. */
-        private static final int NUMBER_F2_COEFFICIENTS = 1976;
-
-        /** Rows number for F2 and Fm3 arrays. */
-        private static final int ROWS = 2;
-
-        /** Columns number for F2 array. */
-        private static final int TOTAL_COLUMNS_F2 = 76;
-
-        /** Columns number for Fm3 array. */
-        private static final int TOTAL_COLUMNS_FM3 = 49;
-
-        /** Depth of F2 array. */
-        private static final int DEPTH_F2 = 13;
-
-        /** Depth of Fm3 array. */
-        private static final int DEPTH_FM3 = 9;
-
-        /** Regular expression for supported file name. */
-        private String supportedName;
-
-        /** F2 coefficients used for the computation of the F2 layer critical frequency. */
-        private double[][][] f2Loader;
-
-        /** Fm3 coefficients used for the computation of the F2 layer maximum usable frequency factor. */
-        private double[][][] fm3Loader;
-
-        /**
-         * Build a new instance.
-         */
-        CCIRLoader() {
-            this.supportedName = DEFAULT_SUPPORTED_NAME;
-            this.f2Loader  = null;
-            this.fm3Loader = null;
-        }
-
-        /**
-         * Get the F2 coefficients used for the computation of the F2 layer critical frequency.
-         * @return the F2 coefficients
-         */
-        public double[][][] getF2() {
-            return f2Loader.clone();
-        }
-
-        /**
-         * Get the Fm3 coefficients used for the computation of the F2 layer maximum usable frequency factor.
-         * @return the F2 coefficients
-         */
-        public double[][][] getFm3() {
-            return fm3Loader.clone();
-        }
-
-        /** Load the data for a given month.
-         * @param dateComponents month given but its DateComponents
-         */
-        public void loadCCIRCoefficients(final DateComponents dateComponents) {
-
-            // The files are named ccirXX.asc where XX substitute the month of the year + 10
-            final int currentMonth = dateComponents.getMonth();
-            this.supportedName = NEQUICK_BASE + String.format("ccir%02d.asc", currentMonth + 10);
-            try (InputStream in = getStream(supportedName)) {
-                loadData(in, supportedName);
-            } catch (IOException e) {
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-            }
-            // Throw an exception if F2 or Fm3 were not loaded properly
-            if (f2Loader == null || fm3Loader == null) {
-                throw new OrekitException(OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, supportedName);
-            }
-
-        }
-
-        /**
-         * Load data from a stream.
-         * @param input input stream
-         * @param name name of the file
-         * @throws IOException if data can't be read
-         */
-        public void loadData(final InputStream input, final String name)
-            throws IOException {
-
-            // Initialize arrays
-            final double[][][] f2Temp  = new double[ROWS][TOTAL_COLUMNS_F2][DEPTH_F2];
-            final double[][][] fm3Temp = new double[ROWS][TOTAL_COLUMNS_FM3][DEPTH_FM3];
-
-            // Placeholders for parsed data
-            int    lineNumber       = 0;
-            int    index            = 0;
-            int    currentRowF2     = 0;
-            int    currentColumnF2  = 0;
-            int    currentDepthF2   = 0;
-            int    currentRowFm3    = 0;
-            int    currentColumnFm3 = 0;
-            int    currentDepthFm3  = 0;
-            String line             = null;
-
-            try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
-                 BufferedReader    br = new BufferedReader(isr)) {
-
-                for (line = br.readLine(); line != null; line = br.readLine()) {
-                    ++lineNumber;
-                    line = line.trim();
-
-                    // Read grid data
-                    if (!line.isEmpty()) {
-                        final String[] ccir_line = SEPARATOR.split(line);
-                        for (final String field : ccir_line) {
-
-                            if (index < NUMBER_F2_COEFFICIENTS) {
-                                // Parse F2 coefficients
-                                if (currentDepthF2 >= DEPTH_F2 && currentColumnF2 < (TOTAL_COLUMNS_F2 - 1)) {
-                                    currentDepthF2 = 0;
-                                    currentColumnF2++;
-                                } else if (currentDepthF2 >= DEPTH_F2 && currentColumnF2 >= (TOTAL_COLUMNS_F2 - 1)) {
-                                    currentDepthF2 = 0;
-                                    currentColumnF2 = 0;
-                                    currentRowF2++;
-                                }
-                                f2Temp[currentRowF2][currentColumnF2][currentDepthF2++] = Double.parseDouble(field);
-                                index++;
-                            } else {
-                                // Parse Fm3 coefficients
-                                if (currentDepthFm3 >= DEPTH_FM3 && currentColumnFm3 < (TOTAL_COLUMNS_FM3 - 1)) {
-                                    currentDepthFm3 = 0;
-                                    currentColumnFm3++;
-                                } else if (currentDepthFm3 >= DEPTH_FM3 && currentColumnFm3 >= (TOTAL_COLUMNS_FM3 - 1)) {
-                                    currentDepthFm3 = 0;
-                                    currentColumnFm3 = 0;
-                                    currentRowFm3++;
-                                }
-                                fm3Temp[currentRowFm3][currentColumnFm3][currentDepthFm3++] = Double.parseDouble(field);
-                                index++;
-                            }
-
-                        }
-                    }
-
-                }
-
-            } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, line);
-            }
-
-            f2Loader  = f2Temp.clone();
-            fm3Loader = fm3Temp.clone();
-
-        }
-
-    }
-
-    /**
-     * Container for ray-perigee parameters.
-     * By convention, point 1 is at lower height.
-     */
-    private static class Ray {
-
-        /** Threshold for ray-perigee parameters computation. */
-        private static final double THRESHOLD = 1.0e-10;
-
-        /** Distance of the first point from the ray perigee [m]. */
-        private final double s1;
-
-        /** Distance of the second point from the ray perigee [m]. */
-        private final double s2;
-
-        /** Ray-perigee radius [m]. */
-        private final double rp;
-
-        /** Ray-perigee latitude [rad]. */
-        private final double latP;
-
-        /** Ray-perigee longitude [rad]. */
-        private final double lonP;
-
-        /** Sine and cosine of ray-perigee latitude. */
-        private final SinCos scLatP;
-
-        /** Sine of azimuth of satellite as seen from ray-perigee. */
-        private final double sinAzP;
-
-        /** Cosine of azimuth of satellite as seen from ray-perigee. */
-        private final double cosAzP;
-
-        /**
-         * Constructor.
-         * @param recP receiver position
-         * @param satP satellite position
-         */
-        Ray(final GeodeticPoint recP, final GeodeticPoint satP) {
-
-            // Integration limits in meters (Eq. 140 and 141)
-            final double r1 = RE + recP.getAltitude();
-            final double r2 = RE + satP.getAltitude();
-
-            // Useful parameters
-            final double lat1     = recP.getLatitude();
-            final double lat2     = satP.getLatitude();
-            final double lon1     = recP.getLongitude();
-            final double lon2     = satP.getLongitude();
-            final SinCos scLatSat = FastMath.sinCos(lat2);
-            final SinCos scLatRec = FastMath.sinCos(lat1);
-            final SinCos scLon21  = FastMath.sinCos(lon2 - lon1);
-
-            // Zenith angle computation (Eq. 153 to 155)
-            // with added protection against numerical noise near zenith observation
-            final double cosD = FastMath.min(1.0,
-                                             scLatRec.sin() * scLatSat.sin() +
-                                             scLatRec.cos() * scLatSat.cos() * scLon21.cos());
-            final double sinD = FastMath.sqrt(1.0 - cosD * cosD);
-            final double z    = FastMath.atan2(sinD, cosD - (r1 / r2));
-            final SinCos scZ  = FastMath.sinCos(z);
-
-            // Ray-perigee computation in meters (Eq. 156)
-            this.rp = r1 * scZ.sin();
-
-            // Ray-perigee latitude and longitude
-            if (FastMath.abs(FastMath.abs(lat1) - 0.5 * FastMath.PI) < THRESHOLD) {
-                // receiver is almost at North or South pole
-
-                // Ray-perigee latitude (Eq. 157)
-                this.latP = FastMath.copySign(z, lat1);
-
-                // Ray-perigee longitude (Eq. 164)
-                if (z < 0) {
-                    this.lonP = lon2;
-                } else {
-                    this.lonP = lon2 + FastMath.PI;
-                }
-
-            } else if (FastMath.abs(scZ.sin()) < THRESHOLD) {
-                // satellite is almost on receiver zenith
-
-                this.latP = recP.getLatitude();
-                this.lonP = recP.getLongitude();
-
-            } else {
-
-                // Ray-perigee latitude (Eq. 158 to 163)
-                final double sinAz    = scLon21.sin() * scLatSat.cos() / sinD;
-                final double cosAz    = (scLatSat.sin() - cosD * scLatRec.sin()) / (sinD * scLatRec.cos());
-                final double sinLatP  = scLatRec.sin() * scZ.sin() - scLatRec.cos() * scZ.cos() * cosAz;
-                final double cosLatP  = FastMath.sqrt(1.0 - sinLatP * sinLatP);
-                this.latP = FastMath.atan2(sinLatP, cosLatP);
-
-                // Ray-perigee longitude (Eq. 165 to 167)
-                final double sinLonP = -sinAz * scZ.cos() / cosLatP;
-                final double cosLonP = (scZ.sin() - scLatRec.sin() * sinLatP) / (scLatRec.cos() * cosLatP);
-                this.lonP = FastMath.atan2(sinLonP, cosLonP) + lon1;
-
-            }
-
-            // Sine and cosine of ray-perigee latitude
-            this.scLatP = FastMath.sinCos(latP);
-
-            if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD ||
-                FastMath.abs(scZ.sin()) < THRESHOLD) {
-                // Eq. 172 and 173
-                this.sinAzP = 0.0;
-                this.cosAzP = -FastMath.copySign(1, latP);
-            } else {
-                final SinCos scLon = FastMath.sinCos(lon2 - lonP);
-                // Sine and cosine of azimuth of satellite as seen from ray-perigee
-                final SinCos scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
-                // Eq. 174 and 175
-                this.sinAzP =  scLatSat.cos() * scLon.sin()                 /  scPsi.sin();
-                this.cosAzP = (scLatSat.sin() - scLatP.sin() * scPsi.cos()) / (scLatP.cos() * scPsi.sin());
-            }
-
-            // Integration en points s1 and s2 in meters (Eq. 176 and 177)
-            this.s1 = FastMath.sqrt(r1 * r1 - rp * rp);
-            this.s2 = FastMath.sqrt(r2 * r2 - rp * rp);
-        }
-
-        /**
-         * Get the distance of the first point from the ray perigee.
-         * @return s1 in meters
-         */
-        public double getS1() {
-            return s1;
-        }
-
-        /**
-         * Get the distance of the second point from the ray perigee.
-         * @return s2 in meters
-         */
-        public double getS2() {
-            return s2;
-        }
-
-        /**
-         * Get the ray-perigee radius.
-         * @return the ray-perigee radius in meters
-         */
-        public double getRadius() {
-            return rp;
-        }
-
-        /**
-         * Get the ray-perigee latitude.
-         * @return the ray-perigee latitude in radians
-         */
-        public double getLatitude() {
-            return latP;
-        }
-
-        /**
-         * Get the ray-perigee longitude.
-         * @return the ray-perigee longitude in radians
-         */
-        public double getLongitude() {
-            return lonP;
-        }
-
-        /**
-         * Get the sine of azimuth of satellite as seen from ray-perigee.
-         * @return the sine of azimuth
-         */
-        public double getSineAz() {
-            return sinAzP;
-        }
-
-        /**
-         * Get the cosine of azimuth of satellite as seen from ray-perigee.
-         * @return the cosine of azimuth
-         */
-        public double getCosineAz() {
-            return cosAzP;
-        }
-
-        /**
-         * Compute the great circle angle from ray-perigee to satellite.
-         * <p>
-         * This method used the equations 168 to 171 pf the reference document.
-         * </p>
-         * @param scLat sine and cosine of satellite latitude
-         * @param scLon sine and cosine of satellite longitude minus receiver longitude
-         * @return the great circle angle in radians
-         */
-        private double greatCircleAngle(final SinCos scLat, final SinCos scLon) {
-            if (FastMath.abs(FastMath.abs(latP) - 0.5 * FastMath.PI) < THRESHOLD) {
-                return FastMath.abs(FastMath.asin(scLat.sin()) - latP);
-            } else {
-                final double cosPhi = scLatP.sin() * scLat.sin() +
-                                      scLatP.cos() * scLat.cos() * scLon.cos();
-                final double sinPhi = FastMath.sqrt(1.0 - cosPhi * cosPhi);
-                return FastMath.atan2(sinPhi, cosPhi);
-            }
-        }
-    }
-
-    /**
-     * Container for ray-perigee parameters.
-     * By convention, point 1 is at lower height.
-     */
-    private static class FieldRay <T extends CalculusFieldElement<T>> {
-
-        /** Threshold for ray-perigee parameters computation. */
-        private static final double THRESHOLD = 1.0e-10;
-
-        /** Distance of the first point from the ray perigee [m]. */
-        private final T s1;
-
-        /** Distance of the second point from the ray perigee [m]. */
-        private final T s2;
-
-        /** Ray-perigee radius [m]. */
-        private final T rp;
-
-        /** Ray-perigee latitude [rad]. */
-        private final T latP;
-
-        /** Ray-perigee longitude [rad]. */
-        private final T lonP;
-
-        /** Sine and cosine of ray-perigee latitude. */
-        private final FieldSinCos<T> scLatP;
-
-        /** Sine of azimuth of satellite as seen from ray-perigee. */
-        private final T sinAzP;
-
-        /** Cosine of azimuth of satellite as seen from ray-perigee. */
-        private final T cosAzP;
-
-        /**
-         * Constructor.
-         * @param field field of the elements
-         * @param recP receiver position
-         * @param satP satellite position
-         */
-        FieldRay(final Field<T> field, final FieldGeodeticPoint<T> recP, final FieldGeodeticPoint<T> satP) {
-
-            // Integration limits in meters (Eq. 140 and 141)
-            final T r1 = recP.getAltitude().add(RE);
-            final T r2 = satP.getAltitude().add(RE);
-
-            // Useful parameters
-            final T pi   = r1.getPi();
-            final T lat1 = recP.getLatitude();
-            final T lat2 = satP.getLatitude();
-            final T lon1 = recP.getLongitude();
-            final T lon2 = satP.getLongitude();
-            final FieldSinCos<T> scLatSat = FastMath.sinCos(lat2);
-            final FieldSinCos<T> scLatRec = FastMath.sinCos(lat1);
-            final FieldSinCos<T> scLon21  = FastMath.sinCos(lon2.subtract(lon1));
-
-            // Zenith angle computation (Eq. 153 to 155)
-            final T cosD = scLatRec.sin().multiply(scLatSat.sin()).
-                            add(scLatRec.cos().multiply(scLatSat.cos()).multiply(scLon21.cos()));
-            final T sinD = FastMath.sqrt(cosD.multiply(cosD).negate().add(1.0));
-            final T z = FastMath.atan2(sinD, cosD.subtract(r1.divide(r2)));
-            final FieldSinCos<T> scZ  = FastMath.sinCos(z);
-
-            // Ray-perigee computation in meters (Eq. 156)
-            this.rp = r1.multiply(scZ.sin());
-
-            // Ray-perigee latitude and longitude
-            if (FastMath.abs(FastMath.abs(lat1).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD) {
-
-                // Ray-perigee latitude (Eq. 157)
-                this.latP = FastMath.copySign(z, lat1);
-
-                // Ray-perigee longitude (Eq. 164)
-                if (z.getReal() < 0) {
-                    this.lonP = lon2;
-                } else {
-                    this.lonP = lon2.add(pi);
-                }
-
-            } else if (FastMath.abs(scZ.sin().getReal()) < THRESHOLD) {
-                // satellite is almost on receiver zenith
-
-                this.latP = recP.getLatitude();
-                this.lonP = recP.getLongitude();
-
-            } else {
-
-                // Ray-perigee latitude (Eq. 158 to 163)
-                final T sinAz    = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
-                final T cosAz    = scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).divide(sinD.multiply(scLatRec.cos()));
-                final T sinLatP  = scLatRec.sin().multiply(scZ.sin()).subtract(scLatRec.cos().multiply(scZ.cos()).multiply(cosAz));
-                final T cosLatP  = FastMath.sqrt(sinLatP.multiply(sinLatP).negate().add(1.0));
-                this.latP = FastMath.atan2(sinLatP, cosLatP);
-
-                // Ray-perigee longitude (Eq. 165 to 167)
-                final T sinLonP = sinAz.negate().multiply(scZ.cos()).divide(cosLatP);
-                final T cosLonP = scZ.sin().subtract(scLatRec.sin().multiply(sinLatP)).divide(scLatRec.cos().multiply(cosLatP));
-                this.lonP = FastMath.atan2(sinLonP, cosLonP).add(lon1);
-
-            }
-
-            // Sine and cosine of ray-perigee latitude
-            this.scLatP = FastMath.sinCos(latP);
-
-            if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD ||
-                FastMath.abs(scZ.sin().getReal()) < THRESHOLD) {
-                // Eq. 172 and 173
-                this.sinAzP = field.getZero();
-                this.cosAzP = FastMath.copySign(field.getOne(), latP).negate();
-            } else {
-                final FieldSinCos<T> scLon = FastMath.sinCos(lon2.subtract(lonP));
-                // Sine and cosine of azimuth of satellite as seen from ray-perigee
-                final FieldSinCos<T> scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
-                // Eq. 174 and 175
-                this.sinAzP = scLatSat.cos().multiply(scLon.sin()).divide(scPsi.sin());
-                this.cosAzP = scLatSat.sin().subtract(scLatP.sin().multiply(scPsi.cos())).divide(scLatP.cos().multiply(scPsi.sin()));
-            }
-
-            // Integration en points s1 and s2 in meters (Eq. 176 and 177)
-            this.s1 = FastMath.sqrt(r1.multiply(r1).subtract(rp.multiply(rp)));
-            this.s2 = FastMath.sqrt(r2.multiply(r2).subtract(rp.multiply(rp)));
-        }
-
-        /**
-         * Get the distance of the first point from the ray perigee.
-         * @return s1 in meters
-         */
-        public T getS1() {
-            return s1;
-        }
-
-        /**
-         * Get the distance of the second point from the ray perigee.
-         * @return s2 in meters
-         */
-        public T getS2() {
-            return s2;
-        }
-
-        /**
-         * Get the ray-perigee radius.
-         * @return the ray-perigee radius in meters
-         */
-        public T getRadius() {
-            return rp;
-        }
-
-        /**
-         * Get the ray-perigee latitude.
-         * @return the ray-perigee latitude in radians
-         */
-        public T getLatitude() {
-            return latP;
-        }
-
-        /**
-         * Get the ray-perigee longitude.
-         * @return the ray-perigee longitude in radians
-         */
-        public T getLongitude() {
-            return lonP;
-        }
-
-        /**
-         * Get the sine of azimuth of satellite as seen from ray-perigee.
-         * @return the sine of azimuth
-         */
-        public T getSineAz() {
-            return sinAzP;
-        }
-
-        /**
-         * Get the cosine of azimuth of satellite as seen from ray-perigee.
-         * @return the cosine of azimuth
-         */
-        public T getCosineAz() {
-            return cosAzP;
-        }
-
-        /**
-         * Compute the great circle angle from ray-perigee to satellite.
-         * <p>
-         * This method used the equations 168 to 171 pf the reference document.
-         * </p>
-         * @param scLat sine and cosine of satellite latitude
-         * @param scLon sine and cosine of satellite longitude minus receiver longitude
-         * @return the great circle angle in radians
-         */
-        private T greatCircleAngle(final FieldSinCos<T> scLat, final FieldSinCos<T> scLon) {
-            if (FastMath.abs(FastMath.abs(latP).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
-                return FastMath.abs(FastMath.asin(scLat.sin()).subtract(latP));
-            } else {
-                final T cosPhi = scLatP.sin().multiply(scLat.sin()).add(
-                                 scLatP.cos().multiply(scLat.cos()).multiply(scLon.cos()));
-                final T sinPhi = FastMath.sqrt(cosPhi.multiply(cosPhi).negate().add(1.0));
-                return FastMath.atan2(sinPhi, cosPhi);
-            }
-        }
-    }
-
-    /** Performs the computation of the coordinates along the integration path. */
-    private static class Segment {
-
-        /** Threshold for zenith segment. */
-        private static final double THRESHOLD = 1.0;
-
-        /** Latitudes [rad]. */
-        private final double[] latitudes;
-
-        /** Longitudes [rad]. */
-        private final double[] longitudes;
-
-        /** Heights [m]. */
-        private final double[] heights;
-
-        /** Integration step [m]. */
-        private final double deltaN;
-
-        /**
-         * Constructor.
-         * @param n number of points used for the integration
-         * @param ray ray-perigee parameters
-         */
-        Segment(final int n, final Ray ray) {
-            // Integration en points
-            final double s1 = ray.getS1();
-            final double s2 = ray.getS2();
-
-            // Integration step (Eq. 195)
-            this.deltaN = (s2 - s1) / n;
-
-            // Segments
-            final double[] s = getSegments(n, s1);
-
-            // Useful parameters
-            final double rp = ray.getRadius();
-            final SinCos scLatP = FastMath.sinCos(ray.getLatitude());
-
-            // Geodetic coordinates
-            final int size = s.length;
-            heights    = new double[size];
-            latitudes  = new double[size];
-            longitudes = new double[size];
-            for (int i = 0; i < size; i++) {
-                // Heights (Eq. 178)
-                heights[i] = FastMath.sqrt(s[i] * s[i] + rp * rp) - RE;
-
-                if (rp < THRESHOLD) {
-                    // zenith segment
-                    latitudes[i]  = ray.getLatitude();
-                    longitudes[i] = ray.getLongitude();
-                } else {
-                    // Great circle parameters (Eq. 179 to 181)
-                    final double tanDs = s[i] / rp;
-                    final double cosDs = 1.0 / FastMath.sqrt(1.0 + tanDs * tanDs);
-                    final double sinDs = tanDs * cosDs;
-
-                    // Latitude (Eq. 182 to 183)
-                    final double sinLatS = scLatP.sin() * cosDs + scLatP.cos() * sinDs * ray.getCosineAz();
-                    final double cosLatS = FastMath.sqrt(1.0 - sinLatS * sinLatS);
-                    latitudes[i] = FastMath.atan2(sinLatS, cosLatS);
-
-                    // Longitude (Eq. 184 to 187)
-                    final double sinLonS = sinDs * ray.getSineAz() * scLatP.cos();
-                    final double cosLonS = cosDs - scLatP.sin() * sinLatS;
-                    longitudes[i] = FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude();
-                }
-            }
-        }
-
-        /**
-         * Computes the distance of a point from the ray-perigee.
-         * @param n number of points used for the integration
-         * @param s1 lower boundary
-         * @return the distance of a point from the ray-perigee in km
-         */
-        private double[] getSegments(final int n, final double s1) {
-            // Eq. 196
-            final double g = 0.5773502691896 * deltaN;
-            // Eq. 197
-            final double y = s1 + (deltaN - g) * 0.5;
-            final double[] segments = new double[2 * n];
-            int index = 0;
-            for (int i = 0; i < n; i++) {
-                // Eq. 198
-                segments[index] = y + i * deltaN;
-                index++;
-                segments[index] = y + i * deltaN + g;
-                index++;
-            }
-            return segments;
-        }
-
-        /**
-         * Get the latitudes of the coordinates along the integration path.
-         * @return the latitudes in radians
-         */
-        public double[] getLatitudes() {
-            return latitudes;
-        }
-
-        /**
-         * Get the longitudes of the coordinates along the integration path.
-         * @return the longitudes in radians
-         */
-        public double[] getLongitudes() {
-            return longitudes;
-        }
-
-        /**
-         * Get the heights of the coordinates along the integration path.
-         * @return the heights in m
-         */
-        public double[] getHeights() {
-            return heights;
-        }
-
-        /**
-         * Get the integration step.
-         * @return the integration step in meters
-         */
-        public double getInterval() {
-            return deltaN;
-        }
-    }
-
-    /** Performs the computation of the coordinates along the integration path. */
-    private static class FieldSegment <T extends CalculusFieldElement<T>> {
-
-        /** Threshold for zenith segment. */
-        private static final double THRESHOLD = 1.0e-3;
-
-        /** Latitudes [rad]. */
-        private final T[] latitudes;
-
-        /** Longitudes [rad]. */
-        private final T[] longitudes;
-
-        /** Heights [m]. */
-        private final T[] heights;
-
-        /** Integration step [m]. */
-        private final T deltaN;
-
-        /**
-         * Constructor.
-         * @param field field of the elements
-         * @param n number of points used for the integration
-         * @param ray ray-perigee parameters
-         */
-        FieldSegment(final Field<T> field, final int n, final FieldRay<T> ray) {
-            // Integration en points
-            final T s1 = ray.getS1();
-            final T s2 = ray.getS2();
-
-            // Integration step (Eq. 195)
-            this.deltaN = s2.subtract(s1).divide(n);
-
-            // Segments
-            final T[] s = getSegments(field, n, s1);
-
-            // Useful parameters
-            final T rp = ray.getRadius();
-            final FieldSinCos<T> scLatP = FastMath.sinCos(ray.getLatitude());
-
-            // Geodetic coordinates
-            final int size = s.length;
-            heights    = MathArrays.buildArray(field, size);
-            latitudes  = MathArrays.buildArray(field, size);
-            longitudes = MathArrays.buildArray(field, size);
-            for (int i = 0; i < size; i++) {
-                // Heights (Eq. 178)
-                heights[i] = FastMath.sqrt(s[i].multiply(s[i]).add(rp.multiply(rp))).subtract(RE);
-
-                if (rp.getReal() < THRESHOLD) {
-                    // zenith segment
-                    latitudes[i]  = ray.getLatitude();
-                    longitudes[i] = ray.getLongitude();
-                } else {
-                    // Great circle parameters (Eq. 179 to 181)
-                    final T tanDs = s[i].divide(rp);
-                    final T cosDs = FastMath.sqrt(tanDs.multiply(tanDs).add(1.0)).reciprocal();
-                    final T sinDs = tanDs.multiply(cosDs);
-
-                    // Latitude (Eq. 182 to 183)
-                    final T sinLatS = scLatP.sin().multiply(cosDs).add(scLatP.cos().multiply(sinDs).multiply(ray.getCosineAz()));
-                    final T cosLatS = FastMath.sqrt(sinLatS.multiply(sinLatS).negate().add(1.0));
-                    latitudes[i] = FastMath.atan2(sinLatS, cosLatS);
-
-                    // Longitude (Eq. 184 to 187)
-                    final T sinLonS = sinDs.multiply(ray.getSineAz()).multiply(scLatP.cos());
-                    final T cosLonS = cosDs.subtract(scLatP.sin().multiply(sinLatS));
-                    longitudes[i] = FastMath.atan2(sinLonS, cosLonS).add(ray.getLongitude());
-                }
-            }
-        }
-
-        /**
-         * Computes the distance of a point from the ray-perigee.
-         * @param field field of the elements
-         * @param n number of points used for the integration
-         * @param s1 lower boundary
-         * @return the distance of a point from the ray-perigee in km
-         */
-        private T[] getSegments(final Field<T> field, final int n, final T s1) {
-            // Eq. 196
-            final T g = deltaN.multiply(0.5773502691896);
-            // Eq. 197
-            final T y = s1.add(deltaN.subtract(g).multiply(0.5));
-            final T[] segments = MathArrays.buildArray(field, 2 * n);
-            int index = 0;
-            for (int i = 0; i < n; i++) {
-                // Eq. 198
-                segments[index] = y.add(deltaN.multiply(i));
-                index++;
-                segments[index] = y.add(deltaN.multiply(i)).add(g);
-                index++;
-            }
-            return segments;
-        }
-
-        /**
-         * Get the latitudes of the coordinates along the integration path.
-         * @return the latitudes in radians
-         */
-        public T[] getLatitudes() {
-            return latitudes;
-        }
-
-        /**
-         * Get the longitudes of the coordinates along the integration path.
-         * @return the longitudes in radians
-         */
-        public T[] getLongitudes() {
-            return longitudes;
-        }
-
-        /**
-         * Get the heights of the coordinates along the integration path.
-         * @return the heights in m
-         */
-        public T[] getHeights() {
-            return heights;
-        }
-
-        /**
-         * Get the integration step.
-         * @return the integration step in meters
-         */
-        public T getInterval() {
-            return deltaN;
         }
     }
 
