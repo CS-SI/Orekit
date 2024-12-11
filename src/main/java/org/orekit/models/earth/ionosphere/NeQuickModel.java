@@ -706,7 +706,7 @@ public class NeQuickModel implements IonosphericModel {
     private static class MODIPLoader {
 
         /** Supported name for MODIP grid. */
-        private static final String SUPPORTED_NAME = NEQUICK_BASE + "modip.txt";
+        private static final String SUPPORTED_NAME = NEQUICK_BASE + "modipNeQG_wrapped.asc";
 
         /** MODIP grid. */
         private double[][] grid;
