@@ -19,6 +19,8 @@ package org.orekit.control.indirect.shooting.propagation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
+import org.orekit.propagation.conversion.ExplicitRungeKuttaIntegratorBuilder;
+import org.orekit.propagation.conversion.FieldExplicitRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 
@@ -37,7 +39,7 @@ public interface ShootingIntegrationSettings {
      * Returns an ODE integrator builder.
      * @return builder
      */
-    default ODEIntegratorBuilder getIntegratorBuilder() {
+    default ExplicitRungeKuttaIntegratorBuilder getIntegratorBuilder() {
         return getFieldIntegratorBuilder(Binary64Field.getInstance()).toODEIntegratorBuilder();
     }
 
@@ -47,5 +49,5 @@ public interface ShootingIntegrationSettings {
      * @return builder
      * @param <T> field type
      */
-    <T extends CalculusFieldElement<T>> FieldODEIntegratorBuilder<T> getFieldIntegratorBuilder(Field<T> field);
+    <T extends CalculusFieldElement<T>> FieldExplicitRungeKuttaIntegratorBuilder<T> getFieldIntegratorBuilder(Field<T> field);
 }

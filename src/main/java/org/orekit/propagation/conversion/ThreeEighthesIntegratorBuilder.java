@@ -25,24 +25,21 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class ThreeEighthesIntegratorBuilder extends AbstractIntegratorBuilder<ThreeEighthesIntegrator> {
-
-    /** Step size (s). */
-    private final double step;
+public class ThreeEighthesIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<ThreeEighthesIntegrator> {
 
     /** Build a new instance.
      * @param step step size (s)
      * @see ThreeEighthesIntegrator
      */
     public ThreeEighthesIntegratorBuilder(final double step) {
-        this.step = step;
+        super(step);
     }
 
     /** {@inheritDoc} */
     @Override
     public ThreeEighthesIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
                                                    final PositionAngleType angleType) {
-        return new ThreeEighthesIntegrator(step);
+        return new ThreeEighthesIntegrator(getStep());
     }
 
 }

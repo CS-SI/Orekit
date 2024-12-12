@@ -31,8 +31,9 @@ import org.orekit.orbits.PositionAngleType;
  * @since 12.0
  * @param <T> type of the field elements
  */
-public class EulerFieldIntegratorBuilder<T extends CalculusFieldElement<T>> extends
-        AbstractFixedStepFieldIntegratorBuilder<T, EulerFieldIntegrator<T>> {
+public class EulerFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
+        extends AbstractFixedStepFieldIntegratorBuilder<T, EulerFieldIntegrator<T>>
+        implements FieldExplicitRungeKuttaIntegratorBuilder<T> {
 
     /**
      * Constructor.

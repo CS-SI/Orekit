@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,30 +16,35 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.nonstiff.LutherIntegrator;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngleType;
+import org.hipparchus.ode.nonstiff.RungeKuttaIntegrator;
 
-/** Builder for LutherIntegrator.
- * @author Luc Maisonobe
- * @since 7.1
+/**
+ * Abstract class for fixed-step, single-step integrator builder.
+ *
+ * @param <T> field type
+ * @see org.hipparchus.ode.nonstiff.RungeKuttaIntegrator
+ * @since 13.0
+ * @author Romain Serra
  */
-public class LutherIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<LutherIntegrator> {
+public abstract class AbstractFixedSingleStepIntegratorBuilder<T extends RungeKuttaIntegrator>
+        extends AbstractIntegratorBuilder<T> implements ExplicitRungeKuttaIntegratorBuilder {
 
-    /** Build a new instance.
-     * @param step step size (s)
-     * @see LutherIntegrator
+    /** Default step-size. */
+    private final double step;
+
+    /**
+     * Constructor.
+     * @param step default step-size
      */
-    public LutherIntegratorBuilder(final double step) {
-        super(step);
+    protected AbstractFixedSingleStepIntegratorBuilder(final double step) {
+        this.step = step;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public LutherIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
-                                            final PositionAngleType angleType) {
-        return new LutherIntegrator(getStep());
+    /**
+     * Getter for the step size.
+     * @return step
+     */
+    public double getStep() {
+        return step;
     }
-
 }

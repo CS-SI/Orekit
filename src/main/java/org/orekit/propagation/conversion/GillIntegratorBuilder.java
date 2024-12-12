@@ -25,23 +25,20 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class GillIntegratorBuilder extends AbstractIntegratorBuilder<GillIntegrator> {
-
-    /** Step size (s). */
-    private final double step;
+public class GillIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<GillIntegrator> {
 
     /** Build a new instance.
      * @param step step size (s)
      * @see GillIntegrator
      */
     public GillIntegratorBuilder(final double step) {
-        this.step = step;
+        super(step);
     }
 
     /** {@inheritDoc} */
     public GillIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
                                           final PositionAngleType angleType) {
-        return new GillIntegrator(step);
+        return new GillIntegrator(getStep());
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2022-2024 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,30 +16,25 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.nonstiff.LutherIntegrator;
+import org.hipparchus.ode.nonstiff.ExplicitRungeKuttaIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.utils.AbsolutePVCoordinates;
 
-/** Builder for LutherIntegrator.
- * @author Luc Maisonobe
- * @since 7.1
+/** This interface is for builders of explicit Runge-Kutta integrators (adaptive or not).
+ * @author Romain Serra
+ * @see ExplicitRungeKuttaIntegrator
+ * @since 13.0
  */
-public class LutherIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<LutherIntegrator> {
-
-    /** Build a new instance.
-     * @param step step size (s)
-     * @see LutherIntegrator
-     */
-    public LutherIntegratorBuilder(final double step) {
-        super(step);
-    }
+public interface ExplicitRungeKuttaIntegratorBuilder extends ODEIntegratorBuilder {
 
     /** {@inheritDoc} */
-    @Override
-    public LutherIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
-                                            final PositionAngleType angleType) {
-        return new LutherIntegrator(getStep());
-    }
+    ExplicitRungeKuttaIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType, PositionAngleType angleType);
 
+    /** {@inheritDoc} */
+    ExplicitRungeKuttaIntegrator buildIntegrator(Orbit orbit, OrbitType orbitType);
+
+    /** {@inheritDoc} */
+    ExplicitRungeKuttaIntegrator buildIntegrator(AbsolutePVCoordinates absolutePVCoordinates);
 }
