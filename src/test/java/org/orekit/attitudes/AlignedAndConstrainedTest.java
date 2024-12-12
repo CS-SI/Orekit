@@ -449,12 +449,10 @@ class AlignedAndConstrainedTest {
         // GIVEN
         final Frame nonInertialFrame = FramesFactory.getGTOD(false);
         // WHEN
-        final Exception exception = Assertions.assertThrows(OrekitException.class, () -> new AlignedAndConstrained(Vector3D.PLUS_I,
+        final OrekitException exception = Assertions.assertThrows(OrekitException.class, () -> new AlignedAndConstrained(Vector3D.PLUS_I,
                 PredefinedTarget.VELOCITY, Vector3D.PLUS_K, PredefinedTarget.SUN, nonInertialFrame, null, null));
         // THEN
-        final int size = 10;
-        Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME.getSourceString().substring(0, size),
-                exception.getMessage().substring(0, size));
+        Assertions.assertEquals(OrekitMessages.NON_PSEUDO_INERTIAL_FRAME, exception.getSpecifier());
     }
 
     @BeforeEach
