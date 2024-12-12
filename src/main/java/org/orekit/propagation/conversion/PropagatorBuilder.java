@@ -37,9 +37,8 @@ public interface PropagatorBuilder extends Cloneable {
 
     /** Create a new instance identical to this one.
      * @return new instance identical to this one
-     * @deprecated as of 12.2, replaced by {@link Object#clone()}
+     * WARNING: this method will be removed in 13.0. It doesn't have the deprecated annotation because the method is abstract and shall be implemented.
      */
-    @Deprecated
     PropagatorBuilder copy();
 
     /** Build a propagator.

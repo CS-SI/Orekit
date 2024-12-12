@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="12.2.1" date="TBD" description="TBD">
+      <action dev="gegout" type="fix" issue="1624">
+        Fix deprecated abstract method in 12.2
+      </action>
       <action dev="serrof" type="fix" issue="1620">
         Fixed computation time regression by removing HashMap from (Field)TLEPropagator.
       </action>
