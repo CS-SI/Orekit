@@ -450,6 +450,11 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
             }
 
             @Override
+            public int getDimension() {
+                return 7;
+            }
+
+            @Override
             public AdditionalDerivativesProvider buildAdditionalDerivativesProvider() {
                 return new CartesianAdjointDerivativesProvider(new UnboundedCartesianEnergy(getAdjointName(), massFlowRateFactor,
                         eventDetectionSettings), keplerianTerm);

@@ -30,10 +30,32 @@ import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvi
  */
 public abstract class CartesianAdjointDynamicsProvider implements AdjointDynamicsProvider {
 
+    /** Adjoint name. */
+    private final String adjointName;
+
+    /** Adjoint dimension. */
+    private final int dimension;
+
+    /**
+     * Constructor.
+     * @param adjointName adjoint name
+     * @param dimension adjoint dimension
+     */
+    protected CartesianAdjointDynamicsProvider(final String adjointName, final int dimension) {
+        this.adjointName = adjointName;
+        this.dimension = dimension;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        return dimension;
+    }
+
     /** {@inheritDoc} */
     @Override
     public String getAdjointName() {
-        return buildAdditionalDerivativesProvider().getName();
+        return adjointName;
     }
 
     /** {@inheritDoc} */

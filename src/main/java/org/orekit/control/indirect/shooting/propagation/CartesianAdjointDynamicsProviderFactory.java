@@ -56,7 +56,7 @@ public class CartesianAdjointDynamicsProviderFactory {
     public static CartesianAdjointDynamicsProvider buildUnboundedEnergyProvider(final String adjointName,
                                                                                 final double massFlowRateFactor,
                                                                                 final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider() {
+        return new CartesianAdjointDynamicsProvider(adjointName, massFlowRateFactor == 0 ? 6 : 7) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -92,7 +92,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                               final double massFlowRateFactor,
                                                                               final double maximumThrustMagnitude,
                                                                               final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider() {
+        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -121,7 +121,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                                 final double massFlowRateFactor,
                                                                                 final double maximumThrustMagnitude,
                                                                                 final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider() {
+        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
