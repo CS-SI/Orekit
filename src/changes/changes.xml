@@ -21,8 +21,11 @@
   </properties>
   <body>
     <release version="12.2.1" date="TBD" description="TBD">
+      <action dev="serrof" type="fix" issue="1624">
+        Fix LofOffsetPointing delegating everything to input AttitudeProvider.
+      </action>
       <action dev="gegout" type="fix" issue="1624">
-        Fix deprecated abstract method in 12.2
+        Fix deprecated abstract method in 12.2.
       </action>
       <action dev="serrof" type="fix" issue="1620">
         Fixed computation time regression by removing HashMap from (Field)TLEPropagator.
@@ -42,7 +45,7 @@
       <action dev="serrof" type="fix" issue="1525">
         Fixed conversion error with large values for arguments of longitude and latitude.
       </action>
-      <action dev="serrof" type="fix" issue="1418">
+      <action dev="geckonoid" type="fix" issue="1418">
         Fixed ClockOffsetDriver not modifying the value of BistaticRange.
       </action>
     </release>

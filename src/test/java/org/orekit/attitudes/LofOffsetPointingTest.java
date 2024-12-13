@@ -182,9 +182,8 @@ class LofOffsetPointingTest {
                     dir = Vector3D.PLUS_J;
                     break;
                 case QSW:
-                    dir = Vector3D.MINUS_I;
-                    break;
                 case LVLH:
+                case NTW:
                     dir = Vector3D.MINUS_I;
                     break;
                 case LVLH_CCSDS:
@@ -192,9 +191,6 @@ class LofOffsetPointingTest {
                     break;
                 case VNC:
                     dir = Vector3D.MINUS_K;
-                    break;
-                case NTW:
-                    dir = Vector3D.MINUS_I;
                     break;
                 default :
                     // EQW and deprecated VVLH, not used in this test
@@ -214,7 +210,7 @@ class LofOffsetPointingTest {
         final FieldOrbit<T> orbitF = new FieldSpacecraftState<>(field, new SpacecraftState(orbit)).getOrbit();
         final FieldAbsoluteDate<T> dateF = new FieldAbsoluteDate<>(field, date);
         final FieldAttitude<T> attitudeF = provider.getAttitude(orbitF, dateF, frame);
-        final double tolerance = 1e-15;
+        final double tolerance = 1e-12;
         Assertions.assertEquals(0.0, Rotation.distance(attitudeD.getRotation(), attitudeF.getRotation().toRotation()), tolerance);
         Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getSpin(), attitudeF.getSpin().toVector3D()), tolerance);
         Assertions.assertEquals(0.0, Vector3D.distance(attitudeD.getRotationAcceleration(), attitudeF.getRotationAcceleration().toVector3D()), tolerance);
@@ -232,14 +228,30 @@ class LofOffsetPointingTest {
     }
 
     @Test
+    void testGetAttitudeRotationAgainstOriginal() {
+        // GIVEN
+        final CircularOrbit circ =
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(100),
+                        FastMath.toRadians(1.300), PositionAngleType.MEAN,
+                        FramesFactory.getEME2000(), date, mu);
+        final LofOffset lofOffset = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0., 1, 0);
+        final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, lofOffset, new Vector3D(0, 0, 1.1));
+        // WHEN
+        final Rotation actualRotation = pointing.getAttitudeRotation(circ, circ.getDate(), circ.getFrame());
+        // THEN
+        final Rotation unExpectedRotation = lofOffset.getAttitudeRotation(circ, circ.getDate(), circ.getFrame());
+        Assertions.assertNotEquals(0., Rotation.distance(unExpectedRotation, actualRotation));
+    }
+
+    @Test
     void testGetAttitudeRotation() {
         // GIVEN
         final CircularOrbit circ =
-                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                        FastMath.toRadians(5.300), PositionAngleType.MEAN,
+                new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(100),
+                        FastMath.toRadians(1.300), PositionAngleType.MEAN,
                         FramesFactory.getEME2000(), date, mu);
-        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, FastMath.PI, 0, 0);
-        final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, upsideDown, Vector3D.PLUS_K);
+        final LofOffset lofOffset = new LofOffset(circ.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0., 0, 0);
+        final LofOffsetPointing pointing = new LofOffsetPointing(circ.getFrame(), earthSpheric, lofOffset, Vector3D.PLUS_K);
         // WHEN
         final Rotation actualRotation = pointing.getAttitudeRotation(circ, circ.getDate(), circ.getFrame());
         // THEN

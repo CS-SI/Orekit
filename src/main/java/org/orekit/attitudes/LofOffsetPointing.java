@@ -24,8 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -82,34 +80,6 @@ public class LofOffsetPointing extends GroundPointing {
         this.shape = shape;
         this.attitudeLaw = attLaw;
         this.satPointingVector = satPointingVector;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Attitude getAttitude(final PVCoordinatesProvider pvProv,
-                                final AbsoluteDate date, final Frame frame) {
-        return attitudeLaw.getAttitude(pvProv, date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                            final FieldAbsoluteDate<T> date, final Frame frame) {
-        return attitudeLaw.getAttitude(pvProv, date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Rotation getAttitudeRotation(final PVCoordinatesProvider pvProv,
-                                        final AbsoluteDate date, final Frame frame) {
-        return attitudeLaw.getAttitudeRotation(pvProv, date, frame);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> FieldRotation<T> getAttitudeRotation(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                    final FieldAbsoluteDate<T> date, final Frame frame) {
-        return attitudeLaw.getAttitudeRotation(pvProv, date, frame);
     }
 
     /** {@inheritDoc} */
