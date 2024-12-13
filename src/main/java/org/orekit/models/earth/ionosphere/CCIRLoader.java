@@ -108,7 +108,7 @@ class CCIRLoader {
 
         // The files are named ccirXX.asc where XX substitute the month of the year + 10
         final int currentMonth = dateComponents.getMonth();
-        final String fileName = String.format("%s/ccir%02d.asc", NeQuickModel.NEQUICK_BASE, currentMonth + 10);
+        final String fileName = String.format("%sccir%02d.asc", NeQuickModel.NEQUICK_BASE, currentMonth + 10);
         try (InputStream in = CCIRLoader.class.getResourceAsStream(fileName)) {
             loadData(in, fileName);
         } catch (IOException e) {

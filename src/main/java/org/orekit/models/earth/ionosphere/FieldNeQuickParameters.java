@@ -81,18 +81,16 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
      * @param alpha effective ionisation level coefficients
-     * @param modipGrid modip grid
+     * @param modip modip
      */
     FieldNeQuickParameters(final DateTimeComponents dateTime,
                            final double[] flattenF2, final double[] flattenFm3,
                            final T latitude, final T longitude,
-                           final double[] alpha, final double[][] modipGrid) {
+                           final double[] alpha, final T modip) {
 
         // Zero
         final T zero = latitude.getField().getZero();
 
-        // MODIP in degrees
-        final T modip = computeMODIP(latitude, longitude, modipGrid);
         // Effective ionisation level Az
         final T az = computeAz(modip, alpha);
         // Effective sunspot number (Eq. 19)
@@ -252,71 +250,11 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Computes the value of the modified dip latitude (MODIP) for the
-     * given latitude and longitude.
-     *
-     * @param lat receiver latitude, radians
-     * @param lon receiver longitude, radians
-     * @param stModip modip grid
-     * @return the MODIP in degrees
-     */
-    private T computeMODIP(final T lat, final T lon, final double[][] stModip) {
-
-        // Zero
-        final T zero = lat.getField().getZero();
-
-        // For the MODIP computation, the latitude and longitude have to be converted in degrees
-        final T latitude  = FastMath.toDegrees(lat);
-        final T longitude = FastMath.toDegrees(lon);
-
-        // Extreme cases
-        if (latitude.getReal() == 90.0 || latitude.getReal() == -90.0) {
-            return latitude;
-        }
-
-        // Auxiliary parameter l (Eq. 6 to 8)
-        final int lF = (int) ((longitude.getReal() + 180) * 0.1);
-        int l = lF - 2;
-        if (l < -2) {
-            l += 36;
-        } else if (l > 33) {
-            l -= 36;
-        }
-
-        // Auxiliary parameter a (Eq. 9 to 11)
-        final T a  = latitude.add(90).multiply(0.2).add(1.0);
-        final T aF = FastMath.floor(a);
-        // Eq. 10
-        final T x = a.subtract(aF);
-        // Eq. 11
-        final int i = (int) aF.getReal() - 2;
-
-        // zi coefficients (Eq. 12 and 13)
-        final T z1 = interpolate(zero.add(stModip[i + 1][l + 2]), zero.add(stModip[i + 2][l + 2]),
-                                      zero.add(stModip[i + 3][l + 2]), zero.add(stModip[i + 4][l + 2]), x);
-        final T z2 = interpolate(zero.add(stModip[i + 1][l + 3]), zero.add(stModip[i + 2][l + 3]),
-                                      zero.add(stModip[i + 3][l + 3]), zero.add(stModip[i + 4][l + 3]), x);
-        final T z3 = interpolate(zero.add(stModip[i + 1][l + 4]), zero.add(stModip[i + 2][l + 4]),
-                                      zero.add(stModip[i + 3][l + 4]), zero.add(stModip[i + 4][l + 4]), x);
-        final T z4 = interpolate(zero.add(stModip[i + 1][l + 5]), zero.add(stModip[i + 2][l + 5]),
-                                      zero.add(stModip[i + 3][l + 5]), zero.add(stModip[i + 4][l + 5]), x);
-
-        // Auxiliary parameter b (Eq. 14 and 15)
-        final T b  = longitude.add(180).multiply(0.1);
-        final T bF = FastMath.floor(b);
-        final T y  = b.subtract(bF);
-
-        // MODIP (Ref Eq. 16)
-        return interpolate(z1, z2, z3, z4, y);
-
-    }
-
-    /**
      * This method computes the effective ionisation level Az.
      * <p>
      * This parameter is used for the computation of the Total Electron Content (TEC).
      * </p>
-     * @param modip modified dip latitude (MODIP) in degrees
+     * @param modip modified dip latitude (ModipGrid) in degrees
      * @param alpha effective ionisation level coefficients
      * @return the ionisation level Az
      */
@@ -549,7 +487,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
 
         T frequency = cf2[0];
 
-        // MODIP coefficients Eq. 57
+        // ModipGrid coefficients Eq. 57
         final T sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final T[] m = MathArrays.buildArray(latitude.getField(), 12);
         m[0] = latitude.getField().getOne();
@@ -594,7 +532,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
 
         T m3000 = cm3[0];
 
-        // MODIP coefficients Eq. 57
+        // ModipGrid coefficients Eq. 57
         final T sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final T[] m = MathArrays.buildArray(latitude.getField(), 12);
         m[0] = latitude.getField().getOne();
@@ -747,38 +685,6 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         } else {
             return FastMath.exp(power);
         }
-    }
-
-    /**
-     * This method provides a third order interpolation function
-     * as recommended in the reference document (Ref Eq. 128 to Eq. 138)
-     *
-     * @param z1 z1 coefficient
-     * @param z2 z2 coefficient
-     * @param z3 z3 coefficient
-     * @param z4 z4 coefficient
-     * @param x position
-     * @return a third order interpolation
-     */
-    private T interpolate(final T z1, final T z2,
-                          final T z3, final T z4,
-                          final T x) {
-
-        if (FastMath.abs(2.0 * x.getReal()) < 1e-10) {
-            return z2;
-        }
-
-        final T delta = x.multiply(2.0).subtract(1.0);
-        final T g1 = z3.add(z2);
-        final T g2 = z3.subtract(z2);
-        final T g3 = z4.add(z1);
-        final T g4 = z4.subtract(z1).divide(3.0);
-        final T a0 = g1.multiply(9.0).subtract(g3);
-        final T a1 = g2.multiply(9.0).subtract(g4);
-        final T a2 = g3.subtract(g1);
-        final T a3 = g4.subtract(g2);
-        return delta.multiply(a3).add(a2).multiply(delta).add(a1).multiply(delta).add(a0).multiply(0.0625);
-
     }
 
     /**

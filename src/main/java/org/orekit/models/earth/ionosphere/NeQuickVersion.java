@@ -16,6 +16,8 @@
  */
 package org.orekit.models.earth.ionosphere;
 
+import org.orekit.data.DataSource;
+
 /** Enumerate for NeQuick model version.
  * @author Luc Maisonobe
  * @since 13.0
@@ -28,51 +30,59 @@ public enum NeQuickVersion {
     /** Original NeQuick 2 as recommended by ITU-R P.531. */
     NEQUICK_2_ITU(180, 180, "modip.asc", false);
 
-    /** Number of cells of MODIP grid in longitude (without wrapping). */
-    private final int cellsLon;
+    /** Number of cells of ModipGrid grid in longitude (without wrapping). */
+    private final int nbCellsLon;
 
-    /** Number of cells of MODIP grid in latitude (without wrapping). */
-    private final int cellsLat;
+    /** Number of cells of ModipGrid grid in latitude (without wrapping). */
+    private final int nbCellsLat;
 
     /** Name of grid resource file. */
     private final String resourceName;
 
-    /** Indicator for already included MODIP grid wrapping in resource file. */
+    /** Indicator for already included ModipGrid grid wrapping in resource file. */
     private final boolean wrappingAlreadyIncluded;
 
     /** Simple constructor.
-     * @param cellsLon number of cells of MODIP grid in longitude (without wrapping)
-     * @param cellsLat number of cells of MODIP grid in latitude (without wrapping)
+     * @param nbCellsLon number of cells of ModipGrid grid in longitude (without wrapping)
+     * @param nbCellsLat number of cells of ModipGrid grid in latitude (without wrapping)
      * @param resourceName name of grid resource file
-     * @param wrappingAlreadyIncluded indicator for already included MODIP grid wrapping in resource file
+     * @param wrappingAlreadyIncluded indicator for already included ModipGrid grid wrapping in resource file
      */
-    NeQuickVersion(final int cellsLon, final int cellsLat,
+    NeQuickVersion(final int nbCellsLon, final int nbCellsLat,
                    final String resourceName, final boolean wrappingAlreadyIncluded) {
-        this.cellsLon                = cellsLon;
-        this.cellsLat                = cellsLat;
+        this.nbCellsLon              = nbCellsLon;
+        this.nbCellsLat              = nbCellsLat;
         this.resourceName            = resourceName;
         this.wrappingAlreadyIncluded = wrappingAlreadyIncluded;
     }
 
-    /** Get number of cells of MODIP grid in longitude (without wrapping).
-     * @return number of cells of MODIP grid in longitude (without wrapping)
+    /** Get number of cells of ModipGrid grid in longitude (without wrapping).
+     * @return number of cells of ModipGrid grid in longitude (without wrapping)
      */
-    int getcellsLon() {
-        return cellsLon;
+    int getnbCellsLon() {
+        return nbCellsLon;
     }
 
-    /** Get number of cells of MODIP grid in latitude (without wrapping).
-     * @return number of cells of MODIP grid in latitude (without wrapping)
+    /** Get number of cells of ModipGrid grid in latitude (without wrapping).
+     * @return number of cells of ModipGrid grid in latitude (without wrapping)
      */
-    int getcellsLat() {
-        return cellsLat;
+    int getnbCellsLat() {
+        return nbCellsLat;
     }
 
-    /** Get name of grid resource file.
-     * @return name of grid resource file
+    /** Get grid source.
+     * <p>
+     * A new data source is created each time this method is called,
+     * in practice it should be called only once, as per the
+     * initialization on demand holder idiom used to load the grid
+     * only once
+     * </p>
+     * @return grid source
      */
-    String getResourceName() {
-        return resourceName;
+    DataSource getSource() {
+        return new DataSource(resourceName,
+                              () -> NeQuickVersion.class.getResourceAsStream(NeQuickModel.NEQUICK_BASE +
+                                                                             resourceName));
     }
 
     /** Check if wrapping is already included in resource file.

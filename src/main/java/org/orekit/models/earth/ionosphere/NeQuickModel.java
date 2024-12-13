@@ -29,6 +29,7 @@ import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.FieldSpacecraftState;
@@ -56,7 +57,7 @@ public class NeQuickModel implements IonosphericModel {
     static final double RE = 6371200.0;
 
     /** NeQuick resources base directory. */
-    static final String NEQUICK_BASE = "/assets/org/orekit/nequick";
+    static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
 
     /** Meters to kilometers converter. */
     private static final double M_TO_KM = 0.001;
@@ -70,8 +71,8 @@ public class NeQuickModel implements IonosphericModel {
     /** The three ionospheric coefficients broadcast in the Galileo navigation message. */
     private final double[] alpha;
 
-    /** MODIP grid. */
-    private final double[][] stModip;
+    /** Modip grid. */
+    private final ModipGrid modipGrid;
 
     /** Month used for loading CCIR coefficients. */
     private int month;
@@ -100,19 +101,33 @@ public class NeQuickModel implements IonosphericModel {
 
     /**
      * Build a new instance.
+     * <p>
+     * This constructor defaults to the {@link NeQuickVersion#NEQUICK_2_GALILEO Galileo-specific}
+     * version of the NeQuick model.
+     * </p>
      * @param alpha effective ionisation level coefficients
      * @param utc UTC time scale.
      * @since 10.1
      */
     public NeQuickModel(final double[] alpha, final TimeScale utc) {
+        this(NeQuickVersion.NEQUICK_2_GALILEO, alpha, utc);
+    }
+
+    /**
+     * Build a new instance.
+     * @param version version of the model to use
+     * @param alpha effective ionisation level coefficients
+     * @param utc UTC time scale.
+     * @since 13.0
+     */
+    public NeQuickModel(final NeQuickVersion version, final double[] alpha, final TimeScale utc) {
         // F2 layer values
         this.month      = 0;
         this.flattenF2  = null;
         this.flattenFm3 = null;
-        // Read modip grid
-        final MODIP parser = new MODIP();
-        parser.loadMODIPGrid();
-        this.stModip = parser.getMODIPGrid();
+        // Modip grid
+        this.modipGrid  = getModipGrid(version);
+
         // Ionisation level coefficients
         this.alpha = alpha.clone();
         this.utc = utc;
@@ -303,9 +318,11 @@ public class NeQuickModel implements IonosphericModel {
         // Compute electron density
         double density = 0.0;
         for (int i = 0; i < heightS.length; i++) {
+            final double latitude  = latitudeS[i];
+            final double longitude = longitudeS[i];
+            final double modip     = modipGrid.computeMODIP(latitude, longitude);
             final NeQuickParameters parameters = new NeQuickParameters(dateTime, flattenF2, flattenFm3,
-                                                                       latitudeS[i], longitudeS[i],
-                                                                       alpha, stModip);
+                                                                       latitude, longitude, alpha, modip);
             density += electronDensity(heightS[i], parameters);
         }
 
@@ -331,9 +348,12 @@ public class NeQuickModel implements IonosphericModel {
         // Compute electron density
         T density = field.getZero();
         for (int i = 0; i < heightS.length; i++) {
+            final T latitude  = latitudeS[i];
+            final T longitude = longitudeS[i];
+            final T modip     = modipGrid.computeMODIP(latitude, longitude);
             final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(dateTime, flattenF2, flattenFm3,
-                                                                                      latitudeS[i], longitudeS[i],
-                                                                                      alpha, stModip);
+                                                                                      latitude, longitude,
+                                                                                      alpha, modip);
             density = density.add(electronDensity(field, heightS[i], parameters));
         }
 
@@ -676,6 +696,74 @@ public class NeQuickModel implements IonosphericModel {
         } else {
             return FastMath.exp(power);
         }
+    }
+
+    /** Get the modip grid for specified NeQuick version.
+     * @param version version of the NeQuick model
+     * @return modip grid for specified version
+     */
+    private static ModipGrid getModipGrid(final NeQuickVersion version) {
+        switch (version) {
+            case NEQUICK_2_GALILEO:
+                return GalileoHolder.INSTANCE;
+            case NEQUICK_2_ITU:
+                return ItuHolder.INSTANCE;
+            default:
+                // this should never happen
+                throw new OrekitInternalError(null);
+        }
+    }
+
+    /** Holder for the Galileo-specific modip singleton.
+     * <p>
+     * We use the initialization on demand holder idiom to store the singleton,
+     * as it is both thread-safe, efficient (no synchronization) and works with
+     * all versions of java.
+     * </p>
+     */
+    private static class GalileoHolder {
+
+        /** Unique instance. */
+        private static final ModipGrid INSTANCE =
+            new ModipGrid(NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLon(),
+                          NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLat(),
+                          NeQuickVersion.NEQUICK_2_GALILEO.getSource(),
+                          NeQuickVersion.NEQUICK_2_GALILEO.isWrappingAlreadyIncluded());
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private GalileoHolder() {
+        }
+
+    }
+
+    /** Holder for the ITU modip singleton.
+     * <p>
+     * We use the initialization on demand holder idiom to store the singleton,
+     * as it is both thread-safe, efficient (no synchronization) and works with
+     * all versions of java.
+     * </p>
+     */
+    private static class ItuHolder {
+
+        /** Unique instance. */
+        private static final ModipGrid INSTANCE =
+            new ModipGrid(NeQuickVersion.NEQUICK_2_ITU.getnbCellsLon(),
+                          NeQuickVersion.NEQUICK_2_ITU.getnbCellsLat(),
+                          NeQuickVersion.NEQUICK_2_ITU.getSource(),
+                          NeQuickVersion.NEQUICK_2_ITU.isWrappingAlreadyIncluded());
+
+        /** Private constructor.
+         * <p>This class is a utility class, it should neither have a public
+         * nor a default constructor. This private constructor prevents
+         * the compiler from generating one automatically.</p>
+         */
+        private ItuHolder() {
+        }
+
     }
 
 }
