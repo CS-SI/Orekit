@@ -19,6 +19,7 @@ package org.orekit.forces.maneuvers.propulsion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -30,6 +31,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -53,7 +55,11 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class ProfileThrustPropulsionModelTest {
 
@@ -131,7 +137,7 @@ class ProfileThrustPropulsionModelTest {
                                                           new PolynomialFunction(0.0),
                                                           new PolynomialFunction(0.0)),
                               t3, false);
-        final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
+        final PropulsionModel propulsionModel = ProfileThrustPropulsionModel.of(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
         Assertions.assertEquals("ABM", propulsionModel.getName());
         Assertions.assertEquals(0.0,     thrust(initialState, t0.shiftedBy(-0.001),              propulsionModel), 1.0e-8);
@@ -222,7 +228,7 @@ class ProfileThrustPropulsionModelTest {
                                                           new PolynomialFunction(0.0),
                                                           new PolynomialFunction(0.0)),
                               t3, false);
-        final PropulsionModel propulsionModel = new ProfileThrustPropulsionModel(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
+        final PropulsionModel propulsionModel = ProfileThrustPropulsionModel.of(profile, isp, Control3DVectorCostType.TWO_NORM, "ABM");
 
         Assertions.assertEquals("ABM", propulsionModel.getName());
         Assertions.assertEquals(0.0,     thrust(initialState, fireDate.shiftedBy(-0.001),                        propulsionModel).getReal(), 1.0e-8);
@@ -260,6 +266,71 @@ class ProfileThrustPropulsionModelTest {
                                                          final PropulsionModel propulsionModel) {
         final FieldSpacecraftState<T> state = initialState.shiftedBy(targetDate.durationFrom(initialState.getDate()));
         return state.getMass().multiply(propulsionModel.getAcceleration(state, state.getAttitude(), null).getNorm());
+    }
+
+    @Test
+    void testGetControl3DVectorCostTypeDefault() {
+        // GIVEN
+        final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(null),
+                1., "");
+        // WHEN
+        final Control3DVectorCostType actualCostType = propulsionModel.getControl3DVectorCostType();
+        // THEN
+        Assertions.assertEquals(Control3DVectorCostType.TWO_NORM, actualCostType);
+    }
+
+    @Test
+    void testGetControl3DVectorCostType() {
+        // GIVEN
+        final Control3DVectorCostType expectedCostType = Control3DVectorCostType.ONE_NORM;
+        final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(null),
+                1., expectedCostType, "");
+        // WHEN
+        final Control3DVectorCostType actualCostType = propulsionModel.getControl3DVectorCostType();
+        // THEN
+        Assertions.assertEquals(expectedCostType, actualCostType);
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final ParameterDriver driver = Mockito.mock(ParameterDriver.class);
+        final String expectedName = "a";
+        Mockito.when(driver.getName()).thenReturn(expectedName);
+        final ThrustSegment segment = new TestThrustSegment(driver);
+        final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(segment),
+                1., Control3DVectorCostType.NONE, "");
+        // WHEN
+        final List<ParameterDriver> propulsionDrivers = propulsionModel.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(1, propulsionDrivers.size());
+        Assertions.assertEquals(expectedName, propulsionDrivers.get(0).getName());
+    }
+
+    private static class TestThrustSegment implements ThrustSegment {
+
+        private final ParameterDriver driver;
+
+        TestThrustSegment(final ParameterDriver driver) {
+            this.driver = driver;
+        }
+
+        @Override
+        public Vector3D getThrustVector(AbsoluteDate date, double mass, double[] parameters) {
+            return Vector3D.PLUS_I;
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(FieldAbsoluteDate<T> date, T mass, T[] parameters) {
+            return null;
+        }
+
+        @Override
+        public List<ParameterDriver> getParametersDrivers() {
+            final ArrayList<ParameterDriver> drivers = new ArrayList<>();
+            drivers.add(driver);
+            return drivers;
+        }
     }
 
     @BeforeEach

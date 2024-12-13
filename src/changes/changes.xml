@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="update" issue="1631">
+            Generalize ProfileThrustPropulsionModel with ThrustSegment.
+        </action>
         <action dev="serrof" type="update" issue="1626">
             Use ExtendedPositionProvider in YawSteering.
         </action>
