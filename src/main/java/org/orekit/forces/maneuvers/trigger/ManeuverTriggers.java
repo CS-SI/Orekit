@@ -19,7 +19,7 @@ package org.orekit.forces.maneuvers.trigger;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetectorsProvider;
@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriversProvider;
 
-/** Generic interface for the maneuver triggers used in a {@link Maneuver}.
+/** Generic interface for the maneuver triggers used in a {@link TriggeredManeuver}.
  * @author Maxime Journot
  * @since 10.2
  */

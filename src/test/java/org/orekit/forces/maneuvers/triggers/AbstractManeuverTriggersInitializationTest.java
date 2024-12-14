@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
@@ -171,7 +171,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testInBetween() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate.shiftedBy(-(duration / 2)),
                                                      startDate.shiftedBy( (duration / 2))),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
@@ -193,7 +193,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testOnStart() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate,
                                                      startDate.shiftedBy(duration)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
@@ -218,7 +218,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testOnEnd() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate.shiftedBy(-duration),
                                                      startDate),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
@@ -243,7 +243,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testOnEndReverse() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate.shiftedBy(-duration),
                                                      startDate),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
@@ -268,7 +268,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testOnStartReverse() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate,
                                                      startDate.shiftedBy(duration)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
@@ -292,7 +292,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testInBetweenReverse() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate.shiftedBy(-duration / 2),
                                                      startDate.shiftedBy( duration / 2)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
@@ -317,7 +317,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testControlForward() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate.shiftedBy(1.0),
                                                      startDate.shiftedBy(1.0 + duration)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));
@@ -341,7 +341,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     @Test
     public void testControlReverse() {
         //Create test Thrust Maneuver
-        Maneuver ctm = new Maneuver(null,
+        TriggeredManeuver ctm = new TriggeredManeuver(null,
                                     configureTrigger(startDate.shiftedBy(-1.0 - duration),
                                                      startDate.shiftedBy(-1.0)),
                                     new BasicConstantThrustPropulsionModel(thrust, isp, direction, ""));

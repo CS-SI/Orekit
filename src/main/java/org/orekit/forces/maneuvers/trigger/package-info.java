@@ -16,7 +16,7 @@
  */
 /**
  *
- * This package provides maneuver triggers' models intended to be used with class {@link org.orekit.forces.maneuvers.Maneuver}.
+ * This package provides maneuver triggers' models intended to be used with class {@link org.orekit.forces.maneuvers.TriggeredManeuver}.
  *
  */
 package org.orekit.forces.maneuvers.trigger;

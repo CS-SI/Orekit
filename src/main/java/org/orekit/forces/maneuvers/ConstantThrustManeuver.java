@@ -38,7 +38,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @author Maxime Journot
  */
-public class ConstantThrustManeuver extends Maneuver {
+public class ConstantThrustManeuver extends TriggeredManeuver {
 
     /** Simple constructor for a constant direction and constant thrust.
      * <p>

@@ -36,7 +36,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
@@ -146,7 +146,7 @@ class ProfileThrustPropulsionModelTest {
         Assertions.assertEquals(0.5 * f, thrust(initialState, t3.shiftedBy(-0.5 * rampDuration), propulsionModel), 1.0e-8);
         Assertions.assertEquals(0.0,     thrust(initialState, t3.shiftedBy(+0.001),              propulsionModel), 1.0e-8);
 
-        final Maneuver maneuver = new Maneuver(null, new DateBasedManeuverTriggers(fireDate, duration), propulsionModel);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, new DateBasedManeuverTriggers(fireDate, duration), propulsionModel);
 
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(initOrbit, initOrbit.getType());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(1.0e-6, rampDuration, tolerance[0], tolerance[1]);
@@ -237,7 +237,7 @@ class ProfileThrustPropulsionModelTest {
         Assertions.assertEquals(0.5 * f, thrust(initialState, fireDate.shiftedBy(duration - 0.5 * rampDuration), propulsionModel).getReal(), 1.0e-8);
         Assertions.assertEquals(0.0,     thrust(initialState, fireDate.shiftedBy(duration + 0.001),              propulsionModel).getReal(), 1.0e-8);
 
-        final Maneuver maneuver = new Maneuver(null, new DateBasedManeuverTriggers(fireDate.toAbsoluteDate(), duration), propulsionModel);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, new DateBasedManeuverTriggers(fireDate.toAbsoluteDate(), duration), propulsionModel);
 
         double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(1e-6).getTolerances(initOrbit, initOrbit.getType());
         AdaptiveStepsizeFieldIntegrator<T> integrator =

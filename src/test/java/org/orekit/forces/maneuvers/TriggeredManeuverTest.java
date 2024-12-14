@@ -50,7 +50,7 @@ import org.orekit.utils.ParameterDriver;
 import java.util.ArrayList;
 import java.util.List;
 
-class ManeuverTest {
+class TriggeredManeuverTest {
 
     @Test
     void testGetName() {
@@ -63,7 +63,7 @@ class ManeuverTest {
         final double arbitraryIsp = 1.;
         final PropulsionModel propulsion = new BasicConstantThrustPropulsionModel(arbitraryThrust, arbitraryIsp, Vector3D.PLUS_I, expectedName);
         // WHEN
-        final Maneuver maneuver = new Maneuver(null, triggers, propulsion);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, triggers, propulsion);
         final String actualName = maneuver.getName();
         // THEN
         Assertions.assertEquals(expectedName, actualName);
@@ -79,7 +79,7 @@ class ManeuverTest {
         driverList.add(Mockito.mock(ParameterDriver.class));
         Mockito.when(mocedkAttitudeProvider.getParametersDrivers()).thenReturn(driverList);
         // WHEN
-        final Maneuver maneuver = new Maneuver(mocedkAttitudeProvider, mockedTriggers, mockedPropulsion);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(mocedkAttitudeProvider, mockedTriggers, mockedPropulsion);
         final List<ParameterDriver> actualDrivers = maneuver.getParametersDrivers();
         // THEN
         Assertions.assertEquals(driverList.size(), actualDrivers.size());
@@ -92,7 +92,7 @@ class ManeuverTest {
         final PropulsionModel mockedPropulsion = Mockito.mock(PropulsionModel.class);
         Mockito.when(mockedPropulsion.getControl3DVectorCostType()).thenReturn(Control3DVectorCostType.TWO_NORM);
         // WHEN
-        final Maneuver maneuver = new Maneuver(null, mockedTriggers, mockedPropulsion);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, mockedTriggers, mockedPropulsion);
         final Control3DVectorCostType actualCostType = maneuver.getControl3DVectorCostType();
         // THEN
         final Control3DVectorCostType expectedCostType = mockedPropulsion.getControl3DVectorCostType();
@@ -132,14 +132,14 @@ class ManeuverTest {
 
         // create Maneuver
         final FrameAlignedProvider attitudeOverride = new FrameAlignedProvider(frame);
-        final Maneuver maneuverWithOverride = new Maneuver(attitudeOverride, mockedTriggers, mockedPropulsion);
+        final TriggeredManeuver maneuverWithOverride = new TriggeredManeuver(attitudeOverride, mockedTriggers, mockedPropulsion);
         final Complex[] fieldParameters = MathArrays.buildArray(field, arbitraryNumber);
         
         // WHEN
         final FieldVector3D<Complex> actualAcceleration = maneuverWithOverride.acceleration(fieldState, fieldParameters);
         
         // THEN
-        final Maneuver maneuverWithoutOverride = new Maneuver(null, mockedTriggers, mockedPropulsion);
+        final TriggeredManeuver maneuverWithoutOverride = new TriggeredManeuver(null, mockedTriggers, mockedPropulsion);
         Assertions.assertNotEquals(0., actualAcceleration.toVector3D().getNorm());
         final Vector3D expectedAcceleration = maneuverWithoutOverride.acceleration(fieldState.toSpacecraftState(),
                 new double[fieldParameters.length]);
@@ -178,7 +178,7 @@ class ManeuverTest {
         final FieldSpacecraftState<Gradient> fieldState = createFieldState(field, FramesFactory.getEME2000(), epoch);
 
         // create Maneuver
-        final Maneuver maneuver = new Maneuver(null, mockedTriggers, mockedPropulsion);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, mockedTriggers, mockedPropulsion);
         final Gradient[] fieldParameters = MathArrays.buildArray(field, arbitraryNumber);
         
         // WHEN
@@ -203,7 +203,7 @@ class ManeuverTest {
     @Test
     void testGetAttitudeModelParametersNull() {
         final double[] parameters = new double[] {1};
-        final Maneuver maneuver = new Maneuver(null, null, null);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, null, null);
         final double[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
         Assertions.assertArrayEquals(new double[0], actualDrivers);
     }
@@ -216,7 +216,7 @@ class ManeuverTest {
         final List<ParameterDriver> drivers = new ArrayList<>();
         drivers.add(Mockito.mock(ParameterDriver.class));
         Mockito.when(mockedRotationModel.getParametersDrivers()).thenReturn(drivers);
-        final Maneuver maneuver = new Maneuver(mockedRotationModel, null, null);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(mockedRotationModel, null, null);
         final double[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
         Assertions.assertArrayEquals(parameters, actualDrivers);
     }
@@ -226,7 +226,7 @@ class ManeuverTest {
         final Binary64Field field = Binary64Field.getInstance();
         final Binary64[] parameters = MathArrays.buildArray(field, 1);
         parameters[0] = Binary64.ONE;
-        final Maneuver maneuver = new Maneuver(null, null, null);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, null, null);
         final Binary64[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
         Assertions.assertEquals(0, actualDrivers.length);
     }
@@ -241,7 +241,7 @@ class ManeuverTest {
         final List<ParameterDriver> drivers = new ArrayList<>();
         drivers.add(Mockito.mock(ParameterDriver.class));
         Mockito.when(mockedRotationModel.getParametersDrivers()).thenReturn(drivers);
-        final Maneuver maneuver = new Maneuver(mockedRotationModel, null, null);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(mockedRotationModel, null, null);
         final Binary64[] actualDrivers = maneuver.getAttitudeModelParameters(parameters);
         Assertions.assertArrayEquals(parameters, actualDrivers);
     }

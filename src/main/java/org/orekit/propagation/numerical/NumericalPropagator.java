@@ -41,7 +41,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.inertia.InertialForces;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
@@ -519,9 +519,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
-            if (forceModel instanceof Maneuver) {
-                final Maneuver maneuver = (Maneuver) forceModel;
-                final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
+            if (forceModel instanceof TriggeredManeuver) {
+                final TriggeredManeuver triggeredManeuver = (TriggeredManeuver) forceModel;
+                final ManeuverTriggers maneuverTriggers = triggeredManeuver.getManeuverTriggers();
 
                 maneuverTriggers.getEventDetectors().
                         filter(ParameterDrivenDateIntervalDetector.class::isInstance).
@@ -534,7 +534,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                 // normally datedriver should have only 1 span but just in case the user defines several span, there will
                                 // be no problem here
                                 for (Span<String> span = d.getStartDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                    start = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), true, d.getThreshold());
+                                    start = manageTriggerDate(stmName, triggeredManeuver, maneuverTriggers, span.getData(), true, d.getThreshold());
                                     names.add(start.getName());
                                     start = null;
                                 }
@@ -543,7 +543,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                                 // normally datedriver should have only 1 span but just in case the user defines several span, there will
                                 // be no problem here
                                 for (Span<String> span = d.getStopDriver().getNamesSpanMap().getFirstSpan(); span != null; span = span.next()) {
-                                    stop = manageTriggerDate(stmName, maneuver, maneuverTriggers, span.getData(), false, d.getThreshold());
+                                    stop = manageTriggerDate(stmName, triggeredManeuver, maneuverTriggers, span.getData(), false, d.getThreshold());
                                     names.add(stop.getName());
                                     stop = null;
                                 }
@@ -597,7 +597,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Manage a maneuver trigger date.
      * @param stmName name of the State Transition Matrix state
-     * @param maneuver maneuver force model
+     * @param triggeredManeuver maneuver force model
      * @param mt trigger to which the driver is bound
      * @param driverName name of the date driver
      * @param start if true, the driver is a maneuver start
@@ -606,7 +606,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @since 11.1
      */
     private TriggerDate manageTriggerDate(final String stmName,
-                                          final Maneuver maneuver,
+                                          final TriggeredManeuver triggeredManeuver,
                                           final ManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
@@ -626,7 +626,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         if (triggerGenerator == null) {
             // this is the first time we need the Jacobian column generator, create it
-            triggerGenerator = new TriggerDate(stmName, driverName, start, maneuver, threshold);
+            triggerGenerator = new TriggerDate(stmName, driverName, start, triggeredManeuver, threshold);
             mt.addResetter(triggerGenerator);
             addAdditionalDerivativesProvider(triggerGenerator.getMassDepletionDelay());
             addAdditionalStateProvider(triggerGenerator);

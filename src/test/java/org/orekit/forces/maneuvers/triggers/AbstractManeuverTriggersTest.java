@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
 import org.orekit.forces.maneuvers.trigger.FieldManeuverTriggersResetter;
@@ -130,7 +130,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double isp = 318;
         final double duration = 3653.99;
         final double f = 420;
-        final Maneuver maneuver = new Maneuver(null,
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null,
                                                configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
@@ -169,7 +169,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double isp = 318;
         final double duration = 30;
         final double f = 420;
-        final Maneuver maneuver = new Maneuver(null,
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null,
                                                configureTrigger(fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
@@ -203,7 +203,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double isp = 318;
         final double duration = 3653.99;
         final double f = 420;
-        final Maneuver maneuver = new Maneuver(null,
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null,
                                                configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
@@ -246,7 +246,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
         final double isp = 318;
         final double duration = 30;
         final double f = 420;
-        final Maneuver maneuver = new Maneuver(null,
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null,
                                                configureTrigger(field, fireDate, fireDate.shiftedBy(duration)),
                                                new BasicConstantThrustPropulsionModel(f, isp, Vector3D.PLUS_I, "ABM"));
         Assertions.assertEquals(f,   ((BasicConstantThrustPropulsionModel) maneuver.getPropulsionModel()).getThrustMagnitude(), 1.0e-10);
@@ -310,7 +310,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     private NumericalPropagator buildPropagator(final AttitudeProvider attitudeProvider, final SpacecraftState initialState,
-                                                final Maneuver maneuver) {
+                                                final TriggeredManeuver maneuver) {
         OrbitType orbitType = OrbitType.EQUINOCTIAL;
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 1000, tol[0], tol[1]);
@@ -326,7 +326,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     private <S extends CalculusFieldElement<S>> FieldNumericalPropagator<S> buildPropagator(final Field<S> field,
                                                                                             final AttitudeProvider attitudeProvider,
                                                                                             final FieldSpacecraftState<S> initialState,
-                                                                                            final Maneuver maneuver) {
+                                                                                            final TriggeredManeuver maneuver) {
         OrbitType orbitType = OrbitType.EQUINOCTIAL;
         double[][] tol = ToleranceProvider.getDefaultToleranceProvider(1e-3).getTolerances(initialState.getOrbit(), orbitType);
         AdaptiveStepsizeFieldIntegrator<S> integrator = new DormandPrince853FieldIntegrator<>(field, 0.001, 1000, tol[0], tol[1]);

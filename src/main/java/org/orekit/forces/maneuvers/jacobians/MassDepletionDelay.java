@@ -17,7 +17,7 @@
 package org.orekit.forces.maneuvers.jacobians;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
@@ -39,7 +39,7 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
     private final boolean manageStart;
 
     /** Maneuver that is delayed. */
-    private final Maneuver maneuver;
+    private final TriggeredManeuver triggeredManeuver;
 
     /** Indicator for forward propagation. */
     private boolean forward;
@@ -51,12 +51,12 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
      * </p>
      * @param triggerName name of the date trigger parameter
      * @param manageStart if true, we compute derivatives with respect to maneuver start
-     * @param maneuver maneuver that is delayed
+     * @param triggeredManeuver maneuver that is delayed
      */
-    public MassDepletionDelay(final String triggerName, final boolean manageStart, final Maneuver maneuver) {
+    public MassDepletionDelay(final String triggerName, final boolean manageStart, final TriggeredManeuver triggeredManeuver) {
         this.depletionName = PREFIX + triggerName;
         this.manageStart   = manageStart;
-        this.maneuver      = maneuver;
+        this.triggeredManeuver = triggeredManeuver;
     }
 
     /** {@inheritDoc} */
@@ -89,16 +89,16 @@ public class MassDepletionDelay implements AdditionalDerivativesProvider {
         if (forward == manageStart) {
 
             // current acceleration
-            final double[] parameters   = maneuver.getParameters(state.getDate());
+            final double[] parameters   = triggeredManeuver.getParameters(state.getDate());
             // for the acceleration method we need all the span values of all the parameters driver
             // as in the acceleration method an exctractParameter method is called
-            final Vector3D acceleration = maneuver.acceleration(state, parameters);
+            final Vector3D acceleration = triggeredManeuver.acceleration(state, parameters);
 
             // we have acceleration Γ = F/m and m = m₀ - q (t - tₛ)
             // where m is current mass, m₀ is initial mass and tₛ is maneuver trigger time
             // a delay dtₛ on trigger time induces delaying mass depletion
             // we get: dΓ = -F/m² dm = -F/m² q dtₛ = -Γ q/m dtₛ
-            final double minusQ = maneuver.getPropulsionModel().getMassDerivatives(state, maneuver.getParameters(state.getDate()));
+            final double minusQ = triggeredManeuver.getPropulsionModel().getMassDerivatives(state, triggeredManeuver.getParameters(state.getDate()));
             final double m      = state.getMass();
             final double ratio  = minusQ / m;
 

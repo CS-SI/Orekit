@@ -56,7 +56,7 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
@@ -143,7 +143,7 @@ class StateTransitionMatrixGeneratorTest {
         });
         propagator2.setInitialState(propagator2.getInitialState().addAdditionalState("dummy-3", new double[1]));
         propagator2.addAdditionalStateProvider(new TriggerDate(dummyStmGenerator.getName(), "dummy-4", true,
-                                                               (Maneuver) propagator2.getAllForceModels().get(1),
+                                                               (TriggeredManeuver) propagator2.getAllForceModels().get(1),
                                                                1.0e-6));
         propagator2.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() { return "dummy-5"; }
@@ -665,7 +665,7 @@ class StateTransitionMatrixGeneratorTest {
             propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                                            GravityFieldFactory.getNormalizedProvider(degree, degree)));
         }
-        final Maneuver maneuver = new Maneuver(null, triggers, propulsionModel);
+        final TriggeredManeuver maneuver = new TriggeredManeuver(null, triggers, propulsionModel);
         propagator.addForceModel(maneuver);
         propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
             public String getName() { return triggers.getName().concat("-acc"); }

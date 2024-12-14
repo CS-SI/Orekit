@@ -40,6 +40,7 @@ import org.orekit.utils.TimeSpanMap;
 
 /** Thrust propulsion model based on segmented profile.
  * @author Luc Maisonobe
+ * @author Romain Serra
  * @since 12.0
  */
 public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
@@ -148,14 +149,35 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final SpacecraftState s, final double[] parameters) {
-        final ThrustSegment active = profile.get(s.getDate());
+        final ThrustSegment active = getActiveSegment(s.getDate());
         return active == null ? Vector3D.ZERO : active.getThrustVector(s.getDate(), s.getMass(), parameters);
+    }
+
+    /**
+     * Return the active thrust segment at input date.
+     * @param date date
+     * @return active segment
+     * @since 13.0
+     */
+    public ThrustSegment getActiveSegment(final AbsoluteDate date) {
+        return profile.get(date);
+    }
+
+    /**
+     * Extract the firings between given dates.
+     * @param startDate start date
+     * @param endDate end date
+     * @return firings
+     * @since 13.0
+     */
+    public TimeSpanMap<ThrustSegment> getFirings(final AbsoluteDate startDate, final AbsoluteDate endDate) {
+        return profile.extractRange(startDate, endDate);
     }
 
     /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldSpacecraftState<T> s,
                                                                                 final T[] parameters) {
-        final ThrustSegment active = profile.get(s.getDate().toAbsoluteDate());
+        final ThrustSegment active = getActiveSegment(s.getDate().toAbsoluteDate());
         return active == null ? FieldVector3D.getZero(s.getDate().getField()) :
                 active.getThrustVector(s.getDate(), s.getMass(), parameters);
     }

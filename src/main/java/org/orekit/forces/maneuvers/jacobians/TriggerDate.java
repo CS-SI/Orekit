@@ -21,7 +21,7 @@ import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposition;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
@@ -136,7 +136,7 @@ public class TriggerDate
     private final boolean manageStart;
 
     /** Maneuver force model. */
-    private final Maneuver maneuver;
+    private final TriggeredManeuver triggeredManeuver;
 
     /** Event detector threshold. */
     private final double threshold;
@@ -154,16 +154,16 @@ public class TriggerDate
      * @param stmName name of State Transition Matrix state
      * @param triggerName name of the parameter corresponding to the trigger date column
      * @param manageStart if true, we compute derivatives with respect to maneuver start
-     * @param maneuver maneuver force model
+     * @param triggeredManeuver maneuver force model
      * @param threshold event detector threshold
      */
     public TriggerDate(final String stmName, final String triggerName, final boolean manageStart,
-                       final Maneuver maneuver, final double threshold) {
+                       final TriggeredManeuver triggeredManeuver, final double threshold) {
         this.stmName            = stmName;
         this.triggerName        = triggerName;
-        this.massDepletionDelay = new MassDepletionDelay(triggerName, manageStart, maneuver);
+        this.massDepletionDelay = new MassDepletionDelay(triggerName, manageStart, triggeredManeuver);
         this.manageStart        = manageStart;
-        this.maneuver           = maneuver;
+        this.triggeredManeuver = triggeredManeuver;
         this.threshold          = threshold;
         this.contribution       = null;
         this.trigger            = null;
@@ -256,7 +256,7 @@ public class TriggerDate
 
         // get the acceleration near trigger time
         final SpacecraftState stateWhenFiring = state.shiftedBy((manageStart ? 2 : -2) * threshold);
-        final Vector3D        acceleration    = maneuver.acceleration(stateWhenFiring, maneuver.getParameters(state.getDate()));
+        final Vector3D        acceleration    = triggeredManeuver.acceleration(stateWhenFiring, triggeredManeuver.getParameters(state.getDate()));
 
         // initialize derivatives computation
         final double     sign = (forward == manageStart) ? -1 : +1;

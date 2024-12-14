@@ -27,7 +27,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.TriggeredManeuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
 import org.orekit.forces.maneuvers.propulsion.PropulsionModel;
 import org.orekit.forces.maneuvers.trigger.DateBasedManeuverTriggers;
@@ -116,7 +116,7 @@ public class NumericalPropagationHarvesterTest {
 
         DateBasedManeuverTriggers triggers = new DateBasedManeuverTriggers("apogee_boost", propagator.getInitialState().getDate().shiftedBy(60.0), 120.0);
         PropulsionModel propulsion = new BasicConstantThrustPropulsionModel(400.0, 350.0, Vector3D.PLUS_I, "ABM-");
-        propagator.addForceModel(new Maneuver(null, triggers, propulsion));
+        propagator.addForceModel(new TriggeredManeuver(null, triggers, propulsion));
         Assertions.assertTrue(harvester.getJacobiansColumnsNames().isEmpty());
 
         triggers.getParametersDrivers().get(1).setSelected(true);
