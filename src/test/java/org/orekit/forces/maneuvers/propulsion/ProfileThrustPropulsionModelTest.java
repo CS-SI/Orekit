@@ -269,6 +269,34 @@ class ProfileThrustPropulsionModelTest {
     }
 
     @Test
+    void testGetThrustVector() {
+        // GIVEN
+        final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(null),
+                1., "");
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        // WHEN
+        final Vector3D actualThrust = propulsionModel.getThrustVector(mockedState);
+        // THEN
+        Assertions.assertEquals(propulsionModel.getThrustVector(mockedState, new double[0]), actualThrust);
+    }
+
+    @Test
+    void testGetFlowRate() {
+        // GIVEN
+        final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(null),
+                1., "");
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        // WHEN
+        final double actualRate = propulsionModel.getFlowRate(mockedState);
+        // THEN
+        Assertions.assertEquals(propulsionModel.getFlowRate(mockedState, new double[0]), actualRate);
+    }
+
+    @Test
     void testGetControl3DVectorCostTypeDefault() {
         // GIVEN
         final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(null),

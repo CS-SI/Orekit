@@ -136,34 +136,23 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final SpacecraftState s) {
-        return -control3DVectorCostType.evaluate(getThrustVector(s)) / ThrustPropulsionModel.getExhaustVelocity(isp);
+        return getFlowRate(s, getParameters());
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * Here the thrust vector does not depend on parameters
-     * </p>
-     */
+    /** {@inheritDoc} */
+    @Override
+    public double getFlowRate(final SpacecraftState s, final double[] parameters) {
+        return -control3DVectorCostType.evaluate(getThrustVector(s, parameters)) / ThrustPropulsionModel.getExhaustVelocity(isp);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final SpacecraftState s, final double[] parameters) {
         final ThrustSegment active = profile.get(s.getDate());
         return active == null ? Vector3D.ZERO : active.getThrustVector(s.getDate(), s.getMass(), parameters);
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * Here the flow rate does not depend on parameters
-     * </p>
-     */
-    public double getFlowRate(final SpacecraftState s, final double[] parameters) {
-        return getFlowRate(s);
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * Here the thrust vector does not depend on parameters
-     * </p>
-     */
+    /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldSpacecraftState<T> s,
                                                                                 final T[] parameters) {
         final ThrustSegment active = profile.get(s.getDate().toAbsoluteDate());
@@ -171,11 +160,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
                 active.getThrustVector(s.getDate(), s.getMass(), parameters);
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * Here the flow rate does not depend on parameters
-     * </p>
-     */
+    /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s, final T[] parameters) {
         return control3DVectorCostType.evaluate(getThrustVector(s, parameters)).divide(-ThrustPropulsionModel.getExhaustVelocity(isp));
     }
