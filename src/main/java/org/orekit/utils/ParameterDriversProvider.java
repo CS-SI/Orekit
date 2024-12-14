@@ -34,6 +34,21 @@ import org.orekit.utils.TimeSpanMap.Span;
  */
 public interface ParameterDriversProvider {
 
+    /** Find if a parameter driver with a given name already exists in a list of parameter drivers.
+     * @param driversList the list of parameter drivers
+     * @param name the parameter driver's name to filter with
+     * @return true if the name was found, false otherwise
+     * @since 13.0
+     */
+    static boolean findByName(final List<ParameterDriver> driversList, final String name) {
+        for (final ParameterDriver d : driversList) {
+            if (d.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Get the drivers for parameters.
      * @return drivers for parameters
      */

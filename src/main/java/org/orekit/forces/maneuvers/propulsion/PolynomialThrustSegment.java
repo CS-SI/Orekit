@@ -23,12 +23,16 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
+import org.orekit.utils.ParameterDriver;
 
-/** One polynomial segment of a thrust profile.
+import java.util.ArrayList;
+import java.util.List;
+
+/** One polynomial segment of a thrust Cartesian profile.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class PolynomialThrustSegment {
+public class PolynomialThrustSegment implements ThrustSegment {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -58,23 +62,25 @@ public class PolynomialThrustSegment {
         this.zThrust       = zThrust;
     }
 
-    /** Get thrust vector at a specified date.
-     * @param date date to consider
-     * @return thrust at {@code date} (N)
-     */
-    public Vector3D getThrustVector(final AbsoluteDate date) {
+    /** {@inheritDoc} */
+    @Override
+    public Vector3D getThrustVector(final AbsoluteDate date, final double mass, final double[] parameters) {
         final double dt = date.durationFrom(referenceDate);
         return new Vector3D(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
     }
 
-    /** Get thrust vector at a specified date.
-     * @param <T> type of the field elements
-     * @param date date to consider
-     * @return thrust at {@code date} (N)
-     */
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldAbsoluteDate<T> date) {
+    /** {@inheritDoc} */
+    @Override
+    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldAbsoluteDate<T> date,
+                                                                                final T mass,
+                                                                                final T[] parameters) {
         final T dt = date.durationFrom(referenceDate);
         return new FieldVector3D<>(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<ParameterDriver> getParametersDrivers() {
+        return new ArrayList<>();
+    }
 }
