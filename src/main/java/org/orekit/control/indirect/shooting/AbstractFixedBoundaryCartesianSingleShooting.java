@@ -31,6 +31,7 @@ import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
+import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -290,28 +291,28 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         final Field<Gradient> field = initialDate.getField();
         final FieldExplicitRungeKuttaIntegrator<Gradient> fieldIntegrator = buildFieldIntegrator(fieldInitialState);
         final FieldOrdinaryDifferentialEquation<Gradient> fieldODE = buildFieldODE(fieldInitialState.getDate());
-        final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
-        final int adjointDimension = getPropagationSettings().getAdjointDynamicsProvider().getDimension();
-        FieldSpacecraftState<Gradient> fieldTerminalState = fieldInitialState;
+        final AdjointDynamicsProvider dynamicsProvider = getPropagationSettings().getAdjointDynamicsProvider();
         AbsoluteDate date = initialDate.toAbsoluteDate();
+        // build initial state as array
+        Gradient[] integrationState = MathArrays.buildArray(field, fieldODE.getDimension());
+        final FieldPVCoordinates<Gradient> pvCoordinates = fieldInitialState.getPVCoordinates();
+        System.arraycopy(pvCoordinates.getPosition().toArray(), 0, integrationState, 0, 3);
+        System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, integrationState, 3, 3);
+        integrationState[6] = fieldInitialState.getMass();
+        System.arraycopy(fieldInitialState.getAdditionalState(dynamicsProvider.getAdjointName()), 0, integrationState,
+                7, dynamicsProvider.getDimension());
+        // step-by-step integration
         for (final AbsoluteDate stepDate: stepDates) {
             final Gradient time = initialDate.durationFrom(date).negate();
             final Gradient nextTime = initialDate.durationFrom(stepDate).negate();
-            // turn spacecraft state into integration state
-            final Gradient[] integrationState = MathArrays.buildArray(field, fieldODE.getDimension());
-            final FieldPVCoordinates<Gradient> pvCoordinates = fieldTerminalState.getPVCoordinates();
-            System.arraycopy(pvCoordinates.getPosition().toArray(), 0, integrationState, 0, 3);
-            System.arraycopy(pvCoordinates.getVelocity().toArray(), 0, integrationState, 3, 3);
-            integrationState[6] = fieldTerminalState.getMass();
-            System.arraycopy(fieldTerminalState.getAdditionalState(adjointName), 0, integrationState, 7, adjointDimension);
-            // perform step and remap to spacecraft state
-            final Gradient[] nextState = fieldIntegrator.singleStep(fieldODE, time, integrationState, nextTime);
+            integrationState = fieldIntegrator.singleStep(fieldODE, time, integrationState, nextTime);
             date = new AbsoluteDate(stepDate);
-            fieldTerminalState = createFieldState(new FieldAbsoluteDate<>(field, date),
-                    Arrays.copyOfRange(nextState, 0, 6), nextState[6],
-                    Arrays.copyOfRange(nextState, 7, nextState.length));
         }
-        return fieldTerminalState;
+        // turn terminal state into Orekit object
+        final Gradient[] terminalCartesian = Arrays.copyOfRange(integrationState, 0, 6);
+        final Gradient[] terminalAdjoint = Arrays.copyOfRange(integrationState, 7, integrationState.length);
+        return createFieldState(new FieldAbsoluteDate<>(field, date), terminalCartesian, integrationState[6],
+                terminalAdjoint);
     }
 
     /**

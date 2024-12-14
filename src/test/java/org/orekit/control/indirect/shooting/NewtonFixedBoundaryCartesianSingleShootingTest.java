@@ -118,7 +118,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
         final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
         final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, 0., Double.POSITIVE_INFINITY,
-                new ClassicalRungeKuttaIntegrationSettings(60.));
+                ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(60.));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
         shooting.setScalePositionDefects(1.);
@@ -206,7 +206,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
         final double flowRateFactor = 1e-3;
         final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, flowRateFactor, Double.POSITIVE_INFINITY,
-                new DormandPrince54IntegrationSettings(1e-1, 1e2,
+                ShootingIntegrationSettingsFactory.getDormandPrince54IntegratorSettings(1e-1, 1e2,
                         ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
@@ -239,7 +239,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(massFlowRateFactor,
                 new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit),
-                new ClassicalRungeKuttaIntegrationSettings(100.));
+                ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(100.));
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1.;
@@ -284,7 +284,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final Orbit initialOrbit = createGeoInitialOrbit();
         final double timeOfFlight = initialOrbit.getKeplerianPeriod() * 3;
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
-        final ShootingIntegrationSettings integrationSettings = new ClassicalRungeKuttaIntegrationSettings(100.);
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(100.);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(0.,
                 new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit), integrationSettings);
         final double toleranceMassAdjoint = 1e-10;
@@ -324,7 +324,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final CartesianBoundaryConditionChecker conditionChecker = new NormBasedCartesianConditionChecker(10,
                 tolerancePosition, toleranceVelocity);
         final FixedTimeBoundaryOrbits boundaryOrbits = createBoundaryForKeplerianSettings();
-        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(1e-2, 2e2,
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getDormandPrince54IntegratorSettings(1e-2, 2e2,
                 ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)));
         final ShootingPropagationSettings propagationSettings = createKeplerianShootingSettings(boundaryOrbits.getInitialOrbit(),
                 flowRateFactor, integrationSettings);
@@ -401,7 +401,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final CartesianBoundaryConditionChecker conditionChecker = new NormBasedCartesianConditionChecker(10,
                 tolerancePosition, toleranceVelocity);
         final FixedTimeBoundaryOrbits boundaryOrbits = getHeliocentricBoundary();
-        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(2e2, 1e5,
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getDormandPrince54IntegratorSettings(2e2, 1e5,
                 ToleranceProvider.of(CartesianToleranceProvider.of(1e5, 1e-1, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)));
         final EventDetectionSettings detectionSettings = new EventDetectionSettings(1e5, 1e3, EventDetectionSettings.DEFAULT_MAX_ITER);
         final ShootingPropagationSettings propagationSettings = createHeliocentricShootingSettings(boundaryOrbits.getInitialOrbit(),

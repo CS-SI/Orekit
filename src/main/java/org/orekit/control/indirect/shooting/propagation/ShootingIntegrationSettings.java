@@ -21,8 +21,6 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.orekit.propagation.conversion.ExplicitRungeKuttaIntegratorBuilder;
 import org.orekit.propagation.conversion.FieldExplicitRungeKuttaIntegratorBuilder;
-import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
-import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 
 /**
  * Defines integration settings for indirect shooting methods. Gives standard and Field integrator builders.
@@ -30,13 +28,13 @@ import org.orekit.propagation.conversion.ODEIntegratorBuilder;
  * @author Romain Serra
  * @since 12.2
  * @see ShootingPropagationSettings
- * @see ODEIntegratorBuilder
- * @see FieldODEIntegratorBuilder
+ * @see ExplicitRungeKuttaIntegratorBuilder
+ * @see FieldExplicitRungeKuttaIntegratorBuilder
  */
 public interface ShootingIntegrationSettings {
 
     /**
-     * Returns an ODE integrator builder.
+     * Returns an ODE integrator builder based on an explicit Runge Kutta scheme.
      * @return builder
      */
     default ExplicitRungeKuttaIntegratorBuilder getIntegratorBuilder() {
@@ -44,7 +42,7 @@ public interface ShootingIntegrationSettings {
     }
 
     /**
-     * Returns a Field ODE integrator builder.
+     * Returns a Field ODE integrator builder based on an explicit Runge Kutta scheme.
      * @param field field for builder
      * @return builder
      * @param <T> field type

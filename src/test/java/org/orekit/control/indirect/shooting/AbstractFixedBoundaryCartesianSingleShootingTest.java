@@ -26,8 +26,9 @@ import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryS
 import org.orekit.control.indirect.shooting.boundary.NormBasedCartesianConditionChecker;
 import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
 import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProviderFactory;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettings;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettingsFactory;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
-import org.orekit.control.indirect.shooting.propagation.ClassicalRungeKuttaIntegrationSettings;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -58,7 +59,7 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
     }
 
     private static ShootingPropagationSettings buildPropagationSettings() {
-        final ClassicalRungeKuttaIntegrationSettings integrationSettings = new ClassicalRungeKuttaIntegrationSettings(10.);
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(10.);
         final AdjointDynamicsProvider derivativesProvider = CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider("adjoint",
                 0.);
         return new ShootingPropagationSettings(new ArrayList<>(), derivativesProvider, integrationSettings);

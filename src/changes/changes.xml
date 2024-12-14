@@ -190,8 +190,11 @@
         <action dev="luc" type="add" issue="1528">
             Added elevationSwitchSup to ElevationDetectionAdaptableIntervalFactory.
         </action>
+        <action dev="serrof" type="update" issue="1523">
+            Improve performance of indirect shooting via step-by-step Field propagation.
+        </action>
         <action dev="serrof" type="add" issue="1519">
-          Allow to define body attraction without CelestialBody.
+            Allow to define body attraction without CelestialBody.
         </action>
         <action dev="luc" type="add" issue="707">
             Properly parse dates during the 1961 leap that was 1.422818s long.

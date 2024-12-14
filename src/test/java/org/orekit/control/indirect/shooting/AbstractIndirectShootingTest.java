@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
-import org.orekit.control.indirect.shooting.propagation.ClassicalRungeKuttaIntegrationSettings;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettingsFactory;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.FramesFactory;
@@ -79,7 +79,7 @@ class AbstractIndirectShootingTest {
         Mockito.when(adjointDynamicsProvider.buildAdditionalDerivativesProvider())
                 .thenReturn(Mockito.mock(AdditionalDerivativesProvider.class));
         return new ShootingPropagationSettings(forceModelList, adjointDynamicsProvider,
-                new ClassicalRungeKuttaIntegrationSettings(1.));
+                ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(1.));
     }
 
     private static CartesianOrbit createOrbit() {
