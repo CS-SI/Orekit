@@ -24,6 +24,9 @@
         <action dev="serrof" type="update" issue="1631">
             Generalize ProfileThrustPropulsionModel with ThrustSegment.
         </action>
+        <action dev="serrof" type="update" issue="1628">
+            Remove ThrustDirectionAndAttitudeProvider and ConfigurableLowThrustManeuver.
+        </action>
         <action dev="serrof" type="update" issue="1626">
             Use ExtendedPositionProvider in YawSteering.
         </action>
