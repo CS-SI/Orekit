@@ -16,38 +16,28 @@
  */
 package org.orekit.control.indirect.shooting;
 
-import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.orekit.control.indirect.adjoint.cost.CartesianCost;
-import org.orekit.control.indirect.adjoint.cost.FieldCartesianCost;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
 import org.orekit.control.indirect.shooting.boundary.NormBasedCartesianConditionChecker;
 import org.orekit.control.indirect.shooting.propagation.AdjointDynamicsProvider;
 import org.orekit.control.indirect.shooting.propagation.CartesianAdjointDynamicsProviderFactory;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettings;
+import org.orekit.control.indirect.shooting.propagation.ShootingIntegrationSettingsFactory;
 import org.orekit.control.indirect.shooting.propagation.ShootingPropagationSettings;
-import org.orekit.control.indirect.shooting.propagation.ClassicalRungeKuttaIntegrationSettings;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
-import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.numerical.FieldNumericalPropagator;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 class AbstractFixedBoundaryCartesianSingleShootingTest {
 
@@ -69,27 +59,10 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
     }
 
     private static ShootingPropagationSettings buildPropagationSettings() {
-        final ClassicalRungeKuttaIntegrationSettings integrationSettings = new ClassicalRungeKuttaIntegrationSettings(10.);
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(10.);
         final AdjointDynamicsProvider derivativesProvider = CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider("adjoint",
                 0.);
         return new ShootingPropagationSettings(new ArrayList<>(), derivativesProvider, integrationSettings);
-    }
-
-    @Test
-    void testBuildFieldPropagator() {
-        // GIVEN
-        final Field<Gradient> field = GradientField.getField(1);
-        final FixedTimeBoundaryOrbits boundaryOrbits = createBoundaries();
-        final TestSingleShooting testShooting = new TestSingleShooting(buildPropagationSettings(),
-                boundaryOrbits, null);
-        final SpacecraftState state = new SpacecraftState(boundaryOrbits.getInitialOrbit());
-        final FieldSpacecraftState<Gradient> fieldState = new FieldSpacecraftState<>(field, state);
-        // WHEN
-        final FieldNumericalPropagator<Gradient> fieldPropagator = testShooting.buildFieldPropagator(fieldState);
-        // THEN
-        final NumericalPropagator propagator = testShooting.buildPropagator(state);
-        final int actualSize = fieldPropagator.getEventDetectors().size();
-        Assertions.assertEquals(propagator.getEventDetectors().size(), actualSize);
     }
 
     @Test

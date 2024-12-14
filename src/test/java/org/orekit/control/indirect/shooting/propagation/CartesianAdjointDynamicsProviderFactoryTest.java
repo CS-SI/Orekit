@@ -24,6 +24,7 @@ class CartesianAdjointDynamicsProviderFactoryTest {
         final CartesianAdjointDynamicsProvider provider = CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider(ADJOINT_NAME,
                 massFlowRateFactor);
         // THEN
+        Assertions.assertEquals(provider.getDimension(), provider.buildAdditionalDerivativesProvider().getDimension());
         Assertions.assertEquals(ADJOINT_NAME, provider.getAdjointName());
         Assertions.assertInstanceOf(UnboundedCartesianEnergyNeglectingMass.class,
                 provider.buildAdditionalDerivativesProvider().getCost());
@@ -44,6 +45,7 @@ class CartesianAdjointDynamicsProviderFactoryTest {
         final CartesianAdjointDynamicsProvider provider = CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider(ADJOINT_NAME,
                 massFlowRateFactor);
         // THEN
+        Assertions.assertEquals(provider.getDimension(), provider.buildAdditionalDerivativesProvider().getDimension());
         Assertions.assertEquals(ADJOINT_NAME, provider.getAdjointName());
         Assertions.assertInstanceOf(UnboundedCartesianEnergy.class,
                 provider.buildAdditionalDerivativesProvider().getCost());
@@ -64,6 +66,7 @@ class CartesianAdjointDynamicsProviderFactoryTest {
         final CartesianAdjointDynamicsProvider provider = CartesianAdjointDynamicsProviderFactory.buildBoundedEnergyProvider(ADJOINT_NAME,
                 massFlowRateFactor, 2.);
         // THEN
+        Assertions.assertEquals(provider.getDimension(), provider.buildAdditionalDerivativesProvider().getDimension());
         Assertions.assertEquals(ADJOINT_NAME, provider.getAdjointName());
         Assertions.assertInstanceOf(BoundedCartesianEnergy.class,
                 provider.buildAdditionalDerivativesProvider().getCost());
@@ -84,6 +87,7 @@ class CartesianAdjointDynamicsProviderFactoryTest {
         final CartesianAdjointDynamicsProvider provider = CartesianAdjointDynamicsProviderFactory.buildBoundedFuelCostProvider(ADJOINT_NAME,
                 massFlowRateFactor, 2.);
         // THEN
+        Assertions.assertEquals(provider.getDimension(), provider.buildAdditionalDerivativesProvider().getDimension());
         Assertions.assertEquals(ADJOINT_NAME, provider.getAdjointName());
         Assertions.assertInstanceOf(CartesianFuelCost.class,
                 provider.buildAdditionalDerivativesProvider().getCost());
