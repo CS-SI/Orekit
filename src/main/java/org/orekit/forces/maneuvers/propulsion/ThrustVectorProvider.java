@@ -22,31 +22,26 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriversProvider;
 
-/** One segment of a thrust profile.
+/** Interface defining thrust vectors depending on date and mass only.
+ * The frame is assumed to be the satellite one.
  * @author Romain Serra
- * @see ProfileThrustPropulsionModel
  * @since 13.0
  */
-public interface ThrustSegment extends ParameterDriversProvider {
+public interface ThrustVectorProvider {
 
     /** Get thrust vector at a specified date.
      * @param date date to consider
      * @param mass current mass
-     * @param parameters driving parameters
      * @return thrust at {@code date} (N)
      */
-    Vector3D getThrustVector(AbsoluteDate date, double mass, double[] parameters);
+    Vector3D getThrustVector(AbsoluteDate date, double mass);
 
     /** Get thrust vector at a specified date.
-     * This default implementation uses the non-Field one, so overriding might be needed for some applications.
      * @param <T> type of the field elements
      * @param date date to consider
      * @param mass current mass
-     * @param parameters driving parameters
      * @return thrust at {@code date} (N)
      */
-    <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(FieldAbsoluteDate<T> date, T mass,
-                                                                         T[] parameters);
+    <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(FieldAbsoluteDate<T> date, T mass);
 }
