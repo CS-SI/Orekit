@@ -60,8 +60,7 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
 
     private static ShootingPropagationSettings buildPropagationSettings() {
         final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(10.);
-        final AdjointDynamicsProvider derivativesProvider = CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider("adjoint",
-                0.);
+        final AdjointDynamicsProvider derivativesProvider = CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProviderNeglectingMass("adjoint");
         return new ShootingPropagationSettings(new ArrayList<>(), derivativesProvider, integrationSettings);
     }
 

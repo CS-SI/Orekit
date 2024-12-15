@@ -386,10 +386,15 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                                                                       final double maximumThrustMagnitude,
                                                                       final CartesianAdjointEquationTerm... terms) {
         if (maximumThrustMagnitude == Double.POSITIVE_INFINITY) {
-            return CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider("adjoint", massFlowRateFactor, terms);
+            if (massFlowRateFactor == 0) {
+                return CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProviderNeglectingMass("adjoint",
+                        terms);
+            }
+            return CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider("adjoint", massFlowRateFactor,
+                    EventDetectionSettings.getDefaultEventDetectionSettings(), terms);
         } else {
             return CartesianAdjointDynamicsProviderFactory.buildBoundedEnergyProvider("adjoint", massFlowRateFactor,
-                    maximumThrustMagnitude, terms);
+                    maximumThrustMagnitude, EventDetectionSettings.getDefaultEventDetectionSettings(), terms);
         }
     }
 
