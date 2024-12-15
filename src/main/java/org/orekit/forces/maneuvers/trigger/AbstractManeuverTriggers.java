@@ -33,7 +33,7 @@ import org.orekit.utils.TimeSpanMap;
  * @author Luc Maisonobe
  * @since 11.1
  */
-public abstract class AbstractManeuverTriggers implements ManeuverTriggers {
+public abstract class AbstractManeuverTriggers implements ResettableManeuverTriggers {
 
     /** Firing time spans. */
     private TimeSpanMap<Boolean> firings;
