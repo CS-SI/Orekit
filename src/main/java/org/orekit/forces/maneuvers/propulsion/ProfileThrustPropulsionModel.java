@@ -18,6 +18,7 @@
 package org.orekit.forces.maneuvers.propulsion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -35,7 +36,6 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 
 /** Thrust propulsion model based on segmented profile.
@@ -45,7 +45,7 @@ import org.orekit.utils.TimeSpanMap;
 public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
 
     /** Thrust profile. */
-    private final TimeSpanMap<ThrustSegment> profile;
+    private final TimeSpanMap<ThrustVectorProvider> profile;
 
     /** Specific impulse. */
     private final double isp;
@@ -62,7 +62,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * @param name name of the maneuver
      * @since 13.0
      */
-    public ProfileThrustPropulsionModel(final TimeSpanMap<ThrustSegment> profile, final double isp,
+    public ProfileThrustPropulsionModel(final TimeSpanMap<ThrustVectorProvider> profile, final double isp,
                                         final String name) {
         this(profile, isp, Control3DVectorCostType.TWO_NORM, name);
     }
@@ -74,7 +74,7 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * @param name name of the maneuver
      * @since 13.0
      */
-    public ProfileThrustPropulsionModel(final TimeSpanMap<ThrustSegment> profile, final double isp,
+    public ProfileThrustPropulsionModel(final TimeSpanMap<ThrustVectorProvider> profile, final double isp,
                                         final Control3DVectorCostType control3DVectorCostType, final String name) {
         this.name    = name;
         this.isp     = isp;
@@ -91,10 +91,10 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * @return propulsion model
      * @since 13.0
      */
-    public static <T extends ThrustSegment> ProfileThrustPropulsionModel of(final TimeSpanMap<T> profile,
-                                                                            final double isp,
-                                                                            final Control3DVectorCostType control3DVectorCostType,
-                                                                            final String name) {
+    public static <T extends ThrustVectorProvider> ProfileThrustPropulsionModel of(final TimeSpanMap<T> profile,
+                                                                                   final double isp,
+                                                                                   final Control3DVectorCostType control3DVectorCostType,
+                                                                                   final String name) {
         return new ProfileThrustPropulsionModel(buildSegments(profile), isp, control3DVectorCostType, name);
     }
 
@@ -105,9 +105,9 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
      * @return generic profile
      * @since 13.0
      */
-    private static <T extends ThrustSegment> TimeSpanMap<ThrustSegment> buildSegments(final TimeSpanMap<T> timeSpanMap) {
+    private static <T extends ThrustVectorProvider> TimeSpanMap<ThrustVectorProvider> buildSegments(final TimeSpanMap<T> timeSpanMap) {
         TimeSpanMap.Span<T> span = timeSpanMap.getFirstSpan();
-        final TimeSpanMap<ThrustSegment> segments = new TimeSpanMap<>(null);
+        final TimeSpanMap<ThrustVectorProvider> segments = new TimeSpanMap<>(null);
         while (span != null) {
             segments.addValidBetween(span.getData(), span.getStart(), span.getEnd());
             span = span.next();
@@ -125,6 +125,16 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     @Override
     public Control3DVectorCostType getControl3DVectorCostType() {
         return control3DVectorCostType;
+    }
+
+    /**
+     * Getter for active provider at input date.
+     * @param date date
+     * @return active segment
+     * @since 13.0
+     */
+    public ThrustVectorProvider getActiveProvider(final AbsoluteDate date) {
+        return profile.get(date);
     }
 
     /** {@inheritDoc} */
@@ -148,16 +158,16 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final SpacecraftState s, final double[] parameters) {
-        final ThrustSegment active = profile.get(s.getDate());
-        return active == null ? Vector3D.ZERO : active.getThrustVector(s.getDate(), s.getMass(), parameters);
+        final ThrustVectorProvider active = getActiveProvider(s.getDate());
+        return active == null ? Vector3D.ZERO : active.getThrustVector(s.getDate(), s.getMass());
     }
 
     /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldSpacecraftState<T> s,
                                                                                 final T[] parameters) {
-        final ThrustSegment active = profile.get(s.getDate().toAbsoluteDate());
+        final ThrustVectorProvider active = getActiveProvider(s.getDate().toAbsoluteDate());
         return active == null ? FieldVector3D.getZero(s.getDate().getField()) :
-                active.getThrustVector(s.getDate(), s.getMass(), parameters);
+                active.getThrustVector(s.getDate(), s.getMass());
     }
 
     /** {@inheritDoc} */
@@ -168,16 +178,16 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc}.
      * <p>
      * The single detector returned triggers {@link org.hipparchus.ode.events.Action#RESET_DERIVATIVES} events
-     * at every {@link ThrustSegment thrust segments} boundaries.
+     * at every {@link ThrustVectorProvider} boundaries.
      * </p>
      */
     @Override
     public Stream<EventDetector> getEventDetectors() {
 
         final List<AbsoluteDate> transitionDates = new ArrayList<>();
-        for (TimeSpanMap.Transition<ThrustSegment> transition = profile.getFirstTransition();
-            transition != null;
-            transition = transition.next()) {
+        for (TimeSpanMap.Transition<ThrustVectorProvider> transition = profile.getFirstTransition();
+             transition != null;
+             transition = transition.next()) {
             transitionDates.add(transition.getDate());
         }
         final DateDetector detector = getDateDetector(transitionDates.toArray(new TimeStamped[0]));
@@ -187,15 +197,15 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc}.
      * <p>
      * The single detector returned triggers {@link org.hipparchus.ode.events.Action#RESET_DERIVATIVES} events
-     * at every {@link ThrustSegment thrust segments} boundaries.
+     * at every {@link ThrustVectorProvider} boundaries.
      * </p>
      */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         final List<AbsoluteDate> transitionDates = new ArrayList<>();
-        for (TimeSpanMap.Transition<ThrustSegment> transition = profile.getFirstTransition();
-            transition != null;
-            transition = transition.next()) {
+        for (TimeSpanMap.Transition<ThrustVectorProvider> transition = profile.getFirstTransition();
+             transition != null;
+             transition = transition.next()) {
             transitionDates.add(transition.getDate());
         }
         final FieldDateDetector<T> detector = getFieldDateDetector(field, transitionDates.toArray(new AbsoluteDate[0]));
@@ -205,23 +215,6 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
-        // Get all transitions from the TimeSpanMap
-        final List<ParameterDriver> listParameterDrivers = new ArrayList<>();
-
-        // Loop on the spans
-        for (TimeSpanMap.Span<ThrustSegment> span = profile.getFirstSpan(); span != null; span = span.next()) {
-            // Add all the parameter drivers of the span
-            if (span.getData() != null) {
-                for (ParameterDriver driver : span.getData().getParametersDrivers()) {
-                    // Add the driver only if the name does not exist already
-                    if (!ParameterDriversProvider.findByName(listParameterDrivers, driver.getName())) {
-                        listParameterDrivers.add(driver);
-                    }
-                }
-            }
-        }
-
-        // Return an array of parameter drivers with no duplicated name
-        return listParameterDrivers;
+        return Collections.emptyList();
     }
 }

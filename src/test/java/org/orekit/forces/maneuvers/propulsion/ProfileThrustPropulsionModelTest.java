@@ -19,7 +19,6 @@ package org.orekit.forces.maneuvers.propulsion;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
@@ -58,7 +57,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
-import java.util.ArrayList;
 import java.util.List;
 
 class ProfileThrustPropulsionModelTest {
@@ -325,40 +323,12 @@ class ProfileThrustPropulsionModelTest {
         final ParameterDriver driver = Mockito.mock(ParameterDriver.class);
         final String expectedName = "a";
         Mockito.when(driver.getName()).thenReturn(expectedName);
-        final ThrustSegment segment = new TestThrustSegment(driver);
-        final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(segment),
+        final ProfileThrustPropulsionModel propulsionModel = new ProfileThrustPropulsionModel(new TimeSpanMap<>(null),
                 1., Control3DVectorCostType.NONE, "");
         // WHEN
         final List<ParameterDriver> propulsionDrivers = propulsionModel.getParametersDrivers();
         // THEN
-        Assertions.assertEquals(1, propulsionDrivers.size());
-        Assertions.assertEquals(expectedName, propulsionDrivers.get(0).getName());
-    }
-
-    private static class TestThrustSegment implements ThrustSegment {
-
-        private final ParameterDriver driver;
-
-        TestThrustSegment(final ParameterDriver driver) {
-            this.driver = driver;
-        }
-
-        @Override
-        public Vector3D getThrustVector(AbsoluteDate date, double mass, double[] parameters) {
-            return Vector3D.PLUS_I;
-        }
-
-        @Override
-        public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(FieldAbsoluteDate<T> date, T mass, T[] parameters) {
-            return null;
-        }
-
-        @Override
-        public List<ParameterDriver> getParametersDrivers() {
-            final ArrayList<ParameterDriver> drivers = new ArrayList<>();
-            drivers.add(driver);
-            return drivers;
-        }
+        Assertions.assertEquals(0, propulsionDrivers.size());
     }
 
     @BeforeEach

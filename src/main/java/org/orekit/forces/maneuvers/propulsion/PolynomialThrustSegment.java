@@ -23,16 +23,12 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.utils.ParameterDriver;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/** One polynomial segment of a thrust Cartesian profile.
+/** Thrust vector given as polynomials for the Cartesian coordinates.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class PolynomialThrustSegment implements ThrustSegment {
+public class PolynomialThrustSegment implements ThrustVectorProvider {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;
@@ -64,7 +60,7 @@ public class PolynomialThrustSegment implements ThrustSegment {
 
     /** {@inheritDoc} */
     @Override
-    public Vector3D getThrustVector(final AbsoluteDate date, final double mass, final double[] parameters) {
+    public Vector3D getThrustVector(final AbsoluteDate date, final double mass) {
         final double dt = date.durationFrom(referenceDate);
         return new Vector3D(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
     }
@@ -72,15 +68,8 @@ public class PolynomialThrustSegment implements ThrustSegment {
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldAbsoluteDate<T> date,
-                                                                                final T mass,
-                                                                                final T[] parameters) {
+                                                                                final T mass) {
         final T dt = date.durationFrom(referenceDate);
         return new FieldVector3D<>(xThrust.value(dt), yThrust.value(dt), zThrust.value(dt));
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public List<ParameterDriver> getParametersDrivers() {
-        return new ArrayList<>();
     }
 }
