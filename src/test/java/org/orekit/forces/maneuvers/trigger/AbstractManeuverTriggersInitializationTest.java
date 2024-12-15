@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.orekit.forces.maneuvers.triggers;
+package org.orekit.forces.maneuvers.trigger;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
@@ -27,8 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
-import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;

@@ -14,17 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.maneuvers.triggers;
+package org.orekit.forces.maneuvers.trigger;
 
 
-import org.orekit.forces.maneuvers.trigger.IntervalEventTrigger;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.time.AbsoluteDate;
 
-public class IntervalEventTriggerInitializationTest extends AbstractManeuverTriggersInitializationTest<IntervalEventTrigger<DateDetector>> {
+public class StartStopEventTriggerInitializationTest extends AbstractManeuverTriggersInitializationTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
 
-    protected IntervalEventTriggerTest.IntervalDates createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
-        return new IntervalEventTriggerTest.IntervalDates(start, stop);
+    protected StartStopEventsTrigger<DateDetector, DateDetector> createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
+        return new StartStopEventTriggerTest.StartStopDates(start, stop);
     }
 
 }
