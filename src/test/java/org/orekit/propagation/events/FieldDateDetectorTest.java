@@ -98,10 +98,9 @@ public class FieldDateDetectorTest {
     @SuppressWarnings("unchecked")
     void testGetDefaultDetectionSettings() {
         // GIVEN
-
+        final FieldDateDetector<Complex> fieldDateDetector = new FieldDateDetector<>(FieldAbsoluteDate.getArbitraryEpoch(ComplexField.getInstance()));
         // WHEN
-        final FieldEventDetectionSettings<Complex> fieldEventDetectionSettings = FieldDateDetector
-                .getDefaultDetectionSettings(ComplexField.getInstance());
+        final FieldEventDetectionSettings<Complex> fieldEventDetectionSettings = fieldDateDetector.getDetectionSettings();
         // THEN
         Assertions.assertEquals(DateDetector.DEFAULT_THRESHOLD, fieldEventDetectionSettings.getThreshold().getReal());
         Assertions.assertEquals(DateDetector.DEFAULT_MAX_ITER, fieldEventDetectionSettings.getMaxIterationCount());
@@ -119,8 +118,8 @@ public class FieldDateDetectorTest {
         final FieldDateDetector<Binary64> fieldDateDetector = new FieldDateDetector<>(fieldDate);
         // THEN
         Assertions.assertEquals(fieldDate, fieldDateDetector.getDate());
-        final FieldEventDetectionSettings<Binary64> expectedSettings = FieldDateDetector.getDefaultDetectionSettings(field);
-        Assertions.assertEquals(expectedSettings.getThreshold(), fieldDateDetector.getThreshold());
+        final EventDetectionSettings expectedSettings = new DateDetector().getDetectionSettings();
+        Assertions.assertEquals(expectedSettings.getThreshold(), fieldDateDetector.getThreshold().getReal());
         Assertions.assertEquals(expectedSettings.getMaxIterationCount(), fieldDateDetector.getMaxIterationCount());
     }
 

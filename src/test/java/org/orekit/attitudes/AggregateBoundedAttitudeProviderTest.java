@@ -44,6 +44,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.ParameterDriver;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -206,6 +207,20 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final TestBoundedAttitudeProvider boundedAttitudeProvider = new TestBoundedAttitudeProvider();
+        final List<BoundedAttitudeProvider> boundedAttitudeProviderList = new ArrayList<>();
+        boundedAttitudeProviderList.add(boundedAttitudeProvider);
+        final AggregateBoundedAttitudeProvider aggregateBoundedAttitudeProvider = new AggregateBoundedAttitudeProvider(
+                boundedAttitudeProviderList);
+        // WHEN
+        final List<ParameterDriver> parameterDrivers = aggregateBoundedAttitudeProvider.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(boundedAttitudeProvider.getParametersDrivers().size(), parameterDrivers.size());
+    }
+
+    @Test
     void testGetEventDetectors() {
         // GIVEN
         final TestBoundedAttitudeProvider boundedAttitudeProvider = new TestBoundedAttitudeProvider();
@@ -291,6 +306,7 @@ public class AggregateBoundedAttitudeProviderTest {
         public AbsoluteDate getMaxDate() {
             return getMinDate().shiftedBy(100000.);
         }
+
     }
 
 }

@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
+import org.orekit.propagation.events.intervals.DateDetectionAdaptableIntervalFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.DateDriver;
 import org.orekit.utils.ParameterDriver;
@@ -63,20 +64,17 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
     /** Default suffix for duration driver. */
     public static final String DURATION_SUFFIX = "_DURATION";
 
-    /** Detection threshold. */
-    private static final double THRESHOLD = 1.0e-10;
-
     /** Reference interval start driver. */
-    private DateDriver start;
+    private final DateDriver start;
 
     /** Reference interval stop driver. */
-    private DateDriver stop;
+    private final DateDriver stop;
 
     /** Median date driver. */
-    private DateDriver median;
+    private final DateDriver median;
 
     /** Duration driver. */
-    private ParameterDriver duration;
+    private final ParameterDriver duration;
 
     /** Build a new instance.
      * @param prefix prefix to use for parameter drivers names
@@ -87,7 +85,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                final AbsoluteDate refMedian, final double refDuration) {
         this(prefix,
              refMedian.shiftedBy(-0.5 * refDuration),
-             refMedian.shiftedBy(+0.5 * refDuration));
+             refMedian.shiftedBy(0.5 * refDuration));
     }
 
     /** Build a new instance.
@@ -97,8 +95,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
      */
     public ParameterDrivenDateIntervalDetector(final String prefix,
                                                final AbsoluteDate refStart, final AbsoluteDate refStop) {
-        this(new EventDetectionSettings((s, isForward) -> FastMath.max(0.5 * refStop.durationFrom(refStart), THRESHOLD),
-             THRESHOLD, DEFAULT_MAX_ITER),
+        this(getDefaultDetectionSettings(refStart, refStop),
              new StopOnDecreasing(),
              new DateDriver(refStart, prefix + START_SUFFIX, true),
              new DateDriver(refStop, prefix + STOP_SUFFIX, false),
@@ -136,6 +133,19 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
         replaceBindingObserver(median,   new MedianObserver());
         replaceBindingObserver(duration, new DurationObserver());
 
+    }
+
+    /**
+     * Get default detection settings.
+     * @param refStart reference interval start date
+     * @param refStop reference interval stop date
+     * @return default detection settings
+     * @since 13.0
+     */
+    public static EventDetectionSettings getDefaultDetectionSettings(final AbsoluteDate refStart,
+                                                                     final AbsoluteDate refStop) {
+        return new EventDetectionSettings(DateDetectionAdaptableIntervalFactory.getDatesDetectionInterval(refStart, refStop),
+                DateDetector.DEFAULT_THRESHOLD, EventDetectionSettings.DEFAULT_MAX_ITER);
     }
 
     /** Replace binding observers.

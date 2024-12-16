@@ -1,7 +1,7 @@
 package org.orekit.propagation.conversion;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.DormandPrince54Integrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.frames.FramesFactory;
@@ -59,14 +59,14 @@ class AbstractVariableStepIntegratorBuilderTest {
         Assertions.assertArrayEquals(expectedTolerances[1], actualTolerances[1]);
     }
 
-    private static class TestIntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+    private static class TestIntegratorBuilder extends AbstractVariableStepIntegratorBuilder<DormandPrince54Integrator> {
 
         protected TestIntegratorBuilder(double minStep, double maxStep, ToleranceProvider toleranceProvider) {
             super(minStep, maxStep, toleranceProvider);
         }
 
         @Override
-        protected AbstractIntegrator buildIntegrator(double[][] tolerances) {
+        protected DormandPrince54Integrator buildIntegrator(double[][] tolerances) {
             return null;
         }
     }

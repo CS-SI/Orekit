@@ -92,8 +92,8 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     @Override
     public void init(final SpacecraftState s0,
                      final AbsoluteDate t) {
+        EventDetector.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()) >= 0.0;
-        getHandler().init(s0, t, this);
     }
 
     /** {@inheritDoc} */

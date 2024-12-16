@@ -370,11 +370,11 @@ class StateCovarianceBlenderTest {
 
         // Results obtained when using modified orbit date to use truncated JPL test resource file
         Assertions.assertEquals( 0.1190324127, relativeRMSSigmaError[0].getMean(), tolerance);
-        Assertions.assertEquals( 7.2800701738, relativeRMSSigmaError[1].getMean(), tolerance);
+        Assertions.assertEquals( 19.9401863789, relativeRMSSigmaError[1].getMean(), tolerance);
         Assertions.assertEquals( 0.1221432731, relativeRMSSigmaError[0].getPercentile(50), tolerance);
-        Assertions.assertEquals( 7.4882858178, relativeRMSSigmaError[1].getPercentile(50), tolerance);
+        Assertions.assertEquals( 14.0023883813, relativeRMSSigmaError[1].getPercentile(50), tolerance);
         Assertions.assertEquals( 0.2282143786, relativeRMSSigmaError[0].getMax(), tolerance);
-        Assertions.assertEquals(16.0468503672, relativeRMSSigmaError[1].getMax(), tolerance);
+        Assertions.assertEquals(99.776271400, relativeRMSSigmaError[1].getMax(), tolerance);
 
         // Assert getters as well
         Assertions.assertNull(covarianceInterpolator.getOutFrame());

@@ -20,7 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
-import org.orekit.control.indirect.adjoint.cost.CartesianCost;
+import org.orekit.control.indirect.adjoint.cost.FieldCartesianCost;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -39,20 +39,44 @@ import org.orekit.utils.FieldPVCoordinates;
  * @see CartesianAdjointDerivativesProvider
  * @since 12.2
  */
-public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldElement<T>> extends AbstractCartesianAdjointDerivativesProvider implements FieldAdditionalDerivativesProvider<T> {
+public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldElement<T>> implements FieldAdditionalDerivativesProvider<T> {
 
     /** Contributing terms to the adjoint equation. */
     private final CartesianAdjointEquationTerm[] adjointEquationTerms;
+
+    /** Cost function. */
+    private final FieldCartesianCost<T> cost;
 
     /**
      * Constructor.
      * @param cost cost function
      * @param adjointEquationTerms terms contributing to the adjoint equations
      */
-    public FieldCartesianAdjointDerivativesProvider(final CartesianCost cost,
+    public FieldCartesianAdjointDerivativesProvider(final FieldCartesianCost<T> cost,
                                                     final CartesianAdjointEquationTerm... adjointEquationTerms) {
-        super(cost);
+        this.cost = cost;
         this.adjointEquationTerms = adjointEquationTerms;
+    }
+
+    /**
+     * Getter for the cost.
+     * @return cost
+     */
+    public FieldCartesianCost<T> getCost() {
+        return cost;
+    }
+
+    /** Getter for the name.
+     * @return name */
+    public String getName() {
+        return cost.getAdjointName();
+    }
+
+    /** Getter for the dimension.
+     * @return dimension
+     */
+    public int getDimension() {
+        return cost.getAdjointDimension();
     }
 
     /** {@inheritDoc} */
@@ -83,7 +107,7 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
         final T thrustAccelerationNorm = thrustAccelerationVector.getNorm();
         if (thrustAccelerationVector.getNorm().getReal() != 0.) {
             final T thrustForceMagnitude = thrustAccelerationNorm.multiply(mass);
-            mainDerivativesIncrements[6] = thrustForceMagnitude.multiply(-getCost().getMassFlowRateFactor());
+            mainDerivativesIncrements[6] = thrustForceMagnitude.multiply(getCost().getMassFlowRateFactor().negate());
         }
 
         // Cartesian position adjoint

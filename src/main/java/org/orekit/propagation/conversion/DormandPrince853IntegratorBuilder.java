@@ -23,7 +23,8 @@ import org.orekit.propagation.ToleranceProvider;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class DormandPrince853IntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+public class DormandPrince853IntegratorBuilder extends AbstractVariableStepIntegratorBuilder<DormandPrince853Integrator>
+        implements ExplicitRungeKuttaIntegratorBuilder {
 
     /**
      * Build a new instance using default integration tolerances.

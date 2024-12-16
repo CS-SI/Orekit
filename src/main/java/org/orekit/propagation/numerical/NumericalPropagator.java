@@ -45,7 +45,7 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.ResettableManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -519,12 +519,12 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
-            if (forceModel instanceof Maneuver) {
+            if (forceModel instanceof Maneuver && ((Maneuver) forceModel).getManeuverTriggers() instanceof ResettableManeuverTriggers) {
                 final Maneuver maneuver = (Maneuver) forceModel;
-                final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
+                final ResettableManeuverTriggers maneuverTriggers = (ResettableManeuverTriggers) maneuver.getManeuverTriggers();
 
                 maneuverTriggers.getEventDetectors().
-                        filter(d -> d instanceof ParameterDrivenDateIntervalDetector).
+                        filter(ParameterDrivenDateIntervalDetector.class::isInstance).
                         map(d -> (ParameterDrivenDateIntervalDetector) d).
                         forEach(d -> {
                             TriggerDate start;
@@ -607,7 +607,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     private TriggerDate manageTriggerDate(final String stmName,
                                           final Maneuver maneuver,
-                                          final ManeuverTriggers mt,
+                                          final ResettableManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
                                           final double threshold) {
@@ -1079,7 +1079,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
         return ToleranceProvider.getDefaultToleranceProvider(dP).getTolerances(orbit, type, PositionAngleType.TRUE);
     }

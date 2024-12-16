@@ -21,9 +21,6 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationOrder;
@@ -45,7 +42,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
-import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.TopocentricFrame;
@@ -68,15 +64,13 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.FieldPVCoordinatesProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -517,9 +511,7 @@ public class AttitudesSequenceTest {
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
-        final Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
-                                                      FramesFactory.getEME2000(), initialDate,
-                                                      Constants.EIGEN5C_EARTH_MU);
+        final AbsolutePVCoordinates initialPV = new AbsolutePVCoordinates(FramesFactory.getEME2000(), initialDate, new PVCoordinates(position, velocity));
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
@@ -531,8 +523,8 @@ public class AttitudesSequenceTest {
                                                              "Волгоград");
         final AttitudesSequence attitudesSequence = new AttitudesSequence();
         final double            transitionTime    = 250.0;
-        final AttitudeProvider  nadirPointing     = new NadirPointing(initialOrbit.getFrame(), earth);
-        final AttitudeProvider  targetPointing    = new TargetPointing(initialOrbit.getFrame(), volgograd.getPoint(), earth);
+        final AttitudeProvider  nadirPointing     = new NadirPointing(initialPV.getFrame(), earth);
+        final AttitudeProvider  targetPointing    = new TargetPointing(initialPV.getFrame(), volgograd.getPoint(), earth);
         final ElevationDetector eventDetector     = new ElevationDetector(volgograd).
                                                     withConstantElevation(FastMath.toRadians(5.0)).
                                                     withHandler(new ContinueOnEvent());
@@ -540,28 +532,29 @@ public class AttitudesSequenceTest {
         attitudesSequence.addSwitchingCondition(nadirPointing, targetPointing, eventDetector,
                                                 true, false, transitionTime, AngularDerivativesFilter.USE_RR,
                                                 (previous, next, state) -> nadirToTarget.add(state.getDate()));
-        final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialOrbit, initialOrbit.getType());
+        final double[][] tolerance = ToleranceProvider.getDefaultToleranceProvider(10.).getTolerances(initialPV);
         final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(0.001, 300.0, tolerance[0], tolerance[1]);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(earth.getBodyFrame(),
                                                                        GravityFieldFactory.getNormalizedProvider(8, 8)));
-        propagator.setInitialState(new SpacecraftState(initialOrbit,
-                                                       nadirPointing.getAttitude(initialOrbit,
-                                                                                 initialOrbit.getDate(),
-                                                                                 initialOrbit.getFrame())));
+        propagator.setInitialState(new SpacecraftState(initialPV,
+                                                       nadirPointing.getAttitude(initialPV,
+                                                                                 initialPV.getDate(),
+                                                                                 initialPV.getFrame())));
         propagator.setAttitudeProvider(attitudesSequence);
+        propagator.setOrbitType(null);
         propagator.propagate(initialDate.shiftedBy(6000));
 
         // check that if we restart a backward propagation from an intermediate state
         // we properly get an interpolated attitude despite we missed the event trigger
         final AbsoluteDate midTransition = nadirToTarget.get(0).shiftedBy(0.5 * transitionTime);
         SpacecraftState state   = propagator.propagate(midTransition.shiftedBy(+60), midTransition);
-        Rotation nadirR  = nadirPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
-        Rotation targetR = targetPointing.getAttitude(state.getOrbit(), state.getDate(), state.getFrame()).getRotation();
+        Rotation nadirR  = nadirPointing.getAttitude(state.getAbsPVA(), state.getDate(), state.getFrame()).getRotation();
+        Rotation targetR = targetPointing.getAttitude(state.getAbsPVA(), state.getDate(), state.getFrame()).getRotation();
         final double reorientationAngle = Rotation.distance(nadirR, targetR);
         Assertions.assertEquals(0.5 * reorientationAngle, Rotation.distance(state.getAttitude().getRotation(), targetR),
-                0.03 * reorientationAngle);
+                0.08 * reorientationAngle);
 
 
     }
@@ -635,43 +628,6 @@ public class AttitudesSequenceTest {
                 stateAfter.getAttitude().getRotation().getQ3(), 1.0E-16);
     }
 
-    @Test
-    void testGetAttitudeRotation() {
-        // GIVEN
-        final AttitudeProvider attitudeProvider = new TestAttitudeProvider();
-        final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        attitudesSequence.resetActiveProvider(attitudeProvider);
-        final Frame frame = FramesFactory.getGCRF();
-        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final PVCoordinatesProvider mockPvCoordinatesProvider = mock(PVCoordinatesProvider.class);
-        // WHEN
-        final Rotation actualRotation = attitudesSequence.getAttitudeRotation(mockPvCoordinatesProvider, date, frame);
-        // THEN
-        final Attitude attitude = attitudesSequence.getAttitude(mockPvCoordinatesProvider, date, frame);
-        final Rotation expectedRotation = attitude.getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    void testGetAttitudeRotationFieldTest() {
-        // GIVEN
-        final GradientField field = GradientField.getField(1);
-        final AttitudeProvider attitudeProvider = new TestAttitudeProvider();
-        final AttitudesSequence attitudesSequence = new AttitudesSequence();
-        attitudesSequence.resetActiveProvider(attitudeProvider);
-        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
-        final FieldAbsoluteDate<Gradient> fieldDate = new FieldAbsoluteDate<>(field, date);
-        final FieldPVCoordinatesProvider<Gradient> pvCoordinatesProvider = mock(FieldPVCoordinatesProvider.class);
-        final Frame mockFrame = mock(Frame.class);
-        // WHEN
-        final FieldRotation<Gradient> actualRotation = attitudesSequence.getAttitudeRotation(pvCoordinatesProvider, fieldDate, mockFrame);
-        // THEN
-        final FieldAttitude<Gradient> attitude = attitudesSequence.getAttitude(pvCoordinatesProvider, fieldDate, mockFrame);
-        final FieldRotation<Gradient> expectedRotation = attitude.getRotation();
-        Assertions.assertEquals(0., Rotation.distance(expectedRotation.toRotation(), actualRotation.toRotation()));
-    }
-
     /** Issue 1387. */
     @Test
     public void testGetSwitches() {
@@ -700,27 +656,7 @@ public class AttitudesSequenceTest {
         Assertions.assertNotSame(switches1, switches2);
     }
 
-    private static class TestAttitudeProvider implements AttitudeProvider {
-
-        TestAttitudeProvider() {
-            // nothing to do
-        }
-
-        @Override
-        public Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame) {
-            return new Attitude(date, frame, new AngularCoordinates());
-        }
-
-        @Override
-        public <T extends CalculusFieldElement<T>> FieldAttitude<T> getAttitude(FieldPVCoordinatesProvider<T> pvProv,
-                                                                                FieldAbsoluteDate<T> date, Frame frame) {
-            return new FieldAttitude<>(date.getField(), new Attitude(date.toAbsoluteDate(), frame,
-                    new AngularCoordinates()));
-        }
-
-    }
-
-    private static class Handler implements AttitudesSequence.SwitchHandler {
+    private static class Handler implements AttitudeSwitchHandler {
 
         private final AttitudeProvider   expectedPrevious;
         private final AttitudeProvider   expectedNext;

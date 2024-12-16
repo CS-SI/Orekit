@@ -73,15 +73,14 @@ public interface FieldEventDetector <T extends CalculusFieldElement<T>> {
      * if needed.
      * </p>
      * <p>
-     * The default implementation does nothing
+     * The default implementation initializes the handler.
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
      *
      */
-    default void init(FieldSpacecraftState<T> s0,
-                      FieldAbsoluteDate<T> t) {
-        // nothing by default
+    default void init(FieldSpacecraftState<T> s0, FieldAbsoluteDate<T> t) {
+        getHandler().init(s0, t, this);
     }
 
     /** Compute the value of the switching function.

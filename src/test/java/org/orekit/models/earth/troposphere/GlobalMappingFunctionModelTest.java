@@ -17,33 +17,20 @@
 package org.orekit.models.earth.troposphere;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.TrackingCoordinates;
 
-public class GlobalMappingFunctionModelTest {
+public class GlobalMappingFunctionModelTest extends AbstractMappingFunctionTest<GlobalMappingFunctionModel> {
 
-    @BeforeAll
-    public static void setUpGlobal() {
-        Utils.setDataRoot("atmosphere");
-    }
-
-    @BeforeEach
-    public void setUp() throws OrekitException {
-        Utils.setDataRoot("regular-data:potential/shm-format");
+    protected GlobalMappingFunctionModel buildMappingFunction() {
+        return new GlobalMappingFunctionModel();
     }
 
     @Test
     public void testMappingFactors() {
-
         // Site (NRAO, Green Bank, WV): latitude:  0.6708665767 radians
         //                              longitude: -1.393397187 radians
         //                              height:    844.715 m
@@ -55,48 +42,16 @@ public class GlobalMappingFunctionModelTest {
         //
         // Expected mapping factors : hydrostatic -> 3.425246 (Ref)
         //                                    wet -> 3.449589 (Ref)
-
-        final AbsoluteDate date = AbsoluteDate.createMJDDate(55055, 43200, TimeScalesFactory.getUTC());
-
-        final double latitude    = 0.6708665767;
-        final double longitude   = -1.393397187;
-        final double height      = 844.715;
-        final GeodeticPoint point = new GeodeticPoint(latitude, longitude, height);
-
-        final TrackingCoordinates trackingCoordinates = new TrackingCoordinates(0.0, 0.5 * FastMath.PI - 1.278564131, 0.0);
-        final double expectedHydro = 3.425246;
-        final double expectedWet   = 3.449589;
-
-        final TroposphereMappingFunction model = new GlobalMappingFunctionModel();
-
-        final double[] computedMapping = model.mappingFactors(trackingCoordinates, point,
-                                                              TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                              date);
-
-        Assertions.assertEquals(expectedHydro, computedMapping[0], 1.0e-6);
-        Assertions.assertEquals(expectedWet,   computedMapping[1], 1.0e-6);
+        doTestMappingFactors(AbsoluteDate.createMJDDate(55055, 43200, TimeScalesFactory.getUTC()),
+                             new GeodeticPoint(0.6708665767, -1.393397187, 844.715),
+                             new TrackingCoordinates(0.0, 0.5 * FastMath.PI - 1.278564131, 0.0),
+                             3.425246, 3.449589);
     }
 
     @Test
-    public void testFixedHeight() {
-        final AbsoluteDate date = new AbsoluteDate();
-        TroposphereMappingFunction model = new GlobalMappingFunctionModel();
-        double[] lastFactors = new double[] {
-            Double.MAX_VALUE,
-            Double.MAX_VALUE
-        };
-        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        // mapping functions shall decline with increasing elevation angle
-        for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double[] factors = model.mappingFactors(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
-                                                          point,
-                                                          TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                          date);
-            Assertions.assertTrue(Precision.compareTo(factors[0], lastFactors[0], 1.0e-6) < 0);
-            Assertions.assertTrue(Precision.compareTo(factors[1], lastFactors[1], 1.0e-6) < 0);
-            lastFactors[0] = factors[0];
-            lastFactors[1] = factors[1];
-        }
+    @Override
+    public void testDerivatives() {
+        doTestDerivatives(1.0e-100, 5.0e-19, 1.0e-100, 3.0e-8, 1.0e-100);
     }
 
 }

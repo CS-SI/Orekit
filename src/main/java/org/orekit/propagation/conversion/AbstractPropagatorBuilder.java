@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
@@ -45,7 +46,7 @@ import java.util.List;
  * @author Pascal Parraud
  * @since 7.1
  */
-public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
+public abstract class AbstractPropagatorBuilder<T extends AbstractPropagator> implements PropagatorBuilder {
 
     /** Central attraction scaling factor.
      * <p>
@@ -278,9 +279,9 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
     }
 
     @Override
-    public AbstractPropagatorBuilder clone() {
+    public AbstractPropagatorBuilder<T> clone() {
         try {
-            return (AbstractPropagatorBuilder) super.clone();
+            return (AbstractPropagatorBuilder<T>) super.clone();
         } catch (CloneNotSupportedException cnse) {
             throw new OrekitException(OrekitMessages.PROPAGATOR_BUILDER_NOT_CLONEABLE);
         }
@@ -369,6 +370,16 @@ public abstract class AbstractPropagatorBuilder implements PropagatorBuilder {
 
         return selected;
 
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public abstract T buildPropagator(double[] normalizedParameters);
+
+    /** {@inheritDoc} */
+    @Override
+    public T buildPropagator() {
+        return buildPropagator(getSelectedNormalizedParameters());
     }
 
     /** Build an initial orbit using the current selected parameters.

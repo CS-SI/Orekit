@@ -208,7 +208,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
 
         DeSitterRelativity relativity = new DeSitterRelativity();
         Assertions.assertFalse(relativity.dependsOnPositionOnly());
-        final String name = relativity.getSun().getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
+        final String name = relativity.getSun().getName() + DeSitterRelativity.ATTRACTION_COEFFICIENT_SUFFIX;
         checkParameterDerivativeGradient(state, relativity, name, 1.0, 1.0e-15);
 
     }

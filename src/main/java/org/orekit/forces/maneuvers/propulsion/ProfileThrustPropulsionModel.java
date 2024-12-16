@@ -17,7 +17,7 @@
 
 package org.orekit.forces.maneuvers.propulsion;
 
-import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
@@ -26,7 +26,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -34,11 +33,8 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
-import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
-import org.orekit.utils.Constants;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 
@@ -49,7 +45,7 @@ import org.orekit.utils.TimeSpanMap;
 public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
 
     /** Thrust profile. */
-    private final TimeSpanMap<PolynomialThrustSegment> profile;
+    private final TimeSpanMap<ThrustVectorProvider> profile;
 
     /** Specific impulse. */
     private final double isp;
@@ -60,18 +56,63 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
     /** Type of norm linking thrust vector to mass flow rate. */
     private final Control3DVectorCostType control3DVectorCostType;
 
+    /** Constructor with default cost type.
+     * @param profile thrust profile (N)
+     * @param isp specific impulse (s)
+     * @param name name of the maneuver
+     * @since 13.0
+     */
+    public ProfileThrustPropulsionModel(final TimeSpanMap<ThrustVectorProvider> profile, final double isp,
+                                        final String name) {
+        this(profile, isp, Control3DVectorCostType.TWO_NORM, name);
+    }
+
     /** Generic constructor.
      * @param profile thrust profile (N)
      * @param isp specific impulse (s)
      * @param control3DVectorCostType control vector's cost type
      * @param name name of the maneuver
+     * @since 13.0
      */
-    public ProfileThrustPropulsionModel(final TimeSpanMap<PolynomialThrustSegment> profile, final double isp,
+    public ProfileThrustPropulsionModel(final TimeSpanMap<ThrustVectorProvider> profile, final double isp,
                                         final Control3DVectorCostType control3DVectorCostType, final String name) {
         this.name    = name;
         this.isp     = isp;
         this.profile = profile;
         this.control3DVectorCostType = control3DVectorCostType;
+    }
+
+    /** Build with customized profile.
+     * @param profile thrust profile (N)
+     * @param isp specific impulse (s)
+     * @param name name of the maneuver
+     * @param control3DVectorCostType control vector's cost type
+     * @param <T> segment type
+     * @return propulsion model
+     * @since 13.0
+     */
+    public static <T extends ThrustVectorProvider> ProfileThrustPropulsionModel of(final TimeSpanMap<T> profile,
+                                                                                   final double isp,
+                                                                                   final Control3DVectorCostType control3DVectorCostType,
+                                                                                   final String name) {
+        return new ProfileThrustPropulsionModel(buildSegments(profile), isp, control3DVectorCostType, name);
+    }
+
+    /**
+     * Method building a map of generic segments from customized ones.
+     * @param timeSpanMap input profile
+     * @param <T> segment type
+     * @return generic profile
+     * @since 13.0
+     */
+    private static <T extends ThrustVectorProvider> TimeSpanMap<ThrustVectorProvider> buildSegments(final TimeSpanMap<T> timeSpanMap) {
+        TimeSpanMap.Span<T> span = timeSpanMap.getFirstSpan();
+        final TimeSpanMap<ThrustVectorProvider> segments = new TimeSpanMap<>(null);
+        while (span != null) {
+            segments.addValidBetween(span.getData(), span.getStart(), span.getEnd());
+            span = span.next();
+        }
+        return segments;
     }
 
     /** {@inheritDoc} */
@@ -86,118 +127,92 @@ public class ProfileThrustPropulsionModel implements ThrustPropulsionModel {
         return control3DVectorCostType;
     }
 
+    /**
+     * Getter for active provider at input date.
+     * @param date date
+     * @return active segment
+     * @since 13.0
+     */
+    public ThrustVectorProvider getActiveProvider(final AbsoluteDate date) {
+        return profile.get(date);
+    }
+
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final SpacecraftState s) {
-        final PolynomialThrustSegment active = profile.get(s.getDate());
-        return active == null ? Vector3D.ZERO : active.getThrustVector(s.getDate());
+        return getThrustVector(s, getParameters());
     }
 
     /** {@inheritDoc} */
     @Override
     public double getFlowRate(final SpacecraftState s) {
-        return -control3DVectorCostType.evaluate(getThrustVector(s)) / (Constants.G0_STANDARD_GRAVITY * isp);
+        return getFlowRate(s, getParameters());
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * Here the thrust vector does not depend on parameters
-     * </p>
-     */
+    /** {@inheritDoc} */
+    @Override
+    public double getFlowRate(final SpacecraftState s, final double[] parameters) {
+        return -control3DVectorCostType.evaluate(getThrustVector(s, parameters)) / ThrustPropulsionModel.getExhaustVelocity(isp);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public Vector3D getThrustVector(final SpacecraftState s, final double[] parameters) {
-        return getThrustVector(s);
+        final ThrustVectorProvider active = getActiveProvider(s.getDate());
+        return active == null ? Vector3D.ZERO : active.getThrustVector(s.getDate(), s.getMass());
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * Here the flow rate does not depend on parameters
-     * </p>
-     */
-    public double getFlowRate(final SpacecraftState s, final double[] parameters) {
-        return getFlowRate(s);
-    }
-
-    /** {@inheritDoc}
-     * <p>
-     * Here the thrust vector does not depend on parameters
-     * </p>
-     */
+    /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> FieldVector3D<T> getThrustVector(final FieldSpacecraftState<T> s,
                                                                                 final T[] parameters) {
-        final PolynomialThrustSegment active = profile.get(s.getDate().toAbsoluteDate());
-        return active == null ? FieldVector3D.getZero(s.getDate().getField()) : active.getThrustVector(s.getDate());
+        final ThrustVectorProvider active = getActiveProvider(s.getDate().toAbsoluteDate());
+        return active == null ? FieldVector3D.getZero(s.getDate().getField()) :
+                active.getThrustVector(s.getDate(), s.getMass());
     }
 
-    /** {@inheritDoc}
-     * <p>
-     * Here the flow rate does not depend on parameters
-     * </p>
-     */
+    /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> T getFlowRate(final FieldSpacecraftState<T> s, final T[] parameters) {
-        return control3DVectorCostType.evaluate(getThrustVector(s, parameters)).divide(-Constants.G0_STANDARD_GRAVITY * isp);
+        return control3DVectorCostType.evaluate(getThrustVector(s, parameters)).divide(-ThrustPropulsionModel.getExhaustVelocity(isp));
     }
 
     /** {@inheritDoc}.
      * <p>
      * The single detector returned triggers {@link org.hipparchus.ode.events.Action#RESET_DERIVATIVES} events
-     * at every {@link PolynomialThrustSegment thrust segments} boundaries.
+     * at every {@link ThrustVectorProvider} boundaries.
      * </p>
      */
     @Override
     public Stream<EventDetector> getEventDetectors() {
 
-        final double shortest = shortestSegmentDuration();
-        final DateDetector detector = new DateDetector().
-                                      withMaxCheck(0.5 * shortest).
-                                      withMinGap(0.5 * shortest).
-                                      withThreshold(DATATION_ACCURACY).
-                                      withHandler(new ResetDerivativesOnEvent());
-        for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
+        final List<AbsoluteDate> transitionDates = new ArrayList<>();
+        for (TimeSpanMap.Transition<ThrustVectorProvider> transition = profile.getFirstTransition();
              transition != null;
              transition = transition.next()) {
-            detector.addEventDate(transition.getDate());
+            transitionDates.add(transition.getDate());
         }
+        final DateDetector detector = getDateDetector(transitionDates.toArray(new TimeStamped[0]));
         return Stream.of(detector);
     }
 
     /** {@inheritDoc}.
      * <p>
      * The single detector returned triggers {@link org.hipparchus.ode.events.Action#RESET_DERIVATIVES} events
-     * at every {@link PolynomialThrustSegment thrust segments} boundaries.
+     * at every {@link ThrustVectorProvider} boundaries.
      * </p>
      */
     @Override
     public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        final double shortest = shortestSegmentDuration();
-        @SuppressWarnings("unchecked")
-        final FieldDateDetector<T> detector = new FieldDateDetector<>(field,
-                                                                      (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
-                                              withMaxCheck(0.5 * shortest).
-                                              withMinGap(0.5 * shortest).
-                                              withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
-                                              withHandler(new FieldResetDerivativesOnEvent<>());
-        for (TimeSpanMap.Transition<PolynomialThrustSegment> transition = profile.getFirstTransition();
+        final List<AbsoluteDate> transitionDates = new ArrayList<>();
+        for (TimeSpanMap.Transition<ThrustVectorProvider> transition = profile.getFirstTransition();
              transition != null;
              transition = transition.next()) {
-            detector.addEventDate(new FieldAbsoluteDate<>(field, transition.getDate()));
+            transitionDates.add(transition.getDate());
         }
+        final FieldDateDetector<T> detector = getFieldDateDetector(field, transitionDates.toArray(new AbsoluteDate[0]));
         return Stream.of(detector);
     }
 
-    /** Compute the duration of the shortest segment.
-     * @return duration of the shortest segment
-     */
-    private double shortestSegmentDuration() {
-        double shortest = Double.POSITIVE_INFINITY;
-        for (TimeSpanMap.Span<PolynomialThrustSegment> span = profile.getFirstSpan();
-             span != null;
-             span = span.next()) {
-            shortest = FastMath.min(shortest, span.getEnd().durationFrom(span.getStart()));
-        }
-        return shortest;
-    }
-
+    /** {@inheritDoc} */
     @Override
     public List<ParameterDriver> getParametersDrivers() {
         return Collections.emptyList();

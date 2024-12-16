@@ -82,7 +82,7 @@ class ApsideDetectorTest {
     }
 
     private void doTestMaxcheck(final AdaptableInterval maxCheck, int expectedCalls) {
-        CountingApsideDetector detector = new CountingApsideDetector(maxCheck);
+        CountingApsideDetectorModifier detector = new CountingApsideDetectorModifier(maxCheck);
         EventsLogger logger = new EventsLogger();
         propagator.addEventDetector(logger.monitorDetector(detector));
         propagator.propagate(propagator.getInitialState().getOrbit().getDate().shiftedBy(Constants.JULIAN_DAY));
@@ -112,25 +112,33 @@ class ApsideDetectorTest {
                                           Constants.EIGEN5C_EARTH_C60);
     }
 
-    private class CountingApsideDetector extends AdapterDetector {
+    private class CountingApsideDetectorModifier implements DetectorModifier {
 
+        private final ApsideDetector detector;
         private int count;
         
-        public CountingApsideDetector(final AdaptableInterval maxCheck) {
-            super(new ApsideDetector(propagator.getInitialState().getOrbit()).
+        public CountingApsideDetectorModifier(final AdaptableInterval maxCheck) {
+            this.detector = new ApsideDetector(propagator.getInitialState().getOrbit()).
                   withMaxCheck(maxCheck).
                   withThreshold(1.0e-12).
-                  withHandler(new ContinueOnEvent()));
+                  withHandler(new ContinueOnEvent());
         }
 
+        @Override
+        public ApsideDetector getDetector() {
+            return detector;
+        }
+
+        @Override
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
-            super.init(s0, t);
+            DetectorModifier.super.init(s0, t);
             count = 0;
         }
 
+        @Override
         public double g(final SpacecraftState s) {
             ++count;
-            return super.g(s);
+            return DetectorModifier.super.g(s);
         }
 
     }

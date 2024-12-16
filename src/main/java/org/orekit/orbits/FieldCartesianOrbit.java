@@ -407,6 +407,7 @@ public class FieldCartesianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     }
 
     /** {@inheritDoc} */
+    @Override
     public boolean hasNonKeplerianAcceleration() {
         return hasNonKeplerianAcceleration;
     }

@@ -21,18 +21,14 @@ import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.Precision;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.estimation.measurements.GroundStation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -58,50 +54,26 @@ import org.orekit.utils.TrackingCoordinates;
 
 import java.util.List;
 
-public class EstimatedModelTest {
+public class EstimatedModelTest extends AbstractPathDelayTest<EstimatedModel> {
 
-    @BeforeAll
-    public static void setUpGlobal() {
-        Utils.setDataRoot("atmosphere");
-    }
-
-    @BeforeEach
-    public void setUp() throws OrekitException {
-        Utils.setDataRoot("regular-data:potential/shm-format");
+    @Override
+    protected EstimatedModel buildTroposphericModel() {
+        return new EstimatedModel(new NiellMappingFunctionModel(), 2.0);
     }
 
     @Test
-    public void testFixedHeight() {
-        final AbsoluteDate date = new AbsoluteDate();
-        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), 350.0);
-        TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
-        TroposphericModel model = new EstimatedModel(mapping, 2.0);
-        double lastDelay = Double.MAX_VALUE;
-        // delay shall decline with increasing elevation angle
-        for (double elev = 10d; elev < 90d; elev += 8d) {
-            final double delay = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elev), 0.0),
-                                                 point,
-                                                 TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                                 model.getParameters(), date).getDelay();
-            Assertions.assertTrue(Precision.compareTo(delay, lastDelay, 1.0e-6) < 0);
-            lastDelay = delay;
-        }
-    }
-
-    @Test
+    @Override
     public void testDelay() {
-        final double elevation = 10d;
-        final double height = 100d;
-        final AbsoluteDate date = new AbsoluteDate();
-        GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(45.0), FastMath.toRadians(45.0), height);
-        TroposphereMappingFunction mapping = new NiellMappingFunctionModel();
-        TroposphericModel model = new EstimatedModel(mapping, 2.0);
-        final double path = model.pathDelay(new TrackingCoordinates(0.0, FastMath.toRadians(elevation), 0.0),
-                                            point,
-                                            TroposphericModelUtils.STANDARD_ATMOSPHERE,
-                                            model.getParameters(), date).getDelay();
-        Assertions.assertTrue(Precision.compareTo(path, 20d, 1.0e-6) < 0);
-        Assertions.assertTrue(Precision.compareTo(path, 0d, 1.0e-6) > 0);
+        doTestDelay(defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    2.09133, -0.09133, 3.39014, -0.14822, 3.24193);
+    }
+
+    @Test
+    @Override
+    public void testFieldDelay() {
+        doTestDelay(Binary64Field.getInstance(),
+                    defaultDate, defaultPoint, defaultTrackingCoordinates,
+                    2.09133, -0.09133, 3.39014, -0.14822, 3.24193);
     }
 
     @Test
@@ -244,7 +216,7 @@ public class EstimatedModelTest {
             double  delayP4 = model.pathDelay(trackingCoordinatesP4, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                               model.getParameters(), stateP4.getDate()).getDelay();
             
-            fillJacobianColumn(refDeriv, i, orbitType, angleType, steps[i],
+            fillJacobianColumn(refDeriv, i, steps[i],
                                delayM4, delayM3, delayM2, delayM1,
                                delayP1, delayP2, delayP3, delayP4);
         }
@@ -399,7 +371,7 @@ public class EstimatedModelTest {
         double  delayP4 = model.pathDelay(trackingCoordinates, point, TroposphericModelUtils.STANDARD_ATMOSPHERE,
                                           model.getParameters(), state.getDate()).getDelay();
             
-        fillJacobianColumn(refDeriv, 0, orbitType, angleType, h,
+        fillJacobianColumn(refDeriv, 0, h,
                            delayM4, delayM3, delayM2, delayM1,
                            delayP1, delayP2, delayP3, delayP4);
 
@@ -429,16 +401,14 @@ public class EstimatedModelTest {
     }
 
     private SpacecraftState arrayToState(double[][] array, OrbitType orbitType, PositionAngleType angleType,
-                                         Frame frame, AbsoluteDate date, double mu,
-                                         Attitude attitude) {
+                                         Frame frame, AbsoluteDate date, double mu, Attitude attitude) {
         Orbit orbit = orbitType.mapArrayToOrbit(array[0], array[1], angleType, date, mu, frame);
         return (array.length > 6) ?
                new SpacecraftState(orbit, attitude) :
                new SpacecraftState(orbit, attitude, array[0][6]);
     }
 
-    private void fillJacobianColumn(double[][] jacobian, int column,
-                                    OrbitType orbitType, PositionAngleType angleType, double h,
+    private void fillJacobianColumn(double[][] jacobian, int column, double h,
                                     double sM4h, double sM3h,
                                     double sM2h, double sM1h,
                                     double sP1h, double sP2h,

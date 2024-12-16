@@ -119,7 +119,7 @@ import org.orekit.gnss.MeasurementType;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.antenna.FrequencyPattern;
 import org.orekit.models.AtmosphericRefractionModel;
-import org.orekit.models.earth.EarthITU834AtmosphereRefraction;
+import org.orekit.models.earth.ITURP834AtmosphericRefraction;
 import org.orekit.models.earth.Geoid;
 import org.orekit.models.earth.ReferenceEllipsoid;
 import org.orekit.models.earth.atmosphere.Atmosphere;
@@ -1595,7 +1595,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             final AngularRadioRefractionModifier refractionCorrection;
             if (stationElevationRefraction[i]) {
                 final double                     altitude        = station.getBaseFrame().getPoint().getAltitude();
-                final AtmosphericRefractionModel refractionModel = new EarthITU834AtmosphereRefraction(altitude);
+                final AtmosphericRefractionModel refractionModel = new ITURP834AtmosphericRefraction(altitude);
                 refractionCorrection = new AngularRadioRefractionModifier(refractionModel);
             } else {
                 refractionCorrection = null;

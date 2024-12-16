@@ -155,13 +155,21 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
     }
 
     /** Internal wrapper for events detectors. */
-    private class FieldLoggingWrapper extends FieldAdapterDetector<T> {
+    private class FieldLoggingWrapper implements FieldDetectorModifier<T> {
+
+        /** Wrapped detector. */
+        private final FieldEventDetector<T> detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
         FieldLoggingWrapper(final FieldEventDetector<T> detector) {
-            super(detector);
+            this.detector = detector;
+        }
+
+        @Override
+        public FieldEventDetector<T> getDetector() {
+            return detector;
         }
 
         /** Log an event.

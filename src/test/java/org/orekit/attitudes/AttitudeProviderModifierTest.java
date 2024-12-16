@@ -41,6 +41,45 @@ import java.util.List;
 class AttitudeProviderModifierTest {
 
     @Test
+    void testGetAttitude() {
+        // GIVEN
+        final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
+        final AttitudeProvider attitudeProvider = new TestProvider(expectedRotation);
+        final AttitudeProviderModifier modifier = new TestModifier(attitudeProvider);
+        final PVCoordinatesProvider mockedPVCoordinatesProvider = Mockito.mock(PVCoordinatesProvider.class);
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        // WHEN
+        final Attitude actualAttitude = modifier.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame);
+        // THEN
+        final Attitude expectedAttitude = attitudeProvider.getAttitude(mockedPVCoordinatesProvider, date, mockedFrame);
+        Assertions.assertEquals(0, Rotation.distance(expectedRotation, actualAttitude.getRotation()));
+        Assertions.assertEquals(expectedAttitude.getSpin(), actualAttitude.getSpin());
+        Assertions.assertEquals(expectedAttitude.getRotationAcceleration(), actualAttitude.getRotationAcceleration());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void testGetFieldAttitude() {
+        // GIVEN
+        final Rotation expectedRotation = new Rotation(Vector3D.MINUS_I, Vector3D.MINUS_K);
+        final AttitudeProvider attitudeProvider = new TestProvider(expectedRotation);
+        final ComplexField field = ComplexField.getInstance();
+        final FieldPVCoordinatesProvider<Complex> mockedPVCoordinatesProvider = Mockito.mock(FieldPVCoordinatesProvider.class);
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        final AttitudeProviderModifier modifier = new TestModifier(attitudeProvider);
+        // WHEN
+        final FieldAttitude<Complex> attitude = modifier.getAttitude(mockedPVCoordinatesProvider, date,
+                mockedFrame);
+        // THEN
+        final Rotation actualRotation = attitude.getRotation().toRotation();
+        Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
+        Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getRotationAcceleration());
+        Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getSpin());
+    }
+
+    @Test
     void testGetFrozenAttitudeProviderEventDetectors() {
         // GIVEN
         final AttitudeProvider attitudeProvider = new TestProvider(Rotation.IDENTITY);
@@ -72,6 +111,8 @@ class AttitudeProviderModifierTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
         Assertions.assertEquals(Vector3D.ZERO, attitude.getRotationAcceleration());
         Assertions.assertEquals(Vector3D.ZERO, attitude.getSpin());
+        final Rotation rotation = frozenAttitudeProvider.getAttitudeRotation(mockedPVCoordinatesProvider, date, mockedFrame);
+        Assertions.assertEquals(0., Rotation.distance(rotation, actualRotation));
     }
 
     @SuppressWarnings("unchecked")
@@ -93,6 +134,9 @@ class AttitudeProviderModifierTest {
         Assertions.assertEquals(0., Rotation.distance(expectedRotation, actualRotation));
         Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getRotationAcceleration());
         Assertions.assertEquals(FieldVector3D.getZero(field), attitude.getSpin());
+        final Rotation rotation = frozenAttitudeProvider.getAttitudeRotation(mockedPVCoordinatesProvider, date,
+                mockedFrame).toRotation();
+        Assertions.assertEquals(0., Rotation.distance(rotation, actualRotation));
     }
 
     @Test
@@ -108,6 +152,30 @@ class AttitudeProviderModifierTest {
                 frozenAttitudeProvider.getEventDetectors().count());
         Assertions.assertEquals(attitudeProvider.getFieldEventDetectors(field, driverList).count(),
                 frozenAttitudeProvider.getFieldEventDetectors(field, driverList).count());
+    }
+
+    @Test
+    void testGetParametersDrivers() {
+        // GIVEN
+        final AttitudeProvider mockedProvider = new TestProvider(Rotation.IDENTITY);
+        final List<ParameterDriver> expectedDrivers = new ArrayList<>();
+        final AttitudeProviderModifier mockedProviderModifier = Mockito.mock(AttitudeProviderModifier.class);
+        Mockito.when(mockedProviderModifier.getUnderlyingAttitudeProvider()).thenReturn(mockedProvider);
+        // WHEN
+        final List<ParameterDriver> actualDrivers = mockedProviderModifier.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(expectedDrivers.size(), actualDrivers.size());
+    }
+
+    @Test
+    void testGetFrozenAttitudeProviderGetParametersDrivers() {
+        // GIVEN
+        final AttitudeProvider attitudeProvider = new TestProvider(Rotation.IDENTITY);
+        final AttitudeProviderModifier frozenAttitudeProvider = AttitudeProviderModifier.getFrozenAttitudeProvider(attitudeProvider);
+        // WHEN
+        final List<ParameterDriver> drivers = frozenAttitudeProvider.getParametersDrivers();
+        // THEN
+        Assertions.assertEquals(attitudeProvider.getParametersDrivers().size(), drivers.size());
     }
 
     private static class TestProvider implements AttitudeProvider {
@@ -130,6 +198,21 @@ class AttitudeProviderModifierTest {
                                                                                 new FieldRotation<>(date.getField(), r),
                                                                                 FieldVector3D.getZero(date.getField()),
                                                                                 FieldVector3D.getZero(date.getField())));
+        }
+
+    }
+
+    private static class TestModifier implements AttitudeProviderModifier {
+
+        final AttitudeProvider attitudeProvider;
+
+        TestModifier(final AttitudeProvider attitudeProvider) {
+            this.attitudeProvider = attitudeProvider;
+        }
+
+        @Override
+        public AttitudeProvider getUnderlyingAttitudeProvider() {
+            return attitudeProvider;
         }
 
     }

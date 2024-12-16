@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -32,8 +32,8 @@ import org.orekit.utils.FieldAbsolutePVCoordinates;
  *
  * @author Vincent Cucchietti
  */
-public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        implements FieldODEIntegratorBuilder<T> {
+public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends CalculusFieldElement<T>, W extends AdaptiveStepsizeFieldIntegrator<T>>
+        extends FieldAbstractIntegratorBuilder<T, W> {
 
     /** Minimum step size (s). */
     private final double minStep;
@@ -110,14 +110,14 @@ public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends Calcu
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit,
-                                                      final OrbitType orbitType, final PositionAngleType angleType) {
+    public W buildIntegrator(final Field<T> field, final Orbit orbit,
+                             final OrbitType orbitType, final PositionAngleType angleType) {
         return buildIntegrator(field, getTolerances(orbit, orbitType, angleType));
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractFieldIntegrator<T> buildIntegrator(final FieldAbsolutePVCoordinates<T> fieldAbsolutePVCoordinates) {
+    public W buildIntegrator(final FieldAbsolutePVCoordinates<T> fieldAbsolutePVCoordinates) {
         return buildIntegrator(fieldAbsolutePVCoordinates.getDate().getField(), getTolerances(fieldAbsolutePVCoordinates));
     }
 
@@ -128,7 +128,7 @@ public abstract class AbstractVariableStepFieldIntegratorBuilder<T extends Calcu
      * @return integrator
      * @since 13.0
      */
-    protected abstract AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, double[][] tolerances);
+    protected abstract W buildIntegrator(Field<T> field, double[][] tolerances);
 
     /**
      * Get a default tolerance provider.

@@ -36,6 +36,12 @@ public interface AdjointDynamicsProvider {
     String getAdjointName();
 
     /**
+     * Getter for adjoint dimension.
+     * @return dimension
+     */
+    int getDimension();
+
+    /**
      * Builds adjoint derivatives provider.
      * @return derivatives provider
      */

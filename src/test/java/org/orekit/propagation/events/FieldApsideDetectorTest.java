@@ -143,25 +143,31 @@ class FieldApsideDetectorTest {
                                                     Constants.EIGEN5C_EARTH_C60);
     }
 
-    private class CountingApsideDetector<T extends CalculusFieldElement<T>> extends FieldAdapterDetector<T> {
+    private class CountingApsideDetector<T extends CalculusFieldElement<T>> implements FieldDetectorModifier<T> {
 
+        private final FieldEventDetector<T> detector;
         private int count;
         
         public CountingApsideDetector(final FieldPropagator<T> propagator, final FieldAdaptableInterval<T> maxCheck) {
-            super(new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
-                  withMaxCheck(maxCheck).
-                  withThreshold(propagator.getInitialState().getDate().getField().getZero().newInstance(1.0e-12)).
-                  withHandler(new FieldContinueOnEvent<>()));
+            this.detector = new FieldApsideDetector<>(propagator.getInitialState().getOrbit()).
+                    withMaxCheck(maxCheck).
+                    withThreshold(propagator.getInitialState().getDate().getField().getZero().newInstance(1.0e-12)).
+                    withHandler(new FieldContinueOnEvent<>());
+        }
+
+        @Override
+        public FieldEventDetector<T> getDetector() {
+            return detector;
         }
 
         public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
-            super.init(s0, t);
+            FieldDetectorModifier.super.init(s0, t);
             count = 0;
         }
 
         public T g(final FieldSpacecraftState<T> s) {
             ++count;
-            return super.g(s);
+            return FieldDetectorModifier.super.g(s);
         }
 
     }

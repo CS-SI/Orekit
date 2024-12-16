@@ -28,7 +28,7 @@ import org.orekit.propagation.analytical.KeplerianPropagator;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
+public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder<KeplerianPropagator> {
 
     /** Build a new instance.
      * <p>
@@ -78,7 +78,7 @@ public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuil
     }
 
     /** {@inheritDoc} */
-    public Propagator buildPropagator(final double[] normalizedParameters) {
+    public KeplerianPropagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
         final KeplerianPropagator propagator = new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider(), getMu(), getMass());
         getImpulseManeuvers().forEach(propagator::addEventDetector);

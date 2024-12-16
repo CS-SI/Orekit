@@ -274,8 +274,8 @@ public class ParameterDriver {
         return valueSpanMap.getSpansNumber();
     }
 
-    /** Get the dates of the transitions for the drag sensitive models {@link TimeSpanMap}.
-     * @return dates of the transitions for the drag sensitive models {@link TimeSpanMap}
+    /** Get the dates of the transitions {@link TimeSpanMap}.
+     * @return dates of the transitions {@link TimeSpanMap}
      * @since 12.0
      */
     public AbsoluteDate[] getTransitionDates() {

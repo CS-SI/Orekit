@@ -23,7 +23,8 @@ import org.orekit.propagation.ToleranceProvider;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class HighamHall54IntegratorBuilder extends AbstractVariableStepIntegratorBuilder {
+public class HighamHall54IntegratorBuilder extends AbstractVariableStepIntegratorBuilder<HighamHall54Integrator>
+        implements ExplicitRungeKuttaIntegratorBuilder {
 
     /**
      * Build a new instance using default integration tolerances.
