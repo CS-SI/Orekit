@@ -142,22 +142,24 @@ public class BrouwerLyddaneMeanConversionTest {
         Assertions.assertTrue(oef.getMessage().contains("unable to compute Brouwer-Lyddane mean parameters after"));
 
         // Try using least-squares algorithm
-        final Orbit mean0ls = lsConvert.convertToMean(initialState);
+        Assertions.assertDoesNotThrow(() -> {
+            final Orbit mean0ls = lsConvert.convertToMean(initialState);
+            if (doPrint) {
+                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
+                System.out.println(initialState);
+                System.out.println(mean0ls);
+                System.out.println();
+            }
+        });
 
-        if (doPrint) {
-            System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
-            System.out.println(initialState);
-            System.out.println(mean0ls);
-            System.out.println();
-        }
-
-        final Orbit mean1ls = lsConvert.convertToMean(futureState);
-
-        if (doPrint) {
-            System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
-            System.out.println(futureState);
-            System.out.println(mean1ls);
-        }
+        Assertions.assertDoesNotThrow(() -> {
+            final Orbit mean1ls = lsConvert.convertToMean(futureState);
+            if (doPrint) {
+                System.out.println("iter : " + lsConvert.getIterationsNb() + " ; rms : " + lsConvert.getRMS());
+                System.out.println(futureState);
+                System.out.println(mean1ls);
+            }
+        });
     }
 
     @Test
