@@ -127,6 +127,10 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
         final double[] scale = getScale();
         for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
 
+            // Orbital drivers
+            final List<DelegatingDriver> orbitalParameterDrivers =
+                    getBuilders().get(k).getOrbitalParametersDrivers().getDrivers();
+
             // Indexes
             final int[] indK = covarianceIndirection[k];
 
@@ -140,9 +144,17 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
                 final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
 
                 // Fill upper left corner (dY/dY0)
+                int stmRow = 0;
                 for (int i = 0; i < dYdY0.getRowDimension(); ++i) {
-                    for (int j = 0; j < nbOrbParams; ++j) {
-                        stm.setEntry(indK[i], indK[j], dYdY0.getEntry(i, j));
+                    int stmCol = 0;
+                    if (orbitalParameterDrivers.get(i).isSelected()) {
+                        for (int j = 0; j < nbOrbParams; ++j) {
+                            if (orbitalParameterDrivers.get(j).isSelected()) {
+                                stm.setEntry(indK[stmRow], indK[stmCol], dYdY0.getEntry(i, j));
+                                stmCol += 1;
+                            }
+                        }
+                        stmRow += 1;
                     }
                 }
             }
@@ -153,9 +165,13 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
                 final RealMatrix dYdPp = harvesters[k].getParametersJacobian(predictedSpacecraftStates[k]);
 
                 // Fill 1st row, 2nd column (dY/dPp)
+                int stmRow = 0;
                 for (int i = 0; i < dYdPp.getRowDimension(); ++i) {
-                    for (int j = 0; j < nbParams; ++j) {
-                        stm.setEntry(indK[i], indK[j + 6], dYdPp.getEntry(i, j));
+                    if (orbitalParameterDrivers.get(i).isSelected()) {
+                        for (int j = 0; j < nbParams; ++j) {
+                            stm.setEntry(indK[stmRow], indK[j + nbOrbParams], dYdPp.getEntry(i, j));
+                        }
+                        stmRow += 1;
                     }
                 }
 

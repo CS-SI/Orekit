@@ -936,7 +936,13 @@ public enum OrekitMessages implements Localizable {
     FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters"),
 
     /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
-    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned");
+    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned"),
+
+    /** WRONG_PROCESS_COVARIANCE_DIMENSION. */
+    WRONG_PROCESS_COVARIANCE_DIMENSION("Process covariance expecting dimension {0}, got {1}"),
+
+    /** WRONG_MEASUREMENT_COVARIANCE_DIMENSION. */
+    WRONG_MEASUREMENT_COVARIANCE_DIMENSION("Measurement covariance expecting dimension {0}, got {1}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
