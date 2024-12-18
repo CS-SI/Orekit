@@ -20,7 +20,11 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="12.2.1" date="TBD" description="TBD">
+    <release version="12.2.1" date="18/12/2024"
+             description="Version 12.2.1 is a patch release of Orekit.
+             It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,
+             longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use
+             of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
       <action dev="gegout" type="fix" issue="1624">
         Fix deprecated abstract method in 12.2
       </action>
