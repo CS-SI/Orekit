@@ -39,6 +39,9 @@
       <action dev="serrof" type="fix" issue="1551">
         Fixed normalization exception in ThrustPropulsionModel with Field.
       </action>
+      <action dev="markrutten" type="fix" issue="1543">
+            Fix EKF and UKF with 1-5 orbital parameters.
+      </action>
       <action dev="serrof" type="fix" issue="1525">
         Fixed conversion error with large values for arguments of longitude and latitude.
       </action>
