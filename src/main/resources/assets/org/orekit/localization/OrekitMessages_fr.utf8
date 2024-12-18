@@ -903,5 +903,11 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = Le constructor de propagateur ne peut pas êt
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = le champ « {0} » est trop long, la longueur maximale est de {1} caractères
 
+# Process covariance expecting dimension {0}, got {1}
+WRONG_PROCESS_COVARIANCE_DIMENSION = la dimension de la covariance de modèle est {0}, or il est attendu {1}
+
+# Measurement covariance expecting dimension {0}, got {1}
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION = la dimension de la covariance de mesures est {0}, or il est attendu {1}
+
 # cannot parse data {0}
 CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}

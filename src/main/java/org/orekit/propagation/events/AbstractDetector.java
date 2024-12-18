@@ -188,6 +188,17 @@ public abstract class AbstractDetector<T extends AbstractDetector<T>> implements
     }
 
     /** Build a new instance.
+     * @param newMaxCheck maximum checking interval (s)
+     * @param newThreshold convergence threshold (s)
+     * @param newMaxIter maximum number of iterations in the event time search
+     * @param newHandler event handler to call at event occurrences
+     * @return a new instance of the appropriate sub-type
+     */
+    @Deprecated
+    protected abstract T create(AdaptableInterval newMaxCheck, double newThreshold, int newMaxIter,
+                                EventHandler newHandler);
+
+    /** Build a new instance.
      * @param detectionSettings detection settings
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type

@@ -286,6 +286,39 @@
             Added optional name for ObservableSatellite.
         </action>
     </release>
+    <release version="12.2.1" date="18/12/2024"
+             description="Version 12.2.1 is a patch release of Orekit.
+             It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,
+             longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use
+             of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
+        <action dev="gegout" type="fix" issue="1624">
+            Fix deprecated abstract method in 12.2
+        </action>
+        <action dev="serrof" type="fix" issue="1620">
+            Fixed computation time regression by removing HashMap from (Field)TLEPropagator.
+        </action>
+        <action dev="derekkayhan" type="fix" issue="1587">
+            Fixed mass depletions not carried between measurements in KalmanModels.
+        </action>
+        <action dev="vcucchie" type="fix" issue="1565">
+            Fixed unchecked conversion warnings in tests after 12.2 release.
+        </action>
+        <action dev="vcucchie" type="update" issue="1563">
+            Updated design UML diagrams.
+        </action>
+        <action dev="serrof" type="fix" issue="1551">
+            Fixed normalization exception in ThrustPropulsionModel with Field.
+        </action>
+        <action dev="markrutten" type="fix" issue="1543">
+            Fix EKF and UKF with 1-5 orbital parameters.
+        </action>
+        <action dev="serrof" type="fix" issue="1525">
+            Fixed conversion error with large values for arguments of longitude and latitude.
+        </action>
+        <action dev="serrof" type="fix" issue="1418">
+            Fixed ClockOffsetDriver not modifying the value of BistaticRange.
+        </action>
+    </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
              It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
              optimal control (indirect). It implements several methods that were missing in field
