@@ -40,6 +40,7 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.units.Unit;
 
 /**
  * NeQuick ionospheric delay model.
@@ -48,6 +49,7 @@ import org.orekit.utils.ParameterDriver;
  *
  * @see "European Union (2016). European GNSS (Galileo) Open Service-Ionospheric Correction
  *       Algorithm for Galileo Single Frequency Users. 1.2."
+ * @see <a href="https://www.itu.int/rec/R-REC-P.531/en">ITU-R P.531</a>
  *
  * @since 10.1
  */
@@ -58,9 +60,6 @@ public class NeQuickModel implements IonosphericModel {
 
     /** NeQuick resources base directory. */
     static final String NEQUICK_BASE = "/assets/org/orekit/nequick/";
-
-    /** Meters to kilometers converter. */
-    private static final double M_TO_KM = 0.001;
 
     /** Factor for the electron density computation. */
     private static final double DENSITY_FACTOR = 1.0e11;
@@ -80,7 +79,7 @@ public class NeQuickModel implements IonosphericModel {
     /** F2 coefficients used by the F2 layer (flatten array for cache efficiency). */
     private double[] flattenF2;
 
-    /** Fm3 coefficients used by the F2 layer(flatten array for cache efficiency). */
+    /** Fm3 coefficients used by the M(3000)F2 layer(flatten array for cache efficiency). */
     private double[] flattenFm3;
 
     /** UTC time scale. */
@@ -188,7 +187,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /**
-     * This method allows the computation of the Stant Total Electron Content (STEC).
+     * This method allows the computation of the Slant Total Electron Content (STEC).
      * <p>
      * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of
      * the reference document.
@@ -243,7 +242,7 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /**
-     * This method allows the computation of the Stant Total Electron Content (STEC).
+     * This method allows the computation of the Slant Total Electron Content (STEC).
      * <p>
      * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of
      * the reference document.
@@ -304,9 +303,9 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /**
-     * This method perfoms the STEC integration.
+     * This method performs the STEC integration.
      * @param seg coordinates along the integration path
-     * @param dateTime current date and time componentns
+     * @param dateTime current date and time components
      * @return result of the integration
      */
     private double stecIntegration(final Segment seg, final DateTimeComponents dateTime) {
@@ -330,11 +329,11 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /**
-     * This method perfoms the STEC integration.
+     * This method performs the STEC integration.
      * @param <T> type of the elements
      * @param field field of the elements
      * @param seg coordinates along the integration path
-     * @param dateTime current date and time componentns
+     * @param dateTime current date and time components
      * @return result of the integration
      */
     private <T extends CalculusFieldElement<T>> T stecIntegration(final Field<T> field,
@@ -364,11 +363,11 @@ public class NeQuickModel implements IonosphericModel {
      * Computes the electron density at a given height.
      * @param h height in m
      * @param parameters NeQuick model parameters
-     * @return electron density [m^-3]
+     * @return electron density [m⁻³]
      */
     private double electronDensity(final double h, final NeQuickParameters parameters) {
         // Convert height in kilometers
-        final double hInKm = h * M_TO_KM;
+        final double hInKm = Unit.KILOMETRE.fromSI(h);
         // Electron density
         final double n;
         if (hInKm <= parameters.getHmF2()) {
@@ -385,13 +384,13 @@ public class NeQuickModel implements IonosphericModel {
      * @param field field of the elements
      * @param h height in m
      * @param parameters NeQuick model parameters
-     * @return electron density [m^-3]
+     * @return electron density [m⁻³]
      */
     private <T extends CalculusFieldElement<T>> T electronDensity(final Field<T> field,
                                                                   final T h,
                                                                   final FieldNeQuickParameters<T> parameters) {
         // Convert height in kilometers
-        final T hInKm = h.multiply(M_TO_KM);
+        final T hInKm = Unit.KILOMETRE.fromSI(h);
         // Electron density
         final T n;
         if (hInKm.getReal() <= parameters.getHmF2().getReal()) {
@@ -406,7 +405,7 @@ public class NeQuickModel implements IonosphericModel {
      * Computes the electron density of the bottomside.
      * @param h height in km
      * @param parameters NeQuick model parameters
-     * @return the electron density N in m-3
+     * @return the electron density N in m⁻³
      */
     private double bottomElectronDensity(final double h, final NeQuickParameters parameters) {
 
@@ -479,7 +478,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param field field of the elements
      * @param h height in km
      * @param parameters NeQuick model parameters
-     * @return the electron density N in m-3
+     * @return the electron density N in m⁻³
      */
     private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final Field<T> field,
                                                                         final T h,
@@ -557,7 +556,7 @@ public class NeQuickModel implements IonosphericModel {
      * Computes the electron density of the topside.
      * @param h height in km
      * @param parameters NeQuick model parameters
-     * @return the electron density N in m-3
+     * @return the electron density N in m⁻³
      */
     private double topElectronDensity(final double h, final NeQuickParameters parameters) {
 
@@ -587,7 +586,7 @@ public class NeQuickModel implements IonosphericModel {
      * @param field field of the elements
      * @param h height in km
      * @param parameters NeQuick model parameters
-     * @return the electron density N in m-3
+     * @return the electron density N in m⁻³
      */
     private <T extends CalculusFieldElement<T>> T topElectronDensity(final Field<T> field,
                                                                      final T h,

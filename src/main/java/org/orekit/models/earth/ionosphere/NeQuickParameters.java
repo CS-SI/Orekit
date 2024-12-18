@@ -74,7 +74,7 @@ class NeQuickParameters {
      * Build a new instance.
      * @param dateTime current date time components
      * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
-     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
+     * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
      * @param alpha effective ionisation level coefficients
@@ -101,7 +101,7 @@ class NeQuickParameters {
         this.hmE = 120.0;
         // E layer critical frequency in MHz
         final double foE = computefoE(date.getMonth(), az, xeff, latitude);
-        // E layer maximum density in 10^11 m-3 (Eq. 36)
+        // E layer maximum density in 10^11 m⁻³ (Eq. 36)
         final double nmE = 0.124 * foE * foE;
 
         // Time argument (Eq. 49)
@@ -115,14 +115,14 @@ class NeQuickParameters {
         final double foF2 = computefoF2(modip, cf2, latitude, scL);
         // Maximum Usable Frequency factor
         final double mF2  = computeMF2(modip, cm3, latitude, scL);
-        // F2 layer maximum density in 10^11 m-3
+        // F2 layer maximum density in 10^11 m⁻³
         this.nmF2 = 0.124 * foF2 * foF2;
         // F2 layer maximum density height in km
         this.hmF2 = computehmF2(foE, foF2, mF2);
 
         // F1 layer critical frequency in MHz
         final double foF1 = computefoF1(foE, foF2);
-        // F1 layer maximum density in 10^11 m-3
+        // F1 layer maximum density in 10^11 m⁻³
         final double nmF1;
         if (foF1 <= 0.0 && foE > 2.0) {
             final double foEpopf = foE + 0.5;
@@ -423,7 +423,7 @@ class NeQuickParameters {
 
     /**
      * Computes Cm3 coefficients.
-     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
+     * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
      * @param azr effective sunspot number (Eq. 19)
      * @param scT sines/cosines array of time argument
      * @return the Cm3 coefficients array
@@ -575,8 +575,8 @@ class NeQuickParameters {
      * <li>double[2] = A3 → E  layer amplitude
      * </ul>
      * </p>
-     * @param nmE E layer maximum density in 10^11 m-3
-     * @param nmF1 F1 layer maximum density in 10^11 m-3
+     * @param nmE E layer maximum density in 10^11 m⁻³
+     * @param nmF1 F1 layer maximum density in 10^11 m⁻³
      * @param foF1 F1 layer critical frequency in MHz
      * @return a three components array containing the layer amplitudes
      */
@@ -667,7 +667,7 @@ class NeQuickParameters {
      * (i.e. continuous first derivatives) at origin.
      * <p>
      * This function, describe in section F.2.12.1 of the reference document, is
-     * recommanded for computational efficiency.
+     * recommended for computational efficiency.
      * </p>
      * @param dF1 first function
      * @param dF2 second function

@@ -75,7 +75,6 @@ public enum NeQuickVersion {
      * A new data source is created each time this method is called,
      * in practice it should be called only once, as per the
      * initialization on demand holder idiom used to load the grid
-     * only once
      * </p>
      * @return grid source
      */
