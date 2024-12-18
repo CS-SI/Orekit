@@ -116,7 +116,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     protected FieldEventSlopeFilter(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                     final int maxIter, final FieldEventHandler<T> handler,
                                     final D rawDetector, final FilterType filter) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
@@ -139,6 +139,7 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     }
 
     /**  {@inheritDoc} */
+    @Override
     public void init(final FieldSpacecraftState<T> s0,
                      final FieldAbsoluteDate<T> t) {
         super.init(s0, t);
@@ -249,16 +250,16 @@ public class FieldEventSlopeFilter<D extends FieldEventDetector<T>, T extends Ca
     private static class LocalHandler<D extends FieldEventDetector<T>, T extends CalculusFieldElement<T>> implements FieldEventHandler<T> {
 
         /** {@inheritDoc} */
+        @SuppressWarnings("unchecked")
         public Action eventOccurred(final FieldSpacecraftState<T> s, final FieldEventDetector<T> detector, final boolean increasing) {
-            @SuppressWarnings("unchecked")
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().eventOccurred(s, esf.rawDetector, esf.filter.getTriggeredIncreasing());
         }
 
         /** {@inheritDoc} */
         @Override
+        @SuppressWarnings("unchecked")
         public FieldSpacecraftState<T> resetState(final FieldEventDetector<T> detector, final FieldSpacecraftState<T> oldState) {
-            @SuppressWarnings("unchecked")
             final FieldEventSlopeFilter<D, T> esf = (FieldEventSlopeFilter<D, T>) detector;
             return esf.rawDetector.getHandler().resetState(esf.rawDetector, oldState);
         }

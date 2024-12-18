@@ -17,7 +17,6 @@
 package org.orekit.time;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -103,6 +102,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      */
     public static final DateComponents MIN_EPOCH;
 
+    /** Offset between julian day epoch and modified julian day epoch. */
+    public static final double JD_TO_MJD = 2400000.5;
+
     /** Serializable UID. */
     private static final long serialVersionUID = -2462694707837970938L;
 
@@ -124,14 +126,9 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Formatting symbols used in {@link #toString()}. */
     private static final DecimalFormatSymbols US_SYMBOLS = new DecimalFormatSymbols(Locale.US);
 
-    /** Format for years. */
-    private static final DecimalFormat FOUR_DIGITS = new DecimalFormat("0000", US_SYMBOLS);
-
-    /** Format for months and days. */
-    private static final DecimalFormat TWO_DIGITS  = new DecimalFormat("00", US_SYMBOLS);
-
     /** Offset between J2000 epoch and modified julian day epoch. */
     private static final int MJD_TO_J2000 = 51544;
+
 
     /** Basic and extended format calendar date. */
     private static final Pattern CALENDAR_FORMAT = Pattern.compile("^(-?\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)$");
@@ -473,11 +470,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
      * @return string representation of the date.
      */
     public String toString() {
-        return new StringBuilder().
-               append(FOUR_DIGITS.format(year)).append('-').
-               append(TWO_DIGITS.format(month)).append('-').
-               append(TWO_DIGITS.format(day)).
-               toString();
+        return String.format(Locale.US, "%04d-%02d-%02d", year, month, day);
     }
 
     /** {@inheritDoc} */

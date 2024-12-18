@@ -217,9 +217,9 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
         this.hyDot = hyDot;
 
         if (hasDerivatives()) {
-            final UnivariateDerivative1 alphaUD = initializeCachedL(l, lDot, type);
-            this.cachedL = alphaUD.getValue();
-            this.cachedLDot = alphaUD.getFirstDerivative();
+            final UnivariateDerivative1 lUD = initializeCachedL(l, lDot, type);
+            this.cachedL = lUD.getValue();
+            this.cachedLDot = lUD.getFirstDerivative();
         } else {
             this.cachedL = initializeCachedL(l, type);
             this.cachedLDot = Double.NaN;
@@ -807,37 +807,7 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
      * @since 12.1
      */
     private double initializeCachedL(final double l, final PositionAngleType positionAngleType) {
-        if (positionAngleType == cachedPositionAngleType) {
-            return l;
-
-        } else {
-            switch (cachedPositionAngleType) {
-
-                case ECCENTRIC:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, l);
-                    } else {
-                        return EquinoctialLongitudeArgumentUtility.trueToEccentric(ex, ey, l);
-                    }
-
-                case MEAN:
-                    if (positionAngleType == PositionAngleType.TRUE) {
-                        return EquinoctialLongitudeArgumentUtility.trueToMean(ex, ey, l);
-                    } else {
-                        return EquinoctialLongitudeArgumentUtility.eccentricToMean(ex, ey, l);
-                    }
-
-                case TRUE:
-                    if (positionAngleType == PositionAngleType.MEAN) {
-                        return EquinoctialLongitudeArgumentUtility.meanToTrue(ex, ey, l);
-                    } else {
-                        return EquinoctialLongitudeArgumentUtility.eccentricToTrue(ex, ey, l);
-                    }
-
-                default:
-                    throw new OrekitInternalError(null);
-            }
-        }
+        return EquinoctialLongitudeArgumentUtility.convertL(positionAngleType, l, ex, ey, cachedPositionAngleType);
     }
 
     /** Compute non-Keplerian part of the acceleration from first time derivatives.
@@ -1131,27 +1101,40 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased {
     @Override
     public void addKeplerContribution(final PositionAngleType type, final double gm,
                                       final double[] pDot) {
+        pDot[5] += computeKeplerianLDot(type, a, ex, ey, gm, cachedL, cachedPositionAngleType);
+    }
+
+    /**
+     * Compute rate of argument of longitude.
+     * @param type position angle type of rate
+     * @param a semi major axis
+     * @param ex ex
+     * @param ey ey
+     * @param mu mu
+     * @param l argument of longitude
+     * @param cachedType position angle type of passed l
+     * @return first-order time derivative for l
+     * @since 12.2
+     */
+    private static double computeKeplerianLDot(final PositionAngleType type, final double a, final double ex,
+                                               final double ey, final double mu,
+                                               final double l, final PositionAngleType cachedType) {
+        final double n  = FastMath.sqrt(mu / a) / a;
+        if (type == PositionAngleType.MEAN) {
+            return n;
+        }
         final double oMe2;
         final double ksi;
-        final double n  = FastMath.sqrt(gm / a) / a;
         final SinCos sc;
-        switch (type) {
-            case MEAN :
-                pDot[5] += n;
-                break;
-            case ECCENTRIC :
-                sc = FastMath.sinCos(getLE());
-                ksi  = 1. / (1 - ex * sc.cos() - ey * sc.sin());
-                pDot[5] += n * ksi;
-                break;
-            case TRUE :
-                sc = FastMath.sinCos(getLv());
-                oMe2 = 1 - ex * ex - ey * ey;
-                ksi  = 1 + ex * sc.cos() + ey * sc.sin();
-                pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        if (type == PositionAngleType.ECCENTRIC) {
+            sc = FastMath.sinCos(EquinoctialLongitudeArgumentUtility.convertL(cachedType, l, ex, ey, type));
+            ksi  = 1. / (1 - ex * sc.cos() - ey * sc.sin());
+            return n * ksi;
+        } else { // TRUE
+            sc = FastMath.sinCos(EquinoctialLongitudeArgumentUtility.convertL(cachedType, l, ex, ey, type));
+            oMe2 = 1 - ex * ex - ey * ey;
+            ksi  = 1 + ex * sc.cos() + ey * sc.sin();
+            return n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
         }
     }
 

@@ -18,6 +18,9 @@ package org.orekit.orbits;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -30,49 +33,71 @@ class EquinoctialLongitudeArgumentUtilityTest {
     @Test
     void testMeanToTrueAndBack() {
         // GIVEN
-        final double expectedLatitudeArgument = 3.;
+        final double expectedLongitudeArgument = 3.;
         // WHEN
-        final double intermediateLatitudeArgument = EquinoctialLongitudeArgumentUtility.meanToTrue(EX, EY,
-                expectedLatitudeArgument);
-        final double actualLatitudeArgument = EquinoctialLongitudeArgumentUtility.trueToMean(EX, EY,
-                intermediateLatitudeArgument);
+        final double intermediateLongitudeArgument = EquinoctialLongitudeArgumentUtility.meanToTrue(EX, EY,
+                expectedLongitudeArgument);
+        final double actualLongitudeArgument = EquinoctialLongitudeArgumentUtility.trueToMean(EX, EY,
+                intermediateLongitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
+        Assertions.assertEquals(expectedLongitudeArgument, actualLongitudeArgument, TOLERANCE);
     }
 
     @Test
     void testEccentricToTrueAndBack() {
         // GIVEN
-        final double expectedLatitudeArgument = 3.;
+        final double expectedLongitudeArgument = 3.;
         // WHEN
-        final double intermediateLatitudeArgument = EquinoctialLongitudeArgumentUtility.eccentricToTrue(EX, EY,
-                expectedLatitudeArgument);
-        final double actualLatitudeArgument = EquinoctialLongitudeArgumentUtility.trueToEccentric(EX, EY,
-                intermediateLatitudeArgument);
+        final double intermediateLongitudeArgument = EquinoctialLongitudeArgumentUtility.eccentricToTrue(EX, EY,
+                expectedLongitudeArgument);
+        final double actualLongitudeArgument = EquinoctialLongitudeArgumentUtility.trueToEccentric(EX, EY,
+                intermediateLongitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
+        Assertions.assertEquals(expectedLongitudeArgument, actualLongitudeArgument, TOLERANCE);
     }
 
     @Test
     void testEccentricToMeanAndBack() {
         // GIVEN
-        final double expectedLatitudeArgument = 3.;
+        final double expectedLongitudeArgument = 3.;
         // WHEN
-        final double intermediateLatitudeArgument = EquinoctialLongitudeArgumentUtility.eccentricToMean(EX, EY,
-                expectedLatitudeArgument);
-        final double actualLatitudeArgument = EquinoctialLongitudeArgumentUtility.meanToEccentric(EX, EY,
-                intermediateLatitudeArgument);
+        final double intermediateLongitudeArgument = EquinoctialLongitudeArgumentUtility.eccentricToMean(EX, EY,
+                expectedLongitudeArgument);
+        final double actualLongitudeArgument = EquinoctialLongitudeArgumentUtility.meanToEccentric(EX, EY,
+                intermediateLongitudeArgument);
         // THEN
-        Assertions.assertEquals(expectedLatitudeArgument, actualLatitudeArgument, TOLERANCE);
+        Assertions.assertEquals(expectedLongitudeArgument, actualLongitudeArgument, TOLERANCE);
     }
 
     @Test
     void testMeanToEccentricException() {
         // GIVEN
-        final double nanLatitudeArgument = Double.NaN;
+        final double nanLongitudeArgument = Double.NaN;
         // WHEN & THEN
         Assertions.assertThrows(OrekitException.class, () -> EquinoctialLongitudeArgumentUtility.meanToEccentric(EX, EY,
-                nanLatitudeArgument), OrekitMessages.UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT.toString());
+                nanLongitudeArgument), OrekitMessages.UNABLE_TO_COMPUTE_ECCENTRIC_LONGITUDE_ARGUMENT.toString());
     }
 
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testConvertL(final PositionAngleType inputType) {
+        // GIVEN
+        final double expectedLongitudeArgument = 3.;
+        final PositionAngleType intermediateType = PositionAngleType.ECCENTRIC;
+        // WHEN
+        final double intermediateLongitudeArgument = EquinoctialLongitudeArgumentUtility.convertL(inputType,
+                expectedLongitudeArgument, EX, EY, intermediateType);
+        final double actualLongitudeArgument = EquinoctialLongitudeArgumentUtility.convertL(intermediateType,
+                intermediateLongitudeArgument, EX, EY, inputType);
+        // THEN
+        Assertions.assertEquals(expectedLongitudeArgument, actualLongitudeArgument, TOLERANCE);
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {1e3, 5e3, 1e4, 1e5, 5e5})
+    void testIssue1525(final double lM) {
+        final double ex = 0.44940492906694396;
+        final double ey = 0.56419162961687;
+        Assertions.assertDoesNotThrow(() -> EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM));
+    }
 }

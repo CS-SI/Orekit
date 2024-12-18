@@ -444,10 +444,28 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             }
 
             // propagate from start date to end date with event detection
-            return integrateDynamics(tEnd);
+            final FieldSpacecraftState<T> state = integrateDynamics(tEnd);
 
+            // Finalize event detectors
+            getEventsDetectors().forEach(detector -> detector.finish(state));
+
+            return state;
         }
 
+    }
+
+    /** Reset initial state with a given propagation type.
+     *
+     * <p> By default this method returns the same as method resetInitialState(FieldSpacecraftState)
+     * <p> Its purpose is mostly to be derived in FieldDSSTPropagator
+     *
+     * @param state new initial state to consider
+     * @param stateType type of the new state (mean or osculating)
+     * @since 12.1.3
+     */
+    public void resetInitialState(final FieldSpacecraftState<T> state, final PropagationType stateType) {
+        // Default behavior, do not take propagation type into account
+        resetInitialState(state);
     }
 
     /** Propagation with or without event detection.
@@ -500,7 +518,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             finalState = updateAdditionalStatesAndDerivatives(finalState, mathFinalState);
 
             if (resetAtEnd) {
-                resetInitialState(finalState);
+                resetInitialState(finalState, propagationType);
                 setStartDate(finalState.getDate());
             }
 

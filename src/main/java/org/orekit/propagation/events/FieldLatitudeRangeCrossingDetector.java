@@ -117,7 +117,7 @@ public class FieldLatitudeRangeCrossingDetector <T extends CalculusFieldElement<
                                                  final OneAxisEllipsoid body,
                                                  final double fromLatitude,
                                                  final double toLatitude) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.body = body;
         this.fromLatitude = fromLatitude;
         this.toLatitude = toLatitude;

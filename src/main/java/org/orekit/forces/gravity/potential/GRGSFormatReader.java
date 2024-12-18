@@ -16,15 +16,6 @@
  */
 package org.orekit.forces.gravity.potential;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.Precision;
 import org.orekit.annotation.DefaultDataContext;
@@ -36,6 +27,15 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.Constants;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Reader for the GRGS gravity field format.
  *
@@ -90,7 +90,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         };
 
         // regular expression for data lines
-        final String data = "^([ 0-9]{3})([ 0-9]{3})(   |DOT)\\s*(" +
+        final String data = "^([ 0-9]{3})([ 0-9]{3})( {3}|DOT)\\s*(" +
                             real + sep + real + sep + real + sep + real +
                             ")(\\s+[0-9]+)?\\s*$";
 

@@ -158,6 +158,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             } while (!isLastStep);
 
+            // Finalize event detectors
+            for (final EventState<?> es : eventsStates) {
+                es.finish(state);
+            }
+
             // return the last computed state
             lastPropagationEnd = state.getDate();
             setStartDate(state.getDate());

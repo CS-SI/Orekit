@@ -20,6 +20,234 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="12.2.1" date="18/12/2024"
+             description="Version 12.2.1 is a patch release of Orekit.
+             It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,
+             longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use
+             of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
+      <action dev="gegout" type="fix" issue="1624">
+        Fix deprecated abstract method in 12.2
+      </action>
+      <action dev="serrof" type="fix" issue="1620">
+        Fixed computation time regression by removing HashMap from (Field)TLEPropagator.
+      </action>
+      <action dev="derekkayhan" type="fix" issue="1587">
+        Fixed mass depletions not carried between measurements in KalmanModels.
+      </action>
+        <action dev="vcucchie" type="fix" issue="1565">
+            Fixed unchecked conversion warnings in tests after 12.2 release.
+        </action>
+      <action dev="vcucchie" type="update" issue="1563">
+        Updated design UML diagrams.
+      </action>
+      <action dev="serrof" type="fix" issue="1551">
+        Fixed normalization exception in ThrustPropulsionModel with Field.
+      </action>
+      <action dev="markrutten" type="fix" issue="1543">
+            Fix EKF and UKF with 1-5 orbital parameters.
+      </action>
+      <action dev="serrof" type="fix" issue="1525">
+        Fixed conversion error with large values for arguments of longitude and latitude.
+      </action>
+      <action dev="serrof" type="fix" issue="1418">
+        Fixed ClockOffsetDriver not modifying the value of BistaticRange.
+      </action>
+    </release>
+    <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.
+             It includes both fixes and new features. Version 12.2 specifically introduces a new package dedicated to
+             optimal control (indirect). It implements several methods that were missing in field
+             equivalent classes. Also, new quality of life methods are introduced to improve code conciseness and
+             readability. It is worth mentioning that a long standing bug regarding the Brouwer-Lyddane analytical
+             propagator has been fixed. See the list below for a full description of the changes.">
+      <action dev="serrof" type="add" issue="1555">
+        Add init methods in LightFluxModel.
+      </action>
+      <action dev="manny" type="fix" issue="1554">
+        Updated conference paper URL in JB2008 class documentation.
+      </action>
+      <action dev="luc" type="fix" issue="1552">
+        Fixed wrong interpolation of clock models when parsing
+        SP3 files with default clock entries.
+      </action>
+      <action dev="serrof" type="add" issue="1547">
+        Add generic conversion routines for position angles.
+      </action>
+      <action dev="serrof" type="add" issue="1544">
+        Add addImpulseManeuver to relevant propagator builder.
+      </action>
+      <action dev="serrof" type="add" issue="1539">
+        Add abstract class for solar flux model with spherical body.
+      </action>
+      <action dev="serrof" type="fix" issue="1537" due-to="markrutten">
+        Fix crash of EKF whithout orbital parameters and at least one propagation parameter to estimate.
+      </action>
+      <action dev="serrof" type="update" issue="1536">
+        Override methods in (Field) static transform identity.
+      </action>
+      <action dev="serrof" type="update" issue="1533">
+        Override more methods in (Field) transform identity.
+      </action>
+      <action dev="serrof" type="update" issue="1530">
+        Deprecate getBody in AbstractBodyAttraction.
+      </action>
+      <action dev="luc" type="fix" issue="1526">
+        Fixed position accuracy in spliced SP3 files.
+      </action>
+      <action dev="serrof" type="add" issue="1518">
+        Add light flux model for spherical occulting and occulted bodies.
+      </action>
+      <action dev="serrof" type="add" issue="1516">
+        Add scales for defect in indirect shooting.
+      </action>
+      <action dev="serrof" type="update" issue="1512">
+        Make easier implementation of user-defined adjoint.
+      </action>
+      <action dev="serrof" type="add" issue="1511">
+        Add (Field)ResetDerivativesOnEvent.
+      </action>
+      <action dev="serrof" type="add" issue="1510">
+        Add adaptive step integration for indirect shooting.
+      </action>
+      <action dev="serrof" type="update" issue="1509">
+        Add Cartesian covariance conversions.
+      </action>
+      <action dev="serrof" type="update" issue="1508">
+        Use (Field)EventDetectionSettings in cylindrical shadow.
+      </action>
+      <action dev="serrof" type="update" issue="1506">
+        Deprecated a few methods in (Field)AbstractDetector to increase use of (Field)EventDetectionSettings.
+      </action>
+      <action dev="serrof" type="add" issue="1506">
+        Add toGeodeticPoint in FieldGeodeticPoint.
+      </action>
+      <action dev="serrof" type="update" issue="1505">
+        Pass propagation frame as argument when evaluating adjoint contribution.
+      </action>
+      <action dev="serrof" type="add" issue="1500">
+        Add evaluation of Hamiltonian in adjoint dynamics.
+      </action>
+      <action dev="serrof" type="add" issue="1493">
+        Add direct access to lighting ratio from state in AbstractLightFluxModel.
+      </action>
+      <action dev="luc" type="update" issue="1487">
+        Additional protection for zenith line-of-sight in NeQuick-G model.
+      </action>
+      <action dev="serrof" type="add" issue="1483">
+        Add constructor with dV error in adaptive step integrator builder.
+      </action>
+      <action dev="serrof" type="add" issue="1482">
+        Add adjoint dynamics for single absolute attraction.
+      </action>
+      <action dev="serrof" type="add" issue="1481">
+        Add non-orbit build in (Field)IntegratorBuilder.
+      </action>
+      <action dev="serrof" type="add" issue="1479">
+        Add (Field)EventDetectionSettings class.
+      </action>
+      <action dev="luc" type="fix" issue="1478">
+        Added AlignedAndConstrained attitude mode.
+      </action>
+      <action dev="serrof" type="add" issue="1477">
+        Add adjoint dynamics for inertial force.
+      </action>
+      <action dev="serrof" type="add" issue="1476">
+        Add adjoint dynamics for third body force.
+      </action>
+      <action dev="luc" type="fix" issue="1475">
+        Added getOneLetterCode and getTwoLettersCode to TimeSystem.
+      </action>
+      <action dev="luc" type="fix" issue="1473">
+        Protected AmbiguityCache against concurrent modifications.
+      </action>
+      <action dev="serrof" type="add" issue="1472">
+        Add indirect single shooting method for fixed time fixed boundaries with Cartesian coordinates.
+      </action>
+      <action dev="serrof" type="add" issue="1471">
+        Add bounded energy cost for Cartesian adjoint dynamics.
+      </action>
+      <action dev="serrof" type="add" issue="1470">
+        Create Jacobian of (Field)KinematicTransform and use it in (Field)StateCovariance.
+      </action>
+      <action dev="serrof" type="add" issue="1469">
+        Add adjoint dynamics from J2 term.
+      </action>
+      <action dev="serrof" type="add" issue="1466">
+        Add unbounded energy cost for Cartesian adjoint dynamics.
+      </action>
+      <action dev="serrof" type="add" issue="1465">
+        Add finish method in (Field)EventHandler.
+      </action>
+      <action dev="serrof" type="add" issue="1464">
+        Add analytical solar ephemerides.
+      </action>
+      <action dev="serrof" type="add" issue="1457">
+        Add indirect control package with Cartesian adjoint dynamics for Keplerian motion.
+      </action>
+      <action dev="bryan" type="update" issue="1390">
+        J2-squared model can now implement their own short period model.
+      </action>
+      <action dev="vincent" type="add" issue="1387">
+        Added getter for switches in AttitudesSequence.
+      </action>
+      <action dev="bryan" type="update" issue="1378">
+        PropagatorBuilder are now Cloneable.
+      </action>
+      <action dev="rafa" type="add" issue="1368">
+        Added a parser for gravity models in SHA format.
+      </action>
+      <action dev="serrof" type="add" issue="1349">
+        Add more overrides of getAttitudeRotation.
+      </action>
+      <action dev="maxime" type="fix" issue="1104">
+        Use proper body-fixed frame in DSSTZonal and refactored DSSTGravityContext.
+      </action>
+      <action dev="pascal" type="fix" issue="947">
+        Fix negative eccentricity issue with Brouwer-Lyddane propagator.
+      </action>
+    </release>
+    <release version="12.1.3" date="04/09/2024"
+             description="Version 12.1.3 is a patch release of Orekit.
+             It fixes bugs related to thread-safety, measurements status in UKF, inter-satellite measurements
+             and GNSS ambiguity solver, DSST osculating propagation, NeQuick ionospheric model,
+             numerical noises in covariance transformation and parsing of RINEX and CCSDS files.
+             Version 12.1.3 also include Checkstyle fixes.">
+      <action dev="luc" type="fix" issue="643">
+        Removed non thread-safe use of DecimalFormat.
+      </action>
+      <action dev="serrof" type="fix" issue="1501">
+        Pass Status in UKF theoretical measurement.
+      </action>
+      <action dev="luc" type="fix" issue="1499">
+        Fixed mixed up frames in inter-satellites measurements.
+      </action>
+      <action dev="luc" type="fix" issue="1489">
+        Protected several maps against concurrent modifications.
+      </action>
+      <action dev="luc" type="fix" issue="1487">
+        Fixed NeQuick ionospheric model for perfect zenith observation.
+      </action>
+      <action dev="vincent" type="fix" issue="1485">
+        Fixed introduced noises when changing covariance frame with identical frame.
+      </action>
+      <action dev="luc" type="fix" issue="1480">
+        Fixed wrong agency name length in Rinex observation writer.
+      </action>
+      <action dev="luc" type="fix" issue="1448">
+        Greatly reduced computation time of NeQuick ionospheric model.
+      </action>
+      <action dev="luc" type="fix" issue="1475">
+        Added getOneLetterCode and getTwoLettersCode to TimeSystem.
+      </action>
+      <action dev="luc" type="fix" issue="1473">
+        Protected AmbiguityCache against concurrent modifications.
+      </action>
+      <action dev="maxime" type="fix" issue="1467">
+        Fixed checkstyle error in SolarRadiationPressure.
+      </action>
+      <action dev="maxime" type="fix" issue="1461">
+        Fixed update of initial state's prop type after a propagation in DSST.
+      </action>
+    </release>
     <release version="12.1.2" date="13/07/2024"
              description="Version 12.1.2 is a patch release of Orekit.
              It fixes multiple issues related to the parsing of CCSDS CDM, the generation of
@@ -55,6 +283,12 @@
       </action>
       <action dev="bryan" type="update" issue="1442">
         Updated release guide according to new sonatype token generation process.
+      </action>
+      <action dev="laura" type="add" issue="1413">
+        Added method getMJD and getJD in AbsoluteDate.
+      </action>
+      <action dev="serrof" type="add" issue="959">
+        Add finish method in (Field)EventDetector and call it in propagators.
       </action>
     </release>
     <release version="12.1.1" date="25/06/2024"
@@ -209,7 +443,7 @@
         Improved performance of STM when there is no force model not dependent on position only.
       </action>
       <action dev="luc" type="fix" issue="1394">
-         Fixed ignored coordinates system in SP3 parser.
+        Fixed ignored coordinates system in SP3 parser.
       </action>
       <action dev="serrof" type="add" issue="1391">
         Add method to create constant (Field)AdaptableInterval.
@@ -311,241 +545,241 @@
         Added {Field}ClockOffset.
       </action>
       <action dev="serrof" type="add" issue="1345">
-          Added J2-only ForceModel for performance.
+        Added J2-only ForceModel for performance.
       </action>
       <action dev="serrof" type="fix" issue="1344">
-          Fixed hasNonKeplerianAcceleration in FieldOrbit and improved performance.
+        Fixed hasNonKeplerianAcceleration in FieldOrbit and improved performance.
       </action>
       <action dev="luc" type="update" issue="1333">
-          Deprecated InterSatellitesPhaseAmbiguityModifier, OneWayGNSSPhaseAmbiguityModifier
-          and PhaseAmbiguityModifier.
+        Deprecated InterSatellitesPhaseAmbiguityModifier, OneWayGNSSPhaseAmbiguityModifier
+        and PhaseAmbiguityModifier.
       </action>
       <action dev="luc" type="add" >
-          Added AmbiguityDriver and AmbiguityCache.
+        Added AmbiguityDriver and AmbiguityCache.
       </action>
       <action dev="luc" type="update" issue="1343">
-          Allow generation of Rinex observation files in receiver clock time scale.
+        Allow generation of Rinex observation files in receiver clock time scale.
       </action>
       <action dev="luc" type="update" issue="1342">
-          Added ClockTimeScale.
+        Added ClockTimeScale.
       </action>
       <action dev="luc" type="update" issue="1341">
-          {get|set}ClkOffset → {get|set}ClockOffsetApplied.
+        {get|set}ClkOffset → {get|set}ClockOffsetApplied.
       </action>
       <action dev="serrof" type="add" issue="1336">
-          Added getBodyName in body-based attraction models, as well as common abstract class.
+        Added getBodyName in body-based attraction models, as well as common abstract class.
       </action>
       <action dev="maxime" type="update" issue="1335">
-          Added constructors with orbit type in SmallManeuverAnalyticalModel.
+        Added constructors with orbit type in SmallManeuverAnalyticalModel.
       </action>
       <action dev="serrof" type="add" issue="1258">
-          Added get(Un)normalizedC20.
+        Added get(Un)normalizedC20.
       </action>
       <action dev="luc" type="add" issue="1338">
-          Added separate access to original estimation and modifications in estimated measurements.
+        Added separate access to original estimation and modifications in estimated measurements.
       </action>
       <action dev="luc" type="add" issue="1332">
-          Added InterSatellitesOneWayRangeRate measurements.
+        Added InterSatellitesOneWayRangeRate measurements.
       </action>
       <action dev="luc" type="add" >
-          Added constant and quadratic clock models for GNSS measurements.
+        Added constant and quadratic clock models for GNSS measurements.
       </action>
       <action dev="serrof" type="update" issue="1198">
-          Removed redundant code to create FieldOrbit from Orbit.
+        Removed redundant code to create FieldOrbit from Orbit.
       </action>
       <action dev="serrof" type="update" issue="1201">
-          Improved performance with PositionAngleType in (Field)NumericalPropagator.
+        Improved performance with PositionAngleType in (Field)NumericalPropagator.
       </action>
       <action dev="serrof" type="update" issue="1307">
-          Removed unnecessary calls to (Field)Transform in (Field)ShortTermEncounter2DDefinition.
+        Removed unnecessary calls to (Field)Transform in (Field)ShortTermEncounter2DDefinition.
       </action>
       <action dev="serrof" type="add" issue="1288">
-          Added cache for position angle in FieldOrbit when applicable.
+        Added cache for position angle in FieldOrbit when applicable.
       </action>
       <action dev="luc" type="fix" issue="1329">
-          Manage clock offset as an additional state in propagators built from SP3 files.
+        Manage clock offset as an additional state in propagators built from SP3 files.
       </action>
       <action dev="luc" type="fix">
-          Added TimeStampedDoubleAndDerivative and associated interpolator.
+        Added TimeStampedDoubleAndDerivative and associated interpolator.
       </action>
       <action dev="luc" type="fix" issue="1325">
-          Allow direction-dependent phase centers in inter-satellites measurements.
+        Allow direction-dependent phase centers in inter-satellites measurements.
       </action>
       <action dev="alfe" type="add" issue="1215">
-          Create two new EventDetector: LatitudeRangeCrossingDetector and LongitudeRangeCrossingDetector.
+        Create two new EventDetector: LatitudeRangeCrossingDetector and LongitudeRangeCrossingDetector.
       </action>
       <action dev="serrof" type="add" issue="1214">
-          Added cache for position angle in Orbit when applicable.
+        Added cache for position angle in Orbit when applicable.
       </action>
       <action dev="serrof" type="add" issue="1306">
-          Implement resetIntermediateState in (Field)TLEPropagator.
+        Implement resetIntermediateState in (Field)TLEPropagator.
       </action>
       <action dev="serrof" type="add" issue="1318">
-          Add default implementation of getPosition in (Field)Propagator.
+        Add default implementation of getPosition in (Field)Propagator.
       </action>
       <action dev="serrof" type="add" issue="1259">
-          Add (Field)KinematicTransform.
+        Add (Field)KinematicTransform.
       </action>
       <action dev="luc" type="add" issue="1315">
-          Added support for Walker constellations, including in-orbit spares with shifted position.
+        Added support for Walker constellations, including in-orbit spares with shifted position.
       </action>
       <action dev="serrof" type="update">
-          Moved getFieldDate up from FieldTransform to FieldStaticTransform.
+        Moved getFieldDate up from FieldTransform to FieldStaticTransform.
       </action>
       <action dev="serrof" type="update" issue="1302">
-          Added getStaticInverse to (Field)StaticTransform.
+        Added getStaticInverse to (Field)StaticTransform.
       </action>
       <action dev="luc" type="update" issue="1304">
-          Make access to raw albedo and infrared radiation pressure in KnockeRediffusedForceModel public.
+        Make access to raw albedo and infrared radiation pressure in KnockeRediffusedForceModel public.
       </action>
       <action dev="serrof" type="update" issue="1249">
-          Reduce code duplication in (Field)Propagator inheritors.
+        Reduce code duplication in (Field)Propagator inheritors.
       </action>
       <action dev="luc" type="update">
-          Take azimuthal asymmetry into account in Vienna tropospheric models.
+        Take azimuthal asymmetry into account in Vienna tropospheric models.
       </action>
       <action dev="luc" type="add">
-          Added GlobalPressureTemperature3 model.
+        Added GlobalPressureTemperature3 model.
       </action>
       <action dev="luc" type="add">
-          Added GlobalPressureTemperature2w (i.e. wet) model.
+        Added GlobalPressureTemperature2w (i.e. wet) model.
       </action>
       <action dev="luc" type="add">
-          Allow to use any GPT grid file (GPT2, GPT2w, GPT3) in GlobalPressureTemperature2 model.
+        Allow to use any GPT grid file (GPT2, GPT2w, GPT3) in GlobalPressureTemperature2 model.
       </action>
       <action dev="luc" type="add">
-          Added providers for horizontal gradient.
+        Added providers for horizontal gradient.
       </action>
       <action dev="luc" type="add">
-          Added Askne-Nordius tropospheric model.
+        Added Askne-Nordius tropospheric model.
       </action>
       <action dev="luc" type="add">
-          Replaced Vienna{One|Three}Model by Vienna{One|Three}.
+        Replaced Vienna{One|Three}Model by Vienna{One|Three}.
       </action>
       <action dev="luc" type="add">
-          Added ConstantTroposphericModel.
+        Added ConstantTroposphericModel.
       </action>
       <action dev="luc" type="add">
-          Added ChaoMappingFunction for tropospheric mapping function.
+        Added ChaoMappingFunction for tropospheric mapping function.
       </action>
       <action dev="luc" type="add">
-          Added ModifiedHopfieldModel for tropospheric delay.
+        Added ModifiedHopfieldModel for tropospheric delay.
       </action>
       <action dev="luc" type="add">
-          Added CanonicalSaastamoinenModel for tropospheric delay.
+        Added CanonicalSaastamoinenModel for tropospheric delay.
       </action>
       <action dev="luc" type="update">
-          Replaced SaastamoinenModel by ModifiedSaastamoinenModel for tropospheric delay.
+        Replaced SaastamoinenModel by ModifiedSaastamoinenModel for tropospheric delay.
       </action>
       <action dev="luc" type="add">
-          Added NBS/NRC steam table model for water vapor pressure.
+        Added NBS/NRC steam table model for water vapor pressure.
       </action>
       <action dev="luc" type="add">
-          Added Wang1988 model for water vapor pressure.
+        Added Wang1988 model for water vapor pressure.
       </action>
       <action dev="luc" type="add">
-          Added CIPM2007 model for water vapor pressure.
+        Added CIPM2007 model for water vapor pressure.
       </action>
       <action dev="luc" type="add">
-          Added WaterVaporPressureProvider interface.
+        Added WaterVaporPressureProvider interface.
       </action>
       <action dev="luc" type="add">
-          Added HeightDependentPressureTemperatureHumidityConverter for converting weather parameters.
+        Added HeightDependentPressureTemperatureHumidityConverter for converting weather parameters.
       </action>
       <action dev="luc" type="update" issue="1287">
-          Replaced WeatherModel by {Field}PressureTemperatureHumidityProvider.
+        Replaced WeatherModel by {Field}PressureTemperatureHumidityProvider.
       </action>
       <action dev="luc" type="add" issue="1287">
-          Added {Field}PressureTemperature and {Field}PressureTemperatureHumidity containers.
+        Added {Field}PressureTemperature and {Field}PressureTemperatureHumidity containers.
       </action>
       <action dev="luc" type="update" issue="1287">
-          Replaced GlobalPressureTemperature2Model by GlobalPressureTemperature2.
+        Replaced GlobalPressureTemperature2Model by GlobalPressureTemperature2.
       </action>
       <action dev="luc" type="update" issue="1287">
-          Replaced GlobalPressureTemperatureModel by GlobalPressureTemperature.
+        Replaced GlobalPressureTemperatureModel by GlobalPressureTemperature.
       </action>
       <action dev="luc" type="update" issue="1287">
-          Replaced MappingFunction by TroposphereMappingFunction.
+        Replaced MappingFunction by TroposphereMappingFunction.
       </action>
       <action dev="luc" type="update" issue="1287">
-          Replaced EstimatedTroposphericModel by EstimatedModel.
+        Replaced EstimatedTroposphericModel by EstimatedModel.
       </action>
       <action dev="luc" type="update" issue="1287">
-          Replaced DiscreteTroposphericModel by TroposphericModel.
+        Replaced DiscreteTroposphericModel by TroposphericModel.
       </action>
       <action dev="bryan" type="add" issue="1299">
-          Added support for Intelsat's 11 elements propagation.
+        Added support for Intelsat's 11 elements propagation.
       </action>
       <action dev="luc" type="add" issue="1294">
-          Added NsgfV00Filter to allow parsing some wrong SP3 files.
+        Added NsgfV00Filter to allow parsing some wrong SP3 files.
       </action>
       <action dev="serrof" type="add" issue="1260">
-          Started using new square method for Field.
+        Started using new square method for Field.
       </action>
       <action dev="luc" type="add" issue="1286">
-          Fixed parsing of SP3 files with partly missing standard deviations.
+        Fixed parsing of SP3 files with partly missing standard deviations.
       </action>
       <action dev="luc" type="update" issue="1285">
-          Added field versions of unit conversions from and to SI units.
+        Added field versions of unit conversions from and to SI units.
       </action>
       <action dev="serrof" type="update" issue="1276">
-          Removed uses of scalar multiply on Field one.
+        Removed uses of scalar multiply on Field one.
       </action>
       <action dev="serrof" type="add" issue="1275">
-          Added utility classes for position angle conversions for (Field) CircularOrbit and EquinoctialOrbit.
+        Added utility classes for position angle conversions for (Field) CircularOrbit and EquinoctialOrbit.
       </action>
       <action dev="luc" type="add" issue="1278">
-          Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
+        Fixed exceptions occurring in EOP prediction with ill chosen fitting parameters.
       </action>
       <action dev="luc" type="add" due-to="Elisabet Cid Borobia">
-          Added translation of error messages in Catalan language.
+        Added translation of error messages in Catalan language.
       </action>
       <action dev="greyskyy" type="add" issue="1295">
-          Added EventDetector implementations for detecting beta angle crossing events.
+        Added EventDetector implementations for detecting beta angle crossing events.
       </action>
-  </release>
-  <release version="12.0.2" date="15/03/2024"
-           description="Version 12.0.2 is a patch release of Orekit.
+    </release>
+    <release version="12.0.2" date="15/03/2024"
+             description="Version 12.0.2 is a patch release of Orekit.
            It fixes issues related to SP3 files, interpolation, measurements, multi-threading
            and DSST jacobian setup. Copyright year has been updated.">
       <action dev="luc" type="fix" issue="1347">
-          Change visibility of InertiaAxis and Inertia constructors to public.
+        Change visibility of InertiaAxis and Inertia constructors to public.
       </action>
       <action dev="luc" type="fix" issue="1346">
-          Allow Rinex V4 observation files to have either "ANTENNA: DELTA X/Y/Z"
-          or "ANTENNA: DELTA H/E/N" header line.
+        Allow Rinex V4 observation files to have either "ANTENNA: DELTA X/Y/Z"
+        or "ANTENNA: DELTA H/E/N" header line.
       </action>
       <action dev="luc" type="fix" issue="1328">
-          Field versions of Frame.getStaticTransformTo don't allow
-          null dates (they never did, but the javadoc wrongly stated this was allowed).
+        Field versions of Frame.getStaticTransformTo don't allow
+        null dates (they never did, but the javadoc wrongly stated this was allowed).
       </action>
       <action dev="markrutten" type="fix" issue="1327">
-          Removed blank lines in SP3 file generation.
+        Removed blank lines in SP3 file generation.
       </action>
       <action dev="luc" type="fix" issue="1322">
-          Fixed forbidden SBAS System Time in SP3 files.
+        Fixed forbidden SBAS System Time in SP3 files.
       </action>
       <action dev="luc" type="fix" issue="1321">
-          Fixed wrong key for Beidou System Time in SP3 files.
+        Fixed wrong key for Beidou System Time in SP3 files.
       </action>
       <action dev="luc" type="update" issue="1314">
-          Fixed wrong parsing of some time systems in SP3 files.
+        Fixed wrong parsing of some time systems in SP3 files.
       </action>
       <action dev="markrutten" type="fix" issue="1309">
-          Fixed incorrect transmitter location in BistaticRange measurement.
+        Fixed incorrect transmitter location in BistaticRange measurement.
       </action>
       <action dev="evan" type="fix" issue="1300" due-to="Sander Cochran">
-          Fix regression in Ephemeris with interpolationPoints=1.
+        Fix regression in Ephemeris with interpolationPoints=1.
       </action>
       <action dev="Christopher Schank " type="fix" issue="1296">
-          Fixed loading of UTC (now thread safe).
+        Fixed loading of UTC (now thread safe).
       </action>
       <action dev="evan" type="fix" issue="986">
-          Fix DSST Jacobian setup.
+        Fix DSST Jacobian setup.
       </action>
-  </release>
-  <release version="12.0.1" date="31/12/2023"
-           description="Version 12.0.1 is a patch release of Orekit.
+    </release>
+    <release version="12.0.1" date="31/12/2023"
+             description="Version 12.0.1 is a patch release of Orekit.
            It fixes several issues related to the Ephemeris class, interpolation and caching behaviours.
            Checkstyle configuration for IntelliJ is added and some javadocs have been updated. Finally, missing
            contributions have been added to the changes.">
@@ -585,9 +819,9 @@
       <action dev="bryan" type="fix" issue="1055">
         Fixed bad caching of the ocean tides model.
       </action>
-  </release>
-  <release version="12.0" date="2023-11-08"
-           description="Orekit 12.0 is a major new release.
+    </release>
+    <release version="12.0" date="2023-11-08"
+             description="Orekit 12.0 is a major new release.
            It includes both new features and bug fixes. The main new features
            introduced in 12.0 are: the Zeis model for DSST J2-squared terms, RTCM orbit
            and clock correction messages, new filtering capabilities for CCSDS parsing,
@@ -606,112 +840,112 @@
            messages, CCSDS ADM v2, and Sinex Differential Code Bias (DCB).
            See the list below for a full description of the changes.">
       <action dev="theo611 " type="update" issue="1203">
-          Added new method addSupportedParameters in AbstractPropagatorBuilder.
+        Added new method addSupportedParameters in AbstractPropagatorBuilder.
       </action>
       <action dev="jasquier" type="add" issue="982">
-          Added Gauss angles-only initial orbit determination method.
+        Added Gauss angles-only initial orbit determination method.
       </action>
       <action dev="lirw1984" type="update" issue="938">
-          Enhanced parsing of CRD files.
+        Enhanced parsing of CRD files.
       </action>
       <action dev="luc" type="update" issue="1256">
-          Limit use of synchronization in LazyLoadedTimeScales.
+        Limit use of synchronization in LazyLoadedTimeScales.
       </action>
       <action dev="serrof" type="update" issue="1242">
-          Removed unused static variables in DTM2000.
+        Removed unused static variables in DTM2000.
       </action>
       <action dev="tmills" type="update" issue="1213">
-          Changed "absPva == null" to "isOrbitDefined()" in (Field)SpacecraftState.
+        Changed "absPva == null" to "isOrbitDefined()" in (Field)SpacecraftState.
       </action>
       <action dev="serrof" type="add" issue="1247">
-          Add toStaticTransform to (Field)SpacecraftState.
+        Add toStaticTransform to (Field)SpacecraftState.
       </action>
       <action dev="serrof" type="add" issue="1245">
-          Introduce individual methods for tracking coordinates in TopocentricFrame.
+        Introduce individual methods for tracking coordinates in TopocentricFrame.
       </action>
       <action dev="luc" type="fix" issue="1246">
-         Allow loading IONEX files from DataSource for Global Ionosphere Model.
+        Allow loading IONEX files from DataSource for Global Ionosphere Model.
       </action>
       <action dev="luc" type="fix" issue="1212">
-         Use Ionospĥere Pierce Point in Global Ionosphere Model.
+        Use Ionospĥere Pierce Point in Global Ionosphere Model.
       </action>
       <action dev="luc" type="add" >
-         Added getCartesianPoint to TopocentricFrame.
+        Added getCartesianPoint to TopocentricFrame.
       </action>
       <action dev="serrof" type="fix" issue="1173">
-         Fixed wrong uses of AbsoluteDate for Field transformations in Atmosphere and FieldElevationDetector.
+        Fixed wrong uses of AbsoluteDate for Field transformations in Atmosphere and FieldElevationDetector.
       </action>
       <action dev="serrof" type="add" issue="1240">
-         Add toStaticTransform to (Field)Transform.
+        Add toStaticTransform to (Field)Transform.
       </action>
       <action dev="luc" type="add" issue="1239">
-         Added derivatives to EOP when they are missing in the files.
+        Added derivatives to EOP when they are missing in the files.
       </action>
       <action dev="luc" type="add" issue="1238">
-         Allow customization of interpolation degree in EOP.
+        Allow customization of interpolation degree in EOP.
       </action>
       <action dev="luc" type="add" >
-         Added support for XML and csv versions of bulletin A, bulletin B and EOP C04.
+        Added support for XML and csv versions of bulletin A, bulletin B and EOP C04.
       </action>
       <action dev="alfe" type="fix"  issue="1233">
-          Set InterSatVisibilityDetector global constructor from private to protected.
+        Set InterSatVisibilityDetector global constructor from private to protected.
       </action>
       <action dev="alfe" type="fix"  issue="1231">
-          Fix bug on buildBox constructor coefficients order.
+        Fix bug on buildBox constructor coefficients order.
       </action>
       <action dev="alfe" type="add" issue="1225">
-          Adding {Field}LongitudeCrossingDetector.
+        Adding {Field}LongitudeCrossingDetector.
       </action>
       <action dev="luc" type="add" issue="1227">
-          Added support for CCSDS/SANA geodetic orbital elements.
+        Added support for CCSDS/SANA geodetic orbital elements.
       </action>
       <action dev="serrof" type="add" issue="1211">
-          Added method to create new instance without rates from position-angled based (Field)Orbit, with new Interface.
+        Added method to create new instance without rates from position-angled based (Field)Orbit, with new Interface.
       </action>
       <action dev="luc" type="add" issue="1229">
-          Added {Field}TrackingCoordinates.
+        Added {Field}TrackingCoordinates.
       </action>
       <action dev="luc" type="add" issue="1228">
-          Added lowestAltitudeIntermediate method to OneAxisEllipsoid.
+        Added lowestAltitudeIntermediate method to OneAxisEllipsoid.
       </action>
       <action dev="luc" type="fix" issue="1226">
-          Fixed Sun radius.
+        Fixed Sun radius.
       </action>
       <action dev="serrof" type="add" issue="1217">
-          Added getter for resetAtEnd in (Field)AbstractIntegratedIntegrator.
+        Added getter for resetAtEnd in (Field)AbstractIntegratedIntegrator.
       </action>
       <action dev="luc" type="add" issue="1224">
-          Fixed NaN appering in one axis ellipsoid Cartesian to geodetic transform in rare cases.
+        Fixed NaN appering in one axis ellipsoid Cartesian to geodetic transform in rare cases.
       </action>
       <action dev="luc" type="add" issue="1222">
-          Added configurable skimming altitude to inter-satellite direct view detector.
+        Added configurable skimming altitude to inter-satellite direct view detector.
       </action>
       <action dev="luc" type="add" issue="1223">
-          Added wind-up effect for inter-satellites phase measurements.
+        Added wind-up effect for inter-satellites phase measurements.
       </action>
       <action dev="luc" type="add" issue="1219">
-          Added builders for OneWayGNSSPhase and OneWayGNSSRange.
+        Added builders for OneWayGNSSPhase and OneWayGNSSRange.
       </action>
       <action dev="luc" type="add" issue="1220">
-          Use step interpolators for measurements generation requiring time shifts.
+        Use step interpolators for measurements generation requiring time shifts.
       </action>
       <action dev="luc" type="add" issue="1221">
-          {Field}OrekitStepInterpolator now implement {Field}PVCoordinatesProvider.
+        {Field}OrekitStepInterpolator now implement {Field}PVCoordinatesProvider.
       </action>
       <action dev="bryan" type="add" issue="1216">
-          Added Az/El based initial orbit determination.
+        Added Az/El based initial orbit determination.
       </action>
       <action dev="bryan" type="fix" issue="1196">
-          Fixed multiple issues in initial orbit determination.
+        Fixed multiple issues in initial orbit determination.
       </action>
       <action dev="serrof" type="update" issue="1210">
-          Fixed missing up- and down-stream inheritance of FieldTimeShiftable.
+        Fixed missing up- and down-stream inheritance of FieldTimeShiftable.
       </action>
       <action dev="serrof" type="update" issue="1209">
-          Renamed PositionAngle into PositionAngleType
+        Renamed PositionAngle into PositionAngleType
       </action>
       <action dev="serrof" type="add" issue="1172">
-          Added access to integrator's name for (Field)AbstractIntegratedPropagator
+        Added access to integrator's name for (Field)AbstractIntegratedPropagator
       </action>
       <action dev="vincent" type="fix" issue="1205">
         Fixed failing tests after correction of Hipparchus issue 253.
@@ -786,7 +1020,7 @@
         Moved Rinex parsing/writing into files package.
       </action>
       <action dev="serrof" type="fix" issue="1170">
-          Fixed wrong calls in Field acceleration for some gravitational force models.
+        Fixed wrong calls in Field acceleration for some gravitational force models.
       </action>
       <action dev="markrutten" type="add" issue="1069">
         Added FDOA measurements.
@@ -876,7 +1110,7 @@
         Fixed failing tests on Windows in probability of collision package.
       </action>
       <action dev="serrof" type="add" issue="1061">
-          Added a Field implementation of impulsive maneuvers.
+        Added a Field implementation of impulsive maneuvers.
       </action>
       <action dev="luc" type="add" issue="1028" due-to="Lucas Girodet">
         Added torque-free attitude mode for general (non-symmetrical) body.
@@ -904,7 +1138,7 @@
       </action>
       <action dev="vincent" type="update" issue="1136">
         Replace expected LOFType arguments by recently implemented LOF interface in LocalOrbitalFrame, LofOffset,
-          TabulatedLofOffset and ThrustDirectionAndAttitudeProvider
+        TabulatedLofOffset and ThrustDirectionAndAttitudeProvider
       </action>
       <action dev="vincent" type="update" issue="1136">
         Changed Fieldifier to return fielded orbit in the same orbit type as input orbit
@@ -1000,16 +1234,16 @@
         Fixed typos in parameters name and associated getters when impacted.
       </action>
       <action dev="luc" type="add" issue="1091">
-         Added support for old Rinex 2 navigation files.
+        Added support for old Rinex 2 navigation files.
       </action>
       <action dev="luc" type="add" issue="1088">
-         Added piecewise-polynomial thrust model.
+        Added piecewise-polynomial thrust model.
       </action>
       <action dev="luc" type="add" issue="1087">
-         Accept some slightly invalid Rinex navigation files.
+        Accept some slightly invalid Rinex navigation files.
       </action>
       <action dev="luc" type="add" issue="1080">
-         Added MultiSatFixedStepHandler.
+        Added MultiSatFixedStepHandler.
       </action>
       <action dev="vincent" type="add" issue="1081">
         Added "toOrbitRelativeFrame" method in LOFType enum to allow for a better compatibility between Orekit and CCSDS
@@ -1022,36 +1256,36 @@
         equivalent
       </action>
       <action dev="luc" type="add" issue="1060">
-         Added support for CCSDS ADM V2.
+        Added support for CCSDS ADM V2.
       </action>
       <action dev="luc" type="add">
-         Added PrecessionFinder to recover precession parameters from
-         vector first and second derivatives (used by some CCSDS ADM modes).
+        Added PrecessionFinder to recover precession parameters from
+        vector first and second derivatives (used by some CCSDS ADM modes).
       </action>
       <action dev="vincent" type="update" issue="1058">
         Refactored FieldODEIntegratorBuilder interface and its implementing classes
       </action>
       <action dev="luc" type="add" issue="1047">
-          Added support for Rinex 4.00 (currently only navigation).
+        Added support for Rinex 4.00 (currently only navigation).
       </action>
       <action dev="luc" type="add" issue="1050">
-          Added prediction of Earth Orientation Parameters.
+        Added prediction of Earth Orientation Parameters.
       </action>
       <action dev="luc" type="add" issue="1051">
-          Added creation of ITRF from custom Earth Orientation Parameters history.
+        Added creation of ITRF from custom Earth Orientation Parameters history.
       </action>
       <action dev="luc" type="update" issue="860">
-          Added support for Rinex 3.05 (observation and navigation).
+        Added support for Rinex 3.05 (observation and navigation).
       </action>
       <action dev="luc" type="update">
-          Replaced RinexObservationLoader by RinexObservationParser.
+        Replaced RinexObservationLoader by RinexObservationParser.
       </action>
       <action dev="luc" type="add">
-          Allow to write relative dates in CCSDS files, when dates are close enough to a reference.
+        Allow to write relative dates in CCSDS files, when dates are close enough to a reference.
       </action>
       <action dev="luc" type="update">
-          Properly manage known inconsistency between CCSDS and TLE
-          concerning units of MEAN_MOTION_DOT and MEAN_MOTION_DDOT.
+        Properly manage known inconsistency between CCSDS and TLE
+        concerning units of MEAN_MOTION_DOT and MEAN_MOTION_DDOT.
       </action>
       <action dev="vincent" type="fix" issue="1052">
         Fixed error message when propagating state covariance expressed in LOF. Changed behaviour of
@@ -1077,7 +1311,7 @@
         Added support for STK ephemeris files.
       </action>
       <action dev="luc" type="add" issue="1031">
-         Added support for new EOP C04 format published by IERS starting 2023-02-14
+        Added support for new EOP C04 format published by IERS starting 2023-02-14
       </action>
       <action dev="afossa" type="add" issue="876">
         Added scaling of linear system and allowed different arc duration in multiple shooting.
@@ -1087,12 +1321,12 @@
         linear systems and fixed sign of epoch partials in multiple shooting.
       </action>
       <action dev="luc" type="add">
-         Added DragSensitive.GLOBAL_DRAG_FACTOR as a new global multiplication
-         factor that can be applied to all drag coefficients
+        Added DragSensitive.GLOBAL_DRAG_FACTOR as a new global multiplication
+        factor that can be applied to all drag coefficients
       </action>
       <action dev="luc" type="add">
-         Added RadiationSensitive.GLOBAL_RADIATION_FACTOR as a new global multiplication
-         factor that can be applied to all radiation coefficients
+        Added RadiationSensitive.GLOBAL_RADIATION_FACTOR as a new global multiplication
+        factor that can be applied to all radiation coefficients
       </action>
       <action dev="luc" type="fix" issue="989">
         Added panel dependent coefficients in BoxAndSolarArraySpacecraft.
@@ -1236,10 +1470,10 @@
         Removed reference to old Orekit mailing list in LocalOrbitalFrame.
       </action>
       <action dev="serrof" type="fix" issue="1026">
-          Fixed theoretical evaluation of AngularRaDec when the reference frame is not Earth-centered.
+        Fixed theoretical evaluation of AngularRaDec when the reference frame is not Earth-centered.
       </action>
       <action dev="serrof" type="fix" issue="980">
-      Fixed wrong wrapper in deprecated KeplerianOrbit's and FieldKeplerianOrbit's methods for anomaly conversions.
+        Fixed wrong wrapper in deprecated KeplerianOrbit's and FieldKeplerianOrbit's methods for anomaly conversions.
       </action>
       <action dev="bryan" type="update" issue="1018">
         Improved documentation of glonass propagators.
@@ -1417,7 +1651,7 @@
       <action dev="luc" type="fix" issue="930">
         Prevents zero max check intervals in maneuvers triggers detectors.
       </action>
-       <action dev="luc" type="add">
+      <action dev="luc" type="add">
         Added detection of non-positive max check interval and threshold.
       </action>
       <action dev="luc" type="add" issue="929">
@@ -1693,19 +1927,19 @@
              when building the state transition matrix in multi satellites
              orbit determination. It also fixes bugs in TLE and CRD files.
              Finally it includes an update of the release guide.">
-         <action dev="bryan" type="fix" issue="859" due-to="Emmanuel Papanagiotou">
+      <action dev="bryan" type="fix" issue="859" due-to="Emmanuel Papanagiotou">
         Allowed custom setting of state to TLE conversion in propagator builder.
       </action>
-         <action dev="bryan" type="fix" issue="847">
+      <action dev="bryan" type="fix" issue="847">
         Fixed handling of comments in CRD files.
       </action>
-         <action dev="bryan" type="fix" issue="851">
+      <action dev="bryan" type="fix" issue="851">
         Fixed deserialization of TLE caused by the bStarParameterDriver.
       </action>
-         <action dev="bryan" type="fix" issue="850">
+      <action dev="bryan" type="fix" issue="850">
         Fixed indexes when build state transition matrix for multi sat Kalman.
       </action>
-         <action dev="sdinot" type="update">
+      <action dev="sdinot" type="update">
         Updated the release guide to remove actions that are no longer required.
       </action>
     </release>
@@ -1714,26 +1948,26 @@
              It fixes an important issue related to the calculation of the relativistic
              clock correction for GNSS measurements. It also fixes bugs in OEM and CPF
              files writing. Finally it includes some improvements in the class documentation">
-         <action dev="bryan" type="fix" issue="846">
+      <action dev="bryan" type="fix" issue="846">
         Fixed wrong computation of relativistic clock correction for GNSS measurements.
       </action>
-         <action dev="bryan" type="fix" issue="845">
+      <action dev="bryan" type="fix" issue="845">
         Fixed parsing of Rinex clock files.
       </action>
-         <action dev="bryan" type="fix" issue="844">
+      <action dev="bryan" type="fix" issue="844">
         Fixed null pointer exception when constructing CPF from coordinates.
       </action>
-         <action dev="bryan" type="update" issue="843">
+      <action dev="bryan" type="update" issue="843">
         Improved documentation of solar radiation pressure class to include
         additional information about osculating bodies.
       </action>
-         <action dev="sdinot" type="update" issue="842">
+      <action dev="sdinot" type="update" issue="842">
         Used the latest version of Maven available in RedHat 8.
       </action>
-         <action dev="pascal" type="fix" issue="839">
+      <action dev="pascal" type="fix" issue="839">
         Fixed handling of time system in OemWriter.
       </action>
-         <action dev="bryan" type="update" issue="838" due-to="Kendra Hale">
+      <action dev="bryan" type="update" issue="838" due-to="Kendra Hale">
         Improved documentation of ImpulseManeuver class.
       </action>
     </release>
@@ -1752,14 +1986,14 @@
              to add several step handlers for the same orbit propagation, a new
              event detector for angular separation as seen from the spacecraft.
              See the list below for a full description of the changes.">
-         <action dev="bryan" type="update" issue="766" due-to="Gowtham Sivaraman">
+      <action dev="bryan" type="update" issue="766" due-to="Gowtham Sivaraman">
         Allowed setting of AttitudeProvider to the BoundedPropagator
         generated via propagation.
       </action>
-         <action dev="bryan" type="fix" issue="835">
+      <action dev="bryan" type="fix" issue="835">
         Fixed format symbols for year, month, day in DateComponents#toString().
       </action>
-         <action dev="thomas" type="fix" issue="668">
+      <action dev="thomas" type="fix" issue="668">
         Added a new event detector for angular separation as seen from the spacecraft.
       </action>
       <action dev="maxime" type="fix" issue="829">
@@ -1970,8 +2204,8 @@
       <action dev="bryan" type="fix" issue="670">
         Fixed call to ForceModel.init() in AbstractGaussianContribution class.
       </action>
-         <action dev="thomas" type="add" issue="712">
-          Added IGS clock file support.
+      <action dev="thomas" type="add" issue="712">
+        Added IGS clock file support.
       </action>
       <action dev="bryan" type="update" issue="650">
         Methods computeMeanState() and computeOsculatingState()
@@ -1987,7 +2221,7 @@
         Fixed reference frame in tabulated attitude provider.
       </action>
       <action dev="luc" type="update" >
-          Renamed SINEXLoader into SinexLoader.
+        Renamed SINEXLoader into SinexLoader.
       </action>
       <action dev="luc" type="update" >
         Use DataSource in RinexLoader and SinexLoader.
@@ -2041,13 +2275,13 @@
         Fixed NullPointerException in DSSTTesseral Hansen object.
       </action>
       <action dev="bryan" type="update" issue="601">
-          Changed getPVInPZ90() method to private.
+        Changed getPVInPZ90() method to private.
       </action>
       <action dev="bryan" type="fix" issue="744">
-          Fixed calculation of CR3BP constants.
+        Fixed calculation of CR3BP constants.
       </action>
       <action dev="bryan" type="update" issue="743">
-          Updated JUnit version to 4.13.1.
+        Updated JUnit version to 4.13.1.
       </action>
     </release>
     <release version="10.3.1" date="2021-06-16"
@@ -2075,14 +2309,14 @@
       <action dev="bryan" type="update" issue="741">
         Updated Hipparchus version to 1.8 and updated code with new functionalities.
       </action>
-         <action dev="bryan" type="add" issue="740">
-          Added aggregator for bounded attitude providers.
+      <action dev="bryan" type="add" issue="740">
+        Added aggregator for bounded attitude providers.
       </action>
-         <action dev="thomas" type="add" issue="8">
+      <action dev="thomas" type="add" issue="8">
         Added Knocke's Earth rediffused radiation pressure force model.
       </action>
-         <action dev="bryan" type="add" issue="739">
-          Allowed initialization of attitude provider from attitude segment.
+      <action dev="bryan" type="add" issue="739">
+        Allowed initialization of attitude provider from attitude segment.
       </action>
       <action dev="raphael" type="add" issue="705">
         Allowed writing an AEM file from a list of SpacecraftStates.
@@ -2097,20 +2331,20 @@
         Allowed user-defined format for ephemeris data lines in
         StreamingAemWriter, AEMWriter, StreamingOemWriter and OEMWriter.
       </action>
-         <action dev="bryan" type="fix" issue="683">
-          Updated building instructions.
+      <action dev="bryan" type="fix" issue="683">
+        Updated building instructions.
       </action>
-         <action dev="bryan" type="add" issue="734">
-          Added getters for phase measurement ambiguity driver.
+      <action dev="bryan" type="add" issue="734">
+        Added getters for phase measurement ambiguity driver.
       </action>
-         <action dev="bryan" type="fix" issue="696">
-          Allowed to configure initial covariance for measurements in Kalman Filter.
+      <action dev="bryan" type="fix" issue="696">
+        Allowed to configure initial covariance for measurements in Kalman Filter.
       </action>
       <action dev="thomas, bryan" type="add" issue="709">
         Added clock drift contribution to range rate measurements.
       </action>
-         <action dev="bryan" type="fix" issue="687">
-          Fixed Javadoc of ElevationMask.
+      <action dev="bryan" type="fix" issue="687">
+        Fixed Javadoc of ElevationMask.
       </action>
       <action dev="raphael" type="fix" issue="711">
         Allowed definition of a default interpolation degree in both AEMParser and OEMParser.
@@ -2124,14 +2358,14 @@
       <action dev="bryan" type="add" issue="732">
         Added documentation for checkstyle configuration.
       </action>
-         <action dev="thomas" type="fix" issue="730">
-          Removed useless loop over an empty list
+      <action dev="thomas" type="fix" issue="730">
+        Removed useless loop over an empty list
       </action>
       <action dev="luc" type="fix" issue="731">
         Fixed parsing of some ICGEM gravity fields files.
       </action>
       <action dev="raphael" type="fix" issue="720">
-          Added support for measurements parameters in UnivariateProcessNoise
+        Added support for measurements parameters in UnivariateProcessNoise
       </action>
       <action dev="luc" type="fix" issue="729">
         Fixed wrong handling of RESET-STATE in analytical propagators.
@@ -2181,7 +2415,7 @@
       <action dev="bryan" type="fix" issue="706">
         Fixed missing measurement parameter in inter-satellites range measurement.
       </action>
-         <action dev="thomas" type="fix" issue="713">
+      <action dev="thomas" type="fix" issue="713">
         Fixed computation of DSST short period Jacobian.
       </action>
       <action dev="luc" type="fix" issue="699">
@@ -2376,22 +2610,22 @@
         Improve performance of ZipJarCrawler.
       </action>
       <action dev="bryan" type="add" issue="625">
-          Added default constructors for DSSTZonal and DSSTTesseral.
+        Added default constructors for DSSTZonal and DSSTTesseral.
       </action>
       <action dev="bryan" type="add" issue="622">
-          Added OrekitException for unknown number of frequencies in ANTEX files.
+        Added OrekitException for unknown number of frequencies in ANTEX files.
       </action>
       <action dev="bryan" type="add" issue="621">
-          Added OrekitException in the case where IONEX header is corrupted.
+        Added OrekitException in the case where IONEX header is corrupted.
       </action>
       <action dev="dylan" type="add" issue="359">
-          Added a specific test for issue 359 in BatchLSEstimatorTest.
-          The test verifies that a Newtonian attraction is known
-          by both the propagator builder and the propagator when
-          it is not added explicitly.
+        Added a specific test for issue 359 in BatchLSEstimatorTest.
+        The test verifies that a Newtonian attraction is known
+        by both the propagator builder and the propagator when
+        it is not added explicitly.
       </action>
       <action dev="dylan" type="add" issue="367">
-          Added write of covariance matrices in OEMWriter.
+        Added write of covariance matrices in OEMWriter.
       </action>
       <action dev="dylan" type="fix" issue="619">
         Fixed origin transform in CcsdsModifierFrame.
@@ -2585,7 +2819,7 @@
       <action dev="bryan" type="fix">
         Fixes broken links on Orekit JavaDoc.
       </action>
-       <action dev="pascal" type="fix" issue="558">
+      <action dev="pascal" type="fix" issue="558">
         Fixes broken links on Maven site.
       </action>
       <action dev="luc" type="fix" issue="559">
@@ -3164,30 +3398,30 @@
         Fixes issue #354.
       </action>
       <action dev="luc" type="fix">
-         Added a convenience method to retrieve covariance matrix in
-         physical units in orbit determination.
-         Fixes issue #353.
+        Added a convenience method to retrieve covariance matrix in
+        physical units in orbit determination.
+        Fixes issue #353.
       </action>
       <action dev="luc" type="fix" due-to="Rongwang Li">
-         Fixed two errors in Marini-Murray model implementation.
-         Fixes issue #352.
+        Fixed two errors in Marini-Murray model implementation.
+        Fixes issue #352.
       </action>
       <action dev="luc" type="fix">
-         Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
-         Fixes issue #350.
+        Prevent duplicated Newtonian attraction in FieldNumericalPropagator.
+        Fixes issue #350.
       </action>
       <action dev="luc" type="fix">
-         Copy additional states through impulse maneuvers.
-         Fixes issue #349.
+        Copy additional states through impulse maneuvers.
+        Fixes issue #349.
       </action>
       <action dev="luc" type="fix">
-         Removed unused construction parameters in ShiftingTransformProvider
-         and InterpolatingTransformProvider.
-         Fixes issue #356.
+        Removed unused construction parameters in ShiftingTransformProvider
+        and InterpolatingTransformProvider.
+        Fixes issue #356.
       </action>
       <action dev="luc" type="fix">
-         Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
-         Fixes issue #355.
+        Fixed wrong inertial frame for Earth retrieved from CelestialBodyFactory.
+        Fixes issue #355.
       </action>
       <action dev="luc" type="update">
         Use a git-flow like branching workflow, with a develop branch for bleeding-edge
@@ -3195,7 +3429,7 @@
       </action>
     </release>
     <release version="9.0.1" date="2017-11-01"
-            description="Version 9.0.1 is a patch release of Orekit.
+             description="Version 9.0.1 is a patch release of Orekit.
             It fixes security issus 368.">
       <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML TDM files.
@@ -3220,24 +3454,24 @@
              JB2008 atmosphere model, NRL MSISE 2000 atmosphere model, boolean combination of events
              detectors, ephemeris writer, speed improvements when tens of thousands of measurements
              are used in orbit determination, Danish translations. Several bugs have been fixed.">
-     <action dev="luc" type="add">
-       Added on-board antenna phase center effect on inter-satellites range measurements.
-     </action>
-     <action dev="luc" type="add">
-       Added on-board antenna phase center effect on turn-around range measurements.
-     </action>
-     <action dev="luc" type="add">
-       Added on-board antenna phase center effect on range measurements.
-     </action>
-     <action dev="luc" type="update">
-       Moved Bias and OutlierFilter classes together with the other estimation modifiers.
-     </action>
-     <action dev="luc" type="update">
-       Forced states derivatives to be dimension 6 rather than either 6 or 7. The
-       additional mass was not really useful, it was intended for maneuvers calibration,
-       but in fact during maneuver calibration we adjust either flow rate or specific
-       impulse but not directly mass itself.
-     </action>
+      <action dev="luc" type="add">
+        Added on-board antenna phase center effect on inter-satellites range measurements.
+      </action>
+      <action dev="luc" type="add">
+        Added on-board antenna phase center effect on turn-around range measurements.
+      </action>
+      <action dev="luc" type="add">
+        Added on-board antenna phase center effect on range measurements.
+      </action>
+      <action dev="luc" type="update">
+        Moved Bias and OutlierFilter classes together with the other estimation modifiers.
+      </action>
+      <action dev="luc" type="update">
+        Forced states derivatives to be dimension 6 rather than either 6 or 7. The
+        additional mass was not really useful, it was intended for maneuvers calibration,
+        but in fact during maneuver calibration we adjust either flow rate or specific
+        impulse but not directly mass itself.
+      </action>
       <action dev="luc" type="add">
         Added parametric acceleration force models, where acceleration amplitude is a
         simple parametric function. Acceleration direction is fixed in either inertial
@@ -3422,7 +3656,7 @@
         Tutorials now all rely on orekit-data being in user home folder.
         Fixes issue #245.
       </action>
-       <action dev="luc" type="fix">
+      <action dev="luc" type="fix">
         Apply delay corresponding to h = 0 when station altitude is below 0 in SaastamoinenModel.
         Fixes issue #202.
       </action>
@@ -3509,7 +3743,7 @@
         Fixed outliers configuration parsing in orbit determination tutorial and test.
         Fixes issue #249
       </action>
-       <action dev="luc" type="fix" >
+      <action dev="luc" type="fix" >
         Greatly improved orbit determination speed when a lot of measurements are used
         (several thousands).
       </action>
@@ -3531,7 +3765,7 @@
       </action>
     </release>
     <release version="8.0.1" date="2017-11-01"
-            description="Version 8.0.1 is a patch release of Orekit.
+             description="Version 8.0.1 is a patch release of Orekit.
             It fixes security issus 368.">
       <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML EOP files.
@@ -3622,7 +3856,7 @@
       </action>
     </release>
     <release version="7.2.1" date="2017-11-01"
-            description="Version 7.2.1 is a patch release of Orekit.
+             description="Version 7.2.1 is a patch release of Orekit.
             It fixes security issus 368.">
       <action dev="evan" type="fix">
         Disabled XML external resources when parsing rapid XML EOP files.
@@ -3813,7 +4047,7 @@
         Fixed wrong ephemeris generation for analytical propagators with maneuvers.
         Fixes issue #224.
       </action>
-       <action dev="luc" type="fix" >
+      <action dev="luc" type="fix" >
         Fixed date offset by one second for TLE built from their components,
         if a leap second was introduced earlier in the same year.
         Fixes issue #225.
@@ -4092,18 +4326,18 @@
         Fixes issue #176.
       </action>
       <action dev="evan" type="add">
-          Added general relativity force model.
+        Added general relativity force model.
       </action>
       <action dev="luc" type="add" due-to="Ioanna Stypsanelli">
         added Greek localization for error messages.
       </action>
       <action dev="evan" type="fix">
-          Fixed incorrect partial derivatives for force models that depend on satellite velocity.
-          Fixes #174.
+        Fixed incorrect partial derivatives for force models that depend on satellite velocity.
+        Fixes #174.
       </action>
       <action dev="evan" type="fix">
-          Fixed incorrect parameters set in NumericalPropagatorBuilder.
-          Fixes #175.
+        Fixed incorrect parameters set in NumericalPropagatorBuilder.
+        Fixes #175.
       </action>
       <action dev="luc" type="update" >
         Significantly reduced size of various serialized objects.
@@ -4619,7 +4853,7 @@
       <action dev="luc" type="fix" due-to="Evan Ward">
         Removed weak hash maps in frames (fixes bug #122).
       </action>
-        <action dev="luc" type="fix" due-to="Bruno Revelin">
+      <action dev="luc" type="fix" due-to="Bruno Revelin">
         Improved documentation of interpolation methods (fixes bug #123).
       </action>
       <action dev="tn" type="fix" due-to="Evan Ward">
@@ -4727,7 +4961,7 @@
         Removed too stringent test on trajectory in TLE propagator (fixes bug #86).
       </action>
       <action dev="thomas" type="fix">
-          Set the initial state for a TLEPropagator (fixes bug #85).
+        Set the initial state for a TLEPropagator (fixes bug #85).
       </action>
       <action dev="luc" type="update">
         Improved testing of error messages.
@@ -5379,7 +5613,7 @@
         for users that did add their own implementations, but it is
         simple to deal with (simply add one parameter in the signature
         and ignore it) so its was considered acceptable.
-       </action>
+      </action>
       <action dev="luc" type="add" due-to="James Housden">
         added german localization for error messages
       </action>

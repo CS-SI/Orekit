@@ -178,9 +178,7 @@ public class NadirPointing extends GroundPointing {
         } else {  // use automatic differentiation
             // build time dependent transform
             final FieldUnivariateDerivative2Field<T> ud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field);
-            final T shift = date.durationFrom(date.toAbsoluteDate());
-            final FieldUnivariateDerivative2<T> dt = new FieldUnivariateDerivative2<>(shift, field.getOne(), field.getZero());
-            final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> ud2Date = new FieldAbsoluteDate<>(ud2Field, date.toAbsoluteDate()).shiftedBy(dt);
+            final FieldAbsoluteDate<FieldUnivariateDerivative2<T>> ud2Date = date.toFUD2Field();
             final FieldStaticTransform<FieldUnivariateDerivative2<T>> refToBody = frame.getStaticTransformTo(shape.getBodyFrame(), ud2Date);
 
             final FieldVector3D<FieldUnivariateDerivative2<T>> positionInRefFrame = pvCoordinatesInRef.toUnivariateDerivative2Vector();

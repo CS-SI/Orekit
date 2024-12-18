@@ -95,7 +95,7 @@
         * central attraction
         * gravity models including time-dependent like trends and pulsations
           (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
-          EGM and GRGS gravity field files formats, even compressed)
+          EGM, SHA (GRGM1200B and GRGM1200L) and GRGS gravity field files formats, even compressed)
         * atmospheric drag
         * third body attraction (with data for Sun, Moon and all solar systems planets)
         * radiation pressure with eclipses (multiple oblate spheroids occulting bodies, multiple coefficients for bow and wing models)
@@ -196,6 +196,7 @@
         * central body related attitude (nadir pointing, center pointing, target pointing, yaw compensation, yaw-steering),
         * orbit referenced attitudes (LOF aligned, offset on all axes),
         * space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)
+        * attitude aligned with one target and constrained by another target
         * tabulated attitudes, either respective to inertial frame or respective to Local Orbital Frames
         * specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF), GLONASS, GALILEO, BEIDOU (GEO, IGSO, MEO)
         * torque-free for general (non-symmetrical) body
@@ -325,6 +326,12 @@
     * tessellation of zones of interest as tiles
     * sampling of zones of interest as grids of points
 	* construction of trajectories using loxodromes (commonly, a rhumb line)
+
+  * Indirect optimal control
+
+    * adjoint equations as defined by Pontryagin's Maximum Principle with Cartesian coordinates for a range of forces (gravitational, inertial) including J2
+    * so-called energy cost functions (proportional to the integral of the control vector's squared norm), with Hamiltonian evaluation
+    * single shooting based on Newton algorithm for the case of fixed time, fixed Cartesian bounds
 
   * Collisions
 

@@ -51,17 +51,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AbstractDetector;
-import org.orekit.propagation.events.AdaptableInterval;
-import org.orekit.propagation.events.BooleanDetector;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
-import org.orekit.propagation.events.FieldDateDetector;
-import org.orekit.propagation.events.FieldNegateDetector;
-import org.orekit.propagation.events.NegateDetector;
-import org.orekit.propagation.events.PositionAngleDetector;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -289,7 +279,7 @@ public class ConfigurableLowThrustManeuverTest {
         protected DateIntervalFieldDetector(final FieldAbsoluteDate<T> startDate, final FieldAbsoluteDate<T> endDate,
                                             final FieldAdaptableInterval<T> maxCheck, final T threshold, final int maxIter,
                                             final FieldEventHandler<T> handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
             this.startDate = startDate;
             this.endDate = endDate;
             if (startDate.durationFrom(endDate).getReal() >= 0) {

@@ -18,6 +18,7 @@ package org.orekit.estimation.sequential;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,18 +32,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
-import org.orekit.estimation.measurements.AngularAzElMeasurementCreator;
-import org.orekit.estimation.measurements.AngularRaDecMeasurementCreator;
-import org.orekit.estimation.measurements.InterSatellitesRangeMeasurementCreator;
-import org.orekit.estimation.measurements.MultiplexedMeasurement;
-import org.orekit.estimation.measurements.ObservableSatellite;
-import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.estimation.measurements.PVMeasurementCreator;
-import org.orekit.estimation.measurements.Position;
-import org.orekit.estimation.measurements.PositionMeasurementCreator;
-import org.orekit.estimation.measurements.Range;
-import org.orekit.estimation.measurements.RangeRateMeasurementCreator;
-import org.orekit.estimation.measurements.TwoWayRangeMeasurementCreator;
+import org.orekit.estimation.Force;
+import org.orekit.estimation.TLEEstimationTestUtils;
+import org.orekit.estimation.measurements.*;
+import org.orekit.estimation.measurements.modifiers.Bias;
 import org.orekit.estimation.measurements.modifiers.PhaseCentersRangeModifier;
 import org.orekit.frames.LOFType;
 import org.orekit.gnss.antenna.FrequencyPattern;
@@ -54,7 +47,12 @@ import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.generation.FixedPointTleGenerationAlgorithm;
 import org.orekit.propagation.conversion.NumericalPropagatorBuilder;
+import org.orekit.propagation.conversion.TLEPropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -62,6 +60,455 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class KalmanEstimatorTest {
+
+    @Test
+    void testEstimationStepWithBStarOnly() {
+        // GIVEN
+        TLEEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+        String line1 = "1 07276U 74026A   00055.48318287  .00000000  00000-0  22970+3 0  9994";
+        String line2 = "2 07276  71.6273  78.7838 1248323  14.0598   3.8405  4.72707036231812";
+        final TLE tle = new TLE(line1, line2);
+        final TLEPropagatorBuilder propagatorBuilder = new TLEPropagatorBuilder(tle,
+                PositionAngleType.TRUE, 1., new FixedPointTleGenerationAlgorithm());
+        for (final ParameterDriver driver: propagatorBuilder.getOrbitalParametersDrivers().getDrivers()) {
+            driver.setSelected(false);
+        }
+        propagatorBuilder.getPropagationParametersDrivers().getDrivers().get(0).setSelected(true);
+        final KalmanEstimatorBuilder builder = new KalmanEstimatorBuilder();
+        builder.addPropagationConfiguration(propagatorBuilder,
+                new ConstantProcessNoise(MatrixUtils.createRealMatrix(1, 1)));
+        final KalmanEstimator estimator = builder.build();
+        final AbsoluteDate measurementDate = tle.getDate().shiftedBy(1.0);
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        final Position positionMeasurement = new Position(measurementDate, propagator.getPosition(measurementDate,
+                propagator.getFrame()), 1., 1., new ObservableSatellite(0));
+        // WHEN & THEN
+        Assertions.assertDoesNotThrow(() -> estimator.estimationStep(positionMeasurement));
+    }
+
+    @Test
+    public void testTwoOrbitalParameters() {
+
+        // Create context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create initial orbit and propagator builder
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+        final boolean perfectStart = true;
+        final double minStep = 1.e-6;
+        final double maxStep = 60.;
+        final double dP = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        minStep, maxStep, dP);
+
+        // Create an imperfect PV measurement
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                propagatorBuilder);
+        final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
+        final SpacecraftState state = propagator.propagate(measurementDate);
+        final ObservedMeasurement<?> measurement = new PV(measurementDate,
+                state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
+                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+                5.0, 5.0, 1.0, new ObservableSatellite(0));
+
+        // Unselect all orbital propagation parameters
+        propagatorBuilder.getOrbitalParametersDrivers().getDrivers()
+                .forEach(driver -> driver.setSelected(false));
+
+        // Select eccentricity and anomaly
+        propagatorBuilder.getOrbitalParametersDrivers().findByName("e").setSelected(true);
+        propagatorBuilder.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+
+        // Covariance matrix initialization
+        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1e-2, 1e-5
+        });
+
+        // Process noise matrix
+        final RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1.e-8, 1.e-8
+        });
+
+        // Build the Kalman filter
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder().
+                addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                build();
+
+        // Do the estimation
+        kalman.estimationStep(measurement);
+
+        // Unchanged orbital parameters (two-body propagation)
+        final KeplerianOrbit initialOrbit = (KeplerianOrbit) context.initialOrbit;
+        Assertions.assertEquals(initialOrbit.getA(),
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue());
+        Assertions.assertEquals(initialOrbit.getI(),
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("i").getValue());
+        Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(),
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("Ω").getValue());
+        Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue());
+
+        // Changed orbital parameters
+        Assertions.assertNotEquals(initialOrbit.getE(),
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("e").getValue());
+        Assertions.assertNotEquals(initialOrbit.getTrueAnomaly(),
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("v").getValue());
+    }
+
+    @Test
+    public void testTwoOrbitalParametersMulti() {
+
+        // Create context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create initial orbit and propagator builders
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+        final boolean perfectStart = true;
+        final double minStep = 1.e-6;
+        final double maxStep = 60.;
+        final double dP = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder1 =
+                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        minStep, maxStep, dP, Force.POTENTIAL);
+
+        final NumericalPropagatorBuilder propagatorBuilder2 =
+                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        minStep, maxStep, dP, Force.POTENTIAL, Force.SOLAR_RADIATION_PRESSURE);
+
+        // Create imperfect PV measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                propagatorBuilder1);
+        final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
+        final SpacecraftState state = propagator.propagate(measurementDate);
+        final ObservedMeasurement<?> measurement1 = new PV(measurementDate,
+                state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
+                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+                5.0, 5.0, 1.0, new ObservableSatellite(0));
+        final ObservedMeasurement<?> measurement2 = new PV(measurementDate,
+                state.getPosition().add(new Vector3D(-10.0, 20.0, -1.0)),
+                state.getPVCoordinates().getVelocity().add(new Vector3D(10.0, 50.0, -10.0)),
+                5.0, 5.0, 1.0, new ObservableSatellite(1));
+        final ObservedMeasurement<?> combinedMeasurement =
+                new MultiplexedMeasurement(Arrays.asList(measurement1, measurement2));
+
+        // Unselect all orbital propagation parameters
+        propagatorBuilder1.getOrbitalParametersDrivers().getDrivers()
+                .forEach(driver -> driver.setSelected(false));
+        propagatorBuilder2.getOrbitalParametersDrivers().getDrivers()
+                .forEach(driver -> driver.setSelected(false));
+
+        // Select eccentricity and anomaly
+        propagatorBuilder1.getOrbitalParametersDrivers().findByName("e").setSelected(true);
+        propagatorBuilder1.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+
+        propagatorBuilder2.getOrbitalParametersDrivers().findByName("e").setSelected(true);
+        propagatorBuilder2.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+
+        // Select reflection coefficient for second sat
+        propagatorBuilder2.getPropagationParametersDrivers().findByName("reflection coefficient").setSelected(true);
+
+        // Record the propagation parameter values
+        final double[] parameterValues1 = propagatorBuilder1.getPropagationParametersDrivers().getDrivers().stream()
+                .mapToDouble(ParameterDriver::getValue)
+                .toArray();
+        final double[] parameterValues2 = propagatorBuilder2.getPropagationParametersDrivers().getDrivers().stream()
+                .mapToDouble(ParameterDriver::getValue)
+                .toArray();
+
+
+        // Reference position/velocity at measurement date
+        final Propagator referencePropagator1 = propagatorBuilder1.buildPropagator();
+        final KeplerianOrbit refOrbit1 = (KeplerianOrbit) referencePropagator1.propagate(measurementDate).getOrbit();
+
+        final Propagator referencePropagator2 = propagatorBuilder2.buildPropagator();
+        final KeplerianOrbit refOrbit2 = (KeplerianOrbit) referencePropagator2.propagate(measurementDate).getOrbit();
+
+        // Covariance matrix initialization
+        final RealMatrix initialP1 = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1e-2, 1e-5
+        });
+        final RealMatrix initialP2 = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1e-2, 1e-5, 1e-5
+        });
+
+        // Process noise matrix
+        final RealMatrix Q1 = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1e-8, 1e-8
+        });
+        final RealMatrix Q2 = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1e-8, 1e-8, 1e-8
+        });
+
+        // Build the Kalman filter
+        final KalmanEstimator kalman = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder1, new ConstantProcessNoise(initialP1, Q1))
+                .addPropagationConfiguration(propagatorBuilder2, new ConstantProcessNoise(initialP2, Q2))
+                .build();
+
+        // Do the estimation
+        kalman.estimationStep(combinedMeasurement);
+
+        // Unchanged orbital parameters
+        Assertions.assertEquals(refOrbit1.getA(),
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getI(),
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("i[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(),
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("Ω[0]").getValue());
+        Assertions.assertEquals(refOrbit1.getPerigeeArgument(),
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue());
+
+        Assertions.assertEquals(refOrbit2.getA(),
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getI(),
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("i[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(),
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("Ω[1]").getValue());
+        Assertions.assertEquals(refOrbit2.getPerigeeArgument(),
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue());
+
+        // Changed orbital parameters
+        Assertions.assertNotEquals(refOrbit1.getE(),
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("e[0]").getValue());
+        Assertions.assertNotEquals(refOrbit1.getTrueAnomaly(),
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("v[0]").getValue());
+
+        Assertions.assertNotEquals(refOrbit2.getE(),
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("e[1]").getValue());
+        Assertions.assertNotEquals(refOrbit2.getTrueAnomaly(),
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("v[1]").getValue());
+
+        // Propagation parameters
+        final List<DelegatingDriver> drivers1 = propagatorBuilder1.getPropagationParametersDrivers().getDrivers();
+        for (int i = 0; i < parameterValues1.length; ++i) {
+            double postEstimation = drivers1.get(i).getValue();
+            Assertions.assertEquals(parameterValues1[i], postEstimation);
+        }
+
+        final List<DelegatingDriver> drivers2 = propagatorBuilder2.getPropagationParametersDrivers().getDrivers();
+        for (int i = 0; i < parameterValues2.length; ++i) {
+            double postEstimation = drivers2.get(i).getValue();
+            if (drivers2.get(i).getName().equals("reflection coefficient")) {
+                Assertions.assertNotEquals(parameterValues2[i], postEstimation);
+            } else {
+                Assertions.assertEquals(parameterValues2[i], postEstimation);
+            }
+        }
+    }
+
+    @Test
+    public void testWrongProcessCovarianceDimension() {
+        // Create context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create initial orbit and propagator builder
+        final OrbitType orbitType = OrbitType.KEPLERIAN;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+        final boolean perfectStart = true;
+        final double minStep = 1.e-6;
+        final double maxStep = 60.;
+        final double dP = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        minStep, maxStep, dP);
+
+        // Create an imperfect PV measurement
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                propagatorBuilder);
+        final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
+        final SpacecraftState state = propagator.propagate(measurementDate);
+        final ObservedMeasurement<PV> measurement = new PV(measurementDate,
+                state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
+                state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
+               5.0, 5.0, 1.0, new ObservableSatellite(0));
+
+        // Unselect all orbital propagation parameters
+        propagatorBuilder.getOrbitalParametersDrivers().getDrivers()
+                .forEach(driver -> driver.setSelected(false));
+
+        // Select eccentricity and anomaly
+        propagatorBuilder.getOrbitalParametersDrivers().findByName("e").setSelected(true);
+        propagatorBuilder.getOrbitalParametersDrivers().findByName("v").setSelected(true);
+
+        // Covariance matrix initialization
+        final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1e-2, 1e-5
+        });
+        final RealMatrix badInitialP = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1e-2, 1e-5, 1e6
+        });
+
+        // Process noise matrix
+        final RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1.e-8, 1.e-8
+        });
+        final RealMatrix badQ = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1.e-8, 1.e-8, 1e-6
+        });
+        final RealMatrix measQ = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1.e-8
+        });
+
+        // Initialise the Kalman builder
+        final KalmanEstimatorBuilder kalmanBuilderBadInitial = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(badInitialP, Q));
+
+        // Build the filter (should not succeed)
+        OrekitException thrown = Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitial::build);
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+
+        // Build the Kalman filter
+        final KalmanEstimator kalmanBadProcessNoise = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, badQ))
+                .build();
+
+        // Run the filter (should not succeed)
+        thrown = Assertions.assertThrows(OrekitException.class, () -> kalmanBadProcessNoise.estimationStep(measurement));
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+
+        // Initialize the Kalman builder
+        final KalmanEstimatorBuilder kalmanBadProcessNoiseWithMeasurementProcessNoise = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(badInitialP, badQ))
+                .estimatedMeasurementsParameters(new ParameterDriversList(), new ConstantProcessNoise(measQ, measQ));
+
+        // Build the filter (should not succeed)
+        thrown = Assertions.assertThrows(OrekitException.class, kalmanBadProcessNoiseWithMeasurementProcessNoise::build);
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+
+        // Add a measurement parameter
+        final Bias<PV> pvBias = new Bias<>(new String[]{"x bias"},
+                new double[]{0.0}, new double[]{1.0},
+                new double[]{1.0}, new double[]{1.0});
+        pvBias.getParameterDriver("x bias").setSelected(true);
+        measurement.addModifier(pvBias);
+
+        // Initialize the Kalman builder
+        ParameterDriversList drivers = new ParameterDriversList();
+        drivers.add(pvBias.getParameterDriver("x bias"));
+        final KalmanEstimator estimatorBadMeasurementNoise = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, badQ))
+                .estimatedMeasurementsParameters(drivers, new ConstantProcessNoise(measQ, measQ)).build();
+
+        // Run the filter (should not succeed)
+        thrown = Assertions.assertThrows(OrekitException.class, () -> estimatorBadMeasurementNoise.estimationStep(measurement));
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+    }
+
+    @Test
+    public void testWrongMeasurementCovarianceDimension() {
+
+        // Create context
+        Context context = EstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create initial orbit and propagator builder
+        final OrbitType     orbitType     = OrbitType.KEPLERIAN;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+        final boolean       perfectStart  = true;
+        final double        minStep       = 1.e-6;
+        final double        maxStep       = 60.;
+        final double        dP            = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        minStep, maxStep, dP);
+
+        // Create perfect range measurements
+        final Propagator propagator = EstimationTestUtils.createPropagator(context.initialOrbit,
+                propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                EstimationTestUtils.createMeasurements(propagator,
+                        new TwoWayRangeMeasurementCreator(context),
+                        1.0, 1.1, 60.0);
+
+        // Add a measurement parameter
+        final Bias<Range> rangeBias = new Bias<>(new String[]{"range bias"}, new double[]{0.0}, new double[]{1.0},
+                new double[]{Double.NEGATIVE_INFINITY}, new double[]{Double.POSITIVE_INFINITY});
+        rangeBias.getParameterDriver("range bias").setSelected(true);
+        measurements.forEach(measurement -> ((Range) measurement).addModifier(rangeBias));
+
+        ParameterDriversList measurementParameters = new ParameterDriversList();
+        measurementParameters.add(rangeBias.getParameterDriver("range bias"));
+
+        // Change semi-major axis of 1.2m as in the batch test
+        ParameterDriver aDriver = propagatorBuilder.getOrbitalParametersDrivers().getDrivers().get(0);
+        aDriver.setValue(aDriver.getValue() + 1.2);
+        aDriver.setReferenceDate(AbsoluteDate.GALILEO_EPOCH);
+
+        // Cartesian covariance matrix initialization
+        // 100m on position / 1e-2m/s on velocity
+        final RealMatrix cartesianP = MatrixUtils.createRealDiagonalMatrix(new double [] {
+                100., 100., 100., 1e-2, 1e-2, 1e-2
+        });
+
+        // Jacobian of the orbital parameters w/r to Cartesian
+        final Orbit initialOrbit = orbitType.convertType(context.initialOrbit);
+        final double[][] dYdC = new double[6][6];
+        initialOrbit.getJacobianWrtCartesian(PositionAngleType.TRUE, dYdC);
+        final RealMatrix Jac = MatrixUtils.createRealMatrix(dYdC);
+
+        // Keplerian initial covariance matrix
+        final RealMatrix initialPStateOnly = Jac.multiply(cartesianP.multiply(Jac.transpose()));
+        final RealMatrix initialP = MatrixUtils.createRealIdentityMatrix(7);
+        initialP.setSubMatrix(initialPStateOnly.getData(), 0, 0);
+
+        // Process noise matrix is set to 0 here
+        final RealMatrix QStateOnly = MatrixUtils.createRealMatrix(6, 6);
+        final RealMatrix Q = MatrixUtils.createRealMatrix(7, 7);
+
+        // Initialise the Kalman builder
+        final KalmanEstimatorBuilder kalmanBuilderBadInitial = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialPStateOnly, Q))
+                .estimatedMeasurementsParameters(measurementParameters, null);
+
+        // Build the filter (should not succeed)
+        final OrekitException thrownBadInitial =
+                Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitial::build);
+        Assertions.assertTrue(thrownBadInitial.getMessage().contains("Process covariance expecting dimension 7, got 6"));
+
+        // Build the Kalman filter
+        final KalmanEstimator kalmanBadProcessNoise = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, QStateOnly))
+                .estimatedMeasurementsParameters(measurementParameters, null)
+                .build();
+
+        // Run the filter (should not succeed)
+        final OrekitException thrownBadQ = Assertions.assertThrows(OrekitException.class,
+                () -> kalmanBadProcessNoise.processMeasurements(measurements));
+        Assertions.assertTrue(thrownBadQ.getMessage().contains("Process covariance expecting dimension 7, got 6"));
+
+        // Measurement covariance providers
+        final ConstantProcessNoise badMeasurementInitialNoise =
+                new ConstantProcessNoise(MatrixUtils.createRealIdentityMatrix(2),
+                        MatrixUtils.createRealIdentityMatrix(1));
+        final ConstantProcessNoise badMeasurementProcessNoise =
+                new ConstantProcessNoise(MatrixUtils.createRealIdentityMatrix(1),
+                        MatrixUtils.createRealIdentityMatrix(2));
+
+        // Initialise the Kalman builder
+        final KalmanEstimatorBuilder kalmanBuilderBadInitialMeas = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialPStateOnly, QStateOnly))
+                .estimatedMeasurementsParameters(measurementParameters, badMeasurementInitialNoise);
+
+        // Build the filter (should not succeed)
+        final OrekitException thrownBadInitialMeas =
+                Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitialMeas::build);
+        Assertions.assertTrue(thrownBadInitialMeas.getMessage()
+                .contains("Measurement covariance expecting dimension 1, got 2"));
+
+        // Build the Kalman filter
+        final KalmanEstimator kalmanBadProcessNoiseMeas = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialPStateOnly, QStateOnly))
+                .estimatedMeasurementsParameters(measurementParameters, badMeasurementProcessNoise)
+                .build();
+
+        // Run the filter (should not succeed)
+        final OrekitException thrownBadQMeas = Assertions.assertThrows(OrekitException.class,
+                () -> kalmanBadProcessNoiseMeas.processMeasurements(measurements));
+        Assertions.assertTrue(thrownBadQMeas.getMessage()
+                .contains("Measurement covariance expecting dimension 1, got 2"));
+    }
 
     @Test
     public void testMissingPropagatorBuilder() {
@@ -600,7 +1047,7 @@ public class KalmanEstimatorTest {
                                                                0.0, 4.0, 700.0);
 
         // Concatenate measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(rangeMeasurements);
         measurements.addAll(angularMeasurements);
         measurements.addAll(rangeRateMeasurements);
@@ -695,7 +1142,7 @@ public class KalmanEstimatorTest {
                                                                1.0, 3.0, 300.0);
 
         // Concatenate measurements
-        final List<ObservedMeasurement<?>> measurements = new ArrayList<ObservedMeasurement<?>>();
+        final List<ObservedMeasurement<?>> measurements = new ArrayList<>();
         measurements.addAll(measurementsRange);
         measurements.addAll(measurementsRangeRate);
 
@@ -1000,7 +1447,7 @@ public class KalmanEstimatorTest {
 
         // create orbit estimator
         final RealMatrix processNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(new double[] {
-            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10, 1.e-13, 1.e13
+            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
         });
         final RealMatrix measurementNoiseMatrix = MatrixUtils.createRealDiagonalMatrix(new double[] {
            1.e-15, 1.e-15
@@ -1113,12 +1560,12 @@ public class KalmanEstimatorTest {
 
         // Covariance matrix initialization
         final RealMatrix initialP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5
+            1e-2, 1e-2, 1e-2, 1e-5, 1e-5, 1e-5, 1e-8
         });
 
         // Process noise matrix
         RealMatrix Q = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
+            1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8, 1.e-8
         });
 
 

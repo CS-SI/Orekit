@@ -125,7 +125,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                   final EventHandler handler,
                                                   final DateDriver start, final DateDriver stop,
                                                   final DateDriver median, final ParameterDriver duration) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.start    = start;
         this.stop     = stop;
         this.median   = median;
@@ -151,7 +151,7 @@ public class ParameterDrivenDateIntervalDetector extends AbstractDetector<Parame
                                                  stream().
                                                  filter(observer -> observer instanceof ParameterDrivenDateIntervalDetector.BindingObserver).
                                                  collect(Collectors.toList());
-        original.forEach(observer -> driver.removeObserver(observer));
+        original.forEach(driver::removeObserver);
 
         driver.addObserver(bindingObserver);
 

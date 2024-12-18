@@ -43,7 +43,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** This is the realization of the Jacchia-Bowman 2008 atmospheric model.
  * <p>
  * It is described in the paper:<br>
- * <a href="http://sol.spacenvironment.net/~JB2008/pubs/AIAA_2008-6438_JB2008_Model.pdf">A
+ * <a href="https://www.researchgate.net/publication/228621668_A_New_Empirical_Thermospheric_Density_Model_JB2008_Using_New_Solar_and_Geomagnetic_Indices">A
  * New Empirical Thermospheric Density Model JB2008 Using New Solar Indices</a><br>
  * <i>Bruce R. Bowman &amp; al.</i><br>
  * AIAA 2008-6438<br>

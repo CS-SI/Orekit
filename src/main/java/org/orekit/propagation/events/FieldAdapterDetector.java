@@ -87,4 +87,15 @@ public class FieldAdapterDetector<T extends CalculusFieldElement<T>> implements 
         return detector.getHandler();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final FieldSpacecraftState<T> state) {
+        detector.finish(state);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public FieldEventDetectionSettings<T> getDetectionSettings() {
+        return detector.getDetectionSettings();
+    }
 }

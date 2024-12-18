@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Line;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -543,76 +544,65 @@ public class Transform implements
      */
     public void getJacobian(final CartesianDerivativesFilter selector, final double[][] jacobian) {
 
-        // elementary matrix for rotation
-        final double[][] mData = angular.getRotation().getMatrix();
+        if (selector.getMaxOrder() == 0) {
+            // elementary matrix for rotation
+            final double[][] mData = angular.getRotation().getMatrix();
 
-        // dP1/dP0
-        System.arraycopy(mData[0], 0, jacobian[0], 0, 3);
-        System.arraycopy(mData[1], 0, jacobian[1], 0, 3);
-        System.arraycopy(mData[2], 0, jacobian[2], 0, 3);
+            // dP1/dP0
+            System.arraycopy(mData[0], 0, jacobian[0], 0, 3);
+            System.arraycopy(mData[1], 0, jacobian[1], 0, 3);
+            System.arraycopy(mData[2], 0, jacobian[2], 0, 3);
+        }
 
-        if (selector.getMaxOrder() >= 1) {
+        else if (selector.getMaxOrder() == 1) {
+            // use KinematicTransform Jacobian
+            final double[][] mData = getPVJacobian();
+            for (int i = 0; i < mData.length; i++) {
+                System.arraycopy(mData[i], 0, jacobian[i], 0, mData[i].length);
+            }
+        }
 
-            // dP1/dV0
-            Arrays.fill(jacobian[0], 3, 6, 0.0);
-            Arrays.fill(jacobian[1], 3, 6, 0.0);
-            Arrays.fill(jacobian[2], 3, 6, 0.0);
+        else if (selector.getMaxOrder() >= 2) {
+            getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
 
-            // dV1/dP0
+            // dP1/dA0
+            Arrays.fill(jacobian[0], 6, 9, 0.0);
+            Arrays.fill(jacobian[1], 6, 9, 0.0);
+            Arrays.fill(jacobian[2], 6, 9, 0.0);
+
+            // dV1/dA0
+            Arrays.fill(jacobian[3], 6, 9, 0.0);
+            Arrays.fill(jacobian[4], 6, 9, 0.0);
+            Arrays.fill(jacobian[5], 6, 9, 0.0);
+
+            // dA1/dP0
             final Vector3D o = angular.getRotationRate();
             final double ox = o.getX();
             final double oy = o.getY();
             final double oz = o.getZ();
+            final Vector3D oDot = angular.getRotationAcceleration();
+            final double oDotx  = oDot.getX();
+            final double oDoty  = oDot.getY();
+            final double oDotz  = oDot.getZ();
             for (int i = 0; i < 3; ++i) {
-                jacobian[3][i] = -(oy * mData[2][i] - oz * mData[1][i]);
-                jacobian[4][i] = -(oz * mData[0][i] - ox * mData[2][i]);
-                jacobian[5][i] = -(ox * mData[1][i] - oy * mData[0][i]);
+                jacobian[6][i] = -(oDoty * jacobian[2][i] - oDotz * jacobian[1][i]) - (oy * jacobian[5][i] - oz * jacobian[4][i]);
+                jacobian[7][i] = -(oDotz * jacobian[0][i] - oDotx * jacobian[2][i]) - (oz * jacobian[3][i] - ox * jacobian[5][i]);
+                jacobian[8][i] = -(oDotx * jacobian[1][i] - oDoty * jacobian[0][i]) - (ox * jacobian[4][i] - oy * jacobian[3][i]);
             }
 
-            // dV1/dV0
-            System.arraycopy(mData[0], 0, jacobian[3], 3, 3);
-            System.arraycopy(mData[1], 0, jacobian[4], 3, 3);
-            System.arraycopy(mData[2], 0, jacobian[5], 3, 3);
-
-            if (selector.getMaxOrder() >= 2) {
-
-                // dP1/dA0
-                Arrays.fill(jacobian[0], 6, 9, 0.0);
-                Arrays.fill(jacobian[1], 6, 9, 0.0);
-                Arrays.fill(jacobian[2], 6, 9, 0.0);
-
-                // dV1/dA0
-                Arrays.fill(jacobian[3], 6, 9, 0.0);
-                Arrays.fill(jacobian[4], 6, 9, 0.0);
-                Arrays.fill(jacobian[5], 6, 9, 0.0);
-
-                // dA1/dP0
-                final Vector3D oDot = angular.getRotationAcceleration();
-                final double oDotx  = oDot.getX();
-                final double oDoty  = oDot.getY();
-                final double oDotz  = oDot.getZ();
-                for (int i = 0; i < 3; ++i) {
-                    jacobian[6][i] = -(oDoty * mData[2][i] - oDotz * mData[1][i]) - (oy * jacobian[5][i] - oz * jacobian[4][i]);
-                    jacobian[7][i] = -(oDotz * mData[0][i] - oDotx * mData[2][i]) - (oz * jacobian[3][i] - ox * jacobian[5][i]);
-                    jacobian[8][i] = -(oDotx * mData[1][i] - oDoty * mData[0][i]) - (ox * jacobian[4][i] - oy * jacobian[3][i]);
-                }
-
-                // dA1/dV0
-                for (int i = 0; i < 3; ++i) {
-                    jacobian[6][i + 3] = -2 * (oy * mData[2][i] - oz * mData[1][i]);
-                    jacobian[7][i + 3] = -2 * (oz * mData[0][i] - ox * mData[2][i]);
-                    jacobian[8][i + 3] = -2 * (ox * mData[1][i] - oy * mData[0][i]);
-                }
-
-                // dA1/dA0
-                System.arraycopy(mData[0], 0, jacobian[6], 6, 3);
-                System.arraycopy(mData[1], 0, jacobian[7], 6, 3);
-                System.arraycopy(mData[2], 0, jacobian[8], 6, 3);
-
+            // dA1/dV0
+            for (int i = 0; i < 3; ++i) {
+                jacobian[6][i + 3] = -2 * (oy * jacobian[2][i] - oz * jacobian[1][i]);
+                jacobian[7][i + 3] = -2 * (oz * jacobian[0][i] - ox * jacobian[2][i]);
+                jacobian[8][i + 3] = -2 * (ox * jacobian[1][i] - oy * jacobian[0][i]);
             }
+
+            // dA1/dA0
+            System.arraycopy(jacobian[0], 0, jacobian[6], 6, 3);
+            System.arraycopy(jacobian[1], 0, jacobian[7], 6, 3);
+            System.arraycopy(jacobian[2], 0, jacobian[8], 6, 3);
 
         }
-
     }
 
     /** Get the underlying elementary Cartesian part.
@@ -718,16 +708,31 @@ public class Transform implements
             super(AbsoluteDate.ARBITRARY_EPOCH, PVCoordinates.ZERO, AngularCoordinates.IDENTITY);
         }
 
+        @Override
+        public StaticTransform staticShiftedBy(final double dt) {
+            return toStaticTransform();
+        }
+
         /** {@inheritDoc} */
         @Override
         public Transform shiftedBy(final double dt) {
             return this;
         }
 
+        @Override
+        public StaticTransform getStaticInverse() {
+            return toStaticTransform();
+        }
+
         /** {@inheritDoc} */
         @Override
         public Transform getInverse() {
             return this;
+        }
+
+        @Override
+        public StaticTransform toStaticTransform() {
+            return StaticTransform.getIdentity();
         }
 
         /** {@inheritDoc} */
@@ -742,6 +747,16 @@ public class Transform implements
             return vector;
         }
 
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+            return transformVector(position);
+        }
+
+        @Override
+        public <T extends CalculusFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+            return new FieldVector3D<>(vector.getX(), vector.getY(), vector.getZ());
+        }
+
         /** {@inheritDoc} */
         @Override
         public Line transformLine(final Line line) {
@@ -752,6 +767,16 @@ public class Transform implements
         @Override
         public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
             return pv;
+        }
+
+        @Override
+        public PVCoordinates transformOnlyPV(final PVCoordinates pv) {
+            return new PVCoordinates(pv.getPosition(), pv.getVelocity());
+        }
+
+        @Override
+        public TimeStampedPVCoordinates transformOnlyPV(final TimeStampedPVCoordinates pv) {
+            return new TimeStampedPVCoordinates(pv.getDate(), pv.getPosition(), pv.getVelocity());
         }
 
         @Override

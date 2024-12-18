@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -50,9 +54,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
-import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -116,10 +120,6 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeStampedPVCoordinates;
-
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 
 public class DSSTPropagatorTest {
 
@@ -242,7 +242,7 @@ public class DSSTPropagatorTest {
                                                   FastMath.toRadians(12.0),
                                                   PositionAngleType.TRUE, eci, initialDate, Constants.EIGEN5C_EARTH_MU);
         SpacecraftState oscuState = DSSTPropagator.computeOsculatingState(new SpacecraftState(orbit), null, forces);
-        Assertions.assertEquals(7119927.097122, oscuState.getA(), 0.001);
+        Assertions.assertEquals(7119927.147704, oscuState.getA(), 1.e-6);
     }
 
     @Test
@@ -1197,6 +1197,61 @@ public class DSSTPropagatorTest {
         Assertions.assertNotNull(state);
     }
 
+    /** Test issue 1461.
+     * <p>Test for the dedicated method DSSTPropagator.reset(SpacecraftState, PropagationType)
+     * <p>This should change the status of attribute "initialIsOsculating" depending on input PropagationType
+     */
+    @Test
+    public void testIssue1461() {
+
+        // GIVEN
+        // -----
+        
+        final double step = 60.;
+        final int nStep = 10;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final AttitudeProvider attitude = new FrameAlignedProvider(gcrf);
+        
+        // LEO orbit as input
+        final Orbit initialOrbit = new KeplerianOrbit(7000e3, 1.e-3, FastMath.toRadians(98.), 0., 0., 0.,
+                                                      PositionAngleType.ECCENTRIC, gcrf,
+                                                      AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU);
+        final AbsoluteDate t0 = initialOrbit.getDate();
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        final ClassicalRungeKuttaIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
+        
+        // DSST is configured to propagate in MEAN elements
+        final DSSTPropagator propagator = new DSSTPropagator(integrator, PropagationType.MEAN);
+        
+        // The initial state is OSCULATING
+        propagator.setInitialState(initialState, PropagationType.OSCULATING);
+        
+        // Using a J2-only perturbed force model, the SMA of the mean / averaged orbit should remained constant during propagation
+        propagator.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
+        propagator.setAttitudeProvider(attitude);
+        
+        // Initial mean SMA
+        final double initialMeanSma =  DSSTPropagator.computeMeanState(initialState,
+                                                                       attitude,
+                                                                       propagator.getAllForceModels()).getA();
+        // WHEN
+        // ----
+        
+        // Propagating step by step and getting mean SMAs
+        final List<Double> propagatedMeanSma = new ArrayList<>();
+        for (int i = 1; i <= nStep; i++) {
+            propagatedMeanSma.add(propagator.propagate(t0.shiftedBy(i * step)).getA());
+        }
+
+        // THEN
+        // ----
+        
+        // Mean SMA should remain constant and equal to initial mean sma
+        for (Double meanSma : propagatedMeanSma) {
+            Assertions.assertEquals(initialMeanSma, meanSma, 0.);
+        }
+    }
+
     /**
      * Check that the DSST can include the derivatives of force model parameters in the
      * Jacobian. Uses a very basic force model for a quick test. Checks both mean and
@@ -1488,6 +1543,7 @@ public class DSSTPropagatorTest {
                                            SpacecraftState... meanStates) {
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public <T extends CalculusFieldElement<T>> void updateShortPeriodTerms(
                 T[] parameters, FieldSpacecraftState<T>... meanStates) {

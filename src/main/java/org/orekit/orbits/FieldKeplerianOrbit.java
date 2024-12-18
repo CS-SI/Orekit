@@ -986,70 +986,11 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
      * @since 12.1
      */
     private T initializeCachedAnomaly(final T anomaly, final PositionAngleType inputType) {
-        if (inputType == cachedPositionAngleType) {
-            return anomaly;
-
-        } else {
-            if (a.getReal() < 0) {
-                switch (cachedPositionAngleType) {
-                    case MEAN:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.hyperbolicEccentricToMean(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.hyperbolicTrueToMean(e, anomaly);
-                        }
-
-                    case ECCENTRIC:
-                        if (inputType == PositionAngleType.MEAN) {
-                            return FieldKeplerianAnomalyUtility.hyperbolicMeanToEccentric(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.hyperbolicTrueToEccentric(e, anomaly);
-                        }
-
-                    case TRUE:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.hyperbolicEccentricToTrue(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.hyperbolicMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-
-            } else {
-                switch (cachedPositionAngleType) {
-                    case MEAN:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.ellipticEccentricToMean(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.ellipticTrueToMean(e, anomaly);
-                        }
-
-                    case ECCENTRIC:
-                        if (inputType == PositionAngleType.MEAN) {
-                            return FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.ellipticTrueToEccentric(e, anomaly);
-                        }
-
-                    case TRUE:
-                        if (inputType == PositionAngleType.ECCENTRIC) {
-                            return FieldKeplerianAnomalyUtility.ellipticEccentricToTrue(e, anomaly);
-                        } else {
-                            return FieldKeplerianAnomalyUtility.ellipticMeanToTrue(e, anomaly);
-                        }
-
-                    default:
-                        break;
-                }
-            }
-            throw new OrekitInternalError(null);
-        }
+        return FieldKeplerianAnomalyUtility.convertAnomaly(inputType, anomaly, e, cachedPositionAngleType);
     }
 
     /** Compute reference axes.
-     * @return referecne axes
+     * @return reference axes
      * @since 12.0
      */
     private FieldVector3D<T>[] referenceAxes() {
@@ -1705,26 +1646,39 @@ public class FieldKeplerianOrbit<T extends CalculusFieldElement<T>> extends Fiel
     @Override
     public void addKeplerContribution(final PositionAngleType type, final T gm,
                                       final T[] pDot) {
-        final T oMe2;
-        final T ksi;
+        pDot[5] = pDot[5].add(computeKeplerianAnomalyDot(type, a, e, gm, cachedAnomaly, cachedPositionAngleType));
+    }
+
+    /**
+     * Compute rate of argument of latitude.
+     * @param type position angle type of rate
+     * @param a semi major axis
+     * @param e eccentricity
+     * @param mu mu
+     * @param anomaly anomaly
+     * @param cachedType position angle type of passed anomaly
+     * @param <T> field type
+     * @return first-order time derivative for anomaly
+     * @since 12.2
+     */
+    private static <T extends CalculusFieldElement<T>> T computeKeplerianAnomalyDot(final PositionAngleType type, final T a, final T e,
+                                                                                    final T mu, final T anomaly, final PositionAngleType cachedType) {
         final T absA = a.abs();
-        final T n    = absA.reciprocal().multiply(gm).sqrt().divide(absA);
-        switch (type) {
-            case MEAN :
-                pDot[5] = pDot[5].add(n);
-                break;
-            case ECCENTRIC :
-                oMe2 = e.square().negate().add(1).abs();
-                ksi  = e.multiply(getTrueAnomaly().cos()).add(1);
-                pDot[5] = pDot[5].add( n.multiply(ksi).divide(oMe2));
-                break;
-            case TRUE :
-                oMe2 = e.square().negate().add(1).abs();
-                ksi  = e.multiply(getTrueAnomaly().cos()).add(1);
-                pDot[5] = pDot[5].add(n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt())));
-                break;
-            default :
-                throw new OrekitInternalError(null);
+        final T n    = absA.reciprocal().multiply(mu).sqrt().divide(absA);
+        if (type == PositionAngleType.MEAN) {
+            return n;
+        }
+        final T ksi;
+        final T oMe2;
+        final T trueAnomaly = FieldKeplerianAnomalyUtility.convertAnomaly(cachedType, anomaly, e, PositionAngleType.TRUE);
+        if (type == PositionAngleType.ECCENTRIC) {
+            oMe2 = e.square().negate().add(1).abs();
+            ksi = e.multiply(trueAnomaly.cos()).add(1);
+            return n.multiply(ksi).divide(oMe2);
+        } else {
+            oMe2 = e.square().negate().add(1).abs();
+            ksi  = e.multiply(trueAnomaly.cos()).add(1);
+            return n.multiply(ksi).multiply(ksi).divide(oMe2.multiply(oMe2.sqrt()));
         }
     }
 

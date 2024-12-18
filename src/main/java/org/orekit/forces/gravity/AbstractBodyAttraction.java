@@ -16,15 +16,23 @@
  */
 package org.orekit.forces.gravity;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.forces.ForceModel;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.Collections;
 import java.util.List;
 
-/** Abstract class for body attraction force model.
+/** Abstract class for non-central body attraction force model.
  *
  * @author Romain Serra
  */
@@ -65,9 +73,59 @@ public abstract class AbstractBodyAttraction implements ForceModel {
 
     /** Protected getter for the body.
      * @return the third body considered
+     * @deprecated in next major release this shall be removed as the class will not have to use a CelestialBody
      */
+    @Deprecated
     protected CelestialBody getBody() {
         return body;
+    }
+
+    /**
+     * Get the body's position vector.
+     * @param date date
+     * @param frame frame
+     * @return position
+     * @since 12.2
+     */
+    protected Vector3D getBodyPosition(final AbsoluteDate date, final Frame frame) {
+        return body.getPosition(date, frame);
+    }
+
+    /**
+     * Get the body's position vector.
+     * @param date date
+     * @param frame frame
+     * @param <T> field type
+     * @return position
+     * @since 12.2
+     */
+    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getBodyPosition(final FieldAbsoluteDate<T> date,
+                                                                                   final Frame frame) {
+        return body.getPosition(date, frame);
+    }
+
+    /**
+     * Get the body's position-velocity-acceleration vector.
+     * @param date date
+     * @param frame frame
+     * @return PV
+     * @since 12.2
+     */
+    protected TimeStampedPVCoordinates getBodyPVCoordinates(final AbsoluteDate date, final Frame frame) {
+        return body.getPVCoordinates(date, frame);
+    }
+
+    /**
+     * Get the body's position-velocity-acceleration vector.
+     * @param date date
+     * @param frame frame
+     * @param <T> field type
+     * @return PV
+     * @since 12.2
+     */
+    protected <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getBodyPVCoordinates(final FieldAbsoluteDate<T> date,
+                                                                                                        final Frame frame) {
+        return body.getPVCoordinates(date, frame);
     }
 
     /** {@inheritDoc} */

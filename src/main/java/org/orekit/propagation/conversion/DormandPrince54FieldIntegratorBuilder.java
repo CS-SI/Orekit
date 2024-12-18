@@ -36,7 +36,7 @@ public class DormandPrince54FieldIntegratorBuilder<T extends CalculusFieldElemen
         extends AbstractVariableStepFieldIntegratorBuilder<T> {
 
     /**
-     * Build a new instance.
+     * Build a new instance. Should only use this constructor with {@link Orbit}.
      *
      * @param minStep minimum step size (s)
      * @param maxStep maximum step size (s)
@@ -49,10 +49,27 @@ public class DormandPrince54FieldIntegratorBuilder<T extends CalculusFieldElemen
         super(minStep, maxStep, dP);
     }
 
+    /**
+     * Build a new instance.
+     *
+     * @param minStep minimum step size (s)
+     * @param maxStep maximum step size (s)
+     * @param dP position error (m)
+     * @param dV velocity error (m/s)
+     *
+     * @since 12.2
+     * @see DormandPrince54FieldIntegrator
+     * @see NumericalPropagator#tolerances(double, double, Orbit, OrbitType)
+     */
+    public DormandPrince54FieldIntegratorBuilder(final double minStep, final double maxStep, final double dP,
+                                                 final double dV) {
+        super(minStep, maxStep, dP, dV);
+    }
+
     /** {@inheritDoc} */
     @Override
     public AbstractFieldIntegrator<T> buildIntegrator(final Field<T> field, final Orbit orbit, final OrbitType orbitType) {
-        final double[][] tol = NumericalPropagator.tolerances(dP, orbit, orbitType);
+        final double[][] tol = getTolerances(orbit, orbitType);
         return new DormandPrince54FieldIntegrator<>(field, minStep, maxStep, tol[0], tol[1]);
     }
 }

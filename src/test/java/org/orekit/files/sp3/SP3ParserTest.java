@@ -19,6 +19,7 @@ package org.orekit.files.sp3;
 import java.util.Arrays;
 import java.util.List;
 
+import org.hipparchus.analysis.polynomials.PolynomialFunction;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -684,8 +685,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
                                        new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
                      coord);
-        Assertions.assertEquals(0.999999999999,   coord.getClockCorrection(), 1.0e-12);
-        Assertions.assertEquals(9.99999999999e-5, coord.getClockRateChange(), 1.0e-16);
+        Assertions.assertTrue(Double.isNaN(coord.getClockCorrection()));
+        Assertions.assertTrue(Double.isNaN(coord.getClockRateChange()));
 
     }
 
@@ -708,7 +709,7 @@ public class SP3ParserTest {
 
         // 2016  2 28 0 0 0.00000000
         Assertions.assertEquals(new AbsoluteDate(2016, 2, 28, 0, 0, 0,
-                TimeScalesFactory.getUTC()), coord.getDate());
+                                                 TimeScalesFactory.getUTC()), coord.getDate());
 
 
         // PL52   2228.470946   7268.265924   9581.471543
@@ -716,8 +717,8 @@ public class SP3ParserTest {
         checkPVEntry(new PVCoordinates(new Vector3D(2228470.946, 7268265.924, 9581471.543),
                                        new Vector3D(-4485.6945000, 2432.1151000, -711.6222800)),
                      coord);
-        Assertions.assertEquals(0.999999999999,   coord.getClockCorrection(), 1.0e-12);
-        Assertions.assertEquals(9.99999999999e-5, coord.getClockRateChange(), 1.0e-16);
+        Assertions.assertTrue(Double.isNaN(coord.getClockCorrection()));
+        Assertions.assertTrue(Double.isNaN(coord.getClockRateChange()));
 
     }
 
@@ -1346,6 +1347,43 @@ public class SP3ParserTest {
         } catch (OrekitException oe) {
             Assertions.assertEquals(OrekitMessages.INVALID_SATELLITE_ID, oe.getSpecifier());
             Assertions.assertEquals("Z00", oe.getParts()[0]);
+        }
+
+        Assertions.assertEquals(5,
+                                SP3Utils.indexAccuracy(SP3Utils.POSITION_ACCURACY_UNIT, SP3Utils.POS_VEL_BASE_ACCURACY,
+                                                       spliced.getHeader().getAccuracy("R23")));
+
+    }
+
+    @Test
+    public void testIssue1552() {
+        final String     ex     = "/sp3/three-hours.sp3";
+        final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
+        final SP3        sp3    = new SP3Parser().parse(source);
+
+        final AbsoluteDate start = new AbsoluteDate(2015, 5, 5, 0,  0, 0.0, TimeScalesFactory.getGPS());
+        final AbsoluteDate end   = new AbsoluteDate(2015, 5, 5, 2, 55, 0.0, TimeScalesFactory.getGPS());
+
+        checkPolynomialClock(sp3.getEphemeris("C01").extractClockModel(), start, end,
+                             new PolynomialFunction(-4.34415678e-4, 3.15154873e-11, -2.19219167e-17),
+                             2.2e-10);
+        checkPolynomialClock(sp3.getEphemeris("C02").extractClockModel(), start, end,
+                             new PolynomialFunction(-9.16586434e-4, 2.20479164e-11, 2.96650589e-17),
+                             2.8e-10);
+
+    }
+
+    private void checkPolynomialClock(final AggregatedClockModel clockModel,
+                                  final AbsoluteDate start, final AbsoluteDate end,
+                                  final PolynomialFunction polynomialFunction, final double tolerance) {
+
+        Assertions.assertEquals(start, clockModel.getValidityStart());
+        Assertions.assertEquals(end,   clockModel.getValidityEnd());
+
+        for (double dt = 0; dt < end.durationFrom(start); dt += 1) {
+            final AbsoluteDate date   = start.shiftedBy(dt);
+            final double       offset = clockModel.getOffset(date).getOffset();
+            Assertions.assertEquals(polynomialFunction.value(dt), offset, tolerance);
         }
 
     }

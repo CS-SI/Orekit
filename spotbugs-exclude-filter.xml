@@ -197,6 +197,10 @@
     <Class name="~.*\.Units$"/>
     <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
   </Match>
+  <Match>
+    <Class name="~.*\.IonosphereKlobucharMessage$"/>
+    <Bug pattern="CNT_ROUGH_CONSTANT_VALUE" />
+  </Match>
   
   <!-- The following is a false positive from SpotBugs -->
   <Match>

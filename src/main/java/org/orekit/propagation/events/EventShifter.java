@@ -96,7 +96,7 @@ public class EventShifter extends AbstractDetector<EventShifter> {
                            final int maxIter, final EventHandler handler,
                            final EventDetector detector, final boolean useShiftedStates,
                            final double increasingTimeShift, final double decreasingTimeShift) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;

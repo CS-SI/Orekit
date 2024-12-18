@@ -52,7 +52,7 @@ import org.orekit.utils.TrackingCoordinates;
  * the {@link NiellMappingFunctionModel Niell Mapping Function}
  * </p> <p>
  * The tropospheric zenith delay δ<sub>h</sub> is computed empirically with a
- * {@link DiscreteTroposphericModel tropospheric model}
+ * {@link TroposphericModel tropospheric model}
  * while the tropospheric total zenith delay δ<sub>t</sub> is estimated as a {@link ParameterDriver},
  * hence the wet part is the difference between the two.
  * @since 12.1

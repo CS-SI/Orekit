@@ -28,6 +28,8 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.FieldElement;
 import org.hipparchus.analysis.differentiation.Derivative;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2;
+import org.hipparchus.analysis.differentiation.FieldUnivariateDerivative2Field;
 import org.hipparchus.complex.Complex;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
@@ -515,6 +517,20 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
             this.epoch = epoch + deltaEpoch;
             offset = newOffset;
         }
+    }
+
+    /**
+     * Creates Field date with offset as univariate derivative of second order, with a unit linear coefficient in time.
+     * @return univariate derivative 2 date
+     * @since 12.2
+     */
+    public FieldAbsoluteDate<FieldUnivariateDerivative2<T>> toFUD2Field() {
+        final FieldUnivariateDerivative2Field<T> fud2Field = FieldUnivariateDerivative2Field.getUnivariateDerivative2Field(field);
+        final AbsoluteDate date = toAbsoluteDate();
+        final T fieldShift = durationFrom(date);
+        final FieldUnivariateDerivative2<T> fud2Shift = new FieldUnivariateDerivative2<>(fieldShift, field.getOne(),
+                field.getZero());
+        return new FieldAbsoluteDate<>(fud2Field, date).shiftedBy(fud2Shift);
     }
 
     /** Extract time components from an instant within the day.
@@ -1765,6 +1781,54 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
      */
     public boolean hasZeroField() {
         return (offset instanceof Derivative<?> || offset instanceof Complex) && offset.subtract(offset.getReal()).isZero();
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Modified Julian Date.
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public T getMJD() {
+        return this.getMJD(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return the given date as a Modified Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     * @return double representation of the given date as Modified Julian Date.
+     * @since 12.2
+     */
+    public T getMJD(final TimeScale ts) {
+        final AbsoluteDate absoluteDate = toAbsoluteDate();
+        final T shift = durationFrom(absoluteDate).divide(Constants.JULIAN_DAY);
+        return shift.add(absoluteDate.getMJD(ts));
+    }
+
+    /**
+     * Return the given date as a Julian Date <b>expressed in UTC</b>.
+     *
+     * @return double representation of the given date as Julian Date.
+     * @since 12.2
+     */
+    @DefaultDataContext
+    public T getJD() {
+        return getJD(TimeScalesFactory.getUTC());
+    }
+
+    /**
+     * Return the given date as a Julian Date expressed in given timescale.
+     *
+     * @param ts time scale
+     * @return double representation of the given date as Julian Date.
+     * @since 12.2
+     */
+    public T getJD(final TimeScale ts) {
+        final AbsoluteDate absoluteDate = toAbsoluteDate();
+        final T shift = durationFrom(absoluteDate).divide(Constants.JULIAN_DAY);
+        return shift.add(absoluteDate.getJD(ts));
     }
 }
 

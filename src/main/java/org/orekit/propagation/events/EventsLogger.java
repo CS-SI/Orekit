@@ -55,7 +55,7 @@ public class EventsLogger {
      * </p>
      */
     public EventsLogger() {
-        log = new ArrayList<EventsLogger.LoggedEvent>();
+        log = new ArrayList<>();
     }
 
     /** Monitor an event detector.
@@ -99,7 +99,7 @@ public class EventsLogger {
      * @return an immutable copy of the logged events
      */
     public List<LoggedEvent> getLoggedEvents() {
-        return new ArrayList<EventsLogger.LoggedEvent>(log);
+        return new ArrayList<>(log);
     }
 
     /** Class for logged events entries. */
@@ -167,9 +167,7 @@ public class EventsLogger {
          * @param detector events detector to wrap
          */
         LoggingWrapper(final EventDetector detector) {
-            this(detector.getMaxCheckInterval(), detector.getThreshold(),
-                 detector.getMaxIterationCount(), null,
-                 detector);
+            this(detector.getDetectionSettings(), null, detector);
         }
 
         /** Private constructor with full parameters.
@@ -178,17 +176,14 @@ public class EventsLogger {
          * API with the various {@code withXxx()} methods to set up the instance
          * in a readable manner without using a huge amount of parameters.
          * </p>
-         * @param maxCheck maximum checking interval
-         * @param threshold convergence threshold (s)
-         * @param maxIter maximum number of iterations in the event time search
+         * @param detectionSettings detection settings
          * @param handler event handler to call at event occurrences
          * @param detector events detector to wrap
          * @since 6.1
          */
-        private LoggingWrapper(final AdaptableInterval maxCheck, final double threshold,
-                               final int maxIter, final EventHandler handler,
+        private LoggingWrapper(final EventDetectionSettings detectionSettings, final EventHandler handler,
                                final EventDetector detector) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(detectionSettings, handler);
             this.detector = detector;
         }
 
@@ -196,7 +191,7 @@ public class EventsLogger {
         @Override
         protected LoggingWrapper create(final AdaptableInterval newMaxCheck, final double newThreshold,
                                         final int newMaxIter, final EventHandler newHandler) {
-            return new LoggingWrapper(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
+            return new LoggingWrapper(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler, detector);
         }
 
         /** Log an event.
@@ -208,6 +203,7 @@ public class EventsLogger {
         }
 
         /** {@inheritDoc} */
+        @Override
         public void init(final SpacecraftState s0,
                          final AbsoluteDate t) {
             super.init(s0, t);
@@ -220,6 +216,13 @@ public class EventsLogger {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public void finish(final SpacecraftState state) {
+            detector.finish(state);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public EventHandler getHandler() {
 
             final EventHandler handler = detector.getHandler();

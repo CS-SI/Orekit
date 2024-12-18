@@ -49,6 +49,7 @@ import org.junit.jupiter.api.Test;
 import org.orekit.OrekitMatchers;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -73,6 +74,7 @@ import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.FieldBoundedPropagator;
@@ -252,7 +254,7 @@ public class FieldDSSTPropagatorTest {
                         PositionAngleType.TRUE, eci, initialDate, zero.add(Constants.EIGEN5C_EARTH_MU));
         final FieldSpacecraftState<T> state = new FieldSpacecraftState<>(orbit);
         FieldSpacecraftState<T> oscuState = FieldDSSTPropagator.computeOsculatingState(state, null, forces);
-        Assertions.assertEquals(7119927.097122, oscuState.getA().getReal(), 0.001);
+        Assertions.assertEquals(7119927.148, oscuState.getA().getReal(), 0.001);
     }
 
     @Test
@@ -1277,6 +1279,69 @@ public class FieldDSSTPropagatorTest {
 
         // Verify that no exception occurred
         Assertions.assertNotNull(state);
+    }
+
+    /** Test issue 1461.
+     * <p>Test for the dedicated method DSSTPropagator.reset(SpacecraftState, PropagationType)
+     * <p>This should change the status of attribute "initialIsOsculating" depending on input PropagationType
+     */
+    @Test
+    public void testIssue1461() {
+        doTestIssue1461(Binary64Field.getInstance());
+    }
+
+    /** Method for running test for issue 1461. */
+    private <T extends CalculusFieldElement<T>> void doTestIssue1461(final Field<T> field) {
+
+        // GIVEN
+        // -----
+        
+        final T zero = field.getZero();
+        
+        final double step = 60.;
+        final int nStep = 10;
+        final Frame gcrf = FramesFactory.getGCRF();
+        final AttitudeProvider attitude = new FrameAlignedProvider(gcrf);
+        
+        // LEO orbit as input
+        final FieldOrbit<T> initialOrbit = new FieldKeplerianOrbit<>(field, 
+                        new KeplerianOrbit(7000e3, 1.e-3, FastMath.toRadians(98.), 0., 0., 0.,
+                                                      PositionAngleType.ECCENTRIC, gcrf,
+                                                      AbsoluteDate.ARBITRARY_EPOCH, Constants.EGM96_EARTH_MU));
+        final FieldAbsoluteDate<T> t0 = initialOrbit.getDate();
+        final FieldSpacecraftState<T> initialState = new FieldSpacecraftState<>(initialOrbit);
+        final ClassicalRungeKuttaFieldIntegrator<T> integrator = new ClassicalRungeKuttaFieldIntegrator<>(field, zero.newInstance(step));
+        
+        // DSST is configured to propagate in MEAN elements
+        final FieldDSSTPropagator<T> propagator = new FieldDSSTPropagator<>(field, integrator, PropagationType.MEAN);
+        
+        // The initial state is OSCULATING
+        propagator.setInitialState(initialState, PropagationType.OSCULATING);
+        
+        // Using a J2-only perturbed force model, the SMA of the mean / averaged orbit should remained constant during propagation
+        propagator.addForceModel(new DSSTZonal(GravityFieldFactory.getUnnormalizedProvider(2, 0)));
+        propagator.setAttitudeProvider(attitude);
+        
+        // Initial mean SMA
+        final double initialMeanSma =  FieldDSSTPropagator.computeMeanState(initialState,
+                                                                            attitude,
+                                                                            propagator.getAllForceModels()).getA().getReal();
+        // WHEN
+        // ----
+        
+        // Propagating step by step and getting mean SMAs
+        final List<Double> propagatedMeanSma = new ArrayList<>();
+        for (int i = 1; i <= nStep; i++) {
+            propagatedMeanSma.add(propagator.propagate(t0.shiftedBy(i * step)).getA().getReal());
+        }
+
+        // THEN
+        // ----
+        
+        // Mean SMA should remain constant and equal to initial mean sma
+        for (Double meanSma : propagatedMeanSma) {
+            Assertions.assertEquals(initialMeanSma, meanSma, 0.);
+        }
     }
 
     private <T extends CalculusFieldElement<T>> FieldSpacecraftState<T> getGEOState(final Field<T> field) {

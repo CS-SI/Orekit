@@ -64,6 +64,26 @@ class AbstractLightFluxModelTest {
     }
 
     @Test
+    void testGetLightingRatioField() {
+        // GIVEN
+        final ComplexField field = ComplexField.getInstance();
+        final FieldVector3D<Complex> position = new FieldVector3D<>(field, new Vector3D(1.0, 2.0, 3.0));
+        final FieldAbsoluteDate<Complex> date = FieldAbsoluteDate.getArbitraryEpoch(field);
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        final FieldSpacecraftState<Complex> mockedFieldState = mockState(position, date, mockedFrame);
+        final ExtendedPVCoordinatesProvider mockedProvider = Mockito.mock(ExtendedPVCoordinatesProvider.class);
+        final FieldVector3D<Complex> sunPosition = FieldVector3D.getMinusJ(field);
+        Mockito.when(mockedProvider.getPosition(date, mockedFrame)).thenReturn(sunPosition);
+        final TestLightFluxModel testLightFluxModel = new TestLightFluxModel(mockedProvider);
+        // WHEN
+        final Complex fieldLightingRatio = testLightFluxModel.getLightingRatio(mockedFieldState);
+        // THEN
+        final SpacecraftState mockedState = mockState(position.toVector3D(), date.toAbsoluteDate(), mockedFrame);
+        final double expectedLightingRatio = testLightFluxModel.getLightingRatio(mockedState);
+        Assertions.assertEquals(expectedLightingRatio, fieldLightingRatio.getReal());
+    }
+
+    @Test
     void testGetLightFluxVectorField() {
         // GIVEN
         final ComplexField field = ComplexField.getInstance();

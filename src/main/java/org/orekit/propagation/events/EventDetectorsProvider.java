@@ -23,9 +23,10 @@ import java.util.stream.Stream;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.FastMath;
 import org.orekit.forces.ForceModel;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -110,9 +111,7 @@ public interface EventDetectorsProvider {
                             withMaxCheck(0.5 * shortestDuration).
                             withMinGap(0.5 * shortestDuration).
                             withThreshold(DATATION_ACCURACY).
-                            withHandler((state, d, increasing) -> {
-                                return Action.RESET_DERIVATIVES;
-                            });
+                            withHandler(new ResetDerivativesOnEvent());
             return Stream.of(datesDetector);
         }
     }
@@ -163,9 +162,7 @@ public interface EventDetectorsProvider {
                             withMaxCheck(0.5 * shortestDuration).
                             withMinGap(0.5 * shortestDuration).
                             withThreshold(field.getZero().newInstance(DATATION_ACCURACY)).
-                            withHandler(( state, d, increasing) -> {
-                                return Action.RESET_DERIVATIVES;
-                            });
+                            withHandler(new FieldResetDerivativesOnEvent<>());
             // Add all transitions' dates to the date detector
             for (int i = 0; i < transitionDates.size(); i++) {
                 datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates.get(i)));

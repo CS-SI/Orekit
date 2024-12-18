@@ -247,6 +247,9 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = stato iniziale non specifica
 # target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added
 EVENT_DATE_TOO_CLOSE = la data obiettivo dell'evento deve essere prima del {1} di {3,number,0.0##############E0} secondi o dopo il {2} di {3,number,0.0##############E0} secondi, ma la data obiettivo dell'evento {0} è {4,number,0.0##############E0} secondi prima del {1} e {5,number,0.0##############E0} secondi dopo il {2} quindi non può essere aggiunta
 
+# trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates
+WRONG_COORDINATES_FOR_ADJOINT_EQUATION = <MISSING TRANSLATION>
+
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = impossibile leggere l''intestazione del file di effemeridi del JPL {0}
 
@@ -887,3 +890,15 @@ WALKER_INCONSISTENT_PLANES = <MISSING TRANSLATION>
 
 # Infinite value appears during computation of atmospheric density in NRLMSISE00 model
 INFINITE_NRLMSISE00_DENSITY = <MISSING TRANSLATION>
+
+# Propagator builder cannot be cloned
+PROPAGATOR_BUILDER_NOT_CLONEABLE = <MISSING TRANSLATION>
+
+# field "{0}" is too long, maximum length is {1} characters
+FIELD_TOO_LONG = <MISSING TRANSLATION>
+
+# Process covariance expecting dimension {0}, got {1}
+WRONG_PROCESS_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+
+# Measurement covariance expecting dimension {0}, got {1}
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION = <MISSING TRANSLATION>

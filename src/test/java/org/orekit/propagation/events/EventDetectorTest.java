@@ -31,6 +31,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -59,6 +60,45 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class EventDetectorTest {
 
     private double mu;
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final FinishingHandler handler = new FinishingHandler();
+        final EventDetector detector =
+            new DummyDetector(new EventDetectionSettings(1.0, 1.0e-10, 100), handler);
+        // WHEN
+        detector.finish(Mockito.mock(SpacecraftState.class));
+        // THEN
+        Assertions.assertTrue(handler.isFinished);
+    }
+
+    private static class FinishingHandler extends ContinueOnEvent {
+        boolean isFinished = false;
+
+        @Override
+        public void finish(SpacecraftState finalState, EventDetector detector) {
+            isFinished = true;
+        }
+    }
+
+    private static class DummyDetector
+        extends AbstractDetector<DummyDetector> {
+
+        public DummyDetector(final EventDetectionSettings detectionSettings, final EventHandler handler) {
+            super(detectionSettings, handler);
+        }
+
+        public double g(final SpacecraftState s) {
+            return 0;
+        }
+
+        protected DummyDetector create(final AdaptableInterval newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler newHandler) {
+            return new DummyDetector(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        }
+
+    }
 
     @Test
     public void testEventHandlerInit() {
@@ -152,11 +192,6 @@ public class EventDetectorTest {
         public boolean outOfOrderCallDetected() {
             return outOfOrderCallDetected;
         }
-
-        @Override
-        public void init(SpacecraftState initialState, AbsoluteDate target, double step) {
-        }
-
     }
 
     @Test
@@ -479,6 +514,20 @@ public class EventDetectorTest {
             ++calls;
         }
 
+    }
+
+    @Test
+    void testGetDetectionSettings() {
+        // GIVEN
+        final AdaptableInterval mockedInterval = Mockito.mock(AdaptableInterval.class);
+        final EventDetectionSettings settings = new EventDetectionSettings(mockedInterval, 10, 19);
+        final EventDetector detector = new DummyDetector(settings, null);
+        // WHEN
+        final EventDetectionSettings actualSettings = detector.getDetectionSettings();
+        // THEN
+        Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
+        Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
+        Assertions.assertEquals(settings.getThreshold(), actualSettings.getThreshold());
     }
 
     @BeforeEach

@@ -38,7 +38,6 @@ import org.hipparchus.ode.FieldODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeFieldIntegrator;
 import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853FieldIntegrator;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
@@ -76,16 +75,10 @@ import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldAbstractDetector;
-import org.orekit.propagation.events.FieldAdaptableInterval;
-import org.orekit.propagation.events.FieldApsideDetector;
-import org.orekit.propagation.events.FieldDateDetector;
+import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.FieldContinueOnEvent;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.propagation.events.handlers.FieldStopOnEvent;
-import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.integration.*;
 import org.orekit.propagation.sampling.FieldOrekitStepHandler;
 import org.orekit.propagation.sampling.FieldOrekitStepInterpolator;
@@ -741,7 +734,7 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(0, finalState.getDate().durationFrom(stopDate).getReal(), 1.0e-10);
         propagator.clearEventsDetectors();
         Assertions.assertEquals(0, propagator.getEventsDetectors().size());
-
+        Assertions.assertTrue(checking.isFinished);
     }
 
     @Test
@@ -990,18 +983,18 @@ public class FieldNumericalPropagatorTest {
         extends FieldAbstractDetector<AdditionalStateLinearDetector<T>, T> {
 
         public AdditionalStateLinearDetector(T maxCheck, T threshold) {
-            this(FieldAdaptableInterval.of(maxCheck.getReal()), threshold, DEFAULT_MAX_ITER, new FieldStopOnEvent<>());
+            this(new FieldEventDetectionSettings<>(maxCheck.getReal(), threshold, DEFAULT_MAX_ITER), new FieldStopOnEvent<>());
         }
 
-        private AdditionalStateLinearDetector(FieldAdaptableInterval<T> maxCheck, T threshold, int maxIter,
+        private AdditionalStateLinearDetector(FieldEventDetectionSettings<T> detectionSettings,
                                               FieldEventHandler<T> handler) {
-            super(maxCheck, threshold, maxIter, handler);
+            super(detectionSettings, handler);
         }
 
         protected AdditionalStateLinearDetector<T> create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
                                                           final int newMaxIter,
                                                           final FieldEventHandler<T> newHandler) {
-            return new AdditionalStateLinearDetector<>(newMaxCheck, newThreshold, newMaxIter, newHandler);
+            return new AdditionalStateLinearDetector<>(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
         }
 
         public T g(FieldSpacecraftState<T> s) {
@@ -2049,6 +2042,7 @@ public class FieldNumericalPropagatorTest {
 
         private final Action actionOnEvent;
         private boolean gotHere;
+        private boolean isFinished = false;
 
         public CheckingHandler(final Action actionOnEvent) {
             this.actionOnEvent = actionOnEvent;
@@ -2064,6 +2058,10 @@ public class FieldNumericalPropagatorTest {
             return actionOnEvent;
         }
 
+        @Override
+        public void finish(FieldSpacecraftState<T> finalState, FieldEventDetector<T> detector) {
+            isFinished = true;
+        }
     }
 
     private <T extends CalculusFieldElement<T>>  FieldNumericalPropagator<T> createPropagator(Field<T> field) {

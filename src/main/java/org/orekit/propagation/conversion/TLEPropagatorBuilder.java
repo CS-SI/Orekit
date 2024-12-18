@@ -16,15 +16,10 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
-import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
-import org.orekit.estimation.leastsquares.BatchLSModel;
-import org.orekit.estimation.leastsquares.ModelObserver;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
@@ -34,14 +29,15 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.analytical.tle.generation.TleGenerationAlgorithm;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
+
+import java.util.List;
 
 /** Builder for TLEPropagator.
  * @author Pascal Parraud
  * @author Thomas Paulet
  * @since 6.0
  */
-public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
+public class TLEPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
 
     /** Data context used to access frames and time scales. */
     private final DataContext dataContext;
@@ -69,6 +65,7 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param generationAlgorithm TLE generation algorithm
      * @since 12.0
      * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm)
+     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm, AttitudeProvider)
      */
     @DefaultDataContext
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
@@ -93,12 +90,37 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
      * @param dataContext used to access frames and time scales.
      * @param generationAlgorithm TLE generation algorithm
      * @since 12.0
+     * @see #TLEPropagatorBuilder(TLE, PositionAngleType, double, DataContext, TleGenerationAlgorithm, AttitudeProvider)
      */
     public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
                                 final double positionScale, final DataContext dataContext,
                                 final TleGenerationAlgorithm generationAlgorithm) {
-        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME()).getInitialState().getOrbit(),
-                positionAngleType, positionScale, false, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
+        this(templateTLE, positionAngleType, positionScale, dataContext, generationAlgorithm, FrameAlignedProvider.of(dataContext.getFrames().getTEME()));
+    }
+
+    /** Build a new instance.
+     * <p>
+     * The template TLE is used as a model to {@link
+     * #createInitialOrbit() create initial orbit}. It defines the
+     * inertial frame, the central attraction coefficient, orbit type, satellite number,
+     * classification, .... and is also used together with the {@code positionScale} to
+     * convert from the {@link ParameterDriver#setNormalizedValue(double) normalized}
+     * parameters used by the callers of this builder to the real orbital parameters.
+     * </p>
+     * @param templateTLE reference TLE from which real orbits will be built
+     * @param positionAngleType position angle type to use
+     * @param positionScale scaling factor used for orbital parameters normalization
+     * (typically set to the expected standard deviation of the position)
+     * @param dataContext used to access frames and time scales.
+     * @param generationAlgorithm TLE generation algorithm
+     * @param attitudeProvider attitude law to use
+     * @since 12.2
+     */
+    public TLEPropagatorBuilder(final TLE templateTLE, final PositionAngleType positionAngleType,
+                                final double positionScale, final DataContext dataContext,
+                                final TleGenerationAlgorithm generationAlgorithm, final AttitudeProvider attitudeProvider) {
+        super(TLEPropagator.selectExtrapolator(templateTLE, dataContext.getFrames().getTEME(), attitudeProvider).getInitialState().getOrbit(),
+              positionAngleType, positionScale, false, attitudeProvider, Propagator.DEFAULT_MASS);
 
         // Supported parameters: Bstar
         addSupportedParameters(templateTLE.getParametersDrivers());
@@ -110,9 +132,12 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public TLEPropagatorBuilder copy() {
-        return new TLEPropagatorBuilder(templateTLE, getPositionAngleType(), getPositionScale(),
-                                        dataContext, generationAlgorithm);
+        final TLEPropagatorBuilder builder = new TLEPropagatorBuilder(templateTLE, getPositionAngleType(), getPositionScale(),
+                                        dataContext, generationAlgorithm, getAttitudeProvider());
+        builder.setMass(getMass());
+        return builder;
     }
 
     /** {@inheritDoc} */
@@ -135,8 +160,9 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
         }
 
         // propagator
-        return TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), Propagator.DEFAULT_MASS, teme);
-
+        final TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle, getAttitudeProvider(), getMass(), teme);
+        getImpulseManeuvers().forEach(propagator::addEventDetector);
+        return propagator;
     }
 
     /** Getter for the template TLE.
@@ -145,14 +171,4 @@ public class TLEPropagatorBuilder extends AbstractPropagatorBuilder {
     public TLE getTemplateTLE() {
         return templateTLE;
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
-                                                       final List<ObservedMeasurement<?>> measurements,
-                                                       final ParameterDriversList estimatedMeasurementsParameters,
-                                                       final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
 }

@@ -27,6 +27,7 @@ import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeInterpolator;
@@ -717,73 +718,63 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
 
         final T zero = date.getField().getZero();
 
-        // elementary matrix for rotation
-        final T[][] mData = angular.getRotation().getMatrix();
+        if (selector.getMaxOrder() == 0) {
+            // elementary matrix for rotation
+            final T[][] mData = angular.getRotation().getMatrix();
 
-        // dP1/dP0
-        System.arraycopy(mData[0], 0, jacobian[0], 0, 3);
-        System.arraycopy(mData[1], 0, jacobian[1], 0, 3);
-        System.arraycopy(mData[2], 0, jacobian[2], 0, 3);
+            // dP1/dP0
+            System.arraycopy(mData[0], 0, jacobian[0], 0, 3);
+            System.arraycopy(mData[1], 0, jacobian[1], 0, 3);
+            System.arraycopy(mData[2], 0, jacobian[2], 0, 3);
+        }
 
-        if (selector.getMaxOrder() >= 1) {
+        else if (selector.getMaxOrder() == 1) {
+            // use KinematicTransform Jacobian
+            final T[][] mData = getPVJacobian();
+            for (int i = 0; i < mData.length; i++) {
+                System.arraycopy(mData[i], 0, jacobian[i], 0, mData[i].length);
+            }
+        }
 
-            // dP1/dV0
-            Arrays.fill(jacobian[0], 3, 6, zero);
-            Arrays.fill(jacobian[1], 3, 6, zero);
-            Arrays.fill(jacobian[2], 3, 6, zero);
+        else if (selector.getMaxOrder() >= 2) {
+            getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
 
-            // dV1/dP0
+            // dP1/dA0
+            Arrays.fill(jacobian[0], 6, 9, zero);
+            Arrays.fill(jacobian[1], 6, 9, zero);
+            Arrays.fill(jacobian[2], 6, 9, zero);
+
+            // dV1/dA0
+            Arrays.fill(jacobian[3], 6, 9, zero);
+            Arrays.fill(jacobian[4], 6, 9, zero);
+            Arrays.fill(jacobian[5], 6, 9, zero);
+
+            // dA1/dP0
             final FieldVector3D<T> o = angular.getRotationRate();
             final T ox = o.getX();
             final T oy = o.getY();
             final T oz = o.getZ();
+            final FieldVector3D<T> oDot = angular.getRotationAcceleration();
+            final T oDotx  = oDot.getX();
+            final T oDoty  = oDot.getY();
+            final T oDotz  = oDot.getZ();
             for (int i = 0; i < 3; ++i) {
-                jacobian[3][i] = oz.multiply(mData[1][i]).subtract(oy.multiply(mData[2][i]));
-                jacobian[4][i] = ox.multiply(mData[2][i]).subtract(oz.multiply(mData[0][i]));
-                jacobian[5][i] = oy.multiply(mData[0][i]).subtract(ox.multiply(mData[1][i]));
+                jacobian[6][i] = oDotz.multiply(jacobian[1][i]).subtract(oDoty.multiply(jacobian[2][i])).add(oz.multiply(jacobian[4][i]).subtract(oy.multiply(jacobian[5][i])));
+                jacobian[7][i] = oDotx.multiply(jacobian[2][i]).subtract(oDotz.multiply(jacobian[0][i])).add(ox.multiply(jacobian[5][i]).subtract(oz.multiply(jacobian[3][i])));
+                jacobian[8][i] = oDoty.multiply(jacobian[0][i]).subtract(oDotx.multiply(jacobian[1][i])).add(oy.multiply(jacobian[3][i]).subtract(ox.multiply(jacobian[4][i])));
             }
 
-            // dV1/dV0
-            System.arraycopy(mData[0], 0, jacobian[3], 3, 3);
-            System.arraycopy(mData[1], 0, jacobian[4], 3, 3);
-            System.arraycopy(mData[2], 0, jacobian[5], 3, 3);
-
-            if (selector.getMaxOrder() >= 2) {
-
-                // dP1/dA0
-                Arrays.fill(jacobian[0], 6, 9, zero);
-                Arrays.fill(jacobian[1], 6, 9, zero);
-                Arrays.fill(jacobian[2], 6, 9, zero);
-
-                // dV1/dA0
-                Arrays.fill(jacobian[3], 6, 9, zero);
-                Arrays.fill(jacobian[4], 6, 9, zero);
-                Arrays.fill(jacobian[5], 6, 9, zero);
-
-                // dA1/dP0
-                final FieldVector3D<T> oDot = angular.getRotationAcceleration();
-                final T oDotx  = oDot.getX();
-                final T oDoty  = oDot.getY();
-                final T oDotz  = oDot.getZ();
-                for (int i = 0; i < 3; ++i) {
-                    jacobian[6][i] = oDotz.multiply(mData[1][i]).subtract(oDoty.multiply(mData[2][i])).add(oz.multiply(jacobian[4][i]).subtract(oy.multiply(jacobian[5][i])));
-                    jacobian[7][i] = oDotx.multiply(mData[2][i]).subtract(oDotz.multiply(mData[0][i])).add(ox.multiply(jacobian[5][i]).subtract(oz.multiply(jacobian[3][i])));
-                    jacobian[8][i] = oDoty.multiply(mData[0][i]).subtract(oDotx.multiply(mData[1][i])).add(oy.multiply(jacobian[3][i]).subtract(ox.multiply(jacobian[4][i])));
-                }
-
-                // dA1/dV0
-                for (int i = 0; i < 3; ++i) {
-                    jacobian[6][i + 3] = oz.multiply(mData[1][i]).subtract(oy.multiply(mData[2][i])).multiply(2);
-                    jacobian[7][i + 3] = ox.multiply(mData[2][i]).subtract(oz.multiply(mData[0][i])).multiply(2);
-                    jacobian[8][i + 3] = oy.multiply(mData[0][i]).subtract(ox.multiply(mData[1][i])).multiply(2);
-                }
-
-                // dA1/dA0
-                System.arraycopy(mData[0], 0, jacobian[6], 6, 3);
-                System.arraycopy(mData[1], 0, jacobian[7], 6, 3);
-                System.arraycopy(mData[2], 0, jacobian[8], 6, 3);
-
+            // dA1/dV0
+            for (int i = 0; i < 3; ++i) {
+                jacobian[6][i + 3] = oz.multiply(jacobian[1][i]).subtract(oy.multiply(jacobian[2][i])).multiply(2);
+                jacobian[7][i + 3] = ox.multiply(jacobian[2][i]).subtract(oz.multiply(jacobian[0][i])).multiply(2);
+                jacobian[8][i + 3] = oy.multiply(jacobian[0][i]).subtract(ox.multiply(jacobian[1][i])).multiply(2);
             }
+
+            // dA1/dA0
+            System.arraycopy(jacobian[0], 0, jacobian[6], 6, 3);
+            System.arraycopy(jacobian[1], 0, jacobian[7], 6, 3);
+            System.arraycopy(jacobian[2], 0, jacobian[8], 6, 3);
 
         }
 
@@ -884,6 +875,9 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
     /** Specialized class for identity transform. */
     private static class FieldIdentityTransform<T extends CalculusFieldElement<T>> extends FieldTransform<T> {
 
+        /** Field. */
+        private final Field<T> field;
+
         /** Simple constructor.
          * @param field field for the components
          */
@@ -892,6 +886,17 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
                   FieldAbsoluteDate.getArbitraryEpoch(field).toAbsoluteDate(),
                   FieldPVCoordinates.getZero(field),
                   FieldAngularCoordinates.getIdentity(field));
+            this.field = field;
+        }
+
+        @Override
+        public FieldStaticTransform<T> staticShiftedBy(final T dt) {
+            return toStaticTransform();
+        }
+
+        @Override
+        public FieldTransform<T> shiftedBy(final T dt) {
+            return this;
         }
 
         /** {@inheritDoc} */
@@ -900,10 +905,20 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
             return this;
         }
 
+        @Override
+        public FieldStaticTransform<T> getStaticInverse() {
+            return toStaticTransform();
+        }
+
         /** {@inheritDoc} */
         @Override
         public FieldTransform<T> getInverse() {
             return this;
+        }
+
+        @Override
+        public FieldStaticTransform<T> toStaticTransform() {
+            return FieldStaticTransform.getIdentity(field);
         }
 
         /** {@inheritDoc} */
@@ -912,10 +927,20 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
             return position;
         }
 
+        @Override
+        public FieldVector3D<T> transformPosition(final Vector3D position) {
+            return transformVector(position);
+        }
+
         /** {@inheritDoc} */
         @Override
         public FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
             return vector;
+        }
+
+        @Override
+        public FieldVector3D<T> transformVector(final Vector3D vector) {
+            return new FieldVector3D<>(field, vector);
         }
 
         /** {@inheritDoc} */
@@ -928,6 +953,31 @@ public class FieldTransform<T extends CalculusFieldElement<T>>
         @Override
         public FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
             return pv;
+        }
+
+        @Override
+        public FieldPVCoordinates<T> transformPVCoordinates(final PVCoordinates pv) {
+            return new FieldPVCoordinates<>(field, pv);
+        }
+
+        @Override
+        public TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedPVCoordinates pv) {
+            return new TimeStampedFieldPVCoordinates<>(field, pv);
+        }
+
+        @Override
+        public TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
+            return pv;
+        }
+
+        @Override
+        public FieldPVCoordinates<T> transformOnlyPV(final FieldPVCoordinates<T> pv) {
+            return new FieldPVCoordinates<>(pv.getPosition(), pv.getVelocity());
+        }
+
+        @Override
+        public TimeStampedFieldPVCoordinates<T> transformOnlyPV(final TimeStampedFieldPVCoordinates<T> pv) {
+            return new TimeStampedFieldPVCoordinates<>(pv.getDate(), pv.getPosition(), pv.getVelocity(), FieldVector3D.getZero(field));
         }
 
         /** {@inheritDoc} */

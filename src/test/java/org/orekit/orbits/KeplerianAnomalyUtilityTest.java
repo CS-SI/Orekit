@@ -18,8 +18,42 @@ package org.orekit.orbits;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 public class KeplerianAnomalyUtilityTest {
+
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testConvertAlphaElliptic(final PositionAngleType inputType) {
+        // GIVEN
+        final double expectedAnomaly = 3.;
+        final double eccentricity = 0.1;
+        final PositionAngleType intermediateType = PositionAngleType.ECCENTRIC;
+        // WHEN
+        final double intermediateAnomaly = KeplerianAnomalyUtility.convertAnomaly(inputType,
+                expectedAnomaly, eccentricity, intermediateType);
+        final double actualAnomaly = KeplerianAnomalyUtility.convertAnomaly(intermediateType,
+                intermediateAnomaly, eccentricity, inputType);
+        // THEN
+        Assertions.assertEquals(expectedAnomaly, actualAnomaly, 1e-15);
+    }
+
+    @ParameterizedTest
+    @EnumSource(PositionAngleType.class)
+    void testConvertAlphaHyperbolic(final PositionAngleType inputType) {
+        // GIVEN
+        final double expectedAnomaly = 3.;
+        final double eccentricity = 2;
+        final PositionAngleType intermediateType = PositionAngleType.TRUE;
+        // WHEN
+        final double intermediateAnomaly = KeplerianAnomalyUtility.convertAnomaly(inputType,
+                expectedAnomaly, eccentricity, intermediateType);
+        final double actualAnomaly = KeplerianAnomalyUtility.convertAnomaly(intermediateType,
+                intermediateAnomaly, eccentricity, inputType);
+        // THEN
+        Assertions.assertEquals(expectedAnomaly, actualAnomaly, 1e-10);
+    }
 
     @Test
     public void testEllipticMeanToTrue() {

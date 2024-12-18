@@ -92,7 +92,7 @@ public class FieldLatitudeCrossingDetector <T extends CalculusFieldElement<T>>
             final FieldEventHandler<T> handler,
             final OneAxisEllipsoid body,
             final double latitude) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.body     = body;
         this.latitude = latitude;
     }

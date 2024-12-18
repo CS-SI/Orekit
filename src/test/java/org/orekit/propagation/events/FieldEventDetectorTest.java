@@ -24,6 +24,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.complex.Complex;
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.ode.FieldODEIntegrator;
@@ -35,6 +36,7 @@ import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -64,6 +66,59 @@ import org.orekit.utils.FieldPVCoordinatesProvider;
 public class FieldEventDetectorTest {
 
     private double mu;
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final FinishingHandler handler = new FinishingHandler();
+        final FieldEventDetector<?> detector =
+            new DummyDetector(new FieldEventDetectionSettings<>(1.0, Complex.ONE, 100), handler);
+        // WHEN
+        detector.finish(Mockito.mock(FieldSpacecraftState.class));
+        // THEN
+        Assertions.assertTrue(handler.isFinished);
+    }
+
+    private static class FinishingHandler extends FieldContinueOnEvent {
+        boolean isFinished = false;
+
+        @Override
+        public void finish(FieldSpacecraftState finalState, FieldEventDetector detector) {
+            isFinished = true;
+        }
+    }
+
+    private static class DummyDetector<T extends CalculusFieldElement<T>>
+        extends FieldAbstractDetector<DummyDetector<T>, T> {
+
+        public DummyDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler) {
+            super(detectionSettings, handler);
+        }
+
+        public T g(final FieldSpacecraftState<T> s) {
+            return s.getDate().getField().getZero();
+        }
+
+        protected DummyDetector create(final FieldAdaptableInterval<T> newMaxCheck, final T newThreshold,
+                                       final int newMaxIter, final FieldEventHandler<T> newHandler) {
+            return new DummyDetector(new FieldEventDetectionSettings<>(newMaxCheck, newThreshold, newMaxIter), newHandler);
+        }
+
+    }
+
+    @Test
+    void testGetDetectionSettings() {
+        // GIVEN
+        final FieldAdaptableInterval<Complex> mockedInterval = Mockito.mock(FieldAdaptableInterval.class);
+        final FieldEventDetectionSettings<Complex> settings = new FieldEventDetectionSettings<>(mockedInterval, Complex.ONE, 10);
+        final FieldEventDetector<Complex> detector = new DummyDetector(settings, null);
+        // WHEN
+        final FieldEventDetectionSettings<Complex> actualSettings = detector.getDetectionSettings();
+        // THEN
+        Assertions.assertEquals(mockedInterval, actualSettings.getMaxCheckInterval());
+        Assertions.assertEquals(settings.getMaxIterationCount(), actualSettings.getMaxIterationCount());
+        Assertions.assertEquals(settings.getThreshold(), actualSettings.getThreshold());
+    }
 
     @Test
     public void testEventHandlerInit() {

@@ -16,9 +16,18 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
+import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaFieldIntegrator;
+import org.hipparchus.stat.descriptive.StreamingStatistics;
+import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
@@ -27,20 +36,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.attitudes.FrameAlignedProvider;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.FieldCircularOrbit;
 import org.orekit.orbits.FieldEquinoctialOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.FieldBoundedPropagator;
+import org.orekit.propagation.FieldEphemerisGenerator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.FieldNumericalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTNewtonianAttraction;
@@ -54,14 +71,9 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
-
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class FieldDSSTZonalTest {
 
@@ -492,6 +504,194 @@ public class FieldDSSTZonalTest {
                                                                 initDate,
                                                                 zero.add(3.986004415E14));
         return new FieldSpacecraftState<>(orbit);
+    }
+    
+    /** Test for issue 1104.
+     * <p>Only J2 is used
+     * <p>Comparisons to a numerical propagator are done, with different frames as "body-fixed frames": GCRF, ITRF, TOD
+     */
+    @Test
+    void testIssue1104() {
+        
+        final boolean printResults = false;
+        
+        final Field<Binary64> field = Binary64Field.getInstance();
+        
+        // Frames
+        final Frame gcrf = FramesFactory.getGCRF();
+        final Frame tod = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        
+        // GCRF/GCRF test
+        // ---------
+        
+        // Using GCRF as both inertial and body frame (behaviour before the fix)
+        double diMax  = 9.615e-5;
+        double dOmMax = 3.374e-3;
+        double dLmMax = 1.128e-2;
+        doTestIssue1104(gcrf, gcrf, field, printResults, diMax, dOmMax, dLmMax);
+        
+        // TOD/TOD test
+        // --------
+        
+        // Before fix, using TOD was the best choice to reduce the errors DSST vs Numerical
+        // INC is one order of magnitude better compared to GCRF/GCRF (and not diverging anymore but it's not testable here)
+        // RAAN and LM are only slightly better
+        diMax  = 1.059e-5;
+        dOmMax = 2.789e-3;
+        dLmMax = 1.040e-2;
+        doTestIssue1104(tod, tod, field, printResults, diMax, dOmMax, dLmMax);
+        
+        // GCRF/ITRF test
+        // ---------
+        
+        // Using ITRF as body-fixed frame and GCRF as inertial frame
+        // Results are on par with TOD/TOD
+        diMax  = 1.067e-5;
+        dOmMax = 2.789e-3;
+        dLmMax = 1.040e-2;
+        doTestIssue1104(gcrf, itrf, field, printResults, diMax, dOmMax, dLmMax);
+        
+        // GCRF/TOD test
+        // ---------
+        
+        // Using TOD as body-fixed frame and GCRF as inertial frame
+        // Results are identical to TOD/TOD
+        diMax  = 1.059e-5;
+        dOmMax = 2.789e-3;
+        dLmMax = 1.040e-2;
+        doTestIssue1104(tod, itrf, field, printResults, diMax, dOmMax, dLmMax);
+        
+        // Since ITRF is longer to compute, if another inertial frame than TOD is used,
+        // the best balance performance vs accuracy is to use TOD as body-fixed frame
+    }
+
+    /** Implements the comparison between DSST osculating and numerical. */
+    private <T extends CalculusFieldElement<T>> void doTestIssue1104(final Frame inertialFrame,
+                                                                     final Frame bodyFixedFrame,
+                                                                     final Field<T> field,
+                                                                     final boolean printResults,
+                                                                     final double diMax,
+                                                                     final double dOmMax,
+                                                                     final double dLmMax) {
+        
+        // GIVEN
+        // -----
+        
+        // Parameters
+        final T zero = field.getZero();
+        final double step = 60.;
+        final double nOrb = 50.;
+        
+        final FieldAbsoluteDate<T> t0 = new FieldAbsoluteDate<>(field);
+        
+        // Frames
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        
+        // Potential coefficients providers
+        final int degree = 2;
+        final int order = 0;
+        final UnnormalizedSphericalHarmonicsProvider unnormalized =
+                        GravityFieldFactory.getConstantUnnormalizedProvider(degree, order, t0.toAbsoluteDate());
+        final NormalizedSphericalHarmonicsProvider normalized =
+                        GravityFieldFactory.getConstantNormalizedProvider(degree, order, t0.toAbsoluteDate());
+
+        // Initial LEO osculating orbit
+        final double mass = 150.;
+        final double a  = 6906780.35;
+        final double ex = 5.09E-4;
+        final double ey = 1.24e-3;
+        final double i  = FastMath.toRadians(97.49);
+        final double raan   = FastMath.toRadians(-94.607);
+        final double alphaM = FastMath.toRadians(0.);
+        final FieldCircularOrbit<T> oscCircOrbit0 = new FieldCircularOrbit<>(
+                        zero.newInstance(a),
+                        zero.newInstance(ex),
+                        zero.newInstance(ey),
+                        zero.newInstance(i),
+                        zero.newInstance(raan),
+                        zero.newInstance(alphaM),
+                        PositionAngleType.MEAN,
+                        inertialFrame,
+                        t0,
+                        zero.newInstance(unnormalized.getMu()));
+        
+        final FieldOrbit<T> oscOrbit0 = new FieldEquinoctialOrbit<>(oscCircOrbit0);
+        final FieldSpacecraftState<T> oscState0 = new FieldSpacecraftState<>(oscOrbit0, zero.newInstance(mass));
+        final AttitudeProvider attProvider = new FrameAlignedProvider(inertialFrame);
+
+        // Propagation duration
+        final double duration = nOrb * oscOrbit0.getKeplerianPeriod().getReal();
+        final FieldAbsoluteDate<T> tf = t0.shiftedBy(duration);
+        
+        // Numerical prop
+        final ClassicalRungeKuttaFieldIntegrator<T> integrator =
+                        new ClassicalRungeKuttaFieldIntegrator<>(field, zero.newInstance(step));
+
+        final FieldNumericalPropagator<T> numProp = new FieldNumericalPropagator<>(field, integrator);
+        numProp.setOrbitType(oscOrbit0.getType());
+        numProp.setInitialState(oscState0);
+        numProp.setAttitudeProvider(attProvider);
+        numProp.addForceModel(new HolmesFeatherstoneAttractionModel(itrf, normalized)); // J2-only gravity field
+        final FieldEphemerisGenerator<T> numEphemGen = numProp.getEphemerisGenerator();
+
+        // DSST prop: max step could be much higher but made explicitly equal to numerical to rule out a step difference
+        final ClassicalRungeKuttaFieldIntegrator<T> integratorDsst =
+                        new ClassicalRungeKuttaFieldIntegrator<>(field, zero.newInstance(step));
+        final FieldDSSTPropagator<T> dsstProp = new FieldDSSTPropagator<T>(field, integratorDsst, PropagationType.OSCULATING);
+        dsstProp.setInitialState(oscState0, PropagationType.OSCULATING); // Initial state is OSCULATING
+        dsstProp.setAttitudeProvider(attProvider);
+        final DSSTForceModel zonal = new DSSTZonal(bodyFixedFrame, unnormalized); // J2-only with custom Earth-fixed frame
+        dsstProp.addForceModel(zonal);
+        final FieldEphemerisGenerator<T> dsstEphemGen = dsstProp.getEphemerisGenerator();
+        
+        // WHEN
+        // ----
+        
+        // Statistics containers: compare on INC, RAAN and anomaly since that's where there is
+        // improvement brought by fixing 1104. The in-plane parameters (a, ex, ey) are almost equal
+        final StreamingStatistics dI  = new StreamingStatistics();
+        final StreamingStatistics dOm = new StreamingStatistics();
+        final StreamingStatistics dLM = new StreamingStatistics();
+
+        // Propagate and get ephemeris
+        numProp.propagate(t0, tf);
+        dsstProp.propagate(t0, tf);
+        
+        final FieldBoundedPropagator<T> numEphem  = numEphemGen.getGeneratedEphemeris();
+        final FieldBoundedPropagator<T> dsstEphem = dsstEphemGen.getGeneratedEphemeris();
+        
+        // Compare and fill statistics
+        for (double dt = 0; dt < duration; dt += step) {
+
+            // Date
+            final FieldAbsoluteDate<T> t = t0.shiftedBy(dt);
+
+            // Orbits and comparison
+            final FieldCircularOrbit<T> num  = new FieldCircularOrbit<>(numEphem.propagate(t).getOrbit());
+            final FieldCircularOrbit<T> dsst = new FieldCircularOrbit<>(dsstEphem.propagate(t).getOrbit());
+            dI.addValue(FastMath.toDegrees(dsst.getI().getReal() - num.getI().getReal()));
+            dOm.addValue(FastMath.toDegrees(dsst.getRightAscensionOfAscendingNode().getReal() -
+                                            num.getRightAscensionOfAscendingNode().getReal()));
+            dLM.addValue(FastMath.toDegrees(dsst.getLM().getReal() - num.getLM().getReal()));
+        }
+        
+        // THEN
+        // ----
+        
+        // Optional: print the statistics
+        if (printResults) {
+            System.out.println("Inertial frame  : " + inertialFrame.toString());
+            System.out.println("Body-Fixed frame: " + bodyFixedFrame.toString());
+            System.out.println("\ndi\n" + dI.toString());
+            System.out.println("\ndΩ\n" + dOm.toString());
+            System.out.println("\ndLM\n" + dLM.toString());
+        }
+        
+        // Compare to reference
+        Assertions.assertEquals(diMax, FastMath.max(FastMath.abs(dI.getMax()), FastMath.abs(dI.getMin())), 1.e-8);
+        Assertions.assertEquals(dOmMax, FastMath.max(FastMath.abs(dOm.getMax()), FastMath.abs(dOm.getMin())), 1.e-6);
+        Assertions.assertEquals(dLmMax, FastMath.max(FastMath.abs(dLM.getMax()), FastMath.abs(dLM.getMin())), 1.e-5);
     }
 
     private double[] computeShortPeriodTerms(SpacecraftState state,

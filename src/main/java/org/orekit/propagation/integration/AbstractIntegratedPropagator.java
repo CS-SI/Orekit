@@ -439,10 +439,26 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // propagate from start date to end date with event detection
             final SpacecraftState finalState = integrateDynamics(tEnd, false);
 
-            return finalState;
+            // Finalize event detectors
+            getEventsDetectors().forEach(detector -> detector.finish(finalState));
 
+            return finalState;
         }
 
+    }
+
+    /** Reset initial state with a given propagation type.
+     *
+     * <p> By default this method returns the same as {@link #resetInitialState(SpacecraftState)}
+     * <p> Its purpose is mostly to be derived in DSSTPropagator
+     *
+     * @param state new initial state to consider
+     * @param stateType type of the new state (mean or osculating)
+     * @since 12.1.3
+     */
+    public void resetInitialState(final SpacecraftState state, final PropagationType stateType) {
+        // Default behavior, do not take propagation type into account
+        resetInitialState(state);
     }
 
     /** Set up State Transition Matrix and Jacobian matrix handling.
@@ -505,7 +521,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             finalState = updateAdditionalStatesAndDerivatives(finalState, mathFinalState);
 
             if (resetAtEnd || forceResetAtEnd) {
-                resetInitialState(finalState);
+                resetInitialState(finalState, propagationType);
                 setStartDate(finalState.getDate());
             }
 

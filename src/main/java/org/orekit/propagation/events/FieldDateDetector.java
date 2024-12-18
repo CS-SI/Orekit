@@ -110,10 +110,10 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     protected FieldDateDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                 final int maxIter, final FieldEventHandler<T> handler,
                                 final double minGap, final FieldTimeStamped<T>... dates) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler);
         this.currentIndex  = -1;
         this.gDate         = null;
-        this.eventDateList = new ArrayList<FieldDateDetector.FieldEventDate<T>>(dates.length);
+        this.eventDateList = new ArrayList<>(dates.length);
         for (final FieldTimeStamped<T> ts : dates) {
             addEventDate(ts.getDate());
         }

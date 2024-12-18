@@ -16,25 +16,19 @@
  */
 package org.orekit.propagation.conversion;
 
-import java.util.List;
-
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
-import org.orekit.estimation.leastsquares.BatchLSModel;
-import org.orekit.estimation.leastsquares.ModelObserver;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.utils.ParameterDriversList;
+
 
 /** Builder for Keplerian propagator.
  * @author Pascal Parraud
  * @since 6.0
  */
-public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
+public class KeplerianPropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
 
     /** Build a new instance.
      * <p>
@@ -80,29 +74,24 @@ public class KeplerianPropagatorBuilder extends AbstractPropagatorBuilder {
                                       final PositionAngleType positionAngleType,
                                       final double positionScale,
                                       final AttitudeProvider attitudeProvider) {
-        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider);
+        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider, Propagator.DEFAULT_MASS);
     }
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public KeplerianPropagatorBuilder copy() {
-        return new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
+        final KeplerianPropagatorBuilder builder = new KeplerianPropagatorBuilder(createInitialOrbit(), getPositionAngleType(),
                                               getPositionScale(), getAttitudeProvider());
+        builder.setMass(getMass());
+        return builder;
     }
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final double[] normalizedParameters) {
         setParameters(normalizedParameters);
-        return new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider());
+        final KeplerianPropagator propagator = new KeplerianPropagator(createInitialOrbit(), getAttitudeProvider(), getMu(), getMass());
+        getImpulseManeuvers().forEach(propagator::addEventDetector);
+        return propagator;
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
-                                                       final List<ObservedMeasurement<?>> measurements,
-                                                       final ParameterDriversList estimatedMeasurementsParameters,
-                                                       final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
-    }
-
 }

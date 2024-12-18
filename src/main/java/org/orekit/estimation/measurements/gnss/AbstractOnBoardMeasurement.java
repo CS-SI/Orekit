@@ -23,6 +23,7 @@ import org.orekit.estimation.measurements.ObservableSatellite;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.QuadraticClockModel;
 import org.orekit.estimation.measurements.QuadraticFieldClockModel;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ClockOffset;
@@ -109,7 +110,8 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
                                                                                        final boolean clockOffsetAlreadyApplied) {
 
         // local and remote satellites
-        final TimeStampedPVCoordinates pvaLocal         = states[0].getPVCoordinates();
+        final Frame                    frame            = states[0].getFrame();
+        final TimeStampedPVCoordinates pvaLocal         = states[0].getPVCoordinates(frame);
         final ClockOffset              localClock       = getSatellites().
                                                           get(0).
                                                           getQuadraticClockModel().
@@ -125,7 +127,7 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
         final double deltaT = arrivalDate.durationFrom(states[0]);
         final TimeStampedPVCoordinates pvaDownlink = pvaLocal.shiftedBy(deltaT);
         final double tauD = signalTimeOfFlight(remotePV, arrivalDate, pvaDownlink.getPosition(),
-                                               arrivalDate, states[0].getFrame());
+                                               arrivalDate, frame);
 
         // Remote satellite at signal emission
         final AbsoluteDate        emissionDate      = arrivalDate.shiftedBy(-tauD);
@@ -136,7 +138,7 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
                                                              localClockOffset, localClockRate,
                                                              remoteClockOffset, remoteClockRate,
                                                              tauD, pvaDownlink,
-                                                             remotePV.getPVCoordinates(emissionDate, states[0].getFrame()));
+                                                             remotePV.getPVCoordinates(emissionDate, frame));
 
     }
 
@@ -149,6 +151,8 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
      */
     protected OnBoardCommonParametersWithDerivatives computeCommonParametersWith(final SpacecraftState[] states,
                                                                                  final boolean clockOffsetAlreadyApplied) {
+
+        final Frame frame = states[0].getFrame();
 
         // measurement derivatives are computed with respect to spacecraft state in inertial frame
         // Parameters:
@@ -183,7 +187,7 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
         final TimeStampedFieldPVCoordinates<Gradient> pvaDownlink = pvaLocal.shiftedBy(deltaT);
         final Gradient tauD = signalTimeOfFlight(remotePV, arrivalDate,
                                                  pvaDownlink.getPosition(), arrivalDate,
-                                                 states[0].getFrame());
+                                                 frame);
 
         // Remote satellite at signal emission
         final FieldAbsoluteDate<Gradient>        emissionDate      = arrivalDate.shiftedBy(tauD.negate());
@@ -193,7 +197,7 @@ public abstract class AbstractOnBoardMeasurement<T extends ObservedMeasurement<T
                                                           localClockOffset.getOffset(), localClockOffset.getRate(),
                                                           remoteClockOffset.getOffset(), remoteClockOffset.getRate(),
                                                           tauD, pvaDownlink,
-                                                          remotePV.getPVCoordinates(emissionDate, states[0].getFrame()));
+                                                          remotePV.getPVCoordinates(emissionDate, frame));
 
     }
 

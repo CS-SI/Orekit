@@ -17,24 +17,19 @@
 package org.orekit.propagation.conversion;
 
 import java.util.Collections;
-import java.util.List;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
-import org.orekit.estimation.leastsquares.AbstractBatchLSModel;
-import org.orekit.estimation.leastsquares.BatchLSModel;
-import org.orekit.estimation.leastsquares.ModelObserver;
-import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversList;
 
 /** Builder for Brouwer-Lyddane propagator.
  * <p>
@@ -65,7 +60,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.1
  */
-public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
+public class BrouwerLyddanePropagatorBuilder extends AbstractAnalyticalPropagatorBuilder {
 
     /** Parameters scaling factor.
      * <p>
@@ -211,7 +206,8 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
                                            final double positionScale,
                                            final AttitudeProvider attitudeProvider,
                                            final double M2) {
-        super(overrideMu(templateOrbit, provider, positionAngleType), positionAngleType, positionScale, true, attitudeProvider);
+        super(overrideMu(templateOrbit, provider, positionAngleType), positionAngleType, positionScale, true, attitudeProvider,
+            Propagator.DEFAULT_MASS);
         this.provider = provider;
         // initialize M2 driver
         final ParameterDriver M2Driver = new ParameterDriver(BrouwerLyddanePropagator.M2_NAME, M2, SCALE,
@@ -240,6 +236,7 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public BrouwerLyddanePropagatorBuilder copy() {
 
         // Find M2 value
@@ -252,8 +249,10 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
             }
         }
 
-        return new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
+        final BrouwerLyddanePropagatorBuilder builder = new BrouwerLyddanePropagatorBuilder(createInitialOrbit(), provider, getPositionAngleType(),
                                                    getPositionScale(), getAttitudeProvider(), m2);
+        builder.setMass(getMass());
+        return builder;
     }
 
     /** {@inheritDoc} */
@@ -273,21 +272,32 @@ public class BrouwerLyddanePropagatorBuilder extends AbstractPropagatorBuilder {
         }
 
         // Initialize propagator
-        final BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(createInitialOrbit(), getAttitudeProvider(), provider, newM2);
+        final BrouwerLyddanePropagator propagator = new BrouwerLyddanePropagator(createInitialOrbit(), getAttitudeProvider(), getMass(),
+            provider, newM2);
         propagator.getParametersDrivers().get(0).setSelected(isSelected);
+        getImpulseManeuvers().forEach(propagator::addEventDetector);
 
         // Return
         return propagator;
 
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public AbstractBatchLSModel buildLeastSquaresModel(final PropagatorBuilder[] builders,
-                                                       final List<ObservedMeasurement<?>> measurements,
-                                                       final ParameterDriversList estimatedMeasurementsParameters,
-                                                       final ModelObserver observer) {
-        return new BatchLSModel(builders, measurements, estimatedMeasurementsParameters, observer);
+    /**
+     * Get the value of the M2 parameter.
+     * <p>
+     *  M2 represents the combination of all unmodeled secular along-track effects
+     *  (e.g. drag). It is usually fitted during an orbit determination.
+     * </p>
+     * @return the value of the M2 parameter
+     * @since 12.2
+     */
+    public double getM2Value() {
+        double m2 = 0.0;
+        for (final ParameterDriver driver : getPropagationParametersDrivers().getDrivers()) {
+            if (BrouwerLyddanePropagator.M2_NAME.equals(driver.getName())) {
+                m2 = driver.getValue();
+            }
+        }
+        return m2;
     }
-
 }

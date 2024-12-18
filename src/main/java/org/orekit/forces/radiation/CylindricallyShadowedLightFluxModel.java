@@ -20,12 +20,14 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
-import org.hipparchus.util.FastMath;
 import org.orekit.propagation.events.CylindricalShadowEclipseDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.FieldCylindricalShadowEclipseDetector;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 import org.orekit.utils.ExtendedPositionProvider;
 
 import java.util.ArrayList;
@@ -37,40 +39,44 @@ import java.util.List;
  * model.
  *
  * @author Romain Serra
- * @see AbstractLightFluxModel
+ * @see AbstractSolarLightFluxModel
  * @see LightFluxModel
  * @since 12.1
  */
-public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel {
+public class CylindricallyShadowedLightFluxModel extends AbstractSolarLightFluxModel {
 
     /**
-     * Max. check interval for eclipse detection.
+     * Default max. check interval for eclipse detection.
      */
     private static final double CYLINDRICAL_ECLIPSE_MAX_CHECK = 100;
 
     /**
-     * Threshold for eclipse detection.
+     * Default threshold for eclipse detection.
      */
     private static final double CYLINDRICAL_ECLIPSE_THRESHOLD = 1e-7;
-
-    /** Radius of central, occulting body (approximated as spherical).
-     * Its center is assumed to be at the origin of the frame linked to the state. */
-    private final double occultingBodyRadius;
-
-    /** Reference flux normalized for a 1m distance (N). */
-    private final double kRef;
 
     /**
      * Constructor.
      * @param kRef reference flux
      * @param occultedBody position provider for light source
      * @param occultingBodyRadius radius of central, occulting body
+     * @param eventDetectionSettings user-defined detection settings for eclipses (if ill-tuned, events might be missed or performance might drop)
+     * @since 12.2
+     */
+    public CylindricallyShadowedLightFluxModel(final double kRef, final ExtendedPositionProvider occultedBody,
+                                               final double occultingBodyRadius, final EventDetectionSettings eventDetectionSettings) {
+        super(kRef, occultedBody, occultingBodyRadius, eventDetectionSettings);
+    }
+
+    /**
+     * Constructor with default event detection settings.
+     * @param kRef reference flux
+     * @param occultedBody position provider for light source
+     * @param occultingBodyRadius radius of central, occulting body
      */
     public CylindricallyShadowedLightFluxModel(final double kRef, final ExtendedPositionProvider occultedBody,
                                                final double occultingBodyRadius) {
-        super(occultedBody);
-        this.kRef = kRef;
-        this.occultingBodyRadius = occultingBodyRadius;
+        this(kRef, occultedBody, occultingBodyRadius, getDefaultEclipseDetectionSettings());
     }
 
     /**
@@ -80,31 +86,17 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
      */
     public CylindricallyShadowedLightFluxModel(final ExtendedPositionProvider occultedBody,
                                                final double occultingBodyRadius) {
-        this(4.56e-6 * FastMath.pow(149597870000.0, 2), occultedBody, occultingBodyRadius);
+        super(occultedBody, occultingBodyRadius, getDefaultEclipseDetectionSettings());
     }
 
     /**
-     * Getter for occulting body radius.
-     * @return radius
+     * Define default detection settings for eclipses.
+     * @return default settings
+     * @since 12.2
      */
-    public double getOccultingBodyRadius() {
-        return occultingBodyRadius;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected Vector3D getUnoccultedFluxVector(final Vector3D relativePosition) {
-        final double squaredRadius = relativePosition.getNormSq();
-        final double factor = kRef / (squaredRadius * FastMath.sqrt(squaredRadius));
-        return relativePosition.scalarMultiply(factor);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>> FieldVector3D<T> getUnoccultedFluxVector(final FieldVector3D<T> relativePosition) {
-        final T squaredRadius = relativePosition.getNormSq();
-        final T factor = (squaredRadius.multiply(squaredRadius.sqrt())).reciprocal().multiply(kRef);
-        return relativePosition.scalarMultiply(factor);
+    public static EventDetectionSettings getDefaultEclipseDetectionSettings() {
+        return new EventDetectionSettings(CYLINDRICAL_ECLIPSE_MAX_CHECK, CYLINDRICAL_ECLIPSE_THRESHOLD,
+                EventDetectionSettings.DEFAULT_MAX_ITER);
     }
 
     /** {@inheritDoc} */
@@ -114,7 +106,7 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
         final double dotProduct = position.dotProduct(occultedBodyDirection);
         if (dotProduct < 0.) {
             final double distanceToCylinderAxis = (position.subtract(occultedBodyDirection.scalarMultiply(dotProduct))).getNorm();
-            if (distanceToCylinderAxis <= occultingBodyRadius) {
+            if (distanceToCylinderAxis <= getOccultingBodyRadius()) {
                 return 0.;
             }
         }
@@ -130,7 +122,7 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
         final T dotProduct = position.dotProduct(occultedBodyDirection);
         if (dotProduct.getReal() < 0.) {
             final T distanceToCylinderAxis = (position.subtract(occultedBodyDirection.scalarMultiply(dotProduct))).getNorm();
-            if (distanceToCylinderAxis.getReal() <= occultingBodyRadius) {
+            if (distanceToCylinderAxis.getReal() <= getOccultingBodyRadius()) {
                 return field.getZero();
             }
         }
@@ -142,8 +134,7 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
     @Override
     public List<EventDetector> getEclipseConditionsDetector() {
         final List<EventDetector> detectors = new ArrayList<>();
-        detectors.add(createCylindricalShadowEclipseDetector()
-            .withThreshold(CYLINDRICAL_ECLIPSE_THRESHOLD).withMaxCheck(CYLINDRICAL_ECLIPSE_MAX_CHECK));
+        detectors.add(createCylindricalShadowEclipseDetector().withDetectionSettings(getEventDetectionSettings()));
         return detectors;
     }
 
@@ -153,16 +144,15 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
      */
     private CylindricalShadowEclipseDetector createCylindricalShadowEclipseDetector() {
         return new CylindricalShadowEclipseDetector(getOccultedBody(), getOccultingBodyRadius(),
-                (state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                new ResetDerivativesOnEvent());
     }
 
     /** {@inheritDoc} */
     @Override
     public <T extends CalculusFieldElement<T>> List<FieldEventDetector<T>> getFieldEclipseConditionsDetector(final Field<T> field) {
         final List<FieldEventDetector<T>> detectors = new ArrayList<>();
-        final T threshold = field.getZero().newInstance(CYLINDRICAL_ECLIPSE_THRESHOLD);
-        detectors.add(createFieldCylindricalShadowEclipseDetector(field)
-            .withThreshold(threshold).withMaxCheck(CYLINDRICAL_ECLIPSE_MAX_CHECK));
+        final FieldEventDetectionSettings<T> detectionSettings = new FieldEventDetectionSettings<>(field, getEventDetectionSettings());
+        detectors.add(createFieldCylindricalShadowEclipseDetector(field).withDetectionSettings(detectionSettings));
         return detectors;
     }
 
@@ -175,6 +165,6 @@ public class CylindricallyShadowedLightFluxModel extends AbstractLightFluxModel 
     private <T extends CalculusFieldElement<T>> FieldCylindricalShadowEclipseDetector<T> createFieldCylindricalShadowEclipseDetector(final Field<T> field) {
         final T occultingBodyRadiusAsField = field.getZero().newInstance(getOccultingBodyRadius());
         return new FieldCylindricalShadowEclipseDetector<>(getOccultedBody(), occultingBodyRadiusAsField,
-                (state, detector, increasing) -> Action.RESET_DERIVATIVES);
+                new FieldResetDerivativesOnEvent<>());
     }
 }

@@ -16,12 +16,12 @@
  */
 package org.orekit.errors;
 
-import org.hipparchus.exception.Localizable;
-import org.hipparchus.exception.UTF8Control;
-
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
+import org.hipparchus.exception.Localizable;
+import org.hipparchus.exception.UTF8Control;
 
 /**
  * Enumeration for localized messages formats.
@@ -281,6 +281,9 @@ public enum OrekitMessages implements Localizable {
 
     /** EVENT_DATE_TOO_CLOSE. */
     EVENT_DATE_TOO_CLOSE("target event date must be before {1} by {3,number,0.0##############E0} seconds or after {2} by {3,number,0.0##############E0} seconds, but target event date {0} is {4,number,0.0##############E0} seconds before {1} and {5,number,0.0##############E0} seconds after {2} so it cannot be added"),
+
+    /** WRONG_COORDINATES_FOR_ADJOINT_EQUATION. */
+    WRONG_COORDINATES_FOR_ADJOINT_EQUATION("trying to propagate Cartesian adjoint whilst integration equations of motion with non-Cartesian coordinates"),
 
     /** UNABLE_TO_READ_JPL_HEADER. */
     UNABLE_TO_READ_JPL_HEADER("unable to read header record from JPL ephemerides binary file {0}"),
@@ -927,7 +930,19 @@ public enum OrekitMessages implements Localizable {
     WALKER_INCONSISTENT_PLANES("number of planes {0} is inconsistent with number of satellites {1} in Walker constellation"),
 
     /** INFINITE_NRMSISE00_DENSITY. */
-    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model");
+    INFINITE_NRLMSISE00_DENSITY("Infinite value appears during computation of atmospheric density in NRLMSISE00 model"),
+
+    /** FIELD_TOO_LONG. */
+    FIELD_TOO_LONG("field \"{0}\" is too long, maximum length is {1} characters"),
+
+    /** PROPAGATOR_BUILDER_NOT_CLONEABLE. */
+    PROPAGATOR_BUILDER_NOT_CLONEABLE("Propagator builder cannot be cloned"),
+
+    /** WRONG_PROCESS_COVARIANCE_DIMENSION. */
+    WRONG_PROCESS_COVARIANCE_DIMENSION("Process covariance expecting dimension {0}, got {1}"),
+
+    /** WRONG_MEASUREMENT_COVARIANCE_DIMENSION. */
+    WRONG_MEASUREMENT_COVARIANCE_DIMENSION("Measurement covariance expecting dimension {0}, got {1}");
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

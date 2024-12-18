@@ -88,7 +88,7 @@ public class BetaAngleDetector extends AbstractDetector<BetaAngleDetector> {
                              final int maxIter, final EventHandler handler,
                              final double betaAngleThreshold, final PVCoordinatesProvider celestialBodyProvider,
                              final Frame inertialFrame) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.betaAngleThreshold = betaAngleThreshold;
         this.celestialBodyProvider = celestialBodyProvider;
         this.inertialFrame = inertialFrame;

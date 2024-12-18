@@ -105,7 +105,7 @@ public class GroundAtNightDetector extends AbstractDetector<GroundAtNightDetecto
                                     final double threshold,
                                     final int maxIter,
                                     final EventHandler handler) {
-        super(maxCheck, threshold, maxIter, handler);
+        super(new EventDetectionSettings(maxCheck, threshold, maxIter), handler);
         this.groundLocation    = groundLocation;
         this.sun               = sun;
         this.dawnDuskElevation = dawnDuskElevation;

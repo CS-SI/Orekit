@@ -646,7 +646,7 @@ class NumericalPropagatorTest {
         Assertions.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
         propagator.clearEventsDetectors();
         Assertions.assertEquals(0, propagator.getEventsDetectors().size());
-
+        Assertions.assertTrue(checking.isFinished);
     }
 
     @Test
@@ -1052,6 +1052,7 @@ class NumericalPropagatorTest {
 
         private final Action actionOnEvent;
         private boolean gotHere;
+        private boolean isFinished = false;
 
         public CheckingHandler(final Action actionOnEvent) {
             this.actionOnEvent = actionOnEvent;
@@ -1067,6 +1068,10 @@ class NumericalPropagatorTest {
             return actionOnEvent;
         }
 
+        @Override
+        public void finish(SpacecraftState finalState, EventDetector detector) {
+            isFinished = true;
+        }
     }
 
     @Test
@@ -1562,7 +1567,7 @@ class NumericalPropagatorTest {
         final Orbit initialOrbit = new KeplerianOrbit(8000000.0, 0.01, 0.87, 2.44, 0.21, -1.05, PositionAngleType.MEAN,
                                            eme2000,
                                            date, Constants.EIGEN5C_EARTH_MU);
-        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit, new DormandPrince853IntegratorBuilder(0.02, 0.2, 1.), PositionAngleType.TRUE, 10);
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(initialOrbit, new DormandPrince853IntegratorBuilder(0.02, 0.2, 1., 0.0001), PositionAngleType.TRUE, 10);
         NumericalPropagator propagator = (NumericalPropagator) builder.buildPropagator();
 
         IntStream.

@@ -122,8 +122,8 @@
             <ul>
               <li>central attraction</li>
               <li>gravity models including time-dependent like trends and pulsations (automatic
-                reading of ICGEM (new Eigen models), SHM (old Eigen models), EGM and GRGS gravity
-                field files formats, even compressed)</li>
+                reading of ICGEM (new Eigen models), SHM (old Eigen models), EGM,
+                SHA (GRGM1200B and GRGM1200L) and GRGS gravity field files formats, even compressed)</li>
               <li>atmospheric drag</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses (multiple oblate spheroids occulting bodies,
@@ -242,6 +242,7 @@
                 yaw compensation, yaw-steering)</li>
               <li>orbit referenced attitudes (LOF aligned, offset on all axes)</li>
               <li>space referenced attitudes (inertial, celestial body-pointed, spin-stabilized)</li>
+              <li>attitude aligned with one target and constrained by another target</li>
               <li>tabulated attitudes, either respective to inertial frame or respective to Local
                 Orbital Frames</li>
               <li>specific law for GNSS satellites: GPS (block IIA, block IIF, block IIF),
@@ -415,6 +416,13 @@
           <li>tessellation of zones of interest as tiles</li>
           <li>sampling of zones of interest as grids of points</li>
           <li>construction of trajectories using loxodromes (commonly, a rhumb line)</li>
+        </ul>
+      </li>
+      <li>Indirect optimal control
+        <ul>
+          <li>adjoint equations as defined by Pontryagin's Maximum Principle with Cartesian coordinates for a range of forces: (gravitational, inertial) including J2</li>
+          <li>so-called energy cost functions (proportional to the integral of the control vector's squared norm), with Hamitonian evaluation</li>
+          <li>single shooting based on Newton algorithm for the case of fixed time, fixed Cartesian bounds</li>
         </ul>
       </li>
       <li>Collisions

@@ -82,7 +82,7 @@ public class BooleanDetector extends AbstractDetector<BooleanDetector> {
                               final double newThreshold,
                               final int newMaxIter,
                               final EventHandler newHandler) {
-        super(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        super(new EventDetectionSettings(newMaxCheck, newThreshold, newMaxIter), newHandler);
         this.detectors = detectors;
         this.operator = operator;
     }

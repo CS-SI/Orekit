@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.FieldDerivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -83,6 +84,14 @@ public class FieldAbsolutePVCoordinates<T extends CalculusFieldElement<T>> exten
     public FieldAbsolutePVCoordinates(final Frame frame, final TimeStampedFieldPVCoordinates<T> pva) {
         super(pva.getDate(), pva);
         this.frame = frame;
+    }
+
+    /** Build from Field and non-Fielded object.
+     * @param field field
+     * @param pva non-Field AbsolutePVCoordinates
+     */
+    public FieldAbsolutePVCoordinates(final Field<T> field, final AbsolutePVCoordinates pva) {
+        this(pva.getFrame(), new TimeStampedFieldPVCoordinates<>(field, pva));
     }
 
     /** Multiplicative constructor

@@ -97,6 +97,31 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * API with the various {@code withXxx()} methods to set up the instance
      * in a readable manner without using a huge amount of parameters.
      * </p>
+     * @param detectionSettings detection settings
+     * @param handler event handler to call at event occurrences
+     * @param minElevation minimum elevation in radians (rad)
+     * @param mask reference to elevation mask
+     * @param refractionModel reference to refraction model
+     * @param topo reference to a topocentric model
+     * @since 12.2
+     */
+    protected FieldElevationDetector(final FieldEventDetectionSettings<T> detectionSettings, final FieldEventHandler<T> handler,
+                                     final double minElevation, final ElevationMask mask,
+                                     final AtmosphericRefractionModel refractionModel,
+                                     final TopocentricFrame topo) {
+        super(detectionSettings, handler);
+        this.minElevation    = minElevation;
+        this.elevationMask   = mask;
+        this.refractionModel = refractionModel;
+        this.topo            = topo;
+    }
+
+    /** Protected constructor with full parameters.
+     * <p>
+     * This constructor is not public as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
      * @param maxCheck maximum checking interval
      * @param threshold convergence threshold (s)
      * @param maxIter maximum number of iterations in the event time search
@@ -105,17 +130,14 @@ public class FieldElevationDetector<T extends CalculusFieldElement<T>> extends F
      * @param mask reference to elevation mask
      * @param refractionModel reference to refraction model
      * @param topo reference to a topocentric model
+     * @deprecated as of 12.2
      */
+    @Deprecated
     protected FieldElevationDetector(final FieldAdaptableInterval<T> maxCheck, final T threshold,
                                      final int maxIter, final FieldEventHandler<T> handler,
                                      final double minElevation, final ElevationMask mask,
-                                     final AtmosphericRefractionModel refractionModel,
-                                   final TopocentricFrame topo) {
-        super(maxCheck, threshold, maxIter, handler);
-        this.minElevation    = minElevation;
-        this.elevationMask   = mask;
-        this.refractionModel = refractionModel;
-        this.topo            = topo;
+                                     final AtmosphericRefractionModel refractionModel, final TopocentricFrame topo) {
+        this(new FieldEventDetectionSettings<>(maxCheck, threshold, maxIter), handler, minElevation, mask, refractionModel, topo);
     }
 
     /** {@inheritDoc} */

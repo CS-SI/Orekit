@@ -938,7 +938,7 @@ public class SpacecraftState
      * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * </p>
      * @param outputFrame frame in which coordinates should be defined
-     * @return pvCoordinates in orbit definition frame
+     * @return pvCoordinates in given output frame
      */
     public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame) {
         return isOrbitDefined() ? orbit.getPVCoordinates(outputFrame) : absPva.getPVCoordinates(outputFrame);
