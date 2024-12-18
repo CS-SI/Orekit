@@ -320,7 +320,7 @@ public class KalmanEstimatorTest {
                 propagatorBuilder);
         final AbsoluteDate measurementDate = context.initialOrbit.getDate().shiftedBy(600.0);
         final SpacecraftState state = propagator.propagate(measurementDate);
-        final ObservedMeasurement<?> measurement = new PV(measurementDate,
+        final ObservedMeasurement<PV> measurement = new PV(measurementDate,
                 state.getPosition().add(new Vector3D(10.0, -10.0, 5.0)),
                 state.getPVCoordinates().getVelocity().add(new Vector3D(-10.0, 5.0, -5.0)),
                5.0, 5.0, 1.0, new ObservableSatellite(0));
@@ -348,15 +348,17 @@ public class KalmanEstimatorTest {
         final RealMatrix badQ = MatrixUtils.createRealDiagonalMatrix(new double[]{
                 1.e-8, 1.e-8, 1e-6
         });
+        final RealMatrix measQ = MatrixUtils.createRealDiagonalMatrix(new double[]{
+                1.e-8
+        });
 
         // Initialise the Kalman builder
         final KalmanEstimatorBuilder kalmanBuilderBadInitial = new KalmanEstimatorBuilder()
                 .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(badInitialP, Q));
 
         // Build the filter (should not succeed)
-        final OrekitException thrownInitial =
-                Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitial::build);
-        Assertions.assertTrue(thrownInitial.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+        OrekitException thrown = Assertions.assertThrows(OrekitException.class, kalmanBuilderBadInitial::build);
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
 
         // Build the Kalman filter
         final KalmanEstimator kalmanBadProcessNoise = new KalmanEstimatorBuilder()
@@ -364,9 +366,35 @@ public class KalmanEstimatorTest {
                 .build();
 
         // Run the filter (should not succeed)
-        final OrekitException thrownQ = Assertions.assertThrows(OrekitException.class,
-                () -> kalmanBadProcessNoise.estimationStep(measurement));
-        Assertions.assertTrue(thrownQ.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+        thrown = Assertions.assertThrows(OrekitException.class, () -> kalmanBadProcessNoise.estimationStep(measurement));
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+
+        // Initialize the Kalman builder
+        final KalmanEstimatorBuilder kalmanBadProcessNoiseWithMeasurementProcessNoise = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(badInitialP, badQ))
+                .estimatedMeasurementsParameters(new ParameterDriversList(), new ConstantProcessNoise(measQ, measQ));
+
+        // Build the filter (should not succeed)
+        thrown = Assertions.assertThrows(OrekitException.class, kalmanBadProcessNoiseWithMeasurementProcessNoise::build);
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
+
+        // Add a measurement parameter
+        final Bias<PV> pvBias = new Bias<>(new String[]{"x bias"},
+                new double[]{0.0}, new double[]{1.0},
+                new double[]{1.0}, new double[]{1.0});
+        pvBias.getParameterDriver("x bias").setSelected(true);
+        measurement.addModifier(pvBias);
+
+        // Initialize the Kalman builder
+        ParameterDriversList drivers = new ParameterDriversList();
+        drivers.add(pvBias.getParameterDriver("x bias"));
+        final KalmanEstimator estimatorBadMeasurementNoise = new KalmanEstimatorBuilder()
+                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, badQ))
+                .estimatedMeasurementsParameters(drivers, new ConstantProcessNoise(measQ, measQ)).build();
+
+        // Run the filter (should not succeed)
+        thrown = Assertions.assertThrows(OrekitException.class, () -> estimatorBadMeasurementNoise.estimationStep(measurement));
+        Assertions.assertTrue(thrown.getMessage().contains("Process covariance expecting dimension 2, got 3"));
     }
 
     @Test
