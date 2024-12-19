@@ -116,7 +116,7 @@ public class TrajectoryStateHistoryMetadata extends CommentsContainer {
     public TrajectoryStateHistoryMetadata(final AbsoluteDate epochT0, final DataContext dataContext) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        trajBasis           = "PREDICTED";
+        trajBasis           = null;
         interpolationMethod = DEFAULT_INTERPOLATION_METHOD;
         interpolationDegree = DEFAULT_INTERPOLATION_DEGREE;
         orbAveraging        = "OSCULATING";

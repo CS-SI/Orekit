@@ -55,16 +55,16 @@ public class OrbitDetermination extends CommentsContainer {
     private double actualOdSpan;
 
     /** Number of observations available within the actual OD span. */
-    private int obsAvailable;
+    private Integer obsAvailable;
 
     /** Number of observations accepted within the actual OD span. */
-    private int obsUsed;
+    private Integer obsUsed;
 
     /** Number of sensors tracks available for the OD within the actual OD span. */
-    private int tracksAvailable;
+    private Integer tracksAvailable;
 
     /** Number of sensors tracks accepted for the OD within the actual OD span. */
-    private int tracksUsed;
+    private Integer tracksUsed;
 
     /** Maximum time between observations in the OD of the object. */
     private double maximumObsGap;
@@ -91,13 +91,13 @@ public class OrbitDetermination extends CommentsContainer {
     private double gdop;
 
     /** Number of solved-for states. */
-    private int solveN;
+    private Integer solveN;
 
     /** Description of state elements solved-for. */
     private List<String> solveStates;
 
     /** Number of consider parameters. */
-    private int considerN;
+    private Integer considerN;
 
     /** Description of consider parameters. */
     private List<String> considerParameters;
@@ -108,7 +108,7 @@ public class OrbitDetermination extends CommentsContainer {
     private double sedr;
 
     /** Number of sensors used. */
-    private int sensorsN;
+    private Integer sensorsN;
 
     /** Description of sensors used. */
     private List<String> sensors;
@@ -127,6 +127,20 @@ public class OrbitDetermination extends CommentsContainer {
         considerParameters = Collections.emptyList();
         sensors            = Collections.emptyList();
         dataTypes          = Collections.emptyList();
+        // In 502.0-B-3 (Table 6-11) these values are optional with no default
+        timeSinceFirstObservation = Double.NaN;
+        timeSinceLastObservation = Double.NaN;
+        recommendedOdSpan = Double.NaN;
+        actualOdSpan = Double.NaN;
+        maximumObsGap = Double.NaN;
+        epochEigenInt = Double.NaN;
+        epochEigenMaj = Double.NaN;
+        epochEigenMin = Double.NaN;
+        maxPredictedEigenMaj = Double.NaN;
+        minPredictedEigenMin = Double.NaN;
+        confidence = Double.NaN;
+        gdop = Double.NaN;
+        weightedRms = Double.NaN;
     }
 
     /** {@inheritDoc} */
@@ -253,56 +267,56 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of observations available within the actual OD span.
      * @return number of observations available within the actual OD span
      */
-    public int getObsAvailable() {
+    public Integer getObsAvailable() {
         return obsAvailable;
     }
 
     /** Set number of observations available within the actual OD span.
      * @param obsAvailable number of observations available within the actual OD span
      */
-    public void setObsAvailable(final int obsAvailable) {
+    public void setObsAvailable(final Integer obsAvailable) {
         this.obsAvailable = obsAvailable;
     }
 
     /** Get number of observations accepted within the actual OD span.
      * @return number of observations accepted within the actual OD span
      */
-    public int getObsUsed() {
+    public Integer getObsUsed() {
         return obsUsed;
     }
 
     /** Set number of observations accepted within the actual OD span.
      * @param obsUsed number of observations accepted within the actual OD span
      */
-    public void setObsUsed(final int obsUsed) {
+    public void setObsUsed(final Integer obsUsed) {
         this.obsUsed = obsUsed;
     }
 
     /** Get number of sensors tracks available for the OD within the actual OD span.
      * @return number of sensors tracks available for the OD within the actual OD span
      */
-    public int getTracksAvailable() {
+    public Integer getTracksAvailable() {
         return tracksAvailable;
     }
 
     /** Set number of sensors tracks available for the OD within the actual OD span.
      * @param tracksAvailable number of sensors tracks available for the OD within the actual OD span
      */
-    public void setTracksAvailable(final int tracksAvailable) {
+    public void setTracksAvailable(final Integer tracksAvailable) {
         this.tracksAvailable = tracksAvailable;
     }
 
     /** Get number of sensors tracks accepted for the OD within the actual OD span.
      * @return number of sensors tracks accepted for the OD within the actual OD span
      */
-    public int getTracksUsed() {
+    public Integer getTracksUsed() {
         return tracksUsed;
     }
 
     /** Set number of sensors tracks accepted for the OD within the actual OD span.
      * @param tracksUsed number of sensors tracks accepted for the OD within the actual OD span
      */
-    public void setTracksUsed(final int tracksUsed) {
+    public void setTracksUsed(final Integer tracksUsed) {
         this.tracksUsed = tracksUsed;
     }
 
@@ -421,14 +435,14 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of solved-for states.
      * @return number of solved-for states
      */
-    public int getSolveN() {
+    public Integer getSolveN() {
         return solveN;
     }
 
     /** Set number of solved-for states.
      * @param solveN number of solved-for states
      */
-    public void setSolveN(final int solveN) {
+    public void setSolveN(final Integer solveN) {
         this.solveN = solveN;
     }
 
@@ -449,14 +463,14 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of consider parameters.
      * @return number of consider parameters
      */
-    public int getConsiderN() {
+    public Integer getConsiderN() {
         return considerN;
     }
 
     /** Set number of consider parameters.
      * @param considerN number of consider parameters
      */
-    public void setConsiderN(final int considerN) {
+    public void setConsiderN(final Integer considerN) {
         this.considerN = considerN;
     }
 
@@ -493,14 +507,14 @@ public class OrbitDetermination extends CommentsContainer {
     /** Get number of sensors used.
      * @return number of sensors used
      */
-    public int getSensorsN() {
+    public Integer getSensorsN() {
         return sensorsN;
     }
 
     /** Set number of sensors used.
      * @param sensorsN number of sensors used
      */
-    public void setSensorsN(final int sensorsN) {
+    public void setSensorsN(final Integer sensorsN) {
         this.sensorsN = sensorsN;
     }
 

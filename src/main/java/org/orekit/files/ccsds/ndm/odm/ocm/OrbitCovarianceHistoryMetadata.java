@@ -76,7 +76,7 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     public OrbitCovarianceHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        covBasis          = "PREDICTED";
+        covBasis          = null;
         covReferenceFrame = new FrameFacade(null, null,
                                             OrbitRelativeFrame.TNW_INERTIAL, null,
                                             OrbitRelativeFrame.TNW_INERTIAL.name());
