@@ -23,12 +23,13 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 
 /**
- * This class perfoms the computation of the parameters used by the NeQuick model.
+ * This class performs the computation of the parameters used by the NeQuick model.
  *
  * @author Bryan Cazabonne
  *
  * @see "European Union (2016). European GNSS (Galileo) Open Service-Ionospheric Correction
  *       Algorithm for Galileo Single Frequency Users. 1.2."
+ * @see <a href="https://www.itu.int/rec/R-REC-P.531/en">ITU-R P.531</a>
  *
  * @since 10.1
  */
@@ -77,16 +78,14 @@ class NeQuickParameters {
      * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
-     * @param alpha effective ionisation level coefficients
+     * @param az effective ionisation level
      * @param modip modip
      */
     NeQuickParameters(final DateTimeComponents dateTime,
                       final double[] flattenF2, final double[] flattenFm3,
                       final double latitude, final double longitude,
-                      final double[] alpha, final double modip) {
+                      final double az, final double modip) {
 
-        // Effective ionisation level Az
-        final double az = computeAz(modip, alpha);
         // Effective sunspot number (Eq. 19)
         final double azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;
         // Date and Time components
@@ -241,29 +240,6 @@ class NeQuickParameters {
      */
     public double getH0() {
         return h0;
-    }
-
-    /**
-     * This method computes the effective ionisation level Az.
-     * <p>
-     * This parameter is used for the computation of the Total Electron Content (TEC).
-     * </p>
-     * @param modip modified dip latitude (ModipGrid) in degrees
-     * @param alpha effective ionisation level coefficients
-     * @return the ionisation level Az
-     */
-    private double computeAz(final double modip, final double[] alpha) {
-        // Particular condition (Eq. 17)
-        if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
-            return 63.7;
-        }
-        // Az = a0 + modip * a1 + modip^2 * a2 (Eq. 18)
-        double az = alpha[0] + modip * (alpha[1] + modip * alpha[2]);
-        // If Az < 0 -> Az = 0
-        az = FastMath.max(0.0, az);
-        // If Az > 400 -> Az = 400
-        az = FastMath.min(400.0, az);
-        return az;
     }
 
     /**

@@ -67,8 +67,8 @@ public class NeQuickModel implements IonosphericModel {
     /** Factor for the path delay computation. */
     private static final double DELAY_FACTOR = 40.3e16;
 
-    /** The three ionospheric coefficients broadcast in the Galileo navigation message. */
-    private final double[] alpha;
+    /** Engine for computing effective ionization level. */
+    private final EffectiveIonizationLevelEngine ionizationEngine;
 
     /** Modip grid. */
     private final ModipGrid modipGrid;
@@ -99,36 +99,51 @@ public class NeQuickModel implements IonosphericModel {
     }
 
     /**
-     * Build a new instance.
+     * Build a new instance of the Galileo version of the NeQuick-2 model.
      * <p>
-     * This constructor defaults to the {@link NeQuickVersion#NEQUICK_2_GALILEO Galileo-specific}
-     * version of the NeQuick model.
+     * The Galileo version uses a loose modip grid and 3 broadcast parameters to compute
+     * effective ionization level.
      * </p>
-     * @param alpha effective ionisation level coefficients
+     * @param alpha broadcast effective ionisation level coefficients
      * @param utc UTC time scale.
      * @since 10.1
      */
     public NeQuickModel(final double[] alpha, final TimeScale utc) {
-        this(NeQuickVersion.NEQUICK_2_GALILEO, alpha, utc);
+        this(getModipGrid(NeQuickVersion.NEQUICK_2_GALILEO), new GalileoIonizationEngine(alpha), utc);
+    }
+
+    /**
+     * Build a new instance of the original ITU version of the NeQuick-2 model.
+     * <p>
+     * The original ITU version uses a fine modip grid and effective ionization
+     * is used directly as solar flux
+     * </p>
+     * @param f107 solar flux at 10.7cm (in Solar Flux Units)
+     * @param utc UTC time scale.
+     * @since 10.1
+     */
+    public NeQuickModel(final double f107, final TimeScale utc) {
+        this(getModipGrid(NeQuickVersion.NEQUICK_2_ITU), new ItuIonizationEngine(f107), utc);
     }
 
     /**
      * Build a new instance.
-     * @param version version of the model to use
-     * @param alpha effective ionisation level coefficients
+     * @param modipGrid modip grid
+     * @param ionizationEngine engine for computing effective ionisation level
      * @param utc UTC time scale.
      * @since 13.0
      */
-    public NeQuickModel(final NeQuickVersion version, final double[] alpha, final TimeScale utc) {
+    private NeQuickModel(final ModipGrid modipGrid, final EffectiveIonizationLevelEngine ionizationEngine,
+                         final TimeScale utc) {
         // F2 layer values
         this.month      = 0;
         this.flattenF2  = null;
         this.flattenFm3 = null;
         // Modip grid
-        this.modipGrid  = getModipGrid(version);
+        this.modipGrid  = modipGrid;
 
-        // Ionisation level coefficients
-        this.alpha = alpha.clone();
+        // Ionisation level
+        this.ionizationEngine = ionizationEngine;
         this.utc = utc;
     }
 
@@ -320,8 +335,9 @@ public class NeQuickModel implements IonosphericModel {
             final double latitude  = latitudeS[i];
             final double longitude = longitudeS[i];
             final double modip     = modipGrid.computeMODIP(latitude, longitude);
+            final double az        = ionizationEngine.effectiveIonizationLevel(modip);
             final NeQuickParameters parameters = new NeQuickParameters(dateTime, flattenF2, flattenFm3,
-                                                                       latitude, longitude, alpha, modip);
+                                                                       latitude, longitude, az, modip);
             density += electronDensity(heightS[i], parameters);
         }
 
@@ -350,9 +366,9 @@ public class NeQuickModel implements IonosphericModel {
             final T latitude  = latitudeS[i];
             final T longitude = longitudeS[i];
             final T modip     = modipGrid.computeMODIP(latitude, longitude);
+            final T az        = ionizationEngine.effectiveIonizationLevel(modip);
             final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(dateTime, flattenF2, flattenFm3,
-                                                                                      latitude, longitude,
-                                                                                      alpha, modip);
+                                                                                      latitude, longitude, az, modip);
             density = density.add(electronDensity(field, heightS[i], parameters));
         }
 
@@ -695,6 +711,97 @@ public class NeQuickModel implements IonosphericModel {
         } else {
             return FastMath.exp(power);
         }
+    }
+
+    /** Engine for computing effective ionization level.
+     * @since 13.0
+     */
+    private interface EffectiveIonizationLevelEngine {
+
+        /** Compute effective ionization level.
+         * @param modip modified dip latitude at receiver location
+         * @return effective ionization level (Az in Nequick Galileo, R12 in original Nequick ITU)
+         */
+        double effectiveIonizationLevel(double modip);
+
+        /** Compute effective ionization level.
+         * @param modip modified dip latitude at receiver location
+         * @return effective ionization level (Az in Nequick Galileo, R12 in original Nequick ITU)
+         */
+        <T extends CalculusFieldElement<T>> T effectiveIonizationLevel(T modip);
+
+    }
+
+    /** Galileo-specific version of effective ionization level engine.
+     * @since 13.0
+     */
+    private static class GalileoIonizationEngine implements EffectiveIonizationLevelEngine {
+
+        /** Broadcast ionization engine coefficients. */
+        private final double[] alpha;
+
+        /** Build a new instance.
+         * @param alpha broadcast ionization engine coefficients
+         */
+        GalileoIonizationEngine(final double[] alpha) {
+            this.alpha = alpha.clone();
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double effectiveIonizationLevel(final double modip) {
+            // Particular condition (Eq. 17)
+            if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
+                return 63.7;
+            } else {
+                // Az = a0 + modip * a1 + modip² * a2 (Eq. 18)
+                return FastMath.min(FastMath.max(alpha[0] + modip * (alpha[1] + modip * alpha[2]), 0.0), 400.0);
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> T effectiveIonizationLevel(final T modip) {
+            // Particular condition (Eq. 17)
+            if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
+                return modip.newInstance(63.7);
+            } else {
+                // Az = a0 + modip * a1 + modip² * a2 (Eq. 18)
+                return FastMath.min(FastMath.max(modip.multiply(alpha[2]).add(alpha[1]).multiply(modip).add(alpha[0]),
+                                                 0.0),
+                                    400.0);
+            }
+        }
+
+    }
+
+    /** Original ITU version of effective ionization level engine.
+     * @since 13.0
+     */
+    private static class ItuIonizationEngine implements EffectiveIonizationLevelEngine {
+
+        /** Solar flux. */
+        private final double f107;
+
+        /** Build a new instance.
+         * @param f107 solar flux
+         */
+        ItuIonizationEngine(final double f107) {
+            this.f107 = f107;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double effectiveIonizationLevel(final double modip) {
+            return f107;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> T effectiveIonizationLevel(final T modip) {
+            return modip.newInstance(f107);
+        }
+
     }
 
     /** Get the modip grid for specified NeQuick version.

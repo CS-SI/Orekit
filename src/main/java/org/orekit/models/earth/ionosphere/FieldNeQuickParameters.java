@@ -16,7 +16,6 @@
  */
 package org.orekit.models.earth.ionosphere;
 
-import org.hipparchus.Field;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
@@ -26,12 +25,13 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 
 /**
- * This class perfoms the computation of the parameters used by the NeQuick model.
+ * This class performs the computation of the parameters used by the NeQuick model.
  *
  * @author Bryan Cazabonne
  *
  * @see "European Union (2016). European GNSS (Galileo) Open Service-Ionospheric Correction
  *       Algorithm for Galileo Single Frequency Users. 1.2."
+ * @see <a href="https://www.itu.int/rec/R-REC-P.531/en">ITU-R P.531</a>
  *
  * @since 10.1
  */
@@ -80,19 +80,17 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
-     * @param alpha effective ionisation level coefficients
+     * @param az effective ionisation level
      * @param modip modip
      */
     FieldNeQuickParameters(final DateTimeComponents dateTime,
                            final double[] flattenF2, final double[] flattenFm3,
                            final T latitude, final T longitude,
-                           final double[] alpha, final T modip) {
+                           final T az, final T modip) {
 
         // Zero
         final T zero = latitude.getField().getZero();
 
-        // Effective ionisation level Az
-        final T az = computeAz(modip, alpha);
         // Effective sunspot number (Eq. 19)
         final T azr = FastMath.sqrt(az.subtract(63.7).multiply(1123.6).add(167273.0)).subtract(408.99);
         // Date and Time components
@@ -247,33 +245,6 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      */
     public T getH0() {
         return h0;
-    }
-
-    /**
-     * This method computes the effective ionisation level Az.
-     * <p>
-     * This parameter is used for the computation of the Total Electron Content (TEC).
-     * </p>
-     * @param modip modified dip latitude (ModipGrid) in degrees
-     * @param alpha effective ionisation level coefficients
-     * @return the ionisation level Az
-     */
-    private T computeAz(final T modip, final double[] alpha) {
-        // Field
-        final Field<T> field = modip.getField();
-        // Zero
-        final T zero = field.getZero();
-        // Particular condition (Eq. 17)
-        if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
-            return zero.newInstance(63.7);
-        }
-        // Az = a0 + modip * a1 + modip^2 * a2 (Eq. 18)
-        T az = modip.multiply(alpha[2]).add(alpha[1]).multiply(modip).add(alpha[0]);
-        // If Az < 0 -> Az = 0
-        az = FastMath.max(zero, az);
-        // If Az > 400 -> Az = 400
-        az = FastMath.min(zero.newInstance(400.0), az);
-        return az;
     }
 
     /**
