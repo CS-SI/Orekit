@@ -18,9 +18,15 @@ package org.orekit.files.ccsds.ndm.odm.ocm;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringWriter;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 import org.orekit.data.DataSource;
 import org.orekit.files.ccsds.ndm.AbstractWriterTest;
@@ -32,7 +38,6 @@ import org.orekit.files.ccsds.section.Segment;
 import org.orekit.files.ccsds.utils.generation.Generator;
 import org.orekit.files.ccsds.utils.generation.KvnGenerator;
 import org.orekit.utils.Constants;
-import sun.misc.IOUtils;
 
 public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMetadata, OcmData>, Ocm> {
 
@@ -109,11 +114,36 @@ public class OcmWriterTest extends AbstractWriterTest<OdmHeader, Segment<OcmMeta
         getWriter().writeMessage(generator, parsed);
 
         // verify
-        String expected = new String(
-                IOUtils.readAllBytes(this.getClass().getResourceAsStream(expectedName)),
-                StandardCharsets.UTF_8);
+        String expected = fixture(expectedName);
         String actual = buffer.toString();
         assertThat(actual, is(expected));
+    }
+
+    /**
+     * Read all characters from a class path resource idendified by
+     * {@code name}. Assumes UTF8. Not particularly efficient.
+     *
+     * @param name to read from. See {@link Class#getResourceAsStream(String)}.
+     * @return contents of the file.
+     * @throws IOException on error.
+     */
+    public static String fixture(String name) throws IOException {
+        try (InputStream is = OcmWriterTest.class.getResourceAsStream(name);
+             Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+            CharBuffer buffer = CharBuffer.allocate(1024);
+            while (reader.read(buffer) != -1) {
+                if (!buffer.hasRemaining()) {
+                    // needs larger buffer, double in size
+                    CharBuffer b = CharBuffer.allocate(2 * buffer.capacity());
+                    buffer.flip();
+                    b.put(buffer);
+                    buffer = b;
+                }
+            }
+
+            buffer.flip();
+            return buffer.toString();
+        }
     }
 
 }
