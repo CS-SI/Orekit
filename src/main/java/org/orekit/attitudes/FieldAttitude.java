@@ -23,8 +23,8 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeShiftable;
 import org.orekit.time.FieldTimeStamped;
@@ -169,7 +169,7 @@ public class FieldAttitude<T extends CalculusFieldElement<T>>
         }
 
         // we have to take an intermediate rotation into account
-        final Transform t = newReferenceFrame.getTransformTo(referenceFrame, orientation.getDate().toAbsoluteDate());
+        final FieldTransform<T> t = newReferenceFrame.getTransformTo(referenceFrame, orientation.getDate());
         return new FieldAttitude<>(orientation.getDate(), newReferenceFrame,
                                    orientation.getRotation().compose(t.getRotation(), RotationConvention.VECTOR_OPERATOR),
                                    orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())),

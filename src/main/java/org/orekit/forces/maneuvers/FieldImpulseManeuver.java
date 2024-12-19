@@ -25,6 +25,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.FieldCartesianOrbit;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.events.FieldDetectorModifier;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
@@ -73,7 +74,7 @@ import org.orekit.utils.FieldPVCoordinates;
  * @param <T> type of the field elements
  */
 public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends AbstractImpulseManeuver
-        implements FieldEventDetector<T> {
+        implements FieldDetectorModifier<T> {
 
     /** Triggering event. */
     private final FieldEventDetector<T> trigger;
@@ -179,23 +180,8 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
     /** {@inheritDoc} */
     @Override
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
-        FieldEventDetector.super.init(s0, t);
+        FieldDetectorModifier.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()).getReal() >= 0;
-        // Initialize the triggering event
-        trigger.init(s0, t);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public T g(final FieldSpacecraftState<T> fieldSpacecraftState) {
-        return trigger.g(fieldSpacecraftState);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void finish(final FieldSpacecraftState<T> state) {
-        FieldEventDetector.super.finish(state);
-        trigger.finish(state);
     }
 
     /** {@inheritDoc} */
@@ -204,11 +190,17 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
         return detectionSettings;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public FieldEventDetector<T> getDetector() {
+        return trigger;
+    }
+
     /** Get the triggering event.
      * @return triggering event
      */
     public FieldEventDetector<T> getTrigger() {
-        return trigger;
+        return getDetector();
     }
 
     /**

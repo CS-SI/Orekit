@@ -14,35 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.control.indirect.shooting.propagation;
+package org.orekit.propagation.conversion;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.orekit.propagation.conversion.ClassicalRungeKuttaFieldIntegratorBuilder;
+import org.hipparchus.ode.nonstiff.RungeKuttaIntegrator;
 
 /**
- * Integration settings using the classical Runge-Kutta 4 scheme.
+ * Abstract class for fixed-step, single-step integrator builder.
  *
+ * @param <T> field type
+ * @see org.hipparchus.ode.nonstiff.RungeKuttaIntegrator
+ * @since 13.0
  * @author Romain Serra
- * @since 12.2
- * @see org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator
  */
-public class ClassicalRungeKuttaIntegrationSettings implements ShootingIntegrationSettings {
+public abstract class AbstractFixedSingleStepIntegratorBuilder<T extends RungeKuttaIntegrator>
+        extends AbstractIntegratorBuilder<T> implements ExplicitRungeKuttaIntegratorBuilder {
 
-    /** Step-size for integrator builders. */
+    /** Default step-size. */
     private final double step;
 
     /**
      * Constructor.
-     * @param step step-size for integrator builder
+     * @param step default step-size
      */
-    public ClassicalRungeKuttaIntegrationSettings(final double step) {
+    protected AbstractFixedSingleStepIntegratorBuilder(final double step) {
         this.step = step;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> ClassicalRungeKuttaFieldIntegratorBuilder<T> getFieldIntegratorBuilder(final Field<T> field) {
-        return new ClassicalRungeKuttaFieldIntegratorBuilder<>(field.getZero().newInstance(step));
+    /**
+     * Getter for the step size.
+     * @return step
+     */
+    public double getStep() {
+        return step;
     }
 }

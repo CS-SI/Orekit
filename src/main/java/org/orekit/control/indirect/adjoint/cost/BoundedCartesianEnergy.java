@@ -16,13 +16,9 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.events.EventDetector;
 
 import java.util.stream.Stream;
 
@@ -34,7 +30,7 @@ import java.util.stream.Stream;
  * It has a unit Euclidean norm.
  *
  * @author Romain Serra
- * @see UnboundedCartesianEnergyNeglectingMass
+ * @see UnboundedCartesianEnergy
  * @since 12.2
  */
 public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
@@ -67,6 +63,14 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
         this(name, massFlowRateFactor, maximumThrustMagnitude, EventDetectionSettings.getDefaultEventDetectionSettings());
     }
 
+    /** Getter for maximum thrust magnitude.
+     * @return maximum thrust
+     * @since 13.0
+     */
+    public double getMaximumThrustMagnitude() {
+        return maximumThrustMagnitude;
+    }
+
     /** {@inheritDoc} */
     @Override
     protected double getThrustForceNorm(final double[] adjointVariables, final double mass) {
@@ -81,37 +85,7 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
 
     /** {@inheritDoc} */
     @Override
-    protected <T extends CalculusFieldElement<T>> T getFieldThrustForceNorm(final T[] adjointVariables,
-                                                                            final T mass) {
-        final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
-        final T factor = adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
-        final double factorReal = factor.getReal();
-        final T zero = mass.getField().getZero();
-        if (factorReal > maximumThrustMagnitude) {
-            return zero.newInstance(maximumThrustMagnitude);
-        } else if (factorReal < 0.) {
-            return zero;
-        } else {
-            return factor;
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Stream<EventDetector> getEventDetectors() {
-        final EventDetectionSettings detectionSettings = getEventDetectionSettings();
-        return Stream.of(new SingularityDetector(detectionSettings, 0.),
-            new SingularityDetector(detectionSettings, maximumThrustMagnitude));
+        return Stream.of(new SingularityDetector(0.), new SingularityDetector(maximumThrustMagnitude));
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        final FieldEventDetectionSettings<T> detectionSettings = new FieldEventDetectionSettings<>(field, getEventDetectionSettings());
-        final T zero = field.getZero();
-        final T maximumThrustMagnitudeForEvent = zero.newInstance(maximumThrustMagnitude);
-        return Stream.of(new FieldSingularityDetector<>(detectionSettings, zero),
-            new FieldSingularityDetector<>(detectionSettings, maximumThrustMagnitudeForEvent));
-    }
-
 }

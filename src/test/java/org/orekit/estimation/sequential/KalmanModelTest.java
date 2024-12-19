@@ -34,6 +34,7 @@ import org.orekit.estimation.measurements.ObservedMeasurement;
 import org.orekit.estimation.measurements.PV;
 import org.orekit.estimation.measurements.Range;
 import org.orekit.estimation.measurements.modifiers.Bias;
+import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -559,5 +560,37 @@ public class KalmanModelTest {
         public void evaluationPerformed(KalmanEstimation estimation) {
             this.estimation = estimation;
         }
+    }
+
+    /** 
+     * Test that mass depletions during the processing of a measurement are propagated back to the PropagatorBuilder
+     * so that they are taken into account during processing of subsequent measurements.
+     */
+    @Test
+    public void MassDepletionTest()  {
+        // Add a maneuver with nonzero mass expenditure between the first and second measurement dates.
+        AbsoluteDate initialDate = this.propagatorBuilder.getInitialOrbitDate();
+        double initialMass = this.propagatorBuilder.getMass();
+        AbsoluteDate maneuverDate = initialDate.shiftedBy(5.0);
+
+        ConstantThrustManeuver maneuver = new ConstantThrustManeuver(maneuverDate, 10.0,  10.0, 100.0, new Vector3D(1.0, 0.0, 0.0));
+        this.propagatorBuilder.addForceModel(maneuver);
+    
+        kalman.processMeasurements(Collections.singletonList(pv));
+        kalman.processMeasurements(Collections.singletonList(range));
+        
+        double postManeuverPredictedStateMass = modelLogger.estimation.getPredictedSpacecraftStates()[0].getMass();
+        double postManeuverCorrectedStateMass = modelLogger.estimation.getCorrectedSpacecraftStates()[0].getMass();
+        double postManeuverPropagatorMass = propagatorBuilder.getMass();
+
+        // The mass of the predicted state should be less than the initial mass, because mass should have been expended during the maneuver.
+        Assertions.assertTrue(postManeuverPredictedStateMass < initialMass);
+
+        // The mass for the propagator builder should have been updated to be equal to the mass from the 
+        // newly predicted state, which includes the maneuver.
+        Assertions.assertEquals(postManeuverPredictedStateMass, postManeuverPropagatorMass); 
+
+        // The mass of the corrected state should be equal to the mass from the propagator builder,
+        Assertions.assertEquals(postManeuverCorrectedStateMass, postManeuverPropagatorMass);    
     }
 }

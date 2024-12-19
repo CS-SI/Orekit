@@ -46,9 +46,9 @@ import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.CartesianDerivativesFilter;
+import org.orekit.utils.ExtendedPositionProvider;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
@@ -109,7 +109,7 @@ class YawSteeringTest {
         NadirPointing nadirLaw = new NadirPointing(circOrbit.getFrame(), earthShape);
 
         // Target pointing attitude provider with yaw compensation
-        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        ExtendedPositionProvider sun = CelestialBodyFactory.getSun();
         YawSteering yawCompensLaw = new YawSteering(circOrbit.getFrame(), nadirLaw, sun, Vector3D.MINUS_I);
 
         // Get sun direction in satellite frame

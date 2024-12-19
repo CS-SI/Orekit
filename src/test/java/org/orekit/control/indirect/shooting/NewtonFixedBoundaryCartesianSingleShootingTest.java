@@ -16,6 +16,8 @@
  */
 package org.orekit.control.indirect.shooting;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -27,12 +29,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.orekit.Utils;
+import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
+import org.orekit.control.indirect.adjoint.CartesianAdjointEquationTerm;
 import org.orekit.control.indirect.adjoint.CartesianAdjointJ2Term;
 import org.orekit.control.indirect.adjoint.CartesianAdjointKeplerianTerm;
-import org.orekit.control.indirect.adjoint.cost.BoundedCartesianEnergy;
-import org.orekit.control.indirect.adjoint.cost.CartesianCost;
+import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
+import org.orekit.control.indirect.adjoint.cost.FieldUnboundedCartesianEnergy;
 import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergy;
-import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
 import org.orekit.control.indirect.shooting.boundary.CartesianBoundaryConditionChecker;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeBoundaryOrbits;
 import org.orekit.control.indirect.shooting.boundary.FixedTimeCartesianBoundaryStates;
@@ -50,6 +53,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
+import org.orekit.propagation.integration.AdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.FieldAbsoluteDate;
@@ -111,9 +117,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final double timeOfFlight = 1e4;
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
         final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergyNeglectingMass("adjoint");
-        final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, cartesianCost,
-                new ClassicalRungeKuttaIntegrationSettings(60.));
+        final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, 0., Double.POSITIVE_INFINITY,
+                ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(60.));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
         shooting.setScalePositionDefects(1.);
@@ -135,22 +140,21 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 output);
     }
 
-    private static ShootingPropagationSettings createShootingSettings(final Orbit initialOrbit,
-                                                                      final CartesianCost cartesianCost,
+    private static ShootingPropagationSettings createShootingSettings(final Orbit initialOrbit, final double massFlowRate,
+                                                                      final double maximumThrustMagnitude,
                                                                       final ShootingIntegrationSettings integrationSettings) {
         final NewtonianAttraction newtonianAttraction = new NewtonianAttraction(initialOrbit.getMu());
-        final Frame J2Frame = initialOrbit.getFrame(); // approximation for speed
+        final Frame j2Frame = initialOrbit.getFrame(); // approximation for speed
         final J2OnlyPerturbation j2OnlyPerturbation = new J2OnlyPerturbation(initialOrbit.getMu(),
-                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, -Constants.EGM96_EARTH_C20, J2Frame);
+                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, -Constants.EGM96_EARTH_C20, j2Frame);
         final List<ForceModel> forceModelList = new ArrayList<>();
         forceModelList.add(newtonianAttraction);
         forceModelList.add(j2OnlyPerturbation);
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(initialOrbit.getMu());
         final CartesianAdjointJ2Term j2Term = new CartesianAdjointJ2Term(j2OnlyPerturbation.getMu(), j2OnlyPerturbation.getrEq(),
                 j2OnlyPerturbation.getJ2(initialOrbit.getDate()), j2OnlyPerturbation.getFrame());
-        final AdjointDynamicsProvider adjointDynamicsProvider = new CartesianAdjointDynamicsProvider(cartesianCost,
-                keplerianTerm, j2Term);
-        return new ShootingPropagationSettings(forceModelList, adjointDynamicsProvider, integrationSettings);
+        return new ShootingPropagationSettings(forceModelList, getAdjointDynamicsProvider(massFlowRate,
+                maximumThrustMagnitude, keplerianTerm, j2Term), integrationSettings);
     }
 
     private static Orbit createSomeInitialOrbit(final double approximateAltitude) {
@@ -201,9 +205,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
         final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
         final double flowRateFactor = 1e-3;
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", flowRateFactor);
-        final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, cartesianCost,
-                new DormandPrince54IntegrationSettings(1e-1, 1e2,
+        final ShootingPropagationSettings propagationSettings = createShootingSettings(initialOrbit, flowRateFactor, Double.POSITIVE_INFINITY,
+                ShootingIntegrationSettingsFactory.getDormandPrince54IntegratorSettings(1e-1, 1e2,
                         ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
@@ -217,11 +220,10 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         // THEN
         final double thrustBound = 1e5;
         final ShootingPropagationSettings propagationSettingsBoundedEnergy = createShootingSettings(initialOrbit,
-                new BoundedCartesianEnergy(cartesianCost.getAdjointName(), flowRateFactor, thrustBound),
-                propagationSettings.getIntegrationSettings());
+                flowRateFactor, thrustBound, propagationSettings.getIntegrationSettings());
         final NewtonFixedBoundaryCartesianSingleShooting shootingBoundedEnergy = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettingsBoundedEnergy,
                 boundaryOrbits, conditionChecker);
-        final double[] unboundedEnergyAdjoint = output.getInitialState().getAdditionalState(cartesianCost.getAdjointName());
+        final double[] unboundedEnergyAdjoint = output.getInitialState().getAdditionalState("adjoint");
         double[] guessBoundedEnergy = unboundedEnergyAdjoint.clone();
         final ShootingBoundaryOutput outputBoundedEnergy = shootingBoundedEnergy.solve(mass, guessBoundedEnergy);
         Assertions.assertTrue(outputBoundedEnergy.isConverged());
@@ -232,13 +234,12 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
     void testSolveRegression() {
         // GIVEN
         final double massFlowRateFactor = 2e-6;
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", massFlowRateFactor);
         final Orbit initialOrbit = createSomeInitialOrbit(1e6);
         final double timeOfFlight = initialOrbit.getKeplerianPeriod() * 5;
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
-        final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(cartesianCost,
+        final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(massFlowRateFactor,
                 new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit),
-                new ClassicalRungeKuttaIntegrationSettings(100.));
+                ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(100.));
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1.;
@@ -248,7 +249,8 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final ShootingBoundaryOutput output = shooting.solve(mass, guess);
         // THEN
         Assertions.assertTrue(output.isConverged());
-        final double[] initialAdjoint = output.getInitialState().getAdditionalState(cartesianCost.getAdjointName());
+        final double[] initialAdjoint = output.getInitialState().getAdditionalState(shooting.getPropagationSettings()
+                .getAdjointDynamicsProvider().getAdjointName());
         final double[] expectedAdjoint = new double[] {-1.3432883741256684E-6, -6.343244627959342E-6, -4.2552646864846415E-6,
                 -4.540374638007354E-4, -0.002031906384904598, -8.355018662664441E-4, -1.0320210230861449};
         final double tolerance = 1e-8;
@@ -258,7 +260,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         Assertions.assertNotEquals(1., output.getTerminalState().getMass());
     }
 
-    private static NewtonFixedBoundaryCartesianSingleShooting getShootingMethod(final CartesianCost cartesianCost,
+    private static NewtonFixedBoundaryCartesianSingleShooting getShootingMethod(final double massFlowRateFactor,
                                                                                 final FixedTimeBoundaryOrbits fixedTimeBoundaryOrbits,
                                                                                 final ShootingIntegrationSettings integrationSettings) {
         final double tolerancePosition = 1e-0;
@@ -268,7 +270,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(fixedTimeBoundaryOrbits.getInitialOrbit(),
                 fixedTimeBoundaryOrbits.getTerminalOrbit());
         final ShootingPropagationSettings propagationSettings = createShootingSettings(fixedTimeBoundaryOrbits.getInitialOrbit(),
-                cartesianCost, integrationSettings);
+                massFlowRateFactor, Double.POSITIVE_INFINITY, integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
         shooting.setScalePositionDefects(1e3);
@@ -279,12 +281,11 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
     @Test
     void testSolveForwardBackward() {
         // GIVEN
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergyNeglectingMass("adjoint");
         final Orbit initialOrbit = createGeoInitialOrbit();
         final double timeOfFlight = initialOrbit.getKeplerianPeriod() * 3;
         final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
-        final ShootingIntegrationSettings integrationSettings = new ClassicalRungeKuttaIntegrationSettings(100.);
-        final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(cartesianCost,
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(100.);
+        final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(0.,
                 new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit), integrationSettings);
         final double toleranceMassAdjoint = 1e-10;
         final double initialMass = 3e3;
@@ -295,9 +296,9 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final ShootingBoundaryOutput forwardOutput = shooting.solve(initialMass, guess);
         // THEN
         final SpacecraftState terminalState = forwardOutput.getTerminalState();
-        final String adjointName = cartesianCost.getAdjointName();
+        final String adjointName = "adjoint";
         final double[] terminalAdjointForward = terminalState.getAdditionalState(adjointName);
-        final NewtonFixedBoundaryCartesianSingleShooting backwardShooting = getShootingMethod(cartesianCost,
+        final NewtonFixedBoundaryCartesianSingleShooting backwardShooting = getShootingMethod(0.,
                 new FixedTimeBoundaryOrbits(terminalOrbit, initialOrbit), integrationSettings);
         final ShootingBoundaryOutput backwardOutput = backwardShooting.solve(terminalState.getMass(), terminalAdjointForward);
         Assertions.assertTrue(backwardOutput.isConverged());
@@ -323,17 +324,16 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final CartesianBoundaryConditionChecker conditionChecker = new NormBasedCartesianConditionChecker(10,
                 tolerancePosition, toleranceVelocity);
         final FixedTimeBoundaryOrbits boundaryOrbits = createBoundaryForKeplerianSettings();
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", flowRateFactor);
-        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(1e-2, 2e2,
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getDormandPrince54IntegratorSettings(1e-2, 2e2,
                 ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)));
         final ShootingPropagationSettings propagationSettings = createKeplerianShootingSettings(boundaryOrbits.getInitialOrbit(),
-                cartesianCost, integrationSettings);
+                flowRateFactor, integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
         final double toleranceMassAdjoint = 1e-8;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1e3;
-        final double[] guess = guessWithoutMass(cartesianCost.getAdjointName(), mass, integrationSettings, boundaryOrbits,
+        final double[] guess = guessWithoutMass(propagationSettings.getAdjointDynamicsProvider().getAdjointName(), mass, integrationSettings, boundaryOrbits,
                 conditionChecker);
         // WHEN
         final ShootingBoundaryOutput output = shooting.solve(mass, guess);
@@ -352,13 +352,13 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
     }
 
     private static ShootingPropagationSettings createKeplerianShootingSettings(final Orbit initialOrbit,
-                                                                               final CartesianCost cartesianCost,
+                                                                               final double massFlowRateFactor,
                                                                                final ShootingIntegrationSettings integrationSettings) {
         final NewtonianAttraction newtonianAttraction = new NewtonianAttraction(initialOrbit.getMu());
         final List<ForceModel> forceModelList = new ArrayList<>();
         forceModelList.add(newtonianAttraction);
         final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(initialOrbit.getMu());
-        final AdjointDynamicsProvider adjointDynamicsProvider = new CartesianAdjointDynamicsProvider(cartesianCost,
+        final AdjointDynamicsProvider adjointDynamicsProvider = getAdjointDynamicsProvider(massFlowRateFactor, Double.POSITIVE_INFINITY,
                 keplerianTerm);
         return new ShootingPropagationSettings(forceModelList, adjointDynamicsProvider, integrationSettings);
     }
@@ -368,7 +368,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                                              final FixedTimeBoundaryOrbits boundaryOrbits,
                                              final CartesianBoundaryConditionChecker conditionChecker) {
         final ShootingPropagationSettings propagationSettings = createKeplerianShootingSettings(boundaryOrbits.getInitialOrbit(),
-                new UnboundedCartesianEnergyNeglectingMass(adjointName), integrationSettings);
+                0., integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
         final ShootingBoundaryOutput output = shooting.solve(mass, new double[6]);
@@ -382,6 +382,22 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         return adjointWithMass;
     }
 
+    private static AdjointDynamicsProvider getAdjointDynamicsProvider(final double massFlowRateFactor,
+                                                                      final double maximumThrustMagnitude,
+                                                                      final CartesianAdjointEquationTerm... terms) {
+        if (maximumThrustMagnitude == Double.POSITIVE_INFINITY) {
+            if (massFlowRateFactor == 0) {
+                return CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProviderNeglectingMass("adjoint",
+                        terms);
+            }
+            return CartesianAdjointDynamicsProviderFactory.buildUnboundedEnergyProvider("adjoint", massFlowRateFactor,
+                    EventDetectionSettings.getDefaultEventDetectionSettings(), terms);
+        } else {
+            return CartesianAdjointDynamicsProviderFactory.buildBoundedEnergyProvider("adjoint", massFlowRateFactor,
+                    maximumThrustMagnitude, EventDetectionSettings.getDefaultEventDetectionSettings(), terms);
+        }
+    }
+
     @Test
     void testSolveHeliocentric() {
         // GIVEN
@@ -390,19 +406,17 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final CartesianBoundaryConditionChecker conditionChecker = new NormBasedCartesianConditionChecker(10,
                 tolerancePosition, toleranceVelocity);
         final FixedTimeBoundaryOrbits boundaryOrbits = getHeliocentricBoundary();
-        final DormandPrince54IntegrationSettings integrationSettings = new DormandPrince54IntegrationSettings(2e2, 1e5,
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getDormandPrince54IntegratorSettings(2e2, 1e5,
                 ToleranceProvider.of(CartesianToleranceProvider.of(1e5, 1e-1, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)));
         final EventDetectionSettings detectionSettings = new EventDetectionSettings(1e5, 1e3, EventDetectionSettings.DEFAULT_MAX_ITER);
-        final CartesianCost cartesianCost = new UnboundedCartesianEnergy("adjoint", 1. / (4000. * Constants.G0_STANDARD_GRAVITY),
-                detectionSettings);
-        final ShootingPropagationSettings propagationSettings = createKeplerianShootingSettings(boundaryOrbits.getInitialOrbit(),
-                cartesianCost, integrationSettings);
+        final ShootingPropagationSettings propagationSettings = createHeliocentricShootingSettings(boundaryOrbits.getInitialOrbit(),
+                1. / (4000. * Constants.G0_STANDARD_GRAVITY), detectionSettings, integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
         final double toleranceMassAdjoint = 1e-7;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 2e3;
-        final double[] guess = guessWithoutMass(cartesianCost.getAdjointName(), mass, integrationSettings, boundaryOrbits,
+        final double[] guess = guessWithoutMass("adjoint", mass, integrationSettings, boundaryOrbits,
                 conditionChecker);
         // WHEN
         final ShootingBoundaryOutput output = shooting.solve(mass, guess);
@@ -425,4 +439,40 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final Orbit terminalOrbit = new CartesianOrbit(new TimeStampedPVCoordinates(terminalDate, terminalPosition, terminalVelocity), frame, mu);
         return new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
     }
+
+    private static ShootingPropagationSettings createHeliocentricShootingSettings(final Orbit initialOrbit,
+                                                                               final double massFlowRateFactor,
+                                                                               final EventDetectionSettings eventDetectionSettings,
+                                                                               final ShootingIntegrationSettings integrationSettings) {
+        final NewtonianAttraction newtonianAttraction = new NewtonianAttraction(initialOrbit.getMu());
+        final List<ForceModel> forceModelList = new ArrayList<>();
+        forceModelList.add(newtonianAttraction);
+        final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(initialOrbit.getMu());
+        final AdjointDynamicsProvider adjointDynamicsProvider = new AdjointDynamicsProvider() {
+            @Override
+            public String getAdjointName() {
+                return "adjoint";
+            }
+
+            @Override
+            public int getDimension() {
+                return 7;
+            }
+
+            @Override
+            public AdditionalDerivativesProvider buildAdditionalDerivativesProvider() {
+                return new CartesianAdjointDerivativesProvider(new UnboundedCartesianEnergy(getAdjointName(), massFlowRateFactor,
+                        eventDetectionSettings), keplerianTerm);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldAdditionalDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(Field<T> field) {
+                return new FieldCartesianAdjointDerivativesProvider<>(new FieldUnboundedCartesianEnergy<>(getAdjointName(),
+                        field.getZero().newInstance(massFlowRateFactor),
+                        new FieldEventDetectionSettings<>(field, eventDetectionSettings)), keplerianTerm);
+            }
+        };
+        return new ShootingPropagationSettings(forceModelList, adjointDynamicsProvider, integrationSettings);
+    }
+
 }

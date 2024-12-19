@@ -26,10 +26,9 @@ import org.hipparchus.linear.RealVector;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -109,7 +108,16 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
         final RealVector[] predictedSigmaPoints = new RealVector[sigmaPoints.length];
 
         // Propagate each sigma point
-        for (int i = 0; i < sigmaPoints.length; i++) {
+        //
+        // We need to make a choice about what happens with the non-estimated parts of the orbital states.
+        // Here we've assumed that the zero'th sigma point is roughly the mean and keep those propagated
+        // orbital parameters.  This is why we loop backward through the sigma-points and don't reset the
+        // propagator builders on the last iteration (corresponding to the zero-th sigma point).
+        //
+        // Note that -not- resetting the builders on the last iteration means that their time-stamps correspond
+        // to the prediction time.  The assumption is that the unscented filter calls getEvolution, then
+        // getPredictedMeasurements, then getInnovation.
+        for (int i = sigmaPoints.length - 1; i >= 0; i--) {
 
             // Set parameters for this sigma point
             final RealVector sigmaPoint = sigmaPoints[i].copy();
@@ -119,7 +127,8 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
             final Propagator[] propagators = getEstimatedPropagators();
 
             // Do prediction
-            predictedSigmaPoints[i] = predictState(observedMeasurement.getDate(), sigmaPoint, propagators);
+            predictedSigmaPoints[i] =
+                    predictState(observedMeasurement.getDate(), sigmaPoint, propagators, i != 0);
         }
 
         // Reset the driver reference values based on the first sigma point
@@ -160,27 +169,13 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
         final RealVector[] predictedMeasurements = new RealVector[predictedSigmaPoints.length];
 
         // Loop on sigma points to predict measurements
-        for (int i = 0; i < predictedSigmaPoints.length; i++) {
+        for (int i = 0; i < predictedSigmaPoints.length; ++i) {
             // Set parameters for this sigma point
             final RealVector predictedSigmaPoint = predictedSigmaPoints[i].copy();
             updateParameters(predictedSigmaPoint);
 
             // Get propagators
-            Propagator[] propagators = getEstimatedPropagators();
-
-            // "updateParameters" sets the correct orbital and parameters info, but doesn't reset the time.
-            for (int k = 0; k < propagators.length; ++k) {
-                final SpacecraftState predictedState = propagators[k].getInitialState();
-                final Orbit predictedOrbit = getBuilders().get(k).getOrbitType().convertType(
-                        new CartesianOrbit(predictedState.getPVCoordinates(),
-                                predictedState.getFrame(),
-                                observedMeasurement.getDate(),
-                                predictedState.getMu()
-                        )
-                );
-                getBuilders().get(k).resetOrbit(predictedOrbit);
-            }
-            propagators = getEstimatedPropagators();
+            final Propagator[] propagators = getEstimatedPropagators();
 
             // Predicted states
             final SpacecraftState[] predictedStates = new SpacecraftState[propagators.length];
@@ -214,21 +209,7 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
                 MatrixUtils.createRealVector(measurement.getObservedMeasurement().getTheoreticalStandardDeviation());
 
         // Get propagators
-        Propagator[] propagators = getEstimatedPropagators();
-
-        // "updateParameters" sets the correct orbital info, but doesn't reset the time.
-        for (int k = 0; k < propagators.length; ++k) {
-            final SpacecraftState predicted = propagators[k].getInitialState();
-            final Orbit predictedOrbit = getBuilders().get(k).getOrbitType().convertType(
-                    new CartesianOrbit(predicted.getPVCoordinates(),
-                            predicted.getFrame(),
-                            measurement.getObservedMeasurement().getDate(),
-                            predicted.getMu()
-                    )
-            );
-            getBuilders().get(k).resetOrbit(predictedOrbit);
-        }
-        propagators = getEstimatedPropagators();
+        final Propagator[] propagators = getEstimatedPropagators();
 
         // Predicted states
         for (int k = 0; k < propagators.length; ++k) {
@@ -254,7 +235,8 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
 
     private RealVector predictState(final AbsoluteDate date,
                                     final RealVector previousState,
-                                    final Propagator[] propagators) {
+                                    final Propagator[] propagators,
+                                    final boolean resetState) {
 
         // Initialise predicted state
         final RealVector predictedState = previousState.copy();
@@ -275,6 +257,13 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
             // This updates the orbital drivers with the values of the predicted orbit
             getBuilders().get(k).resetOrbit(predicted.getOrbit());
 
+            // Additionally, for PropagatorBuilders which use mass, update the builder with the predicted mass value.
+            // If any mass changes have occurred during this estimation step, such as maneuvers,
+            // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
+            if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
+                ((AbstractPropagatorBuilder) (getBuilders().get(k))).setMass(predicted.getMass());
+            }
+
             // The orbital parameters in the state vector are replaced with their predicted values
             // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)
             // As the propagator builder was previously updated with the predicted orbit,
@@ -289,8 +278,9 @@ public class UnscentedKalmanModel extends KalmanEstimationCommon implements Unsc
             }
 
             // Set the builder back to the original time
-            getBuilders().get(k).resetOrbit(originalState.getOrbit());
-
+            if (resetState) {
+                getBuilders().get(k).resetOrbit(originalState.getOrbit());
+            }
         }
 
         return predictedState;

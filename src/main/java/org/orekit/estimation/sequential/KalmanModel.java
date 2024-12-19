@@ -29,6 +29,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.AbstractPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
@@ -126,6 +127,10 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
         final double[] scale = getScale();
         for (int k = 0; k < predictedSpacecraftStates.length; ++k) {
 
+            // Orbital drivers
+            final List<DelegatingDriver> orbitalParameterDrivers =
+                    getBuilders().get(k).getOrbitalParametersDrivers().getDrivers();
+
             // Indexes
             final int[] indK = covarianceIndirection[k];
 
@@ -139,9 +144,17 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
                 final RealMatrix dYdY0 = harvesters[k].getStateTransitionMatrix(predictedSpacecraftStates[k]);
 
                 // Fill upper left corner (dY/dY0)
+                int stmRow = 0;
                 for (int i = 0; i < dYdY0.getRowDimension(); ++i) {
-                    for (int j = 0; j < nbOrbParams; ++j) {
-                        stm.setEntry(indK[i], indK[j], dYdY0.getEntry(i, j));
+                    int stmCol = 0;
+                    if (orbitalParameterDrivers.get(i).isSelected()) {
+                        for (int j = 0; j < nbOrbParams; ++j) {
+                            if (orbitalParameterDrivers.get(j).isSelected()) {
+                                stm.setEntry(indK[stmRow], indK[stmCol], dYdY0.getEntry(i, j));
+                                stmCol += 1;
+                            }
+                        }
+                        stmRow += 1;
                     }
                 }
             }
@@ -152,9 +165,13 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
                 final RealMatrix dYdPp = harvesters[k].getParametersJacobian(predictedSpacecraftStates[k]);
 
                 // Fill 1st row, 2nd column (dY/dPp)
+                int stmRow = 0;
                 for (int i = 0; i < dYdPp.getRowDimension(); ++i) {
-                    for (int j = 0; j < nbParams; ++j) {
-                        stm.setEntry(indK[i], indK[j + 6], dYdPp.getEntry(i, j));
+                    if (orbitalParameterDrivers.get(i).isSelected()) {
+                        for (int j = 0; j < nbParams; ++j) {
+                            stm.setEntry(indK[stmRow], indK[j + nbOrbParams], dYdPp.getEntry(i, j));
+                        }
+                        stmRow += 1;
                     }
                 }
 
@@ -396,6 +413,13 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
             // Update the builder with the predicted orbit
             // This updates the orbital drivers with the values of the predicted orbit
             getBuilders().get(k).resetOrbit(predictedSpacecraftState.getOrbit());
+
+            // Additionally, for PropagatorBuilders which use mass, update the builder with the predicted mass value.
+            // If any mass changes have occurred during this estimation step, such as maneuvers,
+            // the updated mass value must be carried over so that new Propagators from this builder start with the updated mass.
+            if (getBuilders().get(k) instanceof AbstractPropagatorBuilder) {
+                ((AbstractPropagatorBuilder) (getBuilders().get(k))).setMass(predictedSpacecraftState.getMass());
+            }
 
             // The orbital parameters in the state vector are replaced with their predicted values
             // The propagation & measurement parameters are not changed by the prediction (i.e. the propagation)

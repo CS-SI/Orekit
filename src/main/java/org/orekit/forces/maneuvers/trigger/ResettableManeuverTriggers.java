@@ -14,17 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.maneuvers.triggers;
 
+package org.orekit.forces.maneuvers.trigger;
 
-import org.orekit.forces.maneuvers.trigger.StartStopEventsTrigger;
-import org.orekit.propagation.events.DateDetector;
-import org.orekit.time.AbsoluteDate;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 
-public class StartStopEventTriggerInitializationTest extends AbstractManeuverTriggersInitializationTest<StartStopEventsTrigger<DateDetector, DateDetector>> {
+/** Interface for maneuver triggers with resetters.
+ * @author Maxime Journot
+ * @since 10.2
+ */
+public interface ResettableManeuverTriggers extends ManeuverTriggers {
 
-    protected StartStopEventsTrigger<DateDetector, DateDetector> createTrigger(final AbsoluteDate start, final AbsoluteDate stop) {
-        return new StartStopEventTriggerTest.StartStopDates(start, stop);
-    }
+    /** Add a resetter.
+     * @param resetter resetter to add
+     */
+    void addResetter(ManeuverTriggersResetter resetter);
 
+    /** Add a resetter.
+     * @param field field to which the state belongs
+     * @param resetter resetter to add
+     * @param <T> type of the field elements
+     */
+    <T extends CalculusFieldElement<T>> void addResetter(Field<T> field, FieldManeuverTriggersResetter<T> resetter);
 }

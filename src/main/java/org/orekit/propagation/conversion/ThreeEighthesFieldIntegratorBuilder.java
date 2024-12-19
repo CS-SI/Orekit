@@ -32,7 +32,8 @@ import org.orekit.orbits.PositionAngleType;
  * @param <T> type of the field elements
  */
 public class ThreeEighthesFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractFixedStepFieldIntegratorBuilder<T, ThreeEighthesFieldIntegrator<T>> {
+        extends AbstractFixedStepFieldIntegratorBuilder<T, ThreeEighthesFieldIntegrator<T>>
+        implements FieldExplicitRungeKuttaIntegratorBuilder<T> {
 
     /**
      * Constructor.

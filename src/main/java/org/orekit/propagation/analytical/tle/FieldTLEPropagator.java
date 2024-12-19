@@ -17,14 +17,13 @@
 package org.orekit.propagation.analytical.tle;
 
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Pair;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FieldAttitude;
@@ -178,11 +177,8 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     /** TLE frame. */
     private final Frame teme;
 
-    /** Spacecraft masses (kg) mapped to TLEs. */
-    private Map<FieldTLE<T>, T> masses;
-
-    /** All TLEs. */
-    private TimeSpanMap<FieldTLE<T>> tles;
+    /** All TLEs and masses. */
+    private TimeSpanMap<Pair<FieldTLE<T>, T>> tlesAndMasses;
 
     /** Protected constructor for derived classes.
      *
@@ -214,9 +210,7 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
         this.utc       = initialTLE.getUtc();
         initializeTle(initialTLE);
         this.teme      = teme;
-        this.tles      = new TimeSpanMap<>(tle);
-        this.masses    = new HashMap<>();
-        this.masses.put(tle, mass);
+        this.tlesAndMasses      = new TimeSpanMap<>(new Pair<>(tle, mass));
 
         initializeCommons(parameters);
         sxpInitialize(parameters);
@@ -590,21 +584,19 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
     public void resetInitialState(final FieldSpacecraftState<T> state) {
         super.resetInitialState(state);
         resetTle(state);
-        masses = new HashMap<>();
-        masses.put(tle, state.getMass());
-        tles = new TimeSpanMap<>(tle);
+        tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, state.getMass()));
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         resetTle(state);
+        final Pair<FieldTLE<T>, T> tleAndMass = new Pair<>(tle, state.getMass());
         if (forward) {
-            tles.addValidAfter(tle, state.getDate().toAbsoluteDate(), false);
+            tlesAndMasses.addValidAfter(tleAndMass, state.getDate().toAbsoluteDate(), false);
         } else {
-            tles.addValidBefore(tle, state.getDate().toAbsoluteDate(), false);
+            tlesAndMasses.addValidBefore(tleAndMass, state.getDate().toAbsoluteDate(), false);
         }
         stateChanged(state);
-        masses.put(tle, state.getMass());
     }
 
     /** Reset internal TLE from a SpacecraftState.
@@ -628,12 +620,12 @@ public abstract class FieldTLEPropagator<T extends CalculusFieldElement<T>> exte
 
     /** {@inheritDoc} */
     protected T getMass(final FieldAbsoluteDate<T> date) {
-        return masses.get(tles.get(date.toAbsoluteDate()));
+        return tlesAndMasses.get(date.toAbsoluteDate()).getValue();
     }
 
     /** {@inheritDoc} */
     public FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
-        final FieldTLE<T> closestTle = tles.get(date.toAbsoluteDate());
+        final FieldTLE<T> closestTle = tlesAndMasses.get(date.toAbsoluteDate()).getKey();
         if (!tle.equals(closestTle)) {
             initializeTle(closestTle);
         }

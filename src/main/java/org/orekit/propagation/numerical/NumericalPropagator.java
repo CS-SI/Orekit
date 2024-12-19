@@ -45,7 +45,7 @@ import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.jacobians.Duration;
 import org.orekit.forces.maneuvers.jacobians.MedianDate;
 import org.orekit.forces.maneuvers.jacobians.TriggerDate;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
+import org.orekit.forces.maneuvers.trigger.ResettableManeuverTriggers;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -519,9 +519,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         final List<String> names = new ArrayList<>();
         for (final ForceModel forceModel : getAllForceModels()) {
-            if (forceModel instanceof Maneuver) {
+            if (forceModel instanceof Maneuver && ((Maneuver) forceModel).getManeuverTriggers() instanceof ResettableManeuverTriggers) {
                 final Maneuver maneuver = (Maneuver) forceModel;
-                final ManeuverTriggers maneuverTriggers = maneuver.getManeuverTriggers();
+                final ResettableManeuverTriggers maneuverTriggers = (ResettableManeuverTriggers) maneuver.getManeuverTriggers();
 
                 maneuverTriggers.getEventDetectors().
                         filter(ParameterDrivenDateIntervalDetector.class::isInstance).
@@ -607,7 +607,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      */
     private TriggerDate manageTriggerDate(final String stmName,
                                           final Maneuver maneuver,
-                                          final ManeuverTriggers mt,
+                                          final ResettableManeuverTriggers mt,
                                           final String driverName,
                                           final boolean start,
                                           final double threshold) {

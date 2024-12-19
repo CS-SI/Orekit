@@ -25,24 +25,21 @@ import org.orekit.orbits.PositionAngleType;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class ClassicalRungeKuttaIntegratorBuilder extends AbstractIntegratorBuilder<ClassicalRungeKuttaIntegrator> {
-
-    /** Step size (s). */
-    private final double step;
+public class ClassicalRungeKuttaIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<ClassicalRungeKuttaIntegrator> {
 
     /** Build a new instance.
      * @param step step size (s)
      * @see ClassicalRungeKuttaIntegrator
      */
     public ClassicalRungeKuttaIntegratorBuilder(final double step) {
-        this.step = step;
+        super(step);
     }
 
     /** {@inheritDoc} */
     @Override
     public ClassicalRungeKuttaIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
                                                          final PositionAngleType angleType) {
-        return new ClassicalRungeKuttaIntegrator(step);
+        return new ClassicalRungeKuttaIntegrator(getStep());
     }
 
 }

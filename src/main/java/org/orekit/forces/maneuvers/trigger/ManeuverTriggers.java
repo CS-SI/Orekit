@@ -18,7 +18,6 @@
 package org.orekit.forces.maneuvers.trigger;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -78,16 +77,4 @@ public interface ManeuverTriggers extends ParameterDriversProvider, EventDetecto
     default String getName() {
         return "";
     }
-
-    /** Add a resetter.
-     * @param resetter resetter to add
-     */
-    void addResetter(ManeuverTriggersResetter resetter);
-
-    /** Add a resetter.
-     * @param field field to which the state belongs
-     * @param resetter resetter to add
-     * @param <T> type of the field elements
-     */
-    <T extends CalculusFieldElement<T>> void addResetter(Field<T> field, FieldManeuverTriggersResetter<T> resetter);
 }

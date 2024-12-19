@@ -36,6 +36,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.events.Action;
 import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -67,6 +68,9 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
+import org.orekit.forces.maneuvers.Maneuver;
+import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
+import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
 import org.orekit.forces.radiation.IsotropicRadiationSingleCoefficient;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
@@ -104,6 +108,39 @@ class NumericalPropagatorTest {
     @Test
     void testIssue1032() {
         Assertions.assertEquals(PropagationType.OSCULATING, propagator.getPropagationType());
+    }
+
+    @Test
+    void testPropagateWithNonResettableManeuver() {
+        final ManeuverTriggers triggers = new ManeuverTriggers() {
+            @Override
+            public boolean isFiring(AbsoluteDate date, double[] parameters) {
+                return false;
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters) {
+                return false;
+            }
+
+            @Override
+            public Stream<EventDetector> getEventDetectors() {
+                return Stream.empty();
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+                return Stream.empty();
+            }
+
+            @Override
+            public List<ParameterDriver> getParametersDrivers() {
+                return Collections.emptyList();
+            }
+        };
+        propagator.addForceModel(new Maneuver(null, triggers, new BasicConstantThrustPropulsionModel(0., 1., Vector3D.PLUS_I, "")));
+        propagator.setupMatricesComputation("stm", MatrixUtils.createRealIdentityMatrix(6), new DoubleArrayDictionary());
+        propagator.setUpStmAndJacobianGenerators();
     }
 
     @Test

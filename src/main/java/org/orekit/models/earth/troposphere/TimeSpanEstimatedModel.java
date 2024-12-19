@@ -32,6 +32,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.FieldTrackingCoordinates;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TrackingCoordinates;
@@ -97,7 +98,7 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
             // Add all the parameter drivers of each span
             for (ParameterDriver tropoDriver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
-                if (!findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
+                if (!ParameterDriversProvider.findByName(listTroposphericParameterDrivers, tropoDriver.getName())) {
                     listTroposphericParameterDrivers.add(tropoDriver);
                 }
             }
@@ -232,20 +233,6 @@ public class TimeSpanEstimatedModel implements TroposphericModel {
         // Compute and return the path delay
         return getTroposphericModel(date.toAbsoluteDate()).pathDelay(trackingCoordinates, point, weather,
                                                                      extractedParameters, date);
-    }
-
-    /** Find if a parameter driver with a given name already exists in a list of parameter drivers.
-     * @param driversList the list of parameter drivers
-     * @param name the parameter driver's name to filter with
-     * @return true if the name was found, false otherwise
-     */
-    private boolean findByName(final List<ParameterDriver> driversList, final String name) {
-        for (final ParameterDriver driver : driversList) {
-            if (driver.getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /** Change the parameter drivers names of a {@link EstimatedModel} model, if needed.
