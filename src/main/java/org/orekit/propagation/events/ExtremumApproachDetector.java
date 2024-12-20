@@ -129,11 +129,7 @@ public class ExtremumApproachDetector extends AbstractDetector<ExtremumApproachD
      * @param s Spacecraft state.
      *
      * @return Relative position between primary (=s) and secondaryPVProvider.
-     *
-     * @deprecated The output type of this method shall be modified in the future to improve code efficiency (though it will
-     * still give access to the relative position and velocity)
      */
-    @Deprecated
     public PVCoordinates computeDeltaPV(final SpacecraftState s) {
         final Vector3D primaryPos = s.getPosition();
         final Vector3D primaryVel = s.getPVCoordinates().getVelocity();

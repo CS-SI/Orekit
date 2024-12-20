@@ -150,11 +150,7 @@ public class FieldExtremumApproachDetector<T extends CalculusFieldElement<T>>
      * @param s Spacecraft state.
      *
      * @return Relative position between primary (=s) and secondaryPVProvider.
-     *
-     * @deprecated The output type of this method shall be modified in the future to improve code efficiency (though it will
-     * still give access to the relative position and velocity)
      */
-    @Deprecated
     public FieldPVCoordinates<T> computeDeltaPV(final FieldSpacecraftState<T> s) {
         final FieldVector3D<T> primaryPos = s.getPosition();
         final FieldVector3D<T> primaryVel = s.getPVCoordinates().getVelocity();

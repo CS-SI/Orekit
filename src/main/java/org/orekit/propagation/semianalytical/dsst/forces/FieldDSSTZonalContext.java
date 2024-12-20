@@ -124,57 +124,12 @@ public class FieldDSSTZonalContext<T extends CalculusFieldElement<T>> extends Fi
         BB = auxiliaryElements.getB().multiply(auxiliaryElements.getB());
     }
 
-    /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
-     * @return &Chi;
-     * @deprecated since 12.2 Use getChi() instead
-     */
-    @Deprecated
-    public T getX() {
-        return getChi();
-    }
-
-    /** Get &Chi;².
-     * @return &Chi;².
-     * @deprecated since 12.2 Use getChi2() instead
-     */
-    @Deprecated
-    public T getXX() {
-        return getChi2();
-    }
 
     /** Getter for the &Chi;³.
      * @return the &Chi;³
      */
-    @Deprecated
     public T getChi3() {
         return chi3;
-    }
-
-    /** Get &Chi;³.
-     * @return &Chi;³
-     * @deprecated since 12.2 Use getChi3() instead
-     */
-    @Deprecated
-    public T getXXX() {
-        return getChi3();
-    }
-
-    /** Get m2aoA = -2 * a / A.
-     * @return m2aoA
-     * @deprecated since 12.2 Use -getAx2oA()() instead
-     */
-    @Deprecated
-    public T getM2aoA() {
-        return getAx2oA().negate();
-    }
-
-    /** Get mCo2AB = -C / 2AB.
-     * @return mCo2AB
-     * @deprecated since 12.2 Use -getCo2AB()() instead
-     */
-    @Deprecated
-    public T getMCo2AB() {
-        return getCo2AB().negate();
     }
 
     /** Get h * k.
