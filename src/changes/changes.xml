@@ -289,6 +289,9 @@
         <action dev="bryan" type="add" issue="1039">
             Added optional name for ObservableSatellite.
         </action>
+        <action dev="serrof" type="add" issue="879">
+            Added clearing method for ephemeris generators in integrator-based propagators.
+        </action>
     </release>
     <release version="12.2.1" date="18/12/2024"
              description="Version 12.2.1 is a patch release of Orekit.
@@ -319,7 +322,7 @@
         <action dev="serrof" type="fix" issue="1525">
             Fixed conversion error with large values for arguments of longitude and latitude.
         </action>
-        <action dev="serrof" type="fix" issue="1418">
+        <action dev="geckonoid" type="fix" issue="1418">
             Fixed ClockOffsetDriver not modifying the value of BistaticRange.
         </action>
     </release>

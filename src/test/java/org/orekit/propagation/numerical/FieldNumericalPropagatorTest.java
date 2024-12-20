@@ -133,6 +133,20 @@ public class FieldNumericalPropagatorTest {
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
     }
 
+
+    @Test
+    void testIssue879() {
+        // GIVEN
+        final FieldNumericalPropagator<Binary64> propagator = createPropagator(Binary64Field.getInstance());
+        final FieldEphemerisGenerator<Binary64> generator = propagator.getEphemerisGenerator();
+        final FieldAbsoluteDate<Binary64> epoch = propagator.getInitialState().getDate();
+        // WHEN
+        propagator.clearEphemerisGenerators();
+        propagator.propagate(epoch.shiftedBy(1));
+        // THEN
+        Assertions.assertThrows(NullPointerException.class, generator::getGeneratedEphemeris);
+    }
+
     @Test
     void testInternalEventDetectorsFromAttitudeProvider() {
         // GIVEN
