@@ -73,14 +73,11 @@ public class NeQuickModel implements IonosphericModel {
     /** Modip grid. */
     private final ModipGrid modipGrid;
 
-    /** Month used for loading CCIR coefficients. */
-    private int month;
-
     /** F2 coefficients used by the F2 layer (flatten array for cache efficiency). */
-    private double[] flattenF2;
+    private final double[][] flattenF2;
 
     /** Fm3 coefficients used by the M(3000)F2 layer(flatten array for cache efficiency). */
-    private double[] flattenFm3;
+    private final double[][] flattenFm3;
 
     /** UTC time scale. */
     private final TimeScale utc;
@@ -136,9 +133,8 @@ public class NeQuickModel implements IonosphericModel {
     private NeQuickModel(final ModipGrid modipGrid, final EffectiveIonizationLevelEngine ionizationEngine,
                          final TimeScale utc) {
         // F2 layer values
-        this.month      = 0;
-        this.flattenF2  = null;
-        this.flattenFm3 = null;
+        this.flattenF2  = new double[12][];
+        this.flattenFm3 = new double[12][];
         // Modip grid
         this.modipGrid  = modipGrid;
 
@@ -336,7 +332,9 @@ public class NeQuickModel implements IonosphericModel {
             final double longitude = longitudeS[i];
             final double modip     = modipGrid.computeMODIP(latitude, longitude);
             final double az        = ionizationEngine.effectiveIonizationLevel(modip);
-            final NeQuickParameters parameters = new NeQuickParameters(dateTime, flattenF2, flattenFm3,
+            final NeQuickParameters parameters = new NeQuickParameters(dateTime,
+                                                                       flattenF2[dateTime.getDate().getMonth() - 1],
+                                                                       flattenFm3[dateTime.getDate().getMonth() - 1],
                                                                        latitude, longitude, az, modip);
             density += electronDensity(heightS[i], parameters);
         }
@@ -367,7 +365,9 @@ public class NeQuickModel implements IonosphericModel {
             final T longitude = longitudeS[i];
             final T modip     = modipGrid.computeMODIP(latitude, longitude);
             final T az        = ionizationEngine.effectiveIonizationLevel(modip);
-            final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(dateTime, flattenF2, flattenFm3,
+            final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(dateTime,
+                                                                                      flattenF2[dateTime.getDate().getMonth() - 1],
+                                                                                      flattenFm3[dateTime.getDate().getMonth() - 1],
                                                                                       latitude, longitude, az, modip);
             density = density.add(electronDensity(field, heightS[i], parameters));
         }
@@ -634,20 +634,19 @@ public class NeQuickModel implements IonosphericModel {
      */
     private void loadsIfNeeded(final DateComponents date) {
 
-        // Current month
-        final int currentMonth = date.getMonth();
+        // Month index
+        final int monthIndex = date.getMonth() - 1;
 
-        // Check if date have changed or if f2 and fm3 arrays are null
-        if (currentMonth != month || flattenF2 == null || flattenFm3 == null) {
-            this.month = currentMonth;
+        // Check if CCIR has already been loaded for this month
+        if (flattenF2[monthIndex] == null) {
 
             // Read file
             final CCIRLoader loader = new CCIRLoader();
             loader.loadCCIRCoefficients(date);
 
             // Update arrays
-            this.flattenF2  = flatten(loader.getF2());
-            this.flattenFm3 = flatten(loader.getFm3());
+            this.flattenF2[monthIndex]  = flatten(loader.getF2());
+            this.flattenFm3[monthIndex] = flatten(loader.getFm3());
         }
     }
 
