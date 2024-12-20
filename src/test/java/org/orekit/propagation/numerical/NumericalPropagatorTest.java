@@ -144,6 +144,17 @@ class NumericalPropagatorTest {
     }
 
     @Test
+    void testIssue879() {
+        // GIVEN
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        // WHEN
+        propagator.clearEphemerisGenerators();
+        propagator.propagate(initDate.shiftedBy(1));
+        // THEN
+        Assertions.assertThrows(NullPointerException.class, generator::getGeneratedEphemeris);
+    }
+
+    @Test
     void testEventsWithTimeRangePropagation() {
         final AtomicInteger counter = new AtomicInteger(0);
         final double dt = 60.0;

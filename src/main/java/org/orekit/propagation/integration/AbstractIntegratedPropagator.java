@@ -354,6 +354,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         integ.addEventDetector(new AdaptedEventDetector(detector));
     }
 
+    /**
+     * Clear the ephemeris generators.
+     * @since 13.0
+     */
+    public void clearEphemerisGenerators() {
+        ephemerisGenerators.clear();
+    }
+
     /** {@inheritDoc} */
     @Override
     public EphemerisGenerator getEphemerisGenerator() {

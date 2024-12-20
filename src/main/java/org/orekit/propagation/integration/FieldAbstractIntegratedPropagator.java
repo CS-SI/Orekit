@@ -364,6 +364,14 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
         integ.addEventDetector(new FieldAdaptedEventDetector(detector));
     }
 
+    /**
+     * Clear the ephemeris generators.
+     * @since 13.0
+     */
+    public void clearEphemerisGenerators() {
+        ephemerisGenerators.clear();
+    }
+
     /** {@inheritDoc} */
     @Override
     public FieldEphemerisGenerator<T> getEphemerisGenerator() {
