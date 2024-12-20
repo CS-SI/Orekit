@@ -60,6 +60,7 @@ class CartesianAdjointSingleBodyTermTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void testGetPositionAdjointContribution() {
         // GIVEN
         final CelestialBody body = getCelestialBody(Vector3D.MINUS_I);

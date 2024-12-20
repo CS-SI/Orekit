@@ -28,6 +28,8 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -276,11 +278,22 @@ class KalmanEstimationCommon implements KalmanEstimation {
             if (nbDyn > 0) {
                 final RealMatrix noiseP = covarianceMatricesProviders.get(k).
                         getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+                if (measurementProcessNoiseMatrix == null && noiseP.getRowDimension() != nbDyn + nbMeas) {
+                    throw new OrekitException(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION,
+                            nbDyn + nbMeas, noiseP.getRowDimension());
+                } else if (measurementProcessNoiseMatrix != null && noiseP.getRowDimension() != nbDyn) {
+                    throw new OrekitException(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION,
+                            nbDyn, noiseP.getRowDimension());
+                }
                 noiseK.setSubMatrix(noiseP.getData(), 0, 0);
             }
             if (measurementProcessNoiseMatrix != null) {
                 final RealMatrix noiseM = measurementProcessNoiseMatrix.
                         getInitialCovarianceMatrix(correctedSpacecraftStates[k]);
+                if (noiseM.getRowDimension() != nbMeas) {
+                    throw new OrekitException(OrekitMessages.WRONG_MEASUREMENT_COVARIANCE_DIMENSION,
+                            nbMeas, noiseM.getRowDimension());
+                }
                 noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
             }
 
@@ -495,12 +508,23 @@ class KalmanEstimationCommon implements KalmanEstimation {
                 final RealMatrix noiseP = covarianceMatricesProviders.get(k).
                         getProcessNoiseMatrix(correctedSpacecraftStates[k],
                                 predictedSpacecraftStates[k]);
+                if (measurementProcessNoiseMatrix == null && noiseP.getRowDimension() != nbDyn + nbMeas) {
+                    throw new OrekitException(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION,
+                            nbDyn + nbMeas, noiseP.getRowDimension());
+                } else if (measurementProcessNoiseMatrix != null && noiseP.getRowDimension() != nbDyn) {
+                    throw new OrekitException(OrekitMessages.WRONG_PROCESS_COVARIANCE_DIMENSION,
+                            nbDyn, noiseP.getRowDimension());
+                }
                 noiseK.setSubMatrix(noiseP.getData(), 0, 0);
             }
             if (measurementProcessNoiseMatrix != null) {
                 final RealMatrix noiseM = measurementProcessNoiseMatrix.
                         getProcessNoiseMatrix(correctedSpacecraftStates[k],
                                 predictedSpacecraftStates[k]);
+                if (noiseM.getRowDimension() != nbMeas) {
+                    throw new OrekitException(OrekitMessages.WRONG_MEASUREMENT_COVARIANCE_DIMENSION,
+                            nbMeas, noiseM.getRowDimension());
+                }
                 noiseK.setSubMatrix(noiseM.getData(), nbDyn, nbDyn);
             }
 
