@@ -115,16 +115,6 @@ public class DSSTTesseralContext extends DSSTGravityContext {
     }
 
     /**
-     * Get μ / a .
-     * @return moa
-     *@deprecated since 12.2 Use getMuoa() instead
-     */
-    @Deprecated
-    public double getMoa() {
-        return getMuoa();
-    }
-
-    /**
      * Get the Keplerian period.
      * <p>
      * The Keplerian period is computed directly from semi major axis and central

@@ -22,7 +22,6 @@ import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.FieldOrbit;
-import org.orekit.propagation.semianalytical.dsst.forces.FieldDSSTGravityContext;
 import org.orekit.time.FieldAbsoluteDate;
 
 /** Container class for common parameters used by all DSST forces.
@@ -328,30 +327,4 @@ public class FieldAuxiliaryElements<T extends CalculusFieldElement<T>> {
         return new AuxiliaryElements(orbit.toOrbit(), getRetrogradeFactor());
     }
 
-    /** Get direction cosine α for central body.
-     * @return α
-     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getAlpha()} instead
-     */
-    @Deprecated
-    public T getAlpha() {
-        return (T) f.getZ();
-    }
-
-    /** Get direction cosine β for central body.
-     * @return β
-     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getBeta()} instead
-     */
-    @Deprecated
-    public T getBeta() {
-        return (T) g.getZ();
-    }
-
-    /** Get direction cosine γ for central body.
-     * @return γ
-     * @deprecated since 12.2, use {@link FieldDSSTGravityContext#getGamma()} instead
-     */
-    @Deprecated
-    public T getGamma() {
-        return (T) w.getZ();
-    }
 }
