@@ -27,7 +27,6 @@ import java.util.stream.Stream;
  * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
  * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
  * Here, the control vector is chosen as the thrust force divided by the maximum thrust magnitude and expressed in the propagation frame.
- * It has a unit Euclidean norm.
  *
  * @author Romain Serra
  * @see UnboundedCartesianEnergy
@@ -86,6 +85,7 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new SingularityDetector(0.), new SingularityDetector(maximumThrustMagnitude));
+        return Stream.of(new SingularityDetector(getEventDetectionSettings(), 0.),
+                new SingularityDetector(getEventDetectionSettings(), maximumThrustMagnitude));
     }
 }

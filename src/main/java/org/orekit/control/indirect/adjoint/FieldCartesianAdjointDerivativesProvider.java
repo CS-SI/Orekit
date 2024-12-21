@@ -164,13 +164,13 @@ public class FieldCartesianAdjointDerivativesProvider<T extends CalculusFieldEle
                 adjointVariables, propagationFrame);
             hamiltonian = hamiltonian.add(contribution);
         }
+        final T mass = state.getMass();
         if (adjointVariables.length != 6) {
-            final T mass = state.getMass();
             final T thrustAccelerationNorm = getCost().getFieldThrustAccelerationVector(adjointVariables, mass).getNorm();
             final T thrustForceNorm = thrustAccelerationNorm.multiply(mass);
             hamiltonian = hamiltonian.subtract(adjointVariables[6].multiply(getCost().getMassFlowRateFactor()).multiply(thrustForceNorm));
         }
-        hamiltonian = hamiltonian.add(getCost().getFieldHamiltonianContribution(adjointVariables, state.getMass()));
+        hamiltonian = hamiltonian.add(getCost().getFieldHamiltonianContribution(adjointVariables, mass));
         return hamiltonian;
     }
 }
