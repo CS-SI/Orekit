@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
-
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
@@ -31,10 +29,7 @@ import org.orekit.utils.Constants;
  * @see "GLONASS Interface Control Document v1.0, 2016"
  * @since 10.0
  */
-public class GLONASSDate implements Serializable, TimeStamped {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20190131L;
+public class GLONASSDate implements TimeStamped {
 
     /** Constant for date computation. */
     private static final int C1 = 44195;
@@ -58,7 +53,7 @@ public class GLONASSDate implements Serializable, TimeStamped {
     private double gmst;
 
     /** Corresponding date. */
-    private final transient AbsoluteDate date;
+    private final AbsoluteDate date;
 
     /** Build an instance corresponding to a GLONASS date.
      *
@@ -217,50 +212,6 @@ public class GLONASSDate implements Serializable, TimeStamped {
         return new AbsoluteDate(new DateComponents(year, month, day),
                                 new TimeComponents(secInNa),
                                 glonass);
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(na, n4, secInNa);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20190131L;
-
-        /** The number of the current day in a four year interval N<sub>a</sub>. */
-        private final int na;
-
-        /** The number of the current four year interval N<sub>4</sub>. */
-        private final int n4;
-
-        /** Number of seconds since N<sub>a</sub>. */
-        private final double secInNa;
-
-        /** Simple constructor.
-         * @param na the number of the current day in a four year interval
-         * @param n4 the number of the current four year interval
-         * @param secInNa the number of seconds since na start
-         */
-        DataTransferObject(final int na, final int n4, final double secInNa) {
-            this.na      = na;
-            this.n4      = n4;
-            this.secInNa = secInNa;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link GPSDate}.
-         * @return replacement {@link GPSDate}
-         */
-        private Object readResolve() {
-            return new GLONASSDate(na, n4, secInNa);
-        }
-
     }
 
 }

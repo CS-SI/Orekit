@@ -30,11 +30,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -192,55 +187,6 @@ public class CelestialBodyFactoryTest {
         return new TimeStampedPVCoordinates(new AbsoluteDate(year, month, day, TimeScalesFactory.getTDB()),
                                             new Vector3D(  xKm * 1000,   yKm * 1000,   zKM * 1000),
                                             new Vector3D(vxKmS * 1000, vyKms * 1000, vzKms * 1000));
-    }
-
-    @Test
-    public void testSerialization()
-            throws IOException, ClassNotFoundException {
-        Utils.setDataRoot("regular-data");
-        for (String name : new String[] {
-            CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER, CelestialBodyFactory.SUN, CelestialBodyFactory.MERCURY,
-            CelestialBodyFactory.VENUS, CelestialBodyFactory.EARTH_MOON, CelestialBodyFactory.EARTH,
-            CelestialBodyFactory.MOON, CelestialBodyFactory.MARS, CelestialBodyFactory.JUPITER,
-            CelestialBodyFactory.SATURN, CelestialBodyFactory.URANUS, CelestialBodyFactory.NEPTUNE, CelestialBodyFactory.PLUTO
-        }) {
-
-            CelestialBody original = CelestialBodyFactory.getBody(name);
-
-            ByteArrayOutputStream bosBody = new ByteArrayOutputStream();
-            ObjectOutputStream    oosBody = new ObjectOutputStream(bosBody);
-            oosBody.writeObject(original);
-            Assertions.assertTrue(bosBody.size() > 400);
-            Assertions.assertTrue(bosBody.size() < 460);
-
-            ByteArrayInputStream  bisBody = new ByteArrayInputStream(bosBody.toByteArray());
-            ObjectInputStream     oisBody = new ObjectInputStream(bisBody);
-            CelestialBody deserializedBody  = (CelestialBody) oisBody.readObject();
-            Assertions.assertTrue(original == deserializedBody);
-
-            ByteArrayOutputStream bosInertialFrame = new ByteArrayOutputStream();
-            ObjectOutputStream    oosInertialFrame = new ObjectOutputStream(bosInertialFrame);
-            oosInertialFrame.writeObject(original.getInertiallyOrientedFrame());
-            Assertions.assertTrue(bosInertialFrame.size() > 400);
-            Assertions.assertTrue(bosInertialFrame.size() < 460);
-
-            ByteArrayInputStream  bisInertialFrame = new ByteArrayInputStream(bosInertialFrame.toByteArray());
-            ObjectInputStream     oisInertialFrame = new ObjectInputStream(bisInertialFrame);
-            Frame deserializedInertialFrame  = (Frame) oisInertialFrame.readObject();
-            Assertions.assertTrue(original.getInertiallyOrientedFrame() == deserializedInertialFrame);
-
-            ByteArrayOutputStream bosBodyFrame = new ByteArrayOutputStream();
-            ObjectOutputStream    oosBodyFrame = new ObjectOutputStream(bosBodyFrame);
-            oosBodyFrame.writeObject(original.getBodyOrientedFrame());
-            Assertions.assertTrue(bosBodyFrame.size() > 400);
-            Assertions.assertTrue(bosBodyFrame.size() < 460);
-
-            ByteArrayInputStream  bisBodyFrame = new ByteArrayInputStream(bosBodyFrame.toByteArray());
-            ObjectInputStream     oisBodyFrame = new ObjectInputStream(bisBodyFrame);
-            Frame deserializedBodyFrame  = (Frame) oisBodyFrame.readObject();
-            Assertions.assertTrue(original.getBodyOrientedFrame() == deserializedBodyFrame);
-
-        }
     }
 
     @Test

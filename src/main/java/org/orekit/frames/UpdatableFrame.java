@@ -56,9 +56,6 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class UpdatableFrame extends Frame {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -2075893064211339303L;
-
     /** Build a non-inertial frame from its transform with respect to its parent.
      * <p>calling this constructor is equivalent to call
      * {@link #UpdatableFrame(Frame, Transform, String, boolean)
@@ -178,9 +175,6 @@ public class UpdatableFrame extends Frame {
 
     /** Local provider for transforms. */
     private static class UpdatableProvider implements TransformProvider {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 4436954500689776331L;
 
         /** Current transform. */
         private AtomicReference<Transform> transform;

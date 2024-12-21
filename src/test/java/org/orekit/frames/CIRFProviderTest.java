@@ -29,11 +29,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class CIRFProviderTest {
@@ -153,31 +148,6 @@ public class CIRFProviderTest {
             maxError = FastMath.max(maxError, error);
         }
         Assertions.assertTrue(maxError < 1.3e-13);
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        CIRFProvider provider = new CIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(provider);
-
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        CIRFProvider deserialized  = (CIRFProvider) ois.readObject();
-        for (int i = 0; i < FastMath.min(100, provider.getEOPHistory().getEntries().size()); ++i) {
-            AbsoluteDate date = provider.getEOPHistory().getEntries().get(i).getDate();
-            Transform expectedIdentity = new Transform(date,
-                                                       provider.getTransform(date).getInverse(),
-                                                       deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
-        }
 
     }
 

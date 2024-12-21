@@ -36,12 +36,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 
 public class TODProviderTest {
@@ -370,33 +365,6 @@ public class TODProviderTest {
             // TOD2006 and TOD2000 are similar to about 30 micro-arcseconds
             // between 2000 and 2002, with EOP corrections taken into account in both cases
             Assertions.assertEquals(0.0, delta, 1.5e-10);
-        }
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        TODProvider provider = new TODProvider(IERSConventions.IERS_2010,
-                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
-                                               DataContext.getDefault().getTimeScales());
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(provider);
-
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        TODProvider deserialized  = (TODProvider) ois.readObject();
-        for (int i = 0; i < FastMath.min(100, provider.getEOPHistory().getEntries().size()); ++i) {
-            AbsoluteDate date = provider.getEOPHistory().getEntries().get(i).getDate();
-            Transform expectedIdentity = new Transform(date,
-                                                       provider.getTransform(date).getInverse(),
-                                                       deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }

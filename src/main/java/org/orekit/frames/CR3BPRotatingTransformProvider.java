@@ -39,9 +39,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 class CR3BPRotatingTransformProvider implements TransformProvider {
 
-    /** Serializable UID.*/
-    private static final long serialVersionUID = 20190519L;
-
     /** Frame for results. Always defined as primaryBody's inertially oriented frame.*/
     private final Frame frame;
 

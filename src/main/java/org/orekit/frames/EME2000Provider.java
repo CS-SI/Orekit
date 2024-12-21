@@ -32,9 +32,6 @@ import org.orekit.utils.Constants;
  */
 class EME2000Provider extends FixedTransformProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6134137187835219727L;
-
     /** Obliquity of the ecliptic. */
     private static final double EPSILON_0 = 84381.448 * Constants.ARC_SECONDS_TO_RADIANS;
 

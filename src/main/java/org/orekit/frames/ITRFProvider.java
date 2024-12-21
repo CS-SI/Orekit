@@ -35,9 +35,6 @@ import org.orekit.utils.Constants;
  */
 class ITRFProvider implements EOPBasedTransformProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130922L;
-
     /** S' rate in radians per julian century.
      * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
      */

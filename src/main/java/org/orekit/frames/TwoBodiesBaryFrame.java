@@ -29,9 +29,6 @@ import org.orekit.utils.OrekitConfiguration;
  */
 public class TwoBodiesBaryFrame extends Frame {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20190725L;
-
     /**
      * Simple constructor.
      * @param primaryBody Primary body.

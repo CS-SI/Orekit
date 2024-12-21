@@ -30,12 +30,6 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.CartesianDerivativesFilter;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 
 public class ShiftingTransformProviderTest {
 
@@ -120,7 +114,6 @@ public class ShiftingTransformProviderTest {
         Assertions.assertThrows(OrekitException.class, () -> {
             ShiftingTransformProvider shiftingProvider =
                     new ShiftingTransformProvider(new TransformProvider() {
-                        private static final long serialVersionUID = -3126512810306982868L;
                         public Transform getTransform(AbsoluteDate date) {
                             throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                         }
@@ -135,56 +128,8 @@ public class ShiftingTransformProviderTest {
         });
     }
 
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-
-        AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
-        CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
-        ShiftingTransformProvider shiftingProvider =
-                new ShiftingTransformProvider(rawProvider,
-                                              CartesianDerivativesFilter.USE_PVA,
-                                              AngularDerivativesFilter.USE_RRA,
-                                              5, 0.8, 10, 60.0, 60.0);
-
-        for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
-            shiftingProvider.getTransform(t0.shiftedBy(dt));
-        }
-        Assertions.assertEquals(12, rawProvider.getCount());
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(shiftingProvider);
-
-        Assertions.assertTrue(bos.size () >  650);
-        Assertions.assertTrue(bos.size () <  750);
-
-        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream ois = new ObjectInputStream(bis);
-        ShiftingTransformProvider deserialized =
-                (ShiftingTransformProvider) ois.readObject();
-        Assertions.assertEquals(0, ((CirclingProvider) deserialized.getRawProvider()).getCount());
-        for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
-            Transform t1 = shiftingProvider.getTransform(t0.shiftedBy(dt));
-            Transform t2 = deserialized.getTransform(t0.shiftedBy(dt));
-            Transform error = new Transform(t1.getDate(), t1, t2.getInverse());
-            // both interpolators should give the same results
-            Assertions.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),   1.0e-15);
-            Assertions.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),   1.0e-15);
-            Assertions.assertEquals(0.0, error.getAngular().getRotation().getAngle(),    1.0e-15);
-            Assertions.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(), 1.0e-15);
-        }
-
-        // the original interpolator should not have triggered any new calls
-        Assertions.assertEquals(12, rawProvider.getCount());
-
-        // the deserialized interpolator should have triggered new calls
-        Assertions.assertEquals(12, ((CirclingProvider) deserialized.getRawProvider()).getCount());
-
-    }
-
     private static class CirclingProvider implements TransformProvider {
 
-        private static final long serialVersionUID = 473784183299281612L;
         private int count;
         private final AbsoluteDate t0;
         private final double omega;

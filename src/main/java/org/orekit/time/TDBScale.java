@@ -36,9 +36,6 @@ import org.orekit.utils.Constants;
  */
 public class TDBScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
-
     /** Constant term for g angle. */
     private static final double G0 = FastMath.toRadians(357.53);
 

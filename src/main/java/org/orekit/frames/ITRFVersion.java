@@ -244,9 +244,6 @@ public enum ITRFVersion {
     /** Specialized transform provider between ITRF frames. */
     public static class Converter implements TransformProvider {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20180330L;
-
         /** Origin ITRF. */
         private final ITRFVersion origin;
 

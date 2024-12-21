@@ -286,9 +286,6 @@ public class CPF implements EphemerisFile<CPF.CPFCoordinate, CPF.CPFEphemeris> {
     /** A single record of position and possibility velocity in an SP3 file. */
     public static class CPFCoordinate extends TimeStampedPVCoordinates {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20201016L;
-
         /** Leap second flag. */
         private final int leap;
 

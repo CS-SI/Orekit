@@ -17,25 +17,16 @@
 package org.orekit.frames;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 
 public class TEMEProviderTest {
@@ -73,33 +64,6 @@ public class TEMEProviderTest {
         PVCoordinates delta = new PVCoordinates(pvEME2000Computed, pvEME2000Ref);
         Assertions.assertEquals(0.0, delta.getPosition().getNorm(), 0.025);
         Assertions.assertEquals(0.0, delta.getVelocity().getNorm(), 1.0e-4);
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        TEMEProvider provider = new TEMEProvider(IERSConventions.IERS_2010,
-                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true),
-                                               DataContext.getDefault().getTimeScales());
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(provider);
-
-        Assertions.assertTrue(bos.size() > 340000);
-        Assertions.assertTrue(bos.size() < 350000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        TEMEProvider deserialized  = (TEMEProvider) ois.readObject();
-        for (int i = 0; i < FastMath.min(100, provider.getEOPHistory().getEntries().size()); ++i) {
-            AbsoluteDate date = provider.getEOPHistory().getEntries().get(i).getDate();
-            Transform expectedIdentity = new Transform(date,
-                                                       provider.getTransform(date).getInverse(),
-                                                       deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
-        }
 
     }
 

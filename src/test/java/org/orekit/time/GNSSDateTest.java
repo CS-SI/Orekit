@@ -253,48 +253,6 @@ public class GNSSDateTest {
     }
 
     @Test
-    public void testSerializationGPS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
-        doTestSerialization(SatelliteSystem.GPS, date, time, 1387, new TimeOffset(318677, 0), 251);
-    }
-
-    @Test
-    public void testSerializationGalileo() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
-        doTestSerialization(SatelliteSystem.GALILEO, date, time, 363, new TimeOffset(318677, 0), 255);
-    }
-
-    @Test
-    public void testSerializationQZSS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
-        doTestSerialization(SatelliteSystem.QZSS, date, time, 1387, new TimeOffset(318677, 0), 252);
-    }
-
-    @Test
-    public void testSerializationBeidou() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2010, 2, 26);
-        final TimeComponents time = new TimeComponents(23, 15, new TimeOffset(12, 0));
-        doTestSerialization(SatelliteSystem.BEIDOU, date, time, 216, new TimeOffset(515713, 0), 254);
-    }
-
-    @Test
-    public void testSerializationIRNSS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
-        doTestSerialization(SatelliteSystem.IRNSS, date, time, 363, new TimeOffset(318677, 0), 253);
-    }
-
-    @Test
-    public void testSerializationSBAS() throws ClassNotFoundException, IOException {
-        final DateComponents date = new DateComponents(2006, 8, 9);
-        final TimeComponents time = new TimeComponents(16, 31, new TimeOffset(3, 0));
-        doTestSerialization(SatelliteSystem.SBAS, date, time, 1387, new TimeOffset(318677, 0), 252);
-    }
-
-    @Test
     public void testDefaultRolloverReference() {
         Assertions.assertNull(GNSSDate.getRolloverReference());
         GNSSDate date = new GNSSDate(305, 1.5e-3, SatelliteSystem.GPS);

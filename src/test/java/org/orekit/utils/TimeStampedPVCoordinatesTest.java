@@ -26,12 +26,6 @@ import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 public class TimeStampedPVCoordinatesTest {
 
     @Test
@@ -299,30 +293,6 @@ public class TimeStampedPVCoordinatesTest {
                                          new Vector3D(-1,  -0.1, -10),
                                          new Vector3D(10,   1.0, 100));
         Assertions.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        TimeStampedPVCoordinates pv = new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
-                                                                   new Vector3D(1, 2, 3),
-                                                                   new Vector3D(4, 5, 6),
-                                                                   new Vector3D(7, 8, 9));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(pv);
-
-        Assertions.assertTrue(bos.size() > 180);
-        Assertions.assertTrue(bos.size() < 190);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        TimeStampedPVCoordinates deserialized  = (TimeStampedPVCoordinates) ois.readObject();
-        Assertions.assertEquals(0.0, deserialized.getDate().durationFrom(pv.getDate()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getPosition(),     pv.getPosition()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getVelocity(),     pv.getVelocity()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getAcceleration(), pv.getAcceleration()), 1.0e-15);
-
     }
 
     private void checkPV(TimeStampedPVCoordinates expected, TimeStampedPVCoordinates real, double epsilon) {

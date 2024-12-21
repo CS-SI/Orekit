@@ -34,9 +34,6 @@ public class TransformProviderUtils {
      */
     public static final TransformProvider IDENTITY_PROVIDER = new TransformProvider() {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20180330L;
-
         /** {@inheritDoc}
          * <p>
          * Always returns {@link Transform#IDENTITY}
@@ -86,9 +83,6 @@ public class TransformProviderUtils {
     public static TransformProvider getReversedProvider(final TransformProvider provider) {
         return new TransformProvider() {
 
-            /** serializable UID. */
-            private static final long serialVersionUID = 20180330L;
-
             /** {@inheritDoc} */
             @Override
             public Transform getTransform(final AbsoluteDate date) {
@@ -135,10 +129,6 @@ public class TransformProviderUtils {
     public static TransformProvider getCombinedProvider(final TransformProvider first,
                                                         final TransformProvider second) {
         return new TransformProvider() {
-
-            /** serializable UID. */
-            private static final long serialVersionUID = 20180330L;
-
             /** {@inheritDoc} */
             @Override
             public Transform getTransform(final AbsoluteDate date) {
