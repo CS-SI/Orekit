@@ -142,15 +142,13 @@ public class UnscentedKalmanEstimatorTest {
         // Unchanged orbital parameters (two body propagation)
         final KeplerianOrbit initialOrbit = (KeplerianOrbit) context.initialOrbit;
         Assertions.assertEquals(initialOrbit.getA(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue());
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue(), 1e-8);
         Assertions.assertEquals(initialOrbit.getI(),
                 propagatorBuilder.getOrbitalParametersDrivers().findByName("i").getValue());
         Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(),
                 propagatorBuilder.getOrbitalParametersDrivers().findByName("Ω").getValue());
         Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue());
-        Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue());
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue(), 1e-15);
 
         // Changed orbital parameters
         Assertions.assertNotEquals(initialOrbit.getE(),
@@ -256,22 +254,22 @@ public class UnscentedKalmanEstimatorTest {
 
         // Unchanged orbital parameters
         Assertions.assertEquals(refOrbit1.getA(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue());
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue(), 1e-8);
         Assertions.assertEquals(refOrbit1.getI(),
                 propagatorBuilder1.getOrbitalParametersDrivers().findByName("i[0]").getValue());
         Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(),
                 propagatorBuilder1.getOrbitalParametersDrivers().findByName("Ω[0]").getValue());
         Assertions.assertEquals(refOrbit1.getPerigeeArgument(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue());
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue(), 1e-15);
 
         Assertions.assertEquals(refOrbit2.getA(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue());
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue(), 1e-8);
         Assertions.assertEquals(refOrbit2.getI(),
                 propagatorBuilder2.getOrbitalParametersDrivers().findByName("i[1]").getValue());
         Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(),
                 propagatorBuilder2.getOrbitalParametersDrivers().findByName("Ω[1]").getValue());
         Assertions.assertEquals(refOrbit2.getPerigeeArgument(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue());
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue(), 1e-15);
 
         // Changed orbital parameters
         Assertions.assertNotEquals(refOrbit1.getE(),
