@@ -70,8 +70,8 @@ public class Perturbations extends CommentsContainer {
     /** Albedo model. */
     private String albedoModel;
 
-    /** Albedo grid size. */
-    private int albedoGridSize;
+    /** Albedo grid size. Optional in 502.0-B-3 with no default. */
+    private Integer albedoGridSize;
 
     /** Shadow model used for solar radiation pressure. */
     private ShadowModel shadowModel;
@@ -145,8 +145,8 @@ public class Perturbations extends CommentsContainer {
         fixedS10P7Mean      = Double.NaN;
         fixedY10P7          = Double.NaN;
         fixedY10P7Mean      = Double.NaN;
-        shadowBodies = Collections.singletonList(new BodyFacade(celestialBodies.getEarth().getName(),
-                                                                celestialBodies.getEarth()));
+        // In 502.0-B-3 (p. 6-50) SHADOW_BODIES is optional with no default
+        shadowBodies = Collections.emptyList();
     }
 
     /** Get name of atmospheric model.
@@ -324,14 +324,14 @@ public class Perturbations extends CommentsContainer {
     /** Get albedo grid size.
      * @return albedo grid size
      */
-    public int getAlbedoGridSize() {
+    public Integer getAlbedoGridSize() {
         return albedoGridSize;
     }
 
     /** Set albedo grid size.
      * @param albedoGridSize albedo grid size
      */
-    public void setAlbedoGridSize(final int albedoGridSize) {
+    public void setAlbedoGridSize(final Integer albedoGridSize) {
         this.albedoGridSize = albedoGridSize;
     }
 

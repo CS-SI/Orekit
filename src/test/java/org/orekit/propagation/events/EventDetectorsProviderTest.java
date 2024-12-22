@@ -27,6 +27,11 @@ import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
+import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
+import org.orekit.propagation.events.intervals.AdaptableInterval;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
@@ -56,22 +61,7 @@ public class EventDetectorsProviderTest {
 
         // Define drivers
         final List<ParameterDriver> drivers = new ArrayList<>();
-
-        // Define provider
-        final EventDetectorsProvider provider = new EventDetectorsProvider() {
-
-            @Override
-            public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>>
-            getFieldEventDetectors(Field<T> field) {
-
-                return getFieldEventDetectors(field, drivers);
-            }
-
-            @Override
-            public Stream<EventDetector> getEventDetectors() {
-                return getEventDetectors(drivers);
-            }
-        };
+        final EventDetectorsProvider provider = getProvider(drivers);
 
         // When: empty drivers list
         // ----
@@ -123,11 +113,11 @@ public class EventDetectorsProviderTest {
         // Detectors list not empty
         Assertions.assertFalse(detectors.isEmpty());
         Assertions.assertEquals(1, detectors.size());
-        Assertions.assertTrue(detectors.get(0) instanceof DateDetector);
+        Assertions.assertInstanceOf(DateDetector.class, detectors.get(0));
         
         Assertions.assertFalse(fieldDetectors.isEmpty());
         Assertions.assertEquals(1, fieldDetectors.size());
-        Assertions.assertTrue(fieldDetectors.get(0) instanceof FieldDateDetector);
+        Assertions.assertInstanceOf(FieldDateDetector.class, fieldDetectors.get(0));
 
         // Check dates
         final int expectedDatesNb = 39;
@@ -151,5 +141,57 @@ public class EventDetectorsProviderTest {
                                 fieldDates.get(expectedDatesNb-1).durationFrom(new FieldAbsoluteDate<>(b64Field,
                                                 t0.shiftedBy(Constants.JULIAN_DAY - step2))).getReal(),
                                 0.);
+    }
+
+    @Test
+    void testGetDateDetector() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final double shift = 10.;
+        final AbsoluteDate nextDate = date.shiftedBy(shift);
+        final EventDetectorsProvider provider = getProvider(new ArrayList<>());
+        // WHEN
+        final DateDetector detector = provider.getDateDetector(date, nextDate);
+        // THEN
+        Assertions.assertEquals(2, detector.getDates().size());
+        Assertions.assertEquals(EventDetectorsProvider.DATATION_ACCURACY, detector.getThreshold());
+        Assertions.assertInstanceOf(ResetDerivativesOnEvent.class, detector.getHandler());
+        final AdaptableInterval interval = detector.getMaxCheckInterval();
+        SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        for (int i = 0; i < 10; i++) {
+            Mockito.when(mockedState.getDate()).thenReturn(date.shiftedBy(i));
+            Assertions.assertTrue(interval.currentInterval(mockedState, true) >= shift / 2);
+        }
+    }
+
+    @Test
+    void testGetFieldDateDetector() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final AbsoluteDate nextDate = date.shiftedBy(1.);
+        final EventDetectorsProvider provider = getProvider(new ArrayList<>());
+        final Binary64Field field = Binary64Field.getInstance();
+        // WHEN
+        final FieldDateDetector<Binary64> detector = provider.getFieldDateDetector(field, date, nextDate);
+        // THEN
+        Assertions.assertEquals(2, detector.getDates().size());
+        Assertions.assertEquals(EventDetectorsProvider.DATATION_ACCURACY, detector.getThreshold().getReal());
+        Assertions.assertInstanceOf(FieldResetDerivativesOnEvent.class, detector.getHandler());
+    }
+
+    private static EventDetectorsProvider getProvider(final List<ParameterDriver> drivers) {
+        return new EventDetectorsProvider() {
+
+            @Override
+            public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
+
+                return getFieldEventDetectors(field, drivers);
+            }
+
+            @Override
+            public Stream<EventDetector> getEventDetectors() {
+                return getEventDetectors(drivers);
+            }
+        };
     }
 }

@@ -23,8 +23,10 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.orekit.Utils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.analytical.FieldEcksteinHechlerPropagator;
 import org.orekit.time.AbstractTimeInterpolator;
@@ -39,6 +41,11 @@ import java.util.List;
 class FieldOrbitHermiteInterpolatorTest {
 
     private final Field<Binary64> field = Binary64Field.getInstance();
+
+    @BeforeEach
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
+    }
 
     @Test
     public void testCartesianInterpolationWithDerivatives() {

@@ -31,7 +31,6 @@ class CylindricalShadowEclipseDetectorTest {
     }
 
     @Test
-    @Deprecated
     void testConstructor() {
         // GIVEN
         final EventDetectionSettings settings = EventDetectionSettings.getDefaultEventDetectionSettings();

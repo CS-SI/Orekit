@@ -19,8 +19,8 @@ package org.orekit.propagation.conversion;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngleType;
+import org.orekit.propagation.PropagationType;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.utils.ParameterDriver;
 
 /**
  * Abstract class for builders for integrator-based propagators.
@@ -28,21 +28,48 @@ import org.orekit.utils.ParameterDriver;
  * @since 13.0
  * @author Romain Serra
  */
-public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractIntegratedPropagator> extends AbstractPropagatorBuilder {
+public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractIntegratedPropagator>
+        extends AbstractPropagatorBuilder<T> {
+
+    /** First order integrator builder for propagation. */
+    private final ODEIntegratorBuilder builder;
+
+    /** Type of the orbit used for the propagation.*/
+    private final PropagationType propagationType;
 
     /** Build a new instance.
      * @param templateOrbit reference orbit from which real orbits will be built
+     * @param builder integrator builder
      * @param positionAngleType position angle type
-     * @param addDriverForCentralAttraction if true, a {@link ParameterDriver} should
      * @param positionScale scaling factor used for orbital parameters normalization
      * (typically set to the expected standard deviation of the position)
+     * @param propagationType type of the orbit used for the propagation (mean or osculating)
      * @param attitudeProvider attitude law.
      * @param mass initial mass
      */
-    protected AbstractIntegratedPropagatorBuilder(final Orbit templateOrbit, final PositionAngleType positionAngleType,
-                                                  final double positionScale, final boolean addDriverForCentralAttraction,
+    protected AbstractIntegratedPropagatorBuilder(final Orbit templateOrbit, final ODEIntegratorBuilder builder,
+                                                  final PositionAngleType positionAngleType, final double positionScale,
+                                                  final PropagationType propagationType,
                                                   final AttitudeProvider attitudeProvider, final double mass) {
-        super(templateOrbit, positionAngleType, positionScale, addDriverForCentralAttraction, attitudeProvider, mass);
+        super(templateOrbit, positionAngleType, positionScale, true, attitudeProvider, mass);
+        this.builder = builder;
+        this.propagationType = propagationType;
+    }
+
+    /**
+     * Getter for integrator builder.
+     * @return builder
+     */
+    public ODEIntegratorBuilder getIntegratorBuilder() {
+        return builder;
+    }
+
+    /**
+     * Getter for the propagation type.
+     * @return propagation type
+     */
+    public PropagationType getPropagationType() {
+        return propagationType;
     }
 
     /** {@inheritDoc} */
@@ -54,4 +81,5 @@ public abstract class AbstractIntegratedPropagatorBuilder<T extends AbstractInte
     public T buildPropagator() {
         return buildPropagator(getSelectedNormalizedParameters());
     }
+
 }

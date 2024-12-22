@@ -35,8 +35,6 @@
 
       interface "TimeShiftable<T>" as TimeShiftable_T_
 
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_
-
     }
 
     package propagation #DDEBD8 {
@@ -87,7 +85,6 @@
 
      TimeStamped         ..|> SpacecraftState
      TimeShiftable_T_    ..|> SpacecraftState
-     TimeInterpolable_T_ ..|> SpacecraftState
 
    }
 

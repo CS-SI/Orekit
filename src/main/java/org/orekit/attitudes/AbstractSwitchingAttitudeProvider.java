@@ -24,7 +24,7 @@ import org.hipparchus.ode.events.Action;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdapterDetector;
+import org.orekit.propagation.events.DetectorModifier;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
@@ -192,7 +192,7 @@ abstract class AbstractSwitchingAttitudeProvider implements AttitudeProvider {
     }
 
     /** Abstract class to manage attitude switches. */
-    abstract static class AbstractAttitudeSwitch extends AdapterDetector implements EventHandler {
+    abstract static class AbstractAttitudeSwitch implements DetectorModifier, EventHandler {
 
         /**
          * Event direction triggering the switch.
@@ -219,6 +219,9 @@ abstract class AbstractSwitchingAttitudeProvider implements AttitudeProvider {
          */
         private final AttitudeSwitchHandler switchHandler;
 
+        /** Wrapped event detector. */
+        private final EventDetector event;
+
         /**
          * Simple constructor.
          *
@@ -233,12 +236,18 @@ abstract class AbstractSwitchingAttitudeProvider implements AttitudeProvider {
         protected AbstractAttitudeSwitch(final EventDetector event, final boolean switchOnIncrease,
                                          final boolean switchOnDecrease, final AttitudeProvider past,
                                          final AttitudeProvider future, final AttitudeSwitchHandler switchHandler) {
-            super(event);
+            this.event = event;
             this.switchOnIncrease = switchOnIncrease;
             this.switchOnDecrease = switchOnDecrease;
             this.past = past;
             this.future = future;
             this.switchHandler = switchHandler;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public EventDetector getDetector() {
+            return event;
         }
 
         /**

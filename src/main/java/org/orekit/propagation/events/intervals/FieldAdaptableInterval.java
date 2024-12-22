@@ -18,6 +18,7 @@
 package org.orekit.propagation.events.intervals;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
 
@@ -52,7 +53,7 @@ public interface FieldAdaptableInterval<T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Method creating a interval provider from a non-Field one.
+     * Method creating an interval provider from a non-Field one.
      * @param <T> field type
      * @param adaptableInterval non-Field interval
      * @return adaptable interval ready to be added to an event detector
@@ -60,6 +61,26 @@ public interface FieldAdaptableInterval<T extends CalculusFieldElement<T>> {
      */
     static <T extends CalculusFieldElement<T>> FieldAdaptableInterval<T> of(final AdaptableInterval adaptableInterval) {
         return (state, isForward) -> adaptableInterval.currentInterval(state.toSpacecraftState(), isForward);
+    }
+
+    /**
+     * Method creating an interval taking the minimum value of all candidates.
+     * @param defaultMaxCheck default value if no intervals is given as inputv
+     * @param adaptableIntervals intervals
+     * @param <T> field type
+     * @return adaptable interval ready to be added to an event detector
+     * @since 13.0
+     */
+    @SafeVarargs
+    static <T extends CalculusFieldElement<T>> FieldAdaptableInterval<T> of(final double defaultMaxCheck,
+                                                                            final FieldAdaptableInterval<T>... adaptableIntervals) {
+        return (state, isForward) -> {
+            double maxCheck = defaultMaxCheck;
+            for (final FieldAdaptableInterval<T> interval : adaptableIntervals) {
+                maxCheck = FastMath.min(maxCheck, interval.currentInterval(state, isForward));
+            }
+            return maxCheck;
+        };
     }
 }
 

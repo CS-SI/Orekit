@@ -650,7 +650,9 @@ public class FieldNumericalPropagator<T extends CalculusFieldElement<T>> extends
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      * @param <T> elements type
+     * @deprecated since 13.0. Use {@link ToleranceProvider} for default and custom tolerances.
      */
+    @Deprecated
     public static <T extends CalculusFieldElement<T>> double[][] tolerances(final T dP, final FieldOrbit<T> orbit,
                                                                             final OrbitType type) {
 

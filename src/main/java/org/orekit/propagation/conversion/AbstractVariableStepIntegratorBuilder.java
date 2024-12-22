@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.hipparchus.ode.AbstractIntegrator;
+import org.hipparchus.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
@@ -29,7 +29,7 @@ import org.orekit.utils.AbsolutePVCoordinates;
  * @author Romain Serra
  * @since 12.2
  */
-public abstract class AbstractVariableStepIntegratorBuilder implements ODEIntegratorBuilder {
+public abstract class AbstractVariableStepIntegratorBuilder<T extends AdaptiveStepsizeIntegrator> extends AbstractIntegratorBuilder<T> {
 
     /** Minimum step size (s). */
     private final double minStep;
@@ -95,14 +95,14 @@ public abstract class AbstractVariableStepIntegratorBuilder implements ODEIntegr
 
     /** {@inheritDoc} */
     @Override
-    public AbstractIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
+    public T buildIntegrator(final Orbit orbit, final OrbitType orbitType,
                                               final PositionAngleType angleType) {
         return buildIntegrator(getTolerances(orbit, orbitType));
     }
 
     /** {@inheritDoc} */
     @Override
-    public AbstractIntegrator buildIntegrator(final AbsolutePVCoordinates absolutePVCoordinates) {
+    public T buildIntegrator(final AbsolutePVCoordinates absolutePVCoordinates) {
         return buildIntegrator(getTolerances(absolutePVCoordinates));
     }
 
@@ -112,7 +112,7 @@ public abstract class AbstractVariableStepIntegratorBuilder implements ODEIntegr
      * @return integrator
      * @since 13.0
      */
-    protected abstract AbstractIntegrator buildIntegrator(double[][] tolerances);
+    protected abstract T buildIntegrator(double[][] tolerances);
 
     /**
      * Get a default tolerance provider.

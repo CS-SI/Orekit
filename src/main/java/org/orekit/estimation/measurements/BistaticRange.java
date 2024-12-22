@@ -145,8 +145,12 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                                                            emitterPV
                                                        });
 
+        // Clock offsets
+        final double dte = getEmitterStation().getClockOffsetDriver().getValue(common.getState().getDate());
+        final double dtr = getReceiverStation().getClockOffsetDriver().getValue(common.getState().getDate());
+
         // Range value
-        final double tau = common.getTauD() + tauU;
+        final double tau = common.getTauD() + tauU + dtr - dte;
         final double range = tau * Constants.SPEED_OF_LIGHT;
 
         estimated.setEstimatedValue(range);
@@ -203,8 +207,12 @@ public class BistaticRange extends GroundReceiverMeasurement<BistaticRange> {
                     emitterPV.toTimeStampedPVCoordinates()
                 });
 
+        // Clock offsets
+        final Gradient dte = getEmitterStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+        final Gradient dtr = getReceiverStation().getClockOffsetDriver().getValue(nbParams, common.getIndices(), state.getDate());
+
         // Range value
-        final Gradient tau = common.getTauD().add(tauU);
+        final Gradient tau = common.getTauD().add(tauU).add(dtr).subtract(dte);
         final Gradient range = tau.multiply(Constants.SPEED_OF_LIGHT);
 
         estimated.setEstimatedValue(range.getValue());

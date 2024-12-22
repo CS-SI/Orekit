@@ -106,7 +106,7 @@ public class StreamingOcmWriterTest {
 
         // verify
         String actualText = buffer.toString();
-        String expectedPath = "/ccsds/odm/ocm/OCMExample5ITRF.txt";
+        String expectedPath = "/ccsds/odm/ocm/OCMExample5ITRFStreamingOutput.txt";
         final OcmParser ocmParser = new ParserBuilder().buildOcmParser();
         Ocm expected = ocmParser.parse(new DataSource(expectedPath, () -> getClass().getResourceAsStream(expectedPath)));
         Ocm actual = ocmParser.parse(new DataSource("mem", () -> new StringReader(actualText)));
@@ -156,7 +156,7 @@ public class StreamingOcmWriterTest {
 
         // verify
         String actualText = buffer.toString();
-        String expectedPath = "/ccsds/odm/ocm/OCMExample5Geodetic.txt";
+        String expectedPath = "/ccsds/odm/ocm/OCMExample5GeodeticStreamingOutput.txt";
         final OcmParser ocmParser = new ParserBuilder().buildOcmParser();
         Ocm expected = ocmParser.parse(new DataSource(expectedPath, () -> getClass().getResourceAsStream(expectedPath)));
         Ocm actual = ocmParser.parse(new DataSource("mem", () -> new StringReader(actualText)));

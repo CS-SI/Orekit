@@ -103,13 +103,30 @@ public interface Generator extends AutoCloseable {
      */
     void writeEntry(String key, char value, boolean mandatory) throws IOException;
 
+    /**
+     * Write a single key/value entry.
+     *
+     * <p>Note that the {@code mandatory} flag has no effect and a value is always written
+     * because the whole domain of {@code value} is treated as valid. Use {@link
+     * #writeEntry(String, Integer, boolean)} for integer values that may not be present.
+     *
+     * @param key   the keyword to write
+     * @param value the value to write
+     * @param mandatory if true, null values triggers exception, otherwise they are silently ignored.
+     * @throws IOException if an I/O error occurs.
+     * @see #writeEntry(String, Integer, boolean)
+     */
+    void writeEntry(String key, int value, boolean mandatory) throws IOException;
+
     /** Write a single key/value entry.
      * @param key   the keyword to write
      * @param value the value to write
      * @param mandatory if true, null values triggers exception, otherwise they are silently ignored
      * @throws IOException if an I/O error occurs.
      */
-    void writeEntry(String key, int value, boolean mandatory) throws IOException;
+    default void writeEntry(String key, Integer value, boolean mandatory) throws IOException {
+        writeEntry(key, value == null ? null : value.toString(), null, mandatory);
+    }
 
     /** Write a single key/value entry.
      * @param key   the keyword to write

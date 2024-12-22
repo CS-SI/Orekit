@@ -120,7 +120,8 @@ public class BodyCenterPointing extends GroundPointing {
 
     /** {@inheritDoc} */
     public <T extends CalculusFieldElement<T>> TimeStampedFieldPVCoordinates<T> getTargetPV(final FieldPVCoordinatesProvider<T> pvProv,
-                                                                                        final FieldAbsoluteDate<T> date, final Frame frame) {
+                                                                                            final FieldAbsoluteDate<T> date,
+                                                                                            final Frame frame) {
 
         // spacecraft coordinates in body frame
         final TimeStampedFieldPVCoordinates<T> scInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame());
@@ -157,7 +158,7 @@ public class BodyCenterPointing extends GroundPointing {
                                                                 ratioDotDot,          scInBodyFrame.getPosition());
         final TimeStampedFieldPVCoordinates<T> projected =
                 new TimeStampedFieldPVCoordinates<>(date, projectedP, projectedV, projectedA);
-        return getBodyFrame().getTransformTo(frame, date.toAbsoluteDate()).transformPVCoordinates(projected);
+        return getBodyFrame().getTransformTo(frame, date).transformPVCoordinates(projected);
 
     }
 

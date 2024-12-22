@@ -18,14 +18,12 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.ode.AbstractFieldIntegrator;
-import org.orekit.orbits.FieldCartesianOrbit;
+import org.hipparchus.ode.FieldODEIntegrator;
 import org.orekit.orbits.FieldOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngleType;
 import org.orekit.utils.FieldAbsolutePVCoordinates;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 /**
  * This interface is the top-level abstraction to build first order integrators for propagators conversion.
@@ -46,9 +44,7 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      *
      * @return a first order integrator ready to use
      */
-    default AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType) {
-        return buildIntegrator(field, orbit, orbitType, PositionAngleType.MEAN);
-    }
+    FieldODEIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType);
 
     /**
      * Build a first order integrator.
@@ -61,8 +57,8 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      * @return a first order integrator ready to use
      * @since 13.0
      */
-    AbstractFieldIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType,
-                                               PositionAngleType angleType);
+    FieldODEIntegrator<T> buildIntegrator(Field<T> field, Orbit orbit, OrbitType orbitType,
+                                          PositionAngleType angleType);
 
     /**
      * Build a first order integrator.
@@ -72,9 +68,7 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      *
      * @return a first order integrator ready to use
      */
-    default AbstractFieldIntegrator<T> buildIntegrator(FieldOrbit<T> orbit, OrbitType orbitType) {
-        return buildIntegrator(orbit.getA().getField(), orbit.toOrbit(), orbitType);
-    }
+    FieldODEIntegrator<T> buildIntegrator(FieldOrbit<T> orbit, OrbitType orbitType);
 
     /**
      * Build a first order integrator. Non-orbit version.
@@ -84,12 +78,7 @@ public interface FieldODEIntegratorBuilder<T extends CalculusFieldElement<T>> {
      * @return a first order integrator ready to use
      * @since 12.2
      */
-    default AbstractFieldIntegrator<T> buildIntegrator(final FieldAbsolutePVCoordinates<T> fieldAbsolutePVCoordinates) {
-        final TimeStampedFieldPVCoordinates<T> fieldPVCoordinates = fieldAbsolutePVCoordinates.getPVCoordinates();
-        final FieldCartesianOrbit<T> fieldOrbit = new FieldCartesianOrbit<>(fieldPVCoordinates, fieldAbsolutePVCoordinates.getFrame(),
-                fieldAbsolutePVCoordinates.getDate().getField().getOne());
-        return buildIntegrator(fieldOrbit, OrbitType.CARTESIAN);
-    }
+    FieldODEIntegrator<T> buildIntegrator(FieldAbsolutePVCoordinates<T> fieldAbsolutePVCoordinates);
 
     /**
      * Form a non-Field equivalent.

@@ -57,21 +57,6 @@ public class DSSTZonalContext extends DSSTGravityContext {
     private double BB;
 
     /**
-     * Constructor with central body frame equals orbit frame.
-     *
-     * @param auxiliaryElements auxiliary elements related to the current orbit
-     * @param provider          provider for spherical harmonics
-     * @param parameters        values of the force model parameters
-     * @deprecated since 12.2 and issue 1104, should be removed in 13.0
-     */
-    @Deprecated
-    DSSTZonalContext(final AuxiliaryElements auxiliaryElements,
-                     final UnnormalizedSphericalHarmonicsProvider provider,
-                     final double[] parameters) {
-        this(auxiliaryElements, auxiliaryElements.getFrame(), provider, parameters);
-    }
-
-    /**
      * Constructor with central body frame potentially different than orbit frame.
      *
      * @param auxiliaryElements auxiliary elements related to the current orbit
@@ -116,56 +101,11 @@ public class DSSTZonalContext extends DSSTGravityContext {
         BB = auxiliaryElements.getB() * auxiliaryElements.getB();
     }
 
-    /** Get &Chi; = 1 / sqrt(1 - e²) = 1 / B.
-     * @return &Chi;
-     * @deprecated since 12.2 Use getChi() instead
-     */
-    @Deprecated
-    public double getX() {
-        return getChi();
-    }
-
-    /** Get &Chi;².
-     * @return &Chi;².
-     * @deprecated since 12.2 Use getChi2() instead
-     */
-    @Deprecated
-    public double getXX() {
-        return getChi2();
-    }
-
     /** Getter for the &Chi;³.
      * @return the &Chi;³
      */
     public double getChi3() {
         return chi3;
-    }
-
-    /** Get &Chi;³.
-     * @return &Chi;³
-     * @deprecated since 12.2 Use getChi3() instead
-     */
-    @Deprecated
-    public double getXXX() {
-        return getChi3();
-    }
-
-    /** Get m2aoA = -2 * a / A.
-     * @return m2aoA
-     * @deprecated since 12.2 Use -getAx2oA()() instead
-     */
-    @Deprecated
-    public double getM2aoA() {
-        return -getAx2oA();
-    }
-
-    /** Get mCo2AB = -C / 2AB.
-     * @return mCo2AB
-     * @deprecated since 12.2 Use -getCo2AB()() instead
-     */
-    @Deprecated
-    public double getMCo2AB() {
-        return -getCo2AB();
     }
 
     /** Get h * k.

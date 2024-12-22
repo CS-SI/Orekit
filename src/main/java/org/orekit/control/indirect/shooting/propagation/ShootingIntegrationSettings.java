@@ -19,8 +19,8 @@ package org.orekit.control.indirect.shooting.propagation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
-import org.orekit.propagation.conversion.FieldODEIntegratorBuilder;
-import org.orekit.propagation.conversion.ODEIntegratorBuilder;
+import org.orekit.propagation.conversion.ExplicitRungeKuttaIntegratorBuilder;
+import org.orekit.propagation.conversion.FieldExplicitRungeKuttaIntegratorBuilder;
 
 /**
  * Defines integration settings for indirect shooting methods. Gives standard and Field integrator builders.
@@ -28,24 +28,24 @@ import org.orekit.propagation.conversion.ODEIntegratorBuilder;
  * @author Romain Serra
  * @since 12.2
  * @see ShootingPropagationSettings
- * @see ODEIntegratorBuilder
- * @see FieldODEIntegratorBuilder
+ * @see ExplicitRungeKuttaIntegratorBuilder
+ * @see FieldExplicitRungeKuttaIntegratorBuilder
  */
 public interface ShootingIntegrationSettings {
 
     /**
-     * Returns an ODE integrator builder.
+     * Returns an ODE integrator builder based on an explicit Runge Kutta scheme.
      * @return builder
      */
-    default ODEIntegratorBuilder getIntegratorBuilder() {
+    default ExplicitRungeKuttaIntegratorBuilder getIntegratorBuilder() {
         return getFieldIntegratorBuilder(Binary64Field.getInstance()).toODEIntegratorBuilder();
     }
 
     /**
-     * Returns a Field ODE integrator builder.
+     * Returns a Field ODE integrator builder based on an explicit Runge Kutta scheme.
      * @param field field for builder
      * @return builder
      * @param <T> field type
      */
-    <T extends CalculusFieldElement<T>> FieldODEIntegratorBuilder<T> getFieldIntegratorBuilder(Field<T> field);
+    <T extends CalculusFieldElement<T>> FieldExplicitRungeKuttaIntegratorBuilder<T> getFieldIntegratorBuilder(Field<T> field);
 }

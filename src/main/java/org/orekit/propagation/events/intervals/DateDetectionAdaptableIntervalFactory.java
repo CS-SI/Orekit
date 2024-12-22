@@ -150,15 +150,15 @@ public class DateDetectionAdaptableIntervalFactory {
     }
 
     /**
-     * Compute min. gap between dated objects.
+     * Compute min. gap between dated objects if applicable. It ignores duplicates.
      * @param timeStampeds time stamped objects
-     * @return minimym gap
+     * @return minimum gap
      */
-    private static double getMinGap(final TimeStamped... timeStampeds) {
+    public static double getMinGap(final TimeStamped... timeStampeds) {
         double minGap = DEFAULT_MAX_CHECK;
         for (final TimeStamped timeStamped : timeStampeds) {
             final Optional<Double> minDistance = Arrays.stream(timeStampeds)
-                    .map(t -> (t.getDate() != timeStamped.getDate()) ? FastMath.abs(t.durationFrom(timeStamped)) : Double.POSITIVE_INFINITY)
+                    .map(t -> (!t.getDate().isEqualTo(timeStamped.getDate())) ? FastMath.abs(t.durationFrom(timeStamped)) : Double.POSITIVE_INFINITY)
                     .min(Double::compareTo);
             if (minDistance.isPresent()) {
                 minGap = FastMath.min(minGap, minDistance.get());

@@ -31,7 +31,7 @@ import org.orekit.propagation.ToleranceProvider;
  * @param <T> type of the field elements
  */
 public class AdamsMoultonFieldIntegratorBuilder<T extends CalculusFieldElement<T>>
-        extends AbstractLimitedVariableStepFieldIntegratorBuilder<T> {
+        extends AbstractLimitedVariableStepFieldIntegratorBuilder<T, AdamsMoultonFieldIntegrator<T>> {
 
     /**
      * Build a new instance. Should only use this constructor with {@link Orbit}.

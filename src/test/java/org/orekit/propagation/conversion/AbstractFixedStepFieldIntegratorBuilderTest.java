@@ -18,7 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.hipparchus.Field;
 import org.hipparchus.complex.Complex;
-import org.hipparchus.ode.AbstractFieldIntegrator;
+import org.hipparchus.ode.nonstiff.EulerFieldIntegrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.orbits.Orbit;
@@ -37,14 +37,14 @@ class AbstractFixedStepFieldIntegratorBuilderTest {
         Assertions.assertEquals(expectedStep, integratorBuilder.getStep());
     }
 
-    private static class TestFieldIntegratorBuilder extends AbstractFixedStepFieldIntegratorBuilder<Complex> {
+    private static class TestFieldIntegratorBuilder extends AbstractFixedStepFieldIntegratorBuilder<Complex, EulerFieldIntegrator<Complex>> {
 
         TestFieldIntegratorBuilder(double step) {
             super(step);
         }
 
         @Override
-        public AbstractFieldIntegrator<Complex> buildIntegrator(Field field, Orbit orbit, OrbitType orbitType, final PositionAngleType angleType) {
+        public EulerFieldIntegrator<Complex> buildIntegrator(Field field, Orbit orbit, OrbitType orbitType, final PositionAngleType angleType) {
             return null;
         }
 

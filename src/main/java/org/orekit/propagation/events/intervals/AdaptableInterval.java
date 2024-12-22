@@ -17,6 +17,7 @@
 
 package org.orekit.propagation.events.intervals;
 
+import org.hipparchus.util.FastMath;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 
@@ -47,5 +48,22 @@ public interface AdaptableInterval {
      */
     static AdaptableInterval of(final double constantInterval) {
         return (state, isForward) -> constantInterval;
+    }
+
+    /**
+     * Method creating an interval taking the minimum value of all candidates.
+     * @param defaultMaxCheck default value if no intervals is given as input
+     * @param adaptableIntervals intervals
+     * @return adaptable interval ready to be added to an event detector
+     * @since 13.0
+     */
+    static AdaptableInterval of(final double defaultMaxCheck, final AdaptableInterval... adaptableIntervals) {
+        return (state, isForward) -> {
+            double maxCheck = defaultMaxCheck;
+            for (final AdaptableInterval interval : adaptableIntervals) {
+                maxCheck = FastMath.min(maxCheck, interval.currentInterval(state, isForward));
+            }
+            return maxCheck;
+        };
     }
 }

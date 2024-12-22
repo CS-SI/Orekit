@@ -19,50 +19,50 @@ package org.orekit.control.indirect.shooting.propagation;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
-import org.orekit.control.indirect.adjoint.CartesianAdjointEquationTerm;
 import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
-import org.orekit.control.indirect.adjoint.cost.CartesianCost;
 
 /**
- * Class for Cartesian adjoint derivatives provider (both standard and Field).
+ * Abstract class for Cartesian adjoint derivatives provider.
  *
  * @author Romain Serra
+ * @see AdjointDynamicsProvider
  * @since 12.2
  */
-public class CartesianAdjointDynamicsProvider implements AdjointDynamicsProvider {
+public abstract class CartesianAdjointDynamicsProvider implements AdjointDynamicsProvider {
 
-    /** Cartesian cost function. */
-    private final CartesianCost cartesianCost;
+    /** Adjoint name. */
+    private final String adjointName;
 
-    /** Cartesian adjoint terms. */
-    private final CartesianAdjointEquationTerm[] equationTerms;
+    /** Adjoint dimension. */
+    private final int dimension;
 
     /**
      * Constructor.
-     * @param cartesianCost Cartesian cost
-     * @param equationTerms adjoint equation terms
+     * @param adjointName adjoint name
+     * @param dimension adjoint dimension
      */
-    public CartesianAdjointDynamicsProvider(final CartesianCost cartesianCost,
-                                            final CartesianAdjointEquationTerm... equationTerms) {
-        this.cartesianCost = cartesianCost;
-        this.equationTerms = equationTerms;
+    protected CartesianAdjointDynamicsProvider(final String adjointName, final int dimension) {
+        this.adjointName = adjointName;
+        this.dimension = dimension;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getDimension() {
+        return dimension;
     }
 
     /** {@inheritDoc} */
     @Override
     public String getAdjointName() {
-        return cartesianCost.getAdjointName();
+        return adjointName;
     }
 
     /** {@inheritDoc} */
     @Override
-    public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
-        return new CartesianAdjointDerivativesProvider(cartesianCost, equationTerms);
-    }
+    public abstract CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider();
 
     /** {@inheritDoc} */
     @Override
-    public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
-        return new FieldCartesianAdjointDerivativesProvider<>(cartesianCost, equationTerms);
-    }
+    public abstract <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(Field<T> field);
 }
