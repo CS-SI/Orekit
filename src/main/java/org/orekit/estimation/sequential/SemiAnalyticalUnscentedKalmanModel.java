@@ -570,6 +570,11 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         return null;
     }
 
+    @Override
+    public RealMatrix getPhysicalStateCrossCovariance() {
+        return null;
+    }
+
     /** {@inheritDoc} */
     @Override
     public RealMatrix getPhysicalStateTransitionMatrix() {

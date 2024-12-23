@@ -108,7 +108,6 @@ public class KalmanSmoother extends AbstractSequentialEstimator {
 
         // Covariance scaling factors
         final double[] covarianceScale = getProcessModel().getScale();
-        final RealVector stateScale = MatrixUtils.createRealVector(covarianceScale);
 
         // Convert to physical states
         final List<PhysicalEstimatedState> smoothedStates = new ArrayList<>();

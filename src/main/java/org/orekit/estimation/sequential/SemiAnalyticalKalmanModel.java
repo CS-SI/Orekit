@@ -68,7 +68,7 @@ import java.util.Map;
  * @author Maxime Journot
  * @since 11.1
  */
-public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator>, SemiAnalyticalProcess {
+public class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearProcess<MeasurementDecorator>, SemiAnalyticalProcess {
 
     /** Builders for DSST propagator. */
     private final DSSTPropagatorBuilder builder;
@@ -553,6 +553,10 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         return null;
     }
 
+    @Override
+    public RealMatrix getPhysicalStateCrossCovariance() {
+        return null;
+    }
 
     /** {@inheritDoc} */
     @Override

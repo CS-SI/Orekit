@@ -53,6 +53,10 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
     /** Propagators for the reference trajectories, up to current date. */
     private Propagator[] referenceTrajectories;
 
+    /** State cross-covariance for smoother. */
+    private RealMatrix crossCovariance;
+
+
     /** Kalman process model constructor.
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
      * @param covarianceMatricesProviders providers for covariance matrices
@@ -66,6 +70,7 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         super(propagatorBuilders, covarianceMatricesProviders, estimatedMeasurementParameters, measurementProcessNoiseMatrix);
         // Build the reference propagators and add their partial derivatives equations implementation
         updateReferenceTrajectories(getEstimatedPropagators());
+        crossCovariance = null;
     }
 
     /** Update the reference trajectories using the propagators as input.
@@ -345,6 +350,8 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         // compute process noise matrix
         final RealMatrix normalizedProcessNoise = getNormalizedProcessNoise(previousState.getDimension());
 
+        crossCovariance = getCorrectedEstimate().getCovariance().multiplyTransposed(stateTransitionMatrix);
+
         setPhysicalPredictedEstimate(new ProcessEstimate(measurement.getTime(), getPhysicalEstimatedState(),
                  KalmanEstimatorUtil.unnormalizeCovarianceMatrix(stateTransitionMatrix
                          .multiply(getCorrectedEstimate().getCovariance())
@@ -354,6 +361,10 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
 
     }
 
+    @Override
+    public RealMatrix getPhysicalStateCrossCovariance() {
+        return KalmanEstimatorUtil.unnormalizeCovarianceMatrix(crossCovariance, getScale());
+    }
 
     /** {@inheritDoc} */
     @Override
