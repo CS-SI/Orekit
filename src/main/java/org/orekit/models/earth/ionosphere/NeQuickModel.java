@@ -438,7 +438,7 @@ public class NeQuickModel implements IonosphericModel {
             return aNo.multiply(DENSITY_FACTOR);
         } else {
             // Chapman parameters (Eq. 119 and 120)
-            final T bc = s[0].multiply(ds[0]).add(one.linearCombination(s[0], ds[0], s[1], ds[1], s[2], ds[2])).divide(aNo).multiply(10.0).negate().add(1.0);
+            final T bc = one.linearCombination(s[0], ds[0], s[1], ds[1], s[2], ds[2]).divide(aNo).multiply(10.0).negate().add(1.0);
             final T z  = h.subtract(100.0).multiply(0.1);
             // Electron density (Eq. 121)
             return aNo.multiply(clipExp(bc.multiply(z).add(clipExp(z.negate())).negate().add(1.0))).multiply(DENSITY_FACTOR);
