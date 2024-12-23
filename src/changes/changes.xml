@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1638">
+            Fixed field implementation of NeQuick ionosphere model.
+        </action>
         <action dev="serrof" type="add" issue="1622">
             Add (Field)DetectorModifier interface, deprecating (Field)AdapterDetector.
         </action>
