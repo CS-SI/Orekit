@@ -354,7 +354,7 @@ public class NeQuickModel implements IonosphericModel {
         }
 
         // Electron density
-        final double aNo = MathArrays.linearCombination(s[0], 1.0, s[1], 1.0, s[2], 1.0);
+        final double aNo = s[0] + s[1] + s[2];
         if (h >= 100) {
             return aNo * DENSITY_FACTOR;
         } else {
@@ -433,7 +433,7 @@ public class NeQuickModel implements IonosphericModel {
         }
 
         // Electron density
-        final T aNo = one.linearCombination(s[0], one, s[1], one, s[2], one);
+        final T aNo = s[0].add(s[1]).add(s[2]);
         if (h.getReal() >= 100) {
             return aNo.multiply(DENSITY_FACTOR);
         } else {
