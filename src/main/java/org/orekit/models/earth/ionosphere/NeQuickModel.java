@@ -67,8 +67,8 @@ public class NeQuickModel implements IonosphericModel {
     /** Factor for the path delay computation. */
     private static final double DELAY_FACTOR = 40.3e16;
 
-    /** Engine for computing effective ionization level. */
-    private final EffectiveIonizationLevelEngine ionizationEngine;
+    /** Engine for computing various low-level aspects of NeQuick model. */
+    private final NeQuickEngine engine;
 
     /** Modip grid. */
     private final ModipGrid modipGrid;
@@ -106,7 +106,17 @@ public class NeQuickModel implements IonosphericModel {
      * @since 10.1
      */
     public NeQuickModel(final double[] alpha, final TimeScale utc) {
-        this(getModipGrid(NeQuickVersion.NEQUICK_2_GALILEO), new GalileoIonizationEngine(alpha), utc);
+
+        // F2 layer values
+        this.flattenF2  = new double[12][];
+        this.flattenFm3 = new double[12][];
+        // Modip grid
+        this.modipGrid  = getModipGrid(NeQuickVersion.NEQUICK_2_GALILEO);
+
+        // Ionisation level
+        this.engine = new GalileoEngine(alpha);
+        this.utc = utc;
+
     }
 
     /**
@@ -120,27 +130,17 @@ public class NeQuickModel implements IonosphericModel {
      * @since 10.1
      */
     public NeQuickModel(final double f107, final TimeScale utc) {
-        this(getModipGrid(NeQuickVersion.NEQUICK_2_ITU), new ItuIonizationEngine(f107), utc);
-    }
 
-    /**
-     * Build a new instance.
-     * @param modipGrid modip grid
-     * @param ionizationEngine engine for computing effective ionisation level
-     * @param utc UTC time scale.
-     * @since 13.0
-     */
-    private NeQuickModel(final ModipGrid modipGrid, final EffectiveIonizationLevelEngine ionizationEngine,
-                         final TimeScale utc) {
         // F2 layer values
         this.flattenF2  = new double[12][];
         this.flattenFm3 = new double[12][];
         // Modip grid
-        this.modipGrid  = modipGrid;
+        this.modipGrid  = getModipGrid(NeQuickVersion.NEQUICK_2_ITU);
 
         // Ionisation level
-        this.ionizationEngine = ionizationEngine;
+        this.engine = new ItuEngine(f107);
         this.utc = utc;
+
     }
 
     /** {@inheritDoc} */
@@ -159,7 +159,7 @@ public class NeQuickModel implements IonosphericModel {
                                                            ellipsoid.getBodyFrame(), state.getDate());
 
         // Total Electron Content
-        final double tec = stec(date, recPoint, satPoint);
+        final double tec = stec(date,recPoint, satPoint);
 
         // Ionospheric delay
         final double factor = DELAY_FACTOR / (frequency * frequency);
@@ -199,10 +199,6 @@ public class NeQuickModel implements IonosphericModel {
 
     /**
      * This method allows the computation of the Slant Total Electron Content (STEC).
-     * <p>
-     * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of
-     * the reference document.
-     * </p>
      * @param date current date
      * @param recP receiver position
      * @param satP satellite position
@@ -210,55 +206,16 @@ public class NeQuickModel implements IonosphericModel {
      */
     public double stec(final AbsoluteDate date, final GeodeticPoint recP, final GeodeticPoint satP) {
 
-        // Ray-perigee parameters
-        final Ray ray = new Ray(recP, satP);
-
         // Load the correct CCIR file
         final DateTimeComponents dateTime = date.getComponents(utc);
         loadsIfNeeded(dateTime.getDate());
 
-        // Tolerance for the integration accuracy. Defined inside the reference document, section 2.5.8.1.
-        final double h1 = recP.getAltitude();
-        final double tolerance;
-        if (h1 < 1000000.0) {
-            tolerance = 0.001;
-        } else {
-            tolerance = 0.01;
-        }
+        return engine.stec(dateTime, new Ray(recP, satP));
 
-        // Integration
-        int n = 8;
-        final Segment seg1 = new Segment(n, ray);
-        double gn1 = stecIntegration(seg1, dateTime);
-        n *= 2;
-        final Segment seg2 = new Segment(n, ray);
-        double gn2 = stecIntegration(seg2, dateTime);
-
-        int count = 1;
-        while (FastMath.abs(gn2 - gn1) > tolerance * FastMath.abs(gn1) && count < 20) {
-            gn1 = gn2;
-            n *= 2;
-            final Segment seg = new Segment(n, ray);
-            gn2 = stecIntegration(seg, dateTime);
-            count += 1;
-        }
-
-        // If count > 20 the integration did not converge
-        if (count == 20) {
-            throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
-        }
-
-        // Eq. 202
-        return (gn2 + ((gn2 - gn1) / 15.0)) * 1.0e-16;
     }
 
     /**
      * This method allows the computation of the Slant Total Electron Content (STEC).
-     * <p>
-     * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of
-     * the reference document.
-     * </p>
-     * @param <T> type of the elements
      * @param date current date
      * @param recP receiver position
      * @param satP satellite position
@@ -268,120 +225,31 @@ public class NeQuickModel implements IonosphericModel {
                                                       final FieldGeodeticPoint<T> recP,
                                                       final FieldGeodeticPoint<T> satP) {
 
-        // Field
-        final Field<T> field = date.getField();
-
-        // Ray-perigee parameters
-        final FieldRay<T> ray = new FieldRay<>(field, recP, satP);
-
         // Load the correct CCIR file
         final DateTimeComponents dateTime = date.getComponents(utc);
         loadsIfNeeded(dateTime.getDate());
 
-        // Tolerance for the integration accuracy. Defined inside the reference document, section 2.5.8.1.
-        final T h1 = recP.getAltitude();
-        final double tolerance;
-        if (h1.getReal() < 1000000.0) {
-            tolerance = 0.001;
-        } else {
-            tolerance = 0.01;
-        }
+        return engine.stec(dateTime, new FieldRay<>(recP, satP));
 
-        // Integration
-        int n = 8;
-        final FieldSegment<T> seg1 = new FieldSegment<>(field, n, ray);
-        T gn1 = stecIntegration(field, seg1, dateTime);
-        n *= 2;
-        final FieldSegment<T> seg2 = new FieldSegment<>(field, n, ray);
-        T gn2 = stecIntegration(field, seg2, dateTime);
-
-        int count = 1;
-        while (FastMath.abs(gn2.subtract(gn1)).getReal() > FastMath.abs(gn1).multiply(tolerance).getReal() && count < 20) {
-            gn1 = gn2;
-            n *= 2;
-            final FieldSegment<T> seg = new FieldSegment<>(field, n, ray);
-            gn2 = stecIntegration(field, seg, dateTime);
-            count += 1;
-        }
-
-        // If count > 20 the integration did not converge
-        if (count == 20) {
-            throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
-        }
-
-        // Eq. 202
-        return gn2.add(gn2.subtract(gn1).divide(15.0)).multiply(1.0e-16);
-    }
-
-    /**
-     * This method performs the STEC integration.
-     * @param seg coordinates along the integration path
-     * @param dateTime current date and time components
-     * @return result of the integration
-     */
-    private double stecIntegration(final Segment seg, final DateTimeComponents dateTime) {
-        // Integration points
-        final double[] heightS    = seg.getHeights();
-        final double[] latitudeS  = seg.getLatitudes();
-        final double[] longitudeS = seg.getLongitudes();
-
-        // Compute electron density
-        double density = 0.0;
-        for (int i = 0; i < heightS.length; i++) {
-            final double latitude  = latitudeS[i];
-            final double longitude = longitudeS[i];
-            final double modip     = modipGrid.computeMODIP(latitude, longitude);
-            final double az        = ionizationEngine.effectiveIonizationLevel(modip);
-            final NeQuickParameters parameters = new NeQuickParameters(dateTime,
-                                                                       flattenF2[dateTime.getDate().getMonth() - 1],
-                                                                       flattenFm3[dateTime.getDate().getMonth() - 1],
-                                                                       latitude, longitude, az, modip);
-            density += electronDensity(heightS[i], parameters);
-        }
-
-        return 0.5 * seg.getInterval() * density;
-    }
-
-    /**
-     * This method performs the STEC integration.
-     * @param <T> type of the elements
-     * @param field field of the elements
-     * @param seg coordinates along the integration path
-     * @param dateTime current date and time components
-     * @return result of the integration
-     */
-    private <T extends CalculusFieldElement<T>> T stecIntegration(final Field<T> field,
-                                                                  final FieldSegment<T> seg,
-                                                                  final DateTimeComponents dateTime) {
-        // Integration points
-        final T[] heightS    = seg.getHeights();
-        final T[] latitudeS  = seg.getLatitudes();
-        final T[] longitudeS = seg.getLongitudes();
-
-        // Compute electron density
-        T density = field.getZero();
-        for (int i = 0; i < heightS.length; i++) {
-            final T latitude  = latitudeS[i];
-            final T longitude = longitudeS[i];
-            final T modip     = modipGrid.computeMODIP(latitude, longitude);
-            final T az        = ionizationEngine.effectiveIonizationLevel(modip);
-            final FieldNeQuickParameters<T> parameters = new FieldNeQuickParameters<>(dateTime,
-                                                                                      flattenF2[dateTime.getDate().getMonth() - 1],
-                                                                                      flattenFm3[dateTime.getDate().getMonth() - 1],
-                                                                                      latitude, longitude, az, modip);
-            density = density.add(electronDensity(field, heightS[i], parameters));
-        }
-
-        return seg.getInterval().multiply(density).multiply(0.5);
     }
 
     /**
      * Computes the electron density at a given height.
-     * @param h height in m
-     * @param parameters NeQuick model parameters
+     * @param dateTime date
+     * @param modip modified dip latitude
+     * @param az effective ionization level
+     * @param latitude latitude along the integration path
+     * @param longitude longitude along the integration path
+     * @param h height along the integration path in m
      * @return electron density [m⁻³]
      */
-    private double electronDensity(final double h, final NeQuickParameters parameters) {
+    private double electronDensity(final DateTimeComponents dateTime, final double modip, final double az,
+                                   final double latitude, final double longitude, final double h) {
+
+        final NeQuickParameters parameters = new NeQuickParameters(dateTime,
+                                                                   flattenF2[dateTime.getDate().getMonth() - 1],
+                                                                   flattenFm3[dateTime.getDate().getMonth() - 1],
+                                                                   latitude, longitude, az, modip);
         // Convert height in kilometers
         final double hInKm = Unit.KILOMETRE.fromSI(h);
         // Electron density
@@ -397,22 +265,32 @@ public class NeQuickModel implements IonosphericModel {
     /**
      * Computes the electron density at a given height.
      * @param <T> type of the elements
-     * @param field field of the elements
-     * @param h height in m
-     * @param parameters NeQuick model parameters
+     * @param dateTime date
+     * @param modip modified dip latitude
+     * @param az effective ionization level
+     * @param latitude latitude along the integration path
+     * @param longitude longitude along the integration path
+     * @param h height along the integration path in m
      * @return electron density [m⁻³]
      */
-    private <T extends CalculusFieldElement<T>> T electronDensity(final Field<T> field,
-                                                                  final T h,
-                                                                  final FieldNeQuickParameters<T> parameters) {
+    private <T extends CalculusFieldElement<T>> T electronDensity(final DateTimeComponents dateTime,
+                                                                  final T modip, final T az,
+                                                                  final T latitude, final T longitude, final T h) {
+
+        final FieldNeQuickParameters<T> parameters =
+            new FieldNeQuickParameters<>(dateTime,
+                                         flattenF2[dateTime.getDate().getMonth() - 1],
+                                         flattenFm3[dateTime.getDate().getMonth() - 1],
+                                         latitude, longitude, az, modip);
+
         // Convert height in kilometers
         final T hInKm = Unit.KILOMETRE.fromSI(h);
         // Electron density
         final T n;
         if (hInKm.getReal() <= parameters.getHmF2().getReal()) {
-            n = bottomElectronDensity(field, hInKm, parameters);
+            n = bottomElectronDensity(hInKm, parameters);
         } else {
-            n = topElectronDensity(field, hInKm, parameters);
+            n = topElectronDensity(hInKm, parameters);
         }
         return n;
     }
@@ -491,16 +369,15 @@ public class NeQuickModel implements IonosphericModel {
     /**
      * Computes the electron density of the bottomside.
      * @param <T> type of the elements
-     * @param field field of the elements
      * @param h height in km
      * @param parameters NeQuick model parameters
      * @return the electron density N in m⁻³
      */
-    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final Field<T> field,
-                                                                        final T h,
+    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final T h,
                                                                         final FieldNeQuickParameters<T> parameters) {
 
         // Zero and One
+        final Field<T> field = h.getField();
         final T zero = field.getZero();
         final T one  = field.getOne();
 
@@ -528,7 +405,7 @@ public class NeQuickModel implements IonosphericModel {
         // Compute the exponential argument for each layer (Eq. 111 to 113)
         // If h < 100km we use h = 100km as recommended in the reference document
         final T   hTemp = FastMath.max(zero.newInstance(100.0), h);
-        final T   exp   = clipExp(field, FastMath.abs(hTemp.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
+        final T   exp   = clipExp(FastMath.abs(hTemp.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
         final T[] arguments = MathArrays.buildArray(field, 3);
         arguments[0] = hTemp.subtract(parameters.getHmF2()).divide(bf2);
         arguments[1] = hTemp.subtract(parameters.getHmF1()).divide(bf1).multiply(exp);
@@ -548,7 +425,7 @@ public class NeQuickModel implements IonosphericModel {
                 s[i]  = zero;
                 ds[i] = zero;
             } else {
-                final T expA   = clipExp(field, arguments[i]);
+                final T expA   = clipExp(arguments[i]);
                 final T opExpA = expA.add(1.0);
                 s[i]  = amplitudes[i].multiply(expA.divide(opExpA.multiply(opExpA)));
                 ds[i] = ct[i].multiply(expA.negate().add(1.0).divide(expA.add(1.0)));
@@ -564,7 +441,7 @@ public class NeQuickModel implements IonosphericModel {
             final T bc = s[0].multiply(ds[0]).add(one.linearCombination(s[0], ds[0], s[1], ds[1], s[2], ds[2])).divide(aNo).multiply(10.0).negate().add(1.0);
             final T z  = h.subtract(100.0).multiply(0.1);
             // Electron density (Eq. 121)
-            return aNo.multiply(clipExp(field, bc.multiply(z).add(clipExp(field, z.negate())).negate().add(1.0))).multiply(DENSITY_FACTOR);
+            return aNo.multiply(clipExp(bc.multiply(z).add(clipExp(z.negate())).negate().add(1.0))).multiply(DENSITY_FACTOR);
         }
     }
 
@@ -599,13 +476,11 @@ public class NeQuickModel implements IonosphericModel {
     /**
      * Computes the electron density of the topside.
      * @param <T> type of the elements
-     * @param field field of the elements
      * @param h height in km
      * @param parameters NeQuick model parameters
      * @return the electron density N in m⁻³
      */
-    private <T extends CalculusFieldElement<T>> T topElectronDensity(final Field<T> field,
-                                                                     final T h,
+    private <T extends CalculusFieldElement<T>> T topElectronDensity(final T h,
                                                                      final FieldNeQuickParameters<T> parameters) {
 
         // Constant parameters (Eq. 122 and 123)
@@ -617,13 +492,13 @@ public class NeQuickModel implements IonosphericModel {
         final T z      = deltaH.divide(parameters.getH0().multiply(deltaH.multiply(r).multiply(g).divide(parameters.getH0().multiply(r).add(deltaH.multiply(g))).add(1.0)));
 
         // Exponential (Eq. 126)
-        final T ee = clipExp(field, z);
+        final T ee = clipExp(z);
 
         // Electron density (Eq. 127)
         if (ee.getReal() > 1.0e11) {
             return parameters.getNmF2().multiply(4.0).divide(ee).multiply(DENSITY_FACTOR);
         } else {
-            final T opExpZ = ee.add(field.getOne());
+            final T opExpZ = ee.add(1.0);
             return parameters.getNmF2().multiply(4.0).multiply(ee).divide(opExpZ.multiply(opExpZ)).multiply(DENSITY_FACTOR);
         }
     }
@@ -697,44 +572,58 @@ public class NeQuickModel implements IonosphericModel {
      * recommended for the computation of exponential values.
      * </p>
      * @param <T> type of the elements
-     * @param field field of the elements
      * @param power power for exponential function
      * @return clipped exponential value
      */
-    private <T extends CalculusFieldElement<T>> T clipExp(final Field<T> field, final T power) {
-        final T zero = field.getZero();
+    private <T extends CalculusFieldElement<T>> T clipExp(final T power) {
         if (power.getReal() > 80.0) {
-            return zero.newInstance(5.5406E34);
+            return power.newInstance(5.5406E34);
         } else if (power.getReal() < -80) {
-            return zero.newInstance(1.8049E-35);
+            return power.newInstance(1.8049E-35);
         } else {
             return FastMath.exp(power);
         }
     }
 
-    /** Engine for computing effective ionization level.
+    /** Engine for computing various low-level aspects of NeQuick model.
      * @since 13.0
      */
-    private interface EffectiveIonizationLevelEngine {
+    private interface NeQuickEngine {
 
-        /** Compute effective ionization level.
-         * @param modip modified dip latitude at receiver location
-         * @return effective ionization level (Az in Nequick Galileo, R12 in original Nequick ITU)
+        /**
+         * This method allows the computation of the Slant Total Electron Content (STEC).
+         * <p>
+         * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of
+         * the reference document.
+         * </p>
+         * @param dateTime current date
+         * @param ray ray-perigee parameters
+         * @return the STEC in TECUnits
          */
-        double effectiveIonizationLevel(double modip);
+        double stec(DateTimeComponents dateTime, Ray ray);
 
-        /** Compute effective ionization level.
-         * @param modip modified dip latitude at receiver location
-         * @return effective ionization level (Az in Nequick Galileo, R12 in original Nequick ITU)
+        /**
+         * This method allows the computation of the Slant Total Electron Content (STEC).
+         * <p>
+         * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of
+         * the reference document.
+         * </p>
+         * @param <T> type of the field elements
+         * @param dateTime current date
+         * @param ray ray-perigee parameters
+         * @return the STEC in TECUnits
          */
-        <T extends CalculusFieldElement<T>> T effectiveIonizationLevel(T modip);
+        <T extends CalculusFieldElement<T>> T stec(DateTimeComponents dateTime, FieldRay<T> ray);
 
     }
 
-    /** Galileo-specific version of effective ionization level engine.
+    /** Galileo-specific version of NeQuick engine.
      * @since 13.0
      */
-    private static class GalileoIonizationEngine implements EffectiveIonizationLevelEngine {
+    private class GalileoEngine implements NeQuickEngine {
+
+        /** Starting number of points for integration. */
+        private static final int N_START = 8;
 
         /** Broadcast ionization engine coefficients. */
         private final double[] alpha;
@@ -742,13 +631,15 @@ public class NeQuickModel implements IonosphericModel {
         /** Build a new instance.
          * @param alpha broadcast ionization engine coefficients
          */
-        GalileoIonizationEngine(final double[] alpha) {
+        GalileoEngine(final double[] alpha) {
             this.alpha = alpha.clone();
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public double effectiveIonizationLevel(final double modip) {
+        /** Compute effective ionization level.
+         * @param modip modified dip latitude at receiver location
+         * @return effective ionization level (Az in Nequick Galileo, R12 in original Nequick ITU)
+         */
+        private double effectiveIonizationLevel(final double modip) {
             // Particular condition (Eq. 17)
             if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
                 return 63.7;
@@ -758,9 +649,12 @@ public class NeQuickModel implements IonosphericModel {
             }
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public <T extends CalculusFieldElement<T>> T effectiveIonizationLevel(final T modip) {
+        /** Compute effective ionization level.
+         * @param <T> type of the field elements
+         * @param modip modified dip latitude at receiver location
+         * @return effective ionization level (Az in Nequick Galileo, R12 in original Nequick ITU)
+         */
+        private <T extends CalculusFieldElement<T>> T effectiveIonizationLevel(final T modip) {
             // Particular condition (Eq. 17)
             if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
                 return modip.newInstance(63.7);
@@ -772,12 +666,154 @@ public class NeQuickModel implements IonosphericModel {
             }
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public double stec(final DateTimeComponents dateTime, final Ray ray) {
+
+            // Tolerance for the integration accuracy. Defined inside the reference document, section 2.5.8.1.
+            final double h1 = ray.getRecH();
+            final double tolerance;
+            if (h1 < 1000000.0) {
+                tolerance = 0.001;
+            } else {
+                tolerance = 0.01;
+            }
+
+            // Integration
+            int n = N_START;
+            final Segment seg1 = new Segment(n, ray, ray.getS1(), ray.getS2());
+            double gn1 = stecIntegration(dateTime, seg1);
+            n *= 2;
+            final Segment seg2 = new Segment(n, ray, ray.getS1(), ray.getS2());
+            double gn2 = stecIntegration(dateTime, seg2);
+
+            int count = 1;
+            while (FastMath.abs(gn2 - gn1) > tolerance * FastMath.abs(gn1) && count < 20) {
+                gn1 = gn2;
+                n *= 2;
+                final Segment seg = new Segment(n, ray, ray.getS1(), ray.getS2());
+                gn2 = stecIntegration(dateTime, seg);
+                count += 1;
+            }
+
+            // If count > 20 the integration did not converge
+            if (count == 20) {
+                throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
+            }
+
+            // Eq. 202
+            return (gn2 + ((gn2 - gn1) / 15.0)) * 1.0e-16;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> T stec(final DateTimeComponents dateTime, final FieldRay<T> ray) {
+
+            // Tolerance for the integration accuracy. Defined inside the reference document, section 2.5.8.1.
+            final T h1 = ray.getRecH();
+            final double tolerance;
+            if (h1.getReal() < 1000000.0) {
+                tolerance = 0.001;
+            } else {
+                tolerance = 0.01;
+            }
+
+            // Integration
+            int n = N_START;
+            final FieldSegment<T> seg1 = new FieldSegment<>(n, ray, ray.getS1(), ray.getS2());
+            T gn1 = stecIntegration(dateTime, seg1);
+            n *= 2;
+            final FieldSegment<T> seg2 = new FieldSegment<>(n, ray, ray.getS1(), ray.getS2());
+            T gn2 = stecIntegration(dateTime, seg2);
+
+            int count = 1;
+            while (FastMath.abs(gn2.subtract(gn1)).getReal() > FastMath.abs(gn1).multiply(tolerance).getReal() &&
+                   count < 20) {
+                gn1 = gn2;
+                n *= 2;
+                final FieldSegment<T> seg = new FieldSegment<>(n, ray, ray.getS1(), ray.getS2());
+                gn2 = stecIntegration(dateTime, seg);
+                count += 1;
+            }
+
+            // If count > 20 the integration did not converge
+            if (count == 20) {
+                throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
+            }
+
+            // Eq. 202
+            return gn2.add(gn2.subtract(gn1).divide(15.0)).multiply(1.0e-16);
+        }
+
+        /**
+         * This method performs the STEC integration.
+         *
+         * @param dateTime current date and time components
+         * @param seg      coordinates along the integration path
+         * @return result of the integration
+         */
+        private double stecIntegration(final DateTimeComponents dateTime, final Segment seg) {
+
+            // Compute electron density
+            double density = 0.0;
+            for (int i = 0; i < seg.getNbPoints(); i++) {
+                final GeodeticPoint gp = seg.getPoint(i);
+                final double modip = modipGrid.computeMODIP(gp.getLatitude(), gp.getLongitude());
+                final double az = effectiveIonizationLevel(modip);
+                density += electronDensity(dateTime, modip, az,
+                                           gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+            }
+
+            return 0.5 * seg.getInterval() * density;
+        }
+
+        /**
+         * This method performs the STEC integration.
+         *
+         * @param <T>      type of the elements
+         * @param dateTime current date and time components
+         * @param seg      coordinates along the integration path
+         * @return result of the integration
+         */
+        private <T extends CalculusFieldElement<T>> T stecIntegration(final DateTimeComponents dateTime,
+                                                                      final FieldSegment<T> seg) {
+            // Compute electron density
+            T density = seg.getInterval().getField().getZero();
+            for (int i = 0; i < seg.getNbPoints(); i++) {
+                final FieldGeodeticPoint<T> gp = seg.getPoint(i);
+                final T modip = modipGrid.computeMODIP(gp.getLatitude(), gp.getLongitude());
+                final T az = effectiveIonizationLevel(modip);
+                density = density.add(electronDensity(dateTime, modip, az,
+                                                      gp.getLatitude(), gp.getLongitude(), gp.getAltitude()));
+            }
+
+            return seg.getInterval().multiply(density).multiply(0.5);
+        }
+
     }
 
-    /** Original ITU version of effective ionization level engine.
+    /** Original ITU version of NeQuick engine.
      * @since 13.0
      */
-    private static class ItuIonizationEngine implements EffectiveIonizationLevelEngine {
+    private class ItuEngine implements NeQuickEngine {
+
+        /** One thousand kilometer height. */
+        private static final double H_1000 = 1000000.0;
+
+        /** Two thousands kilometer height. */
+        private static final double H_2000 = 2000000.0;
+
+        /** Starting number of points for integration. */
+        private static final int N_START = 8;
+
+        /** Max number of points for integration. */
+        private static final int N_STOP = 1024;
+
+        /** Small convergence criterion. */
+        private static final double EPS_SMALL = 1.0e-3;
+
+        /** Medium convergence criterion. */
+        private static final double EPS_MEDIUM = 1.0e-2;
 
         /** Solar flux. */
         private final double f107;
@@ -785,20 +821,168 @@ public class NeQuickModel implements IonosphericModel {
         /** Build a new instance.
          * @param f107 solar flux
          */
-        ItuIonizationEngine(final double f107) {
+        ItuEngine(final double f107) {
             this.f107 = f107;
         }
 
         /** {@inheritDoc} */
         @Override
-        public double effectiveIonizationLevel(final double modip) {
-            return f107;
+        public double stec(final DateTimeComponents dateTime, final Ray ray) {
+            if (ray.getSatH() <= H_2000) {
+                if (ray.getRecH() >= H_1000) {
+                    // only one integration interval
+                    return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), ray.getS2());
+                } else {
+                    // two integration intervals, below and above 1000km
+                    final double h1000 = RE + H_1000;
+                    final double s1000 = FastMath.sqrt(h1000 * h1000 - ray.getRadius() * ray.getRadius());
+                    return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), s1000) +
+                           stecIntegration(dateTime, EPS_MEDIUM, ray, s1000, ray.getS2());
+                }
+            } else {
+                if (ray.getRecH() >= H_2000) {
+                    // only one integration interval
+                    return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), ray.getS2());
+                } else {
+                    final double h2000 = RE + H_2000;
+                    final double s2000 = FastMath.sqrt(h2000 * h2000 - ray.getRadius() * ray.getRadius());
+                    if (ray.getRecH() >= H_1000) {
+                        // two integration intervals, below and above 2000km
+                        return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), s2000) +
+                               stecIntegration(dateTime, EPS_SMALL, ray, s2000, ray.getS2());
+                    } else {
+                        // three integration intervals, below 1000km, between 1000km and 2000km, and above 2000km
+                        final double h1000 = RE + H_1000;
+                        final double s1000 = FastMath.sqrt(h1000 * h1000 - ray.getRadius() * ray.getRadius());
+                        return stecIntegration(dateTime, EPS_SMALL,  ray, ray.getS1(), s1000) +
+                               stecIntegration(dateTime, EPS_MEDIUM, ray, s1000, s2000) +
+                               stecIntegration(dateTime, EPS_MEDIUM, ray, s2000, ray.getS2());
+                    }
+                }
+            }
         }
 
         /** {@inheritDoc} */
         @Override
-        public <T extends CalculusFieldElement<T>> T effectiveIonizationLevel(final T modip) {
-            return modip.newInstance(f107);
+        public <T extends CalculusFieldElement<T>> T stec(final DateTimeComponents dateTime, final FieldRay<T> ray) {
+            if (ray.getSatH().getReal() <= H_2000) {
+                if (ray.getRecH().getReal() >= H_1000) {
+                    // only one integration interval
+                    return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), ray.getS2());
+                } else {
+                    // two integration intervals, below and above 1000km
+                    final double h1000 = RE + H_1000;
+                    final T s1000 = FastMath.sqrt(ray.getRadius().multiply(ray.getRadius()).negate().add(h1000 * h1000));
+                    return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), s1000).
+                           add(stecIntegration(dateTime, EPS_MEDIUM, ray, s1000, ray.getS2()));
+                }
+            } else {
+                if (ray.getRecH().getReal() >= H_2000) {
+                    // only one integration interval
+                    return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), ray.getS2());
+                } else {
+                    final double h2000 = RE + H_2000;
+                    final T s2000 = FastMath.sqrt(ray.getRadius().multiply(ray.getRadius()).negate().add(h2000 * h2000));
+                    if (ray.getRecH().getReal() >= H_1000) {
+                        // two integration intervals, below and above 2000km
+                        return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), s2000).
+                               add(stecIntegration(dateTime, EPS_SMALL, ray, s2000, ray.getS2()));
+                    } else {
+                        // three integration intervals, below 1000km, between 1000km and 2000km, and above 2000km
+                        final double h1000 = RE + H_1000;
+                        final T s1000 = FastMath.sqrt(ray.getRadius().multiply(ray.getRadius()).negate().add(h1000 * h1000));
+                        return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), s1000).
+                               add(stecIntegration(dateTime, EPS_MEDIUM, ray, s1000, s2000)).
+                               add(stecIntegration(dateTime, EPS_MEDIUM, ray, s2000, ray.getS2()));
+                    }
+                }
+            }
+        }
+
+        /**
+         * This method performs the STEC integration.
+         *
+         * @param dateTime current date and time components
+         * @param eps convergence criterion
+         * @param ray ray-perigee parameters
+         * @param s1  lower boundary of integration
+         * @param s2  upper boundary for integration
+         * @return result of the integration
+         */
+        private double stecIntegration(final DateTimeComponents dateTime, final double eps,
+                                       final Ray ray, final double s1, final double s2) {
+
+            double gInt1 = Double.NaN;
+            double gInt2 = Double.NaN;
+
+            for (int n = N_START; n <= N_STOP; n = 2 * n) {
+
+                // integrate with n intervals (2n points)
+                final Segment segment = new Segment(n, ray, s1, s2);
+                double sum = 0;
+                for (int i = 0; i < segment.getNbPoints(); ++i) {
+                    final GeodeticPoint gp = segment.getPoint(i);
+                    final double modip = modipGrid.computeMODIP(gp.getLatitude(), gp.getLongitude());
+                    final double ed    = electronDensity(dateTime, modip, f107,
+                                           gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+                    sum += ed;
+                }
+
+                gInt1 = gInt2;
+                gInt2 = sum * 0.5 * segment.getInterval();
+                if (FastMath.abs(gInt1 - gInt2) <= FastMath.abs(gInt1 * eps)) {
+                    // convergence reached
+                    break;
+                }
+
+            }
+
+            return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt1 + (gInt2 - gInt1) / 15.0);
+
+        }
+
+        /**
+         * This method performs the STEC integration.
+         *
+         * @param dateTime current date and time components
+         * @param eps convergence criterion
+         * @param ray ray-perigee parameters
+         * @param s1  lower boundary of integration
+         * @param s2  upper boundary for integration
+         * @return result of the integration
+         */
+        private <T extends CalculusFieldElement<T>> T stecIntegration(final DateTimeComponents dateTime,
+                                                                      final double eps,
+                                                                      final FieldRay<T> ray, final T s1, final T s2) {
+
+            T gInt1 = s1.newInstance(Double.NaN);
+            T gInt2 = s1.newInstance(Double.NaN);
+            T f107T = s1.newInstance(f107);
+
+            for (int n = N_START; n <= N_STOP; n = 2 * n) {
+
+                // integrate with n intervals (2n points)
+                final FieldSegment<T> segment = new FieldSegment<>(n, ray, s1, s2);
+                T sum = s1.getField().getZero();
+                for (int i = 0; i < segment.getNbPoints(); ++i) {
+                    final FieldGeodeticPoint<T> gp = segment.getPoint(i);
+                    final T modip = modipGrid.computeMODIP(gp.getLatitude(), gp.getLongitude());
+                    final T ed    = electronDensity(dateTime, modip, f107T,
+                                                    gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+                    sum = sum.add(ed);
+                }
+
+                gInt1 = gInt2;
+                gInt2 = sum.multiply(0.5).multiply(segment.getInterval());
+                if (FastMath.abs(gInt1.subtract(gInt2).getReal()) <= FastMath.abs(gInt1.getReal() * eps)) {
+                    // convergence reached
+                    break;
+                }
+
+            }
+
+            return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt1.add(gInt2.subtract(gInt1).divide(15.0)));
+
         }
 
     }

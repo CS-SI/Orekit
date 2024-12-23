@@ -208,6 +208,90 @@ public class NeQuickModelTest {
         Assertions.assertEquals(6.854, stec.getReal(), 1.0e-3);
     }
 
+    // validation test published by ITU
+    @Test
+    public void testValidationItu63() {
+        doTestValidationItu(63, 4.3689);
+    }
+
+    // validation test published by ITU
+    @Test
+    public void testValidationItu128() {
+        doTestValidationItu(128, 11.83090);
+    }
+
+    // validation test published by ITU
+    @Test
+    public void testValidationItu193() {
+        doTestValidationItu(193, 20.85232);
+    }
+
+    private void doTestValidationItu(final double flux, final double expected) {
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(flux, TimeScalesFactory.getUTC());
+
+        // Geodetic points
+        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(82.494293510492980204),
+                                                     FastMath.toRadians(-62.340460202287275138),
+                                                     78.107446296427042398);
+        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(54.445029415916160076),
+                                                     FastMath.toRadians(-118.47006897550868132),
+                                                     20370730.845002099872);
+
+        // Date
+        final AbsoluteDate date = new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC());
+
+        // STEC
+        final double stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(expected, stec, 1.0e-3);
+    }
+
+    // validation test published by ITU
+    @Test
+    public void testValidationItu63Field() {
+        doTestValidationItu(Binary64Field.getInstance(), 63, 4.3689);
+    }
+
+    // validation test published by ITU
+    @Test
+    public void testValidationItu128Field() {
+        doTestValidationItu(Binary64Field.getInstance(), 128, 11.83090);
+    }
+
+    // validation test published by ITU
+    @Test
+    public void testValidationItu193Field() {
+        doTestValidationItu(Binary64Field.getInstance(), 193, 20.85232);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestValidationItu(final Field<T> field,
+                                                                         final double flux, final double expected) {
+
+        // Model
+        final NeQuickModel model = new NeQuickModel(flux, TimeScalesFactory.getUTC());
+
+        // Geodetic points
+        final FieldGeodeticPoint<T> recP =
+            new FieldGeodeticPoint<>(field,
+                                     new GeodeticPoint(FastMath.toRadians(82.494293510492980204),
+                                                       FastMath.toRadians(-62.340460202287275138),
+                                                       78.1074462964270423981));
+        final FieldGeodeticPoint<T> satP =
+            new FieldGeodeticPoint<>(field,
+                                     new GeodeticPoint(FastMath.toRadians(54.4450294159161600763),
+                                                       FastMath.toRadians(-118.47006897550868132),
+                                                       20370730.8450020998725));
+
+        // Date
+        final FieldAbsoluteDate<T> date =
+            new FieldAbsoluteDate<>(field, new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC()));
+
+        // STEC
+        final T stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(expected, stec.getReal(), 1.0e-3);
+    }
+
     @Test
     public void testDelay() {
 

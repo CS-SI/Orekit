@@ -30,6 +30,16 @@ class Ray {
     /** Threshold for ray-perigee parameters computation. */
     private static final double THRESHOLD = 1.0e-10;
 
+    /** Receiver altitude [m].
+     * @since 13.0
+     */
+    private final double recH;
+
+    /** Satellite altitude [m].
+     * @since 13.0
+     */
+    private final double satH;
+
     /** Distance of the first point from the ray perigee [m]. */
     private final double s1;
 
@@ -63,8 +73,10 @@ class Ray {
     Ray(final GeodeticPoint recP, final GeodeticPoint satP) {
 
         // Integration limits in meters (Eq. 140 and 141)
-        final double r1 = NeQuickModel.RE + recP.getAltitude();
-        final double r2 = NeQuickModel.RE + satP.getAltitude();
+        this.recH       = recP.getAltitude();
+        this.satH       = satP.getAltitude();
+        final double r1 = NeQuickModel.RE + recH;
+        final double r2 = NeQuickModel.RE + satH;
 
         // Useful parameters
         final double lat1 = recP.getLatitude();
@@ -139,9 +151,27 @@ class Ray {
             this.cosAzP = (scLatSat.sin() - scLatP.sin() * scPsi.cos()) / (scLatP.cos() * scPsi.sin());
         }
 
-        // Integration en points s1 and s2 in meters (Eq. 176 and 177)
+        // Integration end points s1 and s2 in meters (Eq. 176 and 177)
         this.s1 = FastMath.sqrt(r1 * r1 - rp * rp);
         this.s2 = FastMath.sqrt(r2 * r2 - rp * rp);
+    }
+
+    /**
+     * Get receiver altitude.
+     * @return receiver altitude
+     * @since 13.0
+     */
+    public double getRecH() {
+        return recH;
+    }
+
+    /**
+     * Get satellite altitude.
+     * @return satellite altitude
+     * @since 13.0
+     */
+    public double getSatH() {
+        return satH;
     }
 
     /**
@@ -178,6 +208,16 @@ class Ray {
      */
     public double getLatitude() {
         return latP;
+    }
+
+    /**
+     * Get the ray-perigee latitude sin/cos.
+     *
+     * @return the ray-perigee latitude sin/cos
+     * @since 13.0
+     */
+    public SinCos getScLat() {
+        return scLatP;
     }
 
     /**

@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
+import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 
 /** Container for ray-perigee parameters.
@@ -31,6 +32,16 @@ class FieldRay<T extends CalculusFieldElement<T>> {
 
     /** Threshold for ray-perigee parameters computation. */
     private static final double THRESHOLD = 1.0e-10;
+
+    /** Receiver altitude [m].
+     * @since 13.0
+     */
+    private final T recH;
+
+    /** Satellite altitude [m].
+     * @since 13.0
+     */
+    private final T satH;
 
     /** Distance of the first point from the ray perigee [m]. */
     private final T s1;
@@ -59,15 +70,16 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     /**
      * Constructor.
      *
-     * @param field field of the elements
      * @param recP  receiver position
      * @param satP  satellite position
      */
-    FieldRay(final Field<T> field, final FieldGeodeticPoint<T> recP, final FieldGeodeticPoint<T> satP) {
+    FieldRay(final FieldGeodeticPoint<T> recP, final FieldGeodeticPoint<T> satP) {
 
         // Integration limits in meters (Eq. 140 and 141)
-        final T r1 = recP.getAltitude().add(NeQuickModel.RE);
-        final T r2 = satP.getAltitude().add(NeQuickModel.RE);
+        this.recH  = recP.getAltitude();
+        this.satH  = satP.getAltitude();
+        final T r1 = recH.add(NeQuickModel.RE);
+        final T r2 = satH.add(NeQuickModel.RE);
 
         // Useful parameters
         final T pi = r1.getPi();
@@ -138,8 +150,8 @@ class FieldRay<T extends CalculusFieldElement<T>> {
         if (FastMath.abs(FastMath.abs(latP).subtract(pi.multiply(0.5)).getReal()) < THRESHOLD || FastMath.abs(
             scZ.sin().getReal()) < THRESHOLD) {
             // Eq. 172 and 173
-            this.sinAzP = field.getZero();
-            this.cosAzP = FastMath.copySign(field.getOne(), latP).negate();
+            this.sinAzP = pi.getField().getZero();
+            this.cosAzP = FastMath.copySign(pi.getField().getOne(), latP).negate();
         } else {
             final FieldSinCos<T> scLon = FastMath.sinCos(lon2.subtract(lonP));
             // Sine and cosine of azimuth of satellite as seen from ray-perigee
@@ -150,9 +162,27 @@ class FieldRay<T extends CalculusFieldElement<T>> {
                 scLatSat.sin().subtract(scLatP.sin().multiply(scPsi.cos())).divide(scLatP.cos().multiply(scPsi.sin()));
         }
 
-        // Integration en points s1 and s2 in meters (Eq. 176 and 177)
+        // Integration end points s1 and s2 in meters (Eq. 176 and 177)
         this.s1 = FastMath.sqrt(r1.multiply(r1).subtract(rp.multiply(rp)));
         this.s2 = FastMath.sqrt(r2.multiply(r2).subtract(rp.multiply(rp)));
+    }
+
+    /**
+     * Get receiver altitude.
+     * @return receiver altitude
+     * @since 13.0
+     */
+    public T getRecH() {
+        return recH;
+    }
+
+    /**
+     * Get satellite altitude.
+     * @return satellite altitude
+     * @since 13.0
+     */
+    public T getSatH() {
+        return satH;
     }
 
     /**
@@ -189,6 +219,16 @@ class FieldRay<T extends CalculusFieldElement<T>> {
      */
     public T getLatitude() {
         return latP;
+    }
+
+    /**
+     * Get the ray-perigee latitude sin/cos.
+     *
+     * @return the ray-perigee latitude sin/cos
+     * @since 13.0
+     */
+    public FieldSinCos<T> getScLat() {
+        return scLatP;
     }
 
     /**

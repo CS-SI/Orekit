@@ -17,7 +17,7 @@
 package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.util.FastMath;
-import org.hipparchus.util.SinCos;
+import org.orekit.bodies.GeodeticPoint;
 
 /** Performs the computation of the coordinates along the integration path.
  * @author Bryan Cazabonne
@@ -28,120 +28,89 @@ class Segment {
     /** Threshold for zenith segment. */
     private static final double THRESHOLD = 1.0;
 
-    /** Latitudes [rad]. */
-    private final double[] latitudes;
+    /** Supporting ray. */
+    private final Ray ray;
 
-    /** Longitudes [rad]. */
-    private final double[] longitudes;
+    /** Integration start. */
+    private final double y;
 
-    /** Heights [m]. */
-    private final double[] heights;
+    /** Odd points offset. */
+    private final double g;
 
     /** Integration step [m]. */
     private final double deltaN;
 
+    /** Number of points. */
+    private final int nbPoints;
+
     /**
      * Constructor.
      *
-     * @param n   number of points used for the integration
+     * @param n   number of intervals for integration (2 points per interval, hence 2n points will be generated)
      * @param ray ray-perigee parameters
+     * @param s1  lower boundary of integration
+     * @param s2  upper boundary for integration
      */
-    Segment(final int n, final Ray ray) {
-        // Integration en points
-        final double s1 = ray.getS1();
-        final double s2 = ray.getS2();
+    Segment(final int n, final Ray ray, final double s1, final double s2) {
+
+        this.ray = ray;
 
         // Integration step (Eq. 195)
-        this.deltaN = (s2 - s1) / n;
+        deltaN = (s2 - s1) / n;
 
-        // Segments
-        final double[] s = getSegments(n, s1);
-
-        // Useful parameters
-        final double rp = ray.getRadius();
-        final SinCos scLatP = FastMath.sinCos(ray.getLatitude());
-
-        // Geodetic coordinates
-        final int size = s.length;
-        heights = new double[size];
-        latitudes = new double[size];
-        longitudes = new double[size];
-        for (int i = 0; i < size; i++) {
-            // Heights (Eq. 178)
-            heights[i] = FastMath.sqrt(s[i] * s[i] + rp * rp) - NeQuickModel.RE;
-
-            if (rp < THRESHOLD) {
-                // zenith segment
-                latitudes[i] = ray.getLatitude();
-                longitudes[i] = ray.getLongitude();
-            } else {
-                // Great circle parameters (Eq. 179 to 181)
-                final double tanDs = s[i] / rp;
-                final double cosDs = 1.0 / FastMath.sqrt(1.0 + tanDs * tanDs);
-                final double sinDs = tanDs * cosDs;
-
-                // Latitude (Eq. 182 to 183)
-                final double sinLatS = scLatP.sin() * cosDs + scLatP.cos() * sinDs * ray.getCosineAz();
-                final double cosLatS = FastMath.sqrt(1.0 - sinLatS * sinLatS);
-                latitudes[i] = FastMath.atan2(sinLatS, cosLatS);
-
-                // Longitude (Eq. 184 to 187)
-                final double sinLonS = sinDs * ray.getSineAz() * scLatP.cos();
-                final double cosLonS = cosDs - scLatP.sin() * sinLatS;
-                longitudes[i] = FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude();
-            }
-        }
-    }
-
-    /**
-     * Computes the distance of a point from the ray-perigee.
-     *
-     * @param n  number of points used for the integration
-     * @param s1 lower boundary
-     * @return the distance of a point from the ray-perigee in km
-     */
-    private double[] getSegments(final int n, final double s1) {
         // Eq. 196
-        final double g = 0.5773502691896 * deltaN;
+        g = 0.5773502691896 * deltaN;
+
         // Eq. 197
-        final double y = s1 + (deltaN - g) * 0.5;
-        final double[] segments = new double[2 * n];
-        int index = 0;
-        for (int i = 0; i < n; i++) {
-            // Eq. 198
-            segments[index] = y + i * deltaN;
-            index++;
-            segments[index] = y + i * deltaN + g;
-            index++;
+        y = s1 + (deltaN - g) * 0.5;
+
+        nbPoints = 2 * n;
+
+    }
+
+    /** Get point along the ray.
+     * @param index point index (between O included and {@link #getNbPoints()} excluded)
+     * @return point on ray
+     * @since 13.0
+     */
+    public GeodeticPoint getPoint(int index) {
+
+        final double s = y + (index / 2) * deltaN + (index % 2) * g;
+
+        // Heights (Eq. 178)
+        final double height = FastMath.sqrt(s * s + ray.getRadius() * ray.getRadius()) - NeQuickModel.RE;
+
+        if (ray.getRadius() < THRESHOLD) {
+            // zenith segment
+            return new GeodeticPoint(ray.getLatitude(), ray.getLongitude(), height);
+        } else {
+            // Great circle parameters (Eq. 179 to 181)
+            final double tanDs = s / ray.getRadius();
+            final double cosDs = 1.0 / FastMath.sqrt(1.0 + tanDs * tanDs);
+            final double sinDs = tanDs * cosDs;
+
+            // Latitude (Eq. 182 to 183)
+            final double sinLatS = ray.getScLat().sin() * cosDs + ray.getScLat().cos() * sinDs * ray.getCosineAz();
+            final double cosLatS = FastMath.sqrt(1.0 - sinLatS * sinLatS);
+
+            // Longitude (Eq. 184 to 187)
+            final double sinLonS = sinDs * ray.getSineAz() * ray.getScLat().cos();
+            final double cosLonS = cosDs - ray.getScLat().sin() * sinLatS;
+
+            return new GeodeticPoint(FastMath.atan2(sinLatS, cosLatS),
+                                     FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude(), height);
         }
-        return segments;
     }
 
-    /**
-     * Get the latitudes of the coordinates along the integration path.
-     *
-     * @return the latitudes in radians
+    /** Get number of points.
+     * <p>
+     * Note there are 2 points per interval, so {@code index} must be between 0 (included)
+     * and 2n (excluded) for a segment built with {@code n} intervals
+     * </p>
+     * @return number of points
      */
-    public double[] getLatitudes() {
-        return latitudes;
-    }
-
-    /**
-     * Get the longitudes of the coordinates along the integration path.
-     *
-     * @return the longitudes in radians
-     */
-    public double[] getLongitudes() {
-        return longitudes;
-    }
-
-    /**
-     * Get the heights of the coordinates along the integration path.
-     *
-     * @return the heights in m
-     */
-    public double[] getHeights() {
-        return heights;
+    public int getNbPoints() {
+        return nbPoints;
     }
 
     /**
