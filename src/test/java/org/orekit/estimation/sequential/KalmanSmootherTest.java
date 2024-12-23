@@ -1,11 +1,8 @@
 package org.orekit.estimation.sequential;
 
-import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.FastMath;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -90,21 +87,19 @@ public class KalmanSmootherTest {
         // Observer to print out debugging info
         kalmanSmoother.setObserver(estimation -> {
             System.out.printf("%22.15e", kalmanSmoother.getKalmanFilter().getCorrected().getTime());
-            final KalmanModel testModel = (KalmanModel) kalmanSmoother.getProcessModel();
 
-            csvMatrix(KalmanEstimatorUtil.unnormalizeCovarianceMatrix(
-                    kalmanSmoother.getKalmanFilter().getPredicted().getCovariance(),
-                    testModel.getScale()
-            ));
-            csvMatrix(testModel.getPhysicalStateTransitionMatrix());
-            csvVector(testModel.getPhysicalEstimatedState());
-            csvMatrix(testModel.getPhysicalEstimatedCovarianceMatrix());
+            csvVector(estimation.getPhysicalPredictedState());
+            csvMatrix(estimation.getPhysicalPredictedCovarianceMatrix());
+            csvMatrix(estimation.getPhysicalStateTransitionMatrix());
+            csvVector(estimation.getPhysicalEstimatedState());
+            csvMatrix(estimation.getPhysicalEstimatedCovarianceMatrix());
             System.out.println();
         });
 
         // Print initial state
         final KalmanModel testModel = (KalmanModel) kalmanSmoother.getProcessModel();
         System.out.printf("%22.15e", kalmanSmoother.getKalmanFilter().getCorrected().getTime());
+        csvVector(MatrixUtils.createRealVector(6));
         csvMatrix(MatrixUtils.createRealMatrix(6, 6));
         csvMatrix(MatrixUtils.createRealMatrix(6, 6));
         csvVector(testModel.getPhysicalEstimatedState());

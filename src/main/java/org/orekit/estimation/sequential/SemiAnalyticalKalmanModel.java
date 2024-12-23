@@ -543,6 +543,17 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         return KalmanEstimatorUtil.unnormalizeCovarianceMatrix(correctedEstimate.getCovariance(), scale);
     }
 
+    @Override
+    public RealVector getPhysicalPredictedState() {
+        return null;
+    }
+
+    @Override
+    public RealMatrix getPhysicalPredictedCovarianceMatrix() {
+        return null;
+    }
+
+
     /** {@inheritDoc} */
     @Override
     public RealMatrix getPhysicalStateTransitionMatrix() {

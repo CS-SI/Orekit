@@ -560,6 +560,16 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
         return correctedEstimate.getCovariance();
     }
 
+    @Override
+    public RealVector getPhysicalPredictedState() {
+        return null;
+    }
+
+    @Override
+    public RealMatrix getPhysicalPredictedCovarianceMatrix() {
+        return null;
+    }
+
     /** {@inheritDoc} */
     @Override
     public RealMatrix getPhysicalStateTransitionMatrix() {
