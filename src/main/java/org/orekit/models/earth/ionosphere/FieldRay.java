@@ -17,10 +17,8 @@
 package org.orekit.models.earth.ionosphere;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
-import org.hipparchus.util.SinCos;
 import org.orekit.bodies.FieldGeodeticPoint;
 
 /** Container for ray-perigee parameters.

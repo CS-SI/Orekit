@@ -77,7 +77,8 @@ class FieldSegment<T extends CalculusFieldElement<T>> {
      */
     public FieldGeodeticPoint<T> getPoint(int index) {
 
-        final T s = y.add(deltaN.multiply(index / 2)).add(g.multiply(index % 2));
+        final int p = index / 2;
+        final T   s = y.add(deltaN.multiply(p)).add(g.multiply(index % 2));
 
         // Heights (Eq. 178)
         final T height = FastMath.sqrt(s.multiply(s).add(ray.getRadius().multiply(ray.getRadius()))).

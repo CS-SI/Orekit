@@ -75,7 +75,8 @@ class Segment {
      */
     public GeodeticPoint getPoint(int index) {
 
-        final double s = y + (index / 2) * deltaN + (index % 2) * g;
+        final int    p = index / 2;
+        final double s = y + p * deltaN + (index % 2) * g;
 
         // Heights (Eq. 178)
         final double height = FastMath.sqrt(s * s + ray.getRadius() * ray.getRadius()) - NeQuickModel.RE;
