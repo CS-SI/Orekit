@@ -3,7 +3,6 @@ package org.orekit.estimation.sequential;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.MerweUnscentedTransform;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -80,13 +79,9 @@ public class KalmanSmootherTest {
         final RealMatrix Q = Jac.multiply(cartesianQ.multiply(Jac.transpose()));
 
         // Build the Kalman filter
-        //final AbstractSequentialEstimator kalmanEstimator = new KalmanEstimatorBuilder().
-        //        addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
-        //        build();
-        final AbstractSequentialEstimator kalmanEstimator = new UnscentedKalmanEstimatorBuilder()
-                .addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q))
-                .unscentedTransformProvider(new MerweUnscentedTransform(6))
-                .build();
+        final KalmanEstimator kalmanEstimator = new KalmanEstimatorBuilder().
+                addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q)).
+                build();
         final KalmanSmoother kalmanSmoother = new KalmanSmoother(kalmanEstimator);
 
         // Observer to print out debugging info
@@ -95,20 +90,20 @@ public class KalmanSmootherTest {
 
             csvVector(estimation.getPhysicalPredictedState());
             csvMatrix(estimation.getPhysicalPredictedCovarianceMatrix());
-            csvMatrix(estimation.getPhysicalStateCrossCovariance());
+            csvMatrix(estimation.getPhysicalStateTransitionMatrix());
             csvVector(estimation.getPhysicalEstimatedState());
             csvMatrix(estimation.getPhysicalEstimatedCovarianceMatrix());
             System.out.println();
         });
 
         // Print initial state
-        //final KalmanModel testModel = (KalmanModel) kalmanSmoother.getP
+        final KalmanModel testModel = (KalmanModel) kalmanSmoother.getProcessModel();
         System.out.printf("%22.15e", kalmanSmoother.getKalmanFilter().getCorrected().getTime());
         csvVector(MatrixUtils.createRealVector(6));
         csvMatrix(MatrixUtils.createRealMatrix(6, 6));
         csvMatrix(MatrixUtils.createRealMatrix(6, 6));
-        csvVector(kalmanSmoother.getPhysicalEstimatedState());
-        csvMatrix(kalmanSmoother.getPhysicalEstimatedCovarianceMatrix());
+        csvVector(testModel.getPhysicalEstimatedState());
+        csvMatrix(testModel.getPhysicalEstimatedCovarianceMatrix());
         System.out.println();
 
         // Filter the measurements and check the results

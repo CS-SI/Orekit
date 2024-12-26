@@ -23,8 +23,6 @@ import org.hipparchus.linear.ArrayRealVector;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.hipparchus.util.MerweUnscentedTransform;
-import org.hipparchus.util.UnscentedTransformProvider;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
 import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
@@ -50,9 +48,6 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
 
     /** Reference values. */
     private final double[] referenceValues;
-
-    /** State cross-covariance for smoother. */
-    private RealMatrix crossCovariance;
 
     /** Unscented Kalman process model constructor (package private).
      * @param propagatorBuilders propagators builders used to evaluate the orbits.
@@ -90,8 +85,6 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
         for (final ParameterDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
             referenceValues[index++] = driver.getReferenceValue();
         }
-
-        crossCovariance = null;
     }
 
     /** {@inheritDoc} */
@@ -156,10 +149,6 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
             d += 1;
         }
 
-        // Previous and predicted (without process noise) cross-covariance
-        final UnscentedTransformProvider transformProvider = new MerweUnscentedTransform(6);
-        crossCovariance = computeCrossCovarianceMatrix(transformProvider, sigmaPoints, predictedSigmaPoints);
-
         // compute process noise matrix
         final RealMatrix normalizedProcessNoise = getNormalizedProcessNoise(sigmaPoints[0].getDimension());
 
@@ -200,53 +189,9 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
         return getNormalizedProcessNoise(predictedState.getDimension());
     }
 
-
-    @Override
-    public RealMatrix getPhysicalStateCrossCovariance() {
-        return KalmanEstimatorUtil.unnormalizeCovarianceMatrix(crossCovariance, getScale());
-    }
-
-    private RealMatrix computeCrossCovarianceMatrix(final UnscentedTransformProvider utProvider,
-                                                    final RealVector[] predictedStates,
-                                                    final RealVector[] predictedMeasurements) {
-
-        // Means
-        final RealVector predictedState = utProvider.getUnscentedMeanState(predictedStates);
-        final RealVector predictedMeasurement = utProvider.getUnscentedMeanState(predictedMeasurements);
-
-        // Initialize the cross covariance matrix
-        RealMatrix crossCovarianceMatrix = MatrixUtils.createRealMatrix(predictedState.getDimension(),
-                predictedMeasurement.getDimension());
-
-        // Covariance weights
-        final RealVector wc = utProvider.getWc();
-
-        // Compute the cross covariance matrix
-        for (int i = 0; i < wc.getDimension(); i++) {
-            final RealVector stateDiff = predictedStates[i].subtract(predictedState);
-            final RealVector measDiff  = predictedMeasurements[i].subtract(predictedMeasurement);
-            crossCovarianceMatrix = crossCovarianceMatrix.add(stateDiff.outerProduct(measDiff).scalarMultiply(wc.getEntry(i)));
-        }
-
-        // Return the cross covariance
-        return crossCovarianceMatrix;
-    }
-
-
-
     /** {@inheritDoc} */
     @Override
     public RealVector[] getPredictedMeasurements(final RealVector[] predictedSigmaPoints, final MeasurementDecorator measurement) {
-
-        // Predicted mean and covariance
-        final UnscentedTransformProvider transformProvider = new MerweUnscentedTransform(6);
-        final RealVector predictedMean = transformProvider.getUnscentedMeanState(predictedSigmaPoints);
-        final RealMatrix predictedCovariance = transformProvider.getUnscentedCovariance(predictedSigmaPoints, predictedMean);
-        setPhysicalPredictedEstimate(new ProcessEstimate(
-                measurement.getTime(),
-                getPhysicalEstimatedState(),
-                KalmanEstimatorUtil.unnormalizeCovarianceMatrix(predictedCovariance, getScale())
-        ));
 
         // Observed measurement
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();

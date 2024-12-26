@@ -76,10 +76,6 @@ public interface KalmanEstimation {
      */
     RealMatrix getPhysicalPredictedCovarianceMatrix();
 
-
-    RealMatrix getPhysicalStateCrossCovariance();
-
-
     /** Get physical state transition matrix between previous state and estimated (but not yet corrected) state.
      * @return state transition matrix between previous state and estimated state (but not yet corrected)
      * (may be null for initial process estimate)
