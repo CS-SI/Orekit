@@ -90,12 +90,10 @@ class FieldRay<T extends CalculusFieldElement<T>> {
         final FieldSinCos<T> scLon21 = FastMath.sinCos(lon2.subtract(lon1));
 
         // Zenith angle computation (Eq. 153 to 155)
-        final T
-            cosD =
-            scLatRec.sin().multiply(scLatSat.sin())
-                .add(scLatRec.cos().multiply(scLatSat.cos()).multiply(scLon21.cos()));
+        final T cosD = scLatRec.sin().multiply(scLatSat.sin()).
+                       add(scLatRec.cos().multiply(scLatSat.cos()).multiply(scLon21.cos()));
         final T sinD = FastMath.sqrt(cosD.multiply(cosD).negate().add(1.0));
-        final T z = FastMath.atan2(sinD, cosD.subtract(r1.divide(r2)));
+        final T z    = FastMath.atan2(sinD, cosD.subtract(r1.divide(r2)));
         final FieldSinCos<T> scZ = FastMath.sinCos(z);
 
         // Ray-perigee computation in meters (Eq. 156)
@@ -123,22 +121,19 @@ class FieldRay<T extends CalculusFieldElement<T>> {
         } else {
 
             // Ray-perigee latitude (Eq. 158 to 163)
-            final T sinAz = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
-            final T
-                cosAz =
-                scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).divide(sinD.multiply(scLatRec.cos()));
-            final T
-                sinLatP =
-                scLatRec.sin().multiply(scZ.sin()).subtract(scLatRec.cos().multiply(scZ.cos()).multiply(cosAz));
+            final T sinAz   = FastMath.sin(lon2.subtract(lon1)).multiply(scLatSat.cos()).divide(sinD);
+            final T cosAz   = scLatSat.sin().subtract(cosD.multiply(scLatRec.sin())).
+                              divide(sinD.multiply(scLatRec.cos()));
+            final T sinLatP = scLatRec.sin().multiply(scZ.sin()).
+                              subtract(scLatRec.cos().multiply(scZ.cos()).multiply(cosAz));
             final T cosLatP = FastMath.sqrt(sinLatP.multiply(sinLatP).negate().add(1.0));
-            this.latP = FastMath.atan2(sinLatP, cosLatP);
+            this.latP       = FastMath.atan2(sinLatP, cosLatP);
 
             // Ray-perigee longitude (Eq. 165 to 167)
             final T sinLonP = sinAz.negate().multiply(scZ.cos()).divide(cosLatP);
-            final T
-                cosLonP =
-                scZ.sin().subtract(scLatRec.sin().multiply(sinLatP)).divide(scLatRec.cos().multiply(cosLatP));
-            this.lonP = FastMath.atan2(sinLonP, cosLonP).add(lon1);
+            final T cosLonP = scZ.sin().subtract(scLatRec.sin().multiply(sinLatP)).
+                              divide(scLatRec.cos().multiply(cosLatP));
+            this.lonP       = FastMath.atan2(sinLonP, cosLonP).add(lon1);
 
         }
 
@@ -156,8 +151,8 @@ class FieldRay<T extends CalculusFieldElement<T>> {
             final FieldSinCos<T> scPsi = FastMath.sinCos(greatCircleAngle(scLatSat, scLon));
             // Eq. 174 and 175
             this.sinAzP = scLatSat.cos().multiply(scLon.sin()).divide(scPsi.sin());
-            this.cosAzP =
-                scLatSat.sin().subtract(scLatP.sin().multiply(scPsi.cos())).divide(scLatP.cos().multiply(scPsi.sin()));
+            this.cosAzP = scLatSat.sin().subtract(scLatP.sin().multiply(scPsi.cos())).
+                          divide(scLatP.cos().multiply(scPsi.sin()));
         }
 
         // Integration end points s1 and s2 in meters (Eq. 176 and 177)
@@ -270,9 +265,8 @@ class FieldRay<T extends CalculusFieldElement<T>> {
         if (FastMath.abs(FastMath.abs(latP).getReal() - 0.5 * FastMath.PI) < THRESHOLD) {
             return FastMath.abs(FastMath.asin(scLat.sin()).subtract(latP));
         } else {
-            final T
-                cosPhi =
-                scLatP.sin().multiply(scLat.sin()).add(scLatP.cos().multiply(scLat.cos()).multiply(scLon.cos()));
+            final T cosPhi = scLatP.sin().multiply(scLat.sin()).
+                             add(scLatP.cos().multiply(scLat.cos()).multiply(scLon.cos()));
             final T sinPhi = FastMath.sqrt(cosPhi.multiply(cosPhi).negate().add(1.0));
             return FastMath.atan2(sinPhi, cosPhi);
         }

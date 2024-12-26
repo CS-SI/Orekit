@@ -404,7 +404,7 @@ public class NeQuickModel implements IonosphericModel {
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
         // If h < 100km we use h = 100km as recommended in the reference document
-        final T   hTemp = FastMath.max(zero.newInstance(100.0), h);
+        final T   hTemp = FastMath.max(h, 100.0);
         final T   exp   = clipExp(FastMath.abs(hTemp.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
         final T[] arguments = MathArrays.buildArray(field, 3);
         arguments[0] = hTemp.subtract(parameters.getHmF2()).divide(bf2);

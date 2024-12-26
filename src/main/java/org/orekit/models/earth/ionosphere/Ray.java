@@ -79,22 +79,22 @@ class Ray {
         final double r2 = NeQuickModel.RE + satH;
 
         // Useful parameters
-        final double lat1 = recP.getLatitude();
-        final double lat2 = satP.getLatitude();
-        final double lon1 = recP.getLongitude();
-        final double lon2 = satP.getLongitude();
+        final double lat1     = recP.getLatitude();
+        final double lat2     = satP.getLatitude();
+        final double lon1     = recP.getLongitude();
+        final double lon2     = satP.getLongitude();
         final SinCos scLatSat = FastMath.sinCos(lat2);
         final SinCos scLatRec = FastMath.sinCos(lat1);
-        final SinCos scLon21 = FastMath.sinCos(lon2 - lon1);
+        final SinCos scLon21  = FastMath.sinCos(lon2 - lon1);
 
         // Zenith angle computation (Eq. 153 to 155)
         // with added protection against numerical noise near zenith observation
-        final double
-            cosD =
-            FastMath.min(1.0, scLatRec.sin() * scLatSat.sin() + scLatRec.cos() * scLatSat.cos() * scLon21.cos());
+        final double cosD = FastMath.min(1.0,
+                                         scLatRec.sin() * scLatSat.sin() +
+                                         scLatRec.cos() * scLatSat.cos() * scLon21.cos());
         final double sinD = FastMath.sqrt(1.0 - cosD * cosD);
-        final double z = FastMath.atan2(sinD, cosD - (r1 / r2));
-        final SinCos scZ = FastMath.sinCos(z);
+        final double z    = FastMath.atan2(sinD, cosD - (r1 / r2));
+        final SinCos scZ  = FastMath.sinCos(z);
 
         // Ray-perigee computation in meters (Eq. 156)
         this.rp = r1 * scZ.sin();
@@ -122,8 +122,8 @@ class Ray {
         } else {
 
             // Ray-perigee latitude (Eq. 158 to 163)
-            final double sinAz = scLon21.sin() * scLatSat.cos() / sinD;
-            final double cosAz = (scLatSat.sin() - cosD * scLatRec.sin()) / (sinD * scLatRec.cos());
+            final double sinAz   = scLon21.sin() * scLatSat.cos() / sinD;
+            final double cosAz   = (scLatSat.sin() - cosD * scLatRec.sin()) / (sinD * scLatRec.cos());
             final double sinLatP = scLatRec.sin() * scZ.sin() - scLatRec.cos() * scZ.cos() * cosAz;
             final double cosLatP = FastMath.sqrt(1.0 - sinLatP * sinLatP);
             this.latP = FastMath.atan2(sinLatP, cosLatP);

@@ -99,7 +99,8 @@ class Segment {
             final double cosLonS = cosDs - ray.getScLat().sin() * sinLatS;
 
             return new GeodeticPoint(FastMath.atan2(sinLatS, cosLatS),
-                                     FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude(), height);
+                                     FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude(),
+                                     height);
         }
     }
 
