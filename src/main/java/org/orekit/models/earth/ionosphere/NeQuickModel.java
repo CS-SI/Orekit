@@ -255,7 +255,7 @@ public class NeQuickModel implements IonosphericModel {
         // Electron density
         final double n;
         if (hInKm <= parameters.getHmF2()) {
-            n = bottomElectronDensity(hInKm, parameters);
+            n = bottomElectronDensity(hInKm, engine.clipH(hInKm), parameters);
         } else {
             n = topElectronDensity(hInKm, parameters);
         }
@@ -288,7 +288,7 @@ public class NeQuickModel implements IonosphericModel {
         // Electron density
         final T n;
         if (hInKm.getReal() <= parameters.getHmF2().getReal()) {
-            n = bottomElectronDensity(hInKm, parameters);
+            n = bottomElectronDensity(hInKm, engine.clipH(hInKm), parameters);
         } else {
             n = topElectronDensity(hInKm, parameters);
         }
@@ -298,10 +298,12 @@ public class NeQuickModel implements IonosphericModel {
     /**
      * Computes the electron density of the bottomside.
      * @param h height in km
+     * @param clippedH clipped height for computing exponential arguments
      * @param parameters NeQuick model parameters
      * @return the electron density N in m⁻³
      */
-    private double bottomElectronDensity(final double h, final NeQuickParameters parameters) {
+    private double bottomElectronDensity(final double h, final double clippedH,
+                                         final NeQuickParameters parameters) {
 
         // Select the relevant B parameter for the current height (Eq. 109 and 110)
         final double be;
@@ -324,13 +326,11 @@ public class NeQuickModel implements IonosphericModel {
         };
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
-        // If h < 100km we use h = 100km as recommended in the reference document
-        final double   hTemp = FastMath.max(100.0, h);
-        final double   exp   = clipExp(10.0 / (1.0 + FastMath.abs(hTemp - parameters.getHmF2())));
+        final double   exp   = clipExp(10.0 / (1.0 + FastMath.abs(clippedH - parameters.getHmF2())));
         final double[] arguments = new double[3];
-        arguments[0] = (hTemp - parameters.getHmF2()) / bf2;
-        arguments[1] = ((hTemp - parameters.getHmF1()) / bf1) * exp;
-        arguments[2] = ((hTemp - parameters.getHmE()) / be) * exp;
+        arguments[0] = (clippedH - parameters.getHmF2()) / bf2;
+        arguments[1] = ((clippedH - parameters.getHmF1()) / bf1) * exp;
+        arguments[2] = ((clippedH - parameters.getHmE()) / be) * exp;
 
         // S coefficients
         final double[] s = new double[3];
@@ -355,25 +355,27 @@ public class NeQuickModel implements IonosphericModel {
 
         // Electron density
         final double aNo = s[0] + s[1] + s[2];
-        if (h >= 100) {
-            return aNo * DENSITY_FACTOR;
-        } else {
+        if (engine.applyChapmanParameters(h)) {
             // Chapman parameters (Eq. 119 and 120)
             final double bc = 1.0 - 10.0 * (MathArrays.linearCombination(s[0], ds[0], s[1], ds[1], s[2], ds[2]) / aNo);
             final double z  = 0.1 * (h - 100.0);
             // Electron density (Eq. 121)
             return aNo * clipExp(1.0 - bc * z - clipExp(-z)) * DENSITY_FACTOR;
+        } else {
+            return aNo * DENSITY_FACTOR;
         }
+
     }
 
     /**
      * Computes the electron density of the bottomside.
      * @param <T> type of the elements
      * @param h height in km
+     * @param clippedH clipped height for computing exponential arguments
      * @param parameters NeQuick model parameters
      * @return the electron density N in m⁻³
      */
-    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final T h,
+    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final T h, final T clippedH,
                                                                         final FieldNeQuickParameters<T> parameters) {
 
         // Zero and One
@@ -403,13 +405,11 @@ public class NeQuickModel implements IonosphericModel {
         ct[2] = be.reciprocal();
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
-        // If h < 100km we use h = 100km as recommended in the reference document
-        final T   hTemp = FastMath.max(h, 100.0);
-        final T   exp   = clipExp(FastMath.abs(hTemp.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
+        final T   exp   = clipExp(FastMath.abs(clippedH.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
         final T[] arguments = MathArrays.buildArray(field, 3);
-        arguments[0] = hTemp.subtract(parameters.getHmF2()).divide(bf2);
-        arguments[1] = hTemp.subtract(parameters.getHmF1()).divide(bf1).multiply(exp);
-        arguments[2] = hTemp.subtract(parameters.getHmE()).divide(be).multiply(exp);
+        arguments[0] = clippedH.subtract(parameters.getHmF2()).divide(bf2);
+        arguments[1] = clippedH.subtract(parameters.getHmF1()).divide(bf1).multiply(exp);
+        arguments[2] = clippedH.subtract(parameters.getHmE()).divide(be).multiply(exp);
 
         // S coefficients
         final T[] s = MathArrays.buildArray(field, 3);
@@ -434,15 +434,16 @@ public class NeQuickModel implements IonosphericModel {
 
         // Electron density
         final T aNo = s[0].add(s[1]).add(s[2]);
-        if (h.getReal() >= 100) {
-            return aNo.multiply(DENSITY_FACTOR);
-        } else {
+        if (engine.applyChapmanParameters(h.getReal())) {
             // Chapman parameters (Eq. 119 and 120)
             final T bc = one.linearCombination(s[0], ds[0], s[1], ds[1], s[2], ds[2]).divide(aNo).multiply(10.0).negate().add(1.0);
             final T z  = h.subtract(100.0).multiply(0.1);
             // Electron density (Eq. 121)
             return aNo.multiply(clipExp(bc.multiply(z).add(clipExp(z.negate())).negate().add(1.0))).multiply(DENSITY_FACTOR);
+        } else {
+            return aNo.multiply(DENSITY_FACTOR);
         }
+
     }
 
     /**
@@ -614,6 +615,28 @@ public class NeQuickModel implements IonosphericModel {
          * @return the STEC in TECUnits
          */
         <T extends CalculusFieldElement<T>> T stec(DateTimeComponents dateTime, FieldRay<T> ray);
+
+        /**
+         * Clip height for bottom density computation.
+         * @param hInKm height in kilometers
+         * @return clipped height
+         */
+        double clipH(double hInKm);
+
+        /**
+         * Clip height for bottom density computation.
+         * @param <T> type of the field elements
+         * @param hInKm height in kilometers
+         * @return clipped height
+         */
+        <T extends CalculusFieldElement<T>> T clipH(T hInKm);
+
+        /**
+         * Check if Chapman parameters should be applied.
+         * @param hInKm height in kilometers
+         * @return true if Chapman parameters should be applie
+         */
+        boolean applyChapmanParameters(double hInKm);
 
     }
 
@@ -790,6 +813,28 @@ public class NeQuickModel implements IonosphericModel {
             return seg.getInterval().multiply(density).multiply(0.5);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public double clipH(final double hInKm) {
+            // If h < 100km we use h = 100km as recommended in the reference document
+            // for equations 111 to 113
+            return FastMath.max(hInKm, 100.0);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> T clipH(final T hInKm) {
+            // If h < 100km we use h = 100km as recommended in the reference document
+            // for equations 111 to 113
+            return FastMath.max(hInKm, 100);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean applyChapmanParameters(final double hInKm) {
+            return hInKm < 100.0;
+        }
+
     }
 
     /** Original ITU version of NeQuick engine.
@@ -925,6 +970,7 @@ public class NeQuickModel implements IonosphericModel {
                     final double modip = modipGrid.computeMODIP(gp.getLatitude(), gp.getLongitude());
                     final double ed    = electronDensity(dateTime, modip, f107,
                                            gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
+                    System.out.println(i + " " + ed);
                     sum += ed;
                 }
 
@@ -983,6 +1029,24 @@ public class NeQuickModel implements IonosphericModel {
 
             return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt1.add(gInt2.subtract(gInt1).divide(15.0)));
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double clipH(final double hInKm) {
+            return hInKm;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public <T extends CalculusFieldElement<T>> T clipH(final T hInKm) {
+            return hInKm;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean applyChapmanParameters(final double hInKm) {
+            return false;
         }
 
     }
