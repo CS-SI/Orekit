@@ -254,7 +254,7 @@ class FieldRay<T extends CalculusFieldElement<T>> {
     /**
      * Compute the great circle angle from ray-perigee to satellite.
      * <p>
-     * This method used the equations 168 to 171 pf the reference document.
+     * This method used the equations 168 to 171 of the reference document.
      * </p>
      *
      * @param scLat sine and cosine of satellite latitude
