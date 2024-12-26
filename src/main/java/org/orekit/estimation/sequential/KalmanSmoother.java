@@ -164,7 +164,7 @@ public class KalmanSmoother extends AbstractSequentialEstimator {
             physicalState.setEntry(i, setResetDriver(driver, referenceState.getEntry(i), normalisedState.getEntry(i)));
             i += 1;
         }
-        return referenceState;
+        return physicalState;
     }
 
     /** Use a driver to extract a new value, given reference and normalised values,
