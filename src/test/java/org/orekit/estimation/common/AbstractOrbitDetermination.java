@@ -38,7 +38,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
@@ -80,7 +79,13 @@ import org.orekit.estimation.measurements.modifiers.RangeIonosphericDelayModifie
 import org.orekit.estimation.measurements.modifiers.RangeRateIonosphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.RangeTroposphericDelayModifier;
 import org.orekit.estimation.measurements.modifiers.ShapiroRangeModifier;
-import org.orekit.estimation.sequential.*;
+import org.orekit.estimation.sequential.ConstantProcessNoise;
+import org.orekit.estimation.sequential.KalmanEstimation;
+import org.orekit.estimation.sequential.KalmanEstimator;
+import org.orekit.estimation.sequential.KalmanEstimatorBuilder;
+import org.orekit.estimation.sequential.KalmanObserver;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimator;
+import org.orekit.estimation.sequential.UnscentedKalmanEstimatorBuilder;
 import org.orekit.files.ilrs.CPF;
 import org.orekit.files.ilrs.CPF.CPFCoordinate;
 import org.orekit.files.ilrs.CPF.CPFEphemeris;
@@ -159,7 +164,10 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.DormandPrince853IntegratorBuilder;
 import org.orekit.propagation.conversion.ODEIntegratorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
-import org.orekit.time.*;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
@@ -707,14 +715,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
         final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
 
-        // Ensure all measurements are in time order
-        multiplexed.sort(new ChronologicalComparator());
-
-        // Reset initial state in propagator builder to before first measurement
-        SpacecraftState initialState = propagatorBuilder.buildPropagator()
-                .propagate(multiplexed.get(0).getDate().shiftedBy(-10.0 * 60.0));
-        propagatorBuilder.resetOrbit(initialState.getOrbit());
-
         // Building the Kalman filter:
         // - Gather the estimated measurement parameters in a list
         // - Prepare the initial covariance matrix and the process noise matrix
@@ -764,7 +764,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         // Build the Kalman
-        KalmanSmoother kalman;
         if (isUnscented) {
             // Unscented 
             final UnscentedKalmanEstimatorBuilder kalmanBuilder = new UnscentedKalmanEstimatorBuilder().
@@ -774,129 +773,137 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
             }
             // Unscented
-            kalman = new KalmanSmoother(kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(6 + nbPropag + nbMeas)).build());
+            final UnscentedKalmanEstimator kalman = kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(6 + nbPropag + nbMeas)).build();
+            Observer observer = new Observer(print, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
+            // Add an observer
+            kalman.setObserver(observer);
+            // Process the list measurements 
+            final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+
+
+            // Process the list measurements 
+
+            // Get the last estimated physical covariances
+            final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
+
+            // Parameters and measurements.
+            final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
+            final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
+
+            // Eventually, print parameter changes, statistics and covariances
+            if (print) {
+                
+                // Display parameter change for non orbital drivers
+                int length = 0;
+                for (final ParameterDriver parameterDriver : propagationParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                if (propagationParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
+                                             true, length, propagationParameters);
+                }
+                if (measurementsParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
+                                             true, length, measurementsParameters);
+                }
+                // Measurements statistics summary
+                System.out.println();
+                rangeLog.displaySummary(System.out);
+                rangeRateLog.displaySummary(System.out);
+                azimuthLog.displaySummary(System.out);
+                elevationLog.displaySummary(System.out);
+                positionOnlyLog.displaySummary(System.out);
+                positionLog.displaySummary(System.out);
+                velocityLog.displaySummary(System.out);
+                
+                // Covariances and sigmas
+                displayFinalCovariances(System.out, kalman);
+            }
+
+            // Instantiation of the results
+            return new ResultKalman(propagationParameters, measurementsParameters,
+                                    kalman.getCurrentMeasurementNumber(), estimated.getPVCoordinates(),
+                                    rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
+                                    azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
+                                    positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
+                                    covarianceMatrix);
+        
         } else {
-            // Extended
+            // Extended 
             final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
                     addPropagationConfiguration(propagatorBuilder, new ConstantProcessNoise(initialP, Q));
             if (measurementP != null) {
                 // Measurement part
                 kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
             }
-            // Extended wrapped in smoother
-            kalman = new KalmanSmoother(kalmanBuilder.build());
+            // Extended
+            final KalmanEstimator kalman = kalmanBuilder.build();
+            Observer observer = new Observer(print, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
+            // Add an observer
+            kalman.setObserver(observer);
+            
+            // Process the list measurements 
+            final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+
+            // Get the last estimated physical covariances
+            final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
+
+            // Parameters and measurements.
+            final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
+            final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
+
+            // Eventually, print parameter changes, statistics and covariances
+            if (print) {
+                
+                // Display parameter change for non orbital drivers
+                int length = 0;
+                for (final ParameterDriver parameterDriver : propagationParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
+                    length = FastMath.max(length, parameterDriver.getName().length());
+                }
+                if (propagationParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
+                                             true, length, propagationParameters);
+                }
+                if (measurementsParameters.getNbParams() > 0) {
+                    displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
+                                             true, length, measurementsParameters);
+
+                    // Measurements statistics summary
+                    System.out.println();
+                    rangeLog.displaySummary(System.out);
+                    rangeRateLog.displaySummary(System.out);
+                    azimuthLog.displaySummary(System.out);
+                    elevationLog.displaySummary(System.out);
+                    positionOnlyLog.displaySummary(System.out);
+                    positionLog.displaySummary(System.out);
+                    velocityLog.displaySummary(System.out);
+                    
+                    // Covariances and sigmas
+                    displayFinalCovariances(System.out, kalman);
+
+                }
+
+            }
+            
+
+            // Instantiation of the results
+            return new ResultKalman(propagationParameters, measurementsParameters,
+                                    kalman.getCurrentMeasurementNumber(), estimated.getPVCoordinates(),
+                                    rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
+                                    azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
+                                    positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
+                                    covarianceMatrix);
         }
-
-
-        // Add an observer
-        //Observer observer = new Observer(print, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
-        //kalman.setObserver(observer);
-
-        final AbsoluteDate initialDate = kalman.getCurrentDate();
-        kalman.setObserver(estimation -> {
-            System.out.printf("%22.15e", estimation.getCurrentDate().durationFrom(initialDate));
-
-            csvVector(estimation.getPhysicalPredictedState());
-            csvMatrix(estimation.getPhysicalPredictedCovarianceMatrix());
-            csvMatrix(estimation.getPhysicalStateCrossCovariance());
-            csvVector(estimation.getPhysicalEstimatedState());
-            csvMatrix(estimation.getPhysicalEstimatedCovarianceMatrix());
-            System.out.println();
-        });
-
-        // Print initial state
-        //final KalmanModel testModel = (KalmanModel) kalmanSmoother.getP
-        System.out.printf("%22.15e", 0.0);
-        final int stateDim = 6 + nbPropag + nbMeas;
-        csvVector(MatrixUtils.createRealVector(stateDim));
-        csvMatrix(MatrixUtils.createRealMatrix(stateDim, stateDim));
-        csvMatrix(MatrixUtils.createRealMatrix(stateDim, stateDim));
-        csvVector(kalman.getPhysicalEstimatedState());
-        csvMatrix(kalman.getPhysicalEstimatedCovarianceMatrix());
-        System.out.println();
-
-        // Process the list measurements
-        final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
-
-        // Smooth backward
-        List<PhysicalEstimatedState> smoothedStates = kalman.backwardsSmooth();
-
-        System.out.println();
-        for (PhysicalEstimatedState state : smoothedStates) {
-            double dt = state.durationFrom(initialDate);
-            System.out.printf("%22.15e", dt);
-            csvVector(state.getState());
-            csvMatrix(state.getCovarianceMatrix());
-            System.out.println();
-        }
-
-
-        // Get the last estimated physical covariances
-        final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
-
-        // Parameters and measurements.
-        final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
-        final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
-
-        // Eventually, print parameter changes, statistics and covariances
-        if (print) {
-
-            // Display parameter change for non orbital drivers
-            int length = 0;
-            for (final ParameterDriver parameterDriver : propagationParameters.getDrivers()) {
-                length = FastMath.max(length, parameterDriver.getName().length());
-            }
-            for (final ParameterDriver parameterDriver : measurementsParameters.getDrivers()) {
-                length = FastMath.max(length, parameterDriver.getName().length());
-            }
-            if (propagationParameters.getNbParams() > 0) {
-                displayParametersChanges(System.out, "Estimated propagator parameters changes: ",
-                                         true, length, propagationParameters);
-            }
-            if (measurementsParameters.getNbParams() > 0) {
-                displayParametersChanges(System.out, "Estimated measurements parameters changes: ",
-                                         true, length, measurementsParameters);
-            }
-            // Measurements statistics summary
-            System.out.println();
-            rangeLog.displaySummary(System.out);
-            rangeRateLog.displaySummary(System.out);
-            azimuthLog.displaySummary(System.out);
-            elevationLog.displaySummary(System.out);
-            positionOnlyLog.displaySummary(System.out);
-            positionLog.displaySummary(System.out);
-            velocityLog.displaySummary(System.out);
-
-            // Covariances and sigmas
-            displayFinalCovariances(System.out, kalman);
-        }
-
-        // Instantiation of the results
-        return new ResultKalman(propagationParameters, measurementsParameters,
-                                kalman.getCurrentMeasurementNumber(), estimated.getPVCoordinates(),
-                                rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
-                                azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
-                                positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
-                                covarianceMatrix);
 
     }
 
-    public static void csvMatrix(final RealMatrix matrix) {
-        for (int row = 0; row < matrix.getRowDimension(); row++) {
-            for (int col = 0; col < matrix.getColumnDimension(); col++) {
-                System.out.printf(", %22.15e", matrix.getEntry(row, col));
-            }
-        }
-    }
-
-    public static void csvVector(final RealVector vector) {
-        for (int row = 0; row < vector.getDimension(); row++) {
-            System.out.printf(", %22.15e", vector.getEntry(row));
-        }
-    }
-
-
-    /**
+     /**
       * Use the physical models in the input file
       * Incorporate the initial reference values
       * And run the propagation until the last measurement to get the reference orbit at the same date
@@ -2500,7 +2507,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Display covariances and sigmas as predicted by a Kalman filter at date t.
      */
-    private void displayFinalCovariances(final PrintStream logStream, final AbstractSequentialEstimator kalman) {
+    private void displayFinalCovariances(final PrintStream logStream, final KalmanEstimator kalman) {
 
 //        // Get kalman estimated propagator
 //        final NumericalPropagator kalmanProp = kalman.getProcessModel().getEstimatedPropagator();
@@ -2593,6 +2600,102 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
         logStream.println();
     } 
+
+    /** Display covariances and sigmas as predicted by a Kalman filter at date t. 
+     */
+    private void displayFinalCovariances(final PrintStream logStream, final UnscentedKalmanEstimator kalman) {
+        
+//        // Get kalman estimated propagator
+//        final NumericalPropagator kalmanProp = kalman.getProcessModel().getEstimatedPropagator();
+//        
+//        // Link the partial derivatives to this propagator
+//        final String equationName = "kalman-derivatives";
+//        PartialDerivativesEquations kalmanDerivatives = new PartialDerivativesEquations(equationName, kalmanProp);
+//        
+//        // Initialize the derivatives
+//        final SpacecraftState rawState = kalmanProp.getInitialState();
+//        final SpacecraftState stateWithDerivatives =
+//                        kalmanDerivatives.setInitialJacobians(rawState);
+//        kalmanProp.resetInitialState(stateWithDerivatives);
+//        
+//        // Propagate to target date
+//        final SpacecraftState kalmanState = kalmanProp.propagate(targetDate);
+//        
+//        // Compute STM
+//        RealMatrix STM = kalman.getProcessModel().getErrorStateTransitionMatrix(kalmanState, kalmanDerivatives);
+//        
+//        // Compute covariance matrix
+//        RealMatrix P = kalman.getProcessModel().unNormalizeCovarianceMatrix(kalman.predictCovariance(STM,
+//                                                                              kalman.getProcessModel().getProcessNoiseMatrix()));
+        final RealMatrix P = kalman.getPhysicalEstimatedCovarianceMatrix();
+        final String[] paramNames = new String[P.getRowDimension()];
+        int index = 0;
+        int paramSize = 0;
+        for (final ParameterDriver driver : kalman.getOrbitalParametersDrivers(true).getDrivers()) {
+            paramNames[index++] = driver.getName();
+            paramSize = FastMath.max(paramSize, driver.getName().length());
+        }
+        for (final ParameterDriver driver : kalman.getPropagationParametersDrivers(true).getDrivers()) {
+            paramNames[index++] = driver.getName();
+            paramSize = FastMath.max(paramSize, driver.getName().length());
+        }
+        for (final ParameterDriver driver : kalman.getEstimatedMeasurementsParameters().getDrivers()) {
+            paramNames[index++] = driver.getName();
+            paramSize = FastMath.max(paramSize, driver.getName().length());
+        }
+        if (paramSize < 20) {
+            paramSize = 20;
+        }
+        
+        // Header
+        logStream.format("\n%s\n", "Kalman Final Covariances:");
+//        logStream.format(Locale.US, "\tDate: %-23s UTC\n",
+//                         targetDate.toString(TimeScalesFactory.getUTC()));
+        logStream.format(Locale.US, "\tDate: %-23s UTC\n",
+                         kalman.getCurrentDate().toString(TimeScalesFactory.getUTC()));
+        
+        // Covariances
+        String strFormat = String.format("%%%2ds  ", paramSize);
+        logStream.format(strFormat, "Covariances:");
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+        }
+        logStream.println();
+        String numFormat = String.format("%%%2d.6f  ", paramSize);
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+            for (int j = 0; j <= i; j++) {
+                logStream.format(Locale.US, numFormat, P.getEntry(i, j));
+            }
+            logStream.println();
+        }
+        
+        // Correlation coeff
+        final double[] sigmas = new double[P.getRowDimension()];
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            sigmas[i] = FastMath.sqrt(P.getEntry(i, i));
+        }
+        
+        logStream.format("\n" + strFormat, "Corr coef:");
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+        }
+        logStream.println();
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat, paramNames[i]);
+            for (int j = 0; j <= i; j++) {
+                logStream.format(Locale.US, numFormat, P.getEntry(i, j)/(sigmas[i]*sigmas[j]));
+            }
+            logStream.println();
+        }
+        
+        // Sigmas
+        logStream.format("\n" + strFormat + "\n", "Sigmas: ");
+        for (int i = 0; i < P.getRowDimension(); i++) {
+            logStream.format(Locale.US, strFormat + numFormat + "\n", paramNames[i], sigmas[i]);
+        }
+        logStream.println();
+    }
 
     /** Log evaluations.
      */
