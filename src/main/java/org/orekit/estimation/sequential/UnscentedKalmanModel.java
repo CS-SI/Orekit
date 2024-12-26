@@ -238,6 +238,16 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
     @Override
     public RealVector[] getPredictedMeasurements(final RealVector[] predictedSigmaPoints, final MeasurementDecorator measurement) {
 
+        // Predicted mean and covariance
+        final UnscentedTransformProvider transformProvider = new MerweUnscentedTransform(6);
+        final RealVector predictedMean = transformProvider.getUnscentedMeanState(predictedSigmaPoints);
+        final RealMatrix predictedCovariance = transformProvider.getUnscentedCovariance(predictedSigmaPoints, predictedMean);
+        setPhysicalPredictedEstimate(new ProcessEstimate(
+                measurement.getTime(),
+                getPhysicalEstimatedState(),
+                KalmanEstimatorUtil.unnormalizeCovarianceMatrix(predictedCovariance, getScale())
+        ));
+
         // Observed measurement
         final ObservedMeasurement<?> observedMeasurement = measurement.getObservedMeasurement();
 
