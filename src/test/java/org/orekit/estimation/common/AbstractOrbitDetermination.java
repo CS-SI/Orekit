@@ -785,10 +785,11 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         Observer observer = new Observer(print, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
         kalman.setObserver(observer);
 
-        // Process the list or measurements
+        // Process the list of measurements
         final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
 
-        // Process the list measurements
+        // Smooth backward
+        final List<PhysicalEstimatedState> smoothedStates = kalman.backwardsSmooth();
 
         // Get the last estimated physical covariances
         final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
