@@ -22,6 +22,7 @@ import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataContext;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateTimeComponents;
@@ -260,12 +261,14 @@ public class NeQuickGalileo extends NeQuickModel {
      */
     private static class GalileoHolder {
 
+        /** Resource for modip grid. */
+        private static final String MODIP_GRID = "/assets/org/orekit/nequick/modipNeQG_wrapped.asc";
+
         /** Unique instance. */
         private static final ModipGrid INSTANCE =
-            new ModipGrid(NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLon(),
-                          NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLat(),
-                          NeQuickVersion.NEQUICK_2_GALILEO.getSource(),
-                          NeQuickVersion.NEQUICK_2_GALILEO.isWrappingAlreadyIncluded());
+            new ModipGrid(36, 36,
+                          new DataSource(MODIP_GRID, () -> GalileoHolder.class.getResourceAsStream(MODIP_GRID)),
+                          true);
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public

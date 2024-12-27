@@ -20,6 +20,7 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
+import org.orekit.data.DataSource;
 import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.units.Unit;
@@ -255,12 +256,14 @@ public class NeQuickItu extends NeQuickModel {
      */
     private static class ItuHolder {
 
+        /** Resource for modip grid. */
+        private static final String MODIP_GRID = "/assets/org/orekit/nequick/modip.asc";
+
         /** Unique instance. */
         private static final ModipGrid INSTANCE =
-            new ModipGrid(NeQuickVersion.NEQUICK_2_ITU.getnbCellsLon(),
-                          NeQuickVersion.NEQUICK_2_ITU.getnbCellsLat(),
-                          NeQuickVersion.NEQUICK_2_ITU.getSource(),
-                          NeQuickVersion.NEQUICK_2_ITU.isWrappingAlreadyIncluded());
+            new ModipGrid(180, 180,
+                          new DataSource(MODIP_GRID, () -> ItuHolder.class.getResourceAsStream(MODIP_GRID)),
+                          false);
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public

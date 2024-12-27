@@ -33,10 +33,11 @@ public class ModipGridTest {
 
     @Test
     public void testGalileoGrid() {
-        final ModipGrid modipGrid = new ModipGrid(NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLon(),
-                                                  NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLat(),
-                                                  NeQuickVersion.NEQUICK_2_GALILEO.getSource(),
-                                                  NeQuickVersion.NEQUICK_2_GALILEO.isWrappingAlreadyIncluded());
+        final String grid = "/assets/org/orekit/nequick/modipNeQG_wrapped.asc";
+        final ModipGrid modipGrid = new ModipGrid(36, 36,
+                                                  new DataSource(grid,
+                                                                 () -> ModipGridTest.class.getResourceAsStream(grid)),
+                                                  true);
 
         // check non-existent points past pole
         for (double lonDeg = -1000.0; lonDeg <= 1000.0; lonDeg += 0.125) {
@@ -79,10 +80,11 @@ public class ModipGridTest {
 
     @Test
     public void testGalileoGridField() {
-        final ModipGrid modipGrid = new ModipGrid(NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLon(),
-                                                  NeQuickVersion.NEQUICK_2_GALILEO.getnbCellsLat(),
-                                                  NeQuickVersion.NEQUICK_2_GALILEO.getSource(),
-                                                  NeQuickVersion.NEQUICK_2_GALILEO.isWrappingAlreadyIncluded());
+        final String grid = "/assets/org/orekit/nequick/modipNeQG_wrapped.asc";
+        final ModipGrid modipGrid = new ModipGrid(36, 36,
+                                                  new DataSource(grid,
+                                                                 () -> ModipGridTest.class.getResourceAsStream(grid)),
+                                                  true);
 
         final Field<Binary64> field = Binary64Field.getInstance();
 
@@ -127,10 +129,11 @@ public class ModipGridTest {
 
     @Test
     public void testItuGrid() {
-        final ModipGrid modipGrid = new ModipGrid(NeQuickVersion.NEQUICK_2_ITU.getnbCellsLon(),
-                                                  NeQuickVersion.NEQUICK_2_ITU.getnbCellsLat(),
-                                                  NeQuickVersion.NEQUICK_2_ITU.getSource(),
-                                                  NeQuickVersion.NEQUICK_2_ITU.isWrappingAlreadyIncluded());
+        final String grid = "/assets/org/orekit/nequick/modip.asc";
+        final ModipGrid modipGrid = new ModipGrid(180, 180,
+                                                  new DataSource(grid,
+                                                                 () -> ModipGridTest.class.getResourceAsStream(grid)),
+                                                  false);
 
         // check non-existent points past pole
         for (double lonDeg = -1000.0; lonDeg <= 1000.0; lonDeg += 0.125) {
@@ -173,10 +176,11 @@ public class ModipGridTest {
 
     @Test
     public void testItuGridField() {
-        final ModipGrid modipGrid = new ModipGrid(NeQuickVersion.NEQUICK_2_ITU.getnbCellsLon(),
-                                                  NeQuickVersion.NEQUICK_2_ITU.getnbCellsLat(),
-                                                  NeQuickVersion.NEQUICK_2_ITU.getSource(),
-                                                  NeQuickVersion.NEQUICK_2_ITU.isWrappingAlreadyIncluded());
+        final String grid = "/assets/org/orekit/nequick/modip.asc";
+        final ModipGrid modipGrid = new ModipGrid(180, 180,
+                                                  new DataSource(grid,
+                                                                 () -> ModipGridTest.class.getResourceAsStream(grid)),
+                                                  false);
 
         final Field<Binary64> field = Binary64Field.getInstance();
 
