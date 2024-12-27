@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
@@ -33,7 +33,7 @@ import org.orekit.time.TimeComponents;
  *
  * @since 10.1
  */
-class NeQuickParameters {
+public class NeQuickParameters {
 
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;
@@ -81,10 +81,8 @@ class NeQuickParameters {
      * @param az effective ionisation level
      * @param modip modip
      */
-    NeQuickParameters(final DateTimeComponents dateTime,
-                      final double[] flattenF2, final double[] flattenFm3,
-                      final double latitude, final double longitude,
-                      final double az, final double modip) {
+    public NeQuickParameters(final DateTimeComponents dateTime, final double[] flattenF2, final double[] flattenFm3,
+                             final double latitude, final double longitude, final double az, final double modip) {
 
         // Effective sunspot number (Eq. 19)
         final double azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
@@ -25,7 +25,7 @@ import org.orekit.bodies.GeodeticPoint;
  * @author Bryan Cazabonne
  * @since 13.0
  */
-class Ray {
+public class Ray {
 
     /** Threshold for ray-perigee parameters computation. */
     private static final double THRESHOLD = 1.0e-10;
@@ -70,7 +70,7 @@ class Ray {
      * @param recP receiver position
      * @param satP satellite position
      */
-    Ray(final GeodeticPoint recP, final GeodeticPoint satP) {
+    public Ray(final GeodeticPoint recP, final GeodeticPoint satP) {
 
         // Integration limits in meters (Eq. 140 and 141)
         this.recH       = recP.getAltitude();

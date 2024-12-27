@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
 import org.orekit.data.DataSource;
 
@@ -25,10 +25,10 @@ import org.orekit.data.DataSource;
 public enum NeQuickVersion {
 
     /** Galileo-specific version of NeQuick 2. */
-    NEQUICK_2_GALILEO(36, 36, "modipNeQG_wrapped.asc", true),
+    NEQUICK_2_GALILEO(36, 36, "/assets/org/orekit/nequick/modipNeQG_wrapped.asc", true),
 
     /** Original NeQuick 2 as recommended by ITU-R P.531. */
-    NEQUICK_2_ITU(180, 180, "modip.asc", false);
+    NEQUICK_2_ITU(180, 180, "/assets/org/orekit/nequick/modip.asc", false);
 
     /** Number of cells of ModipGrid grid in longitude (without wrapping). */
     private final int nbCellsLon;
@@ -59,14 +59,14 @@ public enum NeQuickVersion {
     /** Get number of cells of ModipGrid grid in longitude (without wrapping).
      * @return number of cells of ModipGrid grid in longitude (without wrapping)
      */
-    int getnbCellsLon() {
+    public int getnbCellsLon() {
         return nbCellsLon;
     }
 
     /** Get number of cells of ModipGrid grid in latitude (without wrapping).
      * @return number of cells of ModipGrid grid in latitude (without wrapping)
      */
-    int getnbCellsLat() {
+    public int getnbCellsLat() {
         return nbCellsLat;
     }
 
@@ -78,16 +78,15 @@ public enum NeQuickVersion {
      * </p>
      * @return grid source
      */
-    DataSource getSource() {
+    public DataSource getSource() {
         return new DataSource(resourceName,
-                              () -> NeQuickVersion.class.getResourceAsStream(NeQuickModel.NEQUICK_BASE +
-                                                                             resourceName));
+                              () -> NeQuickVersion.class.getResourceAsStream(resourceName));
     }
 
     /** Check if wrapping is already included in resource file.
      * @return true if wrapping is already included in resource file
      */
-    boolean isWrappingAlreadyIncluded() {
+    public boolean isWrappingAlreadyIncluded() {
         return wrappingAlreadyIncluded;
     }
 

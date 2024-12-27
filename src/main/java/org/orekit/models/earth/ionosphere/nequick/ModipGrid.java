@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
@@ -73,8 +73,8 @@ class ModipGrid {
      * @param source source of the grid file
      * @param wrappingAlreadyIncluded indicator for already included ModipGrid grid wrapping in resource file
      */
-    ModipGrid(final int nbCellsLon, final int nbCellsLat,
-              final DataSource source, final boolean wrappingAlreadyIncluded) {
+    ModipGrid(final int nbCellsLon, final int nbCellsLat, final DataSource source,
+              final boolean wrappingAlreadyIncluded) {
         this.nbCellsLon = nbCellsLon;
         this.sizeLon    = MathUtils.TWO_PI / nbCellsLon;
         this.nbCellsLat = nbCellsLat;

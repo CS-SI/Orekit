@@ -14,31 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
+import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
-import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.FieldGeodeticPoint;
 
 /** Performs the computation of the coordinates along the integration path.
  * @author Bryan Cazabonne
  * @since 13.0
  */
-class Segment {
+class FieldSegment<T extends CalculusFieldElement<T>> {
 
     /** Threshold for zenith segment. */
-    private static final double THRESHOLD = 1.0;
+    private static final double THRESHOLD = 1.0e-3;
 
     /** Supporting ray. */
-    private final Ray ray;
+    private final FieldRay<T> ray;
 
     /** Integration start. */
-    private final double y;
+    private final T y;
 
     /** Odd points offset. */
-    private final double g;
+    private final T g;
 
     /** Integration step [m]. */
-    private final double deltaN;
+    private final T deltaN;
 
     /** Number of points. */
     private final int nbPoints;
@@ -51,18 +52,18 @@ class Segment {
      * @param s1  lower boundary of integration
      * @param s2  upper boundary for integration
      */
-    Segment(final int n, final Ray ray, final double s1, final double s2) {
+    FieldSegment(final int n, final FieldRay<T> ray, final T s1, final T s2) {
 
         this.ray = ray;
 
         // Integration step (Eq. 195)
-        deltaN = (s2 - s1) / n;
+        deltaN = s2.subtract(s1).divide(n);
 
         // Eq. 196
-        g = 0.5773502691896 * deltaN;
+        g = deltaN.multiply(0.5773502691896);
 
         // Eq. 197
-        y = s1 + (deltaN - g) * 0.5;
+        y = s1.add(deltaN.subtract(g).multiply(0.5));
 
         nbPoints = 2 * n;
 
@@ -73,34 +74,37 @@ class Segment {
      * @return point on ray
      * @since 13.0
      */
-    public GeodeticPoint getPoint(int index) {
+    public FieldGeodeticPoint<T> getPoint(int index) {
 
-        final int    p = index / 2;
-        final double s = y + p * deltaN + (index % 2) * g;
+        final int p = index / 2;
+        final T   s = y.add(deltaN.multiply(p)).add(g.multiply(index % 2));
 
         // Heights (Eq. 178)
-        final double height = FastMath.sqrt(s * s + ray.getRadius() * ray.getRadius()) - NeQuickModel.RE;
+        final T height = FastMath.sqrt(s.multiply(s).add(ray.getRadius().multiply(ray.getRadius()))).
+                         subtract(NeQuickModel.RE);
 
-        if (ray.getRadius() < THRESHOLD) {
+        if (ray.getRadius().getReal() < THRESHOLD) {
             // zenith segment
-            return new GeodeticPoint(ray.getLatitude(), ray.getLongitude(), height);
+            return new FieldGeodeticPoint<>(ray.getLatitude(),  ray.getLongitude(), height);
         } else {
             // Great circle parameters (Eq. 179 to 181)
-            final double tanDs = s / ray.getRadius();
-            final double cosDs = 1.0 / FastMath.sqrt(1.0 + tanDs * tanDs);
-            final double sinDs = tanDs * cosDs;
+            final T tanDs = s.divide(ray.getRadius());
+            final T cosDs = FastMath.sqrt(tanDs.multiply(tanDs).add(1.0)).reciprocal();
+            final T sinDs = tanDs.multiply(cosDs);
 
             // Latitude (Eq. 182 to 183)
-            final double sinLatS = ray.getScLat().sin() * cosDs + ray.getScLat().cos() * sinDs * ray.getCosineAz();
-            final double cosLatS = FastMath.sqrt(1.0 - sinLatS * sinLatS);
+            final T sinLatS =
+                ray.getScLat().sin().multiply(cosDs).add(ray.getScLat().cos().multiply(sinDs).multiply(ray.getCosineAz()));
+            final T cosLatS = FastMath.sqrt(sinLatS.multiply(sinLatS).negate().add(1.0));
 
             // Longitude (Eq. 184 to 187)
-            final double sinLonS = sinDs * ray.getSineAz() * ray.getScLat().cos();
-            final double cosLonS = cosDs - ray.getScLat().sin() * sinLatS;
+            final T sinLonS = sinDs.multiply(ray.getSineAz()).multiply(ray.getScLat().cos());
+            final T cosLonS = cosDs.subtract(ray.getScLat().sin().multiply(sinLatS));
 
-            return new GeodeticPoint(FastMath.atan2(sinLatS, cosLatS),
-                                     FastMath.atan2(sinLonS, cosLonS) + ray.getLongitude(),
-                                     height);
+            return new FieldGeodeticPoint<>(FastMath.atan2(sinLatS, cosLatS),
+                                            FastMath.atan2(sinLonS, cosLonS).add(ray.getLongitude()),
+                                            height);
+
         }
     }
 
@@ -120,7 +124,7 @@ class Segment {
      *
      * @return the integration step in meters
      */
-    public double getInterval() {
+    public T getInterval() {
         return deltaN;
     }
 

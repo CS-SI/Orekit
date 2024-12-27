@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -50,7 +50,7 @@ import org.orekit.utils.PVCoordinates;
  * Reference values for the tests are from : "European Union (2016). European GNSS (Galileo)
  * Open Service-Ionospheric Correction Algorithm for Galileo Single Frequency Users. 1.2."
  */
-public class NeQuickModelTest {
+public class NeQuickGalileoTest {
 
     private double[] medium;
     private double[] high;
@@ -71,7 +71,7 @@ public class NeQuickModelTest {
     public void testHighSolarActivityGalileo() {
 
         // Model
-        final NeQuickModel model = new NeQuickModel(high);
+        final NeQuickGalileo model = new NeQuickGalileo(high);
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(82.49), FastMath.toRadians(297.66), 78.11);
@@ -96,7 +96,7 @@ public class NeQuickModelTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickModel model = new NeQuickModel(high);
+        final NeQuickGalileo model = new NeQuickGalileo(high);
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(82.49)),
@@ -118,7 +118,7 @@ public class NeQuickModelTest {
     public void testMediumSolarActivityGalileo() {
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
@@ -133,24 +133,6 @@ public class NeQuickModelTest {
     }
 
     @Test
-    public void testMediumSolarActivityItu() {
-
-        // Model
-        final NeQuickModel model = new NeQuickModel(137.568737, TimeScalesFactory.getUTC());
-
-        // Geodetic points
-        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
-        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(124.09), 20100697.90);
-
-        // Date
-        final AbsoluteDate date = new AbsoluteDate(2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
-
-        // STEC
-        final double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.854, stec, 1.0e-3);
-    }
-
-    @Test
     public void testFieldMediumSolarActivityGalileo() {
         doTestFieldMediumSolarActivityGalileo(Binary64Field.getInstance());
     }
@@ -161,7 +143,7 @@ public class NeQuickModelTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(-31.80)),
@@ -180,123 +162,10 @@ public class NeQuickModelTest {
     }
 
     @Test
-    public void testFieldMediumSolarActivityItu() {
-        doTestFieldMediumSolarActivityItu(Binary64Field.getInstance());
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestFieldMediumSolarActivityItu(final Field<T> field) {
-
-        // Zero
-        final T zero = field.getZero();
-
-        // Model
-        final NeQuickModel model = new NeQuickModel(137.568737, TimeScalesFactory.getUTC());
-
-        // Geodetic points
-        final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(-31.80)),
-                                                                    zero.newInstance(FastMath.toRadians(115.89)),
-                                                                    zero.newInstance(12.78));
-        final FieldGeodeticPoint<T> satP = new FieldGeodeticPoint<>(zero.newInstance(FastMath.toRadians(-14.31)),
-                                                                    zero.newInstance(FastMath.toRadians(124.09)),
-                                                                    zero.newInstance(20100697.90));
-
-        // Date
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
-
-        // STEC
-        final T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.854, stec.getReal(), 1.0e-3);
-    }
-
-    // validation test published by ITU
-    @Test
-    public void testValidationItu63() {
-        doTestValidationItu(63, 4.3689);
-    }
-
-    // validation test published by ITU
-    @Test
-    public void testValidationItu128() {
-        doTestValidationItu(128, 11.83090);
-    }
-
-    // validation test published by ITU
-    @Test
-    public void testValidationItu193() {
-        doTestValidationItu(193, 20.85232);
-    }
-
-    private void doTestValidationItu(final double flux, final double expected) {
-
-        // Model
-        final NeQuickModel model = new NeQuickModel(flux, TimeScalesFactory.getUTC());
-
-        // Geodetic points
-        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(82.494293510492980204),
-                                                     FastMath.toRadians(-62.340460202287275138),
-                                                     78.107446296427042398);
-        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(54.445029415916160076),
-                                                     FastMath.toRadians(-118.47006897550868132),
-                                                     20370730.845002099872);
-
-        // Date
-        final AbsoluteDate date = new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC());
-
-        // STEC
-        final double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(expected, stec, 1.0e-3);
-    }
-
-    // validation test published by ITU
-    @Test
-    public void testValidationItu63Field() {
-        doTestValidationItu(Binary64Field.getInstance(), 63, 4.3689);
-    }
-
-    // validation test published by ITU
-    @Test
-    public void testValidationItu128Field() {
-        doTestValidationItu(Binary64Field.getInstance(), 128, 11.83090);
-    }
-
-    // validation test published by ITU
-    @Test
-    public void testValidationItu193Field() {
-        doTestValidationItu(Binary64Field.getInstance(), 193, 20.85232);
-    }
-
-    private <T extends CalculusFieldElement<T>> void doTestValidationItu(final Field<T> field,
-                                                                         final double flux, final double expected) {
-
-        // Model
-        final NeQuickModel model = new NeQuickModel(flux, TimeScalesFactory.getUTC());
-
-        // Geodetic points
-        final FieldGeodeticPoint<T> recP =
-            new FieldGeodeticPoint<>(field,
-                                     new GeodeticPoint(FastMath.toRadians(82.494293510492980204),
-                                                       FastMath.toRadians(-62.340460202287275138),
-                                                       78.1074462964270423981));
-        final FieldGeodeticPoint<T> satP =
-            new FieldGeodeticPoint<>(field,
-                                     new GeodeticPoint(FastMath.toRadians(54.4450294159161600763),
-                                                       FastMath.toRadians(-118.47006897550868132),
-                                                       20370730.8450020998725));
-
-        // Date
-        final FieldAbsoluteDate<T> date =
-            new FieldAbsoluteDate<>(field, new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC()));
-
-        // STEC
-        final T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(expected, stec.getReal(), 1.0e-3);
-    }
-
-    @Test
     public void testDelay() {
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(115.89), 12.78);
@@ -337,7 +206,7 @@ public class NeQuickModelTest {
         final T one  = field.getOne();
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Geodetic points
         final double recLat = FastMath.toRadians(-31.80);
@@ -374,7 +243,7 @@ public class NeQuickModelTest {
     public void testAntiMeridian() {
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
@@ -397,7 +266,7 @@ public class NeQuickModelTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Date
         final FieldAbsoluteDate<T> date =
@@ -420,7 +289,7 @@ public class NeQuickModelTest {
     public void testZenith() {
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Date
         final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
@@ -443,7 +312,7 @@ public class NeQuickModelTest {
         final T zero = field.getZero();
 
         // Model
-        final NeQuickModel model = new NeQuickModel(medium);
+        final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Date
         final FieldAbsoluteDate<T> date =

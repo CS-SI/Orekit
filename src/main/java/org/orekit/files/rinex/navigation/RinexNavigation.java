@@ -25,7 +25,7 @@ import java.util.Map;
 import org.orekit.files.rinex.RinexFile;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.models.earth.ionosphere.KlobucharIonoModel;
-import org.orekit.models.earth.ionosphere.NeQuickModel;
+import org.orekit.models.earth.ionosphere.nequick.NeQuickModel;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;

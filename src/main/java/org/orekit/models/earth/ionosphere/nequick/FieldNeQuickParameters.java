@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
@@ -83,10 +83,9 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * @param az effective ionisation level
      * @param modip modip
      */
-    FieldNeQuickParameters(final DateTimeComponents dateTime,
-                           final double[] flattenF2, final double[] flattenFm3,
-                           final T latitude, final T longitude,
-                           final T az, final T modip) {
+    FieldNeQuickParameters(final DateTimeComponents dateTime, final double[] flattenF2,
+                           final double[] flattenFm3, final T latitude, final T longitude, final T az,
+                           final T modip) {
 
         // Zero
         final T zero = latitude.getField().getZero();
