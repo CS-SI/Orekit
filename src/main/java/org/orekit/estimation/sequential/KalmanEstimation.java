@@ -66,16 +66,6 @@ public interface KalmanEstimation {
      */
     RealMatrix getPhysicalEstimatedCovarianceMatrix();
 
-    /** Get the "physical" predicted state (i.e. not normalized)
-     * @return the "physical" predicted state
-     */
-    RealVector getPhysicalPredictedState();
-
-    /** Get the "physical" predicted covariance matrix (i.e. not normalized)
-     * @return the "physical" predicted covariance matrix
-     */
-    RealMatrix getPhysicalPredictedCovarianceMatrix();
-
     /** Get physical state transition matrix between previous state and estimated (but not yet corrected) state.
      * @return state transition matrix between previous state and estimated state (but not yet corrected)
      * (may be null for initial process estimate)

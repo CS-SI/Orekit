@@ -345,13 +345,8 @@ public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLi
         // compute process noise matrix
         final RealMatrix normalizedProcessNoise = getNormalizedProcessNoise(previousState.getDimension());
 
-        setPhysicalPredictedEstimate(new ProcessEstimate(measurement.getTime(), getPhysicalEstimatedState(),
-                 KalmanEstimatorUtil.unnormalizeCovarianceMatrix(stateTransitionMatrix
-                         .multiply(getCorrectedEstimate().getCovariance())
-                         .multiplyTransposed(stateTransitionMatrix).add(normalizedProcessNoise), getScale())));
         return new NonLinearEvolution(measurement.getTime(), predictedState,
                                       stateTransitionMatrix, normalizedProcessNoise, measurementMatrix);
-
     }
 
 

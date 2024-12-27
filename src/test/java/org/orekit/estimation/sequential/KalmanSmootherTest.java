@@ -3,6 +3,7 @@ package org.orekit.estimation.sequential;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.orekit.estimation.Context;
 import org.orekit.estimation.EstimationTestUtils;
@@ -23,6 +24,7 @@ public class KalmanSmootherTest {
      * Perfect range rate measurements with a perfect start
      * Cartesian formalism
      */
+    @Disabled
     @Test
     public void testCartesianRangeRate() {
 

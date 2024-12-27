@@ -93,9 +93,6 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, Seque
     /** Current corrected estimate. */
     private ProcessEstimate correctedEstimate;
 
-    /** Current predicted estimate. */
-    private ProcessEstimate physicalPredictedEstimate;
-
     /** Current number of measurement. */
     private int currentMeasurementNumber;
 
@@ -320,7 +317,6 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, Seque
         final RealMatrix correctedCovariance = KalmanEstimatorUtil.normalizeCovarianceMatrix(physicalProcessNoise, scale);
 
         correctedEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
-        physicalPredictedEstimate = null;
     }
 
 
@@ -443,18 +439,6 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, Seque
         // Pn[i,j] = P[i,j] / (scale[i]*scale[j])
         // Consequently: P[i,j] = Pn[i,j] * scale[i] * scale[j]
         return KalmanEstimatorUtil.unnormalizeCovarianceMatrix(correctedEstimate.getCovariance(), scale);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public RealVector getPhysicalPredictedState() {
-        return physicalPredictedEstimate.getState();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public RealMatrix getPhysicalPredictedCovarianceMatrix() {
-        return physicalPredictedEstimate.getCovariance();
     }
 
     /** {@inheritDoc} */
@@ -624,13 +608,6 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, Seque
      */
     protected void setCorrectedEstimate(final ProcessEstimate correctedEstimate) {
         this.correctedEstimate = correctedEstimate;
-    }
-
-    /** Setter for the predictedEstimate.
-     * @param physicalPredictedEstimate the precictedEstimate
-     */
-    protected void setPhysicalPredictedEstimate(final ProcessEstimate physicalPredictedEstimate) {
-        this.physicalPredictedEstimate = physicalPredictedEstimate;
     }
 
     /** Getter for the referenceDate.
