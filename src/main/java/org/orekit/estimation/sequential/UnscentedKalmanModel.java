@@ -149,9 +149,6 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
             d += 1;
         }
 
-        // compute process noise matrix
-        final RealMatrix normalizedProcessNoise = getNormalizedProcessNoise(sigmaPoints[0].getDimension());
-
         // Return
         return new UnscentedEvolution(measurement.getTime(), predictedSigmaPoints);
     }
