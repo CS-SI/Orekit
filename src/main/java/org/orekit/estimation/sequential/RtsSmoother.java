@@ -16,16 +16,11 @@
  */
 package org.orekit.estimation.sequential;
 
-import org.hipparchus.exception.MathRuntimeException;
-import org.hipparchus.filtering.kalman.KalmanFilter;
-import org.hipparchus.filtering.kalman.KalmanFilterSmoother;
+import org.hipparchus.filtering.kalman.KalmanSmoother;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.linear.RealVector;
-import org.orekit.errors.OrekitException;
-import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
@@ -33,82 +28,66 @@ import org.orekit.utils.ParameterDriversList;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Implementation of a Kalman smoother to perform orbit determination.
- *
- * @author Mark Rutten
- */
-public class KalmanSmoother extends AbstractSequentialEstimator {
-
-    /** Underlying estimator. */
-    private final AbstractSequentialEstimator estimator;
+public class RtsSmoother implements KalmanObserver {
 
     /** Smoother. */
-    private final KalmanFilterSmoother<MeasurementDecorator> smoother;
+    private final KalmanSmoother smoother;
+
+    /** Estimator reference date. */
+    private final AbsoluteDate referenceDate;
+
+    /** Covariance scales for unnormalising estimates. */
+    private final double[] covarianceScale;
+
+    /** Estimated orbital parameters. */
+    private ParameterDriversList estimatedOrbitalParameters;
+
+    /** Estimated propagation drivers. */
+    private ParameterDriversList estimatedPropagationParameters;
+
+    /** Estimated measurements parameters. */
+    private ParameterDriversList estimatedMeasurementsParameters;
 
     /** Reference states for unnormalising estimates. */
     private final List<RealVector> referenceStates;
 
     /** Constructor.
-     * @param estimator the underlying (forward) Kalman or unscented estimator
+     * @param estimator the Kalman estimator
      */
-    public KalmanSmoother(final AbstractSequentialEstimator estimator) {
-        super(estimator.getMatrixDecomposer(), estimator.getBuilders());
-
-        this.estimator = estimator;
-        this.smoother = new KalmanFilterSmoother<>(estimator.getKalmanFilter(), getMatrixDecomposer());
+    public RtsSmoother(final AbstractSequentialEstimator estimator) {
+        this.smoother = new KalmanSmoother(estimator.getMatrixDecomposer());;
+        this.referenceDate = estimator.getReferenceDate();
+        this.covarianceScale = estimator.getProcessModel().getScale();
+        this.estimatedOrbitalParameters = null;
+        this.estimatedPropagationParameters = null;
+        this.estimatedMeasurementsParameters = null;
         this.referenceStates = new ArrayList<>();
+
+        // Add smoother observer to underlying filter
+        estimator.getKalmanFilter().setObserver(smoother);
+    }
+
+
+    @Override
+    public void init(final KalmanEstimation estimation) {
+        // Get the estimated parameter drivers
+        estimatedOrbitalParameters = estimation.getEstimatedOrbitalParameters();
+        estimatedPropagationParameters = estimation.getEstimatedPropagationParameters();
+        estimatedMeasurementsParameters = estimation.getEstimatedMeasurementsParameters();
+
+        // Get the first reference state
         referenceStates.add(getReferenceState());
     }
 
-    /** {@inheritDoc} */
     @Override
-    protected KalmanFilter<MeasurementDecorator> getKalmanFilter() {
-        return smoother;
+    public void evaluationPerformed(final KalmanEstimation estimation) {
+        referenceStates.add(getReferenceState());
     }
-
-    /** {@inheritDoc} */
-    @Override
-    protected SequentialModel getProcessModel() {
-        return estimator.getProcessModel();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected KalmanEstimation getKalmanEstimation() {
-        return estimator.getKalmanEstimation();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
-        try {
-            final ProcessEstimate estimate = getKalmanFilter().estimationStep(
-                    KalmanEstimatorUtil.decorate(observedMeasurement, getReferenceDate())
-            );
-            // Get the reference state before finalize resets it
-            referenceStates.add(getReferenceState());
-            getProcessModel().finalizeEstimation(observedMeasurement, estimate);
-            if (getObserver() != null) {
-                getObserver().evaluationPerformed(getKalmanEstimation());
-            }
-            return getProcessModel().getEstimatedPropagators();
-        } catch (MathRuntimeException mrte) {
-            throw new OrekitException(mrte);
-        }
-    }
-
 
     public List<PhysicalEstimatedState> backwardsSmooth() {
 
         // Backwards smoothing step
         final List<ProcessEstimate> normalisedStates = smoother.backwardsSmooth();
-
-        // Reference date
-        final AbsoluteDate referenceDate = estimator.getReferenceDate();
-
-        // Covariance scaling factors
-        final double[] covarianceScale = getProcessModel().getScale();
-        final RealVector stateScale = MatrixUtils.createRealVector(covarianceScale);
 
         // Convert to physical states
         final List<PhysicalEstimatedState> smoothedStates = new ArrayList<>();
@@ -131,19 +110,20 @@ public class KalmanSmoother extends AbstractSequentialEstimator {
      * @return the reference state
      */
     private RealVector getReferenceState() {
-        final RealVector referenceState = MatrixUtils.createRealVector(getProcessModel().getScale().length);
+        final RealVector referenceState = MatrixUtils.createRealVector(covarianceScale.length);
         int i = 0;
-        for (final ParameterDriversList.DelegatingDriver driver : getOrbitalParametersDrivers(true).getDrivers()) {
+        for (final ParameterDriversList.DelegatingDriver driver : estimatedOrbitalParameters.getDrivers()) {
             referenceState.setEntry(i++, driver.getReferenceValue());
         }
-        for (final ParameterDriversList.DelegatingDriver driver : getPropagationParametersDrivers(true).getDrivers()) {
+        for (final ParameterDriversList.DelegatingDriver driver : estimatedPropagationParameters.getDrivers()) {
             referenceState.setEntry(i++, driver.getReferenceValue());
         }
-        for (final ParameterDriversList.DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+        for (final ParameterDriversList.DelegatingDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             referenceState.setEntry(i++, driver.getReferenceValue());
         }
         return referenceState;
     }
+
 
     /** Get reference values from the estimation parameter drivers.
      * @param normalisedState the normalised state
@@ -151,17 +131,17 @@ public class KalmanSmoother extends AbstractSequentialEstimator {
      * @return the reference state
      */
     private RealVector getPhysicalState(final RealVector normalisedState, final RealVector referenceState) {
-        final RealVector physicalState = MatrixUtils.createRealVector(getProcessModel().getScale().length);
+        final RealVector physicalState = MatrixUtils.createRealVector(covarianceScale.length);
         int i = 0;
-        for (final ParameterDriversList.DelegatingDriver driver : getOrbitalParametersDrivers(true).getDrivers()) {
+        for (final ParameterDriversList.DelegatingDriver driver : estimatedOrbitalParameters.getDrivers()) {
             physicalState.setEntry(i, setResetDriver(driver, referenceState.getEntry(i), normalisedState.getEntry(i)));
             i += 1;
         }
-        for (final ParameterDriversList.DelegatingDriver driver : getPropagationParametersDrivers(true).getDrivers()) {
+        for (final ParameterDriversList.DelegatingDriver driver : estimatedPropagationParameters.getDrivers()) {
             physicalState.setEntry(i, setResetDriver(driver, referenceState.getEntry(i), normalisedState.getEntry(i)));
             i += 1;
         }
-        for (final ParameterDriversList.DelegatingDriver driver : getEstimatedMeasurementsParameters().getDrivers()) {
+        for (final ParameterDriversList.DelegatingDriver driver : estimatedMeasurementsParameters.getDrivers()) {
             physicalState.setEntry(i, setResetDriver(driver, referenceState.getEntry(i), normalisedState.getEntry(i)));
             i += 1;
         }
@@ -193,5 +173,6 @@ public class KalmanSmoother extends AbstractSequentialEstimator {
 
         return physicalValue;
     }
+
 
 }

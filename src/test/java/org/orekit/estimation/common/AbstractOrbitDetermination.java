@@ -758,7 +758,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         // Build the Kalman
-        final KalmanSmoother kalman;
+        final AbstractSequentialEstimator kalman;
         if (isUnscented) {
             // Unscented 
             final UnscentedKalmanEstimatorBuilder kalmanBuilder = new UnscentedKalmanEstimatorBuilder().
@@ -768,7 +768,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
             }
             // Unscented
-            kalman = new KalmanSmoother(kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(6 + nbPropag + nbMeas)).build());
+            kalman = kalmanBuilder.unscentedTransformProvider(new MerweUnscentedTransform(6 + nbPropag + nbMeas)).build();
         } else {
             // Extended
             final KalmanEstimatorBuilder kalmanBuilder = new KalmanEstimatorBuilder().
@@ -778,18 +778,53 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                 kalmanBuilder.estimatedMeasurementsParameters(estimatedMeasurementsParameters, new ConstantProcessNoise(measurementP, measurementQ));
             }
             // Extended
-            kalman = new KalmanSmoother(kalmanBuilder.build());
+            kalman = kalmanBuilder.build();
         }
 
         // Add an observer
         Observer observer = new Observer(print, rangeLog, rangeRateLog, azimuthLog, elevationLog, positionOnlyLog, positionLog, velocityLog);
-        kalman.setObserver(observer);
+
+        // Smoother observer
+        RtsSmoother smoother = new RtsSmoother(kalman);
+
+        // Debugging observer
+        final AbsoluteDate startDate = kalman.getCurrentDate();
+        //KalmanObserver debugging = estimation -> {
+        //    double dt = estimation.getCurrentDate().durationFrom(startDate);
+        //    System.out.printf("%22.15e", dt);
+        //    csvVector(estimation.getPhysicalEstimatedState());
+        //    csvMatrix(estimation.getPhysicalEstimatedCovarianceMatrix());
+        //    System.out.println();
+        //};
+
+        List<KalmanObserver> kalmanObservers = new ArrayList<>();
+        kalmanObservers.add(observer);
+        kalmanObservers.add(smoother);
+        //kalmanObservers.add(debugging);
+        kalman.setObserver(new ObserverList(kalmanObservers));
+
+        // Initial state
+        //System.out.printf("%22.15e", 0.0);
+        //csvVector(kalman.getPhysicalEstimatedState());
+        //csvMatrix(kalman.getPhysicalEstimatedCovarianceMatrix());
+        //System.out.println();
 
         // Process the list of measurements
         final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
 
         // Smooth backward
-        final List<PhysicalEstimatedState> smoothedStates = kalman.backwardsSmooth();
+        final List<PhysicalEstimatedState> smoothedStates = smoother.backwardsSmooth();
+
+        // Print out debugging info
+        //System.out.println();
+        //for (PhysicalEstimatedState state : smoothedStates) {
+        //    double dt = state.durationFrom(startDate);
+        //    System.out.printf("%22.15e", dt);
+        //    csvVector(state.getState());
+        //    csvMatrix(state.getCovarianceMatrix());
+        //    System.out.println();
+        //}
+
 
         // Get the last estimated physical covariances
         final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
@@ -841,7 +876,25 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     }
 
-     /**
+    /*
+    public static void csvMatrix(final RealMatrix matrix) {
+        for (int row = 0; row < matrix.getRowDimension(); row++) {
+            for (int col = 0; col < matrix.getColumnDimension(); col++) {
+                System.out.printf(", %22.15e", matrix.getEntry(row, col));
+            }
+        }
+    }
+
+    public static void csvVector(final RealVector vector) {
+        for (int row = 0; row < vector.getDimension(); row++) {
+            System.out.printf(", %22.15e", vector.getEntry(row));
+        }
+    }
+
+     */
+
+
+    /**
       * Use the physical models in the input file
       * Incorporate the initial reference values
       * And run the propagation until the last measurement to get the reference orbit at the same date
@@ -2787,6 +2840,26 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     
     
+    }
+
+
+    public static class ObserverList implements KalmanObserver {
+
+        private final List<KalmanObserver> observerList;
+
+        public ObserverList(final List<KalmanObserver> observers) {
+            this.observerList = observers;
+        }
+
+        @Override
+        public void init(KalmanEstimation estimation) {
+            observerList.forEach(observer -> observer.init(estimation));
+        }
+
+        @Override
+        public void evaluationPerformed(KalmanEstimation estimation) {
+            observerList.forEach(observer -> observer.evaluationPerformed(estimation));
+        }
     }
 
 }

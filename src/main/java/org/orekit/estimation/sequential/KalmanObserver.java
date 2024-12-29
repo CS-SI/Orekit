@@ -28,6 +28,9 @@ package org.orekit.estimation.sequential;
 @FunctionalInterface
 public interface KalmanObserver {
 
+    default void init(KalmanEstimation estimation) {
+    }
+
     /** Notification callback after each one of a Kalman filter estimation.
      * @param estimation estimation performed by Kalman estimator
      */

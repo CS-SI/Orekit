@@ -57,6 +57,7 @@ public abstract class AbstractSequentialEstimator extends AbstractKalmanEstimato
      */
     public void setObserver(final KalmanObserver observer) {
         this.observer = observer;
+        observer.init(getKalmanEstimation());
     }
 
     /** Get the observer.

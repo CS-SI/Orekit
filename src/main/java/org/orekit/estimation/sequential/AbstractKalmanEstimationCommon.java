@@ -625,7 +625,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, Seque
     /** Setter for the currentDate.
      * @param currentDate the currentDate
      */
-    public void setCurrentDate(final AbsoluteDate currentDate) {
+    protected void setCurrentDate(final AbsoluteDate currentDate) {
         this.currentDate = currentDate;
     }
 
