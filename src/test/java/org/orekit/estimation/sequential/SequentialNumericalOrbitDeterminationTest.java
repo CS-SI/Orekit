@@ -62,10 +62,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDetermination<NumericalPropagatorBuilder> {
 
@@ -211,18 +208,18 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     public void testLageos2Extended() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
-        final double distanceAccuracy = 0.541;
-        final double velocityAccuracy = 4.12e-3;
+        final double distanceAccuracy = 1.84;
+        final double velocityAccuracy = 6.1e-4;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.2983710,  -0.137384,  0.0156606 };
-        final double rangeBias = -0.00129569;
+        final double[] stationOffSet = { 0.042082,  0.046141,  -0.034318 };
+        final double rangeBias = 0.034867;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -23.537659, 20.444514, 0.973118, 5.686005 };
+        final double[] refStatRange = { -5.910594, 2.695840, -0.055281, 1.411116 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, false);
     }
@@ -231,20 +228,20 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     public void testLageos2Unscented() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
-        final double distanceAccuracy = 0.482;
-        final double velocityAccuracy = 3.97e-3;
+        final double distanceAccuracy = 2.46;
+        final double velocityAccuracy = 1.8e-4;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.302324,  -0.127179,  0.0172399 };
-        final double rangeBias = -0.008282;
+        final double[] stationOffSet = { 0.044850,  0.030216,  -0.035853 };
+        final double rangeBias = 0.035252;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -16.560410, 21.362738, 0.665356, 5.657324 };
+        final double[] refStatRange = { -6.212086, 3.196686, -0.012196, 1.456780 };
 
-        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, true);
+        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, true, true);
     }
 
 
@@ -254,7 +251,8 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
                                final boolean print, final boolean isUnscented) throws URISyntaxException, IOException {
 
         // input in resources directory
-        final String inputPath = SequentialNumericalOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/Lageos2/kalman_od_test_Lageos2.in").toURI().getPath();
+        final String inputPath = SequentialNumericalOrbitDeterminationTest.class.getClassLoader()
+                .getResource("orbit-determination/Lageos2/kalman_od_test_Lageos2.in").toURI().getPath();
         final File input  = new File(inputPath);
 
         // configure Orekit data acces
@@ -265,26 +263,22 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
 
-        // Initial orbital Cartesian covariance matrix
-        // These covariances are derived from the deltas between initial and reference orbits
-        // So in a way they are "perfect"...
         // Cartesian covariance matrix initialization
+        final double posVar = FastMath.pow(1e3, 2);
+        final double velVar = FastMath.pow(1.0, 2);
         final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
+                posVar, posVar, posVar, velVar, velVar, velVar
         });
 
         // Orbital Cartesian process noise matrix (Q)
-        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
-        });
+        final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealMatrix(6, 6);
 
         // Initial measurement covariance matrix and process noise matrix
+        final double measVar = FastMath.pow(1.0, 2);
         final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-           1., 1., 1., 1.
+                measVar, measVar, measVar, measVar
         });
-        final RealMatrix measurementQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-6, 1e-6, 1e-6, 1e-6
-         });
+        final RealMatrix measurementQ = MatrixUtils.createRealMatrix(4, 4);
 
         // Kalman orbit determination run.
         ResultKalman kalmanLageos2 = runKalman(input, orbitType, print,

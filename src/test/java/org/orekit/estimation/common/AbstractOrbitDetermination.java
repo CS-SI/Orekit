@@ -38,6 +38,7 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
@@ -46,6 +47,7 @@ import org.hipparchus.optim.nonlinear.vector.leastsquares.SequentialGaussNewtonO
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MerweUnscentedTransform;
 import org.hipparchus.util.Precision;
+import org.junit.jupiter.api.Assertions;
 import org.orekit.KeyValueFileParser;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
@@ -709,6 +711,17 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
         final List<ObservedMeasurement<?>> multiplexed = multiplexMeasurements(independentMeasurements, 1.0e-9);
 
+        // We want to test with all propagations in the same direction.
+        // Propagate to just before first measurement.
+        SpacecraftState initialState = propagatorBuilder.buildPropagator()
+                .propagate(multiplexed.get(0).getDate().shiftedBy(-10.0 * 60.0));
+        propagatorBuilder.resetOrbit(initialState.getOrbit());
+
+        // Ensure all measurements are in time-order
+        for (int k = 1; k < multiplexed.size(); ++k) {
+            Assertions.assertTrue(multiplexed.get(k).getDate().isAfter(multiplexed.get(k - 1)));
+        }
+
         // Building the Kalman filter:
         // - Gather the estimated measurement parameters in a list
         // - Prepare the initial covariance matrix and the process noise matrix
@@ -789,13 +802,16 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
         // Debugging observer
         final AbsoluteDate startDate = kalman.getCurrentDate();
-        //KalmanObserver debugging = estimation -> {
-        //    double dt = estimation.getCurrentDate().durationFrom(startDate);
-        //    System.out.printf("%22.15e", dt);
-        //    csvVector(estimation.getPhysicalEstimatedState());
-        //    csvMatrix(estimation.getPhysicalEstimatedCovarianceMatrix());
-        //    System.out.println();
-        //};
+        KalmanObserver debugging = estimation -> {
+            double dt = estimation.getCurrentDate().durationFrom(startDate);
+            System.out.printf("%22.15e", dt);
+            csvVector(estimation.getPhysicalEstimatedState());
+            csvMatrix(estimation.getPhysicalEstimatedCovarianceMatrix());
+            csvVector(MatrixUtils.createRealVector(estimation.getPredictedMeasurement().getObservedValue()));
+            csvVector(MatrixUtils.createRealVector(estimation.getPredictedMeasurement().getEstimatedValue()));
+            csvMatrix(estimation.getPhysicalInnovationCovarianceMatrix());
+            System.out.println();
+        };
 
         List<KalmanObserver> kalmanObservers = new ArrayList<>();
         kalmanObservers.add(observer);
@@ -807,6 +823,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         //System.out.printf("%22.15e", 0.0);
         //csvVector(kalman.getPhysicalEstimatedState());
         //csvMatrix(kalman.getPhysicalEstimatedCovarianceMatrix());
+        //csvVector(MatrixUtils.createRealVector(new double[]{0.0}));
+        //csvVector(MatrixUtils.createRealVector(new double[]{0.0}));
+        //csvMatrix(MatrixUtils.createRealMatrix(new double[][]{{0.0}}));
         //System.out.println();
 
         // Process the list of measurements
@@ -876,7 +895,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     }
 
-    /*
     public static void csvMatrix(final RealMatrix matrix) {
         for (int row = 0; row < matrix.getRowDimension(); row++) {
             for (int col = 0; col < matrix.getColumnDimension(); col++) {
@@ -890,8 +908,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             System.out.printf(", %22.15e", vector.getEntry(row));
         }
     }
-
-     */
 
 
     /**
