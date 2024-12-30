@@ -20,6 +20,7 @@ import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalArgumentException;
 import org.hipparchus.util.FastMath;
 import org.orekit.estimation.measurements.EstimatedMeasurement;
+import org.orekit.estimation.measurements.EstimatedMeasurementBase;
 import org.orekit.estimation.measurements.ObservedMeasurement;
 
 /** Modifier that sets estimated measurement weight to 0 if residual is too far from expected domain.
@@ -63,7 +64,12 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
     /** {@inheritDoc} */
     @Override
     public void modify(final EstimatedMeasurement<T> estimated) {
+        modifyWithoutDerivatives(estimated);
+    }
 
+    /** {@inheritDoc} */
+    @Override
+    public void modifyWithoutDerivatives(final EstimatedMeasurementBase<T> estimated) {
         // Do not apply the filter if current iteration/measurement is lower than
         // warmup attribute or if the attribute sigma has not been initialized yet
         if (estimated.getIteration() > getWarmup() && sigma != null) {
@@ -74,7 +80,7 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
             // Check that the dimension of sigma array is consistent with the measurement
             if (observed.length != sigma.length) {
                 throw new MathIllegalArgumentException(LocalizedCoreFormats.DIMENSIONS_MISMATCH,
-                                                       sigma.length, getSigma().length);
+                        sigma.length, getSigma().length);
             }
 
             // Check if observed value is not too far from estimation
@@ -85,6 +91,6 @@ public class DynamicOutlierFilter<T extends ObservedMeasurement<T>> extends Outl
                 }
             }
         }
-
     }
+
 }
