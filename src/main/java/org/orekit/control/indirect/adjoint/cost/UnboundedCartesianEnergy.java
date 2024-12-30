@@ -63,6 +63,6 @@ public class UnboundedCartesianEnergy extends CartesianEnergyConsideringMass {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new SingularityDetector(0.));
+        return Stream.of(new SingularityDetector(getEventDetectionSettings(), 0.));
     }
 }

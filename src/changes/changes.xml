@@ -25,6 +25,9 @@
             Update OCM parsing, so it is possible to know when a value is not present in a
             OCM file. Updated OCM writing so values that are not present are not written.
         </action>
+        <action dev="serrof" type="add" issue="1634">
+            Add penalized fuel cost for indirect control.
+        </action>
         <action dev="serrof" type="update" issue="1633">
             Introduce dedicated ResettableManeuverTriggers interface.
         </action>

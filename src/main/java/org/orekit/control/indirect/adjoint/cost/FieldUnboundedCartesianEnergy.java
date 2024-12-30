@@ -73,7 +73,7 @@ public class FieldUnboundedCartesianEnergy<T extends CalculusFieldElement<T>> ex
     /** {@inheritDoc} */
     @Override
     public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.of(new FieldSingularityDetector(field.getZero()));
+        return Stream.of(new FieldSingularityDetector(getEventDetectionSettings(), field.getZero()));
     }
 
     /** {@inheritDoc} */

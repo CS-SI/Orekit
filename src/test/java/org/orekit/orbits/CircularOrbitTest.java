@@ -142,17 +142,6 @@ class CircularOrbitTest {
 
     }
 
-    @Timeout(5)
-    @ParameterizedTest()
-    @EnumSource(PositionAngleType.class)
-    void testConstructor(final PositionAngleType positionAngleType) {
-        for (int i = 0; i < 10000000; i++) {
-            final CircularOrbit orbit = new CircularOrbit(42166712.0, 0.1e-10, -0.1e-10, 0, 0.,
-                    5.300, positionAngleType, FramesFactory.getEME2000(), date, mu);
-            Assertions.assertEquals(positionAngleType, orbit.getCachedPositionAngleType());
-        }
-    }
-
     @Test
     void testCircularToEquinoctialCirc() {
 

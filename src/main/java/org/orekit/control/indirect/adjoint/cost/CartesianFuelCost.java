@@ -21,8 +21,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 import java.util.stream.Stream;
 
@@ -131,34 +129,27 @@ public class CartesianFuelCost extends AbstractCartesianCost {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new SwitchDetector());
+        return Stream.of(new FuelCostSwitchDetector(eventDetectionSettings));
     }
 
     /**
      * Event detector for bang-bang switches.
      */
-    private class SwitchDetector implements EventDetector {
+    private class FuelCostSwitchDetector extends ControlSwitchDetector {
 
-        /** Event handler. */
-        private final EventHandler handler = new ResetDerivativesOnEvent();
+        /**
+         * Constructor.
+         * @param detectionSettings detection settings.
+         */
+        FuelCostSwitchDetector(final EventDetectionSettings detectionSettings) {
+            super(detectionSettings);
+        }
 
         /** {@inheritDoc} */
         @Override
         public double g(final SpacecraftState state) {
             final double[] adjoint = state.getAdditionalState(getAdjointName());
             return evaluateSwitchFunction(adjoint, state.getMass());
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public EventDetectionSettings getDetectionSettings() {
-            return eventDetectionSettings;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public EventHandler getHandler() {
-            return handler;
         }
     }
 
