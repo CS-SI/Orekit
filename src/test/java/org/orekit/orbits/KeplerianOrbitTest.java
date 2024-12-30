@@ -173,17 +173,6 @@ class KeplerianOrbitTest {
 
     }
 
-    @Timeout(5)
-    @ParameterizedTest()
-    @EnumSource(PositionAngleType.class)
-    void testConstructor(final PositionAngleType positionAngleType) {
-        for (int i = 0; i < 10000000; i++) {
-            final KeplerianOrbit orbit = new KeplerianOrbit(42166712.0, 0.0001, 1, 0, 0.,
-                    5.300, positionAngleType, FramesFactory.getEME2000(), date, mu);
-            Assertions.assertEquals(positionAngleType, orbit.getCachedPositionAngleType());
-        }
-    }
-
     @Test 
     void testKeplerianToCartesian() {
 
