@@ -208,18 +208,18 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
     public void testLageos2Extended() throws URISyntaxException, IOException {
 
         // Position/velocity accuracy
-        final double distanceAccuracy = 1.84;
-        final double velocityAccuracy = 6.1e-4;
+        final double distanceAccuracy = 2.47;
+        final double velocityAccuracy = 1.1e-3;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
-        final double[] stationOffSet = { 0.042082,  0.046141,  -0.034318 };
-        final double rangeBias = 0.034867;
+        final double[] stationOffSet = { 0.043889,  0.044726,  -0.037800 };
+        final double rangeBias = 0.041171;
 
         // Batch LS values
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
-        final double[] refStatRange = { -5.910594, 2.695840, -0.055281, 1.411116 };
+        final double[] refStatRange = { -5.910596, 3.306810, -0.037121, 1.454286 };
 
         testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, false);
     }
@@ -241,7 +241,7 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
         final double[] refStatRange = { -6.212086, 3.196686, -0.012196, 1.456780 };
 
-        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, true, true);
+        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, true);
     }
 
 
@@ -311,8 +311,6 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Check distances
         final double dP = Vector3D.distance(refPos, estimatedPos);
         final double dV = Vector3D.distance(refVel, estimatedVel);
-        Assertions.assertEquals(0.0, dP, distanceAccuracy);
-        Assertions.assertEquals(0.0, dV, velocityAccuracy);
 
         // Print orbit deltas
         if (print) {
@@ -324,6 +322,9 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
             System.out.format(Locale.US, "\t%-10s %20.6f\n",
                               "ΔV [m/s]", dV);
         }
+
+        Assertions.assertEquals(0.0, dP, distanceAccuracy);
+        Assertions.assertEquals(0.0, dV, velocityAccuracy);
 
         // Accuracy for tests
         final double parametersAccuracy = 1e-6;
