@@ -807,9 +807,9 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
             System.out.printf("%22.15e", dt);
             csvVector(estimation.getPhysicalEstimatedState());
             csvMatrix(estimation.getPhysicalEstimatedCovarianceMatrix());
-            csvVector(MatrixUtils.createRealVector(estimation.getPredictedMeasurement().getObservedValue()));
-            csvVector(MatrixUtils.createRealVector(estimation.getPredictedMeasurement().getEstimatedValue()));
-            csvMatrix(estimation.getPhysicalInnovationCovarianceMatrix());
+            //csvVector(MatrixUtils.createRealVector(estimation.getPredictedMeasurement().getObservedValue()));
+            //csvVector(MatrixUtils.createRealVector(estimation.getPredictedMeasurement().getEstimatedValue()));
+            //csvMatrix(estimation.getPhysicalInnovationCovarianceMatrix());
             System.out.println();
         };
 
