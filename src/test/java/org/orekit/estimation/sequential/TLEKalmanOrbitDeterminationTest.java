@@ -320,7 +320,7 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         final String inputPath = TLEKalmanOrbitDeterminationTest.class.getClassLoader().getResource("orbit-determination/analytical/tle_od_test_GPS07.in").toURI().getPath();
         final File input  = new File(inputPath);
 
-        // configure Orekit data acces
+        // configure Orekit data access
         Utils.setDataRoot("orbit-determination/february-2016:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
 
@@ -333,23 +333,30 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         // Default for test is Cartesian
         final OrbitType orbitType = OrbitType.CARTESIAN;
 
-        // Initial orbital Keplerian covariance matrix
+        // Cartesian covariance matrix initialization
+        final double posVar = FastMath.pow(1e3, 2);
+        final double velVar = FastMath.pow(0.1, 2);
         final RealMatrix cartesianOrbitalP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e4, 4e3, 1, 5e-3, 6e-5, 1e-4
+                posVar, posVar, posVar, velVar, velVar, velVar
         });
 
         // Orbital Cartesian process noise matrix (Q)
+        final double posVarQ = FastMath.pow(0.0, 2);
+        final double velVarQ = FastMath.pow(1e-2, 2);
         final RealMatrix cartesianOrbitalQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1.e-4, 1.e-4, 1.e-4, 1.e-10, 1.e-10, 1.e-10
+                posVarQ, posVarQ, posVarQ, velVarQ, velVarQ, velVarQ
         });
 
         // Initial measurement covariance matrix and process noise matrix
+        final double measVar = FastMath.pow(1e-7, 2);
         final RealMatrix measurementP = MatrixUtils.createRealDiagonalMatrix(new double [] {
-           1., 1., 1., 1., 1., 1.
+                measVar, measVar, measVar, measVar, measVar, measVar
         });
+
+        final double measVarQ = FastMath.pow(1e-8, 2);
         final RealMatrix measurementQ = MatrixUtils.createRealDiagonalMatrix(new double [] {
-            1e-6, 1e-6, 1e-6, 1e-6, 1e-6, 1e-6
-         });
+                measVarQ, measVarQ, measVarQ, measVarQ, measVarQ, measVarQ
+        });
 
         // Kalman orbit determination run.
         ResultKalman kalmanGNSS = runKalman(input, orbitType, print,
@@ -359,7 +366,8 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
 
         // Definition of the accuracy for the test
         // Initial TLE error at last measurement date is 1053.6m
-        final double distanceAccuracy = 67.48;
+        final double distanceAccuracy = 77.17;
+        final double parameterAccuracy = 1e-3;
 
         // Tests
 
@@ -392,12 +400,12 @@ public class TLEKalmanOrbitDeterminationTest extends AbstractOrbitDetermination<
         //test on statistic for the range residuals
         final long nbRange = 8211;
 
-        final double[] RefStatRange = { -44.073, 51.349, 0.242, 8.602 };
+        final double[] RefStatRange = { -8.285, 4.496, -6.3e-4, 1.195 };
         Assertions.assertEquals(nbRange, kalmanGNSS.getRangeStat().getN());
-        Assertions.assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[2], kalmanGNSS.getRangeStat().getMean(),              distanceAccuracy);
-        Assertions.assertEquals(RefStatRange[3], kalmanGNSS.getRangeStat().getStandardDeviation(), distanceAccuracy);
+        Assertions.assertEquals(RefStatRange[0], kalmanGNSS.getRangeStat().getMin(),               parameterAccuracy);
+        Assertions.assertEquals(RefStatRange[1], kalmanGNSS.getRangeStat().getMax(),               parameterAccuracy);
+        Assertions.assertEquals(RefStatRange[2], kalmanGNSS.getRangeStat().getMean(),              parameterAccuracy);
+        Assertions.assertEquals(RefStatRange[3], kalmanGNSS.getRangeStat().getStandardDeviation(), parameterAccuracy);
 
     }
 
