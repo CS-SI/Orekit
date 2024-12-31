@@ -18,26 +18,29 @@
 package org.orekit.estimation.common;
 
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.linear.RealVector;
 import org.hipparchus.stat.descriptive.StreamingStatistics;
+import org.orekit.estimation.sequential.PhysicalEstimatedState;
 import org.orekit.utils.ParameterDriversList;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class ResultKalman {
-    private int numberOfMeasurements;
-    private TimeStampedPVCoordinates estimatedPV;
-    private StreamingStatistics rangeStat;
-    private StreamingStatistics azimStat;
-    private StreamingStatistics elevStat;
-    private ParameterDriversList propagatorParameters  ;
-    private ParameterDriversList measurementsParameters;
-    private RealMatrix covariances;
+    private final int numberOfMeasurements;
+    private final TimeStampedPVCoordinates estimatedPV;
+    private final StreamingStatistics rangeStat;
+    private final StreamingStatistics azimStat;
+    private final StreamingStatistics elevStat;
+    private final ParameterDriversList propagatorParameters  ;
+    private final ParameterDriversList measurementsParameters;
+    private final RealMatrix covariances;
+    private final PhysicalEstimatedState smoothedState;
     ResultKalman(ParameterDriversList  propagatorParameters,
                  ParameterDriversList  measurementsParameters,
                  int numberOfMeasurements, TimeStampedPVCoordinates estimatedPV,
                  StreamingStatistics rangeStat, StreamingStatistics rangeRateStat,
                  StreamingStatistics azimStat, StreamingStatistics elevStat,
                  StreamingStatistics posStat, StreamingStatistics velStat,
-                 RealMatrix covariances) {
+                 RealMatrix covariances, PhysicalEstimatedState smoothedState) {
 
         this.propagatorParameters   = propagatorParameters;
         this.measurementsParameters = measurementsParameters;
@@ -47,6 +50,7 @@ public class ResultKalman {
         this.azimStat               = azimStat;
         this.elevStat               = elevStat;
         this.covariances            = covariances;
+        this.smoothedState          = smoothedState;
     }
 
     public int getNumberOfMeasurements() {
@@ -81,4 +85,7 @@ public class ResultKalman {
         return measurementsParameters;
     }
 
+    public PhysicalEstimatedState getSmoothedState() {
+        return smoothedState;
+    }
 }

@@ -40,13 +40,13 @@ public class RtsSmoother implements KalmanObserver {
     private final double[] covarianceScale;
 
     /** Estimated orbital parameters. */
-    private ParameterDriversList estimatedOrbitalParameters;
+    private final ParameterDriversList estimatedOrbitalParameters;
 
     /** Estimated propagation drivers. */
-    private ParameterDriversList estimatedPropagationParameters;
+    private final ParameterDriversList estimatedPropagationParameters;
 
     /** Estimated measurements parameters. */
-    private ParameterDriversList estimatedMeasurementsParameters;
+    private final ParameterDriversList estimatedMeasurementsParameters;
 
     /** Reference states for unnormalising estimates. */
     private final List<RealVector> referenceStates;
@@ -58,9 +58,9 @@ public class RtsSmoother implements KalmanObserver {
         this.smoother = new KalmanSmoother(estimator.getMatrixDecomposer());;
         this.referenceDate = estimator.getReferenceDate();
         this.covarianceScale = estimator.getProcessModel().getScale();
-        this.estimatedOrbitalParameters = null;
-        this.estimatedPropagationParameters = null;
-        this.estimatedMeasurementsParameters = null;
+        this.estimatedOrbitalParameters = estimator.getOrbitalParametersDrivers(true);
+        this.estimatedPropagationParameters = estimator.getPropagationParametersDrivers(true);
+        this.estimatedMeasurementsParameters = estimator.getEstimatedMeasurementsParameters();
         this.referenceStates = new ArrayList<>();
 
         // Add smoother observer to underlying filter
@@ -70,11 +70,6 @@ public class RtsSmoother implements KalmanObserver {
 
     @Override
     public void init(final KalmanEstimation estimation) {
-        // Get the estimated parameter drivers
-        estimatedOrbitalParameters = estimation.getEstimatedOrbitalParameters();
-        estimatedPropagationParameters = estimation.getEstimatedPropagationParameters();
-        estimatedMeasurementsParameters = estimation.getEstimatedMeasurementsParameters();
-
         // Get the first reference state
         referenceStates.add(getReferenceState());
     }
@@ -173,6 +168,5 @@ public class RtsSmoother implements KalmanObserver {
 
         return physicalValue;
     }
-
 
 }

@@ -211,6 +211,12 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         final double distanceAccuracy = 2.47;
         final double velocityAccuracy = 1.1e-3;
 
+        // Smoother position/velocity accuracy
+        final double smoothDistanceAccuracy = 5.13;
+        final double smoothVelocityAccuracy = 2.6e-3;
+        final double distanceStd = 12.79;
+        final double velocityStd = 6.2e-3;
+
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
         //final double rangeBias = -0.286275;
@@ -221,7 +227,9 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
         final double[] refStatRange = { -5.910596, 3.306810, -0.037121, 1.454286 };
 
-        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, false);
+        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
+                smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
+                false, false);
     }
 
     @Test
@@ -230,6 +238,12 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         // Position/velocity accuracy
         final double distanceAccuracy = 2.46;
         final double velocityAccuracy = 1.8e-4;
+
+        // Smoother position/velocity accuracy
+        final double smoothDistanceAccuracy = 3.97;
+        final double smoothVelocityAccuracy = 2.0e-3;
+        final double distanceStd = 19.65;
+        final double velocityStd = 0.011;
 
         // Batch LS values
         //final double[] stationOffSet = { 1.659203,  0.861250,  -0.885352 };
@@ -241,13 +255,17 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
         //final double[] refStatRange = { -2.431135, 2.218644, 0.038483, 0.982017 };
         final double[] refStatRange = { -6.212086, 3.196686, -0.012196, 1.456780 };
 
-        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange, false, true);
+        testLageos2(distanceAccuracy, velocityAccuracy, stationOffSet, rangeBias, refStatRange,
+                smoothDistanceAccuracy, smoothVelocityAccuracy, distanceStd, velocityStd,
+                false, true);
     }
 
 
     // Orbit determination for Lageos2 based on SLR (range) measurements
     protected void testLageos2(final double distanceAccuracy, final double velocityAccuracy,
                                final double[] stationOffSet, final double rangeBias, final double[] refStatRange,
+                               final double smoothDistanceAccuracy, final double smoothVelocityAccuracy,
+                               final double smoothDistanceStd, final double smoothVelocityStd,
                                final boolean print, final boolean isUnscented) throws URISyntaxException, IOException {
 
         // input in resources directory
@@ -325,6 +343,43 @@ public class SequentialNumericalOrbitDeterminationTest extends AbstractOrbitDete
 
         Assertions.assertEquals(0.0, dP, distanceAccuracy);
         Assertions.assertEquals(0.0, dV, velocityAccuracy);
+
+        // Run the reference to initial date
+        final Orbit initialOrbit = runReference(input, orbitType, refPos0, refVel0, null,
+                kalmanLageos2.getSmoothedState().getDate());
+        final Vector3D initialPos = initialOrbit.getPosition();
+        final Vector3D initialVel = initialOrbit.getPVCoordinates().getVelocity();
+
+        // Check smoother distances
+        final double[] smoothedState = kalmanLageos2.getSmoothedState().getState().toArray();
+        final Vector3D smoothedPos = new Vector3D(smoothedState[0], smoothedState[1], smoothedState[2]);
+        final Vector3D smoothedVel = new Vector3D(smoothedState[3], smoothedState[4], smoothedState[5]);
+        final double dPSmooth = Vector3D.distance(initialPos, smoothedPos);
+        final double dVSmooth = Vector3D.distance(initialVel, smoothedVel);
+
+        // Check smoother variances
+        final RealMatrix smoothedCov = kalmanLageos2.getSmoothedState().getCovarianceMatrix();
+        final double posStd = FastMath.sqrt(smoothedCov.getEntry(0, 0) +
+                smoothedCov.getEntry(1, 1) + smoothedCov.getEntry(2, 2));
+        final double velStd = FastMath.sqrt(smoothedCov.getEntry(3, 3) +
+                smoothedCov.getEntry(4, 4) + smoothedCov.getEntry(5, 5));
+
+        // Print smoother orbit deltas
+        if (print) {
+            System.out.println("Smoother performances:");
+            System.out.format("\t%-30s\n",
+                    "ΔEstimated / Reference & std. dev.");
+            System.out.format(Locale.US, "\t%-10s %20.6f %20.6f\n",
+                    "ΔP [m]", dPSmooth, posStd);
+            System.out.format(Locale.US, "\t%-10s %20.6f %20.6f\n",
+                    "ΔV [m/s]", dVSmooth, velStd);
+        }
+
+        Assertions.assertEquals(0.0, dPSmooth, smoothDistanceAccuracy);
+        Assertions.assertEquals(0.0, dVSmooth, smoothVelocityAccuracy);
+        Assertions.assertEquals(0.0, posStd, smoothDistanceStd);
+        Assertions.assertEquals(0.0, velStd, smoothVelocityStd);
+
 
         // Accuracy for tests
         final double parametersAccuracy = 1e-6;

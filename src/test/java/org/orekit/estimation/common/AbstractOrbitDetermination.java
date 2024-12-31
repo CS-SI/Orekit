@@ -857,7 +857,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
                                 rangeLog.createStatisticsSummary(),  rangeRateLog.createStatisticsSummary(),
                                 azimuthLog.createStatisticsSummary(),  elevationLog.createStatisticsSummary(),
                                 positionLog.createStatisticsSummary(),  velocityLog.createStatisticsSummary(),
-                                covarianceMatrix);
+                                covarianceMatrix, smoothedStates.get(0));
 
     }
 
