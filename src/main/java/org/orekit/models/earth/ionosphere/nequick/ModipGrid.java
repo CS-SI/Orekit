@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 
 /** Modified Dip Latitude grid.
  * <p>
- * The ModipGrid grid allows to estimate modip μ [deg] at a given point (φ,λ)
+ * The modip grid allows to estimate modip μ [deg] at a given point (φ,λ)
  * by interpolation of the relevant values contained in the support file.
  * </p>
  * <p>
@@ -52,13 +52,13 @@ class ModipGrid {
     /** Pattern for delimiting regular expressions. */
     private static final Pattern SEPARATOR = Pattern.compile("\\s+");
 
-    /** Number of cells of ModipGrid grid in longitude (without wrapping). */
+    /** Number of cells of modip grid in longitude (without wrapping). */
     private final int nbCellsLon;
 
     /** Cell size in longitude. */
     private final double sizeLon;
 
-    /** Number of cells of ModipGrid grid in latitude (without wrapping). */
+    /** Number of cells of modip grid in latitude (without wrapping). */
     private final int nbCellsLat;
 
     /** Cell size in latitude. */
@@ -68,10 +68,10 @@ class ModipGrid {
     private final double[][] grid;
 
     /** Build a new modip grid.
-     * @param nbCellsLon number of cells of ModipGrid grid in longitude (without wrapping)
-     * @param nbCellsLat number of cells of ModipGrid grid in latitude (without wrapping)
+     * @param nbCellsLon number of cells of modip grid in longitude (without wrapping)
+     * @param nbCellsLat number of cells of modip grid in latitude (without wrapping)
      * @param source source of the grid file
-     * @param wrappingAlreadyIncluded indicator for already included ModipGrid grid wrapping in resource file
+     * @param wrappingAlreadyIncluded indicator for already included modip grid wrapping in resource file
      */
     ModipGrid(final int nbCellsLon, final int nbCellsLat, final DataSource source,
               final boolean wrappingAlreadyIncluded) {
@@ -304,7 +304,7 @@ class ModipGrid {
 
         }
 
-        // Throw an exception if ModipGrid grid was not loaded properly
+        // Throw an exception if modip grid was not loaded properly
         if (row != grid.length) {
             throw new OrekitException(OrekitMessages.MODIP_GRID_NOT_LOADED, source.getName());
         }
