@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,7 +116,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
     private RealVector correctedFilterCorrection;
 
     /** Propagators for the reference trajectories, up to current date. */
-    private DSSTPropagator dsstPropagator;
+    private final DSSTPropagator dsstPropagator;
 
     /** Short period terms for the nominal mean spacecraft state. */
     private RealVector shortPeriodicTerms;
@@ -321,6 +321,16 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
             predictedStates[k] = predicted;
         }
 
+        // Return
+        return new UnscentedEvolution(measurement.getTime(), predictedStates);
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public RealMatrix getProcessNoiseMatrix(final double previousTime, final RealVector predictedState,
+                                            final MeasurementDecorator measurement) {
+
         // Number of estimated measurement parameters
         final int nbMeas = getNumberSelectedMeasurementDrivers();
 
@@ -338,13 +348,11 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // Verify dimension
         KalmanEstimatorUtil.checkDimension(noiseK.getRowDimension(),
-                                           builder.getOrbitalParametersDrivers(),
-                                           builder.getPropagationParametersDrivers(),
-                                           estimatedMeasurementsParameters);
+                builder.getOrbitalParametersDrivers(),
+                builder.getPropagationParametersDrivers(),
+                estimatedMeasurementsParameters);
 
-        // Return
-        return new UnscentedEvolution(measurement.getTime(), predictedStates, noiseK);
-
+        return noiseK;
     }
 
     /** {@inheritDoc} */

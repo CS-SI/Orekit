@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.maneuvers.triggers;
+package org.orekit.forces.maneuvers.trigger;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -35,9 +35,6 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.forces.maneuvers.propulsion.BasicConstantThrustPropulsionModel;
-import org.orekit.forces.maneuvers.trigger.AbstractManeuverTriggers;
-import org.orekit.forces.maneuvers.trigger.FieldManeuverTriggersResetter;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.FieldKeplerianOrbit;
 import org.orekit.orbits.FieldOrbit;

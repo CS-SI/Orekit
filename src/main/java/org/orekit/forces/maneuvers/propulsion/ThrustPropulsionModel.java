@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -113,13 +113,12 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * Acceleration is computed here using the thrust vector in S/C frame.
      */
     @Override
-    default Vector3D getAcceleration(SpacecraftState s,
-                                    final Attitude maneuverAttitude,
-                                    double[] parameters) {
+    default Vector3D getAcceleration(final SpacecraftState s, final Attitude maneuverAttitude,
+                                     final double[] parameters) {
 
         final Vector3D thrustVector = getThrustVector(s, parameters);
-        final double thrust = thrustVector.getNorm();
-        if (thrust == 0) {
+        final double thrustNorm = thrustVector.getNorm();
+        if (thrustNorm == 0) {
             return Vector3D.ZERO;
         }
         final Vector3D direction = thrustVector.normalize();
@@ -128,7 +127,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
         // It seems under-efficient to rotate direction and apply thrust
         // instead of just rotating the whole thrust vector itself.
         // However it has to be done that way to avoid numerical discrepancies with legacy tests.
-        return new Vector3D(thrust / s.getMass(),
+        return new Vector3D(thrustNorm / s.getMass(),
                             maneuverAttitude.getRotation().applyInverseTo(direction));
     }
 
@@ -136,14 +135,14 @@ public interface ThrustPropulsionModel extends PropulsionModel {
      * Acceleration is computed here using the thrust vector in S/C frame.
      */
     @Override
-    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(FieldSpacecraftState<T> s,
-                                                                            final FieldAttitude<T> maneuverAttitude,
-                                                                            T[] parameters) {
+    default <T extends CalculusFieldElement<T>> FieldVector3D<T> getAcceleration(final FieldSpacecraftState<T> s,
+                                                                                 final FieldAttitude<T> maneuverAttitude,
+                                                                                 final T[] parameters) {
         // Extract thrust & direction from thrust vector
         final FieldVector3D<T> thrustVector = getThrustVector(s, parameters);
-        final T thrust = thrustVector.getNorm();
-        if (thrust.isZero()) {
-            return FieldVector3D.getZero(s.getDate().getField());
+        final T thrustNorm = thrustVector.getNorm();
+        if (thrustNorm.getReal() == 0) {
+            return maneuverAttitude.getRotation().applyInverseTo(thrustVector.scalarMultiply(s.getMass().reciprocal()));
         }
         final FieldVector3D<T> direction = thrustVector.normalize();
 
@@ -151,7 +150,7 @@ public interface ThrustPropulsionModel extends PropulsionModel {
         // It seems under-efficient to rotate direction and apply thrust
         // instead of just rotating the whole thrust vector itself.
         // However it has to be done that way to avoid numerical discrepancies with legacy tests.
-        return new FieldVector3D<>(thrust.divide(s.getMass()),
+        return new FieldVector3D<>(thrustNorm.divide(s.getMass()),
                         maneuverAttitude.getRotation().applyInverseTo(direction));
     }
 

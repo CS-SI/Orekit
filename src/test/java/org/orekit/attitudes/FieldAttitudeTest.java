@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.attitudes;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -25,20 +27,23 @@ import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.orekit.frames.FieldTransform;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.FieldAngularCoordinates;
 
 
-public class FieldAttitudeTest {
+class FieldAttitudeTest {
 
     @Test
-    public void testShift() {
+    void testShift() {
         doTestShift(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
         doTestSpin(Binary64Field.getInstance());
     }
 
@@ -101,6 +106,24 @@ public class FieldAttitudeTest {
         FieldVector3D<T> reversed = FieldAngularCoordinates.estimateRate(shifted.getRotation(), attitude.getRotation(), dt);
         Assertions.assertEquals(0.0, reversed.add(attitude.getSpin()).getNorm().getReal(), 1.0e-10);
 
+    }
+
+    @Test
+    void testWithReferenceFrame() {
+        // GIVEN
+        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
+        final FieldAbsoluteDate<UnivariateDerivative1> date = new FieldAbsoluteDate<>(field).shiftedBy(new UnivariateDerivative1(0, 1));
+        final FieldAngularCoordinates<UnivariateDerivative1> angularCoordinates = new FieldAngularCoordinates<>(FieldRotation.getIdentity(field),
+                FieldVector3D.getZero(field));
+        final Frame frame = FramesFactory.getEME2000();
+        final FieldAttitude<UnivariateDerivative1> attitude = new FieldAttitude<>(date, frame, angularCoordinates);
+        final Frame mockedFrame = Mockito.mock(Frame.class);
+        Mockito.when(mockedFrame.getTransformTo(frame, date)).thenReturn(new FieldTransform<>(date,
+                FieldRotation.getIdentity(field), FieldVector3D.getPlusI(field)));
+        // WHEN
+        final FieldAttitude<UnivariateDerivative1> attitudeInNonInertialFrame = attitude.withReferenceFrame(mockedFrame);
+        // THEN
+        Assertions.assertEquals(1., attitudeInNonInertialFrame.getSpin().getX().getReal());
     }
 
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -76,7 +76,7 @@ public class OrbitCovarianceHistoryMetadata extends CommentsContainer {
     public OrbitCovarianceHistoryMetadata(final AbsoluteDate epochT0) {
         // we don't call the setXxx() methods in order to avoid
         // calling refuseFurtherComments as a side effect
-        covBasis          = "PREDICTED";
+        covBasis          = null;
         covReferenceFrame = new FrameFacade(null, null,
                                             OrbitRelativeFrame.TNW_INERTIAL, null,
                                             OrbitRelativeFrame.TNW_INERTIAL.name());

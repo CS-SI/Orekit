@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,7 @@ import org.orekit.files.ccsds.definitions.TimeConverter;
 import org.orekit.files.ccsds.definitions.Units;
 import org.orekit.files.ccsds.section.AbstractWriter;
 import org.orekit.files.ccsds.utils.generation.Generator;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.units.Unit;
 
 /** Writer for physical properties data.
@@ -71,10 +72,12 @@ class OrbitPhysicalPropertiesWriter extends AbstractWriter {
 
         // Optimally Enclosing Box
         generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_PARENT_FRAME.name(),       phys.getOebParentFrame().getName(),           null, false);
-        if (!phys.getOebParentFrameEpoch().equals(timeConverter.getReferenceDate()) &&
+        final AbsoluteDate oebParentFrameEpoch = phys.getOebParentFrameEpoch();
+        // oebParentFrameEpoch may be null. Usually checked in writeEntry(...)
+        if (!timeConverter.getReferenceDate().equals(oebParentFrameEpoch) &&
             phys.getOebParentFrame().asOrbitRelativeFrame() == null &&
             phys.getOebParentFrame().asSpacecraftBodyFrame() == null) {
-            generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, phys.getOebParentFrameEpoch(), true, false);
+            generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_PARENT_FRAME_EPOCH.name(), timeConverter, oebParentFrameEpoch, true, false);
         }
         generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q1.name(),                 phys.getOebQ().getQ1(), Unit.ONE,                   false);
         generator.writeEntry(OrbitPhysicalPropertiesKey.OEB_Q2.name(),                 phys.getOebQ().getQ2(), Unit.ONE,                   false);
@@ -125,12 +128,12 @@ class OrbitPhysicalPropertiesWriter extends AbstractWriter {
         // inertia
         final RealMatrix inertia = phys.getInertiaMatrix();
         if (inertia != null) {
-            generator.writeEntry(OrbitPhysicalPropertiesKey.IXX.name(), inertia.getEntry(0, 0), Units.KG_M2, true);
-            generator.writeEntry(OrbitPhysicalPropertiesKey.IYY.name(), inertia.getEntry(1, 1), Units.KG_M2, true);
-            generator.writeEntry(OrbitPhysicalPropertiesKey.IZZ.name(), inertia.getEntry(2, 2), Units.KG_M2, true);
-            generator.writeEntry(OrbitPhysicalPropertiesKey.IXY.name(), inertia.getEntry(0, 1), Units.KG_M2, true);
-            generator.writeEntry(OrbitPhysicalPropertiesKey.IXZ.name(), inertia.getEntry(0, 2), Units.KG_M2, true);
-            generator.writeEntry(OrbitPhysicalPropertiesKey.IYZ.name(), inertia.getEntry(1, 2), Units.KG_M2, true);
+            generator.writeEntry(OrbitPhysicalPropertiesKey.IXX.name(), inertia.getEntry(0, 0), Units.KG_M2, false);
+            generator.writeEntry(OrbitPhysicalPropertiesKey.IYY.name(), inertia.getEntry(1, 1), Units.KG_M2, false);
+            generator.writeEntry(OrbitPhysicalPropertiesKey.IZZ.name(), inertia.getEntry(2, 2), Units.KG_M2, false);
+            generator.writeEntry(OrbitPhysicalPropertiesKey.IXY.name(), inertia.getEntry(0, 1), Units.KG_M2, false);
+            generator.writeEntry(OrbitPhysicalPropertiesKey.IXZ.name(), inertia.getEntry(0, 2), Units.KG_M2, false);
+            generator.writeEntry(OrbitPhysicalPropertiesKey.IYZ.name(), inertia.getEntry(1, 2), Units.KG_M2, false);
         }
 
     }

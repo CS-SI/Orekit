@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,7 +23,8 @@ import org.orekit.propagation.ToleranceProvider;
  * @author Pascal Parraud
  * @since 6.0
  */
-public class HighamHall54IntegratorBuilder extends AbstractVariableStepIntegratorBuilder<HighamHall54Integrator> {
+public class HighamHall54IntegratorBuilder extends AbstractVariableStepIntegratorBuilder<HighamHall54Integrator>
+        implements ExplicitRungeKuttaIntegratorBuilder {
 
     /**
      * Build a new instance using default integration tolerances.

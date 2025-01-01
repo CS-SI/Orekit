@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2024 CS GROUP
+<!-- Copyright 2002-2025 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -23,6 +23,25 @@
     <release version="13.0" date="TBD" description="TBD">
         <action dev="luc" type="fix" issue="1638">
             Fixed field implementation of NeQuick ionosphere model.
+        </action>
+        <action dev="evan" type="update" issue="1623">
+            Update OCM parsing, so it is possible to know when a value is not present in a
+            OCM file. Updated OCM writing so values that are not present are not written.
+        </action>
+        <action dev="serrof" type="add" issue="1634">
+            Add penalized fuel cost for indirect control.
+        </action>
+        <action dev="serrof" type="update" issue="1633">
+            Introduce dedicated ResettableManeuverTriggers interface.
+        </action>
+        <action dev="serrof" type="update" issue="1631">
+            Generalize ProfileThrustPropulsionModel with ThrustSegment.
+        </action>
+        <action dev="serrof" type="update" issue="1628">
+            Remove ThrustDirectionAndAttitudeProvider and ConfigurableLowThrustManeuver.
+        </action>
+        <action dev="serrof" type="update" issue="1626">
+            Use ExtendedPositionProvider in YawSteering.
         </action>
         <action dev="serrof" type="add" issue="1622">
             Add (Field)DetectorModifier interface, deprecating (Field)AdapterDetector.
@@ -99,6 +118,9 @@
         </action>
         <action dev="luc" type="update" issue="1590">
             Renamed EarthITU453AtmosphereRefraction into EarthITU834AtmosphereRefraction.
+        </action>
+        <action dev="serrof" type="update" issue="1586">
+            Add reference inertial frame in AlignedAndConstrained.
         </action>
         <action dev="serrof" type="update" issue="1585">
             Add default implementation for theoreticalEvaluationWithoutDerivatives in AbstractMeasurement.
@@ -184,8 +206,11 @@
         <action dev="luc" type="add" issue="1528">
             Added elevationSwitchSup to ElevationDetectionAdaptableIntervalFactory.
         </action>
+        <action dev="serrof" type="update" issue="1523">
+            Improve performance of indirect shooting via step-by-step Field propagation.
+        </action>
         <action dev="serrof" type="add" issue="1519">
-          Allow to define body attraction without CelestialBody.
+            Allow to define body attraction without CelestialBody.
         </action>
         <action dev="luc" type="add" issue="707">
             Properly parse dates during the 1961 leap that was 1.422818s long.
@@ -269,6 +294,42 @@
         </action>
         <action dev="bryan" type="add" issue="1039">
             Added optional name for ObservableSatellite.
+        </action>
+        <action dev="serrof" type="add" issue="879">
+            Added clearing method for ephemeris generators in integrator-based propagators.
+        </action>
+    </release>
+    <release version="12.2.1" date="18/12/2024"
+             description="Version 12.2.1 is a patch release of Orekit.
+             It fixes bugs related to performance in TLEPropagator, mass update between measurements in Kalman models,
+             longitude normalization in DSST, missing use of clock offsets in bi-static measurements, and wrong use
+             of Kalman models in case of propagation parameters estimated together with 1 to 5 orbital parameters.">
+        <action dev="gegout" type="fix" issue="1624">
+            Fix deprecated abstract method in 12.2
+        </action>
+        <action dev="serrof" type="fix" issue="1620">
+            Fixed computation time regression by removing HashMap from (Field)TLEPropagator.
+        </action>
+        <action dev="derekkayhan" type="fix" issue="1587">
+            Fixed mass depletions not carried between measurements in KalmanModels.
+        </action>
+        <action dev="vcucchie" type="fix" issue="1565">
+            Fixed unchecked conversion warnings in tests after 12.2 release.
+        </action>
+        <action dev="vcucchie" type="update" issue="1563">
+            Updated design UML diagrams.
+        </action>
+        <action dev="serrof" type="fix" issue="1551">
+            Fixed normalization exception in ThrustPropulsionModel with Field.
+        </action>
+        <action dev="markrutten" type="fix" issue="1543">
+            Fix EKF and UKF with 1-5 orbital parameters.
+        </action>
+        <action dev="serrof" type="fix" issue="1525">
+            Fixed conversion error with large values for arguments of longitude and latitude.
+        </action>
+        <action dev="geckonoid" type="fix" issue="1418">
+            Fixed ClockOffsetDriver not modifying the value of BistaticRange.
         </action>
     </release>
     <release version="12.2" date="18/10/2024" description="Version 12.2 is a minor release of Orekit.

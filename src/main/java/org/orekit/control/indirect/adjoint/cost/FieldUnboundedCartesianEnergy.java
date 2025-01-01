@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ public class FieldUnboundedCartesianEnergy<T extends CalculusFieldElement<T>> ex
     /** {@inheritDoc} */
     @Override
     public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
-        return Stream.of(new FieldSingularityDetector(field.getZero()));
+        return Stream.of(new FieldSingularityDetector(getEventDetectionSettings(), field.getZero()));
     }
 
     /** {@inheritDoc} */

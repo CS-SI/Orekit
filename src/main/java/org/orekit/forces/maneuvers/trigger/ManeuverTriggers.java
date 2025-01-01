@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,6 @@
 package org.orekit.forces.maneuvers.trigger;
 
 import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.forces.maneuvers.Maneuver;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
@@ -78,16 +77,4 @@ public interface ManeuverTriggers extends ParameterDriversProvider, EventDetecto
     default String getName() {
         return "";
     }
-
-    /** Add a resetter.
-     * @param resetter resetter to add
-     */
-    void addResetter(ManeuverTriggersResetter resetter);
-
-    /** Add a resetter.
-     * @param field field to which the state belongs
-     * @param resetter resetter to add
-     * @param <T> type of the field elements
-     */
-    <T extends CalculusFieldElement<T>> void addResetter(Field<T> field, FieldManeuverTriggersResetter<T> resetter);
 }

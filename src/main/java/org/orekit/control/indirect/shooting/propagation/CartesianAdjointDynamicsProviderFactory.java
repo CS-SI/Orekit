@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,6 +29,8 @@ import org.orekit.control.indirect.adjoint.cost.FieldUnboundedCartesianEnergy;
 import org.orekit.control.indirect.adjoint.cost.FieldUnboundedCartesianEnergyNeglectingMass;
 import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergy;
 import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
+import org.orekit.propagation.events.EventDetectionSettings;
+import org.orekit.propagation.events.FieldEventDetectionSettings;
 
 /**
  * Factory for common Cartesian adjoint dynamics providers.
@@ -47,35 +49,54 @@ public class CartesianAdjointDynamicsProviderFactory {
     }
 
     /**
-     * Method building a provider with unbounded Cartesian energy as cost.
+     * Method building a provider with unbounded Cartesian energy and vanishing mass flow as cost.
      * @param adjointName adjoint name
-     * @param massFlowRateFactor mass flow rate factor
      * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
      * @return provider
      */
-    public static CartesianAdjointDynamicsProvider buildUnboundedEnergyProvider(final String adjointName,
-                                                                                final double massFlowRateFactor,
-                                                                                final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider() {
+    public static CartesianAdjointDynamicsProvider buildUnboundedEnergyProviderNeglectingMass(final String adjointName,
+                                                                                              final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
+        return new CartesianAdjointDynamicsProvider(adjointName, 6) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
-                if (massFlowRateFactor == 0.) {
-                    return new CartesianAdjointDerivativesProvider(new UnboundedCartesianEnergyNeglectingMass(adjointName),
-                            cartesianAdjointEquationTerms);
-                }
-                return new CartesianAdjointDerivativesProvider(new UnboundedCartesianEnergy(adjointName, massFlowRateFactor),
+                return new CartesianAdjointDerivativesProvider(new UnboundedCartesianEnergyNeglectingMass(adjointName),
                         cartesianAdjointEquationTerms);
             }
 
             @Override
             public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
-                if (massFlowRateFactor == 0.) {
-                    return new FieldCartesianAdjointDerivativesProvider<>(new FieldUnboundedCartesianEnergyNeglectingMass<>(adjointName, field),
-                            cartesianAdjointEquationTerms);
-                }
+                return new FieldCartesianAdjointDerivativesProvider<>(new FieldUnboundedCartesianEnergyNeglectingMass<>(adjointName, field),
+                        cartesianAdjointEquationTerms);
+            }
+        };
+    }
+
+    /**
+     * Method building a provider with unbounded Cartesian energy as cost.
+     * @param adjointName adjoint name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param eventDetectionSettings detection settings for adjoint-related events
+     * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
+     * @return provider
+     */
+    public static CartesianAdjointDynamicsProvider buildUnboundedEnergyProvider(final String adjointName,
+                                                                                final double massFlowRateFactor,
+                                                                                final EventDetectionSettings eventDetectionSettings,
+                                                                                final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
+        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+
+            @Override
+            public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
+                return new CartesianAdjointDerivativesProvider(new UnboundedCartesianEnergy(adjointName,
+                        massFlowRateFactor, eventDetectionSettings), cartesianAdjointEquationTerms);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
                 return new FieldCartesianAdjointDerivativesProvider<>(new FieldUnboundedCartesianEnergy<>(adjointName,
-                        field.getZero().newInstance(massFlowRateFactor)), cartesianAdjointEquationTerms);
+                        field.getZero().newInstance(massFlowRateFactor), new FieldEventDetectionSettings<>(field,
+                        eventDetectionSettings)), cartesianAdjointEquationTerms);
             }
         };
     }
@@ -85,26 +106,29 @@ public class CartesianAdjointDynamicsProviderFactory {
      * @param adjointName adjoint name
      * @param massFlowRateFactor mass flow rate factor
      * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param eventDetectionSettings detection settings for adjoint-related events
      * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
      * @return provider
      */
     public static CartesianAdjointDynamicsProvider buildBoundedEnergyProvider(final String adjointName,
                                                                               final double massFlowRateFactor,
                                                                               final double maximumThrustMagnitude,
+                                                                              final EventDetectionSettings eventDetectionSettings,
                                                                               final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider() {
+        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
                 return new CartesianAdjointDerivativesProvider(new BoundedCartesianEnergy(adjointName, massFlowRateFactor,
-                        maximumThrustMagnitude), cartesianAdjointEquationTerms);
+                        maximumThrustMagnitude, eventDetectionSettings), cartesianAdjointEquationTerms);
             }
 
             @Override
             public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
                 final T zero = field.getZero();
                 return new FieldCartesianAdjointDerivativesProvider<>(new FieldBoundedCartesianEnergy<>(adjointName,
-                        zero.newInstance(massFlowRateFactor), zero.newInstance(maximumThrustMagnitude)), cartesianAdjointEquationTerms);
+                        zero.newInstance(massFlowRateFactor), zero.newInstance(maximumThrustMagnitude),
+                        new FieldEventDetectionSettings<>(field, eventDetectionSettings)), cartesianAdjointEquationTerms);
             }
         };
     }
@@ -114,26 +138,29 @@ public class CartesianAdjointDynamicsProviderFactory {
      * @param adjointName adjoint name
      * @param massFlowRateFactor mass flow rate factor
      * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param eventDetectionSettings detection settings for adjoint-related events
      * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
      * @return provider
      */
     public static CartesianAdjointDynamicsProvider buildBoundedFuelCostProvider(final String adjointName,
                                                                                 final double massFlowRateFactor,
                                                                                 final double maximumThrustMagnitude,
+                                                                                final EventDetectionSettings eventDetectionSettings,
                                                                                 final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider() {
+        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
                 return new CartesianAdjointDerivativesProvider(new CartesianFuelCost(adjointName, massFlowRateFactor,
-                        maximumThrustMagnitude), cartesianAdjointEquationTerms);
+                        maximumThrustMagnitude, eventDetectionSettings), cartesianAdjointEquationTerms);
             }
 
             @Override
             public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
                 final T zero = field.getZero();
                 return new FieldCartesianAdjointDerivativesProvider<>(new FieldCartesianFuelCost<>(adjointName,
-                        zero.newInstance(massFlowRateFactor), zero.newInstance(maximumThrustMagnitude)), cartesianAdjointEquationTerms);
+                        zero.newInstance(massFlowRateFactor), zero.newInstance(maximumThrustMagnitude),
+                        new FieldEventDetectionSettings<>(field, eventDetectionSettings)), cartesianAdjointEquationTerms);
             }
         };
     }

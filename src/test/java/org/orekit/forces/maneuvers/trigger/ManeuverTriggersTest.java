@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.maneuvers.triggers;
+package org.orekit.forces.maneuvers.trigger;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,9 +25,6 @@ import org.hipparchus.Field;
 import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.orekit.forces.maneuvers.trigger.FieldManeuverTriggersResetter;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggers;
-import org.orekit.forces.maneuvers.trigger.ManeuverTriggersResetter;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngleType;
@@ -52,10 +49,6 @@ public class ManeuverTriggersTest {
             public boolean isFiring(AbsoluteDate date, double[] parameters) {
                 return false;
             }
-            @Override
-            public void addResetter(ManeuverTriggersResetter resetter) {}
-            @Override
-            public <T extends CalculusFieldElement<T>> void addResetter(Field<T> field, FieldManeuverTriggersResetter<T> resetter) {}
             @Override
             public List<ParameterDriver> getParametersDrivers() {
                 return Collections.emptyList();

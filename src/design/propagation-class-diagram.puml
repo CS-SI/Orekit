@@ -1,4 +1,4 @@
-' Copyright 2002-2024 CS GROUP
+' Copyright 2002-2025 CS GROUP
 ' Licensed to CS GROUP (CS) under one or more
 ' contributor license agreements.  See the NOTICE file distributed with
 ' this work for additional information regarding copyright ownership.
@@ -34,8 +34,6 @@
       interface TimeStamped
 
       interface "TimeShiftable<T>" as TimeShiftable_T_
-
-      interface "TimeInterpolable<T>" as TimeInterpolable_T_
 
     }
 
@@ -87,7 +85,6 @@
 
      TimeStamped         ..|> SpacecraftState
      TimeShiftable_T_    ..|> SpacecraftState
-     TimeInterpolable_T_ ..|> SpacecraftState
 
    }
 

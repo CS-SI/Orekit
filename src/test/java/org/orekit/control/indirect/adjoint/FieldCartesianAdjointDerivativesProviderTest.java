@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,15 +46,16 @@ import org.orekit.utils.PVCoordinates;
 class FieldCartesianAdjointDerivativesProviderTest {
 
     @Test
+    @SuppressWarnings("unchecked")
     void testInitException() {
         // GIVEN
         final String name = "name";
         final double mu = Constants.EGM96_EARTH_MU;
         final FieldCartesianAdjointDerivativesProvider<Binary64> derivativesProvider = new FieldCartesianAdjointDerivativesProvider<>(
                 new FieldUnboundedCartesianEnergyNeglectingMass<>(name, Binary64Field.getInstance()), new CartesianAdjointKeplerianTerm(mu));
-        final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
+        final FieldSpacecraftState<Binary64> mockedState = Mockito.mock(FieldSpacecraftState.class);
         Mockito.when(mockedState.isOrbitDefined()).thenReturn(true);
-        final FieldOrbit mockedOrbit = Mockito.mock(FieldOrbit.class);
+        final FieldOrbit<Binary64> mockedOrbit = Mockito.mock(FieldOrbit.class);
         Mockito.when(mockedOrbit.getType()).thenReturn(OrbitType.EQUINOCTIAL);
         Mockito.when(mockedState.getOrbit()).thenReturn(mockedOrbit);
         // WHEN
