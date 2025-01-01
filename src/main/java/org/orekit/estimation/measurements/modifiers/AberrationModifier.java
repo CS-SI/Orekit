@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Mark Rutten
+/* Copyright 2002-2025 Mark Rutten
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
