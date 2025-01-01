@@ -212,7 +212,7 @@ abstract class AbstractGrid {
                 final int latitudeIndex = latitudeAxis.size() - 1 - row;
 
                 final String   line   = reader.readLine();
-                final String[] fields = SPLITTER.split(line.trim());
+                final String[] fields = line == null ? new String[0] : SPLITTER.split(line.trim());
                 if (fields.length != longitudeAxis.size()) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, row + 1, name, line);
                 }
