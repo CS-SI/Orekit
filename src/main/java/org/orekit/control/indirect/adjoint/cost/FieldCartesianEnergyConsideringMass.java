@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,9 +22,6 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
-import org.orekit.propagation.events.FieldEventDetector;
-import org.orekit.propagation.events.handlers.FieldEventHandler;
-import org.orekit.propagation.events.handlers.FieldResetDerivativesOnEvent;
 
 /**
  * Abstract class for energy cost with Cartesian coordinates and non-zero mass flow rate.
@@ -134,18 +131,18 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
     /**
      * Field event detector for singularities in adjoint dynamics.
      */
-    class FieldSingularityDetector implements FieldEventDetector<T> {
+    class FieldSingularityDetector extends FieldControlSwitchDetector<T> {
 
         /** Value to detect. */
         private final T detectionValue;
-        /** Event handler. */
-        private final FieldEventHandler<T> handler = new FieldResetDerivativesOnEvent<>();
 
         /**
          * Constructor.
+         * @param detectionSettings detection settings
          * @param detectionValue value to detect
          */
-        FieldSingularityDetector(final T detectionValue) {
+        FieldSingularityDetector(final FieldEventDetectionSettings<T> detectionSettings, final T detectionValue) {
+            super(detectionSettings);
             this.detectionValue = detectionValue;
         }
 
@@ -167,16 +164,5 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
             return adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public FieldEventDetectionSettings<T> getDetectionSettings() {
-            return eventDetectionSettings;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public FieldEventHandler<T> getHandler() {
-            return handler;
-        }
     }
 }

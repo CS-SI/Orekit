@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -63,6 +63,6 @@ public class UnboundedCartesianEnergy extends CartesianEnergyConsideringMass {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new SingularityDetector(0.));
+        return Stream.of(new SingularityDetector(getEventDetectionSettings(), 0.));
     }
 }

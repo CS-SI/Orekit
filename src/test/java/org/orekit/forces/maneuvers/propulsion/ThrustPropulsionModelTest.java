@@ -1,4 +1,4 @@
-/* Copyright 2020 Exotrail
+/* Copyright 2020-2025 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

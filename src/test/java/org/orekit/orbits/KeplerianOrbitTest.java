@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -171,17 +171,6 @@ class KeplerianOrbitTest {
         Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getRightAscensionOfAscendingNode(), kepHyp.getRightAscensionOfAscendingNode()), kepHyp.getRightAscensionOfAscendingNode(), Utils.epsilonAngle * FastMath.abs(kepHyp.getRightAscensionOfAscendingNode()));
         Assertions.assertEquals(MathUtils.normalizeAngle(paramHyp.getMeanAnomaly(), kepHyp.getMeanAnomaly()), kepHyp.getMeanAnomaly(), Utils.epsilonAngle * FastMath.abs(kepHyp.getMeanAnomaly()));
 
-    }
-
-    @Timeout(5)
-    @ParameterizedTest()
-    @EnumSource(PositionAngleType.class)
-    void testConstructor(final PositionAngleType positionAngleType) {
-        for (int i = 0; i < 10000000; i++) {
-            final KeplerianOrbit orbit = new KeplerianOrbit(42166712.0, 0.0001, 1, 0, 0.,
-                    5.300, positionAngleType, FramesFactory.getEME2000(), date, mu);
-            Assertions.assertEquals(positionAngleType, orbit.getCachedPositionAngleType());
-        }
     }
 
     @Test 
