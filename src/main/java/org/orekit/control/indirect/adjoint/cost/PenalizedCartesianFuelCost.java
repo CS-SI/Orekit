@@ -19,13 +19,15 @@ package org.orekit.control.indirect.adjoint.cost;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.events.EventDetectionSettings;
 
 /**
  * Abstract class for fuel cost with a penalty term proportional to a weight parameter epsilon.
  * This is typically used in a continuation method, starting from epsilon equal to 1
  * and going towards 0 where the fuel cost is recovered. The point is to enhance convergence.
  * The control vector is the normalized (by the upper bound on magnitude) thrust force in propagation frame.
+ * See the following reference:
+ * BERTRAND, Régis et EPENOY, Richard. New smoothing techniques for solving bang–bang optimal control problems—numerical results and statistical interpretation.
+ * Optimal Control Applications and Methods, 2002, vol. 23, no 4, p. 171-197.
  *
  * @author Romain Serra
  * @since 13.0
@@ -39,9 +41,6 @@ public abstract class PenalizedCartesianFuelCost extends AbstractCartesianCost {
     /** Penalty weight. */
     private final double epsilon;
 
-    /** Detection settings for singularity detection. */
-    private final EventDetectionSettings eventDetectionSettings;
-
     /**
      * Constructor.
      *
@@ -49,18 +48,15 @@ public abstract class PenalizedCartesianFuelCost extends AbstractCartesianCost {
      * @param massFlowRateFactor mass flow rate factor
      * @param maximumThrustMagnitude maximum thrust magnitude
      * @param epsilon penalty weight
-     * @param eventDetectionSettings detection settings
      */
     protected PenalizedCartesianFuelCost(final String name, final double massFlowRateFactor,
-                                         final double maximumThrustMagnitude, final double epsilon,
-                                         final EventDetectionSettings eventDetectionSettings) {
+                                         final double maximumThrustMagnitude, final double epsilon) {
         super(name, massFlowRateFactor);
         if (epsilon < 0 || epsilon > 1) {
             throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, "epsilon", epsilon, 0, 1);
         }
         this.maximumThrustMagnitude = maximumThrustMagnitude;
         this.epsilon = epsilon;
-        this.eventDetectionSettings = eventDetectionSettings;
     }
 
     /** Getter for the penalty weight epsilon.
@@ -75,14 +71,6 @@ public abstract class PenalizedCartesianFuelCost extends AbstractCartesianCost {
      */
     public double getMaximumThrustMagnitude() {
         return maximumThrustMagnitude;
-    }
-
-    /**
-     * Getter for the event detection settings.
-     * @return detection settings
-     */
-    public EventDetectionSettings getEventDetectionSettings() {
-        return eventDetectionSettings;
     }
 
     /**

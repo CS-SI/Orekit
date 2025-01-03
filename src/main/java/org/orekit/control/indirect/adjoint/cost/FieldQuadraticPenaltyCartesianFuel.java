@@ -34,8 +34,11 @@ import java.util.stream.Stream;
  * @since 13.0
  * @see BoundedCartesianEnergy
  */
-public class FieldQuadraticallyPenalizedCartesianFuel<T extends CalculusFieldElement<T>>
+public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T>>
         extends FieldPenalizedCartesianFuelCost<T> {
+
+    /** Detection settings for singularity detection. */
+    private final FieldEventDetectionSettings<T> eventDetectionSettings;
 
     /**
      * Constructor.
@@ -46,10 +49,11 @@ public class FieldQuadraticallyPenalizedCartesianFuel<T extends CalculusFieldEle
      * @param epsilon                penalty weight
      * @param eventDetectionSettings detection settings
      */
-    public FieldQuadraticallyPenalizedCartesianFuel(final String name, final T massFlowRateFactor,
-                                                    final T maximumThrustMagnitude, final T epsilon,
-                                                    final FieldEventDetectionSettings<T> eventDetectionSettings) {
-        super(name, massFlowRateFactor, maximumThrustMagnitude, epsilon, eventDetectionSettings);
+    public FieldQuadraticPenaltyCartesianFuel(final String name, final T massFlowRateFactor,
+                                              final T maximumThrustMagnitude, final T epsilon,
+                                              final FieldEventDetectionSettings<T> eventDetectionSettings) {
+        super(name, massFlowRateFactor, maximumThrustMagnitude, epsilon);
+        this.eventDetectionSettings = eventDetectionSettings;
     }
 
     /**
@@ -60,10 +64,18 @@ public class FieldQuadraticallyPenalizedCartesianFuel<T extends CalculusFieldEle
      * @param maximumThrustMagnitude maximum thrust magnitude
      * @param epsilon                penalty weight
      */
-    public FieldQuadraticallyPenalizedCartesianFuel(final String name, final T massFlowRateFactor,
-                                                    final T maximumThrustMagnitude, final T epsilon) {
+    public FieldQuadraticPenaltyCartesianFuel(final String name, final T massFlowRateFactor,
+                                              final T maximumThrustMagnitude, final T epsilon) {
         this(name, massFlowRateFactor, maximumThrustMagnitude, epsilon, new FieldEventDetectionSettings<>(massFlowRateFactor.getField(),
                 EventDetectionSettings.getDefaultEventDetectionSettings()));
+    }
+
+    /**
+     * Getter for the event detection settings.
+     * @return detection settings
+     */
+    public FieldEventDetectionSettings<T> getEventDetectionSettings() {
+        return eventDetectionSettings;
     }
 
     /** {@inheritDoc} */
@@ -89,7 +101,9 @@ public class FieldQuadraticallyPenalizedCartesianFuel<T extends CalculusFieldEle
     public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
         final T switchFunction = evaluateSwitchFunction(adjointVariables, mass);
         if (switchFunction.getReal() > 0.) {
-            adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables).multiply(getMaximumThrustMagnitude()).divide(mass.square()));
+            final T minimum = FastMath.min(switchFunction, getMaximumThrustMagnitude());
+            adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables)
+                    .multiply(minimum).divide(mass.square()));
         }
     }
 
@@ -139,8 +153,8 @@ public class FieldQuadraticallyPenalizedCartesianFuel<T extends CalculusFieldEle
 
     /** {@inheritDoc} */
     @Override
-    public QuadraticallyPenalizedCartesianFuel toCartesianCost() {
-        return new QuadraticallyPenalizedCartesianFuel(getAdjointName(), getMassFlowRateFactor().getReal(),
+    public QuadraticPenaltyCartesianFuel toCartesianCost() {
+        return new QuadraticPenaltyCartesianFuel(getAdjointName(), getMassFlowRateFactor().getReal(),
                 getMaximumThrustMagnitude().getReal(), getEpsilon().getReal(),
                 getEventDetectionSettings().toEventDetectionSettings());
     }

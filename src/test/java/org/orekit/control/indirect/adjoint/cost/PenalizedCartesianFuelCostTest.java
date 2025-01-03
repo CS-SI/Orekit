@@ -33,13 +33,11 @@ class PenalizedCartesianFuelCostTest {
         // GIVEN
         final double expectedMagnitude = 1.;
         final double expectedEpsilon = 0.5;
-        final EventDetectionSettings expectedDetectionSettings = Mockito.mock(EventDetectionSettings.class);
         // WHEN
-        final TestPenalizedCost penalizedCost = new TestPenalizedCost(expectedMagnitude, expectedEpsilon, expectedDetectionSettings);
+        final TestPenalizedCost penalizedCost = new TestPenalizedCost(expectedMagnitude, expectedEpsilon);
         // THEN
         Assertions.assertEquals(expectedEpsilon, penalizedCost.getEpsilon());
         Assertions.assertEquals(expectedMagnitude, penalizedCost.getMaximumThrustMagnitude());
-        Assertions.assertEquals(expectedDetectionSettings, penalizedCost.getEventDetectionSettings());
     }
 
     @Test
@@ -48,8 +46,7 @@ class PenalizedCartesianFuelCostTest {
         final double expectedMagnitude = 1.;
         final double expectedEpsilon = 0.5;
         final EventDetectionSettings expectedDetectionSettings = Mockito.mock(EventDetectionSettings.class);
-        final TestPenalizedCost penalizedCost = new TestPenalizedCost(expectedMagnitude, expectedEpsilon,
-                expectedDetectionSettings);
+        final TestPenalizedCost penalizedCost = new TestPenalizedCost(expectedMagnitude, expectedEpsilon);
         final double[] adjoint = new double[] {0, 0, 0, 1, 2, 3};
         // WHEN
         final Vector3D thrustDirection = penalizedCost.getThrustDirection(adjoint);
@@ -60,19 +57,17 @@ class PenalizedCartesianFuelCostTest {
     @ParameterizedTest
     @ValueSource(doubles = {-2, 2})
     void testExceptionConstructor(final double outOfBoundsEpsilon) {
-        // GIVEN
-        final EventDetectionSettings mockedDetectionSettings = Mockito.mock(EventDetectionSettings.class);
+        // GIVEN outOfBoundsEpsilon
         // WHEN & THEN
         final OrekitException exception = Assertions.assertThrows(OrekitException.class,
-                () -> new TestPenalizedCost(1, outOfBoundsEpsilon, mockedDetectionSettings));
+                () -> new TestPenalizedCost(1, outOfBoundsEpsilon));
         Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, exception.getSpecifier());
     }
 
     private static class TestPenalizedCost extends PenalizedCartesianFuelCost {
 
-        protected TestPenalizedCost(double maximumThrustMagnitude,
-                                    double epsilon, EventDetectionSettings eventDetectionSettings) {
-            super("", 0., maximumThrustMagnitude, epsilon, eventDetectionSettings);
+        protected TestPenalizedCost(double maximumThrustMagnitude, double epsilon) {
+            super("", 0., maximumThrustMagnitude, epsilon);
         }
 
         @Override
