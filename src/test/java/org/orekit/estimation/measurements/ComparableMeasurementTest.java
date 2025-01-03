@@ -79,7 +79,9 @@ public class ComparableMeasurementTest {
 
         // Sorted by date by default
         Assertions.assertEquals(pv.compareTo(azel), -1);
+        Assertions.assertEquals(azel.compareTo(pv), +1);
         Assertions.assertEquals(range.compareTo(pv2), +1);
+        Assertions.assertEquals(pv2.compareTo(range), -1);
 
         // Same date but different measurement - "bigger" measurement after "smaller" one
         Assertions.assertEquals(range.compareTo(azel), -1);
@@ -89,9 +91,7 @@ public class ComparableMeasurementTest {
         Assertions.assertEquals(pv.compareTo(pv3), -1);
         Assertions.assertEquals(pv3.compareTo(pv), +1);
 
-        // Same date, same size, same values - Arbitrary order, always return -1
-        Assertions.assertEquals(pv.compareTo(pv2), -1);
-        Assertions.assertEquals(pv2.compareTo(pv), -1);
-
+        // Same date, same size, same values. Likely non-zero, but may be zero.
+        Assertions.assertEquals(pv.compareTo(pv2), -pv2.compareTo(pv));
     }
 }
