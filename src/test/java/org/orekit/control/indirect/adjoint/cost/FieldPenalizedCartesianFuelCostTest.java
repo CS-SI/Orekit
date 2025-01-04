@@ -18,15 +18,12 @@ package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64;
-import org.hipparchus.util.Binary64Field;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.FieldEventDetectionSettings;
 
 class FieldPenalizedCartesianFuelCostTest {
 
@@ -34,13 +31,10 @@ class FieldPenalizedCartesianFuelCostTest {
     @ValueSource(doubles = {-2, 2})
     void testExceptionConstructor(final double epsilon) {
         // GIVEN
-        final Binary64 magnitude = Binary64.ONE;
-        final FieldEventDetectionSettings<Binary64> expectedDetectionSettings = new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
-                EventDetectionSettings.getDefaultEventDetectionSettings());
-        // WHEN & THEN
+        final Binary64 magnitude = Binary64.ONE;        // WHEN & THEN
         final Binary64 outOfBoundsEpsilon = magnitude.newInstance(epsilon);
         final OrekitException exception = Assertions.assertThrows(OrekitException.class,
-                () -> new TestPenalizedCost(magnitude, outOfBoundsEpsilon, expectedDetectionSettings));
+                () -> new TestPenalizedCost(magnitude, outOfBoundsEpsilon));
         Assertions.assertEquals(OrekitMessages.INVALID_PARAMETER_RANGE, exception.getSpecifier());
     }
 
@@ -49,21 +43,17 @@ class FieldPenalizedCartesianFuelCostTest {
         // GIVEN
         final Binary64 expectedMagnitude = Binary64.ONE;
         final Binary64 expectedEpsilon = Binary64.ZERO;
-        final FieldEventDetectionSettings<Binary64> expectedDetectionSettings = new FieldEventDetectionSettings<>(Binary64Field.getInstance(),
-                EventDetectionSettings.getDefaultEventDetectionSettings());
         // WHEN
-        final TestPenalizedCost penalizedCost = new TestPenalizedCost(expectedMagnitude, expectedEpsilon, expectedDetectionSettings);
+        final TestPenalizedCost penalizedCost = new TestPenalizedCost(expectedMagnitude, expectedEpsilon);
         // THEN
         Assertions.assertEquals(expectedEpsilon, penalizedCost.getEpsilon());
         Assertions.assertEquals(expectedMagnitude, penalizedCost.getMaximumThrustMagnitude());
-        Assertions.assertEquals(expectedDetectionSettings, penalizedCost.getEventDetectionSettings());
     }
 
     private static class TestPenalizedCost extends FieldPenalizedCartesianFuelCost<Binary64> {
 
-        protected TestPenalizedCost(Binary64 maximumThrustMagnitude,
-                                    Binary64 epsilon, FieldEventDetectionSettings<Binary64> eventDetectionSettings) {
-            super("", Binary64.ZERO, maximumThrustMagnitude, epsilon, eventDetectionSettings);
+        protected TestPenalizedCost(Binary64 maximumThrustMagnitude, Binary64 epsilon) {
+            super("", Binary64.ZERO, maximumThrustMagnitude, epsilon);
         }
 
         @Override

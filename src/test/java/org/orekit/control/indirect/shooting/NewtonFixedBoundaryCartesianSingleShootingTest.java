@@ -519,4 +519,61 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         return propagator.propagate(terminalDate);
     }
 
+    @Test
+    void testQuadraticContinuation() {
+        // GIVEN
+        final double tolerancePosition = 1e-0;
+        final double toleranceVelocity = 1e-4;
+        final CartesianBoundaryConditionChecker conditionChecker = new NormBasedCartesianConditionChecker(10,
+                tolerancePosition, toleranceVelocity);
+        final Orbit initialOrbit = createSomeInitialOrbit(2e6);
+        final double timeOfFlight = 1e4;
+        final Orbit terminalOrbit = createTerminalBoundary(initialOrbit, timeOfFlight);
+        final FixedTimeBoundaryOrbits boundaryOrbits = new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit);
+        final double flowRateFactor = 1e-2;
+        final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory
+                .getDormandPrince54IntegratorSettings(1e-1, 1e2,  ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE)));
+        final double maximumThrust = 1e1;
+        final ShootingPropagationSettings propagationSettings = createShootingSettingsForQuadraticPenalty(initialOrbit, flowRateFactor,
+                maximumThrust, 1., integrationSettings);
+        final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
+                boundaryOrbits, conditionChecker);
+        final double toleranceMassAdjoint = 1e-10;
+        shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
+        final double mass = 2e3;
+        final double[] guess = new double[]{-1.3144902474363005, -7.770298698677809, -5.328110916176676,
+                -275.6031033370172, -3049.432734131893, -1560.1101732794737, -172.14906242868724};
+        ShootingBoundaryOutput output = shooting.solve(mass, guess);
+        // WHEN & THEN
+        for (double epsilon = 0.9; epsilon > 0.7; epsilon -= 0.05) {
+            double[] previousAdjoint = output.getInitialState().getAdditionalState("adjoint");
+            final ShootingPropagationSettings propagationSettingsWithNewEpsilon = createShootingSettingsForQuadraticPenalty(initialOrbit,
+                    flowRateFactor, maximumThrust, epsilon, propagationSettings.getIntegrationSettings());
+            final NewtonFixedBoundaryCartesianSingleShooting shootingWithNewEpsilon = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettingsWithNewEpsilon,
+                    boundaryOrbits, conditionChecker);
+            output = shootingWithNewEpsilon.solve(mass, previousAdjoint);
+            Assertions.assertTrue(output.isConverged());
+        }
+    }
+
+    private static ShootingPropagationSettings createShootingSettingsForQuadraticPenalty(final Orbit initialOrbit,
+                                                                                         final double massFlowRate,
+                                                                                         final double maximumThrustMagnitude,
+                                                                                         final double epsilon,
+                                                                                         final ShootingIntegrationSettings integrationSettings) {
+        final NewtonianAttraction newtonianAttraction = new NewtonianAttraction(initialOrbit.getMu());
+        final Frame j2Frame = initialOrbit.getFrame(); // approximation for speed
+        final J2OnlyPerturbation j2OnlyPerturbation = new J2OnlyPerturbation(initialOrbit.getMu(),
+                Constants.EGM96_EARTH_EQUATORIAL_RADIUS, -Constants.EGM96_EARTH_C20, j2Frame);
+        final List<ForceModel> forceModelList = new ArrayList<>();
+        forceModelList.add(newtonianAttraction);
+        forceModelList.add(j2OnlyPerturbation);
+        final CartesianAdjointKeplerianTerm keplerianTerm = new CartesianAdjointKeplerianTerm(initialOrbit.getMu());
+        final CartesianAdjointJ2Term j2Term = new CartesianAdjointJ2Term(j2OnlyPerturbation.getMu(), j2OnlyPerturbation.getrEq(),
+                j2OnlyPerturbation.getJ2(initialOrbit.getDate()), j2OnlyPerturbation.getFrame());
+        return new ShootingPropagationSettings(forceModelList,
+                CartesianAdjointDynamicsProviderFactory.buildQuadraticPenaltyFuelCostProvider("adjoint",
+                        massFlowRate, maximumThrustMagnitude, epsilon, EventDetectionSettings.getDefaultEventDetectionSettings(),
+                        keplerianTerm, j2Term), integrationSettings);
+    }
 }

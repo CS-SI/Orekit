@@ -42,15 +42,15 @@ import org.orekit.utils.PVCoordinates;
 import java.util.List;
 import java.util.stream.Collectors;
 
-class FieldQuadraticallyPenalizedCartesianFuelTest {
+class FieldQuadraticPenaltyCartesianFuelTest {
 
     private static final String ADJOINT_NAME = "adjoint";
 
     @ParameterizedTest
-    @ValueSource(doubles = {1, 2, 10, 100, 1000})
+    @ValueSource(doubles = {0, 0.1, 0.5, 0.9})
     void testEvaluateFieldPenaltyFunction(final double norm) {
         // GIVEN
-        final FieldQuadraticallyPenalizedCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticallyPenalizedCartesianFuel<>(
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticPenaltyCartesianFuel<>(
                 ADJOINT_NAME, Binary64.ONE, Binary64.PI, Binary64.ZERO);
         // WHEN
         final Binary64 actualPenalty = penalizedCartesianFuel.evaluateFieldPenaltyFunction(Binary64.ONE.newInstance(norm));
@@ -62,7 +62,7 @@ class FieldQuadraticallyPenalizedCartesianFuelTest {
     @ValueSource(doubles = {1e-3, 1e-2, 0.5, 0.999})
     void testGetFieldHamiltonianContribution(final double epsilon) {
         // GIVEN
-        final FieldQuadraticallyPenalizedCartesianFuel<Binary64> fieldCost = new FieldQuadraticallyPenalizedCartesianFuel<>(
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> fieldCost = new FieldQuadraticPenaltyCartesianFuel<>(
                 ADJOINT_NAME, Binary64.ONE, Binary64.PI, new Binary64(epsilon));
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6, 7};
         final Binary64[] fieldAdjoint = MathArrays.buildArray(Binary64Field.getInstance(), adjoint.length);
@@ -73,14 +73,14 @@ class FieldQuadraticallyPenalizedCartesianFuelTest {
         // WHEN
         final Binary64 actualPenalty = fieldCost.getFieldHamiltonianContribution(fieldAdjoint, mass);
         // THEN
-        final QuadraticallyPenalizedCartesianFuel cost = fieldCost.toCartesianCost();
+        final QuadraticPenaltyCartesianFuel cost = fieldCost.toCartesianCost();
         Assertions.assertEquals(cost.getHamiltonianContribution(adjoint, mass.getReal()), actualPenalty.getReal());
     }
 
     @Test
     void testGetFieldEventDetectors() {
         // GIVEN
-        final FieldQuadraticallyPenalizedCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticallyPenalizedCartesianFuel<>(
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticPenaltyCartesianFuel<>(
                 ADJOINT_NAME, Binary64.ONE, Binary64.PI, new Binary64(0.5));
         // WHEN
         final List<FieldEventDetector<Binary64>> actualDetectors = penalizedCartesianFuel
@@ -101,7 +101,7 @@ class FieldQuadraticallyPenalizedCartesianFuelTest {
         final Binary64 massFlowRateFactor = new Binary64(1);
         final Binary64 maximumThrustMagnitude = new Binary64(10);
         final Binary64 epsilon = new Binary64(1e-6);
-        final FieldQuadraticallyPenalizedCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticallyPenalizedCartesianFuel<>(ADJOINT_NAME,
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticPenaltyCartesianFuel<>(ADJOINT_NAME,
                 massFlowRateFactor, maximumThrustMagnitude, epsilon);
         final Binary64 mass = new Binary64(100);
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6, 7};
@@ -123,7 +123,7 @@ class FieldQuadraticallyPenalizedCartesianFuelTest {
         final Binary64 massFlowRateFactor = new Binary64(1);
         final Binary64 maximumThrustMagnitude = new Binary64(10);
         final Binary64 epsilon = Binary64.ONE;
-        final FieldQuadraticallyPenalizedCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticallyPenalizedCartesianFuel<>(ADJOINT_NAME,
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticPenaltyCartesianFuel<>(ADJOINT_NAME,
                 massFlowRateFactor, maximumThrustMagnitude, epsilon);
         final Binary64 mass = new Binary64(100);
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6, 7};
@@ -142,10 +142,10 @@ class FieldQuadraticallyPenalizedCartesianFuelTest {
     @Test
     void testToCartesianCost() {
         // GIVEN
-        final FieldQuadraticallyPenalizedCartesianFuel<Binary64> fieldCost = new FieldQuadraticallyPenalizedCartesianFuel<>(
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> fieldCost = new FieldQuadraticPenaltyCartesianFuel<>(
                 ADJOINT_NAME, Binary64.ONE, Binary64.PI, Binary64.ZERO);
         // WHEN
-        final QuadraticallyPenalizedCartesianFuel cost = fieldCost.toCartesianCost();
+        final QuadraticPenaltyCartesianFuel cost = fieldCost.toCartesianCost();
         // THEN
         Assertions.assertEquals(fieldCost.getEpsilon().getReal(), cost.getEpsilon());
         Assertions.assertEquals(fieldCost.getMaximumThrustMagnitude().getReal(), cost.getMaximumThrustMagnitude());
@@ -161,7 +161,7 @@ class FieldQuadraticallyPenalizedCartesianFuelTest {
         final double maximumThrustMagnitude = 1e-3;
         final double epsilon = 0.5;
         final Binary64 zero = Binary64.ZERO;
-        final FieldQuadraticallyPenalizedCartesianFuel<Binary64> fieldCost = new FieldQuadraticallyPenalizedCartesianFuel<>(ADJOINT_NAME,
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> fieldCost = new FieldQuadraticPenaltyCartesianFuel<>(ADJOINT_NAME,
                 zero.newInstance(massFlowRateFactor), zero.newInstance(maximumThrustMagnitude), zero.newInstance(epsilon));
         final SpacecraftState state = buildState(mass);
         final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(Binary64Field.getInstance(), state);
@@ -169,7 +169,7 @@ class FieldQuadraticallyPenalizedCartesianFuelTest {
         // WHEN
         final FieldCombinedDerivatives<Binary64> actualDerivatives = derivativesProvider.combinedDerivatives(fieldState);
         // THEN
-        final QuadraticallyPenalizedCartesianFuel cost = new QuadraticallyPenalizedCartesianFuel(ADJOINT_NAME,
+        final QuadraticPenaltyCartesianFuel cost = new QuadraticPenaltyCartesianFuel(ADJOINT_NAME,
                 massFlowRateFactor, maximumThrustMagnitude, epsilon);
         final CombinedDerivatives expectedDerivatives = new CartesianAdjointDerivativesProvider(cost)
                 .combinedDerivatives(state);
