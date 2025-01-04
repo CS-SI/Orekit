@@ -195,7 +195,7 @@ public abstract class NeQuickModel implements IonosphericModel {
         // Electron density
         final double n;
         if (hInKm <= parameters.getHmF2()) {
-            n = bottomElectronDensity(hInKm, clipH(hInKm), parameters);
+            n = bottomElectronDensity(hInKm, parameters);
         } else {
             n = topElectronDensity(hInKm, parameters);
         }
@@ -227,7 +227,7 @@ public abstract class NeQuickModel implements IonosphericModel {
         // Electron density
         final T n;
         if (hInKm.getReal() <= parameters.getHmF2().getReal()) {
-            n = bottomElectronDensity(hInKm, clipH(hInKm), parameters);
+            n = bottomElectronDensity(hInKm, parameters);
         } else {
             n = topElectronDensity(hInKm, parameters);
         }
@@ -237,12 +237,10 @@ public abstract class NeQuickModel implements IonosphericModel {
     /**
      * Computes the electron density of the bottomside.
      * @param h height in km
-     * @param clippedH clipped height for computing exponential arguments
      * @param parameters NeQuick model parameters
      * @return the electron density N in m⁻³
      */
-    private double bottomElectronDensity(final double h, final double clippedH,
-                                         final NeQuickParameters parameters) {
+    private double bottomElectronDensity(final double h, final NeQuickParameters parameters) {
 
         // Select the relevant B parameter for the current height (Eq. 109 and 110)
         final double be;
@@ -265,11 +263,12 @@ public abstract class NeQuickModel implements IonosphericModel {
         };
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
+        final double clippedH = clipH(h);
         final double   exp   = clipExp(10.0 / (1.0 + FastMath.abs(clippedH - parameters.getHmF2())));
         final double[] arguments = new double[3];
-        arguments[0] = (clippedH - parameters.getHmF2()) / bf2;
-        arguments[1] = ((clippedH - parameters.getHmF1()) / bf1) * exp;
-        arguments[2] = ((clippedH - parameters.getHmE()) / be) * exp;
+        arguments[0] = fixLowHArg((clippedH - parameters.getHmF2()) / bf2, h);
+        arguments[1] = fixLowHArg(((clippedH - parameters.getHmF1()) / bf1) * exp, h);
+        arguments[2] = fixLowHArg(((clippedH - parameters.getHmE()) / be) * exp, h);
 
         // S coefficients
         final double[] s = new double[3];
@@ -310,11 +309,10 @@ public abstract class NeQuickModel implements IonosphericModel {
      * Computes the electron density of the bottomside.
      * @param <T> type of the elements
      * @param h height in km
-     * @param clippedH clipped height for computing exponential arguments
      * @param parameters NeQuick model parameters
      * @return the electron density N in m⁻³
      */
-    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final T h, final T clippedH,
+    private <T extends CalculusFieldElement<T>> T bottomElectronDensity(final T h,
                                                                         final FieldNeQuickParameters<T> parameters) {
 
         // Zero and One
@@ -344,11 +342,12 @@ public abstract class NeQuickModel implements IonosphericModel {
         ct[2] = be.reciprocal();
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
+        final T clippedH = clipH(h);
         final T   exp   = clipExp(FastMath.abs(clippedH.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
         final T[] arguments = MathArrays.buildArray(field, 3);
-        arguments[0] = clippedH.subtract(parameters.getHmF2()).divide(bf2);
-        arguments[1] = clippedH.subtract(parameters.getHmF1()).divide(bf1).multiply(exp);
-        arguments[2] = clippedH.subtract(parameters.getHmE()).divide(be).multiply(exp);
+        arguments[0] = fixLowHArg(clippedH.subtract(parameters.getHmF2()).divide(bf2), h);
+        arguments[1] = fixLowHArg(clippedH.subtract(parameters.getHmF1()).divide(bf1).multiply(exp), h);
+        arguments[2] = fixLowHArg(clippedH.subtract(parameters.getHmE()).divide(be).multiply(exp), h);
 
         // S coefficients
         final T[] s = MathArrays.buildArray(field, 3);
@@ -399,7 +398,8 @@ public abstract class NeQuickModel implements IonosphericModel {
 
         // Arguments deltaH and z (Eq. 124 and 125)
         final double deltaH = h - parameters.getHmF2();
-        final double z      = deltaH / (parameters.getH0() * (1.0 + (r * g * deltaH) / (r * parameters.getH0() + g * deltaH)));
+        final double h0     = computeH0(parameters);
+        final double z      = deltaH / (h0 * (1.0 + (r * g * deltaH) / (r * h0 + g * deltaH)));
 
         // Exponential (Eq. 126)
         final double ee = clipExp(z);
@@ -429,7 +429,8 @@ public abstract class NeQuickModel implements IonosphericModel {
 
         // Arguments deltaH and z (Eq. 124 and 125)
         final T deltaH = h.subtract(parameters.getHmF2());
-        final T z      = deltaH.divide(parameters.getH0().multiply(deltaH.multiply(r).multiply(g).divide(parameters.getH0().multiply(r).add(deltaH.multiply(g))).add(1.0)));
+        final T h0     = computeH0(parameters);
+        final T z      = deltaH.divide(h0.multiply(deltaH.multiply(r).multiply(g).divide(h0.multiply(r).add(deltaH.multiply(g))).add(1.0)));
 
         // Exponential (Eq. 126)
         final T ee = clipExp(z);
@@ -527,9 +528,6 @@ public abstract class NeQuickModel implements IonosphericModel {
 
     /**
      * This method allows the computation of the Slant Total Electron Content (STEC).
-     * <p>
-     * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of the reference document.
-     * </p>
      *
      * @param dateTime current date
      * @param ray      ray-perigee parameters
@@ -539,9 +537,6 @@ public abstract class NeQuickModel implements IonosphericModel {
 
     /**
      * This method allows the computation of the Slant Total Electron Content (STEC).
-     * <p>
-     * This method follows the Gauss algorithm exposed in section 2.5.8.2.8 of the reference document.
-     * </p>
      *
      * @param <T>      type of the field elements
      * @param dateTime current date
@@ -555,6 +550,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      *
      * @param hInKm height in kilometers
      * @return clipped height
+     * @since 13.0
      */
     abstract double clipH(double hInKm);
 
@@ -564,6 +560,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param <T>   type of the field elements
      * @param hInKm height in kilometers
      * @return clipped height
+     * @since 13.0
      */
     abstract <T extends CalculusFieldElement<T>> T clipH(T hInKm);
 
@@ -571,8 +568,43 @@ public abstract class NeQuickModel implements IonosphericModel {
      * Check if Chapman parameters should be applied.
      *
      * @param hInKm height in kilometers
-     * @return true if Chapman parameters should be applie
+     * @return true if Chapman parameters should be applied
+     * @since 13.0
      */
     abstract boolean applyChapmanParameters(double hInKm);
+
+    /**
+     * Fix arguments for lao altitudes.
+     * @param arg argument of the exponential
+     * @param h height in km
+     * @return fixed argument
+     * @since 13.0
+     */
+    abstract double fixLowHArg(double arg, double h);
+
+    /**
+     * Fix arguments for lao altitudes.
+     * @param <T>   type of the field elements
+     * @param arg argument of the exponential
+     * @param h height in km
+     * @return fixed argument
+     * @since 13.0
+     */
+    abstract <T extends CalculusFieldElement<T>> T fixLowHArg(T arg, T h);
+
+    /**
+     * Compute topside thickness parameter.
+     * @param parameters NeQuick model parameters
+     * @since 13.0
+     */
+    abstract double computeH0(NeQuickParameters parameters);
+
+    /**
+     * Compute topside thickness parameter.
+     * @param <T>   type of the field elements
+     * @param parameters NeQuick model parameters
+     * @since 13.0
+     */
+    abstract <T extends CalculusFieldElement<T>> T computeH0(FieldNeQuickParameters<T> parameters);
 
 }

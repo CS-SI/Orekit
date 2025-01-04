@@ -42,6 +42,12 @@ public class NeQuickItu extends NeQuickModel {
     /** Two thousands kilometer height. */
     private static final double H_2000 = 2000000.0;
 
+    /** H0 (km). */
+    private static final double H0 = 90.0;
+
+    /** HD (km). */
+    private static final double HD = 5.0;
+
     /** Starting number of points for integration. */
     private static final int N_START = 8;
 
@@ -168,10 +174,10 @@ public class NeQuickItu extends NeQuickModel {
                 final double modip = ItuHolder.INSTANCE.computeMODIP(gp.getLatitude(), gp.getLongitude());
                 final double ed =
                     electronDensity(dateTime, modip, f107, gp.getLatitude(), gp.getLongitude(), gp.getAltitude());
-                System.out.println(i + " " + ed);
                 sum += ed;
             }
 
+            System.out.println("      sum: " + sum);
             gInt1 = gInt2;
             gInt2 = sum * 0.5 * segment.getInterval();
             if (FastMath.abs(gInt1 - gInt2) <= FastMath.abs(gInt1 * eps)) {
@@ -245,6 +251,41 @@ public class NeQuickItu extends NeQuickModel {
     @Override
     boolean applyChapmanParameters(final double hInKm) {
         return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    double fixLowHArg(final double arg, final double h) {
+        return h < H0 ? arg * (HD + H0 - h) / HD : arg;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    <T extends CalculusFieldElement<T>> T fixLowHArg(final T arg, final T h) {
+        return h.getReal() < H0 ? arg.multiply(h.negate().add(HD + H0)).divide(HD) : arg;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    double computeH0(final NeQuickParameters parameters) {
+        final double b2k = -0.0538  * parameters.getFoF2() -
+                            0.00664 * parameters.getHmF2() +
+                            0.113   * parameters.getHmF2() / parameters.getB2Bot() +
+                            0.00257 * parameters.getAzr() +
+                            3.22;
+      return parameters.getB2Bot() * parameters.join(b2k, 1.0, 2.0, b2k - 1.0);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    <T extends CalculusFieldElement<T>> T computeH0(final FieldNeQuickParameters<T> parameters) {
+        final T b2k = parameters.getFoF2().multiply(-0.0538).
+                      subtract(parameters.getHmF2().multiply(0.00664)).
+                      add(parameters.getHmF2().multiply(0.113).divide(parameters.getB2Bot())).
+                      add(parameters.getAzr().multiply(0.00257)).
+                      add (3.22);
+      return parameters.getB2Bot().multiply(parameters.join(b2k, b2k.newInstance(1.0),
+                                                            b2k.newInstance(2.0), b2k.subtract(1.0)));
     }
 
     /** Holder for the ITU modip singleton.

@@ -40,6 +40,21 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;
 
+    /** Current date time components.
+     * @since 13.0
+     */
+    private final DateTimeComponents dateTime;
+
+    /** Effective sunspot number.
+     * @since 13.0
+     */
+    private final T azr;
+
+    /** F2 layer critical frequency.
+     * @since 13.0
+     */
+    private final T foF2;
+
     /** F2 layer maximum density. */
     private final T nmF2;
 
@@ -67,9 +82,6 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     /** E layer bottom thickness parameter [km]. */
     private final T beBot;
 
-    /** topside thickness parameter [km]. */
-    private final T h0;
-
     /** Layer amplitudes. */
     private final T[] amplitudes;
 
@@ -90,8 +102,11 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         // Zero
         final T zero = latitude.getField().getZero();
 
+        this.dateTime = dateTime;
+
         // Effective sunspot number (Eq. 19)
-        final T azr = FastMath.sqrt(az.subtract(63.7).multiply(1123.6).add(167273.0)).subtract(408.99);
+        azr = FastMath.sqrt(az.subtract(63.7).multiply(1123.6).add(167273.0)).subtract(408.99);
+
         // Date and Time components
         final DateComponents date = dateTime.getDate();
         final TimeComponents time = dateTime.getTime();
@@ -115,7 +130,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final T[] cm3 = computeCm3(flattenFm3, azr, scT);
         // F2 layer critical frequency in MHz
         final T[] scL = sinCos(longitude, 8);
-        final T foF2 = computefoF2(modip, cf2, latitude, scL);
+        this.foF2 = computefoF2(modip, cf2, latitude, scL);
         // Maximum Usable Frequency factor
         final T mF2  = computeMF2(modip, cm3, latitude, scL);
         // F2 layer maximum density in 10^11 m-3
@@ -147,8 +162,33 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         // Layer amplitude coefficients
         this.amplitudes = computeLayerAmplitudes(nmE, nmF1, foF1);
 
-        // Topside thickness parameter
-        this.h0 = computeH0(date.getMonth(), azr);
+    }
+
+    /**
+     * Get current date time components.
+     * @return current date time components
+     * @since 13.0
+     */
+    public DateTimeComponents getDateTime() {
+        return dateTime;
+    }
+
+    /**
+     * Get effective sunspot number.
+     * @return effective sunspot number
+     * @since 13.0
+     */
+    public T getAzr() {
+        return azr;
+    }
+
+    /**
+     * Get F2 layer critical frequency.
+     * @return F2 layer critical frequency
+     * @since 13.0
+     */
+    public T getFoF2() {
+        return foF2;
     }
 
     /**
@@ -236,14 +276,6 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      */
     public T[] getLayerAmplitudes() {
         return amplitudes.clone();
-    }
-
-    /**
-     * Get the topside thickness parameter H0.
-     * @return H0 in km
-     */
-    public T getH0() {
-        return h0;
     }
 
     /**
@@ -599,45 +631,6 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * This method computes the topside thickness parameter H0.
-     *
-     * @param month current month
-     * @param azr effective sunspot number
-     * @return H0 in km
-     */
-    private T computeH0(final int month, final T azr) {
-
-        // One
-        final T one = azr.getField().getOne();
-
-        // Auxiliary parameter ka (Eq. 99 and 100)
-        final T ka;
-        if (month > 3 && month < 10) {
-            // month = 4,5,6,7,8,9
-            ka = azr.multiply(0.014).add(hmF2.multiply(0.008)).negate().add(6.705);
-        } else {
-            // month = 1,2,3,10,11,12
-            final T ratio = hmF2.divide(b2Bot);
-            ka = ratio.multiply(ratio).multiply(0.097).add(nmF2.multiply(0.153)).add(-7.77);
-        }
-
-        // Auxiliary parameter kb (Eq. 101 and 102)
-        T kb = join(ka, one.newInstance(2.0), one, ka.subtract(2.0));
-        kb = join(one.newInstance(8.0), kb, one, kb.subtract(8.0));
-
-        // Auxiliary parameter Ha (Eq. 103)
-        final T hA = kb.multiply(b2Bot);
-
-        // Auxiliary parameters x and v (Eq. 104 and 105)
-        final T x = hA.subtract(150.0).multiply(0.01);
-        final T v = x.multiply(0.041163).subtract(0.183981).multiply(x).add(1.424472);
-
-        // Topside thickness parameter (Eq. 106)
-        return hA.divide(v);
-
-    }
-
-    /**
      * A clipped exponential function.
      * <p>
      * This function, describe in section F.2.12.2 of the reference document, is
@@ -670,8 +663,7 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * @param dX x value
      * @return the computed value
      */
-    private T join(final T dF1, final T dF2,
-                   final T dA, final T dX) {
+    T join(final T dF1, final T dF2, final T dA, final T dX) {
         final T ee = clipExp(dA.multiply(dX));
         return dF1.multiply(ee).add(dF2).divide(ee.add(1.0));
     }

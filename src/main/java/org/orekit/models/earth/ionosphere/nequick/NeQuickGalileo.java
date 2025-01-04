@@ -252,6 +252,87 @@ public class NeQuickGalileo extends NeQuickModel {
         return hInKm < 100.0;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    double fixLowHArg(final double arg, final double h) {
+        return arg;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    <T extends CalculusFieldElement<T>> T fixLowHArg(final T arg, final T h) {
+        return arg;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    double computeH0(final NeQuickParameters parameters) {
+
+        final int month = parameters.getDateTime().getDate().getMonth();
+
+        // Auxiliary parameter ka (Eq. 99 and 100)
+        final double ka;
+        if (month > 3 && month < 10) {
+            // month = 4,5,6,7,8,9
+            ka = 6.705 - 0.014 * parameters.getAzr() - 0.008 * parameters.getHmF2();
+        } else {
+            // month = 1,2,3,10,11,12
+            final double ratio = parameters.getHmF2() / parameters.getB2Bot();
+            ka = -7.77 + 0.097 * ratio * ratio + 0.153 * parameters.getNmF2();
+        }
+
+        // Auxiliary parameter kb (Eq. 101 and 102)
+        double kb = parameters.join(ka, 2.0, 1.0, ka - 2.0);
+        kb = parameters.join(8.0, kb, 1.0, kb - 8.0);
+
+        // Auxiliary parameter Ha (Eq. 103)
+        final double hA = kb * parameters.getB2Bot();
+
+        // Auxiliary parameters x and v (Eq. 104 and 105)
+        final double x = 0.01 * (hA - 150.0);
+        final double v = (0.041163 * x - 0.183981) * x + 1.424472;
+
+        // Topside thickness parameter (Eq. 106)
+        return hA / v;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    <T extends CalculusFieldElement<T>> T computeH0(final FieldNeQuickParameters<T> parameters) {
+
+        final int month = parameters.getDateTime().getDate().getMonth();
+
+        // One
+        final T one = parameters.getAzr().getField().getOne();
+
+        // Auxiliary parameter ka (Eq. 99 and 100)
+        final T ka;
+        if (month > 3 && month < 10) {
+            // month = 4,5,6,7,8,9
+            ka = parameters.getAzr().multiply(0.014).add(parameters.getHmF2().multiply(0.008)).negate().add(6.705);
+        } else {
+            // month = 1,2,3,10,11,12
+            final T ratio = parameters.getHmF2().divide(parameters.getB2Bot());
+            ka = ratio.multiply(ratio).multiply(0.097).add(parameters.getNmF2().multiply(0.153)).add(-7.77);
+        }
+
+        // Auxiliary parameter kb (Eq. 101 and 102)
+        T kb = parameters.join(ka, one.newInstance(2.0), one, ka.subtract(2.0));
+        kb = parameters.join(one.newInstance(8.0), kb, one, kb.subtract(8.0));
+
+        // Auxiliary parameter Ha (Eq. 103)
+        final T hA = kb.multiply(parameters.getB2Bot());
+
+        // Auxiliary parameters x and v (Eq. 104 and 105)
+        final T x = hA.subtract(150.0).multiply(0.01);
+        final T v = x.multiply(0.041163).subtract(0.183981).multiply(x).add(1.424472);
+
+        // Topside thickness parameter (Eq. 106)
+        return hA.divide(v);
+
+    }
+
     /** Holder for the Galileo-specific modip singleton.
      * <p>
      * We use the initialization on demand holder idiom to store the singleton,

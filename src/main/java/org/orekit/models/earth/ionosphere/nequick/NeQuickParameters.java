@@ -38,6 +38,21 @@ public class NeQuickParameters {
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;
 
+    /** Current date time components.
+     * @since 13.0
+     */
+    private final DateTimeComponents dateTime;
+
+    /** Effective sunspot number.
+     * @since 13.0
+     */
+    private final double azr;
+
+    /** F2 layer critical frequency.
+     * @since 13.0
+     */
+    private final double foF2;
+
     /** F2 layer maximum density. */
     private final double nmF2;
 
@@ -65,9 +80,6 @@ public class NeQuickParameters {
     /** E layer bottom thickness parameter [km]. */
     private final double beBot;
 
-    /** topside thickness parameter [km]. */
-    private final double h0;
-
     /** Layer amplitudes. */
     private final double[] amplitudes;
 
@@ -84,8 +96,11 @@ public class NeQuickParameters {
     public NeQuickParameters(final DateTimeComponents dateTime, final double[] flattenF2, final double[] flattenFm3,
                              final double latitude, final double longitude, final double az, final double modip) {
 
+        this.dateTime = dateTime;
+
         // Effective sunspot number (Eq. 19)
-        final double azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;
+        azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;
+
         // Date and Time components
         final DateComponents date = dateTime.getDate();
         final TimeComponents time = dateTime.getTime();
@@ -109,7 +124,7 @@ public class NeQuickParameters {
         final double[] cm3 = computeCm3(flattenFm3, azr, scT);
         // F2 layer critical frequency in MHz
         final double[] scL = sinCos(longitude, 8);
-        final double foF2 = computefoF2(modip, cf2, latitude, scL);
+        this.foF2 = computefoF2(modip, cf2, latitude, scL);
         // Maximum Usable Frequency factor
         final double mF2  = computeMF2(modip, cm3, latitude, scL);
         // F2 layer maximum density in 10^11 m⁻³
@@ -141,11 +156,36 @@ public class NeQuickParameters {
         // Layer amplitude coefficients
         this.amplitudes = computeLayerAmplitudes(nmE, nmF1, foF1);
 
-        // Topside thickness parameter
-        this.h0 = computeH0(date.getMonth(), azr);
     }
 
     /**
+     * Get current date time components.
+     * @return current date time components
+     * @since 13.0
+     */
+    public DateTimeComponents getDateTime() {
+        return dateTime;
+    }
+
+    /**
+     * Get effective sunspot number.
+     * @return effective sunspot number
+     * @since 13.0
+     */
+    public double getAzr() {
+        return azr;
+    }
+
+    /**
+     * Get F2 layer critical frequency.
+     * @return F2 layer critical frequency
+     * @since 13.0
+     */
+    public double getFoF2() {
+        return foF2;
+    }
+
+     /**
      * Get the F2 layer maximum density.
      * @return nmF2
      */
@@ -230,14 +270,6 @@ public class NeQuickParameters {
      */
     public double[] getLayerAmplitudes() {
         return amplitudes.clone();
-    }
-
-    /**
-     * Get the topside thickness parameter H0.
-     * @return H0 in km
-     */
-    public double getH0() {
-        return h0;
     }
 
     /**
@@ -582,42 +614,6 @@ public class NeQuickParameters {
     }
 
     /**
-     * This method computes the topside thickness parameter H0.
-     *
-     * @param month current month
-     * @param azr effective sunspot number
-     * @return H0 in km
-     */
-    private double computeH0(final int month, final double azr) {
-
-        // Auxiliary parameter ka (Eq. 99 and 100)
-        final double ka;
-        if (month > 3 && month < 10) {
-            // month = 4,5,6,7,8,9
-            ka = 6.705 - 0.014 * azr - 0.008 * hmF2;
-        } else {
-            // month = 1,2,3,10,11,12
-            final double ratio = hmF2 / b2Bot;
-            ka = -7.77 + 0.097 * ratio * ratio + 0.153 * nmF2;
-        }
-
-        // Auxiliary parameter kb (Eq. 101 and 102)
-        double kb = join(ka, 2.0, 1.0, ka - 2.0);
-        kb = join(8.0, kb, 1.0, kb - 8.0);
-
-        // Auxiliary parameter Ha (Eq. 103)
-        final double hA = kb * b2Bot;
-
-        // Auxiliary parameters x and v (Eq. 104 and 105)
-        final double x = 0.01 * (hA - 150.0);
-        final double v = (0.041163 * x - 0.183981) * x + 1.424472;
-
-        // Topside thickness parameter (Eq. 106)
-        return hA / v;
-
-    }
-
-    /**
      * A clipped exponential function.
      * <p>
      * This function, describe in section F.2.12.2 of the reference document, is
@@ -649,8 +645,7 @@ public class NeQuickParameters {
      * @param dX x value
      * @return the computed value
      */
-    private double join(final double dF1, final double dF2,
-                        final double dA, final double dX) {
+    double join(final double dF1, final double dF2, final double dA, final double dX) {
         final double ee = clipExp(dA * dX);
         return (dF1 * ee + dF2) / (ee + 1.0);
     }
