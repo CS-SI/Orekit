@@ -51,16 +51,29 @@ public class FieldLogarithmicBarrierCartesianFuel<T extends CalculusFieldElement
     /** {@inheritDoc} */
     @Override
     public FieldVector3D<T> getFieldThrustAccelerationVector(final T[] adjointVariables, final T mass) {
-        final T twoEpsilon = getEpsilon().multiply(2);
-        final T otherTerm = getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(getMassFlowRateFactor().multiply(adjointVariables[6])).subtract(1);
-        final T thrustMagnitude = twoEpsilon.divide(twoEpsilon.add(otherTerm).add(FastMath.sqrt(otherTerm.square().add(twoEpsilon.square()))));
-        return getFieldThrustDirection(adjointVariables).scalarMultiply(thrustMagnitude.divide(mass));
+        final T thrustForceMagnitude = getThrustForceMagnitude(adjointVariables, mass);
+        return getFieldThrustDirection(adjointVariables).scalarMultiply(thrustForceMagnitude.divide(mass));
     }
 
     /** {@inheritDoc} */
     @Override
     public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
-        adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables).multiply(getMaximumThrustMagnitude()).divide(mass.square()));
+        adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables)
+                .multiply(getThrustForceMagnitude(adjointVariables, mass)).divide(mass.square()));
+    }
+
+    /**
+     * Computes the Euclidean norm of the thrust force.
+     * @param adjointVariables adjoint variables
+     * @param mass mass
+     * @return thrust force magnitude
+     */
+    private T getThrustForceMagnitude(final T[] adjointVariables, final T mass) {
+        final T twoEpsilon = getEpsilon().multiply(2);
+        final T otherTerm = getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(getMassFlowRateFactor()
+                .multiply(adjointVariables[6])).subtract(1);
+        return twoEpsilon.multiply(getMaximumThrustMagnitude())
+                .divide(twoEpsilon.add(otherTerm).add(FastMath.sqrt(otherTerm.square().add(twoEpsilon.square()))));
     }
 
     /** {@inheritDoc} */

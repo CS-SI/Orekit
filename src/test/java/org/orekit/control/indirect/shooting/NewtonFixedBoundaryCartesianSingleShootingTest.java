@@ -71,6 +71,8 @@ import java.util.List;
 
 class NewtonFixedBoundaryCartesianSingleShootingTest {
 
+    private final static double THRESHOLD_LU_DECOMPOSITION = 1e-11;
+
     @BeforeEach
     public void setUp() {
         Utils.setDataRoot("regular-data");
@@ -125,6 +127,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(60.));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         shooting.setScalePositionDefects(1.);
         shooting.setScaleVelocityDefects(1.);
         final double mass = 1e3;
@@ -184,6 +187,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 convertToAbsolutePVCoordinates(terminalOrbit));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryStates, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final ShootingBoundaryOutput otherOutput = shooting.solve(mass, guess);
         Assertions.assertEquals(otherOutput.getIterationCount(), output.getIterationCount());
@@ -214,6 +218,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                         ToleranceProvider.of(CartesianToleranceProvider.of(1e-3, 1e-6, CartesianToleranceProvider.DEFAULT_ABSOLUTE_MASS_TOLERANCE))));
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1e3;
@@ -227,6 +232,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 flowRateFactor, thrustBound, propagationSettings.getIntegrationSettings());
         final NewtonFixedBoundaryCartesianSingleShooting shootingBoundedEnergy = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettingsBoundedEnergy,
                 boundaryOrbits, conditionChecker);
+        shootingBoundedEnergy.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double[] unboundedEnergyAdjoint = output.getInitialState().getAdditionalState("adjoint");
         double[] guessBoundedEnergy = unboundedEnergyAdjoint.clone();
         final ShootingBoundaryOutput outputBoundedEnergy = shootingBoundedEnergy.solve(mass, guessBoundedEnergy);
@@ -244,6 +250,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(massFlowRateFactor,
                 new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit),
                 ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(100.));
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1.;
@@ -277,6 +284,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 massFlowRateFactor, Double.POSITIVE_INFINITY, integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         shooting.setScalePositionDefects(1e3);
         shooting.setScaleVelocityDefects(1.);
         return shooting;
@@ -291,6 +299,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final ShootingIntegrationSettings integrationSettings = ShootingIntegrationSettingsFactory.getClassicalRungeKuttaIntegratorSettings(100.);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = getShootingMethod(0.,
                 new FixedTimeBoundaryOrbits(initialOrbit, terminalOrbit), integrationSettings);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double toleranceMassAdjoint = 1e-10;
         final double initialMass = 3e3;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
@@ -304,6 +313,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final double[] terminalAdjointForward = terminalState.getAdditionalState(adjointName);
         final NewtonFixedBoundaryCartesianSingleShooting backwardShooting = getShootingMethod(0.,
                 new FixedTimeBoundaryOrbits(terminalOrbit, initialOrbit), integrationSettings);
+        backwardShooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final ShootingBoundaryOutput backwardOutput = backwardShooting.solve(terminalState.getMass(), terminalAdjointForward);
         Assertions.assertTrue(backwardOutput.isConverged());
         Assertions.assertEquals(0, backwardOutput.getIterationCount());
@@ -334,6 +344,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 flowRateFactor, integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double toleranceMassAdjoint = 1e-8;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 1e3;
@@ -375,6 +386,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 0., integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final ShootingBoundaryOutput output = shooting.solve(mass, new double[6]);
         final double squaredMass = mass * mass;
         final double[] adjoint = output.getInitialState().getAdditionalState(adjointName);
@@ -417,9 +429,24 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 massFlowRateFactor, detectionSettings, integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double toleranceMassAdjoint = 1e-7;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         return shooting;
+    }
+
+    @Test
+    void testGetSingularityThreshold() {
+        // GIVEN
+        final FixedTimeBoundaryOrbits boundaryOrbits = getHeliocentricBoundary();
+        final NewtonFixedBoundaryCartesianSingleShooting shooting = getHeliocentricShootingMethod(1. / (4000. * Constants.G0_STANDARD_GRAVITY),
+                boundaryOrbits);
+        final double expectedThreshold = 1.;
+        shooting.setSingularityThreshold(expectedThreshold);
+        // WHEN
+        final double actualThreshold = shooting.getSingularityThreshold();
+        // THEN
+        Assertions.assertEquals(expectedThreshold, actualThreshold);
     }
 
     @Test
@@ -428,6 +455,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final FixedTimeBoundaryOrbits boundaryOrbits = getHeliocentricBoundary();
         final NewtonFixedBoundaryCartesianSingleShooting shooting = getHeliocentricShootingMethod(1. / (4000. * Constants.G0_STANDARD_GRAVITY),
                 boundaryOrbits);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double mass = 2e3;
         final double[] guess = guessWithoutMass("adjoint", mass, shooting.getPropagationSettings().getIntegrationSettings(),
                 boundaryOrbits, shooting.getConditionChecker());
@@ -496,6 +524,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final FixedTimeBoundaryOrbits boundaryOrbits = getHeliocentricBoundary();
         final NewtonFixedBoundaryCartesianSingleShooting shooting = getHeliocentricShootingMethod(0.,
                 boundaryOrbits);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double mass = 3e3;
         // WHEN
         final ShootingBoundaryOutput output = shooting.solve(mass, new double[6]);
@@ -538,6 +567,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                 maximumThrust, 1., integrationSettings);
         final NewtonFixedBoundaryCartesianSingleShooting shooting = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettings,
                 boundaryOrbits, conditionChecker);
+        shooting.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
         final double toleranceMassAdjoint = 1e-10;
         shooting.setToleranceMassAdjoint(toleranceMassAdjoint);
         final double mass = 2e3;
@@ -551,6 +581,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
                     flowRateFactor, maximumThrust, epsilon, propagationSettings.getIntegrationSettings());
             final NewtonFixedBoundaryCartesianSingleShooting shootingWithNewEpsilon = new NewtonFixedBoundaryCartesianSingleShooting(propagationSettingsWithNewEpsilon,
                     boundaryOrbits, conditionChecker);
+            shootingWithNewEpsilon.setSingularityThreshold(THRESHOLD_LU_DECOMPOSITION);
             output = shootingWithNewEpsilon.solve(mass, previousAdjoint);
             Assertions.assertTrue(output.isConverged());
         }

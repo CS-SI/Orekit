@@ -85,8 +85,8 @@ public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
     public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
         final double switchFunction = evaluateSwitchFunction(adjointVariables, mass);
         if (switchFunction > 0) {
-            final double thrustMagnitude = FastMath.min(switchFunction, getMaximumThrustMagnitude());
-            return getThrustDirection(adjointVariables).scalarMultiply(thrustMagnitude / mass);
+            final double thrustForceMagnitude = FastMath.min(switchFunction, getMaximumThrustMagnitude());
+            return getThrustDirection(adjointVariables).scalarMultiply(thrustForceMagnitude / mass);
         } else {
             return Vector3D.ZERO;
         }

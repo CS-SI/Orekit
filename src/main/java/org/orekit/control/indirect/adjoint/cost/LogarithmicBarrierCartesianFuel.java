@@ -49,16 +49,27 @@ public class LogarithmicBarrierCartesianFuel extends PenalizedCartesianFuelCost 
     /** {@inheritDoc} */
     @Override
     public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
-        final double twoEpsilon = getEpsilon() * 2;
-        final double otherTerm = getAdjointVelocityNorm(adjointVariables) / mass - getMassFlowRateFactor() * adjointVariables[6] - 1;
-        final double thrustMagnitude = twoEpsilon / (twoEpsilon + otherTerm + FastMath.sqrt(otherTerm * otherTerm + twoEpsilon * twoEpsilon));
-        return getThrustDirection(adjointVariables).scalarMultiply(thrustMagnitude / mass);
+        final double thrustForceMagnitude = getThrustForceMagnitude(adjointVariables, mass);
+        return getThrustDirection(adjointVariables).scalarMultiply(thrustForceMagnitude / mass);
     }
 
     /** {@inheritDoc} */
     @Override
     public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
                                          final double[] adjointDerivatives) {
-        adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) * getMaximumThrustMagnitude() / (mass * mass);
+        adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) * getThrustForceMagnitude(adjointVariables,
+                mass) / (mass * mass);
+    }
+
+    /**
+     * Computes the Euclidean norm of the thrust force.
+     * @param adjointVariables adjoint variables
+     * @param mass mass
+     * @return thrust force magnitude
+     */
+    private double getThrustForceMagnitude(final double[] adjointVariables, final double mass) {
+        final double twoEpsilon = getEpsilon() * 2;
+        final double otherTerm = getAdjointVelocityNorm(adjointVariables) / mass - getMassFlowRateFactor() * adjointVariables[6] - 1;
+        return twoEpsilon * getMaximumThrustMagnitude() / (twoEpsilon + otherTerm + FastMath.sqrt(otherTerm * otherTerm + twoEpsilon * twoEpsilon));
     }
 }
