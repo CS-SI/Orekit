@@ -317,7 +317,7 @@
     * tropospheric mapping functions (Chao, revised Chao, Global Mapping Function, ITU-R P.834, Vienna 1, Vienna 3, Niell, Mendes-Pavlis)
     * Klobuchar ionospheric model (including parsing α and β coefficients from University of Bern Astronomical Institute files)
     * Global Ionospheric Map (GIM) model
-    * NeQuick-G ionospheric model
+    * NeQuick ionospheric models (both Galileo-specific and original ITU-R P.531 versions)
     * VTEC estimated ionospheric model with Single Layer Model (SLM) ionospheric mapping function
     * Pressure, Temperature and Humidity models (GPT, GPT2, GPT2w, GPT3, ITU-R P.834)
     * Water Vapor pressure evolution (CIPM-2007, NBS-SRC, Wang 1988)
