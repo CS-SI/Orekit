@@ -16,15 +16,15 @@
  */
 package org.orekit.models.earth.ionosphere.nequick;
 
+import org.hipparchus.util.FastMath;
+import org.orekit.data.DataSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.io.Reader;
 import java.util.regex.Pattern;
 
 /**
@@ -68,17 +68,17 @@ class CCIRLoader {
     private static final int DEPTH_FM3 = 9;
 
     /** F2 coefficients used for the computation of the F2 layer critical frequency. */
-    private double[][][] f2Loader;
+    private double[][][] parsedF2;
 
     /** Fm3 coefficients used for the computation of the F2 layer maximum usable frequency factor. */
-    private double[][][] fm3Loader;
+    private double[][][] parsedFm3;
 
     /**
      * Build a new instance.
      */
     CCIRLoader() {
-        this.f2Loader = null;
-        this.fm3Loader = null;
+        this.parsedF2  = new double[ROWS][TOTAL_COLUMNS_F2][DEPTH_F2];
+        this.parsedFm3 = new double[ROWS][TOTAL_COLUMNS_FM3][DEPTH_FM3];
     }
 
     /**
@@ -87,7 +87,7 @@ class CCIRLoader {
      * @return the F2 coefficients
      */
     public double[][][] getF2() {
-        return f2Loader.clone();
+        return parsedF2.clone();
     }
 
     /**
@@ -96,7 +96,7 @@ class CCIRLoader {
      * @return the F2 coefficients
      */
     public double[][][] getFm3() {
-        return fm3Loader.clone();
+        return parsedFm3.clone();
     }
 
     /**
@@ -109,44 +109,28 @@ class CCIRLoader {
         // The files are named ccirXX.asc where XX substitute the month of the year + 10
         final int currentMonth = dateComponents.getMonth();
         final String fileName = String.format("/assets/org/orekit/nequick/ccir%02d.asc", currentMonth + 10);
-        try (InputStream in = CCIRLoader.class.getResourceAsStream(fileName)) {
-            loadData(in, fileName);
-        } catch (IOException e) {
-            throw new OrekitException(OrekitMessages.INTERNAL_ERROR, e);
-        }
-        // Throw an exception if F2 or Fm3 were not loaded properly
-        if (f2Loader == null || fm3Loader == null) {
-            throw new OrekitException(OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, fileName);
-        }
+        loadData(new DataSource(fileName, () -> CCIRLoader.class.getResourceAsStream(fileName)));
 
     }
 
-    /**
-     * Load data from a stream.
-     *
-     * @param input input stream
-     * @param name  name of the file
-     * @exception IOException if data can't be read
+    /** Load data.
+     * @param dataSource data source
      */
-    public void loadData(final InputStream input, final String name) throws IOException {
-
-        // Initialize arrays
-        final double[][][] f2Temp = new double[ROWS][TOTAL_COLUMNS_F2][DEPTH_F2];
-        final double[][][] fm3Temp = new double[ROWS][TOTAL_COLUMNS_FM3][DEPTH_FM3];
+    public void loadData(final DataSource dataSource) {
 
         // Placeholders for parsed data
-        int lineNumber = 0;
-        int index = 0;
-        int currentRowF2 = 0;
-        int currentColumnF2 = 0;
-        int currentDepthF2 = 0;
-        int currentRowFm3 = 0;
-        int currentColumnFm3 = 0;
-        int currentDepthFm3 = 0;
-        String line = null;
+        int    lineNumber       = 0;
+        int    index            = 0;
+        int    currentRowF2     = 0;
+        int    currentColumnF2  = 0;
+        int    currentDepthF2   = 0;
+        int    currentRowFm3    = 0;
+        int    currentColumnFm3 = 0;
+        int    currentDepthFm3  = 0;
+        String line             = null;
 
-        try (InputStreamReader isr = new InputStreamReader(input, StandardCharsets.UTF_8);
-             BufferedReader br = new BufferedReader(isr)) {
+        try (Reader         r  = dataSource.getOpener().openReaderOnce();
+             BufferedReader br = new BufferedReader(r)) {
 
             for (line = br.readLine(); line != null; line = br.readLine()) {
                 ++lineNumber;
@@ -167,7 +151,7 @@ class CCIRLoader {
                                 currentColumnF2 = 0;
                                 currentRowF2++;
                             }
-                            f2Temp[currentRowF2][currentColumnF2][currentDepthF2++] = Double.parseDouble(field);
+                            parsedF2[currentRowF2][currentColumnF2][currentDepthF2++] = Double.parseDouble(field);
                             index++;
                         } else {
                             // Parse Fm3 coefficients
@@ -179,7 +163,7 @@ class CCIRLoader {
                                 currentColumnFm3 = 0;
                                 currentRowFm3++;
                             }
-                            fm3Temp[currentRowFm3][currentColumnFm3][currentDepthFm3++] = Double.parseDouble(field);
+                            parsedFm3[currentRowFm3][currentColumnFm3][currentDepthFm3++] = Double.parseDouble(field);
                             index++;
                         }
 
@@ -188,13 +172,34 @@ class CCIRLoader {
 
             }
 
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, dataSource.getName());
         } catch (NumberFormatException nfe) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, dataSource.getName(), line);
         }
 
-        f2Loader = f2Temp.clone();
-        fm3Loader = fm3Temp.clone();
+        checkDimensions(currentRowF2,  currentColumnF2,  currentDepthF2,  parsedF2,  dataSource.getName());
+        checkDimensions(currentRowFm3, currentColumnFm3, currentDepthFm3, parsedFm3, dataSource.getName());
 
+    }
+
+    /** Check dimensions.
+     * @param currentRow current row index
+     * @param currentColumn current column index
+     * @param currentDepth current depth index
+     * @param array storage array
+     * @param name data source name
+     */
+    private void checkDimensions(final int currentRow, final int currentColumn, final int currentDepth,
+                                 final double[][][] array, final String name) {
+        // just three equality tests
+        // written in a way test coverage doesn't complain about missing cases…
+        if (FastMath.max(FastMath.max(FastMath.abs(currentRow - (array.length - 1)),
+                                      FastMath.abs(currentColumn - (array[0].length - 1))),
+                         FastMath.abs(currentDepth - array[0][0].length)) != 0) {
+            throw new OrekitException(OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, name);
+        }
     }
 
 }

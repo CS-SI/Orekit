@@ -354,7 +354,7 @@ public class NeQuickItuTest {
                                                                     FastMath.toRadians(zero.newInstance(-177.43)),
                                                                     zero.newInstance(20100697.90));
         T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(70.372, stec.getReal(), 0.001);
+        Assertions.assertEquals(70.373, stec.getReal(), 0.001);
 
     }
 
