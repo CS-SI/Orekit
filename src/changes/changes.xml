@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1641">
+            Add tuning option for LU decomposition in Newton-based indirect shooting.
+        </action>
         <action dev="serrof" type="add" issue="1640">
             Add logarithmic barrier for fuel cost with indirect control.
         </action>

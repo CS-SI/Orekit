@@ -89,8 +89,8 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
     public FieldVector3D<T> getFieldThrustAccelerationVector(final T[] adjointVariables, final T mass) {
         final T switchFunction = evaluateSwitchFunction(adjointVariables, mass);
         if (switchFunction.getReal() > 0) {
-            final T thrustMagnitude = FastMath.min(switchFunction, getMaximumThrustMagnitude());
-            return getFieldThrustDirection(adjointVariables).scalarMultiply(thrustMagnitude.divide(mass));
+            final T thrustForceMagnitude = FastMath.min(switchFunction, getMaximumThrustMagnitude());
+            return getFieldThrustDirection(adjointVariables).scalarMultiply(thrustForceMagnitude.divide(mass));
         } else {
             return FieldVector3D.getZero(mass.getField());
         }
