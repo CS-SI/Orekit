@@ -21,8 +21,11 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="fix" issue="1625">
+            Added implementation of ITU version of NeQuick ionosphere model.
+        </action>
         <action dev="luc" type="fix" issue="1638">
-            Fixed field implementation of NeQuick ionosphere model.
+            Fixed field implementation of Galileo NeQuick ionosphere model.
         </action>
         <action dev="evan" type="update" issue="1623">
             Update OCM parsing, so it is possible to know when a value is not present in a

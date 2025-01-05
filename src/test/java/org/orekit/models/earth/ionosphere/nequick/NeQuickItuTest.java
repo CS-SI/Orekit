@@ -72,7 +72,7 @@ public class NeQuickItuTest {
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.854, stec, 1.0e-3);
+        Assertions.assertEquals(8.937, stec, 1.0e-3);
     }
 
     @Test
@@ -101,13 +101,13 @@ public class NeQuickItuTest {
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.854, stec.getReal(), 1.0e-3);
+        Assertions.assertEquals(8.937, stec.getReal(), 1.0e-3);
     }
 
     // validation test published by ITU
     @Test
     public void testValidationItu63() {
-        doTestValidationItu(63, 4.3689);
+        doTestValidationItu(63, 4.36189);
     }
 
     // validation test published by ITU
@@ -146,7 +146,7 @@ public class NeQuickItuTest {
     // validation test published by ITU
     @Test
     public void testValidationItu63Field() {
-        doTestValidationItu(Binary64Field.getInstance(), 63, 4.3689);
+        doTestValidationItu(Binary64Field.getInstance(), 63, 4.36189);
     }
 
     // validation test published by ITU
@@ -218,7 +218,7 @@ public class NeQuickItuTest {
                                              PredefinedGnssSignal.G01.getFrequency(), model.getParameters());
        
         // Verify
-        Assertions.assertEquals(1.13, delay, 0.01);
+        Assertions.assertEquals(1.32, delay, 0.01);
     }
 
     @Test
@@ -263,7 +263,7 @@ public class NeQuickItuTest {
                                         PredefinedGnssSignal.G01.getFrequency(), model.getParameters(field));
        
         // Verify
-        Assertions.assertEquals(1.13, delay.getReal(), 0.01);
+        Assertions.assertEquals(1.32, delay.getReal(), 0.01);
     }
 
     @Test
@@ -279,7 +279,7 @@ public class NeQuickItuTest {
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(-179.99), 12.78);
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(-177.43), 20100697.90);
         double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.839, stec, 0.001);
+        Assertions.assertEquals(7.815, stec, 0.001);
 
     }
 
@@ -308,7 +308,7 @@ public class NeQuickItuTest {
                                                                     FastMath.toRadians(zero.newInstance(-177.43)),
                                                                     zero.newInstance(20100697.90));
         T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.839, stec.getReal(), 0.001);
+        Assertions.assertEquals(7.815, stec.getReal(), 0.001);
 
     }
 
@@ -325,7 +325,7 @@ public class NeQuickItuTest {
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(51.678), FastMath.toRadians(-9.448), 0.0);
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(51.678), FastMath.toRadians(-9.448), 600000.0);
         double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(26.346, stec, 0.001);
+        Assertions.assertEquals(16.618, stec, 0.001);
 
     }
 
@@ -354,7 +354,7 @@ public class NeQuickItuTest {
                                                                     FastMath.toRadians(zero.newInstance(-9.448)),
                                                                     zero.newInstance(600000.0));
         T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(26.346, stec.getReal(), 0.001);
+        Assertions.assertEquals(16.618, stec.getReal(), 0.001);
 
     }
 

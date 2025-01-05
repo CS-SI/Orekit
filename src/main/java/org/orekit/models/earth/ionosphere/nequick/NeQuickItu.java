@@ -178,7 +178,6 @@ public class NeQuickItu extends NeQuickModel {
                 sum += ed;
             }
 
-            System.out.println("      sum: " + sum);
             gInt1 = gInt2;
             gInt2 = sum * 0.5 * segment.getInterval();
             if (FastMath.abs(gInt1 - gInt2) <= FastMath.abs(gInt1 * eps)) {
@@ -188,7 +187,7 @@ public class NeQuickItu extends NeQuickModel {
 
         }
 
-        return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt1 + (gInt2 - gInt1) / 15.0);
+        return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt2 + (gInt2 - gInt1) / 15.0);
 
     }
 
@@ -232,7 +231,7 @@ public class NeQuickItu extends NeQuickModel {
 
         }
 
-        return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt1.add(gInt2.subtract(gInt1).divide(15.0)));
+        return Unit.TOTAL_ELECTRON_CONTENT_UNIT.fromSI(gInt2.add(gInt2.subtract(gInt1).divide(15.0)));
 
     }
 
