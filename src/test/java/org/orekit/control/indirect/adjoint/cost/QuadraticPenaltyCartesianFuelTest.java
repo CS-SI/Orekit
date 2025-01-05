@@ -44,12 +44,13 @@ class QuadraticPenaltyCartesianFuelTest {
     @ValueSource(doubles = {0., 0.1, 0.5, 0.9})
     void testEvaluatePenaltyFunction(final double norm) {
         // GIVEN
+        final double unitMaximumThrust = 1;
         final QuadraticPenaltyCartesianFuel penalizedCartesianFuel = new QuadraticPenaltyCartesianFuel(ADJOINT_NAME,
-                1., 2., 0.5);
+                2., unitMaximumThrust, 0.5);
         // WHEN
         final double actualPenalty = penalizedCartesianFuel.evaluatePenaltyFunction(norm);
         // THEN
-        Assertions.assertEquals(norm * norm / 2, actualPenalty);
+        Assertions.assertEquals(norm * norm / 2 - norm, actualPenalty, 1e-15);
     }
 
     @Test

@@ -81,7 +81,7 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
     /** {@inheritDoc} */
     @Override
     public T evaluateFieldPenaltyFunction(final T controlNorm) {
-        return controlNorm.square().divide(2);
+        return controlNorm.multiply(controlNorm.multiply(getMaximumThrustMagnitude()).divide(2).subtract(1.));
     }
 
     /** {@inheritDoc} */

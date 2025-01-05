@@ -99,7 +99,8 @@ public abstract class FieldPenalizedCartesianFuelCost<T extends CalculusFieldEle
         final FieldVector3D<T> thrustForce = getFieldThrustAccelerationVector(adjointVariables,
                 mass).scalarMultiply(mass);
         final T controlNorm = thrustForce.getNorm().divide(getMaximumThrustMagnitude());
-        return controlNorm.add(getEpsilon().multiply(evaluateFieldPenaltyFunction(controlNorm)));
+        return controlNorm.add(getEpsilon().multiply(evaluateFieldPenaltyFunction(controlNorm)))
+                .multiply(getMaximumThrustMagnitude().negate());
     }
 
 }

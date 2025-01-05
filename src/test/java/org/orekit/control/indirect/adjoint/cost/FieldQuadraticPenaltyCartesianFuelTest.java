@@ -50,12 +50,13 @@ class FieldQuadraticPenaltyCartesianFuelTest {
     @ValueSource(doubles = {0, 0.1, 0.5, 0.9})
     void testEvaluateFieldPenaltyFunction(final double norm) {
         // GIVEN
+        final Binary64 unitMaximumThrust = Binary64.ONE;
         final FieldQuadraticPenaltyCartesianFuel<Binary64> penalizedCartesianFuel = new FieldQuadraticPenaltyCartesianFuel<>(
-                ADJOINT_NAME, Binary64.ONE, Binary64.PI, Binary64.ZERO);
+                ADJOINT_NAME, Binary64.ONE, unitMaximumThrust, Binary64.ZERO);
         // WHEN
         final Binary64 actualPenalty = penalizedCartesianFuel.evaluateFieldPenaltyFunction(Binary64.ONE.newInstance(norm));
         // THEN
-        Assertions.assertEquals(norm * norm / 2, actualPenalty.getReal());
+        Assertions.assertEquals(norm * norm / 2 - norm, actualPenalty.getReal(), 1e-15);
     }
 
     @ParameterizedTest

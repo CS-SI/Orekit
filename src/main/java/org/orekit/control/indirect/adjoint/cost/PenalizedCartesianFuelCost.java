@@ -94,7 +94,7 @@ public abstract class PenalizedCartesianFuelCost extends AbstractCartesianCost {
     public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
         final Vector3D thrustForce = getThrustAccelerationVector(adjointVariables, mass).scalarMultiply(mass);
         final double controlNorm = thrustForce.getNorm() / getMaximumThrustMagnitude();
-        return controlNorm + getEpsilon() * evaluatePenaltyFunction(controlNorm);
+        return -(controlNorm + getEpsilon() * evaluatePenaltyFunction(controlNorm)) * getMaximumThrustMagnitude();
     }
 
 }

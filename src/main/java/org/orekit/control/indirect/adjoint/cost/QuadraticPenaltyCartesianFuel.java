@@ -77,7 +77,7 @@ public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
     /** {@inheritDoc} */
     @Override
     public double evaluatePenaltyFunction(final double controlNorm) {
-        return controlNorm * controlNorm / 2;
+        return controlNorm * (controlNorm * getMaximumThrustMagnitude() / 2 - 1.);
     }
 
     /** {@inheritDoc} */
