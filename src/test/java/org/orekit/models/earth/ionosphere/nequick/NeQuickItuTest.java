@@ -189,6 +189,103 @@ public class NeQuickItuTest {
     }
 
     @Test
+    public void testHeights1() {
+        doTestHeights(30.0, 205000000.0, 10.730);
+    }
+
+    @Test
+    public void testHeights2() {
+        doTestHeights(1300000.0, 205000000.0, 0.943);
+    }
+
+    @Test
+    public void testHeights3() {
+        doTestHeights(2300000.0, 205000000.0, 0.580);
+    }
+
+    @Test
+    public void testHeights4() {
+        doTestHeights(30.0, 1950000.0, 29.670);
+    }
+
+    @Test
+    public void testHeights5() {
+        doTestHeights(1030000.0, 1950000.0, 2.594);
+    }
+
+    private void doTestHeights(final double hRec, final double hSat, final double expected) {
+
+        // Model
+        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+
+        // Geodetic points
+        final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians( 82.494),
+                                                     FastMath.toRadians(-62.340),
+                                                     hRec);
+        final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(54.445),
+                                                     FastMath.toRadians(-118.470),
+                                                     hSat);
+
+        // Date
+        final AbsoluteDate date = new AbsoluteDate(2007, 4, 1, TimeScalesFactory.getUTC());
+
+        // STEC
+        final double stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(expected, stec, 1.0e-3);
+
+    }
+
+    @Test
+    public void testHeights1Field() {
+        doTestHeights(Binary64Field.getInstance(), 30.0, 205000000.0, 10.730);
+    }
+
+    @Test
+    public void testHeights2Field() {
+        doTestHeights(Binary64Field.getInstance(), 1300000.0, 205000000.0, 0.943);
+    }
+
+    @Test
+    public void testHeights3Field() {
+        doTestHeights(Binary64Field.getInstance(), 2300000.0, 205000000.0, 0.580);
+    }
+
+    @Test
+    public void testHeights4Field() {
+        doTestHeights(Binary64Field.getInstance(), 30.0, 1950000.0, 29.670);
+    }
+
+    @Test
+    public void testHeights5Field() {
+        doTestHeights(Binary64Field.getInstance(), 1030000.0, 1950000.0, 2.594);
+    }
+
+    private <T extends CalculusFieldElement<T>> void doTestHeights(final Field<T> field,
+                                                                   final double hRec, final double hSat, final double expected) {
+
+        final T zero = field.getZero();
+
+        // Model
+        final NeQuickItu model = new NeQuickItu(128.0, TimeScalesFactory.getUTC());
+
+        // Geodetic points
+        final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance( 82.494)),
+                                                                    FastMath.toRadians(zero.newInstance(-62.340)),
+                                                                    zero.newInstance(hRec));
+        final FieldGeodeticPoint<T> satP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(54.445)),
+                                                                    FastMath.toRadians(zero.newInstance(-118.470)),
+                                                                    zero.newInstance(hSat));
+
+        // Date
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2007, 4, 1, TimeScalesFactory.getUTC());
+
+        // STEC
+        final T stec = model.stec(date, recP, satP);
+        Assertions.assertEquals(expected, stec.getReal(), 1.0e-3);
+
+    }
+
+    @Test
     public void testDelay() {
 
         // Model

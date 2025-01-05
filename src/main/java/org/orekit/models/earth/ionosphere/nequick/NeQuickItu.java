@@ -138,9 +138,7 @@ public class NeQuickItu extends NeQuickModel {
                 } else {
                     // three integration intervals, below 1000km, between 1000km and 2000km, and above 2000km
                     final double h1000 = NeQuickModel.RE + H_1000;
-                    final T
-                        s1000 =
-                        FastMath.sqrt(ray.getRadius().multiply(ray.getRadius()).negate().add(h1000 * h1000));
+                    final T s1000 = FastMath.sqrt(ray.getRadius().multiply(ray.getRadius()).negate().add(h1000 * h1000));
                     return stecIntegration(dateTime, EPS_SMALL, ray, ray.getS1(), s1000).
                            add(stecIntegration(dateTime, EPS_MEDIUM, ray, s1000, s2000)).
                            add(stecIntegration(dateTime, EPS_MEDIUM, ray, s2000, ray.getS2()));
