@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 
+import java.io.IOException;
 import java.io.PipedReader;
 import java.io.StringReader;
 
@@ -59,6 +60,7 @@ public class CCIRLoaderTest {
             new CCIRLoader().loadData(new DataSource("exception", () -> new PipedReader()));
             Assertions.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
+            Assertions.assertEquals(IOException.class, oe.getCause().getClass());
             Assertions.assertEquals(OrekitMessages.NEQUICK_F2_FM3_NOT_LOADED, oe.getSpecifier());
             Assertions.assertEquals("exception", oe.getParts()[0]);
         }
