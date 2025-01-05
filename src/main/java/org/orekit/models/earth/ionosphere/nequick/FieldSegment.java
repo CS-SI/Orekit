@@ -74,7 +74,7 @@ class FieldSegment<T extends CalculusFieldElement<T>> {
      * @return point on ray
      * @since 13.0
      */
-    public FieldGeodeticPoint<T> getPoint(int index) {
+    public FieldGeodeticPoint<T> getPoint(final int index) {
 
         final int p = index / 2;
         final T   s = y.add(deltaN.multiply(p)).add(g.multiply(index % 2));

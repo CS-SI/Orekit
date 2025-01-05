@@ -99,7 +99,7 @@ public abstract class NeQuickModel implements IonosphericModel {
                                                            ellipsoid.getBodyFrame(), state.getDate());
 
         // Total Electron Content
-        final double tec = stec(date,recPoint, satPoint);
+        final double tec = stec(date, recPoint, satPoint);
 
         // Ionospheric delay
         final double factor = DELAY_FACTOR / (frequency * frequency);
@@ -156,6 +156,7 @@ public abstract class NeQuickModel implements IonosphericModel {
 
     /**
      * This method allows the computation of the Slant Total Electron Content (STEC).
+     * @param <T> type of the elements
      * @param date current date
      * @param recP receiver position
      * @param satP satellite position
@@ -204,6 +205,7 @@ public abstract class NeQuickModel implements IonosphericModel {
 
     /**
      * Computes the electron density at a given height.
+     * @param <T> type of the elements
      * @param dateTime date
      * @param modip modified dip latitude
      * @param az effective ionization level
@@ -547,6 +549,7 @@ public abstract class NeQuickModel implements IonosphericModel {
     /**
      * Compute topside thickness parameter.
      * @param parameters NeQuick model parameters
+     * @return topside thickness parameter
      * @since 13.0
      */
     abstract double computeH0(NeQuickParameters parameters);
@@ -555,6 +558,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * Compute topside thickness parameter.
      * @param <T>   type of the field elements
      * @param parameters NeQuick model parameters
+     * @return topside thickness parameter
      * @since 13.0
      */
     abstract <T extends CalculusFieldElement<T>> T computeH0(FieldNeQuickParameters<T> parameters);

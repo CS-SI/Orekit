@@ -92,7 +92,7 @@ class ModipGrid {
 
         // index in latitude (note that Galileo document uses x for interpolation in latitude)
         // ensuring we have two points before (or at) index and two points after index for 3rd order interpolation
-        double x  = (latitude + MathUtils.SEMI_PI) / sizeLat + 1;
+        final double x  = (latitude + MathUtils.SEMI_PI) / sizeLat + 1;
         if (x < 1) {
             return -90;
         }
@@ -157,6 +157,7 @@ class ModipGrid {
     }
 
     /** Compute modip for a location.
+     * @param <T> type of the field elements
      * @param latitude latitude
      * @param longitude longitude
      * @return modip at specified location
@@ -165,7 +166,7 @@ class ModipGrid {
 
         // index in latitude (note that Galileo document uses x for interpolation in latitude)
         // ensuring we have two points before (or at) index and two points after index for 3rd order interpolation
-        T x  = latitude.add(MathUtils.SEMI_PI).divide(sizeLat).add(1);
+        final T x  = latitude.add(MathUtils.SEMI_PI).divide(sizeLat).add(1);
         if (x.getReal() < 1) {
             return latitude.newInstance(-90);
         }
@@ -246,7 +247,7 @@ class ModipGrid {
      */
     private void loadData(final DataSource source, final boolean addWrapping) {
         // if we must add wrapping, we must keep some empty rows and columns that will be filled later on
-        int first = addWrapping ? 1 : 0;
+        final int first = addWrapping ? 1 : 0;
 
         // Open stream and parse data
         int lineNumber = 0;

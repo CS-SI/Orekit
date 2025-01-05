@@ -120,8 +120,8 @@ public class NeQuickParameters {
         final double t = FastMath.toRadians(15 * hours) - FastMath.PI;
         // Compute Fourier time series for foF2 and M(3000)F2
         final double[] scT = sinCos(t, 6);
-        final double[] cf2 = computeCF2(flattenF2, azr, scT);
-        final double[] cm3 = computeCm3(flattenFm3, azr, scT);
+        final double[] cf2 = computeCF2(flattenF2, scT);
+        final double[] cm3 = computeCm3(flattenFm3, scT);
         // F2 layer critical frequency in MHz
         final double[] scL = sinCos(longitude, 8);
         this.foF2 = computefoF2(modip, cf2, latitude, scL);
@@ -130,10 +130,10 @@ public class NeQuickParameters {
         // F2 layer maximum density in 10^11 m⁻³
         this.nmF2 = 0.124 * foF2 * foF2;
         // F2 layer maximum density height in km
-        this.hmF2 = computehmF2(foE, foF2, mF2);
+        this.hmF2 = computehmF2(foE, mF2);
 
         // F1 layer critical frequency in MHz
-        final double foF1 = computefoF1(foE, foF2);
+        final double foF1 = computefoF1(foE);
         // F1 layer maximum density in 10^11 m⁻³
         final double nmF1;
         if (foF1 <= 0.0 && foE > 2.0) {
@@ -336,11 +336,10 @@ public class NeQuickParameters {
     /**
      * Computes the F2 layer height of maximum electron density.
      * @param foE E layer layer critical frequency in MHz
-     * @param foF2 F2 layer layer critical frequency in MHz
      * @param mF2 maximum usable frequency factor
      * @return hmF2 in km
      */
-    private double computehmF2(final double foE, final double foF2, final double mF2) {
+    private double computehmF2(final double foE, final double mF2) {
         // Ratio
         final double fo = foF2 / foE;
         final double ratio = join(fo, 1.75, 20.0, fo - 1.75);
@@ -385,11 +384,10 @@ public class NeQuickParameters {
     /**
      * Computes cf2 coefficients.
      * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
-     * @param azr effective sunspot number (Eq. 19)
      * @param scT sines/cosines array of time argument
      * @return the cf2 coefficients array
      */
-    private double[] computeCF2(final double[] flattenF2, final double azr, final double[] scT) {
+    private double[] computeCF2(final double[] flattenF2, final double[] scT) {
 
         // interpolation coefficients for effective spot number
         final double azr01 = azr * 0.01;
@@ -420,11 +418,10 @@ public class NeQuickParameters {
     /**
      * Computes Cm3 coefficients.
      * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
-     * @param azr effective sunspot number (Eq. 19)
      * @param scT sines/cosines array of time argument
      * @return the Cm3 coefficients array
      */
-    private double[] computeCm3(final double[] flattenFm3, final double azr, final double[] scT) {
+    private double[] computeCm3(final double[] flattenFm3, final double[] scT) {
 
         // interpolation coefficients for effective spot number
         final double azr01 = azr * 0.01;
@@ -548,9 +545,8 @@ public class NeQuickParameters {
      * </p>
      * @param foE the E layer critical frequency, MHz
      * @return the F1 layer critical frequency, MHz
-     * @param foF2 the F2 layer critical frequency, MHz
      */
-    private double computefoF1(final double foE, final double foF2) {
+    private double computefoF1(final double foE) {
         final double temp  = join(1.4 * foE, 0.0, 1000.0, foE - 2.0);
         final double temp2 = join(0.0, temp, 1000.0, foE - temp);
         final double value = join(temp2, 0.85 * temp2, 60.0, 0.85 * foF2 - temp2);

@@ -101,7 +101,7 @@ public class NeQuickGalileo extends NeQuickModel {
             return FastMath.min(FastMath.max(modip.multiply(alpha[2]).add(alpha[1]).multiply(modip).add(alpha[0]),
                                              0.0),
                                 400.0);
-            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -127,11 +127,11 @@ public class NeQuickGalileo extends NeQuickModel {
 
         int count = 1;
         while (FastMath.abs(gn2 - gn1) > tolerance * FastMath.abs(gn1) && count < 20) {
-                gn1 = gn2;
-                n *= 2;
-                final Segment seg = new Segment(n, ray, ray.getS1(), ray.getS2());
-                gn2 = stecIntegration(dateTime, seg);
-                count += 1;
+            gn1 = gn2;
+            n *= 2;
+            final Segment seg = new Segment(n, ray, ray.getS1(), ray.getS2());
+            gn2 = stecIntegration(dateTime, seg);
+            count += 1;
         }
 
         // If count > 20 the integration did not converge
@@ -166,18 +166,18 @@ public class NeQuickGalileo extends NeQuickModel {
         T gn2 = stecIntegration(dateTime, seg2);
 
         int count = 1;
-        while (FastMath.abs(gn2.subtract(gn1)).getReal() > FastMath.abs(gn1).multiply(tolerance)
-            .getReal() && count < 20) {
-                gn1 = gn2;
-                n *= 2;
-                final FieldSegment<T> seg = new FieldSegment<>(n, ray, ray.getS1(), ray.getS2());
-                gn2 = stecIntegration(dateTime, seg);
-                count += 1;
+        while (FastMath.abs(gn2.subtract(gn1)).getReal() > FastMath.abs(gn1).multiply(tolerance).getReal() &&
+               count < 20) {
+            gn1 = gn2;
+            n *= 2;
+            final FieldSegment<T> seg = new FieldSegment<>(n, ray, ray.getS1(), ray.getS2());
+            gn2 = stecIntegration(dateTime, seg);
+            count += 1;
         }
 
         // If count > 20 the integration did not converge
         if (count == 20) {
-                throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
+            throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
         }
 
         // Eq. 202

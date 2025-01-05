@@ -126,8 +126,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         final double t = FastMath.toRadians(15 * hours) - FastMath.PI;
         // Compute Fourier time series for foF2 and M(3000)F2
         final T[] scT = sinCos(zero.newInstance(t), 6);
-        final T[] cf2 = computeCF2(flattenF2, azr, scT);
-        final T[] cm3 = computeCm3(flattenFm3, azr, scT);
+        final T[] cf2 = computeCF2(flattenF2, scT);
+        final T[] cm3 = computeCm3(flattenFm3, scT);
         // F2 layer critical frequency in MHz
         final T[] scL = sinCos(longitude, 8);
         this.foF2 = computefoF2(modip, cf2, latitude, scL);
@@ -136,10 +136,10 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
         // F2 layer maximum density in 10^11 m-3
         this.nmF2 = foF2.multiply(foF2).multiply(0.124);
         // F2 layer maximum density height in km
-        this.hmF2 = computehmF2(foE, foF2, mF2);
+        this.hmF2 = computehmF2(foE, mF2);
 
         // F1 layer critical frequency in MHz
-        final T foF1 = computefoF1(foE, foF2);
+        final T foF1 = computefoF1(foE);
         // F1 layer maximum density in 10^11 m-3
         final T nmF1;
         if (foF1.getReal() <= 0.0 && foE.getReal() > 2.0) {
@@ -345,11 +345,10 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     /**
      * Computes the F2 layer height of maximum electron density.
      * @param foE E layer layer critical frequency in MHz
-     * @param foF2 F2 layer layer critical frequency in MHz
      * @param mF2 maximum usable frequency factor
      * @return hmF2 in km
      */
-    private T computehmF2(final T foE, final T foF2, final T mF2) {
+    private T computehmF2(final T foE, final T mF2) {
         // Zero
         final T zero = foE.getField().getZero();
         // Ratio
@@ -396,11 +395,10 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     /**
      * Computes cf2 coefficients.
      * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
-     * @param azr effective sunspot number (Eq. 19)
      * @param scT sines/cosines array of time argument
      * @return the cf2 coefficients array
      */
-    private T[] computeCF2(final double[] flattenF2, final T azr, final T[] scT) {
+    private T[] computeCF2(final double[] flattenF2, final T[] scT) {
 
         // interpolation coefficients for effective spot number
         final T azr01 = azr.multiply(0.01);
@@ -433,11 +431,10 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     /**
      * Computes Cm3 coefficients.
      * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
-     * @param azr effective sunspot number (Eq. 19)
      * @param scT sines/cosines array of time argument
      * @return the Cm3 coefficients array
      */
-    private T[] computeCm3(final double[] flattenFm3, final T azr, final T[] scT) {
+    private T[] computeCm3(final double[] flattenFm3, final T[] scT) {
 
         // interpolation coefficients for effective spot number
         final T azr01 = azr.multiply(0.01);
@@ -561,9 +558,8 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
      * </p>
      * @param foE the E layer critical frequency, MHz
      * @return the F1 layer critical frequency, MHz
-     * @param foF2 the F2 layer critical frequency, MHz
      */
-    private T computefoF1(final T foE, final T foF2) {
+    private T computefoF1(final T foE) {
         final T zero = foE.getField().getZero();
         final T temp  = join(foE.multiply(1.4), zero, zero.newInstance(1000.0), foE.subtract(2.0));
         final T temp2 = join(zero, temp, zero.newInstance(1000.0), foE.subtract(temp));

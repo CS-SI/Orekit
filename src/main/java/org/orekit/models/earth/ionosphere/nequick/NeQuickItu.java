@@ -194,6 +194,7 @@ public class NeQuickItu extends NeQuickModel {
     /**
      * This method performs the STEC integration.
      *
+     * @param <T> type of the field elements
      * @param dateTime current date and time components
      * @param eps convergence criterion
      * @param ray ray-perigee parameters
@@ -207,7 +208,7 @@ public class NeQuickItu extends NeQuickModel {
 
         T gInt1 = s1.newInstance(Double.NaN);
         T gInt2 = s1.newInstance(Double.NaN);
-        T f107T = s1.newInstance(f107);
+        final T f107T = s1.newInstance(f107);
 
         for (int n = N_START; n <= N_STOP; n = 2 * n) {
 
@@ -277,6 +278,7 @@ public class NeQuickItu extends NeQuickModel {
 
     /**
      * Fix arguments for low altitudes.
+     * @param <T> type of the field elements
      * @param arg argument of the exponential
      * @param h height in km
      * @return fixed argument
@@ -294,7 +296,7 @@ public class NeQuickItu extends NeQuickModel {
                             0.113   * parameters.getHmF2() / parameters.getB2Bot() +
                             0.00257 * parameters.getAzr() +
                             3.22;
-      return parameters.getB2Bot() * parameters.join(b2k, 1.0, 2.0, b2k - 1.0);
+        return parameters.getB2Bot() * parameters.join(b2k, 1.0, 2.0, b2k - 1.0);
     }
 
     /** {@inheritDoc} */
@@ -305,8 +307,8 @@ public class NeQuickItu extends NeQuickModel {
                       add(parameters.getHmF2().multiply(0.113).divide(parameters.getB2Bot())).
                       add(parameters.getAzr().multiply(0.00257)).
                       add (3.22);
-      return parameters.getB2Bot().multiply(parameters.join(b2k, b2k.newInstance(1.0),
-                                                            b2k.newInstance(2.0), b2k.subtract(1.0)));
+        return parameters.getB2Bot().
+               multiply(parameters.join(b2k, b2k.newInstance(1.0), b2k.newInstance(2.0), b2k.subtract(1.0)));
     }
 
     /** Holder for the ITU modip singleton.
