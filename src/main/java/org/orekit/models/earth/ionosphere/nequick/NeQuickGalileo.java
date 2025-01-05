@@ -136,7 +136,7 @@ public class NeQuickGalileo extends NeQuickModel {
 
         // If count > 20 the integration did not converge
         if (count == 20) {
-                throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
+            throw new OrekitException(OrekitMessages.STEC_INTEGRATION_DID_NOT_CONVERGE);
         }
 
         // Eq. 202

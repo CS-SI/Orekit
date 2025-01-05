@@ -73,7 +73,7 @@ public class Segment {
      * @return point on ray
      * @since 13.0
      */
-    public GeodeticPoint getPoint(int index) {
+    public GeodeticPoint getPoint(final int index) {
 
         final int    p = index / 2;
         final double s = y + p * deltaN + (index % 2) * g;
