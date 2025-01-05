@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1640">
+            Add logarithmic barrier for fuel cost with indirect control.
+        </action>
         <action dev="luc" type="fix" issue="1625">
             Added implementation of ITU version of NeQuick ionosphere model.
         </action>

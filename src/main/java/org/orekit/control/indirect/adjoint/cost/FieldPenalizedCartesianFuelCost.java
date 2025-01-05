@@ -20,13 +20,15 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.events.FieldEventDetectionSettings;
 
 /**
  * Abstract class for fuel cost with a penalty term proportional to a weight parameter epsilon.
  * This is typically used in a continuation method, starting from epsilon equal to 1
  * and going towards 0 where the fuel cost is recovered. The point is to enhance convergence.
  * The control vector is the normalized (by the upper bound on magnitude) thrust force in propagation frame.
+ * See the following reference:
+ * BERTRAND, Régis et EPENOY, Richard. New smoothing techniques for solving bang–bang optimal control problems—numerical results and statistical interpretation.
+ * Optimal Control Applications and Methods, 2002, vol. 23, no 4, p. 171-197.
  *
  * @author Romain Serra
  * @since 13.0
@@ -42,9 +44,6 @@ public abstract class FieldPenalizedCartesianFuelCost<T extends CalculusFieldEle
     /** Penalty weight. */
     private final T epsilon;
 
-    /** Detection settings for singularity detection. */
-    private final FieldEventDetectionSettings<T> eventDetectionSettings;
-
     /**
      * Constructor.
      *
@@ -52,11 +51,9 @@ public abstract class FieldPenalizedCartesianFuelCost<T extends CalculusFieldEle
      * @param massFlowRateFactor mass flow rate factor
      * @param maximumThrustMagnitude maximum thrust magnitude
      * @param epsilon penalty weight
-     * @param eventDetectionSettings detection settings
      */
     protected FieldPenalizedCartesianFuelCost(final String name, final T massFlowRateFactor,
-                                              final T maximumThrustMagnitude, final T epsilon,
-                                              final FieldEventDetectionSettings<T> eventDetectionSettings) {
+                                              final T maximumThrustMagnitude, final T epsilon) {
         super(name, massFlowRateFactor);
         final double epsilonReal = epsilon.getReal();
         if (epsilonReal < 0 || epsilonReal > 1) {
@@ -64,7 +61,6 @@ public abstract class FieldPenalizedCartesianFuelCost<T extends CalculusFieldEle
         }
         this.maximumThrustMagnitude = maximumThrustMagnitude;
         this.epsilon = epsilon;
-        this.eventDetectionSettings = eventDetectionSettings;
     }
 
     /** Getter for the penalty weight epsilon.
@@ -79,14 +75,6 @@ public abstract class FieldPenalizedCartesianFuelCost<T extends CalculusFieldEle
      */
     public T getMaximumThrustMagnitude() {
         return maximumThrustMagnitude;
-    }
-
-    /**
-     * Getter for the event detection settings.
-     * @return detection settings
-     */
-    public FieldEventDetectionSettings<T> getEventDetectionSettings() {
-        return eventDetectionSettings;
     }
 
     /**

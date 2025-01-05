@@ -36,15 +36,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-class QuadraticallyPenalizedCartesianFuelTest {
+class QuadraticPenaltyCartesianFuelTest {
 
     private static final String ADJOINT_NAME = "adjoint";
 
     @ParameterizedTest
-    @ValueSource(doubles = {1, 2, 10, 100, 1000})
+    @ValueSource(doubles = {0., 0.1, 0.5, 0.9})
     void testEvaluatePenaltyFunction(final double norm) {
         // GIVEN
-        final QuadraticallyPenalizedCartesianFuel penalizedCartesianFuel = new QuadraticallyPenalizedCartesianFuel(ADJOINT_NAME,
+        final QuadraticPenaltyCartesianFuel penalizedCartesianFuel = new QuadraticPenaltyCartesianFuel(ADJOINT_NAME,
                 1., 2., 0.5);
         // WHEN
         final double actualPenalty = penalizedCartesianFuel.evaluatePenaltyFunction(norm);
@@ -55,7 +55,7 @@ class QuadraticallyPenalizedCartesianFuelTest {
     @Test
     void testGetEventDetectors() {
         // GIVEN
-        final QuadraticallyPenalizedCartesianFuel penalizedCartesianFuel = new QuadraticallyPenalizedCartesianFuel(ADJOINT_NAME,
+        final QuadraticPenaltyCartesianFuel penalizedCartesianFuel = new QuadraticPenaltyCartesianFuel(ADJOINT_NAME,
                 1., 2., 0.5);
         // WHEN
         final Stream<EventDetector> actual = penalizedCartesianFuel.getEventDetectors();
@@ -74,7 +74,7 @@ class QuadraticallyPenalizedCartesianFuelTest {
         final double massFlowRateFactor = 1.;
         final double maximumThrustMagnitude = 10.;
         final double epsilon = 1e-6;
-        final QuadraticallyPenalizedCartesianFuel penalizedCartesianFuel = new QuadraticallyPenalizedCartesianFuel(ADJOINT_NAME,
+        final QuadraticPenaltyCartesianFuel penalizedCartesianFuel = new QuadraticPenaltyCartesianFuel(ADJOINT_NAME,
                 massFlowRateFactor, maximumThrustMagnitude, epsilon);
         final double mass = 100;
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6, 7};
@@ -91,9 +91,9 @@ class QuadraticallyPenalizedCartesianFuelTest {
     void testAgainstBoundedCartesianEnergy(final double mass) {
         // GIVEN
         final double massFlowRateFactor = 1.e-2;
-        final double maximumThrustMagnitude = 1e-3;
+        final double maximumThrustMagnitude = 1e-1;
         final double epsilon = 1;
-        final QuadraticallyPenalizedCartesianFuel penalizedCartesianFuel = new QuadraticallyPenalizedCartesianFuel(ADJOINT_NAME,
+        final QuadraticPenaltyCartesianFuel penalizedCartesianFuel = new QuadraticPenaltyCartesianFuel(ADJOINT_NAME,
                 massFlowRateFactor, maximumThrustMagnitude, epsilon);
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6, 7};
         final SpacecraftState state = buildState(adjoint, mass);
@@ -104,9 +104,9 @@ class QuadraticallyPenalizedCartesianFuelTest {
         final BoundedCartesianEnergy energy = new BoundedCartesianEnergy(ADJOINT_NAME, massFlowRateFactor, maximumThrustMagnitude);
         final CombinedDerivatives expectedDerivatives = new CartesianAdjointDerivativesProvider(energy).combinedDerivatives(state);
         Assertions.assertArrayEquals(expectedDerivatives.getAdditionalDerivatives(),
-                actualDerivatives.getAdditionalDerivatives());
+                actualDerivatives.getAdditionalDerivatives(), 1e-15);
         Assertions.assertArrayEquals(expectedDerivatives.getMainStateDerivativesIncrements(),
-                actualDerivatives.getMainStateDerivativesIncrements());
+                actualDerivatives.getMainStateDerivativesIncrements(), 1e-18);
     }
 
     private static SpacecraftState buildState(final double[] adjoint, final double mass) {

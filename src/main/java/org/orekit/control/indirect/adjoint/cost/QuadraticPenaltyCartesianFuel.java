@@ -31,7 +31,10 @@ import java.util.stream.Stream;
  * @since 13.0
  * @see BoundedCartesianEnergy
  */
-public class QuadraticallyPenalizedCartesianFuel extends PenalizedCartesianFuelCost {
+public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
+
+    /** Detection settings for singularity events. */
+    private final EventDetectionSettings eventDetectionSettings;
 
     /**
      * Constructor.
@@ -42,10 +45,11 @@ public class QuadraticallyPenalizedCartesianFuel extends PenalizedCartesianFuelC
      * @param epsilon                penalty weight
      * @param eventDetectionSettings detection settings
      */
-    public QuadraticallyPenalizedCartesianFuel(final String name, final double massFlowRateFactor,
-                                               final double maximumThrustMagnitude, final double epsilon,
-                                               final EventDetectionSettings eventDetectionSettings) {
-        super(name, massFlowRateFactor, maximumThrustMagnitude, epsilon, eventDetectionSettings);
+    public QuadraticPenaltyCartesianFuel(final String name, final double massFlowRateFactor,
+                                         final double maximumThrustMagnitude, final double epsilon,
+                                         final EventDetectionSettings eventDetectionSettings) {
+        super(name, massFlowRateFactor, maximumThrustMagnitude, epsilon);
+        this.eventDetectionSettings = eventDetectionSettings;
     }
 
     /**
@@ -56,10 +60,18 @@ public class QuadraticallyPenalizedCartesianFuel extends PenalizedCartesianFuelC
      * @param maximumThrustMagnitude maximum thrust magnitude
      * @param epsilon                penalty weight
      */
-    public QuadraticallyPenalizedCartesianFuel(final String name, final double massFlowRateFactor,
-                                               final double maximumThrustMagnitude, final double epsilon) {
+    public QuadraticPenaltyCartesianFuel(final String name, final double massFlowRateFactor,
+                                         final double maximumThrustMagnitude, final double epsilon) {
         this(name, massFlowRateFactor, maximumThrustMagnitude, epsilon,
                 EventDetectionSettings.getDefaultEventDetectionSettings());
+    }
+
+    /**
+     * Getter for the event detection settings.
+     * @return detection settings
+     */
+    public EventDetectionSettings getEventDetectionSettings() {
+        return eventDetectionSettings;
     }
 
     /** {@inheritDoc} */
@@ -86,8 +98,8 @@ public class QuadraticallyPenalizedCartesianFuel extends PenalizedCartesianFuelC
                                          final double[] adjointDerivatives) {
         final double switchFunction = evaluateSwitchFunction(adjointVariables, mass);
         if (switchFunction > 0.) {
-            adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) * getMaximumThrustMagnitude() /
-                    (mass * mass);
+            adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) *
+                    FastMath.min(switchFunction, getMaximumThrustMagnitude()) / (mass * mass);
         }
     }
 
