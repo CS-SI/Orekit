@@ -232,35 +232,25 @@ class FieldNeQuickParameters <T extends CalculusFieldElement<T>> {
     }
 
     /**
-     * Get the F1 layer thickness parameter (top).
-     * @return B1Top in km
+     * Get the F1 layer thickness parameter.
+     * @param h current height (km)
+     * @return B1 in km
+     * @since 13.0
      */
-    public T getB1Top() {
-        return b1Top;
+    public T getBF1(final T h) {
+        // Eq. 110
+        return (h.getReal() > hmF1.getReal()) ? b1Top : b1Bot;
     }
 
     /**
-     * Get the F1 layer thickness parameter (bottom).
-     * @return B1Bot in km
+     * Get the E layer thickness parameter.
+     * @param h current height (km)
+     * @return Be in km
+     * @since 13.0
      */
-    public T getB1Bot() {
-        return b1Bot;
-    }
-
-    /**
-     * Get the E layer thickness parameter (bottom).
-     * @return BeBot in km
-     */
-    public T getBEBot() {
-        return beBot;
-    }
-
-    /**
-     * Get the E layer thickness parameter (top).
-     * @return BeTop in km
-     */
-    public T getBETop() {
-        return beTop;
+    public T getBE(final T h) {
+        // Eq. 109
+        return (h.getReal() > hmE.getReal()) ? beTop : beBot;
     }
 
     /**

@@ -18,6 +18,7 @@ package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
@@ -232,36 +233,44 @@ public class NeQuickGalileo extends NeQuickModel {
 
     /** {@inheritDoc} */
     @Override
-    double clipH(final double hInKm) {
-        // If h < 100km we use h = 100km as recommended in the reference document
-        // for equations 111 to 113
-        return FastMath.max(hInKm, 100.0);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    <T extends CalculusFieldElement<T>> T clipH(final T hInKm) {
-        // If h < 100km we use h = 100km as recommended in the reference document
-        // for equations 111 to 113
-        return FastMath.max(hInKm, 100);
-    }
-
-    /** {@inheritDoc} */
-    @Override
     boolean applyChapmanParameters(final double hInKm) {
         return hInKm < 100.0;
     }
 
     /** {@inheritDoc} */
     @Override
-    double fixLowHArg(final double arg, final double h) {
-        return arg;
+    double[] computeExponentialArguments(final double h, final NeQuickParameters parameters) {
+
+        // If h < 100km we use h = 100km as recommended in the reference document
+        // for equations 111 to 113
+        final double clippedH = FastMath.max(h, 100.0);
+
+        // Eq. 111 to 113
+        final double   exp       = clipExp(10.0 / (1.0 + FastMath.abs(clippedH - parameters.getHmF2())));
+        final double[] arguments = new double[3];
+        arguments[0] =  (clippedH - parameters.getHmF2()) / parameters.getB2Bot();
+        arguments[1] = ((clippedH - parameters.getHmF1()) / parameters.getBF1(h)) * exp;
+        arguments[2] = ((clippedH - parameters.getHmE())  / parameters.getBE(h))  * exp;
+        return arguments;
+
     }
 
     /** {@inheritDoc} */
     @Override
-    <T extends CalculusFieldElement<T>> T fixLowHArg(final T arg, final T h) {
-        return arg;
+    <T extends CalculusFieldElement<T>> T[] computeExponentialArguments(final T h,
+                                                                        final FieldNeQuickParameters<T> parameters) {
+        // If h < 100km we use h = 100km as recommended in the reference document
+        // for equations 111 to 113
+        final T clippedH = FastMath.max(h, 100);
+
+        // Eq. 111 to 113
+        final T   exp   = clipExp(FastMath.abs(clippedH.subtract(parameters.getHmF2())).add(1.0).reciprocal().multiply(10.0));
+        final T[] arguments = MathArrays.buildArray(h.getField(), 3);
+        arguments[0] = clippedH.subtract(parameters.getHmF2()).divide(parameters.getB2Bot());
+        arguments[1] = clippedH.subtract(parameters.getHmF1()).divide(parameters.getBF1(h)).multiply(exp);
+        arguments[2] = clippedH.subtract(parameters.getHmE()).divide(parameters.getBE(h)).multiply(exp);
+        return arguments;
+
     }
 
     /** {@inheritDoc} */

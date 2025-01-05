@@ -18,6 +18,7 @@ package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
+import org.hipparchus.util.MathArrays;
 import org.orekit.bodies.FieldGeodeticPoint;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.data.DataSource;
@@ -237,31 +238,52 @@ public class NeQuickItu extends NeQuickModel {
 
     /** {@inheritDoc} */
     @Override
-    double clipH(final double hInKm) {
-        return hInKm;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    <T extends CalculusFieldElement<T>> T clipH(final T hInKm) {
-        return hInKm;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     boolean applyChapmanParameters(final double hInKm) {
         return false;
     }
 
     /** {@inheritDoc} */
     @Override
-    double fixLowHArg(final double arg, final double h) {
-        return h < H0 ? arg * (HD + H0 - h) / HD : arg;
+    double[] computeExponentialArguments(final double h, final NeQuickParameters parameters) {
+        final double   exp   = clipExp(10.0 / (1.0 + FastMath.abs(h - parameters.getHmF2())));
+        final double[] arguments = new double[3];
+        arguments[0] = fixLowHArg( (h - parameters.getHmF2()) / parameters.getB2Bot(), h);
+        arguments[1] = fixLowHArg(((h - parameters.getHmF1()) / parameters.getBF1(h)) * exp, h);
+        arguments[2] = fixLowHArg(((h - parameters.getHmE())  / parameters.getBE(h))  * exp, h);
+        return arguments;
     }
 
     /** {@inheritDoc} */
     @Override
-    <T extends CalculusFieldElement<T>> T fixLowHArg(final T arg, final T h) {
+    <T extends CalculusFieldElement<T>> T[] computeExponentialArguments(final T h,
+                                                                        final FieldNeQuickParameters<T> parameters) {
+        final T   exp   = clipExp(FastMath.abs(h.subtract(parameters.getHmF2())).add(1.0).reciprocal().multiply(10.0));
+        final T[] arguments = MathArrays.buildArray(h.getField(), 3);
+        arguments[0] = fixLowHArg(h.subtract(parameters.getHmF2()).divide(parameters.getB2Bot()), h);
+        arguments[1] = fixLowHArg(h.subtract(parameters.getHmF1()).divide(parameters.getBF1(h)).multiply(exp), h);
+        arguments[2] = fixLowHArg(h.subtract(parameters.getHmE()).divide(parameters.getBE(h)).multiply(exp), h);
+        return arguments;
+    }
+
+    /**
+     * Fix arguments for low altitudes.
+     * @param arg argument of the exponential
+     * @param h height in km
+     * @return fixed argument
+     * @since 13.0
+     */
+    private double fixLowHArg(final double arg, final double h) {
+        return h < H0 ? arg * (HD + H0 - h) / HD : arg;
+    }
+
+    /**
+     * Fix arguments for low altitudes.
+     * @param arg argument of the exponential
+     * @param h height in km
+     * @return fixed argument
+     * @since 13.0
+     */
+    private <T extends CalculusFieldElement<T>> T fixLowHArg(final T arg, final T h) {
         return h.getReal() < H0 ? arg.multiply(h.negate().add(HD + H0)).divide(HD) : arg;
     }
 

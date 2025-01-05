@@ -243,18 +243,8 @@ public abstract class NeQuickModel implements IonosphericModel {
     private double bottomElectronDensity(final double h, final NeQuickParameters parameters) {
 
         // Select the relevant B parameter for the current height (Eq. 109 and 110)
-        final double be;
-        if (h > parameters.getHmE()) {
-            be = parameters.getBETop();
-        } else {
-            be = parameters.getBEBot();
-        }
-        final double bf1;
-        if (h > parameters.getHmF1()) {
-            bf1 = parameters.getB1Top();
-        } else {
-            bf1 = parameters.getB1Bot();
-        }
+        final double be  = parameters.getBE(h);
+        final double bf1 = parameters.getBF1(h);
         final double bf2 = parameters.getB2Bot();
 
         // Useful array of constants
@@ -263,12 +253,7 @@ public abstract class NeQuickModel implements IonosphericModel {
         };
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
-        final double clippedH = clipH(h);
-        final double   exp   = clipExp(10.0 / (1.0 + FastMath.abs(clippedH - parameters.getHmF2())));
-        final double[] arguments = new double[3];
-        arguments[0] = fixLowHArg((clippedH - parameters.getHmF2()) / bf2, h);
-        arguments[1] = fixLowHArg(((clippedH - parameters.getHmF1()) / bf1) * exp, h);
-        arguments[2] = fixLowHArg(((clippedH - parameters.getHmE()) / be) * exp, h);
+        final double[] arguments = computeExponentialArguments(h, parameters);
 
         // S coefficients
         final double[] s = new double[3];
@@ -321,18 +306,8 @@ public abstract class NeQuickModel implements IonosphericModel {
         final T one  = field.getOne();
 
         // Select the relevant B parameter for the current height (Eq. 109 and 110)
-        final T be;
-        if (h.getReal() > parameters.getHmE().getReal()) {
-            be = parameters.getBETop();
-        } else {
-            be = parameters.getBEBot();
-        }
-        final T bf1;
-        if (h.getReal() > parameters.getHmF1().getReal()) {
-            bf1 = parameters.getB1Top();
-        } else {
-            bf1 = parameters.getB1Bot();
-        }
+        final T be  = parameters.getBE(h);
+        final T bf1 = parameters.getBF1(h);
         final T bf2 = parameters.getB2Bot();
 
         // Useful array of constants
@@ -342,12 +317,7 @@ public abstract class NeQuickModel implements IonosphericModel {
         ct[2] = be.reciprocal();
 
         // Compute the exponential argument for each layer (Eq. 111 to 113)
-        final T clippedH = clipH(h);
-        final T   exp   = clipExp(FastMath.abs(clippedH.subtract(parameters.getHmF2())).add(1.0).divide(10.0).reciprocal());
-        final T[] arguments = MathArrays.buildArray(field, 3);
-        arguments[0] = fixLowHArg(clippedH.subtract(parameters.getHmF2()).divide(bf2), h);
-        arguments[1] = fixLowHArg(clippedH.subtract(parameters.getHmF1()).divide(bf1).multiply(exp), h);
-        arguments[2] = fixLowHArg(clippedH.subtract(parameters.getHmE()).divide(be).multiply(exp), h);
+        final T[] arguments = computeExponentialArguments(h, parameters);
 
         // S coefficients
         final T[] s = MathArrays.buildArray(field, 3);
@@ -496,7 +466,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param power power for exponential function
      * @return clipped exponential value
      */
-    private double clipExp(final double power) {
+    protected double clipExp(final double power) {
         if (power > 80.0) {
             return 5.5406E34;
         } else if (power < -80) {
@@ -516,7 +486,7 @@ public abstract class NeQuickModel implements IonosphericModel {
      * @param power power for exponential function
      * @return clipped exponential value
      */
-    private <T extends CalculusFieldElement<T>> T clipExp(final T power) {
+    protected <T extends CalculusFieldElement<T>> T clipExp(final T power) {
         if (power.getReal() > 80.0) {
             return power.newInstance(5.5406E34);
         } else if (power.getReal() < -80) {
@@ -546,25 +516,6 @@ public abstract class NeQuickModel implements IonosphericModel {
     abstract <T extends CalculusFieldElement<T>> T stec(DateTimeComponents dateTime, FieldRay<T> ray);
 
     /**
-     * Clip height for bottom density computation.
-     *
-     * @param hInKm height in kilometers
-     * @return clipped height
-     * @since 13.0
-     */
-    abstract double clipH(double hInKm);
-
-    /**
-     * Clip height for bottom density computation.
-     *
-     * @param <T>   type of the field elements
-     * @param hInKm height in kilometers
-     * @return clipped height
-     * @since 13.0
-     */
-    abstract <T extends CalculusFieldElement<T>> T clipH(T hInKm);
-
-    /**
      * Check if Chapman parameters should be applied.
      *
      * @param hInKm height in kilometers
@@ -574,23 +525,24 @@ public abstract class NeQuickModel implements IonosphericModel {
     abstract boolean applyChapmanParameters(double hInKm);
 
     /**
-     * Fix arguments for lao altitudes.
-     * @param arg argument of the exponential
+     * Compute exponential arguments.
      * @param h height in km
-     * @return fixed argument
+     * @param parameters NeQuick model parameters
+     * @return exponential arguments
      * @since 13.0
      */
-    abstract double fixLowHArg(double arg, double h);
+    abstract double[] computeExponentialArguments(double h, NeQuickParameters parameters);
 
     /**
-     * Fix arguments for lao altitudes.
+     * Compute exponential arguments.
      * @param <T>   type of the field elements
-     * @param arg argument of the exponential
      * @param h height in km
-     * @return fixed argument
+     * @param parameters NeQuick model parameters
+     * @return exponential arguments
      * @since 13.0
      */
-    abstract <T extends CalculusFieldElement<T>> T fixLowHArg(T arg, T h);
+    abstract <T extends CalculusFieldElement<T>> T[] computeExponentialArguments(T h,
+                                                                                 FieldNeQuickParameters<T> parameters);
 
     /**
      * Compute topside thickness parameter.
