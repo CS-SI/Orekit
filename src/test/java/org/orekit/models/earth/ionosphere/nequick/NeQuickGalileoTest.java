@@ -125,11 +125,11 @@ public class NeQuickGalileoTest {
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(124.09), 20100697.90);
 
         // Date
-        final AbsoluteDate date = new AbsoluteDate(2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2018, 1, 2, 16, 0, 0, TimeScalesFactory.getUTC());
 
         // STEC
         final double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.916, stec, 1.0e-3);
+        Assertions.assertEquals(20.481, stec, 1.0e-3);
     }
 
     @Test
@@ -154,11 +154,11 @@ public class NeQuickGalileoTest {
                                                                     zero.newInstance(20100697.90));
 
         // Date
-        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 4, 2, 16, 0, 0, TimeScalesFactory.getUTC());
+        final FieldAbsoluteDate<T> date = new FieldAbsoluteDate<>(field, 2018, 1, 2, 16, 0, 0, TimeScalesFactory.getUTC());
 
         // STEC
         final T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.916, stec.getReal(), 1.0e-3);
+        Assertions.assertEquals(20.481, stec.getReal(), 1.0e-3);
     }
 
     @Test
@@ -246,13 +246,13 @@ public class NeQuickGalileoTest {
         final NeQuickGalileo model = new NeQuickGalileo(medium);
 
         // Date
-        final AbsoluteDate date = new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC());
+        final AbsoluteDate date = new AbsoluteDate(2018,  11,  2, 16, 0, 0, TimeScalesFactory.getUTC());
 
         // Geodetic points
         final GeodeticPoint recP = new GeodeticPoint(FastMath.toRadians(-31.80), FastMath.toRadians(-179.99), 12.78);
         final GeodeticPoint satP = new GeodeticPoint(FastMath.toRadians(-14.31), FastMath.toRadians(-177.43), 20100697.90);
         double stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.839, stec, 0.001);
+        Assertions.assertEquals(20.471, stec, 0.001);
 
     }
 
@@ -271,7 +271,7 @@ public class NeQuickGalileoTest {
         // Date
         final FieldAbsoluteDate<T> date =
                         new FieldAbsoluteDate<>(field,
-                                                new AbsoluteDate(2018,  4,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
+                                                new AbsoluteDate(2018,  11,  2, 16, 0, 0, TimeScalesFactory.getUTC()));
 
         // Geodetic points
         final FieldGeodeticPoint<T> recP = new FieldGeodeticPoint<>(FastMath.toRadians(zero.newInstance(-31.80)),
@@ -281,7 +281,7 @@ public class NeQuickGalileoTest {
                                                                     FastMath.toRadians(zero.newInstance(-177.43)),
                                                                     zero.newInstance(20100697.90));
         T stec = model.stec(date, recP, satP);
-        Assertions.assertEquals(6.839, stec.getReal(), 0.001);
+        Assertions.assertEquals(20.471, stec.getReal(), 0.001);
 
     }
 
