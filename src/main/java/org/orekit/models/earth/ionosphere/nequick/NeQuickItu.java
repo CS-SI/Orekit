@@ -68,7 +68,7 @@ public class NeQuickItu extends NeQuickModel {
      * @param f107 solar flux
      * @param utc UTC time scale
      */
-    NeQuickItu(final double f107, final TimeScale utc) {
+    public NeQuickItu(final double f107, final TimeScale utc) {
         super(utc);
         this.f107 = f107;
     }
