@@ -143,6 +143,11 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
         final RealMatrix defectsJacobian = MatrixUtils.createRealMatrix(defectsJacobianData);
         final DecompositionSolver solver = new LUDecomposition(defectsJacobian, singularityThreshold).getSolver();
         final RealVector negatedDefects = MatrixUtils.createRealVector(defects).mapMultiply(-1);
-        return solver.solve(negatedDefects).toArray();
+        final RealVector solved = solver.solve(negatedDefects);
+        final double[] corrections = new double[solved.getDimension()];
+        for (int i = 0; i < corrections.length; i++) {
+            corrections[i] = solved.getEntry(i) * getScales()[i];
+        }
+        return corrections;
     }
 }
