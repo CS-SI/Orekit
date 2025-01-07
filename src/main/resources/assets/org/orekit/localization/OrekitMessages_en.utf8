@@ -903,5 +903,11 @@ PROPAGATOR_BUILDER_NOT_CLONEABLE = Propagator builder cannot be cloned
 # field "{0}" is too long, maximum length is {1} characters
 FIELD_TOO_LONG = field "{0}" is too long, maximum length is {1} characters
 
+# Process covariance expecting dimension {0}, got {1}
+WRONG_PROCESS_COVARIANCE_DIMENSION = Process covariance expecting dimension {0}, got {1}
+
+# Measurement covariance expecting dimension {0}, got {1}
+WRONG_MEASUREMENT_COVARIANCE_DIMENSION = Measurement covariance expecting dimension {0}, got {1}
+
 # cannot parse data {0}
 CANNOT_PARSE_DATA = cannot parse data {0}

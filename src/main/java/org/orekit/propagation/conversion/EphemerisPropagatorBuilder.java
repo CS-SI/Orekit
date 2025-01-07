@@ -1,4 +1,4 @@
-/* Copyright 2022 Bryan Cazabonne
+/* Copyright 2022-2025 Bryan Cazabonne
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

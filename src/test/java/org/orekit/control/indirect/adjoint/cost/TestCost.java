@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,7 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.FieldEventDetector;
-
-import java.util.stream.Stream;
 
 public class TestCost implements CartesianCost {
 
@@ -43,38 +36,13 @@ public class TestCost implements CartesianCost {
     }
 
     @Override
-    public <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(T[] adjointVariables, T mass) {
-        return new FieldVector3D<>(mass.getField(), new Vector3D(1, 2, 3));
-    }
-
-    @Override
     public void updateAdjointDerivatives(double[] adjointVariables, double mass, double[] adjointDerivatives) {
-
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives) {
 
     }
 
     @Override
     public double getHamiltonianContribution(double[] adjointVariables, double mass) {
         return 0;
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(T[] adjointVariables, T mass) {
-        return mass.getField().getZero();
-    }
-
-    @Override
-    public Stream<EventDetector> getEventDetectors() {
-        return null;
-    }
-
-    @Override
-    public <T extends CalculusFieldElement<T>> Stream<FieldEventDetector<T>> getFieldEventDetectors(Field<T> field) {
-        return null;
     }
 
 }

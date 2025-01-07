@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,14 +18,13 @@ package org.orekit.propagation.analytical.tle;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
+import org.hipparchus.util.Pair;
 import org.hipparchus.util.SinCos;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.Attitude;
@@ -180,11 +179,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     /** TLE frame. */
     private final Frame teme;
 
-    /** Spacecraft masses (kg) mapped to TLEs. */
-    private Map<TLE, Double> masses;
-
-    /** All TLEs. */
-    private TimeSpanMap<TLE> tles;
+    /** All TLEs and masses. */
+    private TimeSpanMap<Pair<TLE, Double>> tlesAndMasses;
 
     /** Protected constructor for derived classes.
      *
@@ -218,9 +214,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
         this.utc       = initialTLE.getUtc();
         initializeTle(initialTLE);
         this.teme      = teme;
-        this.tles      = new TimeSpanMap<>(tle);
-        this.masses    = new HashMap<>();
-        this.masses.put(tle, mass);
+        this.tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, mass));
 
         // set the initial state
         final Orbit orbit = propagateOrbit(initialTLE.getDate());
@@ -572,21 +566,19 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
     public void resetInitialState(final SpacecraftState state) {
         super.resetInitialState(state);
         resetTle(state);
-        masses = new HashMap<>();
-        masses.put(tle, state.getMass());
-        tles = new TimeSpanMap<>(tle);
+        tlesAndMasses = new TimeSpanMap<>(new Pair<>(tle, state.getMass()));
     }
 
     /** {@inheritDoc} */
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
         resetTle(state);
+        final Pair<TLE, Double> tleAndMass = new Pair<>(tle, state.getMass());
         if (forward) {
-            tles.addValidAfter(tle, state.getDate(), false);
+            tlesAndMasses.addValidAfter(tleAndMass, state.getDate(), false);
         } else {
-            tles.addValidBefore(tle, state.getDate(), false);
+            tlesAndMasses.addValidBefore(tleAndMass, state.getDate(), false);
         }
         stateChanged(state);
-        masses.put(tle, state.getMass());
     }
 
     /** Reset internal TLE from a SpacecraftState.
@@ -609,12 +601,12 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     /** {@inheritDoc} */
     protected double getMass(final AbsoluteDate date) {
-        return masses.get(tles.get(date));
+        return tlesAndMasses.get(date).getValue();
     }
 
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date) {
-        final TLE closestTle = tles.get(date);
+        final TLE closestTle = tlesAndMasses.get(date).getKey();
         if (!tle.equals(closestTle)) {
             initializeTle(closestTle);
         }

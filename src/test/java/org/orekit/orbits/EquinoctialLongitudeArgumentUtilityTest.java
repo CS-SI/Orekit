@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -90,5 +91,13 @@ class EquinoctialLongitudeArgumentUtilityTest {
                 intermediateLongitudeArgument, EX, EY, inputType);
         // THEN
         Assertions.assertEquals(expectedLongitudeArgument, actualLongitudeArgument, TOLERANCE);
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {1e3, 5e3, 1e4, 1e5, 5e5})
+    void testIssue1525(final double lM) {
+        final double ex = 0.44940492906694396;
+        final double ey = 0.56419162961687;
+        Assertions.assertDoesNotThrow(() -> EquinoctialLongitudeArgumentUtility.meanToEccentric(ex, ey, lM));
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -352,6 +352,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     protected void setUpEventDetector(final ODEIntegrator integ, final EventDetector detector) {
         integ.addEventDetector(new AdaptedEventDetector(detector));
+    }
+
+    /**
+     * Clear the ephemeris generators.
+     * @since 13.0
+     */
+    public void clearEphemerisGenerators() {
+        ephemerisGenerators.clear();
     }
 
     /** {@inheritDoc} */

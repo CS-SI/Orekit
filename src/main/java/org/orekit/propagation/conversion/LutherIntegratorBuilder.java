@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -25,24 +25,21 @@ import org.orekit.orbits.PositionAngleType;
  * @author Luc Maisonobe
  * @since 7.1
  */
-public class LutherIntegratorBuilder extends AbstractIntegratorBuilder<LutherIntegrator> {
-
-    /** Step size (s). */
-    private final double step;
+public class LutherIntegratorBuilder extends AbstractFixedSingleStepIntegratorBuilder<LutherIntegrator> {
 
     /** Build a new instance.
      * @param step step size (s)
      * @see LutherIntegrator
      */
     public LutherIntegratorBuilder(final double step) {
-        this.step = step;
+        super(step);
     }
 
     /** {@inheritDoc} */
     @Override
     public LutherIntegrator buildIntegrator(final Orbit orbit, final OrbitType orbitType,
                                             final PositionAngleType angleType) {
-        return new LutherIntegrator(step);
+        return new LutherIntegrator(getStep());
     }
 
 }

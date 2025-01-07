@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,11 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
-import org.orekit.propagation.events.EventDetectorsProvider;
+import org.orekit.propagation.events.EventDetector;
+
+import java.util.stream.Stream;
 
 /**
  * Interface to definite cost function in the frame of Pontryagin's Maximum Principle using Cartesian coordinates.
@@ -31,7 +31,7 @@ import org.orekit.propagation.events.EventDetectorsProvider;
  * @see CartesianAdjointDerivativesProvider
  * @since 12.2
  */
-public interface CartesianCost extends EventDetectorsProvider {
+public interface CartesianCost {
 
     /** Getter for adjoint vector name.
      * @return adjoint vector name
@@ -60,15 +60,6 @@ public interface CartesianCost extends EventDetectorsProvider {
     Vector3D getThrustAccelerationVector(double[] adjointVariables, double mass);
 
     /**
-     * Computes the thrust acceleration vector in propagation frame from the adjoint variables and the mass.
-     * @param adjointVariables adjoint vector
-     * @param mass mass
-     * @param <T> field type
-     * @return thrust vector
-     */
-    <T extends CalculusFieldElement<T>> FieldVector3D<T> getFieldThrustAccelerationVector(T[] adjointVariables, T mass);
-
-    /**
      * Update the adjoint derivatives if necessary.
      *
      * @param adjointVariables   adjoint vector
@@ -76,16 +67,6 @@ public interface CartesianCost extends EventDetectorsProvider {
      * @param adjointDerivatives derivatives to update
      */
     void updateAdjointDerivatives(double[] adjointVariables, double mass, double[] adjointDerivatives);
-
-    /**
-     * Update the adjoint derivatives if necessary.
-     *
-     * @param <T>                field type
-     * @param adjointVariables   adjoint vector
-     * @param mass               mass
-     * @param adjointDerivatives derivatives to update
-     */
-    <T extends CalculusFieldElement<T>> void updateFieldAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives);
 
     /**
      * Computes the Hamiltonian contribution of the cost function.
@@ -96,11 +77,10 @@ public interface CartesianCost extends EventDetectorsProvider {
     double getHamiltonianContribution(double[] adjointVariables, double mass);
 
     /**
-     * Computes the Hamiltonian contribution of the cost function.
-     * @param adjointVariables adjoint vector
-     * @param mass mass
-     * @param <T> field type
-     * @return contribution to Hamiltonian
+     * Get the detectors needed for propagation.
+     * @return event detectors
      */
-    <T extends CalculusFieldElement<T>> T getFieldHamiltonianContribution(T[] adjointVariables, T mass);
+    default Stream<EventDetector> getEventDetectors() {
+        return Stream.of();
+    }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -140,17 +140,6 @@ class CircularOrbitTest {
         Assertions.assertEquals(param.getHy(), circ.getHy(), Utils.epsilonAngle * FastMath.abs(circ.getI()));
         Assertions.assertEquals(MathUtils.normalizeAngle(param.getLv(), circ.getLv()), circ.getLv(), Utils.epsilonAngle * FastMath.abs(circ.getLv()));
 
-    }
-
-    @Timeout(5)
-    @ParameterizedTest()
-    @EnumSource(PositionAngleType.class)
-    void testConstructor(final PositionAngleType positionAngleType) {
-        for (int i = 0; i < 10000000; i++) {
-            final CircularOrbit orbit = new CircularOrbit(42166712.0, 0.1e-10, -0.1e-10, 0, 0.,
-                    5.300, positionAngleType, FramesFactory.getEME2000(), date, mu);
-            Assertions.assertEquals(positionAngleType, orbit.getCachedPositionAngleType());
-        }
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -155,13 +155,21 @@ public class FieldEventsLogger<T extends CalculusFieldElement<T>> {
     }
 
     /** Internal wrapper for events detectors. */
-    private class FieldLoggingWrapper extends FieldAdapterDetector<T> {
+    private class FieldLoggingWrapper implements FieldDetectorModifier<T> {
+
+        /** Wrapped detector. */
+        private final FieldEventDetector<T> detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
         FieldLoggingWrapper(final FieldEventDetector<T> detector) {
-            super(detector);
+            this.detector = detector;
+        }
+
+        @Override
+        public FieldEventDetector<T> getDetector() {
+            return detector;
         }
 
         /** Log an event.

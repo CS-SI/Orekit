@@ -1,4 +1,4 @@
-/* Copyright 2020 Exotrail
+/* Copyright 2020-2025 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,16 +20,21 @@ import java.util.Collections;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
+import org.hipparchus.analysis.differentiation.UnivariateDerivative1Field;
+import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.orekit.attitudes.FieldAttitude;
 import org.orekit.forces.maneuvers.Control3DVectorCostType;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.utils.Constants;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 
 class ThrustPropulsionModelTest {
@@ -153,6 +158,28 @@ class ThrustPropulsionModelTest {
 
         // Assert that returned direction is a zero vector
         Assertions.assertEquals(expectedDirection, returnedDirection);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testIssue1551() {
+        // GIVEN
+        final ThrustPropulsionModel mockedModel = Mockito.mock(ThrustPropulsionModel.class);
+        final FieldSpacecraftState mockedState = Mockito.mock(FieldSpacecraftState.class);
+        Mockito.when(mockedState.getMass()).thenReturn(UnivariateDerivative1.PI);
+        final UnivariateDerivative1Field field = UnivariateDerivative1Field.getInstance();
+        Mockito.when(mockedState.getDate()).thenReturn(FieldAbsoluteDate.getArbitraryEpoch(field));
+        final FieldAttitude mockedAttitude = Mockito.mock(FieldAttitude.class);
+        Mockito.when(mockedAttitude.getRotation()).thenReturn(FieldRotation.getIdentity(field));
+        final UnivariateDerivative1[] parameters = new UnivariateDerivative1[0];
+        final UnivariateDerivative1 zero = field.getZero();
+        Mockito.when(mockedModel.getThrustVector(mockedState, parameters))
+                .thenReturn(new FieldVector3D<>(new UnivariateDerivative1(0., 1), zero, zero));
+        Mockito.when(mockedModel.getAcceleration(mockedState, mockedAttitude, parameters)).thenCallRealMethod();
+        // WHEN
+        final FieldVector3D<UnivariateDerivative1> actualVector = mockedModel.getAcceleration(mockedState, mockedAttitude, parameters);
+        // THEN
+        Assertions.assertEquals(0., actualVector.getNorm().getReal());
     }
 
     @Test

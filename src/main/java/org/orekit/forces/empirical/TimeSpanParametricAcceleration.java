@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,6 +30,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 
@@ -256,7 +257,7 @@ public class TimeSpanParametricAcceleration extends AbstractParametricAccelerati
             // Add all the parameter drivers of the time span
             for (ParameterDriver driver : span.getData().getParametersDrivers()) {
                 // Add the driver only if the name does not exist already
-                if (!findByName(listParameterDrivers, driver.getName())) {
+                if (!ParameterDriversProvider.findByName(listParameterDrivers, driver.getName())) {
                     listParameterDrivers.add(driver);
                 }
             }
@@ -321,20 +322,6 @@ public class TimeSpanParametricAcceleration extends AbstractParametricAccelerati
             }
         }
         return outParameters;
-    }
-
-    /** Find if a parameter driver with a given name already exists in a list of parameter drivers.
-     * @param driversList the list of parameter drivers
-     * @param name the parameter driver's name to filter with
-     * @return true if the name was found, false otherwise
-     */
-    private boolean findByName(final List<ParameterDriver> driversList, final String name) {
-        for (final ParameterDriver d : driversList) {
-            if (d.getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }

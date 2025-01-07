@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -98,29 +98,6 @@ public class NodeDetector extends AbstractDetector<NodeDetector> {
         this(new EventDetectionSettings(AdaptableInterval.of(2 * estimateNodesTimeSeparation(orbit) / 3), threshold,
              DEFAULT_MAX_ITER), new StopOnIncreasing(),
              frame);
-    }
-
-    /** Protected constructor with full parameters.
-     * <p>
-     * This constructor is not public as users are expected to use the builder
-     * API with the various {@code withXxx()} methods to set up the instance
-     * in a readable manner without using a huge amount of parameters.
-     * </p>
-     * @param maxCheck maximum checking interval
-     * @param threshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
-     * @param handler event handler to call at event occurrences
-     * @param frame frame in which the equator is defined (typical
-     * values are {@link org.orekit.frames.FramesFactory#getEME2000() EME<sub>2000</sub>} or
-     * {@link org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean) ITRF})
-     * @since 6.1
-     * @deprecated as of 12.2
-     */
-    @Deprecated
-    protected NodeDetector(final AdaptableInterval maxCheck, final double threshold,
-                           final int maxIter, final EventHandler handler,
-                           final Frame frame) {
-        this(new EventDetectionSettings(maxCheck, threshold, maxIter), handler, frame);
     }
 
     /** Protected constructor with full parameters.
