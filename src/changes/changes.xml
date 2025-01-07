@@ -221,6 +221,9 @@
         <action dev="serrof" type="add" issue="1519">
             Allow to define body attraction without CelestialBody.
         </action>
+        <action dev="serrof" type="add" issue="1514">
+            Add scales for differentiation in indirect shooting.
+        </action>
         <action dev="luc" type="add" issue="707">
             Properly parse dates during the 1961 leap that was 1.422818s long.
         </action>
