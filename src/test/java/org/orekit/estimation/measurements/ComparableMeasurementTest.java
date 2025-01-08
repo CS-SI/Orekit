@@ -94,4 +94,44 @@ public class ComparableMeasurementTest {
         // Same date, same size, same values. Likely non-zero, but may be zero.
         Assertions.assertEquals(pv.compareTo(pv2), -pv2.compareTo(pv));
     }
+
+    /**
+     * Check {@link ComparableMeasurement#compareTo(ComparableMeasurement)} still works if
+     * hashcode is implemented poorly.
+     */
+    @Test
+    public void testComparePoorlyImplementedHashCode() {
+        ComparableMeasurement a = new BadHashCode(), b = new BadHashCode();
+
+        // Same date, same size, same values. Likely non-zero, but may be zero.
+        Assertions.assertEquals(a.compareTo(b), -b.compareTo(a));
+        Assertions.assertEquals(a.compareTo(a), 0);
+        Assertions.assertEquals(b.compareTo(b), 0);
+    }
+
+    /** Implementation of {@link ComparableMeasurement} with a bad hash code. */
+    private static class BadHashCode implements ComparableMeasurement {
+
+        @Override
+        public double[] getObservedValue() {
+            return new double[0];
+        }
+
+        @Override
+        public void setObservedValue(double[] newObserved) {
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return AbsoluteDate.ARBITRARY_EPOCH;
+        }
+
+        @Override
+        public int hashCode() {
+            // test comparison w/ poor hashcode implementation
+            return 1;
+        }
+
+    }
+
 }
