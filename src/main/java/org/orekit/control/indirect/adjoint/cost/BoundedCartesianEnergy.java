@@ -74,7 +74,10 @@ public class BoundedCartesianEnergy extends CartesianEnergyConsideringMass {
     @Override
     protected double getThrustForceNorm(final double[] adjointVariables, final double mass) {
         final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
-        final double factor = adjointVelocityNorm / mass - getMassFlowRateFactor() * adjointVariables[6];
+        double factor = adjointVelocityNorm / mass;
+        if (getAdjointDimension() > 6) {
+            factor -= getMassFlowRateFactor() * adjointVariables[6];
+        }
         if (factor > maximumThrustMagnitude) {
             return maximumThrustMagnitude;
         } else {

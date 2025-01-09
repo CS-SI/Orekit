@@ -47,6 +47,29 @@ class FieldQuadraticPenaltyCartesianFuelTest {
     private static final String ADJOINT_NAME = "adjoint";
 
     @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testUpdateFieldAdjointDerivatives(final boolean withMass) {
+        // GIVEN
+        final Binary64 massFlowRateFactor = withMass ? Binary64.ONE : Binary64.ZERO;
+        final FieldQuadraticPenaltyCartesianFuel<Binary64> cost = new FieldQuadraticPenaltyCartesianFuel<>("adjoint", massFlowRateFactor, Binary64.PI, Binary64.ONE);
+        final Binary64[] adjoint = MathArrays.buildArray(Binary64Field.getInstance(), withMass ? 7 : 6);
+        final Binary64[] derivatives = adjoint.clone();
+        adjoint[3] = Binary64.ONE;
+        // WHEN
+        cost.updateFieldAdjointDerivatives(adjoint, Binary64.ONE, derivatives);
+        // THEN
+        final Binary64 zero = Binary64.ZERO;
+        for (int i = 0; i < 6; ++i) {
+            Assertions.assertEquals(zero, derivatives[i]);
+        }
+        if (withMass) {
+            Assertions.assertNotEquals(zero, derivatives[derivatives.length - 1]);
+        } else {
+            Assertions.assertEquals(zero, derivatives[derivatives.length - 1]);
+        }
+    }
+
+    @ParameterizedTest
     @ValueSource(doubles = {0, 0.1, 0.5, 0.9})
     void testEvaluateFieldPenaltyFunction(final double norm) {
         // GIVEN

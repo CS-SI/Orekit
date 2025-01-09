@@ -16,25 +16,24 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
-import org.hipparchus.util.FastMath;
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-class LogarithmicBarrierCartesianFuelTest {
+class CartesianFlightDurationCostTest {
 
     private static final String ADJOINT_NAME = "adjoint";
 
-    @ParameterizedTest
-    @ValueSource(doubles = {0., 0.1, 0.5, 0.9})
-    void testEvaluatePenaltyFunction(final double norm) {
+    @Test
+    void testGetHamiltonianContribution() {
         // GIVEN
-        final LogarithmicBarrierCartesianFuel penalizedCartesianFuel = new LogarithmicBarrierCartesianFuel(ADJOINT_NAME,
-                1., 2., 0.5);
+        final CartesianFlightDurationCost cost = new CartesianFlightDurationCost(ADJOINT_NAME, 1, 2);
         // WHEN
-        final double actualPenalty = penalizedCartesianFuel.evaluatePenaltyFunction(norm);
+        final double contribution = cost.getHamiltonianContribution(new double[6], 1);
         // THEN
-        Assertions.assertEquals(FastMath.log(norm) + FastMath.log(1 - norm), actualPenalty);
+        Assertions.assertEquals(-1, contribution);
     }
 
     @ParameterizedTest
@@ -42,7 +41,7 @@ class LogarithmicBarrierCartesianFuelTest {
     void testUpdateFieldAdjointDerivatives(final boolean withMass) {
         // GIVEN
         final double massFlowRateFactor = withMass ? 1 : 0;
-        final LogarithmicBarrierCartesianFuel cost = new LogarithmicBarrierCartesianFuel("adjoint", massFlowRateFactor, 2, 0.5);
+        final CartesianFlightDurationCost cost = new CartesianFlightDurationCost(ADJOINT_NAME, massFlowRateFactor, 2);
         final double[] adjoint = new double[withMass ? 7 : 6];
         adjoint[3] = 1;
         final double[] derivatives = new double[adjoint.length];
@@ -57,5 +56,16 @@ class LogarithmicBarrierCartesianFuelTest {
         } else {
             Assertions.assertEquals(0., derivatives[derivatives.length - 1]);
         }
+    }
+
+    @Test
+    void testGetThrustAccelerationVector() {
+        // GIVEN
+        final CartesianFlightDurationCost cost = new CartesianFlightDurationCost(ADJOINT_NAME, 1, 2);
+        // WHEN
+        final Vector3D contribution = cost.getThrustAccelerationVector(new double[] {0, 0, 0, 1, 2, 3}, 1);
+        // THEN
+        Assertions.assertEquals(new Vector3D(1, 2, 3).normalize().scalarMultiply(cost.getMaximumThrustMagnitude()),
+                contribution);
     }
 }

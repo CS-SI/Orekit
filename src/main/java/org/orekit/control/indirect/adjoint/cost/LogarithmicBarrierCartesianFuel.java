@@ -57,8 +57,10 @@ public class LogarithmicBarrierCartesianFuel extends PenalizedCartesianFuelCost 
     @Override
     public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
                                          final double[] adjointDerivatives) {
-        adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) * getThrustForceMagnitude(adjointVariables,
-                mass) / (mass * mass);
+        if (getAdjointDimension() > 6) {
+            adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) * getThrustForceMagnitude(adjointVariables,
+                    mass) / (mass * mass);
+        }
     }
 
     /**
@@ -69,7 +71,10 @@ public class LogarithmicBarrierCartesianFuel extends PenalizedCartesianFuelCost 
      */
     private double getThrustForceMagnitude(final double[] adjointVariables, final double mass) {
         final double twoEpsilon = getEpsilon() * 2;
-        final double otherTerm = getAdjointVelocityNorm(adjointVariables) / mass - getMassFlowRateFactor() * adjointVariables[6] - 1;
+        double otherTerm = getAdjointVelocityNorm(adjointVariables) / mass - 1;
+        if (getAdjointDimension() > 6) {
+            otherTerm -= getMassFlowRateFactor() * adjointVariables[6];
+        }
         return twoEpsilon * getMaximumThrustMagnitude() / (twoEpsilon + otherTerm + FastMath.sqrt(otherTerm * otherTerm + twoEpsilon * twoEpsilon));
     }
 }

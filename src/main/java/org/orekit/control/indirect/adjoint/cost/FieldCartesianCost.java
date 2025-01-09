@@ -39,12 +39,10 @@ public interface FieldCartesianCost<T extends CalculusFieldElement<T>> {
      */
     String getAdjointName();
 
-    /** Getter for adjoint vector dimension. Default is 7 (six for Cartesian coordinates and one for mass).
+    /** Getter for adjoint vector dimension.
      * @return adjoint dimension
      */
-    default int getAdjointDimension() {
-        return 7;
-    }
+    int getAdjointDimension();
 
     /** Getter for mass flow rate factor. It is negated and multiplied by the thrust force magnitude to obtain the mass time derivative.
      * The fact that it is a constant means that the exhaust speed is assumed to be independent of time.

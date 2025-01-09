@@ -19,6 +19,8 @@ package org.orekit.control.indirect.adjoint.cost;
 import org.hipparchus.ode.events.Action;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.orekit.propagation.events.EventDetector;
 
 import java.util.List;
@@ -44,6 +46,28 @@ class BoundedCartesianEnergyTest {
             final CartesianEnergyConsideringMass.SingularityDetector singularityDetector =
                     (CartesianEnergyConsideringMass.SingularityDetector) eventDetector;
             Assertions.assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, true));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testUpdateFieldAdjointDerivatives(final boolean withMass) {
+        // GIVEN
+        final double massFlowRateFactor = withMass ? 1 : 0;
+        final BoundedCartesianEnergy cost = new BoundedCartesianEnergy("adjoint", massFlowRateFactor, 2);
+        final double[] adjoint = new double[withMass ? 7 : 6];
+        adjoint[3] = 1;
+        final double[] derivatives = new double[adjoint.length];
+        // WHEN
+        cost.updateAdjointDerivatives(adjoint, 1, derivatives);
+        // THEN
+        for (int i = 0; i < 6; ++i) {
+            Assertions.assertEquals(0., derivatives[i]);
+        }
+        if (withMass) {
+            Assertions.assertNotEquals(0., derivatives[derivatives.length - 1]);
+        } else {
+            Assertions.assertEquals(0., derivatives[derivatives.length - 1]);
         }
     }
 }
