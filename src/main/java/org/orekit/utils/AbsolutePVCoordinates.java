@@ -16,12 +16,9 @@
  */
 package org.orekit.utils;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitMessages;
@@ -34,11 +31,7 @@ import org.orekit.time.TimeStamped;
 
 /** Position - Velocity - Acceleration linked to a date and a frame.
  */
-public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
-    implements TimeStamped, Serializable, PVCoordinatesProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240819L;
+public class AbsolutePVCoordinates extends TimeStampedPVCoordinates implements TimeStamped, PVCoordinatesProvider {
 
     /** Frame in which are defined the coordinates. */
     private final Frame frame;
@@ -325,64 +318,6 @@ public class AbsolutePVCoordinates extends TimeStampedPVCoordinates
     @Override
     public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame outputFrame) {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(outputFrame);
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20240819L;
-
-        /** Seconds. */
-        private final long seconds;
-
-        /** Attoseconds. */
-        private final long attoseconds;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Frame in which acoordinates are defined. */
-        private final Frame frame;
-
-        /** Simple constructor.
-         * @param absPva instance to serialize
-         */
-        private DTO(final AbsolutePVCoordinates absPva) {
-
-            // decompose date
-            this.seconds     = absPva.getDate().getSeconds();
-            this.attoseconds = absPva.getDate().getAttoSeconds();
-
-            this.d = new double[] {
-                absPva.getPosition().getX(),     absPva.getPosition().getY(),     absPva.getPosition().getZ(),
-                absPva.getVelocity().getX(),     absPva.getVelocity().getY(),     absPva.getVelocity().getZ(),
-                absPva.getAcceleration().getX(), absPva.getAcceleration().getY(), absPva.getAcceleration().getZ()
-            };
-            this.frame = absPva.frame;
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link AbsolutePVCoordinates}.
-         * @return replacement {@link AbsolutePVCoordinates}
-         */
-        private Object readResolve() {
-            return new AbsolutePVCoordinates(frame,
-                                             new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                             new Vector3D(d[0], d[1], d[2]),
-                                             new Vector3D(d[3], d[4], d[5]),
-                                             new Vector3D(d[6], d[7], d[8]));
-        }
-
     }
 
 }

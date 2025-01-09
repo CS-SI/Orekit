@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
@@ -25,10 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.MathUtils;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
@@ -40,9 +35,6 @@ import org.orekit.utils.Constants;
  * the earth rotation angle, its parent frame is the {@link CIRFProvider}</p>
  */
 class TIRFProvider implements EOPBasedTransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130919L;
 
     /** Angular velocity of the Earth, in rad/s. */
     private static final double AVE = 7.292115146706979e-5;
@@ -178,49 +170,6 @@ class TIRFProvider implements EOPBasedTransformProvider {
      */
     public double getEarthRotationAngle(final AbsoluteDate date) {
         return MathUtils.normalizeAngle(era.value(date), 0);
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(eopHistory);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
-
-        /** EOP history. */
-        private final EOPHistory eopHistory;
-
-        /** Simple constructor.
-         * @param eopHistory EOP history
-         */
-        DataTransferObject(final EOPHistory eopHistory) {
-            this.eopHistory = eopHistory;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link TIRFProvider}.
-         * @return replacement {@link TIRFProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return new TIRFProvider(eopHistory,
-                        DataContext.getDefault().getTimeScales().getUT1(eopHistory));
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
-
     }
 
 }

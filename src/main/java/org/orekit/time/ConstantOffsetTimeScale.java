@@ -24,9 +24,6 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class ConstantOffsetTimeScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
-
     /** Name of the time scale. */
     private final String name;
 

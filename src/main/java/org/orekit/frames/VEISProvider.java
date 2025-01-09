@@ -36,9 +36,6 @@ import org.orekit.utils.Constants;
  */
 class VEISProvider implements TransformProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130530L;
-
     /** 1st coef for Veis sidereal time computation in radians (100.075542 deg). */
     private static final double VST0 = 1.746647708617871;
 

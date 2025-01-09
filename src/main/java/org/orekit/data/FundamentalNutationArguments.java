@@ -20,10 +20,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +33,6 @@ import org.hipparchus.exception.DummyLocalizable;
 import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -60,10 +57,7 @@ import org.orekit.utils.IERSConventions;
  * @see PoissonSeries
  * @see BodiesElements
  */
-public class FundamentalNutationArguments implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20131209L;
+public class FundamentalNutationArguments {
 
     /** IERS conventions to use. */
     private final IERSConventions conventions;
@@ -440,64 +434,6 @@ public class FundamentalNutationArguments implements Serializable {
                                          derivative(tc, lNeCoefficients),    // mean Neptune longitude time derivative
                                          value(tc, paCoefficients),          // general accumulated precession in longitude
                                          derivative(tc, paCoefficients));    // general accumulated precession in longitude time derivative
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(conventions, timeScale,
-                                      Arrays.asList(lCoefficients, lPrimeCoefficients, fCoefficients,
-                                                    dCoefficients, omegaCoefficients,
-                                                    lMeCoefficients, lVeCoefficients, lECoefficients,
-                                                    lMaCoefficients, lJCoefficients, lSaCoefficients,
-                                                    lUCoefficients, lNeCoefficients, paCoefficients));
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
-
-        /** IERS conventions to use. */
-        private final IERSConventions conventions;
-
-        /** Time scale for GMST computation. */
-        private final TimeScale timeScale;
-
-        /** All coefficients. */
-        private final List<double[]> coefficients;
-
-        /** Simple constructor.
-         * @param conventions IERS conventions to use
-         * @param timeScale time scale for GMST computation
-         * @param coefficients all coefficients
-         */
-        DataTransferObject(final IERSConventions conventions, final TimeScale timeScale,
-                                  final List<double[]> coefficients) {
-            this.conventions  = conventions;
-            this.timeScale    = timeScale;
-            this.coefficients = coefficients;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link TIRFProvider}.
-         * @return replacement {@link TIRFProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return new FundamentalNutationArguments(conventions, timeScale, coefficients);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
 
     }
 

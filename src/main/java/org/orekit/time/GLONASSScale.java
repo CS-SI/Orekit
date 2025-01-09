@@ -32,9 +32,6 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class GLONASSScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
-
     /** Constant offset with respect to UTC (3 hours). */
     private static final TimeOffset OFFSET = new TimeOffset(3, TimeOffset.HOUR);
 

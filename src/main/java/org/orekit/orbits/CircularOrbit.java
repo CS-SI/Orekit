@@ -16,13 +16,10 @@
  */
 package org.orekit.orbits;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -74,9 +71,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 
 public class CircularOrbit extends Orbit implements PositionAngleBased<CircularOrbit> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20231217L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -1433,98 +1427,6 @@ public class CircularOrbit extends Orbit implements PositionAngleBased<CircularO
         final PositionAngleType positionAngleType = getCachedPositionAngleType();
         return new CircularOrbit(a, ex, ey, i, raan, cachedAlpha, positionAngleType, positionAngleType,
                 getFrame(), getDate(), getMu());
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20241114L;
-
-        /** Seconds. */
-        private final long seconds;
-
-        /** Attoseconds. */
-        private final long attoseconds;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Frame in which are defined the orbital parameters. */
-        private final Frame frame;
-
-        /** Type of cached position angle. */
-        private final PositionAngleType positionAngleType;
-
-        /** Simple constructor.
-         * @param orbit instance to serialize
-         */
-        private DTO(final CircularOrbit orbit) {
-
-            positionAngleType = orbit.getCachedPositionAngleType();
-
-            // decompose date
-            this.seconds     = orbit.getDate().getSeconds();
-            this.attoseconds = orbit.getDate().getAttoSeconds();
-
-            if (orbit.serializePV) {
-                final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
-                this.d = new double[] {
-                    // mu + orbit + derivatives + Cartesian : 22 parameters
-                    orbit.getMu(),
-                    orbit.a, orbit.ex, orbit.ey,
-                    orbit.i, orbit.raan, orbit.cachedAlpha,
-                    orbit.aDot, orbit.exDot, orbit.eyDot,
-                    orbit.iDot, orbit.raanDot, orbit.cachedAlphaDot,
-                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                    pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
-                };
-            } else {
-                // mu + orbit + derivatives: 13 parameters
-                this.d = new double[] {
-                    orbit.getMu(),
-                    orbit.a, orbit.ex, orbit.ey,
-                    orbit.i, orbit.raan, orbit.cachedAlpha,
-                    orbit.aDot, orbit.exDot, orbit.eyDot,
-                    orbit.iDot, orbit.raanDot, orbit.cachedAlphaDot
-                };
-            }
-
-            this.frame = orbit.getFrame();
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link CircularOrbit}.
-         * @return replacement {@link CircularOrbit}
-         */
-        private Object readResolve() {
-            if (d.length == 22) { // mu + orbit + derivatives + Cartesian
-                return new CircularOrbit(d[1], d[2], d[3], d[4], d[5], d[6],
-                        d[7], d[8], d[9], d[10], d[11], d[12],
-                        new TimeStampedPVCoordinates(new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                new Vector3D(d[13], d[14], d[15]),
-                                new Vector3D(d[16], d[17], d[18]),
-                                new Vector3D(d[19], d[20], d[21])),
-                        positionAngleType, frame,
-                        d[0]);
-            }
-            return new CircularOrbit(d[1], d[2], d[3], d[4], d[5], d[6],
-                    d[7], d[8], d[9], d[10], d[11], d[12],
-                    positionAngleType, positionAngleType,
-                    frame, new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                    d[0]);
-        }
-
     }
 
 }

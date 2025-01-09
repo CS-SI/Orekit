@@ -16,11 +16,6 @@
  */
 package org.orekit.bodies;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.DoubleStream;
@@ -460,27 +455,6 @@ class OneAxisEllipsoidTest {
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
         Assertions.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());
-    }
-
-    @Test
-    void testSerialization() throws IOException, ClassNotFoundException {
-        OneAxisEllipsoid original = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                         Constants.WGS84_EARTH_FLATTENING,
-                                                         FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true));
-        original.setAngularThreshold(1.0e-3);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(original);
-        Assertions.assertTrue(bos.size() > 250);
-        Assertions.assertTrue(bos.size() < 350);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        OneAxisEllipsoid deserialized  = (OneAxisEllipsoid) ois.readObject();
-        Assertions.assertEquals(original.getEquatorialRadius(), deserialized.getEquatorialRadius(), 1.0e-12);
-        Assertions.assertEquals(original.getFlattening(), deserialized.getFlattening(), 1.0e-12);
-
     }
 
     @Test

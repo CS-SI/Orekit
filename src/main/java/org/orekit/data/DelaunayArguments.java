@@ -16,8 +16,6 @@
  */
 package org.orekit.data;
 
-import java.io.Serializable;
-
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -27,10 +25,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class DelaunayArguments implements TimeStamped, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170106L;
+public class DelaunayArguments implements TimeStamped {
 
     /** Date. */
     private final AbsoluteDate date;

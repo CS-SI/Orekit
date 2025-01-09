@@ -31,9 +31,6 @@ import org.orekit.utils.PVCoordinates;
  */
 class TwoBodiesBaryTransformProvider implements TransformProvider {
 
-    /** Serializable UID.*/
-    private static final long serialVersionUID = 20190726L;
-
     /** Frame for results. Always defined as primaryBody's inertially oriented frame.*/
     private final Frame frame;
 

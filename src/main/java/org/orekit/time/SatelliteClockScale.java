@@ -24,9 +24,6 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class SatelliteClockScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
-
     /** Name of the scale. */
     private final String name;
 

@@ -61,9 +61,6 @@ import org.orekit.utils.TrackingCoordinates;
  */
 public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -5997915708080966466L;
-
     /** Body shape on which the local point is defined. */
     private final BodyShape parentShape;
 

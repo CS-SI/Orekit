@@ -33,11 +33,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 public class VersionedITRFFrameTest {
 
@@ -102,24 +97,6 @@ public class VersionedITRFFrameTest {
         FieldVector3D<Binary64> p2014Field        = itrf2014.getTransformTo(eme2000, dateField).transformPosition(p);
         Assertions.assertEquals(expectedDistance2008, FieldVector3D.distance(pUnspecifiedField, p2008Field).getReal(), tolerance);
         Assertions.assertEquals(expectedDistance2014, FieldVector3D.distance(pUnspecifiedField, p2014Field).getReal(), tolerance);
-
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        VersionedITRF itrf2008 = FramesFactory.getITRF(ITRFVersion.ITRF_2008,
-                                                       IERSConventions.IERS_2010, false);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(itrf2008);
-
-        Assertions.assertTrue(bos.size() > 45000);
-        Assertions.assertTrue(bos.size() < 50000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        VersionedITRF deserialized  = (VersionedITRF) ois.readObject();
-        Assertions.assertEquals(ITRFVersion.ITRF_2008, deserialized.getITRFVersion());
 
     }
 

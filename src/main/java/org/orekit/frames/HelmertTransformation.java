@@ -56,9 +56,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class HelmertTransformation implements TransformProvider {
 
-    /** serializable UID. */
-    private static final long serialVersionUID = 20220419L;
-
     /** Enumerate for predefined Helmert transformations. */
     public enum Predefined {
 

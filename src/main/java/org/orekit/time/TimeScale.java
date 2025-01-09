@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 
 /** Interface for time scales.
@@ -28,7 +26,7 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public interface TimeScale extends Serializable {
+public interface TimeScale {
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
      * @param date conversion date

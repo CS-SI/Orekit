@@ -16,12 +16,9 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hipparchus.CalculusFieldElement;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -36,9 +33,6 @@ import org.orekit.time.TimeScale;
  * @since 9.2
  */
 class VersionedITRFProvider implements EOPBasedTransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180403L;
 
     /** ITRF version this provider should generate. */
     private final ITRFVersion version;
@@ -218,46 +212,6 @@ class VersionedITRFProvider implements EOPBasedTransformProvider {
                 ITRFVersion.getConverter(rawVersion, version, tt);
         converter.compareAndSet(null, newConverter);
         return newConverter;
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(version, rawProvider);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20180403L;
-
-        /** ITRF version this provider should generate. */
-        private final ITRFVersion version;
-
-        /** Raw ITRF provider. */
-        private final ITRFProvider rawProvider;
-
-        /** Simple constructor.
-         * @param version ITRF version this provider should generate
-         * @param rawProvider raw ITRF provider
-         */
-        DataTransferObject(final ITRFVersion version, final ITRFProvider rawProvider) {
-            this.version     = version;
-            this.rawProvider = rawProvider;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link VersionedITRFProvider}.
-         * @return replacement {@link VersionedITRFProvider}
-         */
-        private Object readResolve() {
-            return new VersionedITRFProvider(version, rawProvider,
-                    DataContext.getDefault().getTimeScales().getTT());
-        }
 
     }
 

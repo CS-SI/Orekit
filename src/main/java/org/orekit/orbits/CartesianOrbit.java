@@ -16,14 +16,11 @@
  */
 package org.orekit.orbits;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.KinematicTransform;
 import org.orekit.time.AbsoluteDate;
@@ -69,9 +66,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Andrew Goetz
  */
 public class CartesianOrbit extends Orbit {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170414L;
 
     /** 6x6 identity matrix. */
     private static final double[][] SIX_BY_SIX_IDENTITY = MatrixUtils.createRealIdentityMatrix(6).getData();
@@ -510,90 +504,6 @@ public class CartesianOrbit extends Orbit {
                 v.getX() + comma +
                 v.getY() + comma +
                 v.getZ() + ")}";
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes all needed parameters,
-     * including position-velocity which are <em>not</em> serialized by parent
-     * {@link Orbit} class.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20241114L;
-
-        /** Seconds. */
-        private final long seconds;
-
-        /** Attoseconds. */
-        private final long attoseconds;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Frame in which are defined the orbital parameters. */
-        private final Frame frame;
-
-        /** Simple constructor.
-         * @param orbit instance to serialize
-         */
-        private DTO(final CartesianOrbit orbit) {
-
-            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
-
-            // decompose date
-            this.seconds     = pv.getDate().getSeconds();
-            this.attoseconds = pv.getDate().getAttoSeconds();
-
-            if (orbit.hasNonKeplerianAcceleration()) {
-                this.d = new double[] {
-                    orbit.getMu(),
-                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                    pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ()
-                };
-            } else {
-                this.d = new double[] {
-                    orbit.getMu(),
-                    pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                    pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ()
-                };
-            }
-
-            this.frame = orbit.getFrame();
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link CartesianOrbit}.
-         * @return replacement {@link CartesianOrbit}
-         */
-        private Object readResolve() {
-            if (d.length >= 10) {
-                // we have derivatives
-                return new CartesianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                                                       new Vector3D(d[1], d[2], d[3]),
-                                                                       new Vector3D(d[4], d[5], d[6]),
-                                                                       new Vector3D(d[7], d[8], d[9])),
-                                          frame, d[0]);
-            } else {
-                // we don't have derivatives
-                return new CartesianOrbit(new TimeStampedPVCoordinates(new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                                                       new Vector3D(d[1], d[2], d[3]),
-                                                                       new Vector3D(d[4], d[5], d[6])),
-                                          frame, d[0]);
-            }
-        }
-
     }
 
 }

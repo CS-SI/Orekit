@@ -49,6 +49,9 @@
         <action dev="serrof" type="update" issue="1628">
             Remove ThrustDirectionAndAttitudeProvider and ConfigurableLowThrustManeuver.
         </action>
+        <action dev="serrof" type="update" issue="1627">
+            Remove DataTransferObject implementations (removing many Serializable implementations).
+        </action>
         <action dev="serrof" type="update" issue="1626">
             Use ExtendedPositionProvider in YawSteering.
         </action>

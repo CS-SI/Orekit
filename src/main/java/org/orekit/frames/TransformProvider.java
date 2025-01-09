@@ -17,8 +17,6 @@
 
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
@@ -29,7 +27,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * </p>
  * @author Luc Maisonobe
  */
-public interface TransformProvider extends Serializable {
+public interface TransformProvider {
 
     /** Get the {@link Transform} corresponding to specified date.
      * @param date current date

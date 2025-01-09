@@ -31,9 +31,6 @@ import org.orekit.utils.Constants;
  */
 public class GMSTScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
-
     /** Duration of one julian day. */
     private static final long FULL_DAY = 86400L;
 
