@@ -416,6 +416,21 @@ public class AbsoluteDate
              timeScale);
     }
 
+    /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
+     *
+     * @deprecated Use {@link AbsoluteDate#AbsoluteDate(Instant, UTCScale)} or {@link AbsoluteDate#AbsoluteDate(Instant)} instead
+     * @param instant instant in the time scale
+     * @param timeScale time scale
+     * @since 12.0
+     */
+    @Deprecated
+    public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
+        this(new DateComponents(DateComponents.JAVA_EPOCH, (int) (instant.getEpochSecond() / 86400L)),
+                new TimeComponents(TimeOffset.SECOND.multiply(instant.getEpochSecond() % 86400L).
+                        add(new TimeOffset(instant.getNano(), TimeUnit.NANOSECONDS))),
+                timeScale);
+    }
+
     /** Build an instance from an {@link Instant instant} in utc time scale.
      * @param instant instant in the time scale
      * @since 12.1
