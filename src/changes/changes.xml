@@ -33,6 +33,10 @@
         <action dev="luc" type="fix" issue="1638">
             Fixed field implementation of Galileo NeQuick ionosphere model.
         </action>
+        <action dev="evan" type="update" issue="1364">
+          Update ComparableMeasurement.compareTo(...) to return a valid result
+          for equal objects.
+        </action>
         <action dev="evan" type="update" issue="1623">
             Update OCM parsing, so it is possible to know when a value is not present in a
             OCM file. Updated OCM writing so values that are not present are not written.
