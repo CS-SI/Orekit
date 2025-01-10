@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.Mockito;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -466,6 +467,38 @@ class ImpulseManeuverTest {
                 expectedIsp, Control3DVectorCostType.NONE);
         // THEN
         Assertions.assertEquals(expectedIsp, maneuver.getIsp());
+    }
+
+    @Test
+    void testInit() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        final ImpulseProvider impulseProvider = Mockito.mock(ImpulseProvider.class);
+        Mockito.doCallRealMethod().when(impulseProvider).init(mockedState, date);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(), null, impulseProvider,
+                1, Control3DVectorCostType.NONE);
+        // WHEN
+        maneuver.init(mockedState, date);
+        // THEN
+        Mockito.verify(impulseProvider, Mockito.times(1)).init(mockedState, date);
+    }
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        final ImpulseProvider impulseProvider = Mockito.mock(ImpulseProvider.class);
+        Mockito.doCallRealMethod().when(impulseProvider).finish(mockedState);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(), null, impulseProvider,
+                1, Control3DVectorCostType.NONE);
+        // WHEN
+        maneuver.finish(mockedState);
+        // THEN
+        Mockito.verify(impulseProvider, Mockito.times(1)).finish(mockedState);
     }
 
     @Test
