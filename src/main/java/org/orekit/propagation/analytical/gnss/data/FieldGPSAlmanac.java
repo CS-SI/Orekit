@@ -34,7 +34,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldGPSAlmanac<T>> {
+    extends FieldAbstractAlmanac<T, FieldGPSAlmanac<T>, GPSAlmanac> {
 
     /** Source of the almanac. */
     private String src;
@@ -61,6 +61,19 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
      */
     public FieldGPSAlmanac(final Field<T> field, final TimeScales timeScales, final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.GPS_MU), GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldGPSAlmanac(final Field<T> field, final GPSAlmanac original) {
+        super(field, original);
+        setSource(original.getSource());
+        setSVN(original.getSVN());
+        setHealth(original.getHealth());
+        setURA(original.getURA());
+        setSatConfiguration(original.getSatConfiguration());
     }
 
     /**  {@inheritDoc} */

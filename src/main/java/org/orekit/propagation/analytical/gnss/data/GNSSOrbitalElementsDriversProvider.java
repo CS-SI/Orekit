@@ -202,9 +202,10 @@ public abstract class GNSSOrbitalElementsDriversProvider<O extends GNSSOrbitalEl
     /** Create a copy with only the non-Keplerian elements initialized.
      * @return copy of the instance with only the non-Keplerian elements initialized
      */
-    public O copyNonKeplerian() {
+    @SuppressWarnings("unchecked")
+        public O copyNonKeplerian() {
         final O copy = uninitializedCopy();
-        copyNonKeplerianTo(copy);
+        copy.setNonKeplerian((O) this);
         return copy;
     }
 
@@ -213,21 +214,22 @@ public abstract class GNSSOrbitalElementsDriversProvider<O extends GNSSOrbitalEl
      */
     protected abstract O uninitializedCopy();
 
-    /** Copy the non-Keplerian elements from another instance.
-     * @param destination instance where to copy non-Keplerian elements
+    /** Set the non-Keplerian elements from another instance.
+     * @param <P> type of the orbital elements
+     * @param origin instance from where to copy non-Keplerian elements
      */
-    protected void copyNonKeplerianTo(final GNSSOrbitalElementsDriversProvider<?> destination) {
-        destination.setPRN(getPRN());
-        destination.setWeek(getWeek());
-        destination.setTime(getTime());
-        destination.setIDot(getIDot());
-        destination.setOmegaDot(getOmegaDot());
-        destination.setCuc(getCuc());
-        destination.setCus(getCus());
-        destination.setCrc(getCrc());
-        destination.setCrs(getCrs());
-        destination.setCic(getCic());
-        destination.setCis(getCis());
+    protected <P extends GNSSOrbitalElementsDriversProvider<P>> void setNonKeplerian(final P origin) {
+        setPRN(origin.getPRN());
+        setWeek(origin.getWeek());
+        setTime(origin.getTime());
+        setIDot(origin.getIDot());
+        setOmegaDot(origin.getOmegaDot());
+        setCuc(origin.getCuc());
+        setCus(origin.getCus());
+        setCrc(origin.getCrc());
+        setCrs(origin.getCrs());
+        setCic(origin.getCic());
+        setCis(origin.getCis());
     }
 
     /** Set GNSS date.

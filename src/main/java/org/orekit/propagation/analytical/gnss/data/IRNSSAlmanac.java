@@ -45,10 +45,11 @@ public class IRNSSAlmanac extends AbstractAlmanac<IRNSSAlmanac> {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldIRNSSAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldIRNSSAlmanac<>(field, getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, IRNSSAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldIRNSSAlmanac<>(field, this);
     }
 
     /** {@inheritDoc} */

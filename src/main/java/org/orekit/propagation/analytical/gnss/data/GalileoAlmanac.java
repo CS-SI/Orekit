@@ -64,23 +64,11 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldGalileoAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldGalileoAlmanac<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldGalileoAlmanac<T> converted = (FieldGalileoAlmanac<T>) fielded;
-        converted.setHealthE5a(getHealthE5a());
-        converted.setHealthE5b(getHealthE5b());
-        converted.setHealthE1(getHealthE1());
-        converted.setIOD(getIOD());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GalileoAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldGalileoAlmanac<>(field, this);
     }
 
     /** {@inheritDoc} */

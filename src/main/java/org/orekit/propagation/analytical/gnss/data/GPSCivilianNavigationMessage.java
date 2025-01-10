@@ -42,10 +42,11 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldGPSCivilianNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldGPSCivilianNavigationMessage<>(field, isCnv2(), getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GPSCivilianNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldGPSCivilianNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

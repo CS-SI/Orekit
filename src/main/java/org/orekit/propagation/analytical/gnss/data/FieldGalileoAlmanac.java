@@ -34,7 +34,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldGalileoAlmanac<T>> {
+    extends FieldAbstractAlmanac<T, FieldGalileoAlmanac<T>, GalileoAlmanac> {
 
     /** Nominal inclination (Ref: Galileo ICD - Table 75). */
     private static final double I0 = FastMath.toRadians(56.0);
@@ -64,6 +64,18 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
      */
     public FieldGalileoAlmanac(final Field<T> field, TimeScales timeScales, final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.GALILEO_MU), GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldGalileoAlmanac(final Field<T> field, final GalileoAlmanac original) {
+        super(field, original);
+        setHealthE5a(original.getHealthE5a());
+        setHealthE5b(original.getHealthE5b());
+        setHealthE1(original.getHealthE1());
+        setIOD(original.getIOD());
     }
 
     /**  {@inheritDoc} */

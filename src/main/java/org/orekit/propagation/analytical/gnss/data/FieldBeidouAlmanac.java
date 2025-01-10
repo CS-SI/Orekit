@@ -33,7 +33,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldBeidouAlmanac<T>> {
+    extends FieldAbstractAlmanac<T, FieldBeidouAlmanac<T>, BeidouAlmanac> {
 
     /** Health status. */
     private int health;
@@ -51,7 +51,16 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
         super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
     }
 
-    /**  {@inheritDoc} */
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldBeidouAlmanac(final Field<T> field, final BeidouAlmanac original) {
+        super(field, original);
+        setHealth(original.getHealth());
+    }
+
+    /** {@inheritDoc} */
     @Override
     protected FieldBeidouAlmanac<T> uninitializedCopy() {
         return new FieldBeidouAlmanac<>(getMu().getField(), getTimeScales(), getSystem());

@@ -40,10 +40,11 @@ public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLeg
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldQZSSLegacyNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldQZSSLegacyNavigationMessage<>(field, getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, QZSSLegacyNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldQZSSLegacyNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

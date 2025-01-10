@@ -37,7 +37,7 @@ import org.orekit.utils.IERSConventions;
 public class FieldGnssPropagatorBuilder<T extends CalculusFieldElement<T>> {
 
     /** The GNSS propagation model orbital elements. */
-    private final FieldGnssOrbitalElements<T, ?> orbitalElements;
+    private final FieldGnssOrbitalElements<T, ?, ?> orbitalElements;
 
     /** The attitude provider. */
     private AttitudeProvider attitudeProvider;
@@ -76,7 +76,7 @@ public class FieldGnssPropagatorBuilder<T extends CalculusFieldElement<T>> {
      * @see #ecef(Frame bodyFixed)
      */
     @DefaultDataContext
-    public FieldGnssPropagatorBuilder(final FieldGnssOrbitalElements<T, ?> orbitalElements) {
+    public FieldGnssPropagatorBuilder(final FieldGnssOrbitalElements<T, ?, ?> orbitalElements) {
         this(orbitalElements, DataContext.getDefault().getFrames());
     }
 
@@ -98,7 +98,7 @@ public class FieldGnssPropagatorBuilder<T extends CalculusFieldElement<T>> {
      * @see #eci(Frame inertial)
      * @see #ecef(Frame bodyFixed)
      */
-    public FieldGnssPropagatorBuilder(final FieldGnssOrbitalElements<T, ?> orbitalElements, final Frames frames) {
+    public FieldGnssPropagatorBuilder(final FieldGnssOrbitalElements<T, ?, ?> orbitalElements, final Frames frames) {
         this.orbitalElements  = orbitalElements;
         this.mass             = orbitalElements.getMu().newInstance(Propagator.DEFAULT_MASS);
         this.eci              = frames.getEME2000();

@@ -61,24 +61,11 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldGPSAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldGPSAlmanac<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldGPSAlmanac<T> converted = (FieldGPSAlmanac<T>) fielded;
-        converted.setSource(getSource());
-        converted.setSVN(getSVN());
-        converted.setHealth(getHealth());
-        converted.setURA(getURA());
-        converted.setSatConfiguration(getSatConfiguration());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GPSAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldGPSAlmanac<>(field, this);
     }
 
     /** {@inheritDoc} */

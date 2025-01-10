@@ -361,7 +361,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssOrbitalElements<Gradient, ?> gElements = convert(elements, orbit);
+            final FieldGnssOrbitalElements<Gradient, ?, ?> gElements = convert(elements, orbit);
             final FieldGnssPropagator<Gradient> gPropagator =
                 new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
                                           gElements.getMu().newInstance(mass));
@@ -496,11 +496,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return converted elements, set up as gradient relative to Keplerian orbit
      * @since 13.0
      */
-    private static FieldGnssOrbitalElements<Gradient, ?> convert(final GNSSOrbitalElements<?> elements,
-                                                                 final KeplerianOrbit orbit) {
+    private static FieldGnssOrbitalElements<Gradient, ?, ?> convert(final GNSSOrbitalElements<?> elements,
+                                                                    final KeplerianOrbit orbit) {
 
         final Field<Gradient> field = GradientField.getField(FREE_PARAMETERS);
-        final FieldGnssOrbitalElements<Gradient, ?> gElements = elements.toField(field);
+        final FieldGnssOrbitalElements<Gradient, ?, ?> gElements = elements.toField(field);
 
         // Keplerian parameters
         gElements.setSma(Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()));

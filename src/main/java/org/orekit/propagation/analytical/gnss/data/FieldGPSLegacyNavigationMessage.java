@@ -28,7 +28,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldGPSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldLegacyNavigationMessage<T, FieldGPSLegacyNavigationMessage<T>> {
+    extends FieldLegacyNavigationMessage<T, FieldGPSLegacyNavigationMessage<T>, GPSLegacyNavigationMessage> {
 
     /** Constructor.
      * @param field      field to which elements belong
@@ -41,6 +41,14 @@ public class FieldGPSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
                                            TimeScales timeScales, final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.GPS_MU), GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB,
               timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldGPSLegacyNavigationMessage(final Field<T> field, final GPSLegacyNavigationMessage original) {
+        super(field, original);
     }
 
     /**  {@inheritDoc} */

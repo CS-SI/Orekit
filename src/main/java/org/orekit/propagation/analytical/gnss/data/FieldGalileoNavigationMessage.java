@@ -28,7 +28,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldGalileoNavigationMessage<T>> {
+    extends FieldAbstractNavigationMessage<T, FieldGalileoNavigationMessage<T>, GalileoNavigationMessage> {
 
     /** Issue of Data of the navigation batch. */
     private int iodNav;
@@ -61,6 +61,20 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
                                          TimeScales timeScales, final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.GALILEO_MU), GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
               timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldGalileoNavigationMessage(final Field<T> field, final GalileoNavigationMessage original) {
+        super(field, original);
+        setIODNav(original.getIODNav());
+        setDataSource(original.getDataSource());
+        setBGDE1E5a(field.getZero().newInstance(original.getBGDE1E5a()));
+        setBGDE5bE1(field.getZero().newInstance(original.getBGDE5bE1()));
+        setSisa(field.getZero().newInstance(original.getSisa()));
+        setSvHealth(field.getZero().newInstance(original.getSvHealth()));
     }
 
     /**  {@inheritDoc} */

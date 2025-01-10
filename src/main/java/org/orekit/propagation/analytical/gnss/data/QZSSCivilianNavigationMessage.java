@@ -42,10 +42,11 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldQZSSCivilianNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldQZSSCivilianNavigationMessage<>(field, isCnv2(), getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, QZSSCivilianNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldQZSSCivilianNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

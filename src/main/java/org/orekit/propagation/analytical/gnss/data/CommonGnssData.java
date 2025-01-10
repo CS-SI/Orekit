@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
@@ -77,20 +75,6 @@ public abstract class CommonGnssData<O extends CommonGnssData<O>>
         this.af0Driver = createDriver(AF0);
         this.af1Driver = createDriver(AF1);
         this.af2Driver = createDriver(AF2);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldCommonGnssData<T, ?> converted = (FieldCommonGnssData<T, ?>) fielded;
-        converted.setAf0(field.getZero().newInstance(getAf0()));
-        converted.setAf1(field.getZero().newInstance(getAf1()));
-        converted.setAf2(field.getZero().newInstance(getAf2()));
-        converted.setTGD(field.getZero().newInstance(getTGD()));
-        converted.setToc(field.getZero().newInstance(getToc()));
     }
 
     /** {@inheritDoc} */

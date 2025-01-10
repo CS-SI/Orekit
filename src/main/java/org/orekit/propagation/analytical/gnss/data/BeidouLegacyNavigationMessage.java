@@ -62,24 +62,11 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldBeidouLegacyNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldBeidouLegacyNavigationMessage<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldBeidouLegacyNavigationMessage<T> converted = (FieldBeidouLegacyNavigationMessage<T>) fielded;
-        converted.setAODE(field.getZero().newInstance(getAODE()));
-        converted.setAODC(field.getZero().newInstance(getAODC()));
-        converted.setTGD1(field.getZero().newInstance(getTGD1()));
-        converted.setTGD2(field.getZero().newInstance(getTGD2()));
-        converted.setSvAccuracy(field.getZero().newInstance(getSvAccuracy()));
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, BeidouLegacyNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldBeidouLegacyNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

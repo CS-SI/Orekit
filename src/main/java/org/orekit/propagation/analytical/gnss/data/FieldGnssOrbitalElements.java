@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.hipparchus.util.FastMath;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.FieldAbsoluteDate;
@@ -27,12 +28,15 @@ import org.orekit.time.TimeScales;
 /** This class provides the minimal set of orbital elements needed by the {@link
  * org.orekit.propagation.analytical.gnss.FieldGnssPropagator}.
  * @param <T> type of the field elements
- * @param <O> type of the orbital elements
+ * @param <F> type of the orbital elements (field version)
+ * @param <O> type of the orbital elements (non-field version)
  * @since 13.0
  * @author Luc Maisonobe
 */
-public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>, O extends FieldGnssOrbitalElements<T, O>>
-    extends GNSSOrbitalElementsDriversProvider<FieldGnssOrbitalElements<T, O>>
+public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>,
+                                               F extends FieldGnssOrbitalElements<T, F, O>,
+                                               O extends GNSSOrbitalElements<O>>
+    extends GNSSOrbitalElementsDriversProvider<FieldGnssOrbitalElements<T, F, O>>
     implements FieldTimeStamped<T> {
 
     /** Earth's universal gravitational parameter. */
@@ -84,6 +88,24 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         this.om0             = mu.newInstance(Double.NaN);
         this.anom            = mu.newInstance(Double.NaN);
 
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    protected FieldGnssOrbitalElements(final Field<T> field, final O original) {
+        super(original.getAngularVelocity(), original.getWeeksInCycle(),
+              original.getTimeScales(), original.getSystem());
+        this.mu = field.getZero().newInstance(original.getMu());
+        setNonKeplerian(original);
+        setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
+        setSma(field.getZero().newInstance(original.getSma()));
+        setE(field.getZero().newInstance(original.getE()));
+        setI0(field.getZero().newInstance(original.getI0()));
+        setPa(field.getZero().newInstance(original.getPa()));
+        setOmega0(field.getZero().newInstance(original.getOmega0()));
+        setM0(field.getZero().newInstance(original.getM0()));
     }
 
     /** {@inheritDoc} */

@@ -117,38 +117,12 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
 
     /** Create a field version of the instance.
      * @param <T> type of the field elements
+     * @param <F> type of the orbital elements (field version)
      * @param field field to which elements belong
      * @return field version of the instance
      */
-    public <T extends CalculusFieldElement<T>> FieldGnssOrbitalElements<T, ?> toField(Field<T> field) {
-        final FieldGnssOrbitalElements<T, ?> fielded = uninitializedField(field);
-        fillUp(field, fielded);
-        return fielded;
-    }
-
-    /** Create an uninitialized field version of the instance.
-     * @param <T> type of the field elements
-     * @param field field to which elements belong
-     * @return uninitialized field version of the instance
-     */
-    protected abstract <T extends CalculusFieldElement<T>>
-        FieldGnssOrbitalElements<T, ?> uninitializedField(Field<T> field);
-
-    /** Fill-up a field version by converting non-field properties.
-     * @param <T> type of the field elements
-     * @param field field to which the elements belong
-     * @param fielded field version of the instance to update
-     */
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        fielded.setGnssDate(new GNSSDate(getWeek(), getTime(), getSystem(), getTimeScales()));
-        fielded.setSma(field.getZero().newInstance(getSma()));
-        fielded.setE(field.getZero().newInstance(getE()));
-        fielded.setI0(field.getZero().newInstance(getI0()));
-        fielded.setPa(field.getZero().newInstance(getPa()));
-        fielded.setOmega0(field.getZero().newInstance(getOmega0()));
-        fielded.setM0(field.getZero().newInstance(getM0()));
-    }
+    public abstract  <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, O>>
+       F toField(Field<T> field);
 
     /** {@inheritDoc} */
     protected void setGnssDate(final GNSSDate gnssDate) {

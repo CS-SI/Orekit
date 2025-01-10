@@ -60,25 +60,11 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldGalileoNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldGalileoNavigationMessage<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldGalileoNavigationMessage<T> converted = (FieldGalileoNavigationMessage<T>) fielded;
-        converted.setIODNav(getIODNav());
-        converted.setDataSource(getDataSource());
-        converted.setBGDE1E5a(field.getZero().newInstance(getBGDE1E5a()));
-        converted.setBGDE5bE1(field.getZero().newInstance(getBGDE5bE1()));
-        converted.setSisa(field.getZero().newInstance(getSisa()));
-        converted.setSvHealth(field.getZero().newInstance(getSvHealth()));
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GalileoNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldGalileoNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

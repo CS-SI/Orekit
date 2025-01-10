@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -30,12 +31,14 @@ import org.orekit.time.TimeScales;
 /**
  * Base class for GNSS almanacs.
  * @param <T> type of the field elements
- * @param <O> type of the orbital elements
+ * @param <F> type of the orbital elements (field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
-public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>, O extends FieldAbstractAlmanac<T, O>>
-    extends FieldCommonGnssData<T, O> {
+public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>,
+                                           F extends FieldAbstractAlmanac<T, F, O>,
+                                           O extends AbstractAlmanac<O>>
+    extends FieldCommonGnssData<T, F, O> {
 
     /**
      * Constructor.
@@ -47,9 +50,17 @@ public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>, O 
      *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
      */
-    public FieldAbstractAlmanac(final T mu, final double angularVelocity, final int weeksInCycle,
-                                final TimeScales timeScales, final SatelliteSystem system) {
+    protected FieldAbstractAlmanac(final T mu, final double angularVelocity, final int weeksInCycle,
+                                   final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    protected FieldAbstractAlmanac(final Field<T> field, final O original) {
+        super(field, original);
     }
 
     /**

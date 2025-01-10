@@ -16,11 +16,8 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScales;
 
 /**
@@ -64,27 +61,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
                                         final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
-    }
-
-    /**  {@inheritDoc} */
-    @Override
-    protected void copyNonKeplerianTo(final GNSSOrbitalElementsDriversProvider<?> destination) {
-        super.copyNonKeplerianTo(destination);
-        final AbstractNavigationMessage<?> converted = (AbstractNavigationMessage<?>) destination;
-        converted.setDeltaN(getDeltaN());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldAbstractNavigationMessage<T, ?> converted = (FieldAbstractNavigationMessage<T, ?>) fielded;
-        converted.setSqrtA(field.getZero().newInstance(sqrtA));
-        converted.setDeltaN(field.getZero().newInstance(deltaN));
-        converted.setEpochToc(new FieldAbsoluteDate<>(field, epochToc));
-        converted.setTransmissionTime(field.getZero().newInstance(transmissionTime));
     }
 
     /**

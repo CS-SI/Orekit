@@ -60,7 +60,7 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
 
         // bootstrap model, with canonical derivatives with respect to orbital parameters only
         final int bootstrapParameters = 6;
-        final FieldGnssOrbitalElements<Gradient, ?> bootstrapElements = oe.toField(GradientField.getField(bootstrapParameters));
+        final FieldGnssOrbitalElements<Gradient, ?, ?> bootstrapElements = oe.toField(GradientField.getField(bootstrapParameters));
         bootstrapElements.setSma(Gradient.variable(bootstrapParameters,    0, oe.getSma()));
         bootstrapElements.setE(Gradient.variable(bootstrapParameters,      1, oe.getE()));
         bootstrapElements.setI0(Gradient.variable(bootstrapParameters,     2, oe.getI0()));
@@ -114,7 +114,7 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
         }
 
         final int totalParameters = bootstrapParameters + freeParameters;
-        final FieldGnssOrbitalElements<Gradient, ?> convertedElements = oe.toField(convertedSma.getField());
+        final FieldGnssOrbitalElements<Gradient, ?, ?> convertedElements = oe.toField(convertedSma.getField());
         convertedElements.setSma(Gradient.variable(totalParameters,    0, oe.getSma()));
         convertedElements.setE(Gradient.variable(totalParameters,      1, oe.getE()));
         convertedElements.setI0(Gradient.variable(totalParameters,     2, oe.getI0()));

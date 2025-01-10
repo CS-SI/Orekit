@@ -28,7 +28,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldIRNSSNavigationMessage<T>>  {
+    extends FieldAbstractNavigationMessage<T, FieldIRNSSNavigationMessage<T>, IRNSSNavigationMessage>  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;
@@ -50,6 +50,17 @@ public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
                                        final TimeScales timeScales, final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.IRNSS_MU), GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB,
               timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldIRNSSNavigationMessage(final Field<T> field, final IRNSSNavigationMessage original) {
+        super(field, original);
+        setIODEC(field.getZero().newInstance(original.getIODEC()));
+        setURA(field.getZero().newInstance(original.getURA()));
+        setSvHealth(field.getZero().newInstance(original.getSvHealth()));
     }
 
     /**  {@inheritDoc} */

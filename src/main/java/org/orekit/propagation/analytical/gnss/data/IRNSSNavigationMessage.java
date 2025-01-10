@@ -49,22 +49,11 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldIRNSSNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldIRNSSNavigationMessage<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldIRNSSNavigationMessage<T> converted = (FieldIRNSSNavigationMessage<T>) fielded;
-        converted.setIODEC(field.getZero().newInstance(getIODEC()));
-        converted.setURA(field.getZero().newInstance(getURA()));
-        converted.setSvHealth(field.getZero().newInstance(getSvHealth()));
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, IRNSSNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldIRNSSNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

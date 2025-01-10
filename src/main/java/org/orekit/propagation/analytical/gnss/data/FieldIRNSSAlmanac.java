@@ -33,7 +33,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldIRNSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldIRNSSAlmanac<T>> {
+    extends FieldAbstractAlmanac<T, FieldIRNSSAlmanac<T>, IRNSSAlmanac> {
 
     /**
      * Constructor.
@@ -46,6 +46,14 @@ public class FieldIRNSSAlmanac<T extends CalculusFieldElement<T>>
     public FieldIRNSSAlmanac(final Field<T> field,
                               final TimeScales timeScales, final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.IRNSS_MU), GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldIRNSSAlmanac(final Field<T> field, final IRNSSAlmanac original) {
+        super(field, original);
     }
 
     /**  {@inheritDoc} */

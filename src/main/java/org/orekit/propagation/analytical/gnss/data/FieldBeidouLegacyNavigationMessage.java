@@ -28,7 +28,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldBeidouLegacyNavigationMessage<T>> {
+    extends FieldAbstractNavigationMessage<T, FieldBeidouLegacyNavigationMessage<T>, BeidouLegacyNavigationMessage> {
 
     /** Age of Data, Ephemeris. */
     private int aode;
@@ -57,6 +57,19 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
                                               final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
               timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldBeidouLegacyNavigationMessage(final Field<T> field, final BeidouLegacyNavigationMessage original) {
+        super(field, original);
+        setAODE(field.getZero().newInstance(original.getAODE()));
+        setAODC(field.getZero().newInstance(original.getAODC()));
+        setTGD1(field.getZero().newInstance(original.getTGD1()));
+        setTGD2(field.getZero().newInstance(original.getTGD2()));
+        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
     }
 
     /**  {@inheritDoc} */

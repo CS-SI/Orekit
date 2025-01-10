@@ -130,7 +130,7 @@ public class IRNSSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         final GNSSPropagator propagator = almanac.getPropagator(frames);
-        GNSSOrbitalElements elements = propagator.getOrbitalElements();
+        GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.IRNSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);

@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
@@ -96,29 +94,6 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
                                         final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
         this.cnv2 = cnv2;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldCivilianNavigationMessage<T, ?> converted = (FieldCivilianNavigationMessage<T, ?>) fielded;
-        converted.setADot(field.getZero().newInstance(getADot()));
-        converted.setDeltaN0Dot(field.getZero().newInstance(getDeltaN0Dot()));
-        converted.setSvAccuracy(field.getZero().newInstance(getSvAccuracy()));
-        converted.setSvHealth(getSvHealth());
-        converted.setIscL1CA(field.getZero().newInstance(getIscL1CA()));
-        converted.setIscL1CD(field.getZero().newInstance(getIscL1CD()));
-        converted.setIscL1CP(field.getZero().newInstance(getIscL1CP()));
-        converted.setIscL2C(field.getZero().newInstance(getIscL2C()));
-        converted.setIscL5I5(field.getZero().newInstance(getIscL5I5()));
-        converted.setIscL5Q5(field.getZero().newInstance(getIscL5Q5()));
-        converted.setUraiEd(getUraiEd());
-        converted.setUraiNed0(getUraiNed0());
-        converted.setUraiNed1(getUraiNed1());
-        converted.setUraiNed2(getUraiNed2());
     }
 
     /** Check it message is a CNV2 message.

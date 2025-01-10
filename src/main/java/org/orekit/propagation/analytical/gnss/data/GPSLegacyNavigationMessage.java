@@ -40,10 +40,11 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldGPSLegacyNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldGPSLegacyNavigationMessage<>(field, getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GPSLegacyNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldGPSLegacyNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

@@ -17,18 +17,22 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
  * @param <T> type of the field elements
- * @param <O> type of the orbital elements
+ * @param <F> type of the orbital elements (field version)
+ * @param <O> type of the orbital elements (non-field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
-public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElement<T>, O extends FieldCivilianNavigationMessage<T, O>>
-    extends FieldAbstractNavigationMessage<T, O>
+public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElement<T>,
+                                                     F extends FieldCivilianNavigationMessage<T, F, O>,
+                                                     O extends CivilianNavigationMessage<O>>
+    extends FieldAbstractNavigationMessage<T, F, O>
     implements FieldGNSSClockElements<T> {
 
     /** Indicator for CNV 2 messages. */
@@ -92,6 +96,29 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
                                              final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
         this.cnv2 = cnv2;
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    protected FieldCivilianNavigationMessage(final Field<T> field, final O original) {
+        super(field, original);
+        this.cnv2 = original.isCnv2();
+        setADot(field.getZero().newInstance(original.getADot()));
+        setDeltaN0Dot(field.getZero().newInstance(original.getDeltaN0Dot()));
+        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
+        setSvHealth(original.getSvHealth());
+        setIscL1CA(field.getZero().newInstance(original.getIscL1CA()));
+        setIscL1CD(field.getZero().newInstance(original.getIscL1CD()));
+        setIscL1CP(field.getZero().newInstance(original.getIscL1CP()));
+        setIscL2C(field.getZero().newInstance(original.getIscL2C()));
+        setIscL5I5(field.getZero().newInstance(original.getIscL5I5()));
+        setIscL5Q5(field.getZero().newInstance(original.getIscL5Q5()));
+        setUraiEd(original.getUraiEd());
+        setUraiNed0(original.getUraiNed0());
+        setUraiNed1(original.getUraiNed1());
+        setUraiNed2(original.getUraiNed2());
     }
 
     /** Check it message is a CNV2 message.

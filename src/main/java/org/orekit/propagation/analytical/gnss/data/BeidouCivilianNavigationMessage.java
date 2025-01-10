@@ -111,36 +111,11 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldBeidouCivilianNavigationMessage<T> uninitializedField(Field<T> field) {
-        return new FieldBeidouCivilianNavigationMessage<>(field, radioWave, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldBeidouCivilianNavigationMessage<T> converted = (FieldBeidouCivilianNavigationMessage<T>) fielded;
-        converted.setADot(field.getZero().newInstance(getADot()));
-        converted.setDeltaN0Dot(field.getZero().newInstance(getDeltaN0Dot()));
-        converted.setIODE(getIODE());
-        converted.setIODC(getIODC());
-        converted.setIscB1CD(field.getZero().newInstance(getIscB1CD()));
-        converted.setIscB1CP(field.getZero().newInstance(getIscB1CP()));
-        converted.setIscB2AD(field.getZero().newInstance(getIscB2AD()));
-        converted.setSisaiOe(getSisaiOe());
-        converted.setSisaiOcb(getSisaiOcb());
-        converted.setSisaiOc1(getSisaiOc1());
-        converted.setSisaiOc2(getSisaiOc2());
-        converted.setSismai(getSismai());
-        converted.setHealth(getHealth());
-        converted.setIntegrityFlags(getIntegrityFlags());
-        converted.setTgdB1Cp(field.getZero().newInstance(getTgdB1Cp()));
-        converted.setTgdB2ap(field.getZero().newInstance(getTgdB2ap()));
-        converted.setTgdB2bI(field.getZero().newInstance(getTgdB2bI()));
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, BeidouCivilianNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldBeidouCivilianNavigationMessage<>(field, this);
     }
 
     /** {@inheritDoc} */

@@ -29,7 +29,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldBeidouCivilianNavigationMessage<T>> {
+    extends FieldAbstractNavigationMessage<T, FieldBeidouCivilianNavigationMessage<T>, BeidouCivilianNavigationMessage> {
 
     /** Radio wave on which navigation signal is sent. */
     private final RadioWave radioWave;
@@ -103,6 +103,32 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
               timeScales, system);
         this.radioWave = radioWave;
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldBeidouCivilianNavigationMessage(final Field<T> field, final BeidouCivilianNavigationMessage original) {
+        super(field, original);
+        this.radioWave = original.getRadioWave();
+        setADot(field.getZero().newInstance(original.getADot()));
+        setDeltaN0Dot(field.getZero().newInstance(original.getDeltaN0Dot()));
+        setIODE(original.getIODE());
+        setIODC(original.getIODC());
+        setIscB1CD(field.getZero().newInstance(original.getIscB1CD()));
+        setIscB1CP(field.getZero().newInstance(original.getIscB1CP()));
+        setIscB2AD(field.getZero().newInstance(original.getIscB2AD()));
+        setSisaiOe(original.getSisaiOe());
+        setSisaiOcb(original.getSisaiOcb());
+        setSisaiOc1(original.getSisaiOc1());
+        setSisaiOc2(original.getSisaiOc2());
+        setSismai(original.getSismai());
+        setHealth(original.getHealth());
+        setIntegrityFlags(original.getIntegrityFlags());
+        setTgdB1Cp(field.getZero().newInstance(original.getTgdB1Cp()));
+        setTgdB2ap(field.getZero().newInstance(original.getTgdB2ap()));
+        setTgdB2bI(field.getZero().newInstance(original.getTgdB2bI()));
     }
 
     /**  {@inheritDoc} */

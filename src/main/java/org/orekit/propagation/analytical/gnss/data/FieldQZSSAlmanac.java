@@ -30,7 +30,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldQZSSAlmanac<T>> {
+    extends FieldAbstractAlmanac<T, FieldQZSSAlmanac<T>, QZSSAlmanac> {
 
     /** Source of the almanac. */
     private String src;
@@ -49,6 +49,16 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
     public FieldQZSSAlmanac(final Field<T> field,
                               final TimeScales timeScales, final SatelliteSystem system) {
         super(field.getZero().newInstance(GNSSConstants.QZSS_MU), GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldQZSSAlmanac(final Field<T> field, final QZSSAlmanac original) {
+        super(field, original);
+        setSource(original.getSource());
+        setHealth(original.getHealth());
     }
 
     /**  {@inheritDoc} */

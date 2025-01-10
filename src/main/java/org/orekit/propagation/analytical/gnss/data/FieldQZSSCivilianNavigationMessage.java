@@ -28,7 +28,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldCivilianNavigationMessage<T, FieldQZSSCivilianNavigationMessage<T>> {
+    extends FieldCivilianNavigationMessage<T, FieldQZSSCivilianNavigationMessage<T>, QZSSCivilianNavigationMessage> {
 
     /** Constructor.
      * @param field      field to which elements belong
@@ -42,6 +42,14 @@ public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T
                                               final TimeScales timeScales, final SatelliteSystem system) {
         super(cnv2, field.getZero().newInstance(GNSSConstants.QZSS_MU), GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
               timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldQZSSCivilianNavigationMessage(final Field<T> field, final QZSSCivilianNavigationMessage original) {
+        super(field, original);
     }
 
     /**  {@inheritDoc} */

@@ -48,21 +48,11 @@ public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldQZSSAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldQZSSAlmanac<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldQZSSAlmanac<T> converted = (FieldQZSSAlmanac<T>) fielded;
-        converted.setSource(getSource());
-        converted.setHealth(getHealth());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, QZSSAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldQZSSAlmanac<>(field, this);
     }
 
     /** {@inheritDoc} */

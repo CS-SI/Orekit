@@ -17,18 +17,22 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
  * @param <T> type of the field elements
- * @param <O> type of the orbital elements
+ * @param <F> type of the orbital elements (field version)
+ * @param <O> type of the orbital elements (non-field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
-public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>, O extends FieldLegacyNavigationMessage<T, O>>
-    extends FieldAbstractNavigationMessage<T, O>
+public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>,
+                                                   F extends FieldLegacyNavigationMessage<T, F, O>,
+                                                   O extends LegacyNavigationMessage<O>>
+    extends FieldAbstractNavigationMessage<T, F, O>
     implements FieldGNSSClockElements<T> {
 
     /** Issue of Data, Ephemeris. */
@@ -59,6 +63,19 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
     protected FieldLegacyNavigationMessage(final T mu, final double angularVelocity, final int weeksInCycle,
                                            final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    public FieldLegacyNavigationMessage(final Field<T> field, final O original) {
+        super(field, original);
+        setIODE(getMu().newInstance(original.getIODE()));
+        setIODC(original.getIODC());
+        setSvAccuracy(getMu().newInstance(original.getSvAccuracy()));
+        setSvHealth(original.getSvHealth());
+        setFitInterval(original.getFitInterval());
     }
 
     /**

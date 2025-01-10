@@ -48,20 +48,11 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected <T extends CalculusFieldElement<T>>
-        FieldBeidouAlmanac<T> uninitializedField(Field<T> field) {
-        return new FieldBeidouAlmanac<>(field, getTimeScales(), getSystem());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    protected <T extends CalculusFieldElement<T>>
-        void fillUp(final Field<T> field, final FieldGnssOrbitalElements<T, ?> fielded) {
-        super.fillUp(field, fielded);
-        @SuppressWarnings("unchecked")
-        final FieldBeidouAlmanac<T> converted = (FieldBeidouAlmanac<T>) fielded;
-        converted.setHealth(getHealth());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, BeidouAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldBeidouAlmanac<>(field, this);
     }
 
     /** {@inheritDoc} */

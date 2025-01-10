@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScales;
@@ -24,7 +25,8 @@ import org.orekit.time.TimeScales;
 /**
  * Base class for GNSS navigation messages.
  * @param <T> type of the field elements
- * @param <O> type of the orbital elements
+ * @param <F> type of the orbital elements (field version)
+ * @param <O> type of the orbital elements (non-field version)
  * @author Luc Maisonobe
  * @since 13.0
  *
@@ -34,8 +36,10 @@ import org.orekit.time.TimeScales;
  * @see FieldQZSSLegacyNavigationMessage
  * @see FieldIRNSSNavigationMessage
  */
-public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>, O extends FieldAbstractNavigationMessage<T, O>>
-    extends FieldAbstractAlmanac<T, O> {
+public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElement<T>,
+                                                     F extends FieldAbstractNavigationMessage<T, F, O>,
+                                                     O extends AbstractNavigationMessage<O>>
+    extends FieldAbstractAlmanac<T, F, O> {
 
     /** Square root of a. */
     private T sqrtA;
@@ -64,13 +68,16 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
     }
 
-    /**  {@inheritDoc} */
-    @Override
-    protected void copyNonKeplerianTo(final GNSSOrbitalElementsDriversProvider<?> destination) {
-        super.copyNonKeplerianTo(destination);
-        @SuppressWarnings("unchecked")
-        final FieldAbstractNavigationMessage<T, ?> converted = (FieldAbstractNavigationMessage<T, ?>) destination;
-        converted.setDeltaN(getDeltaN());
+    /** Constructor from non-field instance.
+     * @param field    field to which elements belong
+     * @param original regular non-field instance
+     */
+    protected FieldAbstractNavigationMessage(final Field<T> field, final O original) {
+        super(field, original);
+        setSqrtA(field.getZero().newInstance(original.getSqrtA()));
+        setDeltaN(field.getZero().newInstance(original.getDeltaN()));
+        setEpochToc(new FieldAbsoluteDate<>(field, original.getEpochToc()));
+        setTransmissionTime(field.getZero().newInstance(original.getTransmissionTime()));
     }
 
     /**
