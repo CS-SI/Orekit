@@ -114,7 +114,7 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
         }
 
         final int totalParameters = bootstrapParameters + freeParameters;
-        final FieldGnssOrbitalElements<Gradient, ?, ?> convertedElements = oe.toField(convertedSma.getField());
+        final FieldGnssOrbitalElements<Gradient, ?, ?> convertedElements = oe.toField(GradientField.getField(totalParameters));
         convertedElements.setSma(Gradient.variable(totalParameters,    0, oe.getSma()));
         convertedElements.setE(Gradient.variable(totalParameters,      1, oe.getE()));
         convertedElements.setI0(Gradient.variable(totalParameters,     2, oe.getI0()));
