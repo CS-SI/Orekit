@@ -418,12 +418,21 @@ public class AbsoluteDate
 
     /** Build an instance from an {@link Instant instant} in a {@link TimeScale time scale}.
      *
-     * @deprecated Use {@link AbsoluteDate#AbsoluteDate(Instant, UTCScale)} or {@link AbsoluteDate#AbsoluteDate(Instant)} instead
-     * @param instant instant in the time scale
-     * @param timeScale time scale
+     * <p>This constructor is provided for those users who wish to provide their own time
+     * scale to control how an {@link Instant} is converted to an {@link AbsoluteDate}.
+     *
+     * <p>Note that {@link Instant} is documented to use the "Java Time Scale", which is a
+     * non-standard time scale that is not well defined, and Orekit does not support it.
+     * Notably it uses seconds that are not SI seconds. {@link Instant}'s time scale may
+     * vary based on many factors, but is documented to be within 1 s of UTC after
+     * 1972-11-04T12:00.
+     *
+     * @param instant in the {@code timeScale}.
+     * @param timeScale of the {@code Instant}.
      * @since 12.0
+     * @see #AbsoluteDate(Instant, UTCScale)
+     * @see #AbsoluteDate(Instant)
      */
-    @Deprecated
     public AbsoluteDate(final Instant instant, final TimeScale timeScale) {
         this(new DateComponents(DateComponents.JAVA_EPOCH, (int) (instant.getEpochSecond() / 86400L)),
                 new TimeComponents(TimeOffset.SECOND.multiply(instant.getEpochSecond() % 86400L).
@@ -434,6 +443,8 @@ public class AbsoluteDate
     /** Build an instance from an {@link Instant instant} in utc time scale.
      * @param instant instant in the time scale
      * @since 12.1
+     * @see #AbsoluteDate(Instant, UTCScale)
+     * @see #AbsoluteDate(Instant, TimeScale)
      */
     @DefaultDataContext
     public AbsoluteDate(final Instant instant) {
@@ -441,15 +452,18 @@ public class AbsoluteDate
     }
 
     /** Build an instance from an {@link Instant instant} in the {@link UTCScale time scale}.
+     *
+     * <p>See the caveats of using {@link Instant} as described in the other {@link
+     * #AbsoluteDate(Instant, TimeScale) constructor}.
+     *
      * @param instant instant in the time scale
      * @param utcScale utc time scale
      * @since 12.1
+     * @see #AbsoluteDate(Instant, TimeScale)
+     * @see #AbsoluteDate(Instant)
      */
     public AbsoluteDate(final Instant instant, final UTCScale utcScale) {
-        this(new DateComponents(DateComponents.JAVA_EPOCH, (int) (instant.getEpochSecond() / 86400L)),
-             new TimeComponents(TimeOffset.SECOND.multiply(instant.getEpochSecond() % 86400L).
-                                add(new TimeOffset(instant.getNano(), TimeUnit.NANOSECONDS))),
-             utcScale);
+        this(instant, (TimeScale) utcScale);
     }
 
     /** Build an instance from an elapsed duration since another instant.
