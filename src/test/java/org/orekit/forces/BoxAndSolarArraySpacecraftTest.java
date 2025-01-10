@@ -68,7 +68,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class BoxAndSolarArraySpacecraftTest {
 
     @Test
-    public void testCoefficients() {
+    void testCoefficients() {
         final double drag = 1.1;
         final double lift = 2.2;
         final double abso = 3.3;
@@ -104,7 +104,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testParametersDrivers() {
+    void testParametersDrivers() {
 
         CelestialBody sun = CelestialBodyFactory.getSun();
         List<Panel> cube = new ArrayList<>();
@@ -210,7 +210,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testNoLiftWithoutReflection() {
+    void testNoLiftWithoutReflection() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -242,7 +242,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testOnlyLiftWithoutReflection() {
+    void testOnlyLiftWithoutReflection() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -275,7 +275,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testLiftVsNoLift()
+    void testLiftVsNoLift()
         throws NoSuchFieldException, SecurityException,
                IllegalArgumentException, IllegalAccessException {
 
@@ -354,7 +354,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testPlaneSpecularReflection() {
+    void testPlaneSpecularReflection() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -382,7 +382,7 @@ public class BoxAndSolarArraySpacecraftTest {
     }
 
     @Test
-    public void testPlaneAbsorption() {
+    void testPlaneAbsorption() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -411,7 +411,7 @@ public class BoxAndSolarArraySpacecraftTest {
 
     /** Test solar array radiation acceleration with zero flux. */
     @Test
-    public void testNullIllumination() {
+    void testNullIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
@@ -432,7 +432,7 @@ public class BoxAndSolarArraySpacecraftTest {
 
     /** Test forward/backward acceleration due to solar array radiation pressure. */
     @Test
-    public void testBackwardIllumination() {
+    void testBackwardIllumination() {
         SpacecraftState state = propagator.getInitialState();
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
@@ -459,7 +459,7 @@ public class BoxAndSolarArraySpacecraftTest {
      *  By comparing the "double" value with a "Binary64" implementation.
      */
     @Test
-    public void testFieldAcceleration() {
+    void testFieldAcceleration() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();

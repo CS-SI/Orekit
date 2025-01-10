@@ -30,7 +30,7 @@ import java.util.Map;
 public class AstronomicalAmplitudeReaderTest {
 
     @Test
-    public void testHfFES2004()
+    void testHfFES2004()
         {
         AstronomicalAmplitudeReader reader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
@@ -70,7 +70,7 @@ public class AstronomicalAmplitudeReaderTest {
     }
 
     @Test
-    public void testEmptyFile() throws IOException {
+    void testEmptyFile() throws IOException {
         try {
             AstronomicalAmplitudeReader reader =
                             new AstronomicalAmplitudeReader("empty-hf-fes2005.dat", 5, 2, 3, 1.0);

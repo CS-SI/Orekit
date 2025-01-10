@@ -139,7 +139,7 @@ class AbstractDragForceModelTest {
     @Test
     @SuppressWarnings("unchecked")
     // This test was added to increase overall conditions coverage in the scope of issue 1453
-    public void testIssue1453() {
+    void testIssue1453() {
         // GIVEN
         // Load Orekit data
         Utils.setDataRoot("regular-data");

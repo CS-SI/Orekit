@@ -80,7 +80,7 @@ public class LofOffsetTest {
      * Testing of the getters.
      */
     @Test
-    public void testGetters() {
+    void testGetters() {
         final Rotation expectedRotation = new Rotation(RotationOrder.XYZ, RotationConvention.VECTOR_OPERATOR, 0, 0, 0).revert();
         final LofOffset lofOffset = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS);
         Assertions.assertEquals(LOFType.LVLH_CCSDS, lofOffset.getLof());
@@ -91,7 +91,7 @@ public class LofOffsetTest {
     /** Test is the lof offset is the one expected
      */
     @Test
-    public void testZero() {
+    void testZero() {
 
         //  Satellite position
 
@@ -110,7 +110,7 @@ public class LofOffsetTest {
      */
     @Test
     @DefaultDataContext
-    public void testOffset() {
+    void testOffset() {
 
         //  Satellite position
         final CircularOrbit circ =
@@ -154,7 +154,7 @@ public class LofOffsetTest {
     /** Test is the target pointed is the one expected
      */
     @Test
-    public void testTarget()
+    void testTarget()
         {
 
         // Create target point and target pointing law towards that point
@@ -187,7 +187,7 @@ public class LofOffsetTest {
 
     @Test
     @DefaultDataContext
-    public void testSpin() {
+    void testSpin() {
 
         final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH_CCSDS, RotationOrder.XYX, 0.1, 0.2, 0.3);
 
@@ -229,7 +229,7 @@ public class LofOffsetTest {
 
     @Test
     @DefaultDataContext
-    public void testAnglesSign() {
+    void testAnglesSign() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
@@ -266,7 +266,7 @@ public class LofOffsetTest {
 
     @Test
     @DefaultDataContext
-    public void testRetrieveAngles() {
+    void testRetrieveAngles() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -296,7 +296,7 @@ public class LofOffsetTest {
 
     @Test
     @DefaultDataContext
-    public void testTypesField() {
+    void testTypesField() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());

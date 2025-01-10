@@ -40,7 +40,7 @@ import org.orekit.utils.ParameterDriver;
 public class ManeuverTriggersTest {
 
     @Test
-    public void testNoOpDefault() {
+    void testNoOpDefault() {
         // just test the default no-op implementation can be called without side effects
         ManeuverTriggers dummy = new ManeuverTriggers() {
             public <T extends CalculusFieldElement<T>> boolean isFiring(FieldAbsoluteDate<T> date, T[] parameters) {

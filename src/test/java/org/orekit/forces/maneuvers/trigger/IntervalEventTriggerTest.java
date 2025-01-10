@@ -79,7 +79,7 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
     }
 
     @Test
-    public void testComponents() {
+    void testComponents() {
         IntervalDates trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
                                               AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    dates = trigger.getFiringIntervalDetector().getDates();

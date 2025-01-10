@@ -66,7 +66,7 @@ import org.orekit.utils.ParameterDriver;
 public class SolarBodyTest {
 
     @Test
-    public void testNaif() throws UnsupportedEncodingException, IOException {
+    void testNaif() throws UnsupportedEncodingException, IOException {
         Utils.setDataRoot("regular-data");
         final Frame refFrame = FramesFactory.getICRF();
         final TimeScale tdb = TimeScalesFactory.getTDB();
@@ -108,7 +108,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testPO405() {
+    void testPO405() {
 
         Utils.setDataRoot("regular-data");
         double threshold = 4.0e-11;
@@ -176,7 +176,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testPO406() {
+    void testPO406() {
 
         Utils.setDataRoot("regular-data");
         double threshold = 2.0e-13;
@@ -350,7 +350,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testFrameShift() {
+    void testFrameShift() {
         Utils.setDataRoot("regular-data");
         final Frame moon  = CelestialBodyFactory.getMoon().getBodyOrientedFrame();
         final Frame earth = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
@@ -372,7 +372,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testPropagationVsEphemeris() {
+    void testPropagationVsEphemeris() {
 
         Utils.setDataRoot("regular-data");
 
@@ -514,7 +514,7 @@ public class SolarBodyTest {
     }
 
     @Test
-    public void testKepler() {
+    void testKepler() {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
         final double au = 149597870691.0;
@@ -556,7 +556,7 @@ public class SolarBodyTest {
      *  Test implementation of {@link JPLCelestialBody#getPosition(AbsoluteDate, Frame)} method.
      */
     @Test
-    public void testGetPosition() {
+    void testGetPosition() {
         Utils.setDataRoot("regular-data");
      
         // double test: Given

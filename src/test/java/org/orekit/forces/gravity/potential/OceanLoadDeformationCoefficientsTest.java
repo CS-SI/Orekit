@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 public class OceanLoadDeformationCoefficientsTest {
 
     @Test
-    public void testIERS1996EqualsIERS2003()
+    void testIERS1996EqualsIERS2003()
         {
         double[] coeff1996 = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeff2003 = OceanLoadDeformationCoefficients.IERS_2003.getCoefficients();
@@ -34,7 +34,7 @@ public class OceanLoadDeformationCoefficientsTest {
     }
 
     @Test
-    public void testIERS1996EqualsIERS2010()
+    void testIERS1996EqualsIERS2010()
         {
         double[] coeff1996 = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeff2010 = OceanLoadDeformationCoefficients.IERS_2010.getCoefficients();
@@ -45,13 +45,13 @@ public class OceanLoadDeformationCoefficientsTest {
     }
 
     @Test
-    public void testGegoutHighDegree()
+    void testGegoutHighDegree()
         {
         Assertions.assertEquals(251, OceanLoadDeformationCoefficients.GEGOUT.getCoefficients().length);
     }
 
     @Test
-    public void testGegoutNotEqualToIERS()
+    void testGegoutNotEqualToIERS()
         {
         double[] coeff1996   = OceanLoadDeformationCoefficients.IERS_1996.getCoefficients();
         double[] coeffGegout = OceanLoadDeformationCoefficients.GEGOUT.getCoefficients();

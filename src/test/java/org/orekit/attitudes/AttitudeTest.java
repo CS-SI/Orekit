@@ -28,7 +28,7 @@ import org.orekit.utils.AngularCoordinates;
 public class AttitudeTest {
 
     @Test
-    public void testZeroRate() {
+    void testZeroRate() {
         //        Utils.setDataRoot("regular-data");
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
@@ -42,7 +42,7 @@ public class AttitudeTest {
     }
 
     @Test
-    public void testShift() {
+    void testShift() {
         //Utils.setDataRoot("regular-data");
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
@@ -65,7 +65,7 @@ public class AttitudeTest {
     }
 
     @Test
-    public void testSpin() {
+    void testSpin() {
         //Utils.setDataRoot("regular-data");
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),

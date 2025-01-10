@@ -41,7 +41,7 @@ import org.orekit.utils.TimeSpanMap;
 public class ICGEMFormatReaderTest {
 
     @Test
-    public void testReadLimits() {
+    void testReadLimits() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
@@ -69,7 +69,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cNormalized() {
+    void testRegular05cNormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
@@ -90,7 +90,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testMoonGravityField() {
+    void testMoonGravityField() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("GrazLGM300c.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
@@ -100,7 +100,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testVenusGravityField() {
+    void testVenusGravityField() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("shgj180ua01.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
@@ -110,7 +110,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testMarsGravityField() {
+    void testMarsGravityField() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("jgm85f01.truncated", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(12, 12);
@@ -120,7 +120,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cUnnormalized() {
+    void testRegular05cUnnormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -145,7 +145,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testEigen06() {
+    void testEigen06() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -173,7 +173,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testEigen06S4() throws OrekitException {
+    void testEigen06S4() throws OrekitException {
         Utils.setDataRoot("potential");
         TimeScale tt = DataContext.getDefault().getTimeScales().getTT();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("EIGEN-6S4-v2-truncated", true, tt));
@@ -244,7 +244,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testEigen06S4SplitBetween() throws OrekitException {
+    void testEigen06S4SplitBetween() throws OrekitException {
         Utils.setDataRoot("potential");
         TimeScale tai = DataContext.getDefault().getTimeScales().getTAI();
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s4-split-between", true, tai));
@@ -292,115 +292,115 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile01() {
+    void testCorruptedFile01() {
         doTestCorruptedFile("corrupted-01-g007_eigen_coef", 5, 5,
                             OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER, -1);
     }
 
     @Test
-    public void testCorruptedFile02() {
+    void testCorruptedFile02() {
         doTestCorruptedFile("corrupted-02-g007_eigen_coef", 5, 5,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 45);
     }
 
     @Test
-    public void testCorruptedFile03() {
+    void testCorruptedFile03() {
         doTestCorruptedFile("corrupted-03-g007_eigen_coef", 5, 5,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 46);
     }
 
     @Test
-    public void testCorruptedFile04() {
+    void testCorruptedFile04() {
         doTestCorruptedFile("corrupted-04-g007_eigen_coef", 5, 5,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 51);
     }
 
     @Test
-    public void testCorruptedFile05() {
+    void testCorruptedFile05() {
         doTestCorruptedFile("corrupted-05-g007_eigen_coef", 5, 5,
                             OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE, -1);
     }
 
     @Test
-    public void testCorruptedFile06() {
+    void testCorruptedFile06() {
         doTestCorruptedFile("corrupted-06-g007_eigen_coef", 5, 5,
                             OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD, -1);
     }
 
     @Test
-    public void testCorruptedFile07() {
+    void testCorruptedFile07() {
         doTestCorruptedFile("corrupted-07-g007_eigen_coef", 5, 5,
                             OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE, -1);
     }
 
     @Test
-    public void testCorruptedFile08() {
+    void testCorruptedFile08() {
         doTestCorruptedFile("corrupted-08-g007_eigen_coef", 5, 5,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 107);
     }
 
     @Test
-    public void testCorruptedFile09() {
+    void testCorruptedFile09() {
         doTestCorruptedFile("corrupted-09-g007_eigen_coef", 5, 5,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 113);
     }
 
     @Test
-    public void testCorruptedFile10() {
+    void testCorruptedFile10() {
         doTestCorruptedFile("corrupted-10-eigen-6s4", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 77);
     }
 
     @Test
-    public void testCorruptedFile11() {
+    void testCorruptedFile11() {
         doTestCorruptedFile("corrupted-11-eigen-6s4", 3, 3,
                             OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE, -1);
     }
 
     @Test
-    public void testCorruptedFile12() {
+    void testCorruptedFile12() {
         doTestCorruptedFile("corrupted-12-eigen-6s4", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 53);
     }
 
     @Test
-    public void testCorruptedFile13() throws OrekitException {
+    void testCorruptedFile13() throws OrekitException {
         doTestCorruptedFile("corrupted-13-eigen-6s4", 1, 1,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 27);
     }
 
     @Test
-    public void testInvalidFormat() {
+    void testInvalidFormat() {
         doTestCorruptedFile("dummy_invalid_format_icgem", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 2);
     }
 
     @Test
-    public void testUnsupportedFormat() {
+    void testUnsupportedFormat() {
         doTestCorruptedFile("dummy_unsupported_format_icgem", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 2);
     }
 
     @Test
-    public void testInvalidProductType() {
+    void testInvalidProductType() {
         doTestCorruptedFile("dummy_invalid_product_type_icgem", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 3);
     }
 
     @Test
-    public void testInvalidError() {
+    void testInvalidError() {
         doTestCorruptedFile("dummy_invalid_error_icgem", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 8);
     }
 
     @Test
-    public void testInvalidNorm() {
+    void testInvalidNorm() {
         doTestCorruptedFile("dummy_invalid_norm_icgem", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 9);
     }
 
     @Test
-    public void testInvalidTide() {
+    void testInvalidTide() {
         doTestCorruptedFile("dummy_invalid_tide_icgem", 3, 3,
                             OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, 10);
     }
@@ -422,7 +422,7 @@ public class ICGEMFormatReaderTest {
 
 
     @Test
-    public void testZeroTide() {
+    void testZeroTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_zero_tide_icgem", false));
         Assertions.assertEquals(TideSystem.ZERO_TIDE,
@@ -430,7 +430,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testUnknownTide() {
+    void testUnknownTide() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_unknown_tide_icgem", false));
         Assertions.assertEquals(TideSystem.UNKNOWN,
@@ -439,7 +439,7 @@ public class ICGEMFormatReaderTest {
 
     /** Check numbers in the format 1.0d0 can be parsed. */
     @Test
-    public void testLowercaseD() {
+    void testLowercaseD() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_small_d_icgem", false));
         Assertions.assertEquals(10.0,
@@ -452,7 +452,7 @@ public class ICGEMFormatReaderTest {
 
     /** check files without 1,0 and 1,1 can be parsed. */
     @Test
-    public void testMissingDegree1() {
+    void testMissingDegree1() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_missing_degree_1", false));
         UnnormalizedSphericalHarmonics harmonics = GravityFieldFactory

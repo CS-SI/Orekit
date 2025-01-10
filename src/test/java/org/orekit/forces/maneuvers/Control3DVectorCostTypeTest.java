@@ -30,7 +30,7 @@ class Control3DVectorCostTypeTest {
     final Vector3D EXAMPLE_VECTOR = new Vector3D(-5., 2.4, -8.6);
 
     @Test
-    public void testDoubleValue() {
+    void testDoubleValue() {
         Assertions.assertEquals(Control3DVectorCostType.NONE.evaluate(EXAMPLE_VECTOR), 0.);
         Assertions.assertEquals(Control3DVectorCostType.ONE_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm1());
         Assertions.assertEquals(Control3DVectorCostType.TWO_NORM.evaluate(EXAMPLE_VECTOR), EXAMPLE_VECTOR.getNorm());
@@ -38,13 +38,13 @@ class Control3DVectorCostTypeTest {
     }
 
     @Test
-    public void testGradient() {
+    void testGradient() {
         final GradientField gradientField = GradientField.getField(2);
         testTemplateField(gradientField);
     }
 
     @Test
-    public void testComplex() {
+    void testComplex() {
         final ComplexField complexField = ComplexField.getInstance();
         testTemplateField(complexField);
     }

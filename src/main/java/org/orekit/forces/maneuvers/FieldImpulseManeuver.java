@@ -187,7 +187,7 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
 
     /** {@inheritDoc} */
     @Override
-    public void finish(FieldSpacecraftState<T> state) {
+    public void finish(final FieldSpacecraftState<T> state) {
         FieldDetectorModifier.super.finish(state);
         fieldImpulseProvider.finish(state);
     }

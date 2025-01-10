@@ -131,7 +131,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -151,7 +151,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -346,7 +346,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testNoParametersDrivers() {
+    void testNoParametersDrivers() {
         try {
             // initialization
             AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -367,7 +367,7 @@ public class InertialForcesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testNonInertialFrame() {
+    void testNonInertialFrame() {
         try {
             // ECEF frame
             final Frame ecef = FramesFactory.getITRF(IERSConventions.IERS_2010, true);

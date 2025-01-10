@@ -178,7 +178,7 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
 
     /** {@inheritDoc} */
     @Override
-    public void finish(SpacecraftState state) {
+    public void finish(final SpacecraftState state) {
         DetectorModifier.super.finish(state);
         impulseProvider.finish(state);
     }

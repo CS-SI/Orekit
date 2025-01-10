@@ -34,7 +34,7 @@ import java.io.IOException;
 public class JPLEphemeridesLoaderTest {
 
     @Test
-    public void testConstantsJPL() {
+    void testConstantsJPL() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
@@ -46,7 +46,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testConstantsInpop() {
+    void testConstantsInpop() {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES,
@@ -56,7 +56,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testGMJPL() {
+    void testGMJPL() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
@@ -98,7 +98,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testGMInpop() {
+    void testGMInpop() {
 
         Utils.setDataRoot("inpop");
 
@@ -141,7 +141,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDerivative405() {
+    void testDerivative405() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()),
@@ -149,7 +149,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDerivative406() {
+    void testDerivative406() {
         Utils.setDataRoot("regular-data:regular-data/de406-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()),
@@ -157,7 +157,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testDummyEarth() {
+    void testDummyEarth() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         JPLEphemeridesLoader loader =
                 new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
@@ -173,7 +173,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testEndianness() {
+    void testEndianness() {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderInpopTCBBig =
@@ -198,7 +198,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testInpopvsJPL() {
+    void testInpopvsJPL() {
         Utils.setDataRoot("regular-data:inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderDE405 =
@@ -228,7 +228,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
-    public void testOverlappingEphemeridesData() throws IOException {
+    void testOverlappingEphemeridesData() throws IOException {
         Utils.setDataRoot("overlapping-data/data.zip");
 
         // the data root contains two ephemerides files (JPL DE 405), which overlap in the period

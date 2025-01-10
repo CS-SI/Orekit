@@ -40,7 +40,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testCR3BPSystem() {
+    void testCR3BPSystem() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
@@ -55,7 +55,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetRotatingFrame() {
+    void testGetRotatingFrame() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final Frame baryFrame = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getRotatingFrame();
@@ -63,7 +63,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetPrimary() {
+    void testGetPrimary() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final CelestialBody primaryBody = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getPrimary();
@@ -71,7 +71,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetSecondary() {
+    void testGetSecondary() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final CelestialBody secondaryBody = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getSecondary();
@@ -79,7 +79,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetMu() {
+    void testGetMu() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final double mu = CR3BPFactory.getSunJupiterCR3BP(date, timeScale).getMassRatio();
@@ -87,7 +87,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetName() {
+    void testGetName() {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         TimeScale timeScale = TimeScalesFactory.getUTC();
         final String name = CR3BPFactory.getSunEarthCR3BP(date, timeScale).getName();
@@ -95,7 +95,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetLPos() {
+    void testGetLPos() {
         final CR3BPSystem syst = CR3BPFactory.getEarthMoonCR3BP();
 
         final Vector3D l1Position = syst.getLPosition(LagrangianPoints.L1);
@@ -125,7 +125,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetGamma() {
+    void testGetGamma() {
         TimeScale timeScale = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2020, 7, 5, 12, 0, 0.0, timeScale);
         final CR3BPSystem syst = CR3BPFactory.getSunEarthCR3BP(date, timeScale);
@@ -143,7 +143,7 @@ public class CR3BPSystemTest {
     }
 
     @Test
-    public void testGetRealAPV() {
+    void testGetRealAPV() {
 
         // Time settings
         final TimeScale timeScale = TimeScalesFactory.getUTC();

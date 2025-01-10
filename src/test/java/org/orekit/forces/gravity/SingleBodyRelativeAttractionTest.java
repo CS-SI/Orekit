@@ -300,7 +300,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -319,7 +319,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -338,7 +338,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -357,7 +357,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -376,7 +376,7 @@ public class SingleBodyRelativeAttractionTest extends AbstractLegacyForceModelTe
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization

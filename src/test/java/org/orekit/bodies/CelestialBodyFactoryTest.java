@@ -81,7 +81,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testHorizon() {
+    void testHorizon() {
 
         // The following data are an excerpt from a telnet session with JPL Horizon system
         // note that in Horizon we selected Jupiter barycenter rather than Jupiter body center
@@ -235,7 +235,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthMoonBarycenter() {
+    void testEarthMoonBarycenter() {
         Utils.setDataRoot("regular-data/de405-ephemerides");
         CelestialBody sun = CelestialBodyFactory.getSun();
         CelestialBody mars = CelestialBodyFactory.getMars();
@@ -257,7 +257,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testICRFAndGCRFAlignment() {
+    void testICRFAndGCRFAlignment() {
         Utils.setDataRoot("regular-data");
         final CelestialBody earthMoonBarycenter   = CelestialBodyFactory.getEarthMoonBarycenter();
         final CelestialBody solarSystemBarycenter = CelestialBodyFactory.getSolarSystemBarycenter();
@@ -279,7 +279,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthInertialFrameAroundJ2000() {
+    void testEarthInertialFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getInertiallyOrientedFrame();
         final Frame base       = FramesFactory.getGCRF();
@@ -293,7 +293,7 @@ public class CelestialBodyFactoryTest {
     }
 
     @Test
-    public void testEarthBodyOrientedFrameAroundJ2000() {
+    void testEarthBodyOrientedFrameAroundJ2000() {
         Utils.setDataRoot("regular-data");
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
         final Frame base       = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
