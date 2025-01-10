@@ -56,7 +56,7 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
      * @param field      field to which elements belong
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav weeks
+     *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
      */
     public FieldGPSAlmanac(final Field<T> field, final TimeScales timeScales, final SatelliteSystem system) {

@@ -32,7 +32,7 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
      * @param cnv2       indicator for CNV2 messages
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav weeks
+     *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
      */
     public QZSSCivilianNavigationMessage(final boolean cnv2,

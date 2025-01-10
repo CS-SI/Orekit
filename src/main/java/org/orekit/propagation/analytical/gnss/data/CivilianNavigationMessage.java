@@ -88,7 +88,7 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
      * @param weeksInCycle    number of weeks in the GNSS cycle
      * @param timeScales      known time scales
      * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav weeks
+     *                        (may be different from real system, for example in Rinex nav, weeks
      *                        are always according to GPS)
      */
     protected CivilianNavigationMessage(final boolean cnv2,

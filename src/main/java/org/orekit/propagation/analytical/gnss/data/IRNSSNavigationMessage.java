@@ -40,7 +40,7 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
     /** Constructor.
      * @param timeScales known time scales
      * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav weeks
+     *                   (may be different from real system, for example in Rinex nav, weeks
      *                   are always according to GPS)
      */
     public IRNSSNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
