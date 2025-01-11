@@ -152,7 +152,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @param field field to which elements belong
      * @return field version of the instance
      */
-    public abstract  <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, O>>
+    public abstract <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, O>>
        F toField(Field<T> field);
 
     /** {@inheritDoc} */

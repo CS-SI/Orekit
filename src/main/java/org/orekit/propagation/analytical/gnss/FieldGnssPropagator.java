@@ -164,13 +164,9 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final FieldUnivariateDerivative2<T> tk = new FieldUnivariateDerivative2<>(getTk(date),
                                                                                   date.getField().getOne(),
                                                                                   date.getField().getZero());
-        // mean motion
-        final T a          = orbitalElements.getSma();
-        final T invA       = a.reciprocal();
-        final T meanMotion = FastMath.sqrt(orbitalElements.getMu().multiply(invA)).multiply(invA);
 
         // Mean anomaly
-        final FieldUnivariateDerivative2<T> mk = tk.multiply(meanMotion).add(orbitalElements.getM0());
+        final FieldUnivariateDerivative2<T> mk = tk.multiply(orbitalElements.getMeanMotion()).add(orbitalElements.getM0());
         // Eccentric Anomaly
         final FieldUnivariateDerivative2<T> e  = tk.newInstance(orbitalElements.getE());
         final FieldUnivariateDerivative2<T> ek = FieldKeplerianAnomalyUtility.ellipticMeanToEccentric(e, mk);
@@ -191,7 +187,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         // Corrected Argument of Latitude
         final FieldSinCos<FieldUnivariateDerivative2<T>> csuk = FastMath.sinCos(phik.add(dphik));
         // Corrected Radius
-        final FieldUnivariateDerivative2<T> rk = ek.cos().multiply(e.negate()).add(1).multiply(a).add(drk);
+        final FieldUnivariateDerivative2<T> rk = ek.cos().multiply(e.negate()).add(1).multiply(orbitalElements.getSma()).add(drk);
         // Corrected Inclination
         final FieldUnivariateDerivative2<T> ik  = tk.multiply(parameters[GNSSOrbitalElements.I_DOT_INDEX]).
                                                   add(orbitalElements.getI0()).add(dik);

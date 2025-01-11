@@ -32,8 +32,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  * @author Luc Maisonobe
 */
-public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>,
-                                               O extends GNSSOrbitalElements<O>>
+public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>, O extends GNSSOrbitalElements<O>>
     extends GNSSOrbitalElementsDriversProvider
     implements FieldTimeStamped<T> {
 

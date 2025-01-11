@@ -286,7 +286,7 @@ public class GPSPropagatorTest {
         double errorA = 0;
         for (final GPSAlmanac almanac : almanacs) {
             final GNSSPropagator propagator = almanac.getPropagator();
-            GNSSOrbitalElements elements = propagator.getOrbitalElements();
+            GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
             AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GPS).getDate();
             for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
                 final AbsoluteDate central = t0.shiftedBy(dt);
@@ -397,13 +397,13 @@ public class GPSPropagatorTest {
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
-        Assertions.assertEquals(1.019954360, stm.getEntry(0, 0), 1.0e-9); // TODO set correct reference value
+        Assertions.assertEquals(9577.125338, stm.getEntry(0, 0), 1.0e-6);
 
         // extract Jacobian matrix
         final RealMatrix jacobian = harvester.getParametersJacobian(state);
         Assertions.assertEquals(6, jacobian.getRowDimension());
         Assertions.assertEquals(2, jacobian.getColumnDimension());
-        Assertions.assertEquals(0.075744251, jacobian.getEntry(0, 0), 1.0e-9); // TODO set correct reference value
+        Assertions.assertEquals(-0.304611875, jacobian.getEntry(0, 0), 1.0e-9);
 
     }
 
@@ -441,34 +441,42 @@ public class GPSPropagatorTest {
 
         final GNSSPropagator rebuilt = new GNSSPropagator(propagator.getInitialState(), goe,
                                                           ecef, attitudeProvider, mass);
-        final GNSSOrbitalElements oe2 = rebuilt.getOrbitalElements();
+        final GNSSOrbitalElements<?> oe2 = rebuilt.getOrbitalElements();
         Assertions.assertEquals(0, goe.getDate().durationFrom(oe2),               1.0e-20);
+        Assertions.assertEquals(0,
+                                Vector3D.distance(propagator.getInitialState().getPVCoordinates().getPosition(),
+                                                  rebuilt.getInitialState().getPVCoordinates().getPosition()),
+                                3.7e-7);
+        Assertions.assertEquals(0,
+                                Vector3D.distance(propagator.getInitialState().getPVCoordinates().getVelocity(),
+                                                  rebuilt.getInitialState().getPVCoordinates().getVelocity()),
+                                3.9e-11);
 
         // general parameters
-        Assertions.assertEquals(goe.getMu(), oe2.getMu(),                         1.0e-20);
-        Assertions.assertEquals(goe.getCycleDuration(),   oe2.getCycleDuration(), 1.0e-20);
-        Assertions.assertEquals(goe.getSystem(),          oe2.getSystem());
-        Assertions.assertEquals(goe.getPRN(),             oe2.getPRN());
-        Assertions.assertEquals(goe.getWeek(),            oe2.getWeek());
+        Assertions.assertEquals(goe.getMu(),            oe2.getMu(),            1.0e-20);
+        Assertions.assertEquals(goe.getCycleDuration(), oe2.getCycleDuration(), 1.0e-20);
+        Assertions.assertEquals(goe.getSystem(),        oe2.getSystem());
+        Assertions.assertEquals(goe.getPRN(),           oe2.getPRN());
+        Assertions.assertEquals(goe.getWeek(),          oe2.getWeek());
 
         // non-Keplerian parameters, which are just copied
-        Assertions.assertEquals(goe.getTime(),            oe2.getTime(),          1.0e-20);
-        Assertions.assertEquals(goe.getIDot(),            oe2.getIDot(),          1.0e-20);
-        Assertions.assertEquals(goe.getOmegaDot(),        oe2.getOmegaDot(),      1.0e-20);
-        Assertions.assertEquals(goe.getCuc(),             oe2.getCuc(),           1.0e-20);
-        Assertions.assertEquals(goe.getCus(),             oe2.getCus(),           1.0e-20);
-        Assertions.assertEquals(goe.getCrc(),             oe2.getCrc(),           1.0e-20);
-        Assertions.assertEquals(goe.getCrs(),             oe2.getCrs(),           1.0e-20);
-        Assertions.assertEquals(goe.getCic(),             oe2.getCic(),           1.0e-20);
-        Assertions.assertEquals(goe.getCis(),             oe2.getCis(),           1.0e-20);
+        Assertions.assertEquals(goe.getTime(),     oe2.getTime(),     1.0e-20);
+        Assertions.assertEquals(goe.getIDot(),     oe2.getIDot(),     1.0e-20);
+        Assertions.assertEquals(goe.getOmegaDot(), oe2.getOmegaDot(), 1.0e-20);
+        Assertions.assertEquals(goe.getCuc(),      oe2.getCuc(),      1.0e-20);
+        Assertions.assertEquals(goe.getCus(),      oe2.getCus(),      1.0e-20);
+        Assertions.assertEquals(goe.getCrc(),      oe2.getCrc(),      1.0e-20);
+        Assertions.assertEquals(goe.getCrs(),      oe2.getCrs(),      1.0e-20);
+        Assertions.assertEquals(goe.getCic(),      oe2.getCic(),      1.0e-20);
+        Assertions.assertEquals(goe.getCis(),      oe2.getCis(),      1.0e-20);
 
         // orbital parameters, those are rebuilt from the initial state
-        Assertions.assertEquals(goe.getSma(),             oe2.getSma(),           4.0e-8);
-        Assertions.assertEquals(goe.getE(),               oe2.getE(),             6.0e-16);
-        Assertions.assertEquals(goe.getI0(),              oe2.getI0(),            1.0e-20);
-        Assertions.assertEquals(goe.getPa(),              MathUtils.normalizeAngle(oe2.getPa(),     goe.getPa()),     1.0e-13);
-        Assertions.assertEquals(goe.getOmega0(),          MathUtils.normalizeAngle(oe2.getOmega0(), goe.getOmega0()), 1.0e-13);
-        Assertions.assertEquals(goe.getM0(),              MathUtils.normalizeAngle(oe2.getM0(),     goe.getM0()),     1.0e-13);
+        Assertions.assertEquals(goe.getSma(),    oe2.getSma(),                                               4.0e-8);
+        Assertions.assertEquals(goe.getE(),      oe2.getE(),                                                 3.2e-16);
+        Assertions.assertEquals(goe.getI0(),     oe2.getI0(),                                                1.0e-20);
+        Assertions.assertEquals(goe.getPa(),     MathUtils.normalizeAngle(oe2.getPa(),     goe.getPa()),     2.6e-14);
+        Assertions.assertEquals(goe.getOmega0(), MathUtils.normalizeAngle(oe2.getOmega0(), goe.getOmega0()), 1.7e-14);
+        Assertions.assertEquals(goe.getM0(),     MathUtils.normalizeAngle(oe2.getM0(),     goe.getM0()),     2.6e-14);
 
     }
 
