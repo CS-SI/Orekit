@@ -19,8 +19,6 @@ package org.orekit.propagation.analytical.gnss.data;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.gnss.RadioWave;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
@@ -29,7 +27,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldBeidouCivilianNavigationMessage<T>, BeidouCivilianNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, BeidouCivilianNavigationMessage> {
 
     /** Radio wave on which navigation signal is sent. */
     private final RadioWave radioWave;
@@ -88,23 +86,6 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     /** Satellite type. */
     private BeidouSatelliteType satelliteType;
 
-    /**
-     * Constructor.
-     * @param field      field to which elements belong
-     * @param radioWave  radio wave on which navigation signal is sent
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldBeidouCivilianNavigationMessage(final Field<T> field,
-                                                final RadioWave radioWave,
-                                                final TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system);
-        this.radioWave = radioWave;
-    }
-
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -129,12 +110,13 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         setTgdB1Cp(field.getZero().newInstance(original.getTgdB1Cp()));
         setTgdB2ap(field.getZero().newInstance(original.getTgdB2ap()));
         setTgdB2bI(field.getZero().newInstance(original.getTgdB2bI()));
+        setSatelliteType(original.getSatelliteType());
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldBeidouCivilianNavigationMessage<T> uninitializedCopy() {
-        return new FieldBeidouCivilianNavigationMessage<>(getMu().getField(), radioWave, getTimeScales(), getSystem());
+    public BeidouCivilianNavigationMessage toNonField() {
+        return new BeidouCivilianNavigationMessage(this);
     }
 
     /**

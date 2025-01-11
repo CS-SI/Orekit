@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a QZSS navigation message.
@@ -28,21 +26,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldCivilianNavigationMessage<T, FieldQZSSCivilianNavigationMessage<T>, QZSSCivilianNavigationMessage> {
-
-    /** Constructor.
-     * @param field      field to which elements belong
-     * @param cnv2       indicator for CNV2 messages
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldQZSSCivilianNavigationMessage(final Field<T> field, final boolean cnv2,
-                                              final TimeScales timeScales, final SatelliteSystem system) {
-        super(cnv2, field.getZero().newInstance(GNSSConstants.QZSS_MU), GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
-              timeScales, system);
-    }
+    extends FieldCivilianNavigationMessage<T, QZSSCivilianNavigationMessage> {
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -52,10 +36,10 @@ public class FieldQZSSCivilianNavigationMessage<T extends CalculusFieldElement<T
         super(field, original);
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldQZSSCivilianNavigationMessage<T> uninitializedCopy() {
-        return new FieldQZSSCivilianNavigationMessage<>(getMu().getField(), isCnv2(), getTimeScales(), getSystem());
+    public QZSSCivilianNavigationMessage toNonField() {
+        return new QZSSCivilianNavigationMessage(this);
     }
 
 }

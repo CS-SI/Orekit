@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Class for BeiDou almanac.
@@ -33,23 +31,10 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldBeidouAlmanac<T>, BeidouAlmanac> {
+    extends FieldAbstractAlmanac<T, BeidouAlmanac> {
 
     /** Health status. */
     private int health;
-
-    /**
-     * Build a new almanac.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldBeidouAlmanac(final Field<T> field,
-                              final TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
-    }
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -62,8 +47,8 @@ public class FieldBeidouAlmanac<T extends CalculusFieldElement<T>>
 
     /** {@inheritDoc} */
     @Override
-    protected FieldBeidouAlmanac<T> uninitializedCopy() {
-        return new FieldBeidouAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
+    public BeidouAlmanac toNonField() {
+        return new BeidouAlmanac(this);
     }
 
     /**

@@ -41,18 +41,20 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GPSCivilianNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldGPSCivilianNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> GPSCivilianNavigationMessage(final FieldGPSCivilianNavigationMessage<T> original) {
+        super(original);
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected GPSCivilianNavigationMessage uninitializedCopy() {
-        return new GPSCivilianNavigationMessage(isCnv2(), getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSCivilianNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldGPSCivilianNavigationMessage<>(field, this);
     }
 
 }

@@ -23,37 +23,19 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
-import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.FieldGnssPropagator;
 import org.orekit.propagation.analytical.gnss.FieldGnssPropagatorBuilder;
-import org.orekit.time.TimeScales;
 
 /**
  * Base class for GNSS almanacs.
  * @param <T> type of the field elements
- * @param <F> type of the orbital elements (field version)
+ * @param <O> type of the orbital elements (non-field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
 public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>,
-                                           F extends FieldAbstractAlmanac<T, F, O>,
                                            O extends AbstractAlmanac<O>>
-    extends FieldCommonGnssData<T, F, O> {
-
-    /**
-     * Constructor.
-     * @param mu Earth's universal gravitational parameter
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle number of weeks in the GNSS cycle
-     * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
-     */
-    protected FieldAbstractAlmanac(final T mu, final double angularVelocity, final int weeksInCycle,
-                                   final TimeScales timeScales, final SatelliteSystem system) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
-    }
+    extends FieldCommonGnssData<T, O> {
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong

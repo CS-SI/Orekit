@@ -44,18 +44,20 @@ public class IRNSSAlmanac extends AbstractAlmanac<IRNSSAlmanac> {
         super(GNSSConstants.IRNSS_MU, GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, IRNSSAlmanac>>
-        F toField(Field<T> field) {
-        return (F) new FieldIRNSSAlmanac<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> IRNSSAlmanac(final FieldIRNSSAlmanac<T> original) {
+        super(original);
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected IRNSSAlmanac uninitializedCopy() {
-        return new IRNSSAlmanac(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, IRNSSAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldIRNSSAlmanac<>(field, this);
     }
 
     /**

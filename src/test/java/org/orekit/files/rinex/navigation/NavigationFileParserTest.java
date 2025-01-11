@@ -156,7 +156,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(13, file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -233,7 +233,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -289,7 +289,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("LCL",                    file.getHeader().getCreationTimeZone());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -357,7 +357,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(4,                        file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -433,7 +433,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -535,7 +535,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(17, file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(2, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -613,7 +613,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(1, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -665,7 +665,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                            file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(3, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -745,7 +745,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(1, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(1, file.getQZSSCivilianNavigationMessages().size());
@@ -802,7 +802,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -861,7 +861,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -938,7 +938,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -988,7 +988,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1048,7 +1048,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(14,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1101,7 +1101,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(3, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1193,7 +1193,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                            file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1276,7 +1276,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                            file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(1, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1354,7 +1354,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals("UTC",                   file.getHeader().getCreationTimeZone());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1427,7 +1427,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1462,7 +1462,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1536,7 +1536,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                      file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0, file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0, file.getQZSSCivilianNavigationMessages().size());
@@ -1613,7 +1613,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
@@ -1715,7 +1715,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
@@ -1808,7 +1808,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(102,                                  file.getHeader().getMergedFiles());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
@@ -1905,7 +1905,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
@@ -1964,7 +1964,7 @@ public class NavigationFileParserTest {
         Assertions.assertEquals(18,                                   file.getHeader().getNumberOfLeapSeconds());
 
         // Verify data
-        checkToField(file);
+        checkFieldConversion(file);
         Assertions.assertEquals(0,  file.getGalileoNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSLegacyNavigationMessages().size());
         Assertions.assertEquals(0,  file.getQZSSCivilianNavigationMessages().size());
@@ -2182,59 +2182,60 @@ public class NavigationFileParserTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private void checkToField(final RinexNavigation file) {
+    private void checkFieldConversion(final RinexNavigation file) {
         for (final List<GalileoNavigationMessage> messages : file.getGalileoNavigationMessages().values()) {
             for (final GalileoNavigationMessage message : messages) {
-                checkField(message, (FieldGalileoNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldGalileoNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
        for (final List<QZSSLegacyNavigationMessage> messages : file.getQZSSLegacyNavigationMessages().values()) {
             for (final QZSSLegacyNavigationMessage message : messages) {
-                checkField(message, (FieldQZSSLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldQZSSLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
         for (final List<QZSSCivilianNavigationMessage> messages : file.getQZSSCivilianNavigationMessages().values()) {
             for (final QZSSCivilianNavigationMessage message : messages) {
-                checkField(message, (FieldQZSSCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldQZSSCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
         for (final List<BeidouLegacyNavigationMessage> messages : file.getBeidouLegacyNavigationMessages().values()) {
             for (final BeidouLegacyNavigationMessage message : messages) {
-                checkField(message, (FieldBeidouLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldBeidouLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
         for (final List<BeidouCivilianNavigationMessage> messages : file.getBeidouCivilianNavigationMessages().values()) {
             for (final BeidouCivilianNavigationMessage message : messages) {
-                checkField(message, (FieldBeidouCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldBeidouCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
         for (final List<IRNSSNavigationMessage> messages : file.getIRNSSNavigationMessages().values()) {
             for (final IRNSSNavigationMessage message : messages) {
-                checkField(message, (FieldIRNSSNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldIRNSSNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
         for (final List<GPSLegacyNavigationMessage> messages : file.getGPSLegacyNavigationMessages().values()) {
             for (final GPSLegacyNavigationMessage message : messages) {
-                checkField(message, (FieldGPSLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldGPSLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
         for (final List<GPSCivilianNavigationMessage> messages : file.getGPSCivilianNavigationMessages().values()) {
             for (final GPSCivilianNavigationMessage message : messages) {
-                checkField(message, (FieldGPSCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
+                checkFieldConversion(message, (FieldGPSCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
             }
         }
 
     }
     @SuppressWarnings("unchecked")
     private <T extends CalculusFieldElement<T>,
-             F extends FieldGnssOrbitalElements<T, F, O>,
+             F extends FieldGnssOrbitalElements<T, O>,
              O extends GNSSOrbitalElements<O>>
-    void checkField(final O message, final F fieldMessage) {
+    void checkFieldConversion(final O message, final F fieldMessage) {
         try {
+            final O rebuilt = fieldMessage.toNonField();
             for (final Method getter : getGetters(message, Integer.TYPE)) {
                 final Method fieldGetter = fieldMessage.getClass().getMethod(getter.getName());
                 Assertions.assertEquals(getter.invoke(message), fieldGetter.invoke(fieldMessage));
+                Assertions.assertEquals(getter.invoke(message), getter.invoke(rebuilt));
             }
             for (final Method getter : getGetters(message, Double.TYPE)) {
                 final Method fieldGetter = fieldMessage.getClass().getMethod(getter.getName());
@@ -2242,12 +2243,17 @@ public class NavigationFileParserTest {
                                  (Double) fieldGetter.invoke(fieldMessage) :
                                  ((T) fieldGetter.invoke(fieldMessage)).getReal();
                 Assertions.assertEquals((Double) getter.invoke(message), f, 1.0e-15);
+                Assertions.assertEquals((Double) getter.invoke(message), (Double) getter.invoke(rebuilt), 1.0e-15, message.getClass().getName() + "." +getter.getName());
             }
             for (final Method getter : getGetters(message, AbsoluteDate.class)) {
                 final Method fieldGetter = fieldMessage.getClass().getMethod(getter.getName());
                 Assertions.assertEquals(0.0,
                                         ((AbsoluteDate) getter.invoke(message)).
                                         durationFrom(((FieldAbsoluteDate<T>) fieldGetter.invoke(fieldMessage)).toAbsoluteDate()),
+                                        1.0e-15);
+                Assertions.assertEquals(0.0,
+                                        ((AbsoluteDate) getter.invoke(message)).
+                                        durationFrom((AbsoluteDate) getter.invoke(rebuilt)),
                                         1.0e-15);
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException nsme) {

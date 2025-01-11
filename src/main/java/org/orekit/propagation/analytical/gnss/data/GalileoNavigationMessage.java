@@ -59,18 +59,26 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoN
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GalileoNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldGalileoNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> GalileoNavigationMessage(final FieldGalileoNavigationMessage<T> original) {
+        super(original);
+        setIODNav(original.getIODNav());
+        setDataSource(original.getDataSource());
+        setBGDE1E5a(original.getBGDE1E5a().getReal());
+        setBGDE5bE1(original.getBGDE5bE1().getReal());
+        setSisa(original.getSisa().getReal());
+        setSvHealth(original.getSvHealth().getReal());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected GalileoNavigationMessage uninitializedCopy() {
-        return new GalileoNavigationMessage(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldGalileoNavigationMessage<>(field, this);
     }
 
     /**

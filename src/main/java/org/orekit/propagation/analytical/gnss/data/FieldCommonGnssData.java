@@ -18,20 +18,16 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /** Container for common GNSS data contained in almanac and navigation messages.
  * @param <T> type of the field elements
- * @param <F> type of the orbital elements (field version)
  * @param <O> type of the orbital elements (non-field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
-public class FieldCommonGnssData<T extends CalculusFieldElement<T>,
-                                 F extends FieldCommonGnssData<T, F, O>,
-                                 O extends CommonGnssData<O>>
-    extends FieldGnssOrbitalElements<T, F, O>
+public abstract class FieldCommonGnssData<T extends CalculusFieldElement<T>,
+                                          O extends CommonGnssData<O>>
+    extends FieldGnssOrbitalElements<T, O>
     implements FieldGNSSClockElements<T> {
 
     /** SV zero-th order clock correction (s). */
@@ -49,24 +45,6 @@ public class FieldCommonGnssData<T extends CalculusFieldElement<T>,
     /** Time Of Clock. */
     private T toc;
 
-    /**
-     * Constructor.
-     * @param mu              Earth's universal gravitational parameter
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle    number of weeks in the GNSS cycle
-     * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
-     */
-    protected FieldCommonGnssData(final T mu, final double angularVelocity, final int weeksInCycle,
-                                  final TimeScales timeScales, final SatelliteSystem system) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
-        af0 = mu.newInstance(0);
-        af1 = mu.newInstance(0);
-        af2 = mu.newInstance(0);
-    }
-
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -78,13 +56,6 @@ public class FieldCommonGnssData<T extends CalculusFieldElement<T>,
         setAf2(field.getZero().newInstance(original.getAf2()));
         setTGD(field.getZero().newInstance(original.getTGD()));
         setToc(field.getZero().newInstance(original.getToc()));
-    }
-
-    /**  {@inheritDoc} */
-    @Override
-    protected FieldCommonGnssData<T, F, O> uninitializedCopy() {
-        return new FieldCommonGnssData<>(getMu(), getAngularVelocity(), getWeeksInCycle(),
-                                         getTimeScales(), getSystem());
     }
 
     /** {@inheritDoc} */

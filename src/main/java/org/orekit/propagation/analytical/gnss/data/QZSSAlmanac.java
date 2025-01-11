@@ -47,18 +47,22 @@ public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
         super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, QZSSAlmanac>>
-        F toField(Field<T> field) {
-        return (F) new FieldQZSSAlmanac<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> QZSSAlmanac(final FieldQZSSAlmanac<T> original) {
+        super(original);
+        setSource(original.getSource());
+        setHealth(original.getHealth());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected QZSSAlmanac uninitializedCopy() {
-        return new QZSSAlmanac(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldQZSSAlmanac<>(field, this);
     }
 
     /**

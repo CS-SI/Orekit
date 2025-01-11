@@ -61,18 +61,25 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, BeidouLegacyNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldBeidouLegacyNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> BeidouLegacyNavigationMessage(final FieldBeidouLegacyNavigationMessage<T> original) {
+        super(original);
+        setAODE(original.getAODE());
+        setAODC(original.getAODC());
+        setTGD1(original.getTGD1().getReal());
+        setTGD2(original.getTGD2().getReal());
+        setSvAccuracy(original.getSvAccuracy().getReal());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected BeidouLegacyNavigationMessage uninitializedCopy() {
-        return new BeidouLegacyNavigationMessage(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouLegacyNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldBeidouLegacyNavigationMessage<>(field, this);
     }
 
     /**

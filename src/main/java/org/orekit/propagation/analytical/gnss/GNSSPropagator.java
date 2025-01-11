@@ -337,7 +337,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * </p>
      *
      * @param initialState    initial state
-     * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be ignored)
+     * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be overridden)
      * @param ecef            Earth Centered Earth Fixed frame
      * @param provider        attitude provider
      * @param mass            satellite mass (kg)
@@ -349,19 +349,16 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
                                                                final Frame ecef, final AttitudeProvider provider,
                                                                final double mass) {
 
-        // build the elements with immutable parts
-        final GNSSOrbitalElements<?> elements = nonKeplerianElements.copyNonKeplerian();
-
         // get approximate initial orbit
         final Frame frozenEcef = ecef.getFrozenFrame(initialState.getFrame(), initialState.getDate(), "frozen");
         KeplerianOrbit orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
+        FieldGnssOrbitalElements<Gradient, ?> gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit
-            final FieldGnssOrbitalElements<Gradient, ?, ?> gElements = convert(elements, orbit);
             final FieldGnssPropagator<Gradient> gPropagator =
                 new FieldGnssPropagator<>(gElements, initialState.getFrame(), ecef, provider,
                                           gElements.getMu().newInstance(mass));
@@ -387,14 +384,12 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
             final RealVector correction = new QRDecomposition(jacobian, EPS).getSolver().solve(residuals);
 
             // update initial orbit
-            orbit = new KeplerianOrbit(orbit.getA()                             + correction.getEntry(0),
-                                       orbit.getE()                             + correction.getEntry(1),
-                                       orbit.getI()                             + correction.getEntry(2),
-                                       orbit.getPerigeeArgument()               + correction.getEntry(3),
-                                       orbit.getRightAscensionOfAscendingNode() + correction.getEntry(4),
-                                       orbit.getMeanAnomaly()                   + correction.getEntry(5),
-                                       PositionAngleType.MEAN, PositionAngleType.MEAN,
-                                       frozenEcef, initialState.getDate(), initialState.getMu());
+            gElements.setSma(gElements.getSma().add(correction.getEntry(0)));
+            gElements.setE(gElements.getE().add(correction.getEntry(1)));
+            gElements.setI0(gElements.getI0().add(correction.getEntry(2)));
+            gElements.setPa(gElements.getPa().add(correction.getEntry(3)));
+            gElements.setOmega0(gElements.getOmega0().add(correction.getEntry(4)));
+            gElements.setM0(gElements.getM0().add(correction.getEntry(5)));
 
             final double deltaP = FastMath.sqrt(residuals.getEntry(0) * residuals.getEntry(0) +
                                                 residuals.getEntry(1) * residuals.getEntry(1) +
@@ -409,15 +404,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
         }
 
-        // store the orbital elements
-        elements.setSma(orbit.getA());
-        elements.setE(orbit.getE());
-        elements.setI0(orbit.getI());
-        elements.setPa(orbit.getPerigeeArgument());
-        elements.setOmega0(orbit.getRightAscensionOfAscendingNode());
-        elements.setM0(orbit.getMeanAnomaly());
-
-        return elements;
+        return gElements.toNonField();
 
     }
 
@@ -496,11 +483,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * @return converted elements, set up as gradient relative to Keplerian orbit
      * @since 13.0
      */
-    private static FieldGnssOrbitalElements<Gradient, ?, ?> convert(final GNSSOrbitalElements<?> elements,
-                                                                    final KeplerianOrbit orbit) {
+    private static FieldGnssOrbitalElements<Gradient, ?> convert(final GNSSOrbitalElements<?> elements,
+                                                                 final KeplerianOrbit orbit) {
 
         final Field<Gradient> field = GradientField.getField(FREE_PARAMETERS);
-        final FieldGnssOrbitalElements<Gradient, ?, ?> gElements = elements.toField(field);
+        final FieldGnssOrbitalElements<Gradient, ?> gElements = elements.toField(field);
 
         // Keplerian parameters
         gElements.setSma(Gradient.variable(FREE_PARAMETERS, 0, orbit.getA()));
@@ -511,6 +498,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         gElements.setM0(Gradient.variable(FREE_PARAMETERS, 5, orbit.getMeanAnomaly()));
 
         return gElements;
+
     }
 
 }

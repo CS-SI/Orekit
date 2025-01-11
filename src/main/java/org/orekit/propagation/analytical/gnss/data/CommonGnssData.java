@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 import org.orekit.utils.ParameterDriver;
@@ -75,6 +76,24 @@ public abstract class CommonGnssData<O extends CommonGnssData<O>>
         this.af0Driver = createDriver(AF0);
         this.af1Driver = createDriver(AF1);
         this.af2Driver = createDriver(AF2);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>,
+               A extends CommonGnssData<A>> CommonGnssData(final FieldCommonGnssData<T, A> original) {
+        super(original);
+        this.af0Driver = createDriver(AF0);
+        this.af1Driver = createDriver(AF1);
+        this.af2Driver = createDriver(AF2);
+        setAf0(original.getAf0().getReal());
+        setAf1(original.getAf1().getReal());
+        setAf2(original.getAf2().getReal());
+        setTGD(original.getTGD().getReal());
+        setToc(original.getToc().getReal());
     }
 
     /** {@inheritDoc} */

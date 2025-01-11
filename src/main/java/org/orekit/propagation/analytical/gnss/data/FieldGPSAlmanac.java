@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * This class holds a GPS almanac as read from SEM or YUMA files.
@@ -34,7 +32,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldGPSAlmanac<T>, GPSAlmanac> {
+    extends FieldAbstractAlmanac<T, GPSAlmanac> {
 
     /** Source of the almanac. */
     private String src;
@@ -51,18 +49,6 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
     /** Satellite configuration. */
     private int config;
 
-    /**
-     * Constructor.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldGPSAlmanac(final Field<T> field, final TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.GPS_MU), GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
-    }
-
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -76,10 +62,10 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
         setSatConfiguration(original.getSatConfiguration());
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldGPSAlmanac<T> uninitializedCopy() {
-        return new FieldGPSAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
+    public GPSAlmanac toNonField() {
+        return new GPSAlmanac(this);
     }
 
     /**

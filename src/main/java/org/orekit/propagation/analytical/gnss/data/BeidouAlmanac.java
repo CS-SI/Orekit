@@ -47,18 +47,21 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
         super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, BeidouAlmanac>>
-        F toField(Field<T> field) {
-        return (F) new FieldBeidouAlmanac<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> BeidouAlmanac(final FieldBeidouAlmanac<T> original) {
+        super(original);
+        setHealth(original.getHealth());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected BeidouAlmanac uninitializedCopy() {
-        return new BeidouAlmanac(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldBeidouAlmanac<>(field, this);
     }
 
     /**

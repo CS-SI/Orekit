@@ -18,9 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.hipparchus.util.FastMath;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Class for Galileo almanac.
@@ -34,13 +31,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldGalileoAlmanac<T>, GalileoAlmanac> {
-
-    /** Nominal inclination (Ref: Galileo ICD - Table 75). */
-    private static final double I0 = FastMath.toRadians(56.0);
-
-    /** Nominal semi-major axis in meters (Ref: Galileo ICD - Table 75). */
-    private static final double A0 = 29600000;
+    extends FieldAbstractAlmanac<T, GalileoAlmanac> {
 
     /** Satellite E5a signal health status. */
     private int healthE5a;
@@ -54,18 +45,6 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
     /** Almanac Issue Of Data. */
     private int iod;
 
-    /**
-     * Build a new almanac.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldGalileoAlmanac(final Field<T> field, TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.GALILEO_MU), GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system);
-    }
-
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -78,34 +57,10 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
         setIOD(original.getIOD());
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldGalileoAlmanac<T> uninitializedCopy() {
-        return new FieldGalileoAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
-    }
-
-    /**
-     * Sets the difference between the square root of the semi-major axis
-     * and the square root of the nominal semi-major axis.
-     * <p>
-     * In addition, this method set the value of the Semi-Major Axis.
-     * </p>
-     * @param dsqa the value to set
-     */
-    public void setDeltaSqrtA(final T dsqa) {
-        final T sqrtA = dsqa.add(FastMath.sqrt(A0));
-        setSma(sqrtA.square());
-    }
-
-    /**
-     * Sets the the correction of orbit reference inclination at reference time.
-     * <p>
-     * In addition, this method set the value of the reference inclination.
-     * </p>
-     * @param dinc correction of orbit reference inclination at reference time in radians
-     */
-    public void setDeltaInc(final T dinc) {
-        setI0(dinc.add(I0));
+    public GalileoAlmanac toNonField() {
+        return new GalileoAlmanac(this);
     }
 
     /**

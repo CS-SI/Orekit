@@ -28,15 +28,13 @@ import org.orekit.time.TimeScales;
 /** This class provides the minimal set of orbital elements needed by the {@link
  * org.orekit.propagation.analytical.gnss.FieldGnssPropagator}.
  * @param <T> type of the field elements
- * @param <F> type of the orbital elements (field version)
  * @param <O> type of the orbital elements (non-field version)
  * @since 13.0
  * @author Luc Maisonobe
 */
 public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>,
-                                               F extends FieldGnssOrbitalElements<T, F, O>,
                                                O extends GNSSOrbitalElements<O>>
-    extends GNSSOrbitalElementsDriversProvider<FieldGnssOrbitalElements<T, F, O>>
+    extends GNSSOrbitalElementsDriversProvider
     implements FieldTimeStamped<T> {
 
     /** Earth's universal gravitational parameter. */
@@ -95,10 +93,23 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @param original regular non-field instance
      */
     protected FieldGnssOrbitalElements(final Field<T> field, final O original) {
+
         super(original.getAngularVelocity(), original.getWeeksInCycle(),
               original.getTimeScales(), original.getSystem());
-        this.mu = field.getZero().newInstance(original.getMu());
-        setNonKeplerian(original);
+        mu = field.getZero().newInstance(original.getMu());
+
+        setPRN(original.getPRN());
+        setWeek(original.getWeek());
+        setTime(original.getTime());
+        setIDot(original.getIDot());
+        setOmegaDot(original.getOmegaDot());
+        setCuc(original.getCuc());
+        setCus(original.getCus());
+        setCrc(original.getCrc());
+        setCrs(original.getCrs());
+        setCic(original.getCic());
+        setCis(original.getCis());
+
         setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
         setSma(field.getZero().newInstance(original.getSma()));
         setE(field.getZero().newInstance(original.getE()));
@@ -106,7 +117,13 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         setPa(field.getZero().newInstance(original.getPa()));
         setOmega0(field.getZero().newInstance(original.getOmega0()));
         setM0(field.getZero().newInstance(original.getM0()));
+
     }
+
+    /** Create a non-field version of the instance.
+     * @return non-field version of the instance
+     */
+    public abstract O toNonField();
 
     /** {@inheritDoc} */
     protected void setGnssDate(final GNSSDate gnssDate) {

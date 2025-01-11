@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
@@ -61,6 +62,20 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     protected AbstractNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
                                         final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>,
+               A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A> original) {
+        super(original);
+        setSqrtA(original.getSqrtA().getReal());
+        setDeltaN(original.getDeltaN().getReal());
+        setEpochToc(original.getEpochToc().toAbsoluteDate());
+        setTransmissionTime(original.getTransmissionTime().getReal());
     }
 
     /**

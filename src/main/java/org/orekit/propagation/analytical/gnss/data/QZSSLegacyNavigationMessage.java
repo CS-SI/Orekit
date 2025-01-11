@@ -39,18 +39,20 @@ public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLeg
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, QZSSLegacyNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldQZSSLegacyNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> QZSSLegacyNavigationMessage(final FieldQZSSLegacyNavigationMessage<T> original) {
+        super(original);
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected QZSSLegacyNavigationMessage uninitializedCopy() {
-        return new QZSSLegacyNavigationMessage(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSLegacyNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldQZSSLegacyNavigationMessage<>(field, this);
     }
 
 }

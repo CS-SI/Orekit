@@ -60,18 +60,25 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
         super(GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GPSAlmanac>>
-        F toField(Field<T> field) {
-        return (F) new FieldGPSAlmanac<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> GPSAlmanac(final FieldGPSAlmanac<T> original) {
+        super(original);
+        setSource(original.getSource());
+        setSVN(original.getSVN());
+        setHealth(original.getHealth());
+        setURA(original.getURA());
+        setSatConfiguration(original.getSatConfiguration());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected GPSAlmanac uninitializedCopy() {
-        return new GPSAlmanac(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldGPSAlmanac<>(field, this);
     }
 
     /**

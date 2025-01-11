@@ -63,18 +63,24 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
         super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB, timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GalileoAlmanac>>
-        F toField(Field<T> field) {
-        return (F) new FieldGalileoAlmanac<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> GalileoAlmanac(final FieldGalileoAlmanac<T> original) {
+        super(original);
+        setHealthE5a(original.getHealthE5a());
+        setHealthE5b(original.getHealthE5b());
+        setHealthE1(original.getHealthE1());
+        setIOD(original.getIOD());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected GalileoAlmanac uninitializedCopy() {
-        return new GalileoAlmanac(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoAlmanac>>
+        F toField(Field<T> field) {
+        return (F) new FieldGalileoAlmanac<>(field, this);
     }
 
     /**

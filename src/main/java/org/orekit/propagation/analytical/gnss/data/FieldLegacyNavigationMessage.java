@@ -18,21 +18,17 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
  * @param <T> type of the field elements
- * @param <F> type of the orbital elements (field version)
  * @param <O> type of the orbital elements (non-field version)
  * @author Luc Maisonobe
  * @since 13.0
  */
 public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElement<T>,
-                                                   F extends FieldLegacyNavigationMessage<T, F, O>,
                                                    O extends LegacyNavigationMessage<O>>
-    extends FieldAbstractNavigationMessage<T, F, O>
+    extends FieldAbstractNavigationMessage<T, O>
     implements FieldGNSSClockElements<T> {
 
     /** Issue of Data, Ephemeris. */
@@ -49,21 +45,6 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
 
     /** Fit interval. */
     private int fitInterval;
-
-    /**
-     * Constructor.
-     * @param mu Earth's universal gravitational parameter
-     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weeksInCycle    number of weeks in the GNSS cycle
-     * @param timeScales      known time scales
-     * @param system          satellite system to consider for interpreting week number
-     *                        (may be different from real system, for example in Rinex nav, weeks
-     *                        are always according to GPS)
-     */
-    protected FieldLegacyNavigationMessage(final T mu, final double angularVelocity, final int weeksInCycle,
-                                           final TimeScales timeScales, final SatelliteSystem system) {
-        super(mu, angularVelocity, weeksInCycle, timeScales, system);
-    }
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong

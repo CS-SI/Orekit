@@ -48,18 +48,23 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, IRNSSNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldIRNSSNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> IRNSSNavigationMessage(final FieldIRNSSNavigationMessage<T> original) {
+        super(original);
+        setIODEC(original.getIODEC());
+        setURA(original.getURA().getReal());
+        setSvHealth(original.getSvHealth().getReal());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected IRNSSNavigationMessage uninitializedCopy() {
-        return new IRNSSNavigationMessage(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, IRNSSNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldIRNSSNavigationMessage<>(field, this);
     }
 
     /**

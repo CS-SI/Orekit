@@ -39,11 +39,10 @@ import java.util.List;
  * {@link org.orekit.propagation.analytical.gnss.GNSSPropagator} and
  * {@link org.orekit.propagation.analytical.gnss.FieldGnssPropagator}.
  * </p>
- * @param <O> type of the orbital elements
  * @since 13.0
  * @author Luc Maisonobe
-*/
-public abstract class GNSSOrbitalElementsDriversProvider<O extends GNSSOrbitalElementsDriversProvider<O>>
+ */
+public abstract class GNSSOrbitalElementsDriversProvider
     implements ParameterDriversProvider {
 
     /** Name for time parameter. */
@@ -197,39 +196,6 @@ public abstract class GNSSOrbitalElementsDriversProvider<O extends GNSSOrbitalEl
             }
         });
 
-    }
-
-    /** Create a copy with only the non-Keplerian elements initialized.
-     * @return copy of the instance with only the non-Keplerian elements initialized
-     */
-    @SuppressWarnings("unchecked")
-        public O copyNonKeplerian() {
-        final O copy = uninitializedCopy();
-        copy.setNonKeplerian((O) this);
-        return copy;
-    }
-
-    /** Create an uninitialized copy.
-     * @return uninitialized copy of the instance
-     */
-    protected abstract O uninitializedCopy();
-
-    /** Set the non-Keplerian elements from another instance.
-     * @param <P> type of the orbital elements
-     * @param origin instance from where to copy non-Keplerian elements
-     */
-    protected <P extends GNSSOrbitalElementsDriversProvider<P>> void setNonKeplerian(final P origin) {
-        setPRN(origin.getPRN());
-        setWeek(origin.getWeek());
-        setTime(origin.getTime());
-        setIDot(origin.getIDot());
-        setOmegaDot(origin.getOmegaDot());
-        setCuc(origin.getCuc());
-        setCus(origin.getCus());
-        setCrc(origin.getCrc());
-        setCrs(origin.getCrs());
-        setCic(origin.getCic());
-        setCis(origin.getCis());
     }
 
     /** Set GNSS date.

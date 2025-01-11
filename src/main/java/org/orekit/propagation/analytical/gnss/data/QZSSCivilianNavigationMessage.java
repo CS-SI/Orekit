@@ -41,18 +41,20 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, QZSSCivilianNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldQZSSCivilianNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> QZSSCivilianNavigationMessage(final FieldQZSSCivilianNavigationMessage<T> original) {
+        super(original);
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected QZSSCivilianNavigationMessage uninitializedCopy() {
-        return new QZSSCivilianNavigationMessage(isCnv2(), getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSCivilianNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldQZSSCivilianNavigationMessage<>(field, this);
     }
 
 }

@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a Galileo navigation message.
@@ -28,7 +26,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldGalileoNavigationMessage<T>, GalileoNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, GalileoNavigationMessage> {
 
     /** Issue of Data of the navigation batch. */
     private int iodNav;
@@ -50,19 +48,6 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     /** Satellite health status. */
     private T svHealth;
 
-    /** Constructor.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldGalileoNavigationMessage(final Field<T> field,
-                                         TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.GALILEO_MU), GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
-              timeScales, system);
-    }
-
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -77,10 +62,10 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
         setSvHealth(field.getZero().newInstance(original.getSvHealth()));
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldGalileoNavigationMessage<T> uninitializedCopy() {
-        return new FieldGalileoNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
+    public GalileoNavigationMessage toNonField() {
+        return new GalileoNavigationMessage(this);
     }
 
     /**

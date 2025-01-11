@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in an IRNSS navigation message.
@@ -28,7 +26,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldIRNSSNavigationMessage<T>, IRNSSNavigationMessage>  {
+    extends FieldAbstractNavigationMessage<T, IRNSSNavigationMessage>  {
 
     /** Issue of Data, Ephemeris and Clock. */
     private int iodec;
@@ -38,19 +36,6 @@ public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
 
     /** Satellite health status. */
     private T svHealth;
-
-    /** Constructor.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldIRNSSNavigationMessage(final Field<T> field,
-                                       final TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.IRNSS_MU), GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB,
-              timeScales, system);
-    }
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -63,10 +48,10 @@ public class FieldIRNSSNavigationMessage<T extends CalculusFieldElement<T>>
         setSvHealth(field.getZero().newInstance(original.getSvHealth()));
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldIRNSSNavigationMessage<T> uninitializedCopy() {
-        return new FieldIRNSSNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
+    public IRNSSNavigationMessage toNonField() {
+        return new IRNSSNavigationMessage(this);
     }
 
     /**

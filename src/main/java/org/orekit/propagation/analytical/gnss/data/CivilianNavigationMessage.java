@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
@@ -94,6 +95,31 @@ public abstract class CivilianNavigationMessage<O extends CivilianNavigationMess
                                         final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
         this.cnv2 = cnv2;
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>,
+               A extends CivilianNavigationMessage<A>> CivilianNavigationMessage(final FieldCivilianNavigationMessage<T, A> original) {
+        super(original);
+        this.cnv2 = original.isCnv2();
+        setADot(original.getADot().getReal());
+        setDeltaN0Dot(original.getDeltaN0Dot().getReal());
+        setSvAccuracy(original.getSvAccuracy().getReal());
+        setSvHealth(original.getSvHealth());
+        setIscL1CA(original.getIscL1CA().getReal());
+        setIscL1CD(original.getIscL1CD().getReal());
+        setIscL1CP(original.getIscL1CP().getReal());
+        setIscL2C(original.getIscL2C().getReal());
+        setIscL5I5(original.getIscL5I5().getReal());
+        setIscL5Q5(original.getIscL5Q5().getReal());
+        setUraiEd(original.getUraiEd());
+        setUraiNed0(original.getUraiNed0());
+        setUraiNed1(original.getUraiNed1());
+        setUraiNed2(original.getUraiNed2());
     }
 
     /** Check it message is a CNV2 message.

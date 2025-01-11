@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a QZSS navigation message.
@@ -28,20 +26,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldLegacyNavigationMessage<T, FieldQZSSLegacyNavigationMessage<T>, QZSSLegacyNavigationMessage> {
-
-    /** Constructor.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldQZSSLegacyNavigationMessage(final Field<T> field,
-                                            TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.QZSS_MU), GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
-              timeScales, system);
-    }
+    extends FieldLegacyNavigationMessage<T, QZSSLegacyNavigationMessage> {
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -51,10 +36,10 @@ public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
         super(field, original);
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldQZSSLegacyNavigationMessage<T> uninitializedCopy() {
-        return new FieldQZSSLegacyNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
+    public QZSSLegacyNavigationMessage toNonField() {
+        return new QZSSLegacyNavigationMessage(this);
     }
 
 }

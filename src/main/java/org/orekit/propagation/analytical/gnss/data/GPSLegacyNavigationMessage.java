@@ -39,18 +39,20 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
               timeScales, system);
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, GPSLegacyNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldGPSLegacyNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> GPSLegacyNavigationMessage(final FieldGPSLegacyNavigationMessage<T> original) {
+        super(original);
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected GPSLegacyNavigationMessage uninitializedCopy() {
-        return new GPSLegacyNavigationMessage(getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSLegacyNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldGPSLegacyNavigationMessage<>(field, this);
     }
 
 }

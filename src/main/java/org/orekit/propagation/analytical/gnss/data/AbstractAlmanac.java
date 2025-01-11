@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.data.DataContext;
@@ -47,6 +48,16 @@ public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends Comm
     public AbstractAlmanac(final double mu, final double angularVelocity, final int weeksInCycle,
                            final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>,
+               A extends AbstractAlmanac<A>> AbstractAlmanac(final FieldAbstractAlmanac<T, A> original) {
+        super(original);
     }
 
     /**

@@ -60,7 +60,7 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
 
         // bootstrap model, with canonical derivatives with respect to orbital parameters only
         final int bootstrapParameters = 6;
-        final FieldGnssOrbitalElements<Gradient, ?, ?> bootstrapElements = oe.toField(GradientField.getField(bootstrapParameters));
+        final FieldGnssOrbitalElements<Gradient, ?> bootstrapElements = oe.toField(GradientField.getField(bootstrapParameters));
         bootstrapElements.setSma(Gradient.variable(bootstrapParameters,    0, oe.getSma()));
         bootstrapElements.setE(Gradient.variable(bootstrapParameters,      1, oe.getE()));
         bootstrapElements.setI0(Gradient.variable(bootstrapParameters,     2, oe.getI0()));
@@ -89,32 +89,31 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
         RealMatrix stateJacobianInverse = new QRDecomposer(1.0e-10).decompose(stateJacobian).getInverse();
 
         final List<ParameterDriver> drivers  = propagator.getOrbitalElements().getParametersDrivers();
-        int freeParameters = bootstrapParameters;
+        int totalParameters = bootstrapParameters;
         for (final ParameterDriver driver : drivers) {
             if (driver.isSelected()) {
-                ++freeParameters;
+                ++totalParameters;
             }
         }
 
         // regular parameters, with converted derivatives
-        final Gradient convertedSma    = extend(new Gradient(oe.getSma(),    stateJacobianInverse.getRow(0)), freeParameters);
-        final Gradient convertedE      = extend(new Gradient(oe.getE(),      stateJacobianInverse.getRow(1)), freeParameters);
-        final Gradient convertedI0     = extend(new Gradient(oe.getI0(),     stateJacobianInverse.getRow(2)), freeParameters);
-        final Gradient convertedPa     = extend(new Gradient(oe.getPa(),     stateJacobianInverse.getRow(3)), freeParameters);
-        final Gradient convertedOmega0 = extend(new Gradient(oe.getOmega0(), stateJacobianInverse.getRow(4)), freeParameters);
-        final Gradient convertedM0     = extend(new Gradient(oe.getM0(),     stateJacobianInverse.getRow(5)), freeParameters);
+        final Gradient convertedSma    = extend(new Gradient(oe.getSma(),    stateJacobianInverse.getRow(0)), totalParameters);
+        final Gradient convertedE      = extend(new Gradient(oe.getE(),      stateJacobianInverse.getRow(1)), totalParameters);
+        final Gradient convertedI0     = extend(new Gradient(oe.getI0(),     stateJacobianInverse.getRow(2)), totalParameters);
+        final Gradient convertedPa     = extend(new Gradient(oe.getPa(),     stateJacobianInverse.getRow(3)), totalParameters);
+        final Gradient convertedOmega0 = extend(new Gradient(oe.getOmega0(), stateJacobianInverse.getRow(4)), totalParameters);
+        final Gradient convertedM0     = extend(new Gradient(oe.getM0(),     stateJacobianInverse.getRow(5)), totalParameters);
 
         final Gradient[] convertedNonKeplerianParameters = new Gradient[GNSSOrbitalElements.SIZE];
         int index = bootstrapParameters;
         for (int i = 0; i < convertedNonKeplerianParameters.length; ++i) {
             final ParameterDriver driver = drivers.get(i);
             convertedNonKeplerianParameters[i] = driver.isSelected() ?
-                                                 Gradient.variable(freeParameters, index++, driver.getValue()) :
-                                                 Gradient.constant(freeParameters, driver.getValue());
+                                                 Gradient.variable(totalParameters, index++, driver.getValue()) :
+                                                 Gradient.constant(totalParameters, driver.getValue());
         }
 
-        final int totalParameters = bootstrapParameters + freeParameters;
-        final FieldGnssOrbitalElements<Gradient, ?, ?> convertedElements = oe.toField(GradientField.getField(totalParameters));
+        final FieldGnssOrbitalElements<Gradient, ?> convertedElements = oe.toField(GradientField.getField(totalParameters));
         convertedElements.setSma(Gradient.variable(totalParameters,    0, oe.getSma()));
         convertedElements.setE(Gradient.variable(totalParameters,      1, oe.getE()));
         convertedElements.setI0(Gradient.variable(totalParameters,     2, oe.getI0()));

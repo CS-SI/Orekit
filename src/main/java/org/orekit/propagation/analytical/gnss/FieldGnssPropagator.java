@@ -52,7 +52,7 @@ import java.util.List;
 public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractAnalyticalPropagator<T> {
 
     /** The GNSS propagation model used. */
-    private final FieldGnssOrbitalElements<T, ?, ?> orbitalElements;
+    private final FieldGnssOrbitalElements<T, ?> orbitalElements;
 
     /** The spacecraft mass (kg). */
     private final T mass;
@@ -71,7 +71,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param provider Attitude provider
      * @param mass Satellite mass (kg)
      */
-    FieldGnssPropagator(final FieldGnssOrbitalElements<T, ?, ?> orbitalElements,
+    FieldGnssPropagator(final FieldGnssOrbitalElements<T, ?> orbitalElements,
                         final Frame eci, final Frame ecef,
                         final AttitudeProvider provider, final T mass) {
         super(orbitalElements.getDate().getField(), provider);

@@ -42,7 +42,7 @@ import org.orekit.utils.ParameterDriver;
  * @author Luc Maisonobe
 */
 public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
-    extends GNSSOrbitalElementsDriversProvider<O>
+    extends GNSSOrbitalElementsDriversProvider
     implements TimeStamped {
 
     /** Name for semi major axis parameter. */
@@ -103,15 +103,46 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         super(angularVelocity, weeksInCycle, timeScales, system);
 
         // immutable field
-        this.mu              = mu;
+        this.mu         = mu;
 
         // fields controlled by parameter drivers for Keplerian orbital elements
-        this.smaDriver       = createDriver(SEMI_MAJOR_AXIS);
-        this.eccDriver       = createDriver(ECCENTRICITY);
-        this.i0Driver        = createDriver(INCLINATION);
-        this.aopDriver       = createDriver(ARGUMENT_OF_PERIGEE);
-        this.om0Driver       = createDriver(NODE_LONGITUDE);
-        this.anomDriver      = createDriver(MEAN_ANOMALY);
+        this.smaDriver  = createDriver(SEMI_MAJOR_AXIS);
+        this.eccDriver  = createDriver(ECCENTRICITY);
+        this.i0Driver   = createDriver(INCLINATION);
+        this.aopDriver  = createDriver(ARGUMENT_OF_PERIGEE);
+        this.om0Driver  = createDriver(NODE_LONGITUDE);
+        this.anomDriver = createDriver(MEAN_ANOMALY);
+
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>,
+               A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A> original) {
+        this(original.getMu().getReal(), original.getAngularVelocity(), original.getWeeksInCycle(),
+             original.getTimeScales(), original.getSystem());
+
+        setPRN(original.getPRN());
+        setWeek(original.getWeek());
+        setTime(original.getTime());
+        setIDot(original.getIDot());
+        setOmegaDot(original.getOmegaDot());
+        setCuc(original.getCuc());
+        setCus(original.getCus());
+        setCrc(original.getCrc());
+        setCrs(original.getCrs());
+        setCic(original.getCic());
+        setCis(original.getCis());
+
+        setSma(original.getSma().getReal());
+        setE(original.getE().getReal());
+        setI0(original.getI0().getReal());
+        setPa(original.getPa().getReal());
+        setOmega0(original.getOmega0().getReal());
+        setM0(original.getM0().getReal());
 
     }
 
@@ -121,7 +152,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
      * @param field field to which elements belong
      * @return field version of the instance
      */
-    public abstract  <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, O>>
+    public abstract  <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, O>>
        F toField(Field<T> field);
 
     /** {@inheritDoc} */

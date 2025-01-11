@@ -110,18 +110,39 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<B
         this.radioWave = radioWave;
     }
 
-    /** {@inheritDoc} */
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, F, BeidouCivilianNavigationMessage>>
-        F toField(Field<T> field) {
-        return (F) new FieldBeidouCivilianNavigationMessage<>(field, this);
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> BeidouCivilianNavigationMessage(final FieldBeidouCivilianNavigationMessage<T> original) {
+        super(original);
+        this.radioWave = original.getRadioWave();
+        setADot(original.getADot().getReal());
+        setDeltaN0Dot(original.getDeltaN0Dot().getReal());
+        setIODE(original.getIODE());
+        setIODC(original.getIODC());
+        setIscB1CD(original.getIscB1CD().getReal());
+        setIscB1CP(original.getIscB1CP().getReal());
+        setIscB2AD(original.getIscB2AD().getReal());
+        setSisaiOe(original.getSisaiOe());
+        setSisaiOcb(original.getSisaiOcb());
+        setSisaiOc1(original.getSisaiOc1());
+        setSisaiOc2(original.getSisaiOc2());
+        setSismai(original.getSismai());
+        setHealth(original.getHealth());
+        setIntegrityFlags(original.getIntegrityFlags());
+        setTgdB1Cp(original.getTgdB1Cp().getReal());
+        setTgdB2ap(original.getTgdB2ap().getReal());
+        setTgdB2bI(original.getTgdB2bI().getReal());
+        setSatelliteType(original.getSatelliteType());
     }
 
     /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
     @Override
-    protected BeidouCivilianNavigationMessage uninitializedCopy() {
-        return new BeidouCivilianNavigationMessage(radioWave, getTimeScales(), getSystem());
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage>>
+        F toField(Field<T> field) {
+        return (F) new FieldBeidouCivilianNavigationMessage<>(field, this);
     }
 
     /**

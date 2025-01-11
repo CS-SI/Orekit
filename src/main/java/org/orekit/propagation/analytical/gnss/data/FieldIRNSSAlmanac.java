@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Class for IRNSS almanac.
@@ -33,20 +31,7 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldIRNSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldIRNSSAlmanac<T>, IRNSSAlmanac> {
-
-    /**
-     * Constructor.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldIRNSSAlmanac(final Field<T> field,
-                              final TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.IRNSS_MU), GNSSConstants.IRNSS_AV, GNSSConstants.IRNSS_WEEK_NB, timeScales, system);
-    }
+    extends FieldAbstractAlmanac<T, IRNSSAlmanac> {
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -56,10 +41,10 @@ public class FieldIRNSSAlmanac<T extends CalculusFieldElement<T>>
         super(field, original);
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldIRNSSAlmanac<T> uninitializedCopy() {
-        return new FieldIRNSSAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
+    public IRNSSAlmanac toNonField() {
+        return new IRNSSAlmanac(this);
     }
 
     /**

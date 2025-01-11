@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * This class holds a QZSS almanac as read from YUMA files.
@@ -30,26 +28,13 @@ import org.orekit.time.TimeScales;
  *
  */
 public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
-    extends FieldAbstractAlmanac<T, FieldQZSSAlmanac<T>, QZSSAlmanac> {
+    extends FieldAbstractAlmanac<T, QZSSAlmanac> {
 
     /** Source of the almanac. */
     private String src;
 
     /** Health status. */
     private int health;
-
-    /**
-     * Constructor.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldQZSSAlmanac(final Field<T> field,
-                              final TimeScales timeScales, final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.QZSS_MU), GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
-    }
 
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
@@ -61,10 +46,10 @@ public class FieldQZSSAlmanac<T extends CalculusFieldElement<T>>
         setHealth(original.getHealth());
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldQZSSAlmanac<T> uninitializedCopy() {
-        return new FieldQZSSAlmanac<>(getMu().getField(), getTimeScales(), getSystem());
+    public QZSSAlmanac toNonField() {
+        return new QZSSAlmanac(this);
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.TimeScales;
 
@@ -62,6 +63,21 @@ public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<
     protected LegacyNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
                                       final TimeScales timeScales, final SatelliteSystem system) {
         super(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>, A extends LegacyNavigationMessage<A>>
+        LegacyNavigationMessage(final FieldLegacyNavigationMessage<T, A> original) {
+        super(original);
+        setIODE(original.getIODE());
+        setIODC(original.getIODC());
+        setSvAccuracy(original.getSvAccuracy().getReal());
+        setSvHealth(original.getSvHealth());
+        setFitInterval(original.getFitInterval());
     }
 
     /**

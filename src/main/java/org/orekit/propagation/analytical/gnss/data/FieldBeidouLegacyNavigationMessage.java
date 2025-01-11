@@ -18,8 +18,6 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
-import org.orekit.gnss.SatelliteSystem;
-import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a BeiDou navigation message.
@@ -28,7 +26,7 @@ import org.orekit.time.TimeScales;
  * @since 13.0
  */
 public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T>>
-    extends FieldAbstractNavigationMessage<T, FieldBeidouLegacyNavigationMessage<T>, BeidouLegacyNavigationMessage> {
+    extends FieldAbstractNavigationMessage<T, BeidouLegacyNavigationMessage> {
 
     /** Age of Data, Ephemeris. */
     private int aode;
@@ -45,20 +43,6 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
     /** The user SV accuracy (m). */
     private T svAccuracy;
 
-    /** Constructor.
-     * @param field      field to which elements belong
-     * @param timeScales known time scales
-     * @param system     satellite system to consider for interpreting week number
-     *                   (may be different from real system, for example in Rinex nav, weeks
-     *                   are always according to GPS)
-     */
-    public FieldBeidouLegacyNavigationMessage(final Field<T> field,
-                                              final TimeScales timeScales,
-                                              final SatelliteSystem system) {
-        super(field.getZero().newInstance(GNSSConstants.BEIDOU_MU), GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
-              timeScales, system);
-    }
-
     /** Constructor from non-field instance.
      * @param field    field to which elements belong
      * @param original regular non-field instance
@@ -72,10 +56,10 @@ public class FieldBeidouLegacyNavigationMessage<T extends CalculusFieldElement<T
         setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
     }
 
-    /**  {@inheritDoc} */
+    /** {@inheritDoc} */
     @Override
-    protected FieldBeidouLegacyNavigationMessage<T> uninitializedCopy() {
-        return new FieldBeidouLegacyNavigationMessage<>(getMu().getField(), getTimeScales(), getSystem());
+    public BeidouLegacyNavigationMessage toNonField() {
+        return new BeidouLegacyNavigationMessage(this);
     }
 
     /**
