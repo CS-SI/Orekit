@@ -24,11 +24,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GalileoAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
@@ -143,21 +142,20 @@ public class GalileoPropagatorTest {
     }
 
     @Test
-    public void testNoReset() {
-        try {
-            final GNSSPropagator propagator = goe.getPropagator();
-            propagator.resetInitialState(propagator.getInitialState());
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
-        try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
-            propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
+    public void testResetInitialState() {
+        final GNSSPropagator propagator = goe.getPropagator();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
+    }
+
+    @Test
+    public void testResetIntermediateState() {
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(goe).build();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+                                          true);
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
@@ -168,7 +166,7 @@ public class GalileoPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         final GNSSPropagator propagator = goe.getPropagator();
-        GNSSOrbitalElements elements = propagator.getOrbitalElements();
+        GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.GALILEO).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);

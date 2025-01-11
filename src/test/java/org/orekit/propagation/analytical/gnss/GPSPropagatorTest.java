@@ -29,8 +29,6 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
@@ -138,21 +136,20 @@ public class GPSPropagatorTest {
     }
 
     @Test
-    public void testNoReset() {
-        try {
-            final GNSSPropagator propagator = almanacs.get(0).getPropagator();
-            propagator.resetInitialState(propagator.getInitialState());
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
-        try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
-            propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
+    public void testResetInitialState() {
+        final GNSSPropagator propagator = almanacs.get(0).getPropagator();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
+    }
+
+    @Test
+    public void testResetIntermediateState() {
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanacs.get(0)).build();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+                                          true);
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test

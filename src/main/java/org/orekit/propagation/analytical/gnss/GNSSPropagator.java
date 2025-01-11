@@ -31,8 +31,6 @@ import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldKeplerianAnomalyUtility;
@@ -91,10 +89,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     private static final double EPS = 1.0e-12;
 
     /** The GNSS propagation model used. */
-    private final GNSSOrbitalElements<?> orbitalElements;
-
-    /** The spacecraft mass (kg). */
-    private final double mass;
+    private GNSSOrbitalElements<?> orbitalElements;
 
     /** The ECI frame used for GNSS propagation. */
     private final Frame eci;
@@ -115,19 +110,15 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         super(provider);
         // Stores the GNSS orbital elements
         this.orbitalElements = orbitalElements;
-        // Sets the start date as the date of the orbital elements
-        setStartDate(orbitalElements.getDate());
-        // Sets the mass
-        this.mass = mass;
         // Sets the Earth Centered Inertial frame
         this.eci  = eci;
         // Sets the Earth Centered Earth Fixed frame
         this.ecef = ecef;
         // Sets initial state
-        final Orbit orbit = propagateOrbit(getStartDate());
+        final Orbit orbit = propagateOrbit(orbitalElements.getDate());
         final Attitude attitude = provider.getAttitude(orbit, orbit.getDate(), orbit.getFrame());
 
-        // calling the method from base class because the one overridden below intentionally throws an exception
+        // calling the method from base class because the one overridden below recomputes the orbital elements
         super.resetInitialState(new SpacecraftState(orbit, attitude, mass));
 
     }
@@ -314,19 +305,22 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc} */
     @Override
     protected double getMass(final AbsoluteDate date) {
-        return mass;
+        return getInitialState().getMass();
     }
 
     /** {@inheritDoc} */
     @Override
     public void resetInitialState(final SpacecraftState state) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        orbitalElements = buildOrbitalElements(state, orbitalElements, ecef, getAttitudeProvider(), state.getMass());
+        final Orbit orbit = propagateOrbit(orbitalElements.getDate());
+        final Attitude attitude = getAttitudeProvider().getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        super.resetInitialState(new SpacecraftState(orbit, attitude, state.getMass()));
     }
 
     /** {@inheritDoc} */
     @Override
     protected void resetIntermediateState(final SpacecraftState state, final boolean forward) {
-        throw new OrekitException(OrekitMessages.NON_RESETABLE_STATE);
+        resetInitialState(state);
     }
 
     /**

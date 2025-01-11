@@ -23,12 +23,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.IRNSSAlmanac;
 import org.orekit.time.AbsoluteDate;
@@ -105,21 +104,20 @@ public class IRNSSPropagatorTest {
     }
 
     @Test
-    public void testNoReset() {
-        try {
-            final GNSSPropagator propagator = almanac.getPropagator(frames);
-            propagator.resetInitialState(propagator.getInitialState());
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
-        try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
-            propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
+    public void testResetInitialState() {
+        final GNSSPropagator propagator = almanac.getPropagator();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
+    }
+
+    @Test
+    public void testResetIntermediateState() {
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+                                          true);
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
