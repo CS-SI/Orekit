@@ -185,13 +185,16 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
     @Override
     protected AbstractMatricesHarvester createHarvester(final String stmName, final RealMatrix initialStm,
                                                         final DoubleArrayDictionary initialJacobianColumns) {
+
         // Create the harvester
         final GnssHarvester harvester = new GnssHarvester(this, stmName, initialStm, initialJacobianColumns);
 
         // Update the list of additional state provider
         addAdditionalStateProvider(harvester);
+
         // Return the configured harvester
         return harvester;
+
      }
 
     /** {@inheritDoc}

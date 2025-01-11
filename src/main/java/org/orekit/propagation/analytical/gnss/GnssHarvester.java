@@ -29,8 +29,7 @@ import org.orekit.utils.DoubleArrayDictionary;
  * @author Luc Maisonobe
  * @since 13.0
  */
-class GnssHarvester
-    extends AbstractAnalyticalMatricesHarvester {
+class GnssHarvester extends AbstractAnalyticalMatricesHarvester {
 
     /** Propagator bound to this harvester. */
     private final GNSSPropagator propagator;

@@ -33,6 +33,8 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
@@ -60,7 +62,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.function.ToDoubleFunction;
 
 public class GPSPropagatorTest {
 
@@ -392,6 +394,7 @@ public class GPSPropagatorTest {
 
         // extract state transition matrix
         final RealMatrix stm = harvester.getStateTransitionMatrix(state);
+        Assertions.assertEquals(OrbitType.CARTESIAN, harvester.getOrbitType());
         Assertions.assertEquals(6, stm.getRowDimension());
         Assertions.assertEquals(6, stm.getColumnDimension());
         Assertions.assertEquals(9577.125338, stm.getEntry(0, 0), 1.0e-6);
@@ -401,6 +404,32 @@ public class GPSPropagatorTest {
         Assertions.assertEquals(6, jacobian.getRowDimension());
         Assertions.assertEquals(2, jacobian.getColumnDimension());
         Assertions.assertEquals(-0.304611875, jacobian.getEntry(0, 0), 1.0e-9);
+
+        // check STM against finite differences
+        final PropagatorDifferentiator dPx =
+                new PropagatorDifferentiator(propagator, state.getDate(), 0, 1.0,
+                                             s -> s.getPVCoordinates().getPosition().getX());
+        Assertions.assertEquals(dPx.getDifferential(), stm.getEntry(0, 0), 1.0e-100);
+        final PropagatorDifferentiator dPy =
+                new PropagatorDifferentiator(propagator, state.getDate(), 1, 1.0,
+                                             s -> s.getPVCoordinates().getPosition().getX());
+        Assertions.assertEquals(dPy.getDifferential(), stm.getEntry(0, 1), 1.0e-100);
+        final PropagatorDifferentiator dPz =
+                new PropagatorDifferentiator(propagator, state.getDate(), 2, 1.0,
+                                             s -> s.getPVCoordinates().getPosition().getX());
+        Assertions.assertEquals(dPz.getDifferential(), stm.getEntry(0, 2), 1.0e-100);
+        final PropagatorDifferentiator dVx =
+                new PropagatorDifferentiator(propagator, state.getDate(), 3, 1.0e-3,
+                                             s -> s.getPVCoordinates().getPosition().getX());
+        Assertions.assertEquals(dVx.getDifferential(), stm.getEntry(0, 3), 1.0e-100);
+        final PropagatorDifferentiator dVy =
+                new PropagatorDifferentiator(propagator, state.getDate(), 4, 1.0e-3,
+                                             s -> s.getPVCoordinates().getPosition().getX());
+        Assertions.assertEquals(dVy.getDifferential(), stm.getEntry(0, 4), 1.0e-100);
+        final PropagatorDifferentiator dVz =
+                new PropagatorDifferentiator(propagator, state.getDate(), 5, 1.0e-3,
+                                             s -> s.getPVCoordinates().getPosition().getX());
+        Assertions.assertEquals(dVz.getDifferential(), stm.getEntry(0, 5), 1.0e-100);
 
     }
 
@@ -503,6 +532,72 @@ public class GPSPropagatorTest {
 
         // WHEN & THEN
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
+
+    }
+
+    private static class PropagatorDifferentiator {
+
+        final GNSSPropagator                    basePropagator;
+        final AbsoluteDate                      target;
+        final int                               index;
+        final double                            step;
+        final ToDoubleFunction<SpacecraftState> extractor;
+
+        PropagatorDifferentiator(final GNSSPropagator                    basePropagator,
+                                 final AbsoluteDate                      target,
+                                 final int                               index,
+                                 final double                            step,
+                                 final ToDoubleFunction<SpacecraftState> extractor) {
+            this.basePropagator = basePropagator;
+            this.target         = target;
+            this.index          = index;
+            this.step           = step;
+            this.extractor      = extractor;
+        }
+
+        private GNSSPropagator shiftPropagator(final double h) {
+
+            // get initial state
+            final SpacecraftState          original = basePropagator.getInitialState();
+            final TimeStampedPVCoordinates pv       = original.getPVCoordinates();
+            final Vector3D                 p        = pv.getPosition();
+            final Vector3D                 v        = pv.getVelocity();
+
+            // shift Cartesian element at specified index
+            final TimeStampedPVCoordinates shiftedPV =
+                new TimeStampedPVCoordinates(original.getDate(),
+                                             new Vector3D(p.getX() + (index == 0 ? h : 0),
+                                                          p.getY() + (index == 1 ? h : 0),
+                                                          p.getZ() + (index == 2 ? h : 0)),
+                                             new Vector3D(v.getX() + (index == 3 ? h : 0),
+                                                          v.getY() + (index == 4 ? h : 0),
+                                                          v.getZ() + (index == 5 ? h : 0)));
+            final SpacecraftState shiftedState  =
+                new SpacecraftState(new CartesianOrbit(shiftedPV, original.getFrame(),
+                                                       original.getDate(), original.getMu()),
+                                    original.getAttitude(), original.getMass());
+
+            // build shifted propagator
+            return new GNSSPropagator(shiftedState,
+                                      basePropagator.getOrbitalElements(),
+                                      basePropagator.getECEF(),
+                                      basePropagator.getAttitudeProvider(),
+                                      basePropagator.getInitialState().getMass());
+
+        }
+
+        double getDifferential() {
+            double m4h = extractor.applyAsDouble(shiftPropagator(-4 * step).propagate(target));
+            double m3h = extractor.applyAsDouble(shiftPropagator(-3 * step).propagate(target));
+            double m2h = extractor.applyAsDouble(shiftPropagator(-2 * step).propagate(target));
+            double m1h = extractor.applyAsDouble(shiftPropagator(-1 * step).propagate(target));
+            double p1h = extractor.applyAsDouble(shiftPropagator( 1 * step).propagate(target));
+            double p2h = extractor.applyAsDouble(shiftPropagator( 2 * step).propagate(target));
+            double p3h = extractor.applyAsDouble(shiftPropagator( 3 * step).propagate(target));
+            double p4h = extractor.applyAsDouble(shiftPropagator( 4 * step).propagate(target));
+            return (-3 * (p4h - m4h) + 32 * (p3h - m3h) - 168 * (p2h - m2h) + 672 * (p1h - m1h)) /
+                   840 * step;
+        }
 
     }
 
