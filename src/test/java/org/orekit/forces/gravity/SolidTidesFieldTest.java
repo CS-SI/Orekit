@@ -57,7 +57,7 @@ import java.util.Arrays;
 public class SolidTidesFieldTest {
 
     @Test
-    public void testConventions2003() throws NoSuchFieldException, IllegalAccessException {
+    void testConventions2003() throws NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
         SolidTidesField tidesField =
@@ -100,7 +100,7 @@ public class SolidTidesFieldTest {
     }
 
     @Test
-    public void testConventions2010() throws NoSuchFieldException, IllegalAccessException {
+    void testConventions2010() throws NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         SolidTidesField tidesField =
@@ -136,7 +136,7 @@ public class SolidTidesFieldTest {
     }
 
     @Test
-    public void testK1Example()
+    void testK1Example()
         throws NoSuchFieldException, IllegalAccessException,
                NoSuchMethodException, InvocationTargetException {
         // the reference for this test is the example at the bottom of page 86, IERS conventions 2010 section 6.2.1
@@ -207,7 +207,7 @@ public class SolidTidesFieldTest {
     }
 
     @Test
-    public void testDeltaCnmSnm() {
+    void testDeltaCnmSnm() {
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getNormalizedProvider(8, 8);
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -249,7 +249,7 @@ public class SolidTidesFieldTest {
     }
 
     @Test
-    public void testInterpolationAccuracy() {
+    void testInterpolationAccuracy() {
 
         // The shortest periods are slightly below one half day for the tidal waves
         // considered here. This implies the sampling rate should be fast enough.

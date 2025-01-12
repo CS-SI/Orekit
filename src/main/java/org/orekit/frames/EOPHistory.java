@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,15 +53,12 @@ import org.orekit.utils.TimeStampedGenerator;
  * @author Pascal Parraud
  * @author Evan Ward
  */
-public class EOPHistory implements Serializable {
+public class EOPHistory {
 
     /** Default interpolation degree.
      * @since 12.0
      */
     public static final int DEFAULT_INTERPOLATION_DEGREE = 3;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20231022L;
 
     /** Interpolation degree.
      * @since 12.0
@@ -907,65 +903,6 @@ public class EOPHistory implements Serializable {
             // the entry already has all derivatives
             return entry;
         }
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(conventions, interpolationDegree, getEntries(), tidalCorrection == null);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20231122L;
-
-        /** IERS conventions. */
-        private final IERSConventions conventions;
-
-        /** Interpolation degree.
-         * @since 12.0
-         */
-        private final int interpolationDegree;
-
-        /** EOP entries. */
-        private final List<EOPEntry> entries;
-
-        /** Indicator for simple interpolation without tidal effects. */
-        private final boolean simpleEOP;
-
-        /** Simple constructor.
-         * @param conventions IERS conventions to which EOP refers
-         * @param interpolationDegree interpolation degree (must be of the form 4k-1)
-         * @param entries the EOP data to use
-         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
-         * @since 12.0
-         */
-        DataTransferObject(final IERSConventions conventions,
-                           final int interpolationDegree,
-                           final List<EOPEntry> entries,
-                           final boolean simpleEOP) {
-            this.conventions         = conventions;
-            this.interpolationDegree = interpolationDegree;
-            this.entries             = entries;
-            this.simpleEOP           = simpleEOP;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link EOPHistory}.
-         * @return replacement {@link EOPHistory}
-         */
-        private Object readResolve() {
-            try {
-                return new EOPHistory(conventions, interpolationDegree, entries, simpleEOP);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
-
     }
 
     /** Internal class for caching tidal correction. */

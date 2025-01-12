@@ -182,6 +182,14 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         FieldDetectorModifier.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()).getReal() >= 0;
+        fieldImpulseProvider.init(s0, t);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final FieldSpacecraftState<T> state) {
+        FieldDetectorModifier.super.finish(state);
+        fieldImpulseProvider.finish(state);
     }
 
     /** {@inheritDoc} */

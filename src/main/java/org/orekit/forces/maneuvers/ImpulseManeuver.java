@@ -173,6 +173,14 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         DetectorModifier.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()) >= 0;
+        impulseProvider.init(s0, t);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final SpacecraftState state) {
+        DetectorModifier.super.finish(state);
+        impulseProvider.finish(state);
     }
 
     /** {@inheritDoc} */

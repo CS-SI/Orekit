@@ -116,7 +116,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testRoughBehaviour() {
+    void testRoughBehaviour() {
 
         final AttitudeProvider attitudeProvider = buildAttitudeProvider();
         final SpacecraftState initialState = buildInitialState(attitudeProvider);
@@ -155,7 +155,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
 
         final AttitudeProvider attitudeProvider = buildAttitudeProvider();
         final SpacecraftState initialState = buildInitialState(attitudeProvider);
@@ -185,7 +185,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testRoughBehaviourField() {
+    void testRoughBehaviourField() {
         doTestRoughBehaviourField(Binary64Field.getInstance());
     }
 
@@ -228,7 +228,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testBackwardField() {
+    void testBackwardField() {
         doTestBackwardField(Binary64Field.getInstance());
     }
 

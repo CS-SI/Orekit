@@ -16,12 +16,9 @@
  */
 package org.orekit.utils;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.Derivative;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
@@ -38,9 +35,6 @@ import org.orekit.time.TimeStamped;
  * @since 7.0
  */
 public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamped {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140723L;
 
     /** The date. */
     private final AbsoluteDate date;
@@ -282,58 +276,6 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                                   append(getAcceleration().getX()).append(comma).
                                   append(getAcceleration().getY()).append(comma).
                                   append(getAcceleration().getZ()).append(")}").toString();
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20140723L;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Simple constructor.
-         * @param pv instance to serialize
-         */
-        private DTO(final TimeStampedPVCoordinates pv) {
-
-            // decompose date
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            final double epoch  = FastMath.floor(pv.getDate().durationFrom(j2000Epoch));
-            final double offset = pv.getDate().durationFrom(j2000Epoch.shiftedBy(epoch));
-
-            this.d = new double[] {
-                epoch, offset,
-                pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ()
-            };
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link TimeStampedPVCoordinates}.
-         * @return replacement {@link TimeStampedPVCoordinates}
-         */
-        private Object readResolve() {
-            final AbsoluteDate j2000Epoch =
-                    DataContext.getDefault().getTimeScales().getJ2000Epoch();
-            return new TimeStampedPVCoordinates(j2000Epoch.shiftedBy(d[0]).shiftedBy(d[1]),
-                                                new Vector3D(d[2], d[3], d[ 4]),
-                                                new Vector3D(d[5], d[6], d[ 7]),
-                                                new Vector3D(d[8], d[9], d[10]));
-        }
-
     }
 
 }

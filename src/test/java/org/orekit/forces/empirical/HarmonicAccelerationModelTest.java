@@ -73,7 +73,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     private Orbit initialOrbit;
 
     @Test
-    public void testEquivalentInertialManeuver() {
+    void testEquivalentInertialManeuver() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -96,7 +96,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialManeuver() {
+    void testEquivalentTangentialManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -115,7 +115,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuver() {
+    void testEquivalentTangentialOverriddenManeuver() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -186,7 +186,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentInertialManeuverField() {
+    void testEquivalentInertialManeuverField() {
         final double   delta     = FastMath.toRadians(-7.4978);
         final double   alpha     = FastMath.toRadians(351);
         final Vector3D direction = new Vector3D(alpha, delta);
@@ -209,7 +209,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialManeuverField() {
+    void testEquivalentTangentialManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -228,7 +228,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testEquivalentTangentialOverriddenManeuverField() {
+    void testEquivalentTangentialOverriddenManeuverField() {
         final double mass     = 2500;
         final double isp      = Double.POSITIVE_INFINITY;
         final double duration = 4000;
@@ -308,17 +308,17 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative1T() {
+    void testParameterDerivative1T() {
         doTestParameterDerivative(1, 4.0e-14, 2.0e-11);
     }
 
     @Test
-    public void testParameterDerivative2T() {
+    void testParameterDerivative2T() {
         doTestParameterDerivative(2, 3.0e-14, 7.0e-12);
     }
 
     @Test
-    public void testParameterDerivative3T() {
+    void testParameterDerivative3T() {
         doTestParameterDerivative(3, 2.0e-14, 2.0e-11);
     }
 
@@ -351,7 +351,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testCoefficientsDetermination() {
+    void testCoefficientsDetermination() {
 
         final double mass = 2500;
         final Orbit orbit = new CircularOrbit(7500000.0, 1.0e-4, 1.0e-3, 1.7, 0.3, 0.5, PositionAngleType.TRUE,

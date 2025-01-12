@@ -252,7 +252,6 @@ public class TransformProviderUtilTest {
     private TransformProvider constantProvider(RandomGenerator random) {
         final Transform combined = randomTransform(random);
         return new TransformProvider() {
-            private static final long serialVersionUID = 20180330L;
             public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date)
                 {
                 return new FieldTransform<>(date.getField(), combined);

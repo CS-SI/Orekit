@@ -16,18 +16,12 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeScalarFunction;
@@ -45,9 +39,6 @@ import org.orekit.utils.IERSConventions;
  * @author Thierry Ceolin
  */
 public class GTODProvider implements EOPBasedTransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20141228L;
 
     /** Angular velocity of the Earth, in rad/s. */
     private static final double AVE = 7.292115146706979e-5;
@@ -194,54 +185,6 @@ public class GTODProvider implements EOPBasedTransformProvider {
         return new FieldVector3D<>(date.getField().getZero(),
                 date.getField().getZero(),
                 date.getField().getZero().add(omp));
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(conventions, eopHistory);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
-
-        /** Conventions. */
-        private final IERSConventions conventions;
-
-        /** EOP history. */
-        private final EOPHistory eopHistory;
-
-        /** Simple constructor.
-         * @param conventions IERS conventions to apply
-         * @param eopHistory EOP history
-         */
-        DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
-            this.conventions = conventions;
-            this.eopHistory  = eopHistory;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link GTODProvider}.
-         * @return replacement {@link GTODProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return new GTODProvider(conventions, eopHistory,
-                        DataContext.getDefault().getTimeScales());
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
-
     }
 
 }

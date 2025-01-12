@@ -16,7 +16,6 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
 import java.util.function.DoubleFunction;
 
 import org.hipparchus.CalculusFieldElement;
@@ -924,61 +923,6 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
                                                0.0, 1.0);
                 return intermediate.apply(lambdaMin);
             }
-        }
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes the files supported names, the
-     * ephemeris type and the body name.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(getA(), f, bodyFrame, angularThreshold);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130518L;
-
-        /** Equatorial radius. */
-        private final double ae;
-
-        /** Flattening. */
-        private final double f;
-
-        /** Body frame related to body shape. */
-        private final Frame bodyFrame;
-
-        /** Convergence limit. */
-        private final double angularThreshold;
-
-        /** Simple constructor.
-         * @param ae equatorial radius
-         * @param f the flattening (f = (a-b)/a)
-         * @param bodyFrame body frame related to body shape
-         * @param angularThreshold convergence limit
-         */
-        DataTransferObject(final double ae, final double f,
-                                  final Frame bodyFrame, final double angularThreshold) {
-            this.ae               = ae;
-            this.f                = f;
-            this.bodyFrame        = bodyFrame;
-            this.angularThreshold = angularThreshold;
-        }
-
-        /** Replace the deserialized data transfer object with a
-         * {@link JPLCelestialBody}.
-         * @return replacement {@link JPLCelestialBody}
-         */
-        private Object readResolve() {
-            final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(ae, f, bodyFrame);
-            ellipsoid.setAngularThreshold(angularThreshold);
-            return ellipsoid;
         }
 
     }

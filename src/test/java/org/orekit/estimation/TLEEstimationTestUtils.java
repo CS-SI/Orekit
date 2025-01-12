@@ -126,7 +126,6 @@ public class TLEEstimationTestUtils {
         final Vector3D rotationRate = new Vector3D(0.0, 0.0, omega);
 
         TransformProvider MyEarthFrame = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
                 final double rotationduration = date.durationFrom(datedef);
                 final Vector3D alpharot = new Vector3D(rotationduration, rotationRate);

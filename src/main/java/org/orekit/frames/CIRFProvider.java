@@ -16,8 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldRotation;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -26,8 +24,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.FieldSinCos;
 import org.hipparchus.util.SinCos;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.TimeVectorFunction;
@@ -44,9 +40,6 @@ import org.orekit.time.TimeVectorFunction;
  * <p>Its parent frame is the GCRF frame.
  */
 class CIRFProvider implements EOPBasedTransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130806L;
 
     /** Function computing CIP/CIO components. */
     private final transient TimeVectorFunction xysPxy2Function;
@@ -146,46 +139,6 @@ class CIRFProvider implements EOPBasedTransformProvider {
                                                           true);
 
         return new FieldTransform<>(date, bpn, FieldVector3D.getZero(date.getField()));
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the frame key.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(eopHistory);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20131209L;
-
-        /** EOP history. */
-        private final EOPHistory eopHistory;
-
-        /** Simple constructor.
-         * @param eopHistory EOP history
-         */
-        DataTransferObject(final EOPHistory eopHistory) {
-            this.eopHistory = eopHistory;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link CIRFProvider}.
-         * @return replacement {@link CIRFProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return new CIRFProvider(eopHistory);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
 
     }
 

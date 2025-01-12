@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
 public class OceanTidesWaveTest {
 
     @Test
-    public void testDelaunayParameters()
+    void testDelaunayParameters()
         throws SecurityException, NoSuchFieldException,
                IllegalArgumentException, IllegalAccessException {
 

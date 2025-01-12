@@ -25,9 +25,6 @@ import org.orekit.bodies.CelestialBody;
  */
 public class CR3BPRotatingFrame extends Frame {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20190520L;
-
     /**
      * Simple constructor.
      * @param mu Mass ratio

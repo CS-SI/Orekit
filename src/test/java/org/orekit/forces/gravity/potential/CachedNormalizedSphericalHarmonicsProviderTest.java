@@ -41,31 +41,31 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     }
 
     @Test
-    public void testGetReferenceDate() {
+    void testGetReferenceDate() {
         AbsoluteDate actualDate = cache.getReferenceDate();
         Assertions.assertEquals(actualDate, date);
     }
 
     @Test
-    public void testLimits() {
+    void testLimits() {
         Assertions.assertEquals(2, cache.getMaxDegree());
         Assertions.assertEquals(2, cache.getMaxOrder());
     }
 
     @Test
-    public void testBody() {
+    void testBody() {
         Assertions.assertEquals(1, cache.getMu(), 1.0e-15);
         Assertions.assertEquals(1, cache.getAe(), 1.0e-15);
     }
 
     @Test
-    public void testGetTideSystem() {
+    void testGetTideSystem() {
         TideSystem actualSystem = cache.getTideSystem();
         Assertions.assertEquals(actualSystem, TideSystem.UNKNOWN);
     }
 
     @Test
-    public void testInterpolation() {
+    void testInterpolation() {
         //setup
         //generate points on grid with date as the origin
         cache.onDate(date);
@@ -88,7 +88,7 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     }
 
     @Test
-    public void testReverseEntryGeneration() {
+    void testReverseEntryGeneration() {
         //setup
         //generate points on grid with date as the origin
         cache.onDate(date);

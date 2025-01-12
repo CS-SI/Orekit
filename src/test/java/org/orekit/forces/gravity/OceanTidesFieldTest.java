@@ -42,7 +42,7 @@ import java.util.Map;
 public class OceanTidesFieldTest {
 
     @Test
-    public void testDeltaCnmSnm() {
+    void testDeltaCnmSnm() {
 
         // this is an arbitrarily truncated model, limited to 4x4 and with only a few waves
         List<OceanTidesWave> waves = getWaves(4, 4, 55565, 56554, 85455, 135655, 273555);

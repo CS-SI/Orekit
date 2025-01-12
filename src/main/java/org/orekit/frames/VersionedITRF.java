@@ -28,9 +28,6 @@ import org.orekit.time.TimeScale;
  */
 public class VersionedITRF extends Frame {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20180403L;
-
     /** Simple constructor.
      * @param parent parent frame (must be non-null)
      * @param version ITRF version this provider should generate

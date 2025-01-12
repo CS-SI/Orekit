@@ -60,7 +60,7 @@ public class AggregateBoundedAttitudeProviderTest {
     }
 
     @Test
-    public void testEmptyList() {
+    void testEmptyList() {
         try {
             new AggregateBoundedAttitudeProvider(Collections.emptyList());
         } catch (OrekitException oe) {
@@ -70,7 +70,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testAEM() {
+    void testAEM() {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -97,7 +97,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testFieldAEM() {
+    void testFieldAEM() {
         doTestFieldAEM(Binary64Field.getInstance());
     }
 
@@ -134,7 +134,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testOutsideBounds() {
+    void testOutsideBounds() {
 
         final String ex = "/ccsds/adm/aem/AEMExample10.txt";
         final DataSource source = new DataSource(ex, () -> getClass().getResourceAsStream(ex));
@@ -161,7 +161,7 @@ public class AggregateBoundedAttitudeProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testFieldOutsideBounds() {
+    void testFieldOutsideBounds() {
         doTestFieldOutsideBounds(Binary64Field.getInstance());
     }
 

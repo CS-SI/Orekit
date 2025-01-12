@@ -16,13 +16,10 @@
  */
 package org.orekit.orbits;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
@@ -1647,83 +1644,6 @@ public class KeplerianOrbit extends Orbit implements PositionAngleBased<Kepleria
             throw new OrekitException(OrekitMessages.INVALID_PARAMETER_RANGE, parameterName,
                     parameter, lowerBound, upperBound);
         }
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20241114L;
-
-        /** Seconds. */
-        private final long seconds;
-
-        /** Attoseconds. */
-        private final long attoseconds;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Type of position angle whose value is cached. */
-        private final PositionAngleType positionAngleType;
-
-        /** Frame in which are defined the orbital parameters. */
-        private final Frame frame;
-
-        /** Simple constructor.
-         * @param orbit instance to serialize
-         */
-        private DTO(final KeplerianOrbit orbit) {
-
-            this.positionAngleType = orbit.cachedPositionAngleType;
-
-            // decompose date
-            this.seconds     = orbit.getDate().getSeconds();
-            this.attoseconds = orbit.getDate().getAttoSeconds();
-
-            this.d = new double[] {
-                orbit.getMu(),
-                orbit.a, orbit.e, orbit.i,
-                orbit.pa, orbit.raan, orbit.cachedAnomaly,
-                orbit.aDot, orbit.eDot, orbit.iDot,
-                orbit.paDot, orbit.raanDot, orbit.cachedAnomalyDot
-            };
-
-            this.frame = orbit.getFrame();
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link KeplerianOrbit}.
-         * @return replacement {@link KeplerianOrbit}
-         */
-        private Object readResolve() {
-            if (d.length >= 13) {
-                // we have derivatives
-                return new KeplerianOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
-                                          d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
-                                          positionAngleType, positionAngleType,
-                                          frame,
-                                          new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                          d[0]);
-            } else {
-                // we don't have derivatives
-                return new KeplerianOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
-                                          positionAngleType, positionAngleType,
-                                          frame,
-                                          new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                          d[0]);
-            }
-        }
-
     }
 
 }

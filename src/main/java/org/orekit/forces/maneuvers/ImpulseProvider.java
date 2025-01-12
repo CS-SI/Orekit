@@ -19,6 +19,7 @@ package org.orekit.forces.maneuvers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** Interface providing velocity increment vectors to impulsive maneuvers.
  *
@@ -26,7 +27,6 @@ import org.orekit.propagation.SpacecraftState;
  * @see ImpulseManeuver
  * @since 13.0
  */
-@FunctionalInterface
 public interface ImpulseProvider {
 
     /**
@@ -37,6 +37,23 @@ public interface ImpulseProvider {
      * @return impulse in satellite's frame
      */
     Vector3D getImpulse(SpacecraftState state, boolean isForward, AttitudeProvider attitudeOverride);
+
+    /**
+     * Method called at start of propagation.
+     * @param initialState state at start of propagation
+     * @param targetDate target end date
+     */
+    default void init(SpacecraftState initialState, AbsoluteDate targetDate) {
+        // nothing by default
+    }
+
+    /**
+     * Method called at end of propagation.
+     * @param finalState state at end of propagation
+     */
+    default void finish(SpacecraftState finalState) {
+        // nothing by default
+    }
 
     /**
      * Get a provider returning a given vector for forward propagation and its opposite for backward.

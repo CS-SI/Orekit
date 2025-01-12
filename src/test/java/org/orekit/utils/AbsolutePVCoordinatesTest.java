@@ -16,12 +16,6 @@
  */
 package org.orekit.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import org.hipparchus.analysis.differentiation.DerivativeStructure;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
@@ -355,30 +349,6 @@ public class AbsolutePVCoordinatesTest {
                                       new Vector3D(-1,  -0.1, -10),
                                       new Vector3D(10,   1.0, 100));
         Assertions.assertEquals("{2000-01-01T11:58:55.816, P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(10.0, 1.0, 100.0)}", pv.toString());
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        AbsolutePVCoordinates pv = new AbsolutePVCoordinates(FramesFactory.getEME2000(),
-                                                             AbsoluteDate.GALILEO_EPOCH,
-                                                             new Vector3D(1, 2, 3),
-                                                             new Vector3D(4, 5, 6),
-                                                             new Vector3D(7, 8, 9));
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(pv);
-
-        Assertions.assertEquals(354, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        AbsolutePVCoordinates deserialized  = (AbsolutePVCoordinates) ois.readObject();
-        Assertions.assertEquals(0.0, deserialized.getDate().durationFrom(pv.getDate()), 1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getPosition(),     pv.getPosition()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getVelocity(),     pv.getVelocity()),     1.0e-15);
-        Assertions.assertEquals(0.0, Vector3D.distance(deserialized.getAcceleration(), pv.getAcceleration()), 1.0e-15);
-
     }
 
     @Test

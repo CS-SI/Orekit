@@ -57,7 +57,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 public class PointingPanelTest {
 
     @Test
-    public void testBestPointing() {
+    void testBestPointing() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -83,7 +83,7 @@ public class PointingPanelTest {
     }
 
     @Test
-    public void testNormalOptimalRotationDouble() {
+    void testNormalOptimalRotationDouble() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
@@ -96,7 +96,7 @@ public class PointingPanelTest {
     }
 
     @Test
-    public void testNormalOptimalRotationField() {
+    void testNormalOptimalRotationField() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
         final Panel absorbingSolarArray = new PointingPanel(Vector3D.PLUS_J, sun, 20.0, 0.0, 0.0, 1.0, 0.0);
@@ -109,7 +109,7 @@ public class PointingPanelTest {
         }
     }
 
-    public void testNormalSunAlignedDouble() {
+    void testNormalSunAlignedDouble() {
         ExtendedPositionProvider ep = new ExtendedPositionProvider() {
             
             @Override
@@ -141,7 +141,7 @@ public class PointingPanelTest {
     }
 
     @Test
-    public void testNormalSunAlignedField() {
+    void testNormalSunAlignedField() {
         ExtendedPositionProvider ep = new ExtendedPositionProvider() {
             
             @Override

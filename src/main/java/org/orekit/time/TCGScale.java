@@ -28,9 +28,6 @@ import org.hipparchus.CalculusFieldElement;
  */
 public class TCGScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
-
     /** LG rate. */
     private static final double LG_RATE = 6.969290134e-10;
 

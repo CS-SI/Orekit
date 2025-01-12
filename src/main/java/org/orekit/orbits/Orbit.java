@@ -16,8 +16,6 @@
  */
 package org.orekit.orbits;
 
-import java.io.Serializable;
-
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.DecompositionSolver;
 import org.hipparchus.linear.MatrixUtils;
@@ -63,13 +61,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public abstract class Orbit
-    implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
+    implements TimeStamped, TimeShiftable<Orbit>, PVCoordinatesProvider {
 
     /** Absolute tolerance when checking if the rate of the position angle is Keplerian or not. */
     protected static final double TOLERANCE_POSITION_ANGLE_RATE = 1e-15;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 438733454597999578L;
 
     /** Frame in which are defined the orbital parameters. */
     private final Frame frame;
@@ -83,28 +78,28 @@ public abstract class Orbit
     /** Computed position.
      * @since 12.0
      */
-    private transient Vector3D position;
+    private Vector3D position;
 
     /** Computed PVCoordinates. */
-    private transient TimeStampedPVCoordinates pvCoordinates;
+    private TimeStampedPVCoordinates pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
-    private transient double[][] jacobianMeanWrtCartesian;
+    private double[][] jacobianMeanWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with mean angle. */
-    private transient double[][] jacobianWrtParametersMean;
+    private double[][] jacobianWrtParametersMean;
 
     /** Jacobian of the orbital parameters with eccentric angle with respect to the Cartesian coordinates. */
-    private transient double[][] jacobianEccentricWrtCartesian;
+    private double[][] jacobianEccentricWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with eccentric angle. */
-    private transient double[][] jacobianWrtParametersEccentric;
+    private double[][] jacobianWrtParametersEccentric;
 
     /** Jacobian of the orbital parameters with true angle with respect to the Cartesian coordinates. */
-    private transient double[][] jacobianTrueWrtCartesian;
+    private double[][] jacobianTrueWrtCartesian;
 
     /** Jacobian of the Cartesian coordinates with respect to the orbital parameters with true angle. */
-    private transient double[][] jacobianWrtParametersTrue;
+    private double[][] jacobianWrtParametersTrue;
 
     /** Default constructor.
      * Build a new instance with arbitrary default elements.

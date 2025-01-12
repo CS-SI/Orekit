@@ -16,11 +16,8 @@
  */
 package org.orekit.propagation;
 
-import java.io.Serializable;
-
 import org.hipparchus.exception.LocalizedCoreFormats;
 import org.hipparchus.exception.MathIllegalStateException;
-import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.orekit.attitudes.Attitude;
@@ -40,7 +37,6 @@ import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.DoubleArrayDictionary;
-import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class is the representation of a complete state holding orbit, attitude
@@ -69,14 +65,10 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class SpacecraftState
-    implements TimeStamped, TimeShiftable<SpacecraftState>, Serializable {
+public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftState> {
 
     /** Default mass. */
     public static final double DEFAULT_MASS = 1000.0;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20211119L;
 
     /**
      * tolerance on date comparison in {@link #checkConsistency(Orbit, Attitude)}. 100 ns
@@ -1002,120 +994,6 @@ public class SpacecraftState
      */
     public double getMass() {
         return mass;
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return isOrbitDefined() ? new DTOO(this) : new DTOA(this);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTOO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20211121L;
-
-        /** Orbit. */
-        private final Orbit orbit;
-
-        /** Attitude and mass double values. */
-        private final double[] d;
-
-        /** Additional states. */
-        private final DoubleArrayDictionary additional;
-
-        /** Additional states derivatives. */
-        private final DoubleArrayDictionary additionalDot;
-
-        /** Simple constructor.
-         * @param state instance to serialize
-         */
-        private DTOO(final SpacecraftState state) {
-
-            this.orbit         = state.orbit;
-            this.additional    = state.additional.getData().isEmpty()    ? null : state.additional;
-            this.additionalDot = state.additionalDot.getData().isEmpty() ? null : state.additionalDot;
-
-            final Rotation rotation             = state.attitude.getRotation();
-            final Vector3D spin                 = state.attitude.getSpin();
-            final Vector3D rotationAcceleration = state.attitude.getRotationAcceleration();
-            this.d = new double[] {
-                rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
-                spin.getX(), spin.getY(), spin.getZ(),
-                rotationAcceleration.getX(), rotationAcceleration.getY(), rotationAcceleration.getZ(),
-                state.mass
-            };
-
-        }
-
-        /** Replace the de-serialized data transfer object with a {@link SpacecraftState}.
-         * @return replacement {@link SpacecraftState}
-         */
-        private Object readResolve() {
-            return new SpacecraftState(orbit,
-                                       new Attitude(orbit.getFrame(),
-                                                    new TimeStampedAngularCoordinates(orbit.getDate(),
-                                                                                      new Rotation(d[0], d[1], d[2], d[3], false),
-                                                                                      new Vector3D(d[4], d[5], d[6]),
-                                                                                      new Vector3D(d[7], d[8], d[9]))),
-                                       d[10], additional, additionalDot);
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTOA implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20211121L;
-
-        /** Absolute position-velocity-acceleration. */
-        private final AbsolutePVCoordinates absPva;
-
-        /** Attitude and mass double values. */
-        private final double[] d;
-
-        /** Additional states. */
-        private final DoubleArrayDictionary additional;
-
-        /** Additional states derivatives. */
-        private final DoubleArrayDictionary additionalDot;
-
-        /** Simple constructor.
-         * @param state instance to serialize
-         */
-        private DTOA(final SpacecraftState state) {
-
-            this.absPva        = state.absPva;
-            this.additional    = state.additional.getData().isEmpty()    ? null : state.additional;
-            this.additionalDot = state.additionalDot.getData().isEmpty() ? null : state.additionalDot;
-
-            final Rotation rotation             = state.attitude.getRotation();
-            final Vector3D spin                 = state.attitude.getSpin();
-            final Vector3D rotationAcceleration = state.attitude.getRotationAcceleration();
-            this.d = new double[] {
-                rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
-                spin.getX(), spin.getY(), spin.getZ(),
-                rotationAcceleration.getX(), rotationAcceleration.getY(), rotationAcceleration.getZ(),
-                state.mass
-            };
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link SpacecraftState}.
-         * @return replacement {@link SpacecraftState}
-         */
-        private Object readResolve() {
-            return new SpacecraftState(absPva,
-                                       new Attitude(absPva.getFrame(),
-                                                    new TimeStampedAngularCoordinates(absPva.getDate(),
-                                                                                      new Rotation(d[0], d[1], d[2], d[3], false),
-                                                                                      new Vector3D(d[4], d[5], d[6]),
-                                                                                      new Vector3D(d[7], d[8], d[9]))),
-                                       d[10], additional, additionalDot);
-        }
     }
 
     @Override

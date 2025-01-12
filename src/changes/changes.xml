@@ -33,6 +33,10 @@
         <action dev="luc" type="fix" issue="1638">
             Fixed field implementation of Galileo NeQuick ionosphere model.
         </action>
+        <action dev="evan" type="update" issue="1364">
+          Update ComparableMeasurement.compareTo(...) to return a valid result
+          for equal objects.
+        </action>
         <action dev="evan" type="update" issue="1623">
             Update OCM parsing, so it is possible to know when a value is not present in a
             OCM file. Updated OCM writing so values that are not present are not written.
@@ -48,6 +52,9 @@
         </action>
         <action dev="serrof" type="update" issue="1628">
             Remove ThrustDirectionAndAttitudeProvider and ConfigurableLowThrustManeuver.
+        </action>
+        <action dev="serrof" type="update" issue="1627">
+            Remove DataTransferObject implementations (removing many Serializable implementations).
         </action>
         <action dev="serrof" type="update" issue="1626">
             Use ExtendedPositionProvider in YawSteering.
@@ -220,6 +227,9 @@
         </action>
         <action dev="serrof" type="add" issue="1519">
             Allow to define body attraction without CelestialBody.
+        </action>
+        <action dev="serrof" type="add" issue="1514">
+            Add scales for differentiation in indirect shooting.
         </action>
         <action dev="luc" type="add" issue="707">
             Properly parse dates during the 1961 leap that was 1.422818s long.

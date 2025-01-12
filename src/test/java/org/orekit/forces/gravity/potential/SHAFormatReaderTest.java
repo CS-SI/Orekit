@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
 public class SHAFormatReaderTest {
 
     @Test
-    public void testReadNormalized() {
+    void testReadNormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("sha.grgm1200b_sigma_truncated_5x5", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
@@ -42,7 +42,7 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testReadUnnormalized() {
+    void testReadUnnormalized() {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("sha.grgm1200b_sigma_truncated_5x5", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -71,7 +71,7 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile1() {
+    void testCorruptedFile1() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-1_sha.grgm1200b_sigma_truncated_5x5", false));
@@ -80,7 +80,7 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile2() {
+    void testCorruptedFile2() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-2_sha.grgm1200b_sigma_truncated_5x5", false));
@@ -89,7 +89,7 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile3() {
+    void testCorruptedFile3() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-3_sha.grgm1200b_sigma_truncated_5x5", false));
@@ -98,7 +98,7 @@ public class SHAFormatReaderTest {
     }
 
     @Test
-    public void testCannotParseHeader() {
+    void testCannotParseHeader() {
         Assertions.assertThrows(OrekitException.class, () -> {
             Utils.setDataRoot("potential");
             GravityFieldFactory.addPotentialCoefficientsReader(new SHAFormatReader("corrupted-4_sha.grgm1200b_sigma_truncated_5x5", false));

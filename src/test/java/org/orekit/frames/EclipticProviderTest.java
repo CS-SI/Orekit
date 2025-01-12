@@ -31,11 +31,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 /** Unit tests for {@link EclipticProvider}. */
 public class EclipticProviderTest {
@@ -125,31 +120,6 @@ public class EclipticProviderTest {
         //action + verify
         MatcherAssert.assertThat(frame.getParent().getTransformProvider(),
                           IsInstanceOf.instanceOf(MODProvider.class));
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        TransformProvider provider = new EclipticProvider(IERSConventions.IERS_2010);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(provider);
-
-        Assertions.assertTrue(bos.size() > 200);
-        Assertions.assertTrue(bos.size() < 250);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        TransformProvider deserialized  = (TransformProvider) ois.readObject();
-        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 3600) {
-            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-            Transform expectedIdentity = new Transform(date,
-                                                       provider.getTransform(date).getInverse(),
-                                                       deserialized.getTransform(date));
-            Assertions.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
-            Assertions.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
-        }
-
     }
 
 }

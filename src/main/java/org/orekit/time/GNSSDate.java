@@ -440,60 +440,6 @@ public class GNSSDate implements Serializable, TimeStamped {
         }
     }
 
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(weekNumber,
-                                      (int) secondsInWeek.getSeconds(), secondsInWeek.getAttoSeconds(),
-                                      system);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20240721L;
-
-        /** Week number since the GNSS reference epoch. */
-        private final int weekNumber;
-
-        /** Number of seconds since week start. */
-        private final int secondsInWeek;
-
-        /** Number of attoseconds since second start. */
-        private final long attoseconds;
-
-        /** Satellite system to consider. */
-        private final SatelliteSystem system;
-
-        /** Simple constructor.
-         * @param weekNumber week number since the GNSS reference epoch
-         * @param secondsInWeek number of seconds since week start
-         * @param attoseconds number of seconds since week start
-         * @param system satellite system to consider
-         */
-        DataTransferObject(final int weekNumber,
-                           final int secondsInWeek,
-                           final long attoseconds,
-                           final SatelliteSystem system) {
-            this.weekNumber    = weekNumber;
-            this.secondsInWeek = secondsInWeek;
-            this.attoseconds   = attoseconds;
-            this.system        = system;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link GNSSDate}.
-         * @return replacement {@link GNSSDate}
-         */
-        private Object readResolve() {
-            return new GNSSDate(weekNumber, new TimeOffset(secondsInWeek, attoseconds), system);
-        }
-
-    }
-
     /** Enumerate for GNSS data. */
     public enum GNSSDateType {
 

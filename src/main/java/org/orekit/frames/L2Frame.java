@@ -29,9 +29,6 @@ import org.orekit.utils.OrekitConfiguration;
  */
 public class L2Frame extends Frame {
 
-    /** Serializable UID.*/
-    private static final long serialVersionUID = 20170811L;
-
     /** Simple constructor.
      * @param primaryBody Celestial body with bigger mass, m1.
      * @param secondaryBody Celestial body with smaller mass, m2.

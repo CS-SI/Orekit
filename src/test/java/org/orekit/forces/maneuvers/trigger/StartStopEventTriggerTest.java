@@ -78,7 +78,7 @@ public class StartStopEventTriggerTest extends AbstractManeuverTriggersTest<Star
     }
 
     @Test
-    public void testComponents() {
+    void testComponents() {
         StartStopEventsTrigger<DateDetector, DateDetector> trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
                                                                                    AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    startDates = trigger.getStartDetector().getDates();

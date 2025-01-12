@@ -53,7 +53,7 @@ public class FixedRateTest {
 
     @Test
     @DefaultDataContext
-    public void testZeroRate() {
+    void testZeroRate() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                              new TimeComponents(13, 17, 7.865),
                                              TimeScalesFactory.getUTC());
@@ -76,7 +76,7 @@ public class FixedRateTest {
 
     @Test
     @DefaultDataContext
-    public void testNonZeroRate() {
+    void testNonZeroRate() {
         final AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 3, 2),
                                                    new TimeComponents(13, 17, 7.865),
                                                    TimeScalesFactory.getUTC());
@@ -105,7 +105,7 @@ public class FixedRateTest {
 
     @Test
     @DefaultDataContext
-    public void testSpin() {
+    void testSpin() {
 
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
@@ -153,7 +153,7 @@ public class FixedRateTest {
 
     @Test
     @DefaultDataContext
-    public void testZeroRateField() {
+    void testZeroRateField() {
         doTestZeroRate(Binary64Field.getInstance());
     }
 
@@ -186,7 +186,7 @@ public class FixedRateTest {
 
     @Test
     @DefaultDataContext
-    public void testNonZeroRateField() {
+    void testNonZeroRateField() {
         doTestNonZeroRate(Binary64Field.getInstance());
     }
 
@@ -221,7 +221,7 @@ public class FixedRateTest {
 
     @Test
     @DefaultDataContext
-    public void testSpinField() {
+    void testSpinField() {
         doTestSpin(Binary64Field.getInstance());
     }
 

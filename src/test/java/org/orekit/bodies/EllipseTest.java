@@ -39,7 +39,7 @@ import java.util.List;
 public class EllipseTest {
 
     @Test
-    public void testMeridianShape() {
+    void testMeridianShape() {
         OneAxisEllipsoid model =
                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -59,7 +59,7 @@ public class EllipseTest {
     }
 
     @Test
-    public void testEquatorialShape() {
+    void testEquatorialShape() {
         OneAxisEllipsoid model =
                 new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                      Constants.WGS84_EARTH_FLATTENING,
@@ -75,7 +75,7 @@ public class EllipseTest {
     }
 
     @Test
-    public void testProjectionDerivatives() {
+    void testProjectionDerivatives() {
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
                                 6.4e6, 6.3e6, FramesFactory.getGCRF());
         TimeStampedPVCoordinates linearMotion =
@@ -107,7 +107,7 @@ public class EllipseTest {
     }
 
     @Test
-    public void testMinRadiusOfCurvature() {
+    void testMinRadiusOfCurvature() {
         final double a = 100.0;
         final double b =  50.0;
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
@@ -119,7 +119,7 @@ public class EllipseTest {
     }
 
     @Test
-    public void testMaxRadiusOfCurvature() {
+    void testMaxRadiusOfCurvature() {
         final double a = 100.0;
         final double b =  50.0;
         Ellipse e = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,
@@ -131,7 +131,7 @@ public class EllipseTest {
     }
 
     @Test
-    public void testFlatEllipse() {
+    void testFlatEllipse() {
         final double a = 0.839;
         final double b = 0.176;
         final Ellipse  ellipse   = new Ellipse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.PLUS_J,

@@ -22,9 +22,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions.NutationCorrectionConverter;
@@ -122,54 +119,6 @@ public class PredictedEOPHistory extends EOPHistory implements Serializable {
         }
 
         return entries;
-
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(rawHistory, extensionDuration, fitter);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20230309L;
-
-        /** Raw EOP history to extend. */
-        private final EOPHistory rawHistory;
-
-        /** Duration of the extension period (s). */
-        private final double extensionDuration;
-
-        /** Fitter for all Earth Orientation Parameters. */
-        private final EOPFitter fitter;
-
-        /** Simple constructor.
-         * @param rawHistory raw EOP history to extend.
-         * @param extensionDuration duration of the extension period (s)
-         * @param fitter fitter for all Earth Orientation Parameters
-         */
-        DataTransferObject(final EOPHistory rawHistory, final double extensionDuration, final EOPFitter fitter) {
-            this.rawHistory        = rawHistory;
-            this.extensionDuration = extensionDuration;
-            this.fitter            = fitter;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link PredictedEOPHistory}.
-         * @return replacement {@link PredictedEOPHistory}
-         */
-        private Object readResolve() {
-            try {
-                return new PredictedEOPHistory(rawHistory, extensionDuration, fitter);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
 
     }
 

@@ -22,6 +22,7 @@ import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.time.FieldAbsoluteDate;
 
 /** Interface providing velocity increment vectors to impulsive maneuvers (Field version).
  *
@@ -30,7 +31,6 @@ import org.orekit.propagation.FieldSpacecraftState;
  * @see FieldImpulseManeuver
  * @since 13.0
  */
-@FunctionalInterface
 public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
 
     /**
@@ -41,6 +41,23 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
      * @return impulse in satellite's frame
      */
     FieldVector3D<T> getImpulse(FieldSpacecraftState<T> state, boolean isForward, AttitudeProvider attitudeOverride);
+
+    /**
+     * Method called at start of propagation.
+     * @param initialState state at start of propagation
+     * @param targetDate target end date
+     */
+    default void init(FieldSpacecraftState<T> initialState, FieldAbsoluteDate<T> targetDate) {
+        // nothing by default
+    }
+
+    /**
+     * Method called at end of propagation.
+     * @param finalState state at end of propagation
+     */
+    default void finish(FieldSpacecraftState<T> finalState) {
+        // nothing by default
+    }
 
     /**
      * Get a provider returning a given vector for forward propagation and its opposite for backward.

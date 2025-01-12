@@ -21,12 +21,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 public class GLONASSDateTest {
 
     private TimeScale glo;
@@ -60,31 +54,6 @@ public class GLONASSDateTest {
         Assertions.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
         Assertions.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
         Assertions.assertEquals(7200.0, date.getSecInDay(), 1.0e-15);
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        GLONASSDate date = new GLONASSDate(251, 5, 7200.0);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(date);
-
-        Assertions.assertTrue(bos.size() > 95);
-        Assertions.assertTrue(bos.size() < 105);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        GLONASSDate deserialized  = (GLONASSDate) ois.readObject();
-        AbsoluteDate ref  = new AbsoluteDate(new DateComponents(2012, 9, 7),
-                                             new TimeComponents(2, 0, 0),
-                                             glo);
-        Assertions.assertEquals(251, deserialized.getDayNumber());
-        Assertions.assertEquals(5, deserialized.getIntervalNumber());
-        Assertions.assertEquals(2456177.5, date.getJD0(), 1.0e-16);
-        Assertions.assertEquals(29191.442830, date.getGMST(), 3.0e-3);
-        Assertions.assertEquals(0, deserialized.getDate().durationFrom(ref), 1.0e-15);
-
     }
 
 }

@@ -58,7 +58,7 @@ public class FieldAttitudeInterpolatorTest {
 
     @Test
     @DefaultDataContext
-    public void testInterpolation() {
+    void testInterpolation() {
 
         // Given
         Utils.setDataRoot("regular-data");

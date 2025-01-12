@@ -79,7 +79,9 @@ public class ComparableMeasurementTest {
 
         // Sorted by date by default
         Assertions.assertEquals(pv.compareTo(azel), -1);
+        Assertions.assertEquals(azel.compareTo(pv), +1);
         Assertions.assertEquals(range.compareTo(pv2), +1);
+        Assertions.assertEquals(pv2.compareTo(range), -1);
 
         // Same date but different measurement - "bigger" measurement after "smaller" one
         Assertions.assertEquals(range.compareTo(azel), -1);
@@ -89,9 +91,47 @@ public class ComparableMeasurementTest {
         Assertions.assertEquals(pv.compareTo(pv3), -1);
         Assertions.assertEquals(pv3.compareTo(pv), +1);
 
-        // Same date, same size, same values - Arbitrary order, always return -1
-        Assertions.assertEquals(pv.compareTo(pv2), -1);
-        Assertions.assertEquals(pv2.compareTo(pv), -1);
+        // Same date, same size, same values. Likely non-zero, but may be zero.
+        Assertions.assertEquals(pv.compareTo(pv2), -pv2.compareTo(pv));
+    }
+
+    /**
+     * Check {@link ComparableMeasurement#compareTo(ComparableMeasurement)} still works if
+     * hashcode is implemented poorly.
+     */
+    @Test
+    public void testComparePoorlyImplementedHashCode() {
+        ComparableMeasurement a = new BadHashCode(), b = new BadHashCode();
+
+        // Same date, same size, same values. Likely non-zero, but may be zero.
+        Assertions.assertEquals(a.compareTo(b), -b.compareTo(a));
+        Assertions.assertEquals(a.compareTo(a), 0);
+        Assertions.assertEquals(b.compareTo(b), 0);
+    }
+
+    /** Implementation of {@link ComparableMeasurement} with a bad hash code. */
+    private static class BadHashCode implements ComparableMeasurement {
+
+        @Override
+        public double[] getObservedValue() {
+            return new double[0];
+        }
+
+        @Override
+        public void setObservedValue(double[] newObserved) {
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return AbsoluteDate.ARBITRARY_EPOCH;
+        }
+
+        @Override
+        public int hashCode() {
+            // test comparison w/ poor hashcode implementation
+            return 1;
+        }
 
     }
+
 }
