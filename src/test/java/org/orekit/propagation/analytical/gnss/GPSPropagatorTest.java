@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.RealMatrix;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.MathUtils;
 import org.hipparchus.util.Precision;
@@ -35,10 +37,12 @@ import org.orekit.gnss.SEMParser;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.AdditionalStateProvider;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.CommonGnssData;
+import org.orekit.propagation.analytical.gnss.data.FieldGPSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
@@ -46,12 +50,14 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
@@ -97,6 +103,30 @@ public class GPSPropagatorTest {
             Assertions.assertEquals(0.0, corrections[2], Precision.SAFE_MIN);
         }
         Assertions.assertEquals(0.0,        almanacs.get(0).getToc(), 1.0e-12);
+        Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
+        Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
+    }
+
+    @Test
+    public void testFieldClockCorrections() {
+        final FieldGPSAlmanac<Binary64> gpsAlmanac = almanacs.get(0).toField(Binary64Field.getInstance());
+        final FieldGnssPropagator<Binary64> propagator = gpsAlmanac.getPropagator();
+        propagator.addAdditionalStateProvider(new FieldClockCorrectionsProvider(gpsAlmanac,
+                                                                                gpsAlmanac.getCycleDuration()));
+        // Propagate at the GPS date and one GPS cycle later
+        final FieldAbsoluteDate<Binary64> date0 = gpsAlmanac.getDate();
+        double dtRelMin = 0;
+        double dtRelMax = 0;
+        for (double dt = 0; dt < 0.5 * Constants.JULIAN_DAY; dt += 1.0) {
+            FieldSpacecraftState<Binary64> state = propagator.propagate(date0.shiftedBy(dt));
+            Binary64[] corrections = state.getAdditionalState(ClockCorrectionsProvider.CLOCK_CORRECTIONS);
+            Assertions.assertEquals(3, corrections.length);
+            Assertions.assertEquals(1.33514404296875E-05, corrections[0].getReal(), 1.0e-19);
+            dtRelMin = FastMath.min(dtRelMin, corrections[1].getReal());
+            dtRelMax = FastMath.max(dtRelMax, corrections[1].getReal());
+            Assertions.assertEquals(0.0, corrections[2].getReal(), Precision.SAFE_MIN);
+        }
+        Assertions.assertEquals(0.0,        gpsAlmanac.getToc().getReal(), 1.0e-12);
         Assertions.assertEquals(-1.1679e-8, dtRelMin, 1.0e-12);
         Assertions.assertEquals(+1.1679e-8, dtRelMax, 1.0e-12);
     }
@@ -488,6 +518,23 @@ public class GPSPropagatorTest {
         // Verify that an infinite loop did not occur
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
+
+    }
+
+    @Test
+    public void testFieldIssue544() {
+        // Builds the GPSPropagator from the almanac
+        final FieldGnssPropagator<Binary64> propagator =
+            new FieldGnssPropagatorBuilder<>(almanacs.get(0).toField(Binary64Field.getInstance())).build();
+        // In order to test the issue, we voluntarily set a Double.NaN value in the date.
+        final FieldAbsoluteDate<Binary64> date0 =
+            new FieldAbsoluteDate<>(Binary64Field.getInstance(),
+                                    2010, 5, 7, 7, 50, Double.NaN, TimeScalesFactory.getUTC());
+        final FieldPVCoordinates<Binary64> pv0 =
+            propagator.propagateInEcef(date0, propagator.getParameters(Binary64Field.getInstance()));
+        // Verify that an infinite loop did not occur
+        Assertions.assertTrue(pv0.getPosition().isNaN());
+        Assertions.assertTrue(pv0.getVelocity().isNaN());
 
     }
 

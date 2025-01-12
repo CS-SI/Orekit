@@ -16,7 +16,10 @@
  */
 package org.orekit.propagation.analytical.gnss;
 
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,10 +31,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.gnss.data.FieldGalileoAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GalileoAlmanac;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeInterpolator;
 import org.orekit.time.TimeScalesFactory;
@@ -121,6 +126,56 @@ public class GalileoPropagatorTest {
 
         // Checks
         Assertions.assertEquals(0., p0.distance(p1), 0.);
+    }
+
+    @Test
+    public void testFieldGalileoCycle() {
+        // Reference for the almanac: 2019-05-28T09:40:01.0Z
+        final FieldGalileoAlmanac<Binary64> almanac =
+            new GalileoAlmanac(DataContext.getDefault().getTimeScales(),
+                               SatelliteSystem.GALILEO).toField(Binary64Field.getInstance());
+        almanac.setPRN(1);
+        almanac.setWeek(1024);
+        almanac.setTime(293400.0);
+        almanac.setDeltaSqrtA(new Binary64(0.013671875));
+        almanac.setE(new Binary64(0.000152587890625));
+        almanac.setDeltaInc(new Binary64(0.003356933593));
+        almanac.setIOD(4);
+        almanac.setOmega0(new Binary64(0.2739257812499857891));
+        almanac.setOmegaDot(-1.74622982740407E-9);
+        almanac.setPa(new Binary64(0.7363586425));
+        almanac.setM0(new Binary64(0.27276611328124));
+        almanac.setAf0(new Binary64(-0.0006141662597));
+        almanac.setAf1(new Binary64(-7.275957614183E-12));
+        almanac.setHealthE1(0);
+        almanac.setHealthE5a(0);
+        almanac.setHealthE5b(0);
+
+        // Intermediate verification
+        Assertions.assertEquals(1,                   almanac.getPRN());
+        Assertions.assertEquals(1024,                almanac.getWeek());
+        Assertions.assertEquals(4,                   almanac.getIOD());
+        Assertions.assertEquals(0,                   almanac.getHealthE1());
+        Assertions.assertEquals(0,                   almanac.getHealthE5a());
+        Assertions.assertEquals(0,                   almanac.getHealthE5b());
+        Assertions.assertEquals(-0.0006141662597,    almanac.getAf0().getReal(), 1.0e-15);
+        Assertions.assertEquals(-7.275957614183E-12, almanac.getAf1().getReal(), 1.0e-15);
+
+        // Builds the GalileoPropagator from the almanac
+        final FieldGnssPropagator<Binary64> propagator = almanac.getPropagator();
+        // Propagate at the Galileo date and one Galileo cycle later
+        final FieldAbsoluteDate<Binary64> date0 = almanac.getDate();
+        final FieldVector3D<Binary64> p0 =
+                propagator.propagateInEcef(date0, propagator.getParameters(Binary64Field.getInstance())).
+                getPosition();
+        final double galCycleDuration = almanac.getCycleDuration();
+        final FieldAbsoluteDate<Binary64> date1 = date0.shiftedBy(galCycleDuration);
+        final FieldVector3D<Binary64> p1 =
+                propagator.propagateInEcef(date1, propagator.getParameters(Binary64Field.getInstance())).
+                getPosition();
+
+        // Checks
+        Assertions.assertEquals(0., p0.distance(p1).getReal(), 0.);
     }
 
     @Test

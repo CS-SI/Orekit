@@ -202,7 +202,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
      * @param parameters propagation parameters
      * @return the GNSS SV PVCoordinates in {@link #getECEF() ECEF frame}
      */
-    private FieldPVCoordinates<T> propagateInEcef(final FieldAbsoluteDate<T> date, final T[] parameters) {
+    public FieldPVCoordinates<T> propagateInEcef(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // Duration from GNSS ephemeris Reference date
         final FieldUnivariateDerivative2<T> tk = new FieldUnivariateDerivative2<>(getTk(date),
                                                                                   date.getField().getOne(),
