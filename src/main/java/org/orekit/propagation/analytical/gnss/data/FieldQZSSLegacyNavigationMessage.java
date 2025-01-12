@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.gnss.data;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 
+import java.util.function.Function;
+
 /**
  * Container for data contained in a QZSS navigation message.
  * @param <T> type of the field elements
@@ -36,10 +38,28 @@ public class FieldQZSSLegacyNavigationMessage<T extends CalculusFieldElement<T>>
         super(field, original);
     }
 
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    public <V extends CalculusFieldElement<V>> FieldQZSSLegacyNavigationMessage(final Function<V, T> converter,
+                                                                                final FieldQZSSLegacyNavigationMessage<V> original) {
+        super(converter, original);
+    }
+
     /** {@inheritDoc} */
     @Override
     public QZSSLegacyNavigationMessage toNonField() {
         return new QZSSLegacyNavigationMessage(this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, QZSSLegacyNavigationMessage>>
+       G changeField(final Function<T, U> converter) {
+        return (G) new FieldQZSSLegacyNavigationMessage<>(converter, this);
     }
 
 }

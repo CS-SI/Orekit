@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+
+import java.util.function.Function;
 
 /**
  * Class for Galileo almanac.
@@ -57,10 +59,32 @@ public class FieldGalileoAlmanac<T extends CalculusFieldElement<T>>
         setIOD(original.getIOD());
     }
 
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    public <V extends CalculusFieldElement<V>> FieldGalileoAlmanac(final Function<V, T> converter,
+                                                                   final FieldGalileoAlmanac<V> original) {
+        super(converter, original);
+        setHealthE5a(original.getHealthE5a());
+        setHealthE5b(original.getHealthE5b());
+        setHealthE1(original.getHealthE1());
+        setIOD(original.getIOD());
+    }
+
     /** {@inheritDoc} */
     @Override
     public GalileoAlmanac toNonField() {
         return new GalileoAlmanac(this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GalileoAlmanac>>
+       G changeField(final Function<T, U> converter) {
+        return (G) new FieldGalileoAlmanac<>(converter, this);
     }
 
     /**

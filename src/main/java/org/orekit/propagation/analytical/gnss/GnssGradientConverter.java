@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,16 +18,11 @@ package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.hipparchus.analysis.differentiation.GradientField;
-import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.linear.MatrixUtils;
-import org.hipparchus.linear.QRDecomposer;
-import org.hipparchus.linear.RealMatrix;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.TimeStampedFieldPVCoordinates;
 
 import java.util.List;
 
@@ -58,86 +53,28 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
 
         final GNSSOrbitalElements<?> oe = propagator.getOrbitalElements();
 
-        // bootstrap model, with canonical derivatives with respect to orbital parameters only
-        final int bootstrapParameters = 6;
-        final FieldGnssOrbitalElements<Gradient, ?> bootstrapElements = oe.toField(GradientField.getField(bootstrapParameters));
-        bootstrapElements.setSma(Gradient.variable(bootstrapParameters,    0, oe.getSma()));
-        bootstrapElements.setE(Gradient.variable(bootstrapParameters,      1, oe.getE()));
-        bootstrapElements.setI0(Gradient.variable(bootstrapParameters,     2, oe.getI0()));
-        bootstrapElements.setPa(Gradient.variable(bootstrapParameters,     3, oe.getPa()));
-        bootstrapElements.setOmega0(Gradient.variable(bootstrapParameters, 4, oe.getOmega0()));
-        bootstrapElements.setM0(Gradient.variable(bootstrapParameters,     5, oe.getM0()));
-        final Gradient bootstrapMass = Gradient.constant(bootstrapParameters,
-                                                         propagator.getMass(propagator.getInitialState().getDate()));
-        final FieldGnssPropagator<Gradient> bootstrapPropagator =
-            new FieldGnssPropagator<>(bootstrapElements, propagator.getECI(), propagator.getECEF(),
-                                      propagator.getAttitudeProvider(), bootstrapMass);
-        final FieldSpacecraftState<Gradient> bootstrapState =
-            bootstrapPropagator.propagate(bootstrapPropagator.getInitialState().getDate());
-
-        // compute conversion matrix for derivatives to get identity initial Cartesian state Jacobian
-        final RealMatrix                              stateJacobian  = MatrixUtils.createRealMatrix(6, 6);
-        final TimeStampedFieldPVCoordinates<Gradient> bootstrapWrtPV = bootstrapState.getPVCoordinates();
-        final FieldVector3D<Gradient>                 bootstrapWrtP  = bootstrapWrtPV.getPosition();
-        final FieldVector3D<Gradient>                 bootstrapWrtV  = bootstrapWrtPV.getVelocity();
-        stateJacobian.setRow(0, bootstrapWrtP.getX().getGradient());
-        stateJacobian.setRow(1, bootstrapWrtP.getY().getGradient());
-        stateJacobian.setRow(2, bootstrapWrtP.getZ().getGradient());
-        stateJacobian.setRow(3, bootstrapWrtV.getX().getGradient());
-        stateJacobian.setRow(4, bootstrapWrtV.getY().getGradient());
-        stateJacobian.setRow(5, bootstrapWrtV.getZ().getGradient());
-        RealMatrix stateJacobianInverse = new QRDecomposer(1.0e-10).decompose(stateJacobian).getInverse();
-
+        // count free parameters
         final List<ParameterDriver> drivers  = propagator.getOrbitalElements().getParametersDrivers();
-        int totalParameters = bootstrapParameters;
+        int freeParameters = FREE_STATE_PARAMETERS;
         for (final ParameterDriver driver : drivers) {
             if (driver.isSelected()) {
-                ++totalParameters;
+                ++freeParameters;
             }
         }
 
-        // regular parameters, with converted derivatives
-        final Gradient convertedSma    = extend(new Gradient(oe.getSma(),    stateJacobianInverse.getRow(0)), totalParameters);
-        final Gradient convertedE      = extend(new Gradient(oe.getE(),      stateJacobianInverse.getRow(1)), totalParameters);
-        final Gradient convertedI0     = extend(new Gradient(oe.getI0(),     stateJacobianInverse.getRow(2)), totalParameters);
-        final Gradient convertedPa     = extend(new Gradient(oe.getPa(),     stateJacobianInverse.getRow(3)), totalParameters);
-        final Gradient convertedOmega0 = extend(new Gradient(oe.getOmega0(), stateJacobianInverse.getRow(4)), totalParameters);
-        final Gradient convertedM0     = extend(new Gradient(oe.getM0(),     stateJacobianInverse.getRow(5)), totalParameters);
+        // prepare initial state with partial derivatives
+        final FieldSpacecraftState<Gradient> gState =
+            buildBasicGradientSpacecraftState(propagator.getInitialState(),
+                                              freeParameters, propagator.getAttitudeProvider());
 
-        final Gradient[] convertedNonKeplerianParameters = new Gradient[GNSSOrbitalElements.SIZE];
-        int index = bootstrapParameters;
-        for (int i = 0; i < convertedNonKeplerianParameters.length; ++i) {
-            final ParameterDriver driver = drivers.get(i);
-            convertedNonKeplerianParameters[i] = driver.isSelected() ?
-                                                 Gradient.variable(totalParameters, index++, driver.getValue()) :
-                                                 Gradient.constant(totalParameters, driver.getValue());
-        }
+        // prepare orbital elements without partial derivatives
+        // (they are added later on, using the "parameters" argument to the field propagateOrbit method)
+        final FieldGnssOrbitalElements<Gradient, ?> goe = oe.toField(GradientField.getField(freeParameters));
 
-        final FieldGnssOrbitalElements<Gradient, ?> convertedElements = oe.toField(GradientField.getField(totalParameters));
-        convertedElements.setSma(Gradient.variable(totalParameters,    0, oe.getSma()));
-        convertedElements.setE(Gradient.variable(totalParameters,      1, oe.getE()));
-        convertedElements.setI0(Gradient.variable(totalParameters,     2, oe.getI0()));
-        convertedElements.setPa(Gradient.variable(totalParameters,     3, oe.getPa()));
-        convertedElements.setOmega0(Gradient.variable(totalParameters, 4, oe.getOmega0()));
-        convertedElements.setM0(Gradient.variable(totalParameters,     5, oe.getM0()));
-        final Gradient convertedMass =
-            Gradient.constant(totalParameters, propagator.getMass(propagator.getInitialState().getDate()));
-
-        // build a propagator with derivatives set up with respect to model Keplerian orbital parameters
-        // that still has identity state Jacobian with respect to initial position-velocity
-        final FieldGnssPropagator<Gradient> gPropagator = new FieldGnssPropagator<>(convertedElements,
-                                                                                    propagator.getECI(),
-                                                                                    propagator.getECEF(),
-                                                                                    propagator.getAttitudeProvider(),
-                                                                                    convertedMass);
-
-        // set selection status as in the original propagator
-        final List<ParameterDriver> gDrivers = gPropagator.getParametersDrivers();
-        for (int i = 0; i < gDrivers.size(); ++i) {
-           gDrivers.get(i).setSelected(drivers.get(i).isSelected());
-        }
-
-        return gPropagator;
+        // build propagator
+        return new FieldGnssPropagator<>(gState, goe,
+                                         propagator.getECEF(), propagator.getAttitudeProvider(),
+                                         gState.getMass());
 
     }
 

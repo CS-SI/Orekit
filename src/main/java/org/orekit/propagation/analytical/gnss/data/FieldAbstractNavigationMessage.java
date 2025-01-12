@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,7 +18,10 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+import org.hipparchus.util.FastMath;
 import org.orekit.time.FieldAbsoluteDate;
+
+import java.util.function.Function;
 
 /**
  * Base class for GNSS navigation messages.
@@ -37,9 +40,6 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
                                                      O extends AbstractNavigationMessage<O>>
     extends FieldAbstractAlmanac<T, O> {
 
-    /** Square root of a. */
-    private T sqrtA;
-
     /** Mean Motion Difference from Computed Value. */
     private T deltaN;
 
@@ -55,10 +55,22 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      */
     protected FieldAbstractNavigationMessage(final Field<T> field, final O original) {
         super(field, original);
-        setSqrtA(field.getZero().newInstance(original.getSqrtA()));
         setDeltaN(field.getZero().newInstance(original.getDeltaN()));
         setEpochToc(new FieldAbsoluteDate<>(field, original.getEpochToc()));
         setTransmissionTime(field.getZero().newInstance(original.getTransmissionTime()));
+    }
+
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    protected <V extends CalculusFieldElement<V>> FieldAbstractNavigationMessage(final Function<V, T> converter,
+                                                                                 final FieldAbstractNavigationMessage<V, O> original) {
+        super(converter, original);
+        setDeltaN(converter.apply(original.getDeltaN()));
+        setEpochToc(new FieldAbsoluteDate<>(getMu().getField(), original.getEpochToc().toAbsoluteDate()));
+        setTransmissionTime(converter.apply(original.getTransmissionTime()));
     }
 
     /**
@@ -66,7 +78,7 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      * @return Square Root of Semi-Major Axis (√m)
      */
     public T getSqrtA() {
-        return sqrtA;
+        return FastMath.sqrt(getSma());
     }
 
     /**
@@ -77,7 +89,6 @@ public abstract class FieldAbstractNavigationMessage<T extends CalculusFieldElem
      * @param sqrtA the Square Root of Semi-Major Axis (√m)
      */
     public void setSqrtA(final T sqrtA) {
-        this.sqrtA = sqrtA;
         setSma(sqrtA.square());
     }
 

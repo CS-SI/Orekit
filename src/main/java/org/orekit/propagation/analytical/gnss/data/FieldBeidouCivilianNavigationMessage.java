@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.gnss.data;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.orekit.gnss.RadioWave;
+
+import java.util.function.Function;
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
@@ -113,10 +115,47 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
         setSatelliteType(original.getSatelliteType());
     }
 
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    public <V extends CalculusFieldElement<V>> FieldBeidouCivilianNavigationMessage(final Function<V, T> converter,
+                                                                                    final FieldBeidouCivilianNavigationMessage<V> original) {
+        super(converter, original);
+        this.radioWave = original.getRadioWave();
+        setADot(converter.apply(original.getADot()));
+        setDeltaN0Dot(converter.apply(original.getDeltaN0Dot()));
+        setIODE(original.getIODE());
+        setIODC(original.getIODC());
+        setIscB1CD(converter.apply(original.getIscB1CD()));
+        setIscB1CP(converter.apply(original.getIscB1CP()));
+        setIscB2AD(converter.apply(original.getIscB2AD()));
+        setSisaiOe(original.getSisaiOe());
+        setSisaiOcb(original.getSisaiOcb());
+        setSisaiOc1(original.getSisaiOc1());
+        setSisaiOc2(original.getSisaiOc2());
+        setSismai(original.getSismai());
+        setHealth(original.getHealth());
+        setIntegrityFlags(original.getIntegrityFlags());
+        setTgdB1Cp(converter.apply(original.getTgdB1Cp()));
+        setTgdB2ap(converter.apply(original.getTgdB2ap()));
+        setTgdB2bI(converter.apply(original.getTgdB2bI()));
+        setSatelliteType(original.getSatelliteType());
+    }
+
     /** {@inheritDoc} */
     @Override
     public BeidouCivilianNavigationMessage toNonField() {
         return new BeidouCivilianNavigationMessage(this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage>>
+       G changeField(final Function<T, U> converter) {
+        return (G) new FieldBeidouCivilianNavigationMessage<>(converter, this);
     }
 
     /**

@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.util.FastMath;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
@@ -34,9 +35,6 @@ import org.orekit.time.TimeScales;
  * @see IRNSSNavigationMessage
  */
 public abstract class AbstractNavigationMessage<O extends AbstractNavigationMessage<O>> extends AbstractAlmanac<O> {
-
-    /** Square root of a. */
-    private double sqrtA;
 
     /** Mean Motion Difference from Computed Value. */
     private double deltaN;
@@ -72,7 +70,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
     protected <T extends CalculusFieldElement<T>,
                A extends AbstractNavigationMessage<A>> AbstractNavigationMessage(final FieldAbstractNavigationMessage<T, A> original) {
         super(original);
-        setSqrtA(original.getSqrtA().getReal());
         setDeltaN(original.getDeltaN().getReal());
         setEpochToc(original.getEpochToc().toAbsoluteDate());
         setTransmissionTime(original.getTransmissionTime().getReal());
@@ -83,7 +80,7 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * @return Square Root of Semi-Major Axis (√m)
      */
     public double getSqrtA() {
-        return sqrtA;
+        return FastMath.sqrt(getSma());
     }
 
     /**
@@ -94,7 +91,6 @@ public abstract class AbstractNavigationMessage<O extends AbstractNavigationMess
      * @param sqrtA the Square Root of Semi-Major Axis (√m)
      */
     public void setSqrtA(final double sqrtA) {
-        this.sqrtA = sqrtA;
         getSmaDriver().setValue(sqrtA * sqrtA);
     }
 

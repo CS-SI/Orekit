@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,10 +28,10 @@ import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
 import org.orekit.utils.IERSConventions;
 
 /**
- * This nested class aims at building a {@link FieldGnssPropagator}.
+ * This nested class aims at building a GNSSPropagator.
  * <p>It implements the classical builder pattern.</p>
  * @param <T> type of the field elements
- * @author Luc Maisonobe
+ * @author Pascal Parraud
  * @since 13.0
  */
 public class FieldGnssPropagatorBuilder<T extends CalculusFieldElement<T>> {

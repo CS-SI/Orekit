@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+
+import java.util.function.Function;
 
 /** Container for common GNSS data contained in almanac and navigation messages.
  * @param <T> type of the field elements
@@ -56,6 +58,21 @@ public abstract class FieldCommonGnssData<T extends CalculusFieldElement<T>,
         setAf2(field.getZero().newInstance(original.getAf2()));
         setTGD(field.getZero().newInstance(original.getTGD()));
         setToc(field.getZero().newInstance(original.getToc()));
+    }
+
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    protected <V extends CalculusFieldElement<V>> FieldCommonGnssData(final Function<V, T> converter,
+                                                                      final FieldCommonGnssData<V, O> original) {
+        super(converter, original);
+        setAf0(converter.apply(original.getAf0()));
+        setAf1(converter.apply(original.getAf1()));
+        setAf2(converter.apply(original.getAf2()));
+        setTGD(converter.apply(original.getTGD()));
+        setToc(converter.apply(original.getToc()));
     }
 
     /** {@inheritDoc} */

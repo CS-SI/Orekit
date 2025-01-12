@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -170,13 +170,13 @@ public abstract class GNSSOrbitalElementsDriversProvider
 
         this.timeDriver = createDriver(TIME);
         this.iDotDriver = createDriver(INCLINATION_RATE);
-        this.domDriver = createDriver(LONGITUDE_RATE);
-        this.cucDriver = createDriver(LATITUDE_COSINE);
-        this.cusDriver = createDriver(LATITUDE_SINE);
-        this.crcDriver = createDriver(RADIUS_COSINE);
-        this.crsDriver = createDriver(RADIUS_SINE);
-        this.cicDriver = createDriver(INCLINATION_COSINE);
-        this.cisDriver = createDriver(INCLINATION_SINE);
+        this.domDriver  = createDriver(LONGITUDE_RATE);
+        this.cucDriver  = createDriver(LATITUDE_COSINE);
+        this.cusDriver  = createDriver(LATITUDE_SINE);
+        this.crcDriver  = createDriver(RADIUS_COSINE);
+        this.crsDriver  = createDriver(RADIUS_SINE);
+        this.cicDriver  = createDriver(INCLINATION_COSINE);
+        this.cisDriver  = createDriver(INCLINATION_SINE);
 
         // automatically update date when time driver is updated
         timeDriver.addObserver(new ParameterObserver() {
@@ -196,6 +196,21 @@ public abstract class GNSSOrbitalElementsDriversProvider
             }
         });
 
+    }
+
+    /** Copy drivers selection settings from another instance.
+     * @param original original instance providing selection settings
+     */
+    protected void copySelectionSettings(final GNSSOrbitalElementsDriversProvider original) {
+        timeDriver.setSelected(original.timeDriver.isSelected());
+        iDotDriver.setSelected(original.iDotDriver.isSelected());
+        domDriver.setSelected(original.domDriver.isSelected());
+        cucDriver.setSelected(original.cucDriver.isSelected());
+        cusDriver.setSelected(original.cusDriver.isSelected());
+        crcDriver.setSelected(original.crcDriver.isSelected());
+        crsDriver.setSelected(original.crsDriver.isSelected());
+        cicDriver.setSelected(original.cicDriver.isSelected());
+        cisDriver.setSelected(original.cisDriver.isSelected());
     }
 
     /** Set GNSS date.

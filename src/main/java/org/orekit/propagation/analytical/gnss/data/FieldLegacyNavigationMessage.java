@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+
+import java.util.function.Function;
 
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
@@ -50,11 +52,26 @@ public abstract class FieldLegacyNavigationMessage<T extends CalculusFieldElemen
      * @param field    field to which elements belong
      * @param original regular non-field instance
      */
-    public FieldLegacyNavigationMessage(final Field<T> field, final O original) {
+    protected FieldLegacyNavigationMessage(final Field<T> field, final O original) {
         super(field, original);
+        setIODE(field.getZero().newInstance(original.getIODE()));
+        setIODC(original.getIODC());
+        setSvAccuracy(field.getZero().newInstance(original.getSvAccuracy()));
+        setSvHealth(original.getSvHealth());
+        setFitInterval(original.getFitInterval());
+    }
+
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    protected <V extends CalculusFieldElement<V>> FieldLegacyNavigationMessage(final Function<V, T> converter,
+                                                                               final FieldLegacyNavigationMessage<V, O> original) {
+        super(converter, original);
         setIODE(getMu().newInstance(original.getIODE()));
         setIODC(original.getIODC());
-        setSvAccuracy(getMu().newInstance(original.getSvAccuracy()));
+        setSvAccuracy(converter.apply(original.getSvAccuracy()));
         setSvHealth(original.getSvHealth());
         setFitInterval(original.getFitInterval());
     }

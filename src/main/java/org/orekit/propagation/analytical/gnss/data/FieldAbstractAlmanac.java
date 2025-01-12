@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,8 @@ import org.orekit.frames.Frames;
 import org.orekit.propagation.analytical.gnss.FieldGnssPropagator;
 import org.orekit.propagation.analytical.gnss.FieldGnssPropagatorBuilder;
 
+import java.util.function.Function;
+
 /**
  * Base class for GNSS almanacs.
  * @param <T> type of the field elements
@@ -43,6 +45,16 @@ public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>,
      */
     protected FieldAbstractAlmanac(final Field<T> field, final O original) {
         super(field, original);
+    }
+
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    protected <V extends CalculusFieldElement<V>> FieldAbstractAlmanac(final Function<V, T> converter,
+                                                                       final FieldAbstractAlmanac<V, O> original) {
+        super(converter, original);
     }
 
     /**
@@ -63,7 +75,6 @@ public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>,
      * @return the propagator corresponding to the navigation message
      * @see #getPropagator(Frames)
      * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, CalculusFieldElement)
-     * @since 12.0
      */
     @DefaultDataContext
     public FieldGnssPropagator<T> getPropagator() {
@@ -87,7 +98,6 @@ public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>,
      * @return the propagator corresponding to the navigation message
      * @see #getPropagator()
      * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, CalculusFieldElement)
-     * @since 13.0
      */
     public FieldGnssPropagator<T> getPropagator(final Frames frames) {
         return new FieldGnssPropagatorBuilder<>(this, frames).build();
@@ -103,7 +113,6 @@ public abstract class FieldAbstractAlmanac<T extends CalculusFieldElement<T>,
      * @return the propagator corresponding to the navigation message
      * @see #getPropagator()
      * @see #getPropagator(Frames)
-     * @since 13.0
      */
     public FieldGnssPropagator<T> getPropagator(final Frames frames, final AttitudeProvider provider,
                                                 final Frame inertial, final Frame bodyFixed, final T mass) {

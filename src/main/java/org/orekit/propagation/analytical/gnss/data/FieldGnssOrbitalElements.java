@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -24,6 +24,8 @@ import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
+
+import java.util.function.Function;
 
 /** This class provides the minimal set of orbital elements needed by the {@link
  * org.orekit.propagation.analytical.gnss.FieldGnssPropagator}.
@@ -75,15 +77,15 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         super(angularVelocity, weeksInCycle, timeScales, system);
 
         // immutable field
-        this.mu              = mu;
+        this.mu   = mu;
 
         // Keplerian orbital elements
-        this.sma             = mu.newInstance(Double.NaN);
-        this.ecc             = mu.newInstance(Double.NaN);
-        this.i0              = mu.newInstance(Double.NaN);
-        this.aop             = mu.newInstance(Double.NaN);
-        this.om0             = mu.newInstance(Double.NaN);
-        this.anom            = mu.newInstance(Double.NaN);
+        this.sma  = mu.newInstance(Double.NaN);
+        this.ecc  = mu.newInstance(Double.NaN);
+        this.i0   = mu.newInstance(Double.NaN);
+        this.aop  = mu.newInstance(Double.NaN);
+        this.om0  = mu.newInstance(Double.NaN);
+        this.anom = mu.newInstance(Double.NaN);
 
     }
 
@@ -97,6 +99,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
               original.getTimeScales(), original.getSystem());
         mu = field.getZero().newInstance(original.getMu());
 
+        // non-Keplerian parameters
         setPRN(original.getPRN());
         setWeek(original.getWeek());
         setTime(original.getTime());
@@ -109,6 +112,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         setCic(original.getCic());
         setCis(original.getCis());
 
+        // Keplerian orbital elements
         setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
         setSma(field.getZero().newInstance(original.getSma()));
         setE(field.getZero().newInstance(original.getE()));
@@ -117,12 +121,64 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
         setOmega0(field.getZero().newInstance(original.getOmega0()));
         setM0(field.getZero().newInstance(original.getM0()));
 
+        // copy selection settings
+        copySelectionSettings(original);
+
+    }
+
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    protected <V extends CalculusFieldElement<V>> FieldGnssOrbitalElements(final Function<V, T> converter,
+                                                                           final FieldGnssOrbitalElements<V, O> original) {
+        super(original.getAngularVelocity(), original.getWeeksInCycle(),
+              original.getTimeScales(), original.getSystem());
+        mu = converter.apply(original.getMu());
+
+        // non-Keplerian parameters
+        setPRN(original.getPRN());
+        setWeek(original.getWeek());
+        setTime(original.getTime());
+        setIDot(original.getIDot());
+        setOmegaDot(original.getOmegaDot());
+        setCuc(original.getCuc());
+        setCus(original.getCus());
+        setCrc(original.getCrc());
+        setCrs(original.getCrs());
+        setCic(original.getCic());
+        setCis(original.getCis());
+
+        // Keplerian orbital elements
+        setGnssDate(new GNSSDate(original.getWeek(), original.getTime(), original.getSystem(), original.getTimeScales()));
+        setSma(converter.apply(original.getSma()));
+        setE(converter.apply(original.getE()));
+        setI0(converter.apply(original.getI0()));
+        setPa(converter.apply(original.getPa()));
+        setOmega0(converter.apply(original.getOmega0()));
+        setM0(converter.apply(original.getM0()));
+
+        // copy selection settings
+        copySelectionSettings(original);
+
     }
 
     /** Create a non-field version of the instance.
      * @return non-field version of the instance
      */
     public abstract O toNonField();
+
+    /**
+     * Create another field version of the instance.
+     *
+     * @param <U>       type of the new field elements
+     * @param <G>       type of the orbital elements (field version)
+     * @param converter for field elements
+     * @return field version of the instance
+     */
+    public abstract <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, O>>
+       G changeField(Function<T, U> converter);
 
     /** {@inheritDoc} */
     protected void setGnssDate(final GNSSDate gnssDate) {

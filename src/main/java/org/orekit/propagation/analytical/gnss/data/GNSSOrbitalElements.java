@@ -125,6 +125,7 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         this(original.getMu().getReal(), original.getAngularVelocity(), original.getWeeksInCycle(),
              original.getTimeScales(), original.getSystem());
 
+        // non-Keperian parameters
         setPRN(original.getPRN());
         setWeek(original.getWeek());
         setTime(original.getTime());
@@ -137,12 +138,16 @@ public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
         setCic(original.getCic());
         setCis(original.getCis());
 
+        // Keplerian orbital elements
         setSma(original.getSma().getReal());
         setE(original.getE().getReal());
         setI0(original.getI0().getReal());
         setPa(original.getPa().getReal());
         setOmega0(original.getOmega0().getReal());
         setM0(original.getM0().getReal());
+
+        // copy selection settings
+        copySelectionSettings(original);
 
     }
 

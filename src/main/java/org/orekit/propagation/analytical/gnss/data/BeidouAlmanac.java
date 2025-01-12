@@ -65,11 +65,11 @@ public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
     }
 
     /**
-     * Sets the Square Root of Semi-Major Axis (m^1/2).
+     * Sets the Square Root of Semi-Major Axis (√m).
      * <p>
      * In addition, this method set the value of the Semi-Major Axis.
      * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
+     * @param sqrtA the Square Root of Semi-Major Axis (√m)
      */
     public void setSqrtA(final double sqrtA) {
         setSma(sqrtA * sqrtA);

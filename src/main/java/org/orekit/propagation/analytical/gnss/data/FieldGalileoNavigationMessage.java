@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,8 @@ package org.orekit.propagation.analytical.gnss.data;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 
+import java.util.function.Function;
+
 /**
  * Container for data contained in a Galileo navigation message.
  * @param <T> type of the field elements
@@ -31,9 +33,7 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     /** Issue of Data of the navigation batch. */
     private int iodNav;
 
-    /** Data source.
-     * @since 12.0
-     */
+    /** Data source. */
     private int dataSource;
 
     /** E1/E5a broadcast group delay (s). */
@@ -62,10 +62,34 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
         setSvHealth(field.getZero().newInstance(original.getSvHealth()));
     }
 
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    public <V extends CalculusFieldElement<V>> FieldGalileoNavigationMessage(final Function<V, T> converter,
+                                                                             final FieldGalileoNavigationMessage<V> original) {
+        super(converter, original);
+        setIODNav(original.getIODNav());
+        setDataSource(original.getDataSource());
+        setBGDE1E5a(converter.apply(original.getBGDE1E5a()));
+        setBGDE5bE1(converter.apply(original.getBGDE5bE1()));
+        setSisa(converter.apply(original.getSisa()));
+        setSvHealth(converter.apply(original.getSvHealth()));
+    }
+
     /** {@inheritDoc} */
     @Override
     public GalileoNavigationMessage toNonField() {
         return new GalileoNavigationMessage(this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GalileoNavigationMessage>>
+       G changeField(final Function<T, U> converter) {
+        return (G) new FieldGalileoNavigationMessage<>(converter, this);
     }
 
     /**

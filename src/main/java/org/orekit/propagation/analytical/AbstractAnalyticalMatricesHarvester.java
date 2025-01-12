@@ -273,7 +273,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     /** {@inheritDoc} */
     @Override
     public OrbitType getOrbitType() {
-        // Set to CARTESIAN because analytical gradient converter uses cartesian representation
+        // Set to CARTESIAN because analytical gradient converters uses Cartesian representation
         return OrbitType.CARTESIAN;
     }
 

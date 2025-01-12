@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+
+import java.util.function.Function;
 
 /**
  * Container for data contained in a GPS/QZNSS civilian navigation message.
@@ -93,6 +95,31 @@ public abstract class FieldCivilianNavigationMessage<T extends CalculusFieldElem
         setIscL2C(field.getZero().newInstance(original.getIscL2C()));
         setIscL5I5(field.getZero().newInstance(original.getIscL5I5()));
         setIscL5Q5(field.getZero().newInstance(original.getIscL5Q5()));
+        setUraiEd(original.getUraiEd());
+        setUraiNed0(original.getUraiNed0());
+        setUraiNed1(original.getUraiNed1());
+        setUraiNed2(original.getUraiNed2());
+    }
+
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    protected <V extends CalculusFieldElement<V>> FieldCivilianNavigationMessage(final Function<V, T> converter,
+                                                                                 final FieldCivilianNavigationMessage<V, O> original) {
+        super(converter, original);
+        this.cnv2 = original.isCnv2();
+        setADot(converter.apply(original.getADot()));
+        setDeltaN0Dot(converter.apply(original.getDeltaN0Dot()));
+        setSvAccuracy(converter.apply(original.getSvAccuracy()));
+        setSvHealth(original.getSvHealth());
+        setIscL1CA(converter.apply(original.getIscL1CA()));
+        setIscL1CD(converter.apply(original.getIscL1CD()));
+        setIscL1CP(converter.apply(original.getIscL1CP()));
+        setIscL2C(converter.apply(original.getIscL2C()));
+        setIscL5I5(converter.apply(original.getIscL5I5()));
+        setIscL5Q5(converter.apply(original.getIscL5Q5()));
         setUraiEd(original.getUraiEd());
         setUraiNed0(original.getUraiNed0());
         setUraiNed1(original.getUraiNed1());

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -18,6 +18,8 @@ package org.orekit.propagation.analytical.gnss.data;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
+
+import java.util.function.Function;
 
 /**
  * This class holds a GPS almanac as read from SEM or YUMA files.
@@ -62,10 +64,33 @@ public class FieldGPSAlmanac<T extends CalculusFieldElement<T>>
         setSatConfiguration(original.getSatConfiguration());
     }
 
+    /** Constructor from different field instance.
+     * @param <V> type of the old field elements
+     * @param original regular non-field instance
+     * @param converter for field elements
+     */
+    public <V extends CalculusFieldElement<V>> FieldGPSAlmanac(final Function<V, T> converter,
+                                                               final FieldGPSAlmanac<V> original) {
+        super(converter, original);
+        setSource(original.getSource());
+        setSVN(original.getSVN());
+        setHealth(original.getHealth());
+        setURA(original.getURA());
+        setSatConfiguration(original.getSatConfiguration());
+    }
+
     /** {@inheritDoc} */
     @Override
     public GPSAlmanac toNonField() {
         return new GPSAlmanac(this);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GPSAlmanac>>
+       G changeField(final Function<T, U> converter) {
+        return (G) new FieldGPSAlmanac<>(converter, this);
     }
 
     /**

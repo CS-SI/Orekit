@@ -128,7 +128,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
      * <p>
      * The Keplerian elements already present in the {@code nonKeplerianElements} argument
      * will be ignored as it is the {@code initialState} argument that will be used to
-     * build the complete {@link #getOrbitalElements() orbital elements} of the propagator
+     * build the complete orbital elements of the propagator
      * </p>
      * @param initialState         initial state
      * @param nonKeplerianElements non-Keplerian orbital elements (the Keplerian orbital elements will be ignored)
