@@ -98,6 +98,7 @@ public class GNSSPropagatorBuilder {
      * </p>
      *
      * @see #attitudeProvider(AttitudeProvider provider)
+     * @param orbitalElements orbital elements
      * @param frames set of frames to use.
      * @see #attitudeProvider(AttitudeProvider provider)
      * @see #mass(double mass)

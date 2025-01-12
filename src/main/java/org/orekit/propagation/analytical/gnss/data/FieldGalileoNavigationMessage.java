@@ -88,7 +88,7 @@ public class FieldGalileoNavigationMessage<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, GalileoNavigationMessage>>
-       G changeField(final Function<T, U> converter) {
+        G changeField(final Function<T, U> converter) {
         return (G) new FieldGalileoNavigationMessage<>(converter, this);
     }
 

@@ -79,7 +79,7 @@ public class GalileoAlmanac extends AbstractAlmanac<GalileoAlmanac> {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoAlmanac>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldGalileoAlmanac<>(field, this);
     }
 

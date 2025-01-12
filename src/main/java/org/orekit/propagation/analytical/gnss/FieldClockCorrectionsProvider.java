@@ -58,6 +58,7 @@ public class FieldClockCorrectionsProvider<T extends CalculusFieldElement<T>>
 
     /** Simple constructor.
      * @param gnssClk GNSS clock elements
+     * @param cycleDuration duration of the GNSS cycle in seconds
      */
     public FieldClockCorrectionsProvider(final FieldGNSSClockElements<T> gnssClk,
                                          final double cycleDuration) {

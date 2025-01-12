@@ -53,7 +53,7 @@ public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZS
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSCivilianNavigationMessage>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldQZSSCivilianNavigationMessage<>(field, this);
     }
 

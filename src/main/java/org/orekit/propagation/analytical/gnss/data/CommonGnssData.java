@@ -140,10 +140,10 @@ public abstract class CommonGnssData<O extends CommonGnssData<O>>
 
     /**
      * Set the estimated group delay differential TGD for L1-L2 correction.
-     * @param tgd the estimated group delay differential TGD for L1-L2 correction (s)
+     * @param groupDelayDifferential the estimated group delay differential TGD for L1-L2 correction (s)
      */
-    public void setTGD(final double tgd) {
-        this.tgd = tgd;
+    public void setTGD(final double groupDelayDifferential) {
+        this.tgd = groupDelayDifferential;
     }
 
     /** {@inheritDoc} */

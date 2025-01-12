@@ -327,11 +327,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
         final Frame frozenEcef = ecef.getFrozenFrame(initialState.getFrame(),
                                                      initialState.getDate().toAbsoluteDate(),
                                                      "frozen");
-        FieldKeplerianOrbit<T> orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
+        final FieldKeplerianOrbit<T> orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
 
         // refine orbit using simple differential correction to reach target PV
         final FieldPVCoordinates<T> targetPV = initialState.getPVCoordinates();
-        FieldGnssOrbitalElements<FieldGradient<T>, ?> gElements = convert(nonKeplerianElements, orbit);
+        final FieldGnssOrbitalElements<FieldGradient<T>, ?> gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit

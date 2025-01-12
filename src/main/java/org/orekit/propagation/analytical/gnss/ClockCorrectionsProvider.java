@@ -64,6 +64,7 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
 
     /** Simple constructor.
      * @param gnssClk GNSS clock elements
+     * @param cycleDuration duration of the GNSS cycle in seconds
      */
     public ClockCorrectionsProvider(final GNSSClockElements gnssClk,
                                     final double cycleDuration) {

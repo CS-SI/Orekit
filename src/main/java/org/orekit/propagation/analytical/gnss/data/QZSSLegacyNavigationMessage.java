@@ -51,7 +51,7 @@ public class QZSSLegacyNavigationMessage extends LegacyNavigationMessage<QZSSLeg
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSLegacyNavigationMessage>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldQZSSLegacyNavigationMessage<>(field, this);
     }
 

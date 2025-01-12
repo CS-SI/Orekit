@@ -56,7 +56,7 @@ public class IRNSSAlmanac extends AbstractAlmanac<IRNSSAlmanac> {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, IRNSSAlmanac>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldIRNSSAlmanac<>(field, this);
     }
 

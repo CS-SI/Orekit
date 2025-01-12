@@ -63,7 +63,7 @@ public class IRNSSNavigationMessage extends AbstractNavigationMessage<IRNSSNavig
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, IRNSSNavigationMessage>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldIRNSSNavigationMessage<>(field, this);
     }
 

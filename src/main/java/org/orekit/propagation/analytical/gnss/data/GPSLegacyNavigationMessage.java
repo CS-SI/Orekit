@@ -51,7 +51,7 @@ public class GPSLegacyNavigationMessage extends LegacyNavigationMessage<GPSLegac
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSLegacyNavigationMessage>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldGPSLegacyNavigationMessage<>(field, this);
     }
 

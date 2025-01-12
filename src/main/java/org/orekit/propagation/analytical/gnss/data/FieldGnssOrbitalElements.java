@@ -178,7 +178,7 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
      * @return field version of the instance
      */
     public abstract <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, O>>
-       G changeField(Function<T, U> converter);
+        G changeField(Function<T, U> converter);
 
     /** {@inheritDoc} */
     protected void setGnssDate(final GNSSDate gnssDate) {
@@ -258,10 +258,10 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     }
 
     /** Set longitude of ascending node of orbit plane at weekly epoch.
-     * @param om0 longitude of ascending node of orbit plane at weekly epoch (rad)
+     * @param omega0 longitude of ascending node of orbit plane at weekly epoch (rad)
      */
-    public void setOmega0(final T om0) {
-        this.om0 = om0;
+    public void setOmega0(final T omega0) {
+        this.om0 = omega0;
     }
 
     /** Get argument of perigee.
@@ -272,10 +272,10 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     }
 
     /** Set argument of perigee.
-     * @param aop argument of perigee (rad)
+     * @param pa argument of perigee (rad)
      */
-    public void setPa(final T aop) {
-        this.aop = aop;
+    public void setPa(final T pa) {
+        this.aop = pa;
     }
 
     /** Get mean anomaly at reference time.
@@ -286,10 +286,10 @@ public abstract class FieldGnssOrbitalElements<T extends CalculusFieldElement<T>
     }
 
     /** Set mean anomaly at reference time.
-     * @param anom mean anomaly at reference time (rad)
+     * @param m0 mean anomaly at reference time (rad)
      */
-    public void setM0(final T anom) {
-        this.anom = anom;
+    public void setM0(final T m0) {
+        this.anom = m0;
     }
 
 }

@@ -195,7 +195,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
         // Return the configured harvester
         return harvester;
 
-     }
+    }
 
     /** {@inheritDoc}
      * @since 13.0
@@ -348,11 +348,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
         // get approximate initial orbit
         final Frame frozenEcef = ecef.getFrozenFrame(initialState.getFrame(), initialState.getDate(), "frozen");
-        KeplerianOrbit orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
+        final KeplerianOrbit orbit = approximateInitialOrbit(initialState, nonKeplerianElements, frozenEcef);
 
         // refine orbit using simple differential correction to reach target PV
         final PVCoordinates targetPV = initialState.getPVCoordinates();
-        FieldGnssOrbitalElements<Gradient, ?> gElements = convert(nonKeplerianElements, orbit);
+        final FieldGnssOrbitalElements<Gradient, ?> gElements = convert(nonKeplerianElements, orbit);
         for (int i = 0; i < MAX_ITER; ++i) {
 
             // get position-velocity derivatives with respect to initial orbit

@@ -53,7 +53,7 @@ public class GPSCivilianNavigationMessage extends CivilianNavigationMessage<GPSC
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSCivilianNavigationMessage>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldGPSCivilianNavigationMessage<>(field, this);
     }
 

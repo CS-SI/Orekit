@@ -77,7 +77,7 @@ public class GPSAlmanac extends AbstractAlmanac<GPSAlmanac> {
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GPSAlmanac>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldGPSAlmanac<>(field, this);
     }
 

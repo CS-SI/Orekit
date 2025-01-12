@@ -154,7 +154,7 @@ public class FieldBeidouCivilianNavigationMessage<T extends CalculusFieldElement
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, BeidouCivilianNavigationMessage>>
-       G changeField(final Function<T, U> converter) {
+        G changeField(final Function<T, U> converter) {
         return (G) new FieldBeidouCivilianNavigationMessage<>(converter, this);
     }
 

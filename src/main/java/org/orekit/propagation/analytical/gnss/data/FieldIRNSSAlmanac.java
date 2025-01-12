@@ -63,7 +63,7 @@ public class FieldIRNSSAlmanac<T extends CalculusFieldElement<T>>
     @SuppressWarnings("unchecked")
     @Override
     public <U extends CalculusFieldElement<U>, G extends FieldGnssOrbitalElements<U, IRNSSAlmanac>>
-       G changeField(final Function<T, U> converter) {
+        G changeField(final Function<T, U> converter) {
         return (G) new FieldIRNSSAlmanac<>(converter, this);
     }
 

@@ -78,7 +78,7 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<Bei
     @SuppressWarnings("unchecked")
     @Override
     public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouLegacyNavigationMessage>>
-        F toField(Field<T> field) {
+        F toField(final Field<T> field) {
         return (F) new FieldBeidouLegacyNavigationMessage<>(field, this);
     }
 
