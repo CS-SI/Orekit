@@ -17,11 +17,8 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.analysis.differentiation.Gradient;
-import org.hipparchus.analysis.differentiation.GradientField;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
-import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
-import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.utils.ParameterDriver;
 
 import java.util.List;
@@ -43,7 +40,6 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
      */
     GnssGradientConverter(final GNSSPropagator propagator) {
         super(propagator, FREE_STATE_PARAMETERS);
-        // Initialize fields
         this.propagator = propagator;
     }
 
@@ -51,30 +47,14 @@ class GnssGradientConverter extends AbstractAnalyticalGradientConverter {
     @Override
     public FieldGnssPropagator<Gradient> getPropagator() {
 
-        final GNSSOrbitalElements<?> oe = propagator.getOrbitalElements();
+        // prepare initial state with proper derivatives
+        final FieldSpacecraftState<Gradient> state = getState(this);
 
-        // count free parameters
-        final List<ParameterDriver> drivers  = propagator.getOrbitalElements().getParametersDrivers();
-        int freeParameters = FREE_STATE_PARAMETERS;
-        for (final ParameterDriver driver : drivers) {
-            if (driver.isSelected()) {
-                ++freeParameters;
-            }
-        }
-
-        // prepare initial state with partial derivatives
-        final FieldSpacecraftState<Gradient> gState =
-            buildBasicGradientSpacecraftState(propagator.getInitialState(),
-                                              freeParameters, propagator.getAttitudeProvider());
-
-        // prepare orbital elements without partial derivatives
-        // (they are added later on, using the "parameters" argument to the field propagateOrbit method)
-        final FieldGnssOrbitalElements<Gradient, ?> goe = oe.toField(GradientField.getField(freeParameters));
-
-        // build propagator
-        return new FieldGnssPropagator<>(gState, goe,
+        // build propagator handling gradient
+        return new FieldGnssPropagator<>(state,
+                                         propagator.getOrbitalElements().toField(state.getDate().getField()),
                                          propagator.getECEF(), propagator.getAttitudeProvider(),
-                                         gState.getMass());
+                                         state.getMass());
 
     }
 
