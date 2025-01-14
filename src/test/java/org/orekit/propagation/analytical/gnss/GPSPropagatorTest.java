@@ -111,8 +111,8 @@ public class GPSPropagatorTest {
     public void testFieldClockCorrections() {
         final FieldGPSAlmanac<Binary64> gpsAlmanac = almanacs.get(0).toField(Binary64Field.getInstance());
         final FieldGnssPropagator<Binary64> propagator = gpsAlmanac.getPropagator();
-        propagator.addAdditionalStateProvider(new FieldClockCorrectionsProvider(gpsAlmanac,
-                                                                                gpsAlmanac.getCycleDuration()));
+        propagator.addAdditionalStateProvider(new FieldClockCorrectionsProvider<>(gpsAlmanac,
+                                                                                  gpsAlmanac.getCycleDuration()));
         // Propagate at the GPS date and one GPS cycle later
         final FieldAbsoluteDate<Binary64> date0 = gpsAlmanac.getDate();
         double dtRelMin = 0;

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
@@ -2231,7 +2232,10 @@ public class NavigationFileParserTest {
              O extends GNSSOrbitalElements<O>>
     void checkFieldConversion(final O message, final F fieldMessage) {
         try {
-            final O rebuilt = fieldMessage.toNonField();
+            // looping over several types to check conversion functions
+            FieldGnssOrbitalElements<? extends FieldGradient<?>, ?> intermediate = fieldMessage.changeField(t -> FieldGradient.constant(6, t));
+            final O rebuilt = (O) intermediate.toNonField();
+
             for (final Method getter : getGetters(message, Integer.TYPE)) {
                 final Method fieldGetter = fieldMessage.getClass().getMethod(getter.getName());
                 Assertions.assertEquals(getter.invoke(message), fieldGetter.invoke(fieldMessage));
