@@ -16,122 +16,117 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.hipparchus.util.FastMath;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.annotation.DefaultDataContext;
+import org.orekit.attitudes.AttitudeProvider;
+import org.orekit.data.DataContext;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Frames;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.time.TimeScales;
 
 /**
  * Base class for GNSS almanacs.
+ * @param <O> type of the orbital elements
  * @author Pascal Parraud
  * @since 11.0
  */
-public abstract class AbstractAlmanac extends CommonGnssData implements GNSSOrbitalElements {
+public abstract class AbstractAlmanac<O extends AbstractAlmanac<O>> extends CommonGnssData<O> {
 
     /**
      * Constructor.
      * @param mu Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weekNumber number of weeks in the GNSS cycle
+     * @param weeksInCycle number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for example in Rinex nav, weeks
+     *                        are always according to GPS)
      */
-    public AbstractAlmanac(final double mu,
-                           final double angularVelocity,
-                           final int weekNumber) {
-        super(mu, angularVelocity, weekNumber);
+    public AbstractAlmanac(final double mu, final double angularVelocity, final int weeksInCycle,
+                           final TimeScales timeScales, final SatelliteSystem system) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>,
+               A extends AbstractAlmanac<A>> AbstractAlmanac(final FieldAbstractAlmanac<T, A> original) {
+        super(original);
     }
 
     /**
-     * Getter for the mean motion.
-     * @return the mean motion
-     */
-    public double getMeanMotion() {
-        final double absA = FastMath.abs(getSma());
-        return FastMath.sqrt(getMu() / absA) / absA;
-    }
-
-    /**
-     * Getter for the rate of inclination angle.
+     * Get the propagator corresponding to the navigation message.
      * <p>
-     * By default, not contained in a GNSS almanac
+     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
+     * The mass is set by default to the
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+     *  context.<br>
+     * The ECEF frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     *  CIO/2010-based ITRF simple EOP} in the default data context.
+     * </p><p>
+     * This constructor uses the {@link DataContext#getDefault() default data context}
      * </p>
-     * @return the rate of inclination angle in rad/s
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator(Frames)
+     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
+     * @since 12.0
      */
-    public double getIDot() {
-        return 0.0;
+    @DefaultDataContext
+    public GNSSPropagator getPropagator() {
+        return new GNSSPropagatorBuilder(this).build();
     }
 
     /**
-     * Getter for the Cuc parameter.
+     * Get the propagator corresponding to the navigation message.
      * <p>
-     * By default, not contained in a GNSS almanac
+     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
+     * The mass is set by default to the
+     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
+     * The ECI frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
+     *  context.<br>
+     * The ECEF frame is set by default to the
+     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
+     *  CIO/2010-based ITRF simple EOP} in the default data context.
      * </p>
-     * @return the Cuc parameter
+     * @param frames set of frames to use
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator()
+     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
+     * @since 13.0
      */
-    public double getCuc() {
-        return 0.0;
+    public GNSSPropagator getPropagator(final Frames frames) {
+        return new GNSSPropagatorBuilder(this, frames).build();
     }
 
     /**
-     * Getter for the Cus parameter.
-     * <p>
-     * By default, not contained in a GNSS almanac
-     * </p>
-     * @return the Cus parameter
+     * Get the propagator corresponding to the navigation message.
+     * @param frames set of frames to use
+     * @param provider attitude provider
+     * @param inertial inertial frame, use to provide the propagated orbit
+     * @param bodyFixed body fixed frame, corresponding to the navigation message
+     * @param mass spacecraft mass in kg
+     * @return the propagator corresponding to the navigation message
+     * @see #getPropagator()
+     * @see #getPropagator(Frames)
+     * @since 13.0
      */
-    public double getCus() {
-        return 0.0;
-    }
-
-    /**
-     * Getter for the Crc parameter.
-     * <p>
-     * By default, not contained in a GNSS almanac
-     * </p>
-     * @return the Crc parameter
-     */
-    public double getCrc() {
-        return 0.0;
-    }
-
-    /**
-     * Getter for the Crs parameter.
-     * <p>
-     * By default, not contained in a GNSS almanac
-     * </p>
-     * @return the Crs parameter
-     */
-    public double getCrs() {
-        return 0.0;
-    }
-
-    /**
-     * Getter for the Cic parameter.
-     * <p>
-     * By default, not contained in a GNSS almanac
-     * </p>
-     * @return the Cic parameter
-     */
-    public double getCic() {
-        return 0.0;
-    }
-
-    /**
-     * Getter for the Cis parameter.
-     * <p>
-     * By default, not contained in a GNSS almanac
-     * </p>
-     * @return the Cis parameter
-     */
-    public double getCis() {
-        return 0.0;
-    }
-
-    /**
-     * Getter for the Drift Rate Correction Coefficient.
-     * <p>
-     * By default, not contained in a GNSS almanac
-     * </p>
-     * @return the Drift Rate Correction Coefficient (s/s²).
-     */
-    public double getAf2() {
-        return 0.0;
+    public GNSSPropagator getPropagator(final Frames frames, final AttitudeProvider provider,
+                                        final Frame inertial, final Frame bodyFixed, final double mass) {
+        return new GNSSPropagatorBuilder(this, frames).attitudeProvider(provider)
+                                                      .eci(inertial)
+                                                      .ecef(bodyFixed)
+                                                      .mass(mass)
+                                                      .build();
     }
 
 }

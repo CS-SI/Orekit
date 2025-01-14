@@ -23,8 +23,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.data.DataContext;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.metric.messages.ParsedMessage;
 import org.orekit.gnss.metric.messages.common.AccuracyProvider;
 import org.orekit.gnss.metric.messages.common.ClockCorrection;
@@ -84,7 +86,8 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1019Data         rtcm1019Data  = new Rtcm1019Data();
-            final GPSLegacyNavigationMessage gpsNavMessage = new GPSLegacyNavigationMessage();
+            final GPSLegacyNavigationMessage gpsNavMessage =
+                new GPSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.GPS);
 
             // Set the satellite ID
             final int gpsId = RtcmDataField.DF009.intValue(encodedMessage);
@@ -222,7 +225,8 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1042Data            rtcm1042Data  = new Rtcm1042Data();
-            final BeidouLegacyNavigationMessage beidouNavMessage = new BeidouLegacyNavigationMessage();
+            final BeidouLegacyNavigationMessage beidouNavMessage =
+                new BeidouLegacyNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.BEIDOU);
 
             // Set the satellite ID
             final int beidouId = RtcmDataField.DF488.intValue(encodedMessage);
@@ -285,7 +289,8 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1044Data          rtcm1044Data   = new Rtcm1044Data();
-            final QZSSLegacyNavigationMessage qzssNavMessage = new QZSSLegacyNavigationMessage();
+            final QZSSLegacyNavigationMessage qzssNavMessage =
+                new QZSSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
 
             // Set the satellite ID
             final int qzssId = RtcmDataField.DF429.intValue(encodedMessage);
@@ -354,7 +359,8 @@ public enum RtcmMessageType implements MessageType {
 
             // Initialize data container and navigation message
             final Rtcm1045Data             rtcm1045Data      = new Rtcm1045Data();
-            final GalileoNavigationMessage galileoNavMessage = new GalileoNavigationMessage();
+            final GalileoNavigationMessage galileoNavMessage =
+                new GalileoNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.GALILEO);
 
             // Set the satellite ID
             final int galileoId = RtcmDataField.DF252.intValue(encodedMessage);

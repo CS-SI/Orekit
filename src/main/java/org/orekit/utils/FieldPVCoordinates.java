@@ -305,7 +305,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
                                            a3, pv3.getAcceleration(), a4, pv4.getAcceleration());
     }
 
-    /** Builds a FieldPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link FieldDerivativeStructure}&gt;.
+    /** Builds a FieldPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link FieldDerivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.

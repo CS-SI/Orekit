@@ -35,8 +35,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
 import org.orekit.propagation.analytical.gnss.data.GPSAlmanac;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScales;
 
 
@@ -224,7 +222,7 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
         reader.readLine();
 
         // Create an empty GPS almanac and set the source
-        final GPSAlmanac almanac = new GPSAlmanac();
+        final GPSAlmanac almanac = new GPSAlmanac(timeScales, SatelliteSystem.GPS);
         almanac.setSource(SOURCE);
 
         try {
@@ -267,8 +265,6 @@ public class SEMParser extends AbstractSelfFeedingLoader implements DataLoader {
             almanac.setSatConfiguration(Integer.parseInt(token[0].trim()));
 
             // Adds the almanac to the list
-            final AbsoluteDate date = new GNSSDate(week, toa, SatelliteSystem.GPS, timeScales).getDate();
-            almanac.setDate(date);
             almanac.setTime(toa);
             almanac.setWeek(week);
             almanacs.add(almanac);

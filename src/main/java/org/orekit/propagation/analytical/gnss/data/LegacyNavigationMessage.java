@@ -16,12 +16,19 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a GPS/QZNSS legacy navigation message.
+ * @param <O> type of the orbital elements
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class LegacyNavigationMessage extends AbstractNavigationMessage implements GNSSClockElements {
+public abstract class LegacyNavigationMessage<O extends LegacyNavigationMessage<O>>
+    extends AbstractNavigationMessage<O>
+    implements GNSSClockElements {
 
     /** Identifier for message type. */
     public static final String LNAV = "LNAV";
@@ -31,9 +38,6 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
 
     /** Issue of Data, Clock. */
     private int iodc;
-
-    /** Group Delay Differential (s). */
-    private double tgd;
 
     /** The user SV accuracy (m). */
     private double svAccuracy;
@@ -50,12 +54,30 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      * Constructor.
      * @param mu Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weekNumber number of weeks in the GNSS cycle
+     * @param weeksInCycle number of weeks in the GNSS cycle
+     * @param timeScales known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for example in Rinex nav, weeks
+     *                        are always according to GPS)
      */
-    protected LegacyNavigationMessage(final double mu,
-                                      final double angularVelocity,
-                                      final int weekNumber) {
-        super(mu, angularVelocity, weekNumber);
+    protected LegacyNavigationMessage(final double mu, final double angularVelocity, final int weeksInCycle,
+                                      final TimeScales timeScales, final SatelliteSystem system) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
+     */
+    protected <T extends CalculusFieldElement<T>, A extends LegacyNavigationMessage<A>>
+        LegacyNavigationMessage(final FieldLegacyNavigationMessage<T, A> original) {
+        super(original);
+        setIODE(original.getIODE());
+        setIODC(original.getIODC());
+        setSvAccuracy(original.getSvAccuracy().getReal());
+        setSvHealth(original.getSvHealth());
+        setFitInterval(original.getFitInterval());
     }
 
     /**
@@ -89,22 +111,6 @@ public class LegacyNavigationMessage extends AbstractNavigationMessage implement
      */
     public void setIODC(final int value) {
         this.iodc = value;
-    }
-
-    /**
-     * Getter for the Group Delay Differential (s).
-     * @return the Group Delay Differential in seconds
-     */
-    public double getTGD() {
-        return tgd;
-    }
-
-    /**
-     * Setter for the Group Delay Differential (s).
-     * @param time the group delay differential to set
-     */
-    public void setTGD(final double time) {
-        this.tgd = time;
     }
 
     /**

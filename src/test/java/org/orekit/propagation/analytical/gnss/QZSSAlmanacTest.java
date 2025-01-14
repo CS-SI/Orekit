@@ -21,6 +21,7 @@ import org.hipparchus.util.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
+import org.orekit.data.DataContext;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
@@ -28,7 +29,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.YUMAParser;
 import org.orekit.propagation.analytical.gnss.data.QZSSAlmanac;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.time.GNSSDate;
 
 import java.io.BufferedReader;
@@ -36,14 +36,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class QZSSAlmanacTest {
 
     @Test
-    public void testLoadData() throws IOException, ParseException, OrekitException {
+    public void testLoadData() throws OrekitException {
         Utils.setDataRoot("regular-data");
         // the parser for reading Yuma files with a pattern
         QZSSYUMAParser reader = new QZSSYUMAParser(".*\\.yum$");
@@ -75,7 +74,7 @@ public class QZSSAlmanacTest {
         Assertions.assertEquals(0.0, alm.getAf1(), 0.);
         Assertions.assertEquals(0, alm.getHealth());
         Assertions.assertEquals("YUMA", alm.getSource());
-        Assertions.assertTrue(alm.getDate().durationFrom(new GNSSDate(1015, 262144.0, SatelliteSystem.QZSS).getDate()) == 0);
+        Assertions.assertEquals(0, alm.getDate().durationFrom(new GNSSDate(1015, 262144.0, SatelliteSystem.QZSS).getDate()));
         Assertions.assertEquals(0., alm.getCic(), 0.);
         Assertions.assertEquals(0., alm.getCis(), 0.);
         Assertions.assertEquals(0., alm.getCrc(), 0.);
@@ -92,7 +91,7 @@ public class QZSSAlmanacTest {
      * @author Pascal Parraud
      *
      */
-    private class QZSSYUMAParser implements DataLoader {
+    private static class QZSSYUMAParser implements DataLoader {
 
         // Constants
         /** The source of the almanacs. */
@@ -131,29 +130,28 @@ public class QZSSAlmanacTest {
         /** Simple constructor.
         *
         * <p>This constructor does not load any data by itself. Data must be loaded
-        * later on by calling one of the {@link #loadData() loadData()} method or
+        * later on by calling one of the {@link #loadData(InputStream, String)}  loadData()} method or
         * the {@link #loadData(InputStream, String) loadData(inputStream, fileName)}
         * method.</p>
          *
          * <p>The supported files names are used when getting data from the
-         * {@link #loadData() loadData()} method that relies on the
+         * {@link #loadData(InputStream, String) loadData()} method that relies on the
          * {@link DataProvidersManager data providers manager}. They are useless when
          * getting data from the {@link #loadData(InputStream, String) loadData(input, name)}
          * method.</p>
          *
          * @param supportedNames regular expression for supported files names
          * (if null, a default pattern matching files with a ".alm" extension will be used)
-         * @see #loadData()
+         * @see #loadData(InputStream, String)
         */
         public QZSSYUMAParser(final String supportedNames) {
             this.supportedNames = (supportedNames == null) ? DEFAULT_SUPPORTED_NAMES : supportedNames;
-            this.almanacs =  new ArrayList<QZSSAlmanac>();
-            this.prnList = new ArrayList<Integer>();
+            this.almanacs =  new ArrayList<>();
+            this.prnList = new ArrayList<>();
         }
 
         @Override
-        public void loadData(final InputStream input, final String name)
-            throws IOException, ParseException, OrekitException {
+        public void loadData(final InputStream input, final String name) {
 
             // Clears the lists
             almanacs.clear();
@@ -164,8 +162,7 @@ public class QZSSAlmanacTest {
 
             try {
                 // Gathers data to create one QZSSAlmanac from 13 consecutive lines
-                final List<Pair<String, String>> entries =
-                    new ArrayList<Pair<String, String>>(KEY.length);
+                final List<Pair<String, String>> entries = new ArrayList<>(KEY.length);
 
                 // Reads the data one line at a time
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -174,7 +171,7 @@ public class QZSSAlmanacTest {
                     // If the line is made of 2 tokens
                     if (token.length == 2) {
                         // Adds these tokens as an entry to the entries
-                        entries.add(new Pair<String, String>(token[0].trim(), token[1].trim()));
+                        entries.add(new Pair<>(token[0].trim(), token[1].trim()));
                     }
                     // If the number of entries equals the expected number
                     if (entries.size() == KEY.length) {
@@ -234,7 +231,8 @@ public class QZSSAlmanacTest {
         private QZSSAlmanac getAlmanac(final List<Pair<String, String>> entries, final String name) {
             try {
                 // Initializes almanac
-                final QZSSAlmanac almanac = new QZSSAlmanac();
+                final QZSSAlmanac almanac = new QZSSAlmanac(DataContext.getDefault().getTimeScales(),
+                                                            SatelliteSystem.QZSS);
                 almanac.setSource(SOURCE);
 
                 // Initializes checks
@@ -295,25 +293,20 @@ public class QZSSAlmanacTest {
                         checks[12] = true;
                     } else {
                         // Unknown entry: the file is not a YUMA file
-                        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
-                                                  name);
+                        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE, name);
                     }
                 }
 
                 // If all expected fields have been read
                 if (readOK(checks)) {
                     // Returns a QZSSAlmanac built from the entries
-                    final AbsoluteDate date = new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.QZSS).getDate();
-                    almanac.setDate(date);
                     return almanac;
                 } else {
                     // The file is not a YUMA file
-                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
-                                              name);
+                    throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE, name);
                 }
             } catch (NumberFormatException nfe) {
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE,
-                                          name);
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_YUMA_ALMANAC_FILE, name);
             }
         }
 

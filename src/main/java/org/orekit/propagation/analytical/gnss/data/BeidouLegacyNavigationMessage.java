@@ -16,12 +16,17 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a BeiDou navigation message.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage {
+public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage<BeidouLegacyNavigationMessage> {
 
     /** Identifier for message type. */
     public static final String D1 = "D1";
@@ -44,9 +49,37 @@ public class BeidouLegacyNavigationMessage extends AbstractNavigationMessage {
     /** The user SV accuracy (m). */
     private double svAccuracy;
 
-    /** Constructor. */
-    public BeidouLegacyNavigationMessage() {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
+    /** Constructor.
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
+     */
+    public BeidouLegacyNavigationMessage(final TimeScales timeScales,
+                                         final SatelliteSystem system) {
+        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+              timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> BeidouLegacyNavigationMessage(final FieldBeidouLegacyNavigationMessage<T> original) {
+        super(original);
+        setAODE(original.getAODE());
+        setAODC(original.getAODC());
+        setTGD1(original.getTGD1().getReal());
+        setTGD2(original.getTGD2().getReal());
+        setSvAccuracy(original.getSvAccuracy().getReal());
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouLegacyNavigationMessage>>
+        F toField(final Field<T> field) {
+        return (F) new FieldBeidouLegacyNavigationMessage<>(field, this);
     }
 
     /**

@@ -85,10 +85,8 @@ public class Rtcm1019Data extends RtcmEphemerisData {
 
         // Week number and time of ephemeris
         final int    week = gpsNavigationMessage.getWeek();
-        final double toe  = gpsNavigationMessage.getTime();
 
         // Set the ephemeris reference data
-        gpsNavigationMessage.setDate(new GNSSDate(week, toe, system, timeScales).getDate());
         gpsNavigationMessage.setEpochToc(new GNSSDate(week, gpsToc, system, timeScales).getDate());
 
         // Return the navigation message

@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical.gnss;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.estimation.measurements.EstimationModifier;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSClockElements;
@@ -39,9 +38,9 @@ import org.orekit.utils.PVCoordinates;
  *   <li>at index 2 the estimated group delay differential {@link GNSSClockElements#getTGD() TGD} for L1-L2 correction</li>
  * </ul>
  * <p>
- * Since Orekit 10.3 the relativistic clock correction can be used as an {@link EstimationModifier}
- * in orbit determination applications to take into consideration this effect
- * in measurement modeling.
+ * Since Orekit 10.3 the relativistic clock correction can be used as an
+ * {@link org.orekit.estimation.measurements.EstimationModifier} in orbit determination applications
+ * to take into consideration this effect in measurement modeling.
  * </p>
  *
  * @author Luc Maisonobe
@@ -60,12 +59,18 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
     /** Clock reference epoch. */
     private final AbsoluteDate clockRef;
 
+    /** Duration of the GNSS cycle in seconds. */
+    private final double cycleDuration;
+
     /** Simple constructor.
      * @param gnssClk GNSS clock elements
+     * @param cycleDuration duration of the GNSS cycle in seconds
      */
-    public ClockCorrectionsProvider(final GNSSClockElements gnssClk) {
-        this.gnssClk  = gnssClk;
-        this.clockRef = gnssClk.getDate();
+    public ClockCorrectionsProvider(final GNSSClockElements gnssClk,
+                                    final double cycleDuration) {
+        this.gnssClk       = gnssClk;
+        this.clockRef      = gnssClk.getDate();
+        this.cycleDuration = cycleDuration;
     }
 
     /** {@inheritDoc} */
@@ -82,7 +87,6 @@ public class ClockCorrectionsProvider implements AdditionalStateProvider {
      * @return the duration from clock Reference epoch (s)
      */
     private double getDT(final AbsoluteDate date) {
-        final double cycleDuration = gnssClk.getCycleDuration();
         // Time from ephemeris reference epoch
         double dt = date.durationFrom(clockRef);
         // Adjusts the time to take roll over week into account

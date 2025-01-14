@@ -163,23 +163,23 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
         analyticalDerivativesJacobianColumns.clear();
 
         final AbstractAnalyticalGradientConverter converter           = getGradientConverter();
-        final FieldSpacecraftState<Gradient> gState                   = converter.getState();
-        final Gradient[] gParameters                                  = converter.getParameters(gState, converter);
-        final FieldAbstractAnalyticalPropagator<Gradient> gPropagator = converter.getPropagator(gState, gParameters);
+        final FieldAbstractAnalyticalPropagator<Gradient> gPropagator = converter.getPropagator();
 
         // Compute Jacobian
-        final AbsoluteDate target               = reference.getDate();
-        final FieldAbsoluteDate<Gradient> start = gPropagator.getInitialState().getDate();
-        final double dt                         = target.durationFrom(start.toAbsoluteDate());
-        final FieldOrbit<Gradient> gOrbit       = gPropagator.propagateOrbit(start.shiftedBy(dt), gParameters);
-        final FieldPVCoordinates<Gradient> gPv  = gOrbit.getPVCoordinates();
+        final AbsoluteDate                   target     = reference.getDate();
+        final FieldAbsoluteDate<Gradient>    start      = gPropagator.getInitialState().getDate();
+        final double                         dt         = target.durationFrom(start.toAbsoluteDate());
+        final FieldSpacecraftState<Gradient> state      = gPropagator.getInitialState();
+        final Gradient[]                     parameters = converter.getParameters(state, converter);
+        final FieldOrbit<Gradient>           gOrbit     = gPropagator.propagateOrbit(start.shiftedBy(dt), parameters);
+        final FieldPVCoordinates<Gradient>   gPv        = gOrbit.getPVCoordinates();
 
-        final double[] derivativesX   = gPv.getPosition().getX().getGradient();
-        final double[] derivativesY   = gPv.getPosition().getY().getGradient();
-        final double[] derivativesZ   = gPv.getPosition().getZ().getGradient();
-        final double[] derivativesVx  = gPv.getVelocity().getX().getGradient();
-        final double[] derivativesVy  = gPv.getVelocity().getY().getGradient();
-        final double[] derivativesVz  = gPv.getVelocity().getZ().getGradient();
+        final double[] derivativesX  = gPv.getPosition().getX().getGradient();
+        final double[] derivativesY  = gPv.getPosition().getY().getGradient();
+        final double[] derivativesZ  = gPv.getPosition().getZ().getGradient();
+        final double[] derivativesVx = gPv.getVelocity().getX().getGradient();
+        final double[] derivativesVy = gPv.getVelocity().getY().getGradient();
+        final double[] derivativesVz = gPv.getVelocity().getZ().getGradient();
 
         // Update Jacobian with respect to state
         addToRow(derivativesX,  0);
@@ -273,7 +273,7 @@ public abstract class AbstractAnalyticalMatricesHarvester extends AbstractMatric
     /** {@inheritDoc} */
     @Override
     public OrbitType getOrbitType() {
-        // Set to CARTESIAN because analytical gradient converter uses cartesian representation
+        // Set to CARTESIAN because analytical gradient converters uses Cartesian representation
         return OrbitType.CARTESIAN;
     }
 

@@ -23,12 +23,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Frames;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.IRNSSAlmanac;
 import org.orekit.time.AbsoluteDate;
@@ -54,7 +53,7 @@ public class IRNSSPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 1 for April 1st 2014 (Source: Rinex 3.04 format - Table A19)
-        almanac = new IRNSSAlmanac();
+        almanac = new IRNSSAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.IRNSS);
         almanac.setPRN(1);
         almanac.setWeek(1786);
         almanac.setTime(172800.0);
@@ -67,7 +66,6 @@ public class IRNSSPropagatorTest {
         almanac.setM0(-1.396094758025);
         almanac.setAf0(-9.473115205765e-04);
         almanac.setAf1(1.250555214938e-12);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.IRNSS).getDate());
 
         frames = DataContext.getDefault().getFrames();
     }
@@ -106,21 +104,20 @@ public class IRNSSPropagatorTest {
     }
 
     @Test
-    public void testNoReset() {
-        try {
-            final GNSSPropagator propagator = almanac.getPropagator(frames);
-            propagator.resetInitialState(propagator.getInitialState());
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
-        try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac, frames).build();
-            propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
+    public void testResetInitialState() {
+        final GNSSPropagator propagator = almanac.getPropagator();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
+    }
+
+    @Test
+    public void testResetIntermediateState() {
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+                                          true);
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
@@ -131,13 +128,13 @@ public class IRNSSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         final GNSSPropagator propagator = almanac.getPropagator(frames);
-        GNSSOrbitalElements elements = propagator.getOrbitalElements();
+        GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.IRNSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 10.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
@@ -168,6 +165,11 @@ public class IRNSSPropagatorTest {
         // Verify that an infinite loop did not occur
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
+    }
+
+    @Test
+    public void testConversion() {
+        GnssTestUtils.checkFieldConversion(almanac);
     }
 
 }

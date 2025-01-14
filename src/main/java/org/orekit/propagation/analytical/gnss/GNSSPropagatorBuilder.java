@@ -38,8 +38,8 @@ public class GNSSPropagatorBuilder {
     // Required parameter
     //////////
 
-    /** The GNSS orbital elements. */
-    private final GNSSOrbitalElements orbit;
+    /** The GNSS propagation model orbital elements. */
+    private final GNSSOrbitalElements<?> orbitalElements;
 
     ///////////
     // Optional parameters
@@ -75,15 +75,15 @@ public class GNSSPropagatorBuilder {
      * Another data context can be set using
      * {@code Builder(final GNSSOrbitalElements gpsOrbElt, final Frames frames)}</p>
      *
-     * @param gnssOrbElt the GNSS orbital elements to be used by the GNSSpropagator.
+     * @param orbitalElements the GNSS orbital elements to be used by the propagator.
      * @see #attitudeProvider(AttitudeProvider provider)
      * @see #mass(double mass)
      * @see #eci(Frame inertial)
      * @see #ecef(Frame bodyFixed)
      */
     @DefaultDataContext
-    public GNSSPropagatorBuilder(final GNSSOrbitalElements gnssOrbElt) {
-        this(gnssOrbElt, DataContext.getDefault().getFrames());
+    public GNSSPropagatorBuilder(final GNSSOrbitalElements<?> orbitalElements) {
+        this(orbitalElements, DataContext.getDefault().getFrames());
     }
 
     /** Initializes the builder.
@@ -97,15 +97,16 @@ public class GNSSPropagatorBuilder {
      *  {@link Frames#getITRF(IERSConventions, boolean)} CIO/2010-based ITRF simple EOP}.
      * </p>
      *
-     * @param gnssOrbElt the GNSS orbital elements to be used by the GNSSpropagator.
+     * @see #attitudeProvider(AttitudeProvider provider)
+     * @param orbitalElements orbital elements
      * @param frames set of frames to use.
      * @see #attitudeProvider(AttitudeProvider provider)
      * @see #mass(double mass)
      * @see #eci(Frame inertial)
      * @see #ecef(Frame bodyFixed)
      */
-    public GNSSPropagatorBuilder(final GNSSOrbitalElements gnssOrbElt, final Frames frames) {
-        this.orbit            = gnssOrbElt;
+    public GNSSPropagatorBuilder(final GNSSOrbitalElements<?> orbitalElements, final Frames frames) {
+        this.orbitalElements  = orbitalElements;
         this.mass             = Propagator.DEFAULT_MASS;
         this.eci              = frames.getEME2000();
         this.ecef             = frames.getITRF(IERSConventions.IERS_2010, true);
@@ -157,7 +158,7 @@ public class GNSSPropagatorBuilder {
      * @return the built GNSSPropagator
      */
     public GNSSPropagator build() {
-        return new GNSSPropagator(orbit, eci, ecef, attitudeProvider, mass);
+        return new GNSSPropagator(orbitalElements, eci, ecef, attitudeProvider, mass);
     }
 
 }

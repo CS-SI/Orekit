@@ -441,7 +441,7 @@ public class GNSSDate implements Serializable, TimeStamped {
     }
 
     /** Enumerate for GNSS data. */
-    private enum GNSSDateType {
+    public enum GNSSDateType {
 
         /** GPS. */
         GPS(SatelliteSystem.GPS, 1024),
@@ -491,14 +491,14 @@ public class GNSSDate implements Serializable, TimeStamped {
         /** Get the number of week in one rollover cycle.
          * @return  the number of week in one rollover cycle
          */
-        private int getRollOverCycle() {
+        public int getRollOverCycle() {
             return numberOfWeek;
         }
 
         /** Get the satellite system.
          * @return the satellite system
          */
-        private SatelliteSystem getSatelliteSystem() {
+        public SatelliteSystem getSatelliteSystem() {
             return satelliteSystem;
         }
 
@@ -507,7 +507,7 @@ public class GNSSDate implements Serializable, TimeStamped {
          * @param satellite satellite system
          * @return the number of week in one rollover cycle for the given satellite system
          */
-        private static int getRollOverWeek(final SatelliteSystem satellite) {
+        public static int getRollOverWeek(final SatelliteSystem satellite) {
             return CYCLE_MAP.get(satellite);
         }
 

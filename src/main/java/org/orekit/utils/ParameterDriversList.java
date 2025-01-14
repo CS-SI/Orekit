@@ -69,7 +69,7 @@ public class ParameterDriversList {
      * <p>
      * Warning if a driver is added and a driver with the same name
      * was already added before, they should have the same validity
-     * Period to avoid surprises. Whatever, all driver having
+     * periods to avoid surprises. Whatever, all driver having
      * same name will have their valueSpanMap, nameSpanMap and validity period
      * overwritten with the last driver added attributes.
      * </p>
@@ -163,13 +163,7 @@ public class ParameterDriversList {
     /** Sort the parameters lexicographically.
      */
     public void sort() {
-        Collections.sort(delegating, new Comparator<DelegatingDriver>() {
-            /** {@inheritDoc} */
-            @Override
-            public int compare(final DelegatingDriver d1, final DelegatingDriver d2) {
-                return d1.getName().compareTo(d2.getName());
-            }
-        });
+        delegating.sort(Comparator.comparing(ParameterDriver::getName));
     }
 
     /** Filter parameters to keep only one type of selection status.
@@ -279,8 +273,10 @@ public class ParameterDriversList {
          * </p>
          * Warning if a driver is added and a driver with the same name
          * was already added before, they should have the same validity
-         * Period (that is to say that the {@link ParameterDriver#setPeriods}
-         * method should have been called with same arguments for all drivers
+         * Period (that is to say that the {@link
+         * ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)}
+         * and {@link ParameterDriver#addSpanAtDate(AbsoluteDate)} methods
+         * should have been called with the same arguments for all drivers
          * having the same name) to avoid surprises. Whatever, all driver having
          * same name will have their valueSpanMap, nameSpanMap and validity period
          * overwritten with the last driver added attributes.
@@ -313,8 +309,10 @@ public class ParameterDriversList {
          * </p>
          * Warning if a driver is added and a driver with the same name
          * was already added before, they should have the same validity
-         * Period (that is to say that the {@link ParameterDriver#setPeriods}
-         * method should have been called with same arguments for all drivers
+         * periods (that is to say that the {@link
+         * ParameterDriver#addSpans(AbsoluteDate, AbsoluteDate, double)}
+         * and {@link ParameterDriver#addSpanAtDate(AbsoluteDate)} methods
+         * should have been called with same arguments for all drivers
          * having the same name) to avoid surprises. Whatever, all driver having
          * same name will have their valueSpanMap, nameSpanMap and validity period
          * overwritten with the last driver added attributes.

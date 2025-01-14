@@ -16,267 +16,90 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.orekit.time.AbsoluteDate;
+import org.hipparchus.CalculusFieldElement;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+import org.orekit.utils.ParameterDriver;
 
-/**
- * Container for common GNSS data contained in almanac and navigation messages.
+/** Container for common GNSS data contained in almanac and navigation messages.
+ * @param <O> type of the orbital elements
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class CommonGnssData {
+public abstract class CommonGnssData<O extends CommonGnssData<O>>
+    extends GNSSOrbitalElements<O>
+    implements GNSSClockElements {
 
-    /** PRN number of the satellite. */
-    private int prn;
+    /** Name for zero-th order clock correction parameter.
+     * @since 13.0
+     */
+    public static final String AF0 = "GnssClock0";
 
-    /** Reference Week of the orbit. */
-    private int week;
+    /** Name for first order clock correction parameter.
+     * @since 13.0
+     */
+    public static final String AF1 = "GnssClock1";
 
-    /** Reference Time. */
-    private double time;
+    /** Name for second order clock correction parameter.
+     * @since 13.0
+     */
+    public static final String AF2 = "GnssClock2";
 
-    /** Semi-Major Axis (m). */
-    private double sma;
+    /** SV zero-th order clock correction (s). */
+    private final ParameterDriver af0Driver;
 
-    /** Eccentricity. */
-    private double ecc;
+    /** SV first order clock correction (s/s). */
+    private final ParameterDriver af1Driver;
 
-    /** Inclination Angle at Reference Time (rad). */
-    private double i0;
+    /** SV second order clock correction (s/s²). */
+    private final ParameterDriver af2Driver;
 
-    /** Longitude of Ascending Node of Orbit Plane at Weekly Epoch (rad). */
-    private double om0;
+    /** Group delay differential TGD for L1-L2 correction. */
+    private double tgd;
 
-    /** Rate of Right Ascension (rad/s). */
-    private double dom;
-
-    /** Argument of Perigee (rad). */
-    private double aop;
-
-    /** Mean Anomaly at Reference Time (rad). */
-    private double anom;
-
-    /** SV Clock Bias Correction Coefficient (s). */
-    private double af0;
-
-    /** SV Clock Drift Correction Coefficient (s/s). */
-    private double af1;
-
-    /** Reference epoch. */
-    private AbsoluteDate date;
-
-    /** Mean angular velocity of the Earth for the GNSS model. */
-    private final double angularVelocity;
-
-    /** Duration of the GNSS cycle in seconds. */
-    private final double cycleDuration;
-
-    /** Earth's universal gravitational parameter. */
-    private final double mu;
+    /** Time Of Clock. */
+    private double toc;
 
     /**
      * Constructor.
      * @param mu Earth's universal gravitational parameter
      * @param angularVelocity mean angular velocity of the Earth for the GNSS model
-     * @param weekNumber number of weeks in the GNSS cycle
+     * @param weeksInCycle number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for example in Rinex nav, weeks
+     *                        are always according to GPS)
      */
-    public CommonGnssData(final double mu,
-                          final double angularVelocity,
-                          final int weekNumber) {
-        this.mu              = mu;
-        this.angularVelocity = angularVelocity;
-        this.cycleDuration   = GNSSConstants.GNSS_WEEK_IN_SECONDS * weekNumber;
+    protected CommonGnssData(final double mu, final double angularVelocity, final int weeksInCycle,
+                             final TimeScales timeScales, final SatelliteSystem system) {
+        super(mu, angularVelocity, weeksInCycle, timeScales, system);
+        this.af0Driver = createDriver(AF0);
+        this.af1Driver = createDriver(AF1);
+        this.af2Driver = createDriver(AF2);
     }
 
-    /**
-     * Getter for the Earth's universal gravitational parameter.
-     * @return the Earth's universal gravitational parameter
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
      */
-    public double getMu() {
-        return mu;
+    protected <T extends CalculusFieldElement<T>,
+               A extends CommonGnssData<A>> CommonGnssData(final FieldCommonGnssData<T, A> original) {
+        super(original);
+        this.af0Driver = createDriver(AF0);
+        this.af1Driver = createDriver(AF1);
+        this.af2Driver = createDriver(AF2);
+        setAf0(original.getAf0().getReal());
+        setAf1(original.getAf1().getReal());
+        setAf2(original.getAf2().getReal());
+        setTGD(original.getTGD().getReal());
+        setToc(original.getToc().getReal());
     }
 
-    /**
-     * Getter for the mean angular velocity of the Earth for the GNSS model.
-     * @return the mean angular velocity of the Earth for the GNSS model
-     */
-    public double getAngularVelocity() {
-        return angularVelocity;
-    }
-
-    /**
-     * Getter for the duration of the GNSS cycle in seconds.
-     * @return the duration of the GNSS cycle in seconds
-     */
-    public double getCycleDuration() {
-        return cycleDuration;
-    }
-
-    /**
-     * Getter for the PRN number of the satellite.
-     * @return the PRN number of the satellite
-     */
-    public int getPRN() {
-        return prn;
-    }
-
-    /**
-     * Setter for the PRN number of the satellite.
-     * @param number the prn number ot set
-     */
-    public void setPRN(final int number) {
-        this.prn = number;
-    }
-
-    /**
-     * Getter for the reference week of the GNSS orbit.
-     * @return the reference week of the GNSS orbit
-     */
-    public int getWeek() {
-        return week;
-    }
-
-    /**
-     * Setter for the reference week of the orbit.
-     * @param week the week to set
-     */
-    public void setWeek(final int week) {
-        this.week = week;
-    }
-
-    /**
-     * Getter for the semi-major axis.
-     * @return the semi-major axis in meters
-     */
-    public double getSma() {
-        return sma;
-    }
-
-    /**
-     * Setter for the semi-major axis.
-     * @param sma the semi-major axis (m)
-     */
-    public void setSma(final double sma) {
-        this.sma = sma;
-    }
-
-    /**
-     * Getter for the reference time of the GNSS orbit as a duration from week start.
-     * @return the reference time in seconds
-     */
-    public double getTime() {
-        return time;
-    }
-
-    /**
-     * Setter for the reference time of the orbit as a duration from week start.
-     * @param time the time to set in seconds
-     */
-    public void setTime(final double time) {
-        this.time = time;
-    }
-
-    /**
-     * Getter for the eccentricity.
-     * @return the eccentricity
-     */
-    public double getE() {
-        return ecc;
-    }
-
-    /**
-     * Setter the eccentricity.
-     * @param e the eccentricity to set
-     */
-    public void setE(final double e) {
-        this.ecc = e;
-    }
-
-    /**
-     * Getter for the inclination angle at reference time.
-     * @return the inclination angle at reference time in radians
-     */
-    public double getI0() {
-        return i0;
-    }
-
-    /**
-     * Setter for the Inclination Angle at Reference Time (rad).
-     * @param i0 the inclination to set
-     */
-    public void setI0(final double i0) {
-        this.i0 = i0;
-    }
-
-    /**
-     * Getter for the longitude of ascending node of orbit plane at weekly epoch.
-     * @return the longitude of ascending node of orbit plane at weekly epoch in radians
-     */
-    public double getOmega0() {
-        return om0;
-    }
-
-    /**
-     * Setter for the Longitude of Ascending Node of Orbit Plane at Weekly Epoch (rad).
-     * @param omega0 the longitude of ascending node to set
-     */
-    public void setOmega0(final double omega0) {
-        this.om0 = omega0;
-    }
-
-    /**
-     * Getter for the rate of right ascension.
-     * @return the rate of right ascension in rad/s
-     */
-    public double getOmegaDot() {
-        return dom;
-    }
-
-    /**
-     * Setter for the rate of Rate of Right Ascension (rad/s).
-     * @param omegaDot the rate of right ascension to set
-     */
-    public void setOmegaDot(final double omegaDot) {
-        this.dom = omegaDot;
-    }
-
-    /**
-     * Getter for the argument of perigee.
-     * @return the argument of perigee in radians
-     */
-    public double getPa() {
-        return aop;
-    }
-
-    /**
-     * Setter fir the Argument of Perigee (rad).
-     * @param omega the argumet of perigee to set
-     */
-    public void setPa(final double omega) {
-        this.aop = omega;
-    }
-
-    /**
-     * Getter for the mean anomaly at reference time.
-     * @return the mean anomaly at reference time in radians
-     */
-    public double getM0() {
-        return anom;
-    }
-
-    /**
-     * Setter for the Mean Anomaly at Reference Time (rad).
-     * @param m0 the mean anomaly to set
-     */
-    public void setM0(final double m0) {
-        this.anom = m0;
-    }
-
-    /**
-     * Getter for the the SV Clock Bias Correction Coefficient.
-     * @return the SV Clock Bias Correction Coefficient (s).
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getAf0() {
-        return af0;
+        return af0Driver.getValue();
     }
 
     /**
@@ -284,15 +107,13 @@ public class CommonGnssData {
      * @param af0 the SV Clock Bias Correction Coefficient to set
      */
     public void setAf0(final double af0) {
-        this.af0 = af0;
+        af0Driver.setValue(af0);
     }
 
-    /**
-     * Getter for the SV Clock Drift Correction Coefficient.
-     * @return the SV Clock Drift Correction Coefficient (s/s).
-     */
+    /** {@inheritDoc} */
+    @Override
     public double getAf1() {
-        return af1;
+        return af1Driver.getValue();
     }
 
     /**
@@ -300,23 +121,52 @@ public class CommonGnssData {
      * @param af1 the SV Clock Drift Correction Coefficient to set
      */
     public void setAf1(final double af1) {
-        this.af1 = af1;
+        af1Driver.setValue(af1);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getAf2() {
+        return af2Driver.getValue();
     }
 
     /**
-     * Getter for the ephemeris reference date.
-     * @return the ephemeris reference date
+     * Setter for the Drift Rate Correction Coefficient (s/s²).
+     * @param af2 the Drift Rate Correction Coefficient to set
      */
-    public AbsoluteDate getDate() {
-        return date;
+    public void setAf2(final double af2) {
+        af2Driver.setValue(af2);
     }
 
     /**
-     * Setter for the reference epoch.
-     * @param date the epoch to set
+     * Set the estimated group delay differential TGD for L1-L2 correction.
+     * @param groupDelayDifferential the estimated group delay differential TGD for L1-L2 correction (s)
      */
-    public void setDate(final AbsoluteDate date) {
-        this.date = date;
+    public void setTGD(final double groupDelayDifferential) {
+        this.tgd = groupDelayDifferential;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getTGD() {
+        return tgd;
+    }
+
+    /**
+     * Set the time of clock.
+     * @param toc the time of clock (s)
+     * @see #getAf0()
+     * @see #getAf1()
+     * @see #getAf2()
+     */
+    public void setToc(final double toc) {
+        this.toc = toc;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getToc() {
+        return toc;
     }
 
 }

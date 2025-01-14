@@ -16,18 +16,45 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a QZSS navigation message.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage {
+public class QZSSCivilianNavigationMessage extends CivilianNavigationMessage<QZSSCivilianNavigationMessage> {
 
     /** Constructor.
-     * @param cnv2 indicator for CNV2 messages
+     * @param cnv2       indicator for CNV2 messages
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
      */
-    public QZSSCivilianNavigationMessage(final boolean cnv2) {
-        super(cnv2, GNSSConstants.GPS_MU, GNSSConstants.GPS_AV, GNSSConstants.GPS_WEEK_NB);
+    public QZSSCivilianNavigationMessage(final boolean cnv2,
+                                         final TimeScales timeScales, final SatelliteSystem system) {
+        super(cnv2, GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB,
+              timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> QZSSCivilianNavigationMessage(final FieldQZSSCivilianNavigationMessage<T> original) {
+        super(original);
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSCivilianNavigationMessage>>
+        F toField(final Field<T> field) {
+        return (F) new FieldQZSSCivilianNavigationMessage<>(field, this);
     }
 
 }

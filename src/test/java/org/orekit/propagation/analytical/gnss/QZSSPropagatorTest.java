@@ -22,11 +22,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.orekit.Utils;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.data.DataContext;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.gnss.SatelliteSystem;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.QZSSAlmanac;
 import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
@@ -53,7 +53,7 @@ public class QZSSPropagatorTest {
         Utils.setDataRoot("gnss");
 
         // Almanac for satellite 193 for May 27th 2019 (q201914.alm)
-        almanac = new QZSSAlmanac();
+        almanac = new QZSSAlmanac(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
         almanac.setPRN(193);
         almanac.setWeek(7);
         almanac.setTime(348160.0);
@@ -67,7 +67,6 @@ public class QZSSPropagatorTest {
         almanac.setAf0(-2.965927124E-04);
         almanac.setAf1(7.275957614E-12);
         almanac.setHealth(0);
-        almanac.setDate(new GNSSDate(almanac.getWeek(), almanac.getTime(), SatelliteSystem.QZSS).getDate());
 
     }
 
@@ -105,21 +104,20 @@ public class QZSSPropagatorTest {
     }
 
     @Test
-    public void testNoReset() {
-        try {
-            final GNSSPropagator propagator = almanac.getPropagator();
-            propagator.resetInitialState(propagator.getInitialState());
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
-        try {
-            GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
-            propagator.resetIntermediateState(propagator.getInitialState(), true);
-            Assertions.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assertions.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
-        }
+    public void testResetInitialState() {
+        final GNSSPropagator propagator = almanac.getPropagator();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetInitialState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000));
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
+    }
+
+    @Test
+    public void testResetIntermediateState() {
+        GNSSPropagator propagator = new GNSSPropagatorBuilder(almanac).build();
+        final SpacecraftState old = propagator.getInitialState();
+        propagator.resetIntermediateState(new SpacecraftState(old.getOrbit(), old.getAttitude(), old.getMass() + 1000),
+                                          true);
+        Assertions.assertEquals(old.getMass() + 1000, propagator.getInitialState().getMass(), 1.0e-9);
     }
 
     @Test
@@ -130,13 +128,13 @@ public class QZSSPropagatorTest {
         double errorV = 0;
         double errorA = 0;
         final GNSSPropagator propagator = almanac.getPropagator();
-        GNSSOrbitalElements elements = propagator.getOrbitalElements();
+        GNSSOrbitalElements<?> elements = propagator.getOrbitalElements();
         AbsoluteDate t0 = new GNSSDate(elements.getWeek(), elements.getTime(), SatelliteSystem.QZSS).getDate();
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 600) {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 60.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
@@ -160,7 +158,8 @@ public class QZSSPropagatorTest {
     @Test
     public void testPosition() {
         // Initial QZSS orbital elements (Ref: IGS)
-        final QZSSLegacyNavigationMessage qoe = new QZSSLegacyNavigationMessage();
+        final QZSSLegacyNavigationMessage qoe =
+            new QZSSLegacyNavigationMessage(DataContext.getDefault().getTimeScales(), SatelliteSystem.QZSS);
         qoe.setPRN(195);
         qoe.setWeek(21);
         qoe.setTime(226800.0);
@@ -179,7 +178,6 @@ public class QZSSPropagatorTest {
         qoe.setCrs(-305.6875);
         qoe.setCic(1.2032687664031982E-6);
         qoe.setCis(-2.6728957891464233E-6);
-        qoe.setDate(new GNSSDate(qoe.getWeek(), qoe.getTime(), SatelliteSystem.QZSS).getDate());
         // Date of the QZSS orbital elements
         final AbsoluteDate target = qoe.getDate();
         // Build the QZSS propagator
@@ -205,4 +203,10 @@ public class QZSSPropagatorTest {
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
 
     }
+
+    @Test
+    public void testConversion() {
+        GnssTestUtils.checkFieldConversion(almanac);
+    }
+
 }

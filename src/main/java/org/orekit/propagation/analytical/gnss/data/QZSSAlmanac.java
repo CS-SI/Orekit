@@ -16,6 +16,11 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * This class holds a QZSS almanac as read from YUMA files.
  *
@@ -23,7 +28,7 @@ package org.orekit.propagation.analytical.gnss.data;
  * @since 10.0
  *
  */
-public class QZSSAlmanac extends AbstractAlmanac {
+public class QZSSAlmanac extends AbstractAlmanac<QZSSAlmanac> {
 
     /** Source of the almanac. */
     private String src;
@@ -33,9 +38,31 @@ public class QZSSAlmanac extends AbstractAlmanac {
 
     /**
      * Constructor.
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
      */
-    public QZSSAlmanac() {
-        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB);
+    public QZSSAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.QZSS_MU, GNSSConstants.QZSS_AV, GNSSConstants.QZSS_WEEK_NB, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> QZSSAlmanac(final FieldQZSSAlmanac<T> original) {
+        super(original);
+        setSource(original.getSource());
+        setHealth(original.getHealth());
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, QZSSAlmanac>>
+        F toField(final Field<T> field) {
+        return (F) new FieldQZSSAlmanac<>(field, this);
     }
 
     /**
@@ -46,7 +73,7 @@ public class QZSSAlmanac extends AbstractAlmanac {
      * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
      */
     public void setSqrtA(final double sqrtA) {
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
     /**
