@@ -16,8 +16,6 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -35,10 +33,7 @@ import org.orekit.utils.PVCoordinates;
  * @see JPLEphemeridesLoader
  * @author Luc Maisonobe
  */
-class PosVelChebyshev implements TimeStamped, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20151023L;
+class PosVelChebyshev implements TimeStamped {
 
     /** Time scale in which the ephemeris is defined. */
     private final TimeScale timeScale;

@@ -16,8 +16,6 @@
  */
 package org.orekit.models.earth.atmosphere;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -33,7 +31,7 @@ import org.orekit.utils.PVCoordinates;
 /** Interface for atmospheric models.
  * @author Luc Maisonobe
  */
-public interface Atmosphere extends Serializable {
+public interface Atmosphere {
 
     /** Get the frame of the central body.
      * @return frame of the central body.

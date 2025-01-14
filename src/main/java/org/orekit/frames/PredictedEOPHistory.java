@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -49,10 +48,7 @@ import org.orekit.utils.SecularAndHarmonic;
  * @since 12.0
  * @author Luc Maisonobe
  */
-public class PredictedEOPHistory extends EOPHistory implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20230309L;
+public class PredictedEOPHistory extends EOPHistory {
 
     /** Raw EOP history to extend. */
     private final EOPHistory rawHistory;

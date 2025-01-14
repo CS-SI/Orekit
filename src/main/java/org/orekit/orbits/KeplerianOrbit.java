@@ -73,9 +73,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class KeplerianOrbit extends Orbit implements PositionAngleBased<KeplerianOrbit> {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20231217L;
-
     /** Name of the eccentricity parameter. */
     private static final String ECCENTRICITY = "eccentricity";
 

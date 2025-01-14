@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Collections;
@@ -65,7 +64,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @since 11.0
  * @param <T> type of the field elements
  */
-public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, Serializable, ParameterDriversProvider {
+public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeStamped<T>, ParameterDriversProvider {
 
     /** Identifier for default type of ephemeris (SGP4/SDP4). */
     public static final int DEFAULT = 0;
@@ -109,9 +108,6 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private static final DecimalFormatSymbols SYMBOLS =
         new DecimalFormatSymbols(Locale.US);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1596648022319057689L;
-
     /** The satellite number. */
     private final int satelliteNumber;
 
@@ -134,7 +130,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private final int elementNumber;
 
     /** the TLE current date. */
-    private final transient FieldAbsoluteDate<T> epoch;
+    private final FieldAbsoluteDate<T> epoch;
 
     /** Mean motion (rad/s). */
     private final T meanMotion;
@@ -173,7 +169,7 @@ public class FieldTLE<T extends CalculusFieldElement<T>> implements FieldTimeSta
     private final TimeScale utc;
 
     /** Driver for ballistic coefficient parameter. */
-    private final transient ParameterDriver bStarParameterDriver;
+    private final ParameterDriver bStarParameterDriver;
 
     /** Simple constructor from unparsed two lines. This constructor uses the {@link
      * DataContext#getDefault() default data context}.

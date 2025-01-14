@@ -126,10 +126,6 @@ import java.util.Arrays;
  *  @since 8.1
  */
 public class NRLMSISE00 extends AbstractSunInfluencedAtmosphere {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -7923498628122574334L;
-
     // Constants
 
     /** Identifier for helium density. */

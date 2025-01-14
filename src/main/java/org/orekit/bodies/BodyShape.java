@@ -16,8 +16,6 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldLine;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -34,7 +32,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * model, but single points can be queried ({@link #getIntersectionPoint}).</p>
  * @author Luc Maisonobe
  */
-public interface BodyShape extends Serializable {
+public interface BodyShape {
 
     /** Get body frame related to body shape.
      * @return body frame related to body shape
