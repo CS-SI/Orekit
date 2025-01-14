@@ -210,4 +210,9 @@ public class BeidouPropagatorTest {
 
     }
 
+    @Test
+    public void testConversion() {
+        GnssTestUtils.checkFieldConversion(almanac);
+    }
+
 }

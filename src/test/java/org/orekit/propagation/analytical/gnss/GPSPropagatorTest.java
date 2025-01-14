@@ -554,4 +554,9 @@ public class GPSPropagatorTest {
 
     }
 
+    @Test
+    public void testConversion() {
+        GnssTestUtils.checkFieldConversion(almanacs.get(0));
+    }
+
 }

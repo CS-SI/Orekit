@@ -76,6 +76,7 @@ public class GalileoPropagatorTest {
         goe.setCrs(-18.78125);
         goe.setCic(3.166496753692627E-8);
         goe.setCis(-1.862645149230957E-8);
+        goe.setEpochToc(new GNSSDate(1024, 0.0, SatelliteSystem.GALILEO).getDate());
     }
 
     @BeforeAll
@@ -272,6 +273,11 @@ public class GalileoPropagatorTest {
         // Verify that an infinite loop did not occur
         Assertions.assertEquals(Vector3D.NaN, pv0.getPosition());
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
+    }
+
+    @Test
+    public void testConversion() {
+        GnssTestUtils.checkFieldConversion(goe);
     }
 
 }

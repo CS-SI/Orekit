@@ -21,15 +21,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hipparchus.CalculusFieldElement;
-import org.hipparchus.analysis.differentiation.FieldGradient;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.util.Binary64;
-import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,22 +45,13 @@ import org.orekit.gnss.SatelliteSystem;
 import org.orekit.gnss.TimeSystem;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
+import org.orekit.propagation.analytical.gnss.GnssTestUtils;
 import org.orekit.propagation.analytical.gnss.SBASPropagator;
 import org.orekit.propagation.analytical.gnss.data.BeidouCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.BeidouSatelliteType;
-import org.orekit.propagation.analytical.gnss.data.FieldBeidouCivilianNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.FieldBeidouLegacyNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.FieldGPSCivilianNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.FieldGPSLegacyNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.FieldGalileoNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.FieldGnssOrbitalElements;
-import org.orekit.propagation.analytical.gnss.data.FieldIRNSSNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.FieldQZSSCivilianNavigationMessage;
-import org.orekit.propagation.analytical.gnss.data.FieldQZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GLONASSNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GNSSConstants;
-import org.orekit.propagation.analytical.gnss.data.GNSSOrbitalElements;
 import org.orekit.propagation.analytical.gnss.data.GPSCivilianNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GPSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.GalileoNavigationMessage;
@@ -75,7 +61,6 @@ import org.orekit.propagation.analytical.gnss.data.QZSSLegacyNavigationMessage;
 import org.orekit.propagation.analytical.gnss.data.SBASNavigationMessage;
 import org.orekit.propagation.numerical.GLONASSNumericalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.time.GNSSDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -2185,98 +2170,30 @@ public class NavigationFileParserTest {
 
     private void checkFieldConversion(final RinexNavigation file) {
         for (final List<GalileoNavigationMessage> messages : file.getGalileoNavigationMessages().values()) {
-            for (final GalileoNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldGalileoNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
        for (final List<QZSSLegacyNavigationMessage> messages : file.getQZSSLegacyNavigationMessages().values()) {
-            for (final QZSSLegacyNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldQZSSLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<QZSSCivilianNavigationMessage> messages : file.getQZSSCivilianNavigationMessages().values()) {
-            for (final QZSSCivilianNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldQZSSCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<BeidouLegacyNavigationMessage> messages : file.getBeidouLegacyNavigationMessages().values()) {
-            for (final BeidouLegacyNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldBeidouLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<BeidouCivilianNavigationMessage> messages : file.getBeidouCivilianNavigationMessages().values()) {
-            for (final BeidouCivilianNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldBeidouCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<IRNSSNavigationMessage> messages : file.getIRNSSNavigationMessages().values()) {
-            for (final IRNSSNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldIRNSSNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<GPSLegacyNavigationMessage> messages : file.getGPSLegacyNavigationMessages().values()) {
-            for (final GPSLegacyNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldGPSLegacyNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
         for (final List<GPSCivilianNavigationMessage> messages : file.getGPSCivilianNavigationMessages().values()) {
-            for (final GPSCivilianNavigationMessage message : messages) {
-                checkFieldConversion(message, (FieldGPSCivilianNavigationMessage<Binary64>) message.toField(Binary64Field.getInstance()));
-            }
+            messages.forEach(GnssTestUtils::checkFieldConversion);
         }
 
-    }
-    @SuppressWarnings("unchecked")
-    private <T extends CalculusFieldElement<T>,
-             F extends FieldGnssOrbitalElements<T, O>,
-             O extends GNSSOrbitalElements<O>>
-    void checkFieldConversion(final O message, final F fieldMessage) {
-        try {
-            // looping over several types to check conversion functions
-            FieldGnssOrbitalElements<? extends FieldGradient<?>, ?> intermediate = fieldMessage.changeField(t -> FieldGradient.constant(6, t));
-            final O rebuilt = (O) intermediate.toNonField();
-
-            for (final Method getter : getGetters(message, Integer.TYPE)) {
-                final Method fieldGetter = fieldMessage.getClass().getMethod(getter.getName());
-                Assertions.assertEquals(getter.invoke(message), fieldGetter.invoke(fieldMessage));
-                Assertions.assertEquals(getter.invoke(message), getter.invoke(rebuilt));
-            }
-            for (final Method getter : getGetters(message, Double.TYPE)) {
-                final Method fieldGetter = fieldMessage.getClass().getMethod(getter.getName());
-                final double f = fieldGetter.getReturnType().equals(Double.TYPE) ?
-                                 (Double) fieldGetter.invoke(fieldMessage) :
-                                 ((T) fieldGetter.invoke(fieldMessage)).getReal();
-                Assertions.assertEquals((Double) getter.invoke(message), f, 1.0e-15);
-                Assertions.assertEquals((Double) getter.invoke(message), (Double) getter.invoke(rebuilt), 1.0e-15, message.getClass().getName() + "." +getter.getName());
-            }
-            for (final Method getter : getGetters(message, AbsoluteDate.class)) {
-                final Method fieldGetter = fieldMessage.getClass().getMethod(getter.getName());
-                Assertions.assertEquals(0.0,
-                                        ((AbsoluteDate) getter.invoke(message)).
-                                        durationFrom(((FieldAbsoluteDate<T>) fieldGetter.invoke(fieldMessage)).toAbsoluteDate()),
-                                        1.0e-15);
-                Assertions.assertEquals(0.0,
-                                        ((AbsoluteDate) getter.invoke(message)).
-                                        durationFrom((AbsoluteDate) getter.invoke(rebuilt)),
-                                        1.0e-15);
-            }
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException nsme) {
-            Assertions.fail(nsme.getLocalizedMessage());
-        }
-    }
-
-    private List<Method> getGetters(final Object o, final Class<?> returnType) {
-        final List<Method> getters = new ArrayList<>();
-        for (Class<?> cls = o.getClass();
-             cls.getName().startsWith("org.orekit") ;
-             cls = cls.getSuperclass()) {
-            for (final Method method : cls.getDeclaredMethods()) {
-                if (method.getName().startsWith("get") && returnType.equals(method.getReturnType())) {
-                    getters.add(method);
-                }
-            }
-        }
-        return getters;
     }
 
 }

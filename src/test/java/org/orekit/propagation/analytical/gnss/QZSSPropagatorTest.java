@@ -203,4 +203,10 @@ public class QZSSPropagatorTest {
         Assertions.assertEquals(Vector3D.NaN, pv0.getVelocity());
 
     }
+
+    @Test
+    public void testConversion() {
+        GnssTestUtils.checkFieldConversion(almanac);
+    }
+
 }
