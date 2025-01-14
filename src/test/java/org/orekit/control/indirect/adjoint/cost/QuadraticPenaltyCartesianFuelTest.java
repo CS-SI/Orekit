@@ -41,6 +41,28 @@ class QuadraticPenaltyCartesianFuelTest {
     private static final String ADJOINT_NAME = "adjoint";
 
     @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testUpdateFieldAdjointDerivatives(final boolean withMass) {
+        // GIVEN
+        final double massFlowRateFactor = withMass ? 1 : 0;
+        final QuadraticPenaltyCartesianFuel cost = new QuadraticPenaltyCartesianFuel("adjoint", massFlowRateFactor, 2, 0.5);
+        final double[] adjoint = new double[withMass ? 7 : 6];
+        adjoint[3] = 1;
+        final double[] derivatives = new double[adjoint.length];
+        // WHEN
+        cost.updateAdjointDerivatives(adjoint, 1, derivatives);
+        // THEN
+        for (int i = 0; i < 6; ++i) {
+            Assertions.assertEquals(0., derivatives[i]);
+        }
+        if (withMass) {
+            Assertions.assertNotEquals(0., derivatives[derivatives.length - 1]);
+        } else {
+            Assertions.assertEquals(0., derivatives[derivatives.length - 1]);
+        }
+    }
+
+    @ParameterizedTest
     @ValueSource(doubles = {0., 0.1, 0.5, 0.9})
     void testEvaluatePenaltyFunction(final double norm) {
         // GIVEN
@@ -88,10 +110,19 @@ class QuadraticPenaltyCartesianFuelTest {
     }
 
     @ParameterizedTest
+    @ValueSource(doubles = {0, 1})
+    void testAgainstBoundedCartesianEnergyVaryingMassFlowRateFactor(final double massFlowRateFactor) {
+        testTemplateAgainstBoundedCartesianEnergy(1, massFlowRateFactor);
+    }
+
+    @ParameterizedTest
     @ValueSource(doubles = {1, 1e2, 1e4})
-    void testAgainstBoundedCartesianEnergy(final double mass) {
+    void testAgainstBoundedCartesianEnergyVaryingMass(final double mass) {
+        testTemplateAgainstBoundedCartesianEnergy(mass, 1e-2);
+    }
+
+    private void testTemplateAgainstBoundedCartesianEnergy(final double mass, final double massFlowRateFactor) {
         // GIVEN
-        final double massFlowRateFactor = 1.e-2;
         final double maximumThrustMagnitude = 1e-1;
         final double epsilon = 1;
         final QuadraticPenaltyCartesianFuel penalizedCartesianFuel = new QuadraticPenaltyCartesianFuel(ADJOINT_NAME,

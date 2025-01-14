@@ -58,8 +58,10 @@ public class FieldLogarithmicBarrierCartesianFuel<T extends CalculusFieldElement
     /** {@inheritDoc} */
     @Override
     public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
-        adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables)
-                .multiply(getThrustForceMagnitude(adjointVariables, mass)).divide(mass.square()));
+        if (getAdjointDimension() > 6) {
+            adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables)
+                    .multiply(getThrustForceMagnitude(adjointVariables, mass)).divide(mass.square()));
+        }
     }
 
     /**
@@ -70,8 +72,10 @@ public class FieldLogarithmicBarrierCartesianFuel<T extends CalculusFieldElement
      */
     private T getThrustForceMagnitude(final T[] adjointVariables, final T mass) {
         final T twoEpsilon = getEpsilon().multiply(2);
-        final T otherTerm = getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(getMassFlowRateFactor()
-                .multiply(adjointVariables[6])).subtract(1);
+        T otherTerm = getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(1.);
+        if (getAdjointDimension() > 6) {
+            otherTerm = otherTerm.subtract(getMassFlowRateFactor().multiply(adjointVariables[6]));
+        }
         return twoEpsilon.multiply(getMaximumThrustMagnitude())
                 .divide(twoEpsilon.add(otherTerm).add(FastMath.sqrt(otherTerm.square().add(twoEpsilon.square()))));
     }

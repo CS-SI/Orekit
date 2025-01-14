@@ -41,12 +41,6 @@ public class UnboundedCartesianEnergyNeglectingMass extends AbstractCartesianCos
 
     /** {@inheritDoc} */
     @Override
-    public int getAdjointDimension() {
-        return 6;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
         return new Vector3D(adjointVariables[3], adjointVariables[4], adjointVariables[5]);
     }

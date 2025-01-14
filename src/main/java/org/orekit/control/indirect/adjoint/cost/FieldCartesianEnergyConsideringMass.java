@@ -19,7 +19,6 @@ package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
-import org.hipparchus.util.FastMath;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetectionSettings;
 
@@ -34,13 +33,7 @@ import org.orekit.propagation.events.FieldEventDetectionSettings;
  * @see CartesianEnergyConsideringMass
  * @since 13.0
  */
-abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElement<T>> implements FieldCartesianCost<T> {
-
-    /** Name of adjoint vector. */
-    private final String name;
-
-    /** Mass flow rate factor (always positive). */
-    private final T massFlowRateFactor;
+abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElement<T>> extends FieldAbstractCartesianCost<T> {
 
     /** Detection settings for singularity detection. */
     private final FieldEventDetectionSettings<T> eventDetectionSettings;
@@ -53,24 +46,8 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
      */
     protected FieldCartesianEnergyConsideringMass(final String name, final T massFlowRateFactor,
                                                   final FieldEventDetectionSettings<T> eventDetectionSettings) {
-        this.name = name;
-        this.massFlowRateFactor = massFlowRateFactor;
+        super(name, massFlowRateFactor);
         this.eventDetectionSettings = eventDetectionSettings;
-    }
-
-    /**
-     * Getter for adjoint vector name.
-     * @return name
-     */
-    @Override
-    public String getAdjointName() {
-        return name;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public T getMassFlowRateFactor() {
-        return massFlowRateFactor;
     }
 
     /**
@@ -106,19 +83,11 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
 
     /** {@inheritDoc} */
     @Override
-    public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass,
-                                                                                  final T[] adjointDerivatives) {
-        adjointDerivatives[6] = adjointDerivatives[6].add(getFieldThrustForceNorm(adjointVariables, mass)
-            .multiply(getFieldAdjointVelocityNorm(adjointVariables)).divide(mass.square()));
-    }
-
-    /**
-     * Computes the Euclidean norm of the adjoint velocity vector.
-     * @param adjointVariables adjoint vector
-     * @return norm of adjoint velocity
-     */
-    protected T getFieldAdjointVelocityNorm(final T[] adjointVariables) {
-        return FastMath.sqrt(adjointVariables[3].square().add(adjointVariables[4].square()).add(adjointVariables[5].square()));
+    public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
+        if (getAdjointDimension() > 6) {
+            adjointDerivatives[6] = adjointDerivatives[6].add(getFieldThrustForceNorm(adjointVariables, mass)
+                    .multiply(getFieldAdjointVelocityNorm(adjointVariables)).divide(mass.square()));
+        }
     }
 
     /** {@inheritDoc} */
@@ -161,7 +130,11 @@ abstract class FieldCartesianEnergyConsideringMass<T extends CalculusFieldElemen
          */
         private T evaluateVariablePart(final T[] adjointVariables, final T mass) {
             final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
-            return adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+            T variablePart = adjointVelocityNorm.divide(mass);
+            if (getAdjointDimension() > 6) {
+                variablePart = variablePart.subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+            }
+            return variablePart;
         }
 
     }

@@ -62,7 +62,10 @@ public class FieldUnboundedCartesianEnergy<T extends CalculusFieldElement<T>> ex
     @Override
     protected T getFieldThrustForceNorm(final T[] adjointVariables, final T mass) {
         final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
-        final T factor = adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        T factor = adjointVelocityNorm.divide(mass);
+        if (getAdjointDimension() > 6) {
+            factor = factor.subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        }
         if (factor.getReal() < 0.) {
             return adjointVelocityNorm.getField().getZero();
         } else {

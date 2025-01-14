@@ -35,6 +35,9 @@ public abstract class AbstractCartesianCost implements CartesianCost {
     /** Mass flow rate factor (always positive). */
     private final double massFlowRateFactor;
 
+    /** Dimension of adjoint vector. */
+    private final int adjointDimension;
+
     /**
      * Constructor.
      * @param name name
@@ -43,6 +46,15 @@ public abstract class AbstractCartesianCost implements CartesianCost {
     protected AbstractCartesianCost(final String name, final double massFlowRateFactor) {
         this.name = name;
         this.massFlowRateFactor = FastMath.abs(massFlowRateFactor);
+        this.adjointDimension = this.massFlowRateFactor == 0. ? 6 : 7;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int getAdjointDimension() {
+        return adjointDimension;
     }
 
     /**

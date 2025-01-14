@@ -22,8 +22,10 @@ import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.CartesianAdjointEquationTerm;
 import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.cost.BoundedCartesianEnergy;
+import org.orekit.control.indirect.adjoint.cost.CartesianFlightDurationCost;
 import org.orekit.control.indirect.adjoint.cost.CartesianFuelCost;
 import org.orekit.control.indirect.adjoint.cost.FieldBoundedCartesianEnergy;
+import org.orekit.control.indirect.adjoint.cost.FieldCartesianFlightDurationCost;
 import org.orekit.control.indirect.adjoint.cost.FieldCartesianFuelCost;
 import org.orekit.control.indirect.adjoint.cost.FieldLogarithmicBarrierCartesianFuel;
 import org.orekit.control.indirect.adjoint.cost.FieldQuadraticPenaltyCartesianFuel;
@@ -50,6 +52,35 @@ public class CartesianAdjointDynamicsProviderFactory {
      */
     private CartesianAdjointDynamicsProviderFactory() {
         // factory class
+    }
+
+    /**
+     * Method building a provider with unbounded Cartesian energy and vanishing mass flow as cost.
+     * @param adjointName adjoint name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
+     * @return provider
+     */
+    public static CartesianAdjointDynamicsProvider buildFlightDurationProvider(final String adjointName,
+                                                                               final double massFlowRateFactor,
+                                                                               final double maximumThrustMagnitude,
+                                                                               final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
+
+            @Override
+            public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
+                return new CartesianAdjointDerivativesProvider(new CartesianFlightDurationCost(adjointName, massFlowRateFactor, maximumThrustMagnitude),
+                        cartesianAdjointEquationTerms);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
+                return new FieldCartesianAdjointDerivativesProvider<>(new FieldCartesianFlightDurationCost<>(adjointName,
+                        field.getZero().newInstance(massFlowRateFactor), field.getZero().newInstance(maximumThrustMagnitude)),
+                        cartesianAdjointEquationTerms);
+            }
+        };
     }
 
     /**
@@ -88,7 +119,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                                 final double massFlowRateFactor,
                                                                                 final EventDetectionSettings eventDetectionSettings,
                                                                                 final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -119,7 +150,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                               final double maximumThrustMagnitude,
                                                                               final EventDetectionSettings eventDetectionSettings,
                                                                               final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -151,7 +182,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                                 final double maximumThrustMagnitude,
                                                                                 final EventDetectionSettings eventDetectionSettings,
                                                                                 final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -185,7 +216,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                                          final double epsilon,
                                                                                          final EventDetectionSettings eventDetectionSettings,
                                                                                          final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -218,7 +249,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                                            final double maximumThrustMagnitude,
                                                                                            final double epsilon,
                                                                                            final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -236,4 +267,12 @@ public class CartesianAdjointDynamicsProviderFactory {
         };
     }
 
+    /**
+     * Get the adjoint dimension.
+     * @param massFlowRateFactor mass flow rate factor
+     * @return dimension
+     */
+    private static int getDimension(final double massFlowRateFactor) {
+        return massFlowRateFactor == 0. ? 6 : 7;
+    }
 }

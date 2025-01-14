@@ -26,6 +26,11 @@ public class TestCost implements CartesianCost {
     }
 
     @Override
+    public int getAdjointDimension() {
+        return getMassFlowRateFactor() == 0 ? 6 : 7;
+    }
+
+    @Override
     public double getMassFlowRateFactor() {
         return 10.;
     }

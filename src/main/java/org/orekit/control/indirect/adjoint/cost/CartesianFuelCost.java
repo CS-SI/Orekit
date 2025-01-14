@@ -86,7 +86,11 @@ public class CartesianFuelCost extends AbstractCartesianCost {
      * @return value of switch function
      */
     private double evaluateSwitchFunction(final double[] adjointVariables, final double mass) {
-        return getAdjointVelocityNorm(adjointVariables) / mass - adjointVariables[6] * getMassFlowRateFactor() - 1.;
+        double switchFunction = getAdjointVelocityNorm(adjointVariables) / mass - 1.;
+        if (getAdjointDimension() > 6) {
+            switchFunction -= adjointVariables[6] * getMassFlowRateFactor();
+        }
+        return switchFunction;
     }
 
     /**
@@ -113,9 +117,11 @@ public class CartesianFuelCost extends AbstractCartesianCost {
     @Override
     public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
                                          final double[] adjointDerivatives) {
-        final double switchFunction = evaluateSwitchFunction(adjointVariables, mass);
-        if (switchFunction > 0.) {
-            adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) * maximumThrustMagnitude / (mass * mass);
+        if (getAdjointDimension() > 6) {
+            final double switchFunction = evaluateSwitchFunction(adjointVariables, mass);
+            if (switchFunction > 0.) {
+                adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) * maximumThrustMagnitude / (mass * mass);
+            }
         }
     }
 

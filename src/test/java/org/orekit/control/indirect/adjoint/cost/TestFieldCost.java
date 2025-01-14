@@ -28,6 +28,11 @@ public class TestFieldCost implements FieldCartesianCost<Binary64> {
     }
 
     @Override
+    public int getAdjointDimension() {
+        return getMassFlowRateFactor().getReal() == 0 ? 6 : 7;
+    }
+
+    @Override
     public Binary64 getMassFlowRateFactor() {
         return Binary64.ONE.multiply(10);
     }

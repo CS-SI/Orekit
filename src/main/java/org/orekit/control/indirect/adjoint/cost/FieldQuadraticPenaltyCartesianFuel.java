@@ -99,11 +99,13 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
     /** {@inheritDoc} */
     @Override
     public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass, final T[] adjointDerivatives) {
-        final T switchFunction = evaluateSwitchFunction(adjointVariables, mass);
-        if (switchFunction.getReal() > 0.) {
-            final T minimum = FastMath.min(switchFunction, getMaximumThrustMagnitude());
-            adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables)
-                    .multiply(minimum).divide(mass.square()));
+        if (getAdjointDimension() > 6) {
+            final T switchFunction = evaluateSwitchFunction(adjointVariables, mass);
+            if (switchFunction.getReal() > 0.) {
+                final T minimum = FastMath.min(switchFunction, getMaximumThrustMagnitude());
+                adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables)
+                        .multiply(minimum).divide(mass.square()));
+            }
         }
     }
 
@@ -114,7 +116,11 @@ public class FieldQuadraticPenaltyCartesianFuel<T extends CalculusFieldElement<T
      * @return value of switch function
      */
     private T evaluateSwitchFunction(final T[] adjointVariables, final T mass) {
-        return (getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor())).subtract(1.)).divide(getEpsilon()).add(1);
+        T epsilonIndependentTerm = getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(1.);
+        if (getAdjointDimension() > 6) {
+            epsilonIndependentTerm = epsilonIndependentTerm.subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        }
+        return epsilonIndependentTerm.divide(getEpsilon()).add(1);
     }
 
     /** {@inheritDoc} */

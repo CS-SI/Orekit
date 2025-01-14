@@ -22,7 +22,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetectionSettings;
 
 /**
- * Abstract class for energy cost with Cartesian coordinates and non-zero mass flow rate.
+ * Abstract class for energy cost with Cartesian coordinates.
  * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
  * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
  *
@@ -81,7 +81,9 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
     @Override
     public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
                                          final double[] adjointDerivatives) {
-        adjointDerivatives[6] += getThrustForceNorm(adjointVariables, mass) * getAdjointVelocityNorm(adjointVariables) / (mass * mass);
+        if (getAdjointDimension() > 6) {
+            adjointDerivatives[6] += getThrustForceNorm(adjointVariables, mass) * getAdjointVelocityNorm(adjointVariables) / (mass * mass);
+        }
     }
 
     /** {@inheritDoc} */
@@ -124,7 +126,11 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
          */
         private double evaluateVariablePart(final double[] adjointVariables, final double mass) {
             final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
-            return adjointVelocityNorm / mass - getMassFlowRateFactor() * adjointVariables[6];
+            double variablePart = adjointVelocityNorm / mass;
+            if (getAdjointDimension() > 6) {
+                variablePart -= getMassFlowRateFactor() * adjointVariables[6];
+            }
+            return variablePart;
         }
 
     }

@@ -96,10 +96,12 @@ public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
     @Override
     public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
                                          final double[] adjointDerivatives) {
-        final double switchFunction = evaluateSwitchFunction(adjointVariables, mass);
-        if (switchFunction > 0.) {
-            adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) *
-                    FastMath.min(switchFunction, getMaximumThrustMagnitude()) / (mass * mass);
+        if (getAdjointDimension() > 6) {
+            final double switchFunction = evaluateSwitchFunction(adjointVariables, mass);
+            if (switchFunction > 0.) {
+                adjointDerivatives[6] += getAdjointVelocityNorm(adjointVariables) *
+                        FastMath.min(switchFunction, getMaximumThrustMagnitude()) / (mass * mass);
+            }
         }
     }
 
@@ -110,8 +112,11 @@ public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
      * @return value of switch function
      */
     private double evaluateSwitchFunction(final double[] adjointVariables, final double mass) {
-        return (getAdjointVelocityNorm(adjointVariables) / mass - adjointVariables[6] * getMassFlowRateFactor() - 1.) /
-                getEpsilon() + 1;
+        double epsilonIndependentTerm = getAdjointVelocityNorm(adjointVariables) / mass - 1.;
+        if (getAdjointDimension() > 6) {
+            epsilonIndependentTerm -= getMassFlowRateFactor() * adjointVariables[6];
+        }
+        return epsilonIndependentTerm / getEpsilon() + 1.;
     }
 
     /** {@inheritDoc} */
