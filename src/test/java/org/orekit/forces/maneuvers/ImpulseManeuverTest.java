@@ -531,7 +531,7 @@ class ImpulseManeuverTest {
         int count = 0;
 
         @Override
-        public Vector3D getImpulse(SpacecraftState state, boolean isForward, AttitudeProvider attitudeOverride) {
+        public Vector3D getImpulse(SpacecraftState state, boolean isForward) {
             count++;
             return Vector3D.PLUS_I.scalarMultiply(count);
         }

@@ -20,7 +20,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.time.FieldAbsoluteDate;
 
@@ -37,10 +36,9 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
      * Method returning the impulse to be applied (Field version).
      * @param state state before the maneuver is applied if {@code isForward} is true, after otherwise
      * @param isForward flag on propagation direction
-     * @param attitudeOverride maneuver attitude override, can be null
      * @return impulse in satellite's frame
      */
-    FieldVector3D<T> getImpulse(FieldSpacecraftState<T> state, boolean isForward, AttitudeProvider attitudeOverride);
+    FieldVector3D<T> getImpulse(FieldSpacecraftState<T> state, boolean isForward);
 
     /**
      * Method called at start of propagation.
@@ -66,13 +64,13 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
      * @return constant provider
      */
     static <T extends CalculusFieldElement<T>> FieldImpulseProvider<T> of(final FieldVector3D<T> forwardImpulse) {
-        return (state, isForward, attitudeOverride) -> isForward ? forwardImpulse : forwardImpulse.negate();
+        return (state, isForward) -> isForward ? forwardImpulse : forwardImpulse.negate();
     }
 
     /**
      * Get a provider returning a given vector for forward propagation and its opposite for backward.
-     * @param field field
      * @param forwardImpulse forward impulse vector
+     *
      * @param <T> field type
      * @return constant provider
      */
@@ -88,8 +86,8 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
      * @return provider
      */
     static <T extends CalculusFieldElement<T>> FieldImpulseProvider<T> of(final ImpulseProvider impulseProvider) {
-        return (state, isForward, attitudeOverride) -> {
-            final Vector3D deltaV = impulseProvider.getImpulse(state.toSpacecraftState(), isForward, attitudeOverride);
+        return (state, isForward) -> {
+            final Vector3D deltaV = impulseProvider.getImpulse(state.toSpacecraftState(), isForward);
             return new FieldVector3D<>(state.getDate().getField(), deltaV);
         };
     }

@@ -24,10 +24,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.orekit.TestUtils;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.FieldCartesianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.FieldSpacecraftState;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -40,10 +43,10 @@ class FieldImpulseProviderTest {
         final Binary64Field field = Binary64Field.getInstance();
         final FieldImpulseProvider<Binary64> provider = FieldImpulseProvider.of(field, forwardImpulse);
         // WHEN
-        final Vector3D vector3D = provider.getImpulse(null, true, null).toVector3D();
+        final Vector3D vector3D = provider.getImpulse(null, true).toVector3D();
         // THEN
         Assertions.assertEquals(forwardImpulse, vector3D);
-        Assertions.assertEquals(forwardImpulse.negate(), provider.getImpulse(null, false, null).toVector3D());
+        Assertions.assertEquals(forwardImpulse.negate(), provider.getImpulse(null, false).toVector3D());
     }
 
     @Test
@@ -51,12 +54,15 @@ class FieldImpulseProviderTest {
         // GIVEN
         final Vector3D forwardImpulse = new Vector3D(1, 2, 3);
         final Binary64Field field = Binary64Field.getInstance();
-        final FieldImpulseProvider<Binary64> provider = FieldImpulseProvider.of(new FieldVector3D<>(field, forwardImpulse));
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final SpacecraftState state = new SpacecraftState(orbit, 100);
+        final FieldSpacecraftState<Binary64> fieldState = new FieldSpacecraftState<>(field, state);
         // WHEN
-        final Vector3D vector3D = provider.getImpulse(null, true, null).toVector3D();
+        final FieldImpulseProvider<Binary64> provider = FieldImpulseProvider.of(new FieldVector3D<>(field, forwardImpulse));
+        final Vector3D vector3D = provider.getImpulse(fieldState, true).toVector3D();
         // THEN
         Assertions.assertEquals(forwardImpulse, vector3D);
-        Assertions.assertEquals(forwardImpulse.negate(), provider.getImpulse(null, false, null).toVector3D());
+        Assertions.assertEquals(forwardImpulse.negate(), provider.getImpulse(fieldState, false).toVector3D());
     }
 
     @ParameterizedTest
@@ -68,9 +74,9 @@ class FieldImpulseProviderTest {
         final FieldImpulseProvider<Binary64> fieldImpulseProvider = FieldImpulseProvider.of(impulseProvider);
         final FieldSpacecraftState<Binary64> fieldSpacecraftState = buildFieldState();
         // WHEN
-        final Vector3D vector3D = fieldImpulseProvider.getImpulse(fieldSpacecraftState, isForward, null).toVector3D();
+        final Vector3D vector3D = fieldImpulseProvider.getImpulse(fieldSpacecraftState, isForward).toVector3D();
         // THEN
-        Assertions.assertEquals(impulseProvider.getImpulse(fieldSpacecraftState.toSpacecraftState(), isForward, null), vector3D);
+        Assertions.assertEquals(impulseProvider.getImpulse(fieldSpacecraftState.toSpacecraftState(), isForward), vector3D);
     }
 
     private static FieldSpacecraftState<Binary64> buildFieldState() {

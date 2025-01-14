@@ -29,7 +29,7 @@ import org.orekit.propagation.events.EventDetectionSettings;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.DoubleArrayDictionary;
+import org.orekit.utils.AbsolutePVCoordinates;
 import org.orekit.utils.PVCoordinates;
 
 /** Impulse maneuver model.
@@ -243,8 +243,8 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
             final AbsoluteDate date = oldState.getDate();
             final AttitudeProvider override = im.getAttitudeOverride();
             final boolean isStateOrbitDefined = oldState.isOrbitDefined();
-            final Rotation rotation;
 
+            final Rotation rotation;
             if (override == null) {
                 rotation = oldState.getAttitude().getRotation();
             } else {
@@ -253,36 +253,31 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
             }
 
             // convert velocity increment in inertial frame
-            final Vector3D deltaVSat = im.impulseProvider.getImpulse(oldState, im.forward, im.getAttitudeOverride());
+            final Vector3D deltaVSat = im.impulseProvider.getImpulse(oldState, im.forward);
             final Vector3D deltaV = rotation.applyInverseTo(deltaVSat);
-            final double sign     = im.forward ? +1 : -1;
 
             // apply increment to position/velocity
             final PVCoordinates oldPV = oldState.getPVCoordinates();
             final Vector3D newVelocity = oldPV.getVelocity().add(deltaV);
             final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(), newVelocity);
-            final CartesianOrbit newOrbit = new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
 
             // compute new mass
             final double normDeltaV = im.getControl3DVectorCostType().evaluate(deltaVSat);
+            final double sign     = im.forward ? +1 : -1;
             final double newMass = oldState.getMass() * FastMath.exp(-sign * normDeltaV / im.vExhaust);
 
             // pack everything in a new state
-            SpacecraftState newState;
-            if (isStateOrbitDefined) {
-                newState = new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
-                        oldState.getAttitude(), newMass);
+            if (oldState.isOrbitDefined()) {
+                final CartesianOrbit newOrbit = new CartesianOrbit(newPV, oldState.getFrame(), oldState.getDate(),
+                        oldState.getMu());
+                return new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
+                        oldState.getAttitude(), newMass, oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
             } else {
-                newState = new SpacecraftState(oldState.getAbsPVA(), oldState.getAttitude(), newMass);
+                final AbsolutePVCoordinates newAPV = new AbsolutePVCoordinates(oldState.getFrame(), oldState.getDate(),
+                        newPV);
+                return new SpacecraftState(newAPV, oldState.getAttitude(), newMass,
+                        oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
             }
-            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesValues().getData()) {
-                newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
-            }
-            for (final DoubleArrayDictionary.Entry entry : oldState.getAdditionalStatesDerivatives().getData()) {
-                newState = newState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
-            }
-            return newState;
-
         }
 
     }

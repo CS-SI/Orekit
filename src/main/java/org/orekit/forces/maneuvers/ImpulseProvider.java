@@ -17,7 +17,6 @@
 package org.orekit.forces.maneuvers;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
@@ -33,10 +32,9 @@ public interface ImpulseProvider {
      * Method returning the impulse to be applied.
      * @param state state before the maneuver is applied if {@code isForward} is true, after otherwise
      * @param isForward flag on propagation direction
-     * @param attitudeOverride maneuver attitude override, can be null
      * @return impulse in satellite's frame
      */
-    Vector3D getImpulse(SpacecraftState state, boolean isForward, AttitudeProvider attitudeOverride);
+    Vector3D getImpulse(SpacecraftState state, boolean isForward);
 
     /**
      * Method called at start of propagation.
@@ -57,10 +55,11 @@ public interface ImpulseProvider {
 
     /**
      * Get a provider returning a given vector for forward propagation and its opposite for backward.
+     * The attitude comes from the state directly.
      * @param forwardImpulse forward impulse vector
      * @return constant provider
      */
-    static ImpulseProvider of(Vector3D forwardImpulse) {
-        return (state, isForward, attitudeOverride) -> isForward ? forwardImpulse : forwardImpulse.negate();
+    static ImpulseProvider of(final Vector3D forwardImpulse) {
+        return (state, isForward) -> isForward ? forwardImpulse : forwardImpulse.negate();
     }
 }
