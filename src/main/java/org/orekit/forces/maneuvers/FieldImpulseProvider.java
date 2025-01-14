@@ -70,7 +70,7 @@ public interface FieldImpulseProvider<T extends CalculusFieldElement<T>> {
     /**
      * Get a provider returning a given vector for forward propagation and its opposite for backward.
      * @param forwardImpulse forward impulse vector
-     *
+     * @param field field
      * @param <T> field type
      * @return constant provider
      */

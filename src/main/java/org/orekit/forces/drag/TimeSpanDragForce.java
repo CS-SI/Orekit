@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.drag;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -25,7 +24,6 @@ import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
-import org.hipparchus.ode.events.Action;
 import org.hipparchus.util.MathArrays;
 import org.orekit.annotation.DefaultDataContext;
 import org.orekit.frames.Frame;
@@ -38,10 +36,10 @@ import org.orekit.propagation.events.FieldDateDetector;
 import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
-import org.orekit.time.FieldTimeStamped;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.ParameterDriver;
+import org.orekit.utils.ParameterDriversProvider;
 import org.orekit.utils.TimeSpanMap;
 import org.orekit.utils.TimeSpanMap.Span;
 import org.orekit.utils.TimeSpanMap.Transition;
@@ -124,11 +122,8 @@ import org.orekit.utils.TimeSpanMap.Transition;
  *  </p>
  * @author Maxime Journot
  * @since 10.2
- * @deprecated as of 12.1
  */
-@Deprecated
 public class TimeSpanDragForce extends AbstractDragForceModel {
-    // TODO move to tests
 
     /** Prefix for dates before in the parameter drivers' name. */
     public static final String DATE_BEFORE = " - Before ";
@@ -290,17 +285,9 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         // Get the transitions' dates from the TimeSpanMap
         final AbsoluteDate[] transitionDates = getTransitionDates();
 
-        // Initialize the date detector
-        final DateDetector datesDetector = new DateDetector(transitionDates[0]).
-                        withMaxCheck(60.).
-                        withHandler((state, detector, increasing) -> Action.RESET_DERIVATIVES);
-        // Add all transitions' dates to the date detector
-        for (int i = 1; i < transitionDates.length; i++) {
-            datesDetector.addEventDate(transitionDates[i]);
-        }
-
-        // Return the detector
-        return Stream.of(datesDetector);
+        // create detector and return it in Stream
+        final DateDetector detector = getDateDetector(transitionDates);
+        return Stream.of(detector);
     }
 
     /** {@inheritDoc}
@@ -315,20 +302,9 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
         // Get the transitions' dates from the TimeSpanMap
         final AbsoluteDate[] transitionDates = getTransitionDates();
 
-        // Initialize the date detector
-        @SuppressWarnings("unchecked")
-        final FieldDateDetector<T> datesDetector =
-                        new FieldDateDetector<>(field, (FieldTimeStamped<T>[]) Array.newInstance(FieldTimeStamped.class, 0)).
-                        withMaxCheck(60.0).
-                        withHandler((FieldSpacecraftState<T> state, FieldEventDetector<T> detector, boolean increasing) ->
-                                    Action.RESET_DERIVATIVES);
-        // Add all transitions' dates to the date detector
-        for (int i = 0; i < transitionDates.length; i++) {
-            datesDetector.addEventDate(new FieldAbsoluteDate<>(field, transitionDates[i]));
-        }
-
-        // Return the detector
-        return Stream.of(datesDetector);
+        // create detector and return it in Stream
+        final FieldDateDetector<T> detector = getFieldDateDetector(field, transitionDates);
+        return Stream.of(detector);
     }
 
     /** {@inheritDoc}
@@ -421,12 +397,7 @@ public class TimeSpanDragForce extends AbstractDragForceModel {
      * @return true if the name was found, false otherwise
      */
     private boolean findByName(final List<ParameterDriver> driversList, final String name) {
-        for (final ParameterDriver d : driversList) {
-            if (d.getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
+        return ParameterDriversProvider.findByName(driversList, name);
     }
 
     /** Get the dates of the transitions for the drag sensitive models {@link TimeSpanMap}.
