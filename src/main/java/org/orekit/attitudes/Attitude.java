@@ -16,8 +16,6 @@
  */
 package org.orekit.attitudes;
 
-import java.io.Serializable;
-
 import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
@@ -48,11 +46,7 @@ import org.orekit.utils.TimeStampedAngularCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class Attitude
-    implements TimeStamped, TimeShiftable<Attitude>, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140611L;
+public class Attitude implements TimeStamped, TimeShiftable<Attitude> {
 
     /** Reference frame. */
     private final Frame referenceFrame;
@@ -122,6 +116,7 @@ public class Attitude
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      * @since 13.0
      */
+    @Override
     public Attitude shiftedBy(final TimeOffset dt) {
         return new Attitude(referenceFrame, orientation.shiftedBy(dt));
     }

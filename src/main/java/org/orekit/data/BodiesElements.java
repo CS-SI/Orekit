@@ -16,8 +16,6 @@
  */
 package org.orekit.data;
 
-import java.io.Serializable;
-
 import org.orekit.time.AbsoluteDate;
 
 /** Elements of the bodies having an effect on nutation.
@@ -25,10 +23,7 @@ import org.orekit.time.AbsoluteDate;
  * it does not provide any processing method.</p>
  * @author Luc Maisonobe
  */
-public final class BodiesElements extends  DelaunayArguments implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170106L;
+public final class BodiesElements extends DelaunayArguments {
 
     /** Mean Mercury longitude. */
     private final double lMe;

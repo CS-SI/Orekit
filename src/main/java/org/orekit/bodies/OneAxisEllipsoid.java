@@ -54,9 +54,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  */
 public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130518L;
-
     /** Threshold for polar and equatorial points detection. */
     private static final double ANGULAR_THRESHOLD = 1.0e-4;
 

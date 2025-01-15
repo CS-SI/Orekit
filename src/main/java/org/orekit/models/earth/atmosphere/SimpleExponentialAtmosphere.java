@@ -36,9 +36,6 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class SimpleExponentialAtmosphere implements Atmosphere {
 
-    /** Serializable UID.*/
-    private static final long serialVersionUID = 2772347498196369601L;
-
     /** Earth shape model. */
     private BodyShape    shape;
 

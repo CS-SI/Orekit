@@ -47,9 +47,6 @@ import org.orekit.utils.ExtendedPositionProvider;
  */
 public class HarrisPriester extends AbstractSunInfluencedAtmosphere {
 
-    /** Serializable UID.*/
-    private static final long serialVersionUID = 2772347498196369601L;
-
     // Constants :
 
     /** Default cosine exponent value. */

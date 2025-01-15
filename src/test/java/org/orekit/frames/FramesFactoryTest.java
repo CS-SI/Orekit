@@ -187,7 +187,6 @@ public class FramesFactoryTest {
     @Test
     public void testUnwrapShiftingTransformProvider() {
         TransformProvider raw = new TransformProvider() {
-            private static final long serialVersionUID = 1L;
             public Transform getTransform(final AbsoluteDate date) {
                 double dt = date.durationFrom(AbsoluteDate.J2000_EPOCH);
                 double sin = FastMath.sin(dt * MathUtils.TWO_PI / Constants.JULIAN_DAY);

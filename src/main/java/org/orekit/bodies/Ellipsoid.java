@@ -16,8 +16,6 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -36,10 +34,7 @@ import org.orekit.frames.Frame;
  * @since 7.0
  * @author Luc Maisonobe
  */
-public class Ellipsoid implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140924L;
+public class Ellipsoid {
 
     /** Frame at the ellipsoid center, aligned with principal axes. */
     private final Frame frame;

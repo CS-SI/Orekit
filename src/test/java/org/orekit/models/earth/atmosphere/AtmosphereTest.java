@@ -78,8 +78,6 @@ class AtmosphereTest {
 
     private static class TestAtmosphere implements Atmosphere {
 
-        private static final long serialVersionUID = 1L;
-
         @Override
         public Frame getFrame() {
             return FramesFactory.getITRF(IERSConventions.IERS_2003, false);

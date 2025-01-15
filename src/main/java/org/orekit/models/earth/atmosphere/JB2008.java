@@ -77,9 +77,6 @@ import org.orekit.utils.ExtendedPositionProvider;
  */
 public class JB2008 extends AbstractSunInfluencedAtmosphere {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -4201270765122160831L;
-
     /** Minimum altitude (m) for JB2008 use. */
     private static final double ALT_MIN = 90000.;
 
@@ -172,7 +169,7 @@ public class JB2008 extends AbstractSunInfluencedAtmosphere {
     private JB2008InputParameters inputParams;
 
     /** Earth body shape. */
-    private BodyShape earth;
+    private final BodyShape earth;
 
     /** UTC time scale. */
     private final TimeScale utc;
