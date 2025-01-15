@@ -31,6 +31,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 
 /** Impulse maneuver model for propagators working with Fields.
@@ -284,7 +285,9 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
                         oldState.getAttitude(), newMass, oldState.getAdditionalStatesValues(),
                         oldState.getAdditionalStatesDerivatives());
             } else {
-                return new FieldSpacecraftState<>(oldState.getAbsPVA(), oldState.getAttitude(), newMass,
+                final FieldAbsolutePVCoordinates<T> newAbsPVA = new FieldAbsolutePVCoordinates<>(oldState.getFrame(),
+                        oldState.getDate(), newPV);
+                return new FieldSpacecraftState<>(newAbsPVA, oldState.getAttitude(), newMass,
                         oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
             }
         }
