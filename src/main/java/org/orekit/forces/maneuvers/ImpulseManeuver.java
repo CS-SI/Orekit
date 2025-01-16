@@ -231,7 +231,7 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
         public Action eventOccurred(final SpacecraftState s, final EventDetector detector,
                                     final boolean increasing) {
             final ImpulseManeuver im = (ImpulseManeuver) detector;
-            im.trigger.getHandler().eventOccurred(s, detector, increasing); // Action is ignored but method still called
+            im.trigger.getHandler().eventOccurred(s, im.trigger, increasing); // Action is ignored but method still called
             return Action.RESET_STATE;
         }
 

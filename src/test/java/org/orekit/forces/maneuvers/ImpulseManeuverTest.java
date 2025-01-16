@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -132,6 +133,19 @@ class ImpulseManeuverTest {
         Assertions.assertEquals(finalVyExpected, finalVelocity.getY(), maneuverTolerance);
         Assertions.assertEquals(finalVzExpected, finalVelocity.getZ(), maneuverTolerance);
 
+    }
+
+    @Test
+    void testEventOccurredEventSlopeFilter() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final ApsideDetector detector = new ApsideDetector(orbit);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new EventSlopeFilter<>(detector,
+                FilterType.TRIGGER_ONLY_INCREASING_EVENTS), Vector3D.ZERO, Double.POSITIVE_INFINITY);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        // WHEN & THEN
+        propagator.addEventDetector(maneuver);
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(orbit.getDate().shiftedBy(1e5)));
     }
 
     @Test

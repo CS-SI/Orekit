@@ -241,7 +241,7 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
                                     final FieldEventDetector<T> detector,
                                     final boolean increasing) {
             final FieldImpulseManeuver<T> im = (FieldImpulseManeuver<T>) detector;
-            im.trigger.getHandler().eventOccurred(s, detector, increasing); // Action ignored but method still called
+            im.trigger.getHandler().eventOccurred(s, im.trigger, increasing); // Action ignored but method still called
             return Action.RESET_STATE;
         }
 
