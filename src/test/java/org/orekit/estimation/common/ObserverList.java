@@ -14,25 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.sequential;
+package org.orekit.estimation.common;
 
-import org.hipparchus.filtering.kalman.ProcessEstimate;
-import org.orekit.estimation.measurements.ObservedMeasurement;
-import org.orekit.propagation.Propagator;
+import org.orekit.estimation.sequential.KalmanEstimation;
+import org.orekit.estimation.sequential.KalmanObserver;
 
-public interface SequentialModel {
+import java.util.List;
 
-    /** Finalize estimation.
-     * @param observedMeasurement measurement that has just been processed
-     * @param estimate corrected estimate
-     */
-    void finalizeEstimation(ObservedMeasurement<?> observedMeasurement,
-                            ProcessEstimate estimate);
+/** Class for storing multiple KalmanObservers
+ */
+public class ObserverList implements KalmanObserver {
 
-    /** Get the propagators estimated with the values set in the propagators builders.
-     * @return propagators based on the current values in the builder
-     */
-    Propagator[] getEstimatedPropagators();
+    private final List<KalmanObserver> observerList;
 
-    double[] getScale();
+    public ObserverList(final List<KalmanObserver> observers) {
+        this.observerList = observers;
+    }
+
+    @Override
+    public void init(KalmanEstimation estimation) {
+        observerList.forEach(observer -> observer.init(estimation));
+    }
+
+    @Override
+    public void evaluationPerformed(KalmanEstimation estimation) {
+        observerList.forEach(observer -> observer.evaluationPerformed(estimation));
+    }
 }

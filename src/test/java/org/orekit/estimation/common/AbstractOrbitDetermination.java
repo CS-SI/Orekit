@@ -38,7 +38,6 @@ import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.linear.MatrixUtils;
 import org.hipparchus.linear.QRDecomposer;
 import org.hipparchus.linear.RealMatrix;
-import org.hipparchus.linear.RealVector;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.GaussNewtonOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer;
 import org.hipparchus.optim.nonlinear.vector.leastsquares.LeastSquaresOptimizer.Optimum;
@@ -771,7 +770,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         }
 
         // Build the Kalman
-        final AbstractSequentialEstimator kalman;
+        final AbstractKalmanEstimator kalman;
         if (isUnscented) {
             // Unscented 
             final UnscentedKalmanEstimatorBuilder kalmanBuilder = new UnscentedKalmanEstimatorBuilder().
@@ -806,7 +805,12 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         kalman.setObserver(new ObserverList(kalmanObservers));
 
         // Process the list of measurements
-        final Orbit estimated = kalman.processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+        final Orbit estimated;
+        if (isUnscented) {
+            estimated = ((UnscentedKalmanEstimator) kalman).processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+        } else {
+            estimated = ((KalmanEstimator) kalman).processMeasurements(multiplexed)[0].getInitialState().getOrbit();
+        }
 
         // Smooth backward
         final List<PhysicalEstimatedState> smoothedStates = smoother.backwardsSmooth();
@@ -815,7 +819,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
         final RealMatrix covarianceMatrix = kalman.getPhysicalEstimatedCovarianceMatrix();
 
         // Parameters and measurements.
-        final ParameterDriversList propagationParameters   = kalman.getPropagationParametersDrivers(true);
+        final ParameterDriversList propagationParameters  = kalman.getPropagationParametersDrivers(true);
         final ParameterDriversList measurementsParameters = kalman.getEstimatedMeasurementsParameters();
 
         // Eventually, print parameter changes, statistics and covariances
@@ -2465,7 +2469,7 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     /** Display covariances and sigmas as predicted by a Kalman filter at date t.
      */
-    private void displayFinalCovariances(final PrintStream logStream, final AbstractSequentialEstimator kalman) {
+    private void displayFinalCovariances(final PrintStream logStream, final AbstractKalmanEstimator kalman) {
 
 //        // Get kalman estimated propagator
 //        final NumericalPropagator kalmanProp = kalman.getProcessModel().getEstimatedPropagator();
@@ -2807,26 +2811,6 @@ public abstract class AbstractOrbitDetermination<T extends PropagatorBuilder> {
 
     
     
-    }
-
-
-    public static class ObserverList implements KalmanObserver {
-
-        private final List<KalmanObserver> observerList;
-
-        public ObserverList(final List<KalmanObserver> observers) {
-            this.observerList = observers;
-        }
-
-        @Override
-        public void init(KalmanEstimation estimation) {
-            observerList.forEach(observer -> observer.init(estimation));
-        }
-
-        @Override
-        public void evaluationPerformed(KalmanEstimation estimation) {
-            observerList.forEach(observer -> observer.evaluationPerformed(estimation));
-        }
     }
 
 }

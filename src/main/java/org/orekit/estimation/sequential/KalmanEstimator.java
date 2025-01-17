@@ -18,9 +18,14 @@ package org.orekit.estimation.sequential;
 
 import java.util.List;
 
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.filtering.kalman.KalmanFilter;
+import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
+import org.orekit.errors.OrekitException;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.BrouwerLyddanePropagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.Ephemeris;
@@ -71,7 +76,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Luc Maisonobe
  * @since 9.2
  */
-public class KalmanEstimator extends AbstractSequentialEstimator {
+public class KalmanEstimator extends AbstractKalmanEstimator {
 
     /** Kalman filter process model. */
     private final KalmanModel processModel;
@@ -118,8 +123,40 @@ public class KalmanEstimator extends AbstractSequentialEstimator {
 
     /** {@inheritDoc}. */
     @Override
-    protected SequentialModel getProcessModel() {
-        return processModel;
+    protected double[] getScale() {
+        return processModel.getScale();
+    }
+
+    /** Process a single measurement.
+     * <p>
+     * Update the filter with the new measurement by calling the estimate method.
+     * </p>
+     * @param observedMeasurement the measurement to process
+     * @return estimated propagators
+     */
+    public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
+        try {
+            final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, getReferenceDate()));
+            processModel.finalizeEstimation(observedMeasurement, estimate);
+            if (getObserver() != null) {
+                getObserver().evaluationPerformed(processModel);
+            }
+            return processModel.getEstimatedPropagators();
+        } catch (MathRuntimeException mrte) {
+            throw new OrekitException(mrte);
+        }
+    }
+
+    /** Process several measurements.
+     * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
+     * @return estimated propagators
+     */
+    public Propagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
+        Propagator[] propagators = null;
+        for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
+            propagators = estimationStep(observedMeasurement);
+        }
+        return propagators;
     }
 
 }

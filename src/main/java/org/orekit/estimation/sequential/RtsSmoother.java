@@ -54,10 +54,10 @@ public class RtsSmoother implements KalmanObserver {
     /** Constructor.
      * @param estimator the Kalman estimator
      */
-    public RtsSmoother(final AbstractSequentialEstimator estimator) {
-        this.smoother = new KalmanSmoother(estimator.getMatrixDecomposer());;
+    public RtsSmoother(final AbstractKalmanEstimator estimator) {
+        this.smoother = new KalmanSmoother(estimator.getMatrixDecomposer());
         this.referenceDate = estimator.getReferenceDate();
-        this.covarianceScale = estimator.getProcessModel().getScale();
+        this.covarianceScale = estimator.getScale();
         this.estimatedOrbitalParameters = estimator.getOrbitalParametersDrivers(true);
         this.estimatedPropagationParameters = estimator.getPropagationParametersDrivers(true);
         this.estimatedMeasurementsParameters = estimator.getEstimatedMeasurementsParameters();

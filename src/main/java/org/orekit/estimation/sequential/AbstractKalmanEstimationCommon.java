@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 9.2
  */
-abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, SequentialModel {
+abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
 
     /** Builders for propagators. */
     private final List<PropagatorBuilder> builders;
@@ -592,7 +592,7 @@ abstract class AbstractKalmanEstimationCommon implements KalmanEstimation, Seque
     /** Getter for the scale.
      * @return the scale
      */
-    public double[] getScale() {
+    protected double[] getScale() {
         return scale;
     }
 

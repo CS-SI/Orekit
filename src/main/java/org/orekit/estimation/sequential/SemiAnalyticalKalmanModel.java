@@ -309,6 +309,13 @@ public  class SemiAnalyticalKalmanModel implements KalmanEstimation, NonLinearPr
         return correctedEstimate;
     }
 
+    /** Getter for the scale.
+     * @return the scale
+     */
+    protected double[] getScale() {
+        return scale;
+    }
+
     /** Process a single measurement.
      * <p>
      * Update the filter with the new measurements.

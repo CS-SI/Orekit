@@ -19,9 +19,12 @@ package org.orekit.estimation.sequential;
 import java.util.List;
 
 import org.hipparchus.filtering.kalman.KalmanFilter;
+import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.util.UnscentedTransformProvider;
+import org.orekit.estimation.measurements.ObservedMeasurement;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.conversion.DSSTPropagatorBuilder;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.utils.ParameterDriver;
@@ -59,7 +62,7 @@ import org.orekit.utils.ParameterDriversList;
  * @author Bryan Cazabonne
  * @since 11.3
  */
-public class UnscentedKalmanEstimator extends AbstractSequentialEstimator {
+public class UnscentedKalmanEstimator extends AbstractKalmanEstimator {
 
     /** Unscented Kalman filter process model. */
     private final UnscentedKalmanModel processModel;
@@ -105,8 +108,36 @@ public class UnscentedKalmanEstimator extends AbstractSequentialEstimator {
 
     /** {@inheritDoc}. */
     @Override
-    protected SequentialModel getProcessModel() {
-        return processModel;
+    protected double[] getScale() {
+        return processModel.getScale();
+    }
+
+    /** Process a single measurement.
+     * <p>
+     * Update the filter with the new measurement by calling the estimate method.
+     * </p>
+     * @param observedMeasurement the measurement to process
+     * @return estimated propagator
+     */
+    public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
+        final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, getReferenceDate()));
+        processModel.finalizeEstimation(observedMeasurement, estimate);
+        if (getObserver() != null) {
+            getObserver().evaluationPerformed(processModel);
+        }
+        return processModel.getEstimatedPropagators();
+    }
+
+    /** Process several measurements.
+     * @param observedMeasurements the measurements to process in <em>chronologically sorted</em> order
+     * @return estimated propagator
+     */
+    public Propagator[] processMeasurements(final Iterable<ObservedMeasurement<?>> observedMeasurements) {
+        Propagator[] propagators = null;
+        for (ObservedMeasurement<?> observedMeasurement : observedMeasurements) {
+            propagators = estimationStep(observedMeasurement);
+        }
+        return propagators;
     }
 
 }
