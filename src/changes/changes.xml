@@ -33,6 +33,9 @@
         <action dev="luc" type="fix" issue="1625">
             Added implementation of ITU version of NeQuick ionosphere model.
         </action>
+        <action dev="markrutten" type="add" issue="1639">
+            Add Kalman smoother.
+        </action>
         <action dev="luc" type="fix" issue="1638">
             Fixed field implementation of Galileo NeQuick ionosphere model.
         </action>
