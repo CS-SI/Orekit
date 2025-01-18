@@ -44,7 +44,7 @@ import java.util.List;
  * @author Bryan Cazabonne
  * @since 11.3
  */
-public class UnscentedKalmanModel extends KalmanEstimationCommon implements UnscentedProcess<MeasurementDecorator> {
+public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon implements UnscentedProcess<MeasurementDecorator> {
 
     /** Reference values. */
     private final double[] referenceValues;

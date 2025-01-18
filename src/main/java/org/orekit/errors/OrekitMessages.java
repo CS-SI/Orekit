@@ -948,7 +948,14 @@ public enum OrekitMessages implements Localizable {
     WRONG_MEASUREMENT_COVARIANCE_DIMENSION("Measurement covariance expecting dimension {0}, got {1}"),
 
     /** CANNOT_PARSE_DATA. */
-    CANNOT_PARSE_DATA("cannot parse data {0}");
+    CANNOT_PARSE_DATA("cannot parse data {0}"),
+
+    /** COVARIANCE_MUST_BE_SQUARE. */
+    COVARIANCE_MUST_BE_SQUARE("covariance matrix is not square"),
+
+    /** INCONSISTENT_STATE_DIMENSIONS. */
+    INCONSISTENT_STATE_DIMENSIONS("state vector (dimension {0}) and covariance (dimension {1}) are inconsistent");
+
 
     /** Base name of the resource bundle in classpath. */
     private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";

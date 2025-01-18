@@ -911,3 +911,9 @@ CANNOT_PARSE_DATA = <MISSING TRANSLATION>
 
 # Measurement covariance expecting dimension {0}, got {1}
 WRONG_MEASUREMENT_COVARIANCE_DIMENSION = <MISSING TRANSLATION>
+
+# covariance must be square
+COVARIANCE_MUST_BE_SQUARE = <MISSING TRANSLATION>
+
+# state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
+INCONSISTENT_STATE_DIMENSIONS = <MISSING TRANSLATION>

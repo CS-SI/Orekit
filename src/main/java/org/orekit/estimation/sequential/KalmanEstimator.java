@@ -19,6 +19,7 @@ package org.orekit.estimation.sequential;
 import java.util.List;
 
 import org.hipparchus.exception.MathRuntimeException;
+import org.hipparchus.filtering.kalman.KalmanFilter;
 import org.hipparchus.filtering.kalman.ProcessEstimate;
 import org.hipparchus.filtering.kalman.extended.ExtendedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
@@ -33,7 +34,6 @@ import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.conversion.PropagatorBuilder;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ParameterDriver;
 import org.orekit.utils.ParameterDriversList;
 
@@ -78,17 +78,11 @@ import org.orekit.utils.ParameterDriversList;
  */
 public class KalmanEstimator extends AbstractKalmanEstimator {
 
-    /** Reference date. */
-    private final AbsoluteDate referenceDate;
-
     /** Kalman filter process model. */
     private final KalmanModel processModel;
 
     /** Filter. */
-    private final ExtendedKalmanFilter<MeasurementDecorator> filter;
-
-    /** Observer to retrieve current estimation info. */
-    private KalmanObserver observer;
+    private final KalmanFilter<MeasurementDecorator> filter;
 
     /** Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
@@ -103,9 +97,7 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
                     final List<CovarianceMatrixProvider> processNoiseMatricesProviders,
                     final ParameterDriversList estimatedMeasurementParameters,
                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
-        super(propagatorBuilders);
-        this.referenceDate      = propagatorBuilders.get(0).getInitialOrbitDate();
-        this.observer           = null;
+        super(decomposer, propagatorBuilders);
 
         // Build the process model and measurement model
         this.processModel = new KalmanModel(propagatorBuilders,
@@ -123,11 +115,16 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
         return processModel;
     }
 
-    /** Set the observer.
-     * @param observer the observer
-     */
-    public void setObserver(final KalmanObserver observer) {
-        this.observer = observer;
+    /** {@inheritDoc}. */
+    @Override
+    protected KalmanFilter<MeasurementDecorator> getKalmanFilter() {
+        return filter;
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    protected double[] getScale() {
+        return processModel.getScale();
     }
 
     /** Process a single measurement.
@@ -139,10 +136,10 @@ public class KalmanEstimator extends AbstractKalmanEstimator {
      */
     public Propagator[] estimationStep(final ObservedMeasurement<?> observedMeasurement) {
         try {
-            final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, referenceDate));
+            final ProcessEstimate estimate = filter.estimationStep(KalmanEstimatorUtil.decorate(observedMeasurement, getReferenceDate()));
             processModel.finalizeEstimation(observedMeasurement, estimate);
-            if (observer != null) {
-                observer.evaluationPerformed(processModel);
+            if (getObserver() != null) {
+                getObserver().evaluationPerformed(processModel);
             }
             return processModel.getEstimatedPropagators();
         } catch (MathRuntimeException mrte) {
