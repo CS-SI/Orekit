@@ -954,7 +954,7 @@ public enum OrekitMessages implements Localizable {
     COVARIANCE_MUST_BE_SQUARE("covariance matrix is not square"),
 
     /** INCONSISTENT_STATE_DIMENSIONS. */
-    INCONSISTENT_STATE_DIMENSIONS("state vector (dimension {0}) and covariance (dimension {0}) are inconsistent");
+    INCONSISTENT_STATE_DIMENSIONS("state vector (dimension {0}) and covariance (dimension {1}) are inconsistent");
 
 
     /** Base name of the resource bundle in classpath. */
