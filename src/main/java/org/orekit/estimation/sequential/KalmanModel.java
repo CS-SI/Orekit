@@ -44,7 +44,7 @@ import java.util.Map;
  * @author Maxime Journot
  * @since 9.2
  */
-public class KalmanModel extends KalmanEstimationCommon implements NonLinearProcess<MeasurementDecorator> {
+public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLinearProcess<MeasurementDecorator> {
 
 
     /** Harvesters for extracting Jacobians from integrated states. */
@@ -347,7 +347,6 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
 
         return new NonLinearEvolution(measurement.getTime(), predictedState,
                                       stateTransitionMatrix, normalizedProcessNoise, measurementMatrix);
-
     }
 
 

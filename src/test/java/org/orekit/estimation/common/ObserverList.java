@@ -1,4 +1,4 @@
-/* Copyright 2002-2025 CS GROUP
+/* Copyright 2002-2024 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,26 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.estimation.sequential;
+package org.orekit.estimation.common;
 
-/** Observer for {@link KalmanEstimator Kalman filter} estimations.
- * <p>
- * This interface is intended to be implemented by users to monitor
- * the progress of the Kalman filter estimator during estimation.
- * </p>
- * @author Luc Maisonobe
- * @author Maxime Journot
- * @since 9.2
+import org.orekit.estimation.sequential.KalmanEstimation;
+import org.orekit.estimation.sequential.KalmanObserver;
+
+import java.util.List;
+
+/** Class for storing multiple KalmanObservers
  */
-@FunctionalInterface
-public interface KalmanObserver {
+public class ObserverList implements KalmanObserver {
 
-    default void init(KalmanEstimation estimation) {
+    private final List<KalmanObserver> observerList;
+
+    public ObserverList(final List<KalmanObserver> observers) {
+        this.observerList = observers;
     }
 
-    /** Notification callback after each one of a Kalman filter estimation.
-     * @param estimation estimation performed by Kalman estimator
-     */
-    void evaluationPerformed(KalmanEstimation estimation);
+    @Override
+    public void init(KalmanEstimation estimation) {
+        observerList.forEach(observer -> observer.init(estimation));
+    }
 
+    @Override
+    public void evaluationPerformed(KalmanEstimation estimation) {
+        observerList.forEach(observer -> observer.evaluationPerformed(estimation));
+    }
 }

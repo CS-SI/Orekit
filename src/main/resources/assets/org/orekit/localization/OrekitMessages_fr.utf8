@@ -911,3 +911,9 @@ WRONG_MEASUREMENT_COVARIANCE_DIMENSION = la dimension de la covariance de mesure
 
 # cannot parse data {0}
 CANNOT_PARSE_DATA = impossible d''analyser la donnée {0}
+
+# covariance must be square
+COVARIANCE_MUST_BE_SQUARE = la matrice de covariance doit être carrée
+
+# state vector (dimension {0}) and covariance (dimension {1}) are inconsistent
+INCONSISTENT_STATE_DIMENSIONS = les tailles du vecteur d''état (dimension {0}) et de la covariance (dimension {1}) ne sont pas compatibles

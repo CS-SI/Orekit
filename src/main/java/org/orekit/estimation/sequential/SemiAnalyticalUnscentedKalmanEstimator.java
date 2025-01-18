@@ -16,9 +16,11 @@
  */
 package org.orekit.estimation.sequential;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.hipparchus.filtering.kalman.KalmanFilter;
 import org.hipparchus.filtering.kalman.unscented.UnscentedKalmanFilter;
 import org.hipparchus.linear.MatrixDecomposer;
 import org.hipparchus.util.UnscentedTransformProvider;
@@ -63,6 +65,9 @@ public class SemiAnalyticalUnscentedKalmanEstimator extends AbstractKalmanEstima
     /** Filter. */
     private final UnscentedKalmanFilter<MeasurementDecorator> filter;
 
+    /** Dummy scale. */
+    private final double[] scale;
+
     /** Unscented Kalman filter estimator constructor (package private).
      * @param decomposer decomposer to use for the correction phase
      * @param propagatorBuilder propagator builder used to evaluate the orbit.
@@ -77,13 +82,18 @@ public class SemiAnalyticalUnscentedKalmanEstimator extends AbstractKalmanEstima
                                            final ParameterDriversList estimatedMeasurementParameters,
                                            final CovarianceMatrixProvider measurementProcessNoiseMatrix,
                                            final UnscentedTransformProvider utProvider) {
-        super(Collections.singletonList(propagatorBuilder));
+        super(decomposer, Collections.singletonList(propagatorBuilder));
         // Build the process model and measurement model
         this.processModel = new SemiAnalyticalUnscentedKalmanModel(propagatorBuilder, processNoiseMatricesProvider,
                                                                    estimatedMeasurementParameters, measurementProcessNoiseMatrix);
 
         // Unscented Kalman Filter of Hipparchus
         this.filter = new UnscentedKalmanFilter<>(decomposer, processModel, processModel.getEstimate(), utProvider);
+
+        // Fill dummy scale with 1s
+        final int dim = processModel.getEstimate().getState().getDimension();
+        this.scale = new double[dim];
+        Arrays.fill(scale, 1.0);
 
     }
 
@@ -93,11 +103,29 @@ public class SemiAnalyticalUnscentedKalmanEstimator extends AbstractKalmanEstima
         return processModel;
     }
 
-    /** Set the observer.
-     * @param observer the observer
-     */
+    /** {@inheritDoc}. */
+    @Override
+    protected KalmanFilter<MeasurementDecorator> getKalmanFilter() {
+        return filter;
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    protected double[] getScale() {
+        return scale;
+    }
+
+    /** {@inheritDoc}. */
+    @Override
     public void setObserver(final KalmanObserver observer) {
-        this.processModel.setObserver(observer);
+        processModel.setObserver(observer);
+        observer.init(getKalmanEstimation());
+    }
+
+    /** {@inheritDoc}. */
+    @Override
+    public KalmanObserver getObserver() {
+        return processModel.getObserver();
     }
 
     /** Process a single measurement.
