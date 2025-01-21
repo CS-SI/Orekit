@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -79,7 +79,7 @@ public class IntervalEventTriggerTest extends AbstractManeuverTriggersTest<Inter
     }
 
     @Test
-    public void testComponents() {
+    void testComponents() {
         IntervalDates trigger = createTrigger(AbsoluteDate.J2000_EPOCH,
                                               AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
         final List<TimeStamped>    dates = trigger.getFiringIntervalDetector().getDates();

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -30,7 +30,6 @@ import java.util.stream.Stream;
  * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
  * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
  * Here, the control vector is chosen as the thrust force divided by the maximum thrust magnitude and expressed in the propagation frame.
- * It has a unit Euclidean norm.
  *
  * @param <T> field type
  * @author Romain Serra
@@ -80,7 +79,10 @@ public class FieldBoundedCartesianEnergy<T extends CalculusFieldElement<T>> exte
     @Override
     protected T getFieldThrustForceNorm(final T[] adjointVariables, final T mass) {
         final T adjointVelocityNorm = getFieldAdjointVelocityNorm(adjointVariables);
-        final T factor = adjointVelocityNorm.divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        T factor = adjointVelocityNorm.divide(mass);
+        if (getAdjointDimension() > 6) {
+            factor = factor.subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        }
         final double factorReal = factor.getReal();
         final T zero = mass.getField().getZero();
         if (factorReal > maximumThrustMagnitude.getReal()) {
@@ -96,14 +98,15 @@ public class FieldBoundedCartesianEnergy<T extends CalculusFieldElement<T>> exte
     @Override
     public Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         final T zero = field.getZero();
-        return Stream.of(new FieldSingularityDetector(zero), new FieldSingularityDetector(maximumThrustMagnitude));
+        return Stream.of(new FieldSingularityDetector(getEventDetectionSettings(), zero),
+                new FieldSingularityDetector(getEventDetectionSettings(), maximumThrustMagnitude));
     }
 
     /** {@inheritDoc} */
     @Override
     public BoundedCartesianEnergy toCartesianCost() {
-        return new BoundedCartesianEnergy(getAdjointName(), getMassFlowRateFactor().getReal(), maximumThrustMagnitude.getReal(),
-                getEventDetectionSettings().toEventDetectionSettings());
+        return new BoundedCartesianEnergy(getAdjointName(), getMassFlowRateFactor().getReal(),
+                maximumThrustMagnitude.getReal(), getEventDetectionSettings().toEventDetectionSettings());
     }
 
 }

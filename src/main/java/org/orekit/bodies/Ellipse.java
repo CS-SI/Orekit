@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.bodies;
-
-import java.io.Serializable;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.geometry.euclidean.twod.Vector2D;
@@ -39,10 +37,7 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @since 7.0
  * @author Luc Maisonobe
  */
-public class Ellipse implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140925L;
+public class Ellipse {
 
     /** Convergence limit. */
     private static final double ANGULAR_THRESHOLD = 1.0e-12;

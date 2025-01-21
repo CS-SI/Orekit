@@ -179,8 +179,6 @@ public class TidalDisplacementTest {
                                                              IERSConventions.class.getResourceAsStream(regularArguments),
                                                              regularArguments) {
 
-                    private static final long serialVersionUID = 20170913L;
-
                     @Override
                     public BodiesElements evaluateAll(final AbsoluteDate date) {
                         BodiesElements base = super.evaluateAll(date);

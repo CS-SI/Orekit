@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -105,7 +105,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testDefaultInterpolation() {
+    void testDefaultInterpolation() {
 
         IERSConventions conventions = IERSConventions.IERS_2010;
         Frame eme2000 = FramesFactory.getEME2000();
@@ -144,7 +144,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect1996() {
+    void testTideEffect1996() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -156,7 +156,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2003WithinAnnualPoleRange() {
+    void testTideEffect2003WithinAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(1969, 07, 01, 13, 59, 27.816, utc);
@@ -168,7 +168,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2003AfterAnnualPoleRange() {
+    void testTideEffect2003AfterAnnualPoleRange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -180,7 +180,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2010BeforePoleModelChange() {
+    void testTideEffect2010BeforePoleModelChange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
@@ -192,7 +192,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testTideEffect2010AfterModelChange() {
+    void testTideEffect2010AfterModelChange() {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
         AbsoluteDate date = new AbsoluteDate(2964, 8, 12, 11, 30, 00.000, utc);
@@ -204,7 +204,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationNoPoleTide()
+    void testStateJacobianVs80ImplementationNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -233,7 +233,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationGradientNoPoleTide()
+    void testStateJacobianVs80ImplementationGradientNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -262,7 +262,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationPoleTide()
+    void testStateJacobianVs80ImplementationPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -290,7 +290,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationGradientPoleTide()
+    void testStateJacobianVs80ImplementationGradientPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -318,7 +318,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesNoPoleTide()
+    void testStateJacobianVsFiniteDifferencesNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -345,7 +345,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesGradientNoPoleTide()
+    void testStateJacobianVsFiniteDifferencesGradientNoPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -372,7 +372,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesPoleTide()
+    void testStateJacobianVsFiniteDifferencesPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -399,7 +399,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesGradientPoleTide()
+    void testStateJacobianVsFiniteDifferencesGradientPoleTide()
         {
         Frame eme2000 = FramesFactory.getEME2000();
         TimeScale utc = TimeScalesFactory.getUTC();
@@ -429,7 +429,7 @@ public class SolidTidesTest extends AbstractLegacyForceModelTest {
      * <p>Mostly for code coverage, with the introduction of interface {@link EventDetectorsProvider}
      */
     @Test
-    public void testGetEventDetectors() {
+    void testGetEventDetectors() {
         
         // Given
         // -----

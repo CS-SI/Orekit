@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -403,7 +403,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testRelativeNumericPrecision() {
+    void testRelativeNumericPrecision() {
 
         // this test is similar in spirit to section 4.2 of Holmes and Featherstone paper,
         // but reduced to lower degree since our reference implementation is MUCH slower
@@ -438,7 +438,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testValue() {
+    void testValue() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -602,7 +602,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
     @Test
-    public void testGradient() {
+    void testGradient() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -632,7 +632,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testHessian() {
+    void testHessian() {
 
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
@@ -798,7 +798,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     // rough test to determine if J2 alone creates heliosynchronism
     @Test
-    public void testHelioSynchronous()
+    void testHelioSynchronous()
         {
 
         // initialization
@@ -860,7 +860,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
-    public void testEcksteinHechlerReference() {
+    void testEcksteinHechlerReference() {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -936,7 +936,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -962,7 +962,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -986,7 +986,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testTimeDependentField() {
+    void testTimeDependentField() {
 
         Utils.setDataRoot("regular-data:potential/icgem-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
@@ -1048,7 +1048,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobian()
+    void testStateJacobian()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1081,7 +1081,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVs80Implementation()
+    void testStateJacobianVs80Implementation()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1109,7 +1109,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVs80ImplementationGradient()
+    void testStateJacobianVs80ImplementationGradient()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1137,7 +1137,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferences()
+    void testStateJacobianVsFiniteDifferences()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1164,7 +1164,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testStateJacobianVsFiniteDifferencesGradient()
+    void testStateJacobianVsFiniteDifferencesGradient()
         {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
@@ -1191,7 +1191,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
     }
 
     @Test
-    public void testIssue996() {
+    void testIssue996() {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
@@ -1236,7 +1236,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractLegacyForceMo
 
     @Test
     @DisplayName("Test that acceleration derivatives with respect to absolute date are not equal to zero.")
-    public void testIssue1070() {
+    void testIssue1070() {
         // GIVEN
         // Define possibly shifted absolute date
         final int freeParameters = 1;

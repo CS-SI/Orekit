@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -117,12 +117,13 @@ class FieldCartesianFuelCostTest {
         Assertions.assertEquals(accelerationVector.scalarMultiply(mass).getNorm(), actual.negate());
     }
 
-    @Test
-    void testGetFieldEventDetectors() {
+    @ParameterizedTest
+    @ValueSource(doubles = {0., 1.})
+    void testGetFieldEventDetectors(final double massFlowRateFactor) {
         // GIVEN
         final String adjointName = "1";
-        final FieldCartesianFuelCost<Binary64> cartesianFuel = new FieldCartesianFuelCost<>(adjointName, Binary64.ONE,
-                new Binary64(2));
+        final FieldCartesianFuelCost<Binary64> cartesianFuel = new FieldCartesianFuelCost<>(adjointName,
+                new Binary64(massFlowRateFactor), new Binary64(2));
         final Binary64Field field = Binary64Field.getInstance();
         final double mass = 3;
         // WHEN

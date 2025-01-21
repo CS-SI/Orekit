@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.bodies;
 
-import java.io.Serializable;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
@@ -26,11 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.RotationConvention;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.Precision;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
-import org.orekit.data.DataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 import org.orekit.frames.FieldStaticTransform;
 import org.orekit.frames.FieldTransform;
 import org.orekit.frames.Frame;
@@ -48,9 +42,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author Luc Maisonobe
  */
 class JPLCelestialBody implements CelestialBody {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 3809787672779740923L;
 
     /** Name of the body. */
     private final String name;
@@ -175,19 +166,6 @@ class JPLCelestialBody implements CelestialBody {
         return transform.transformPosition(scaledPosition);
     }
 
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes the files supported names, the ephemeris type
-     * and the body name.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTOCelestialBody(supportedNames, generateType, name);
-    }
-
     /** {@inheritDoc} */
     public String getName() {
         return name;
@@ -211,9 +189,6 @@ class JPLCelestialBody implements CelestialBody {
     /** Inertially oriented body centered frame. */
     private class InertiallyOriented extends Frame {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -8849993808761896559L;
-
         /** Suffix for inertial frame name. */
         private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
 
@@ -223,9 +198,6 @@ class JPLCelestialBody implements CelestialBody {
          */
         InertiallyOriented(final Frame definingFrame, final String frameName) {
             super(definingFrame, new TransformProvider() {
-
-                /** Serializable UID. */
-                private static final long serialVersionUID = -8610328386110652400L;
 
                 /** {@inheritDoc} */
                 public Transform getTransform(final AbsoluteDate date) {
@@ -337,37 +309,23 @@ class JPLCelestialBody implements CelestialBody {
             }, frameName == null ? name + INERTIAL_FRAME_SUFFIX : frameName, true);
         }
 
-        /** Replace the instance with a data transfer object for serialization.
-         * <p>
-         * This intermediate class serializes the files supported names, the ephemeris type
-         * and the body name.
-         * </p>
-         * @return data transfer object that will be serialized
-         */
-        @DefaultDataContext
-        private Object writeReplace() {
-            return new DTOInertialFrame(supportedNames, generateType, name);
-        }
-
     }
 
     /** Body oriented body centered frame. */
     private class BodyOriented extends Frame {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20170109L;
-
-        /** Suffix for body frame name. */
+        /**
+         * Suffix for body frame name.
+         */
         private static final String BODY_FRAME_SUFFIX = "/rotating";
 
-        /** Simple constructor.
+        /**
+         * Simple constructor.
+         *
          * @param frameName name to use (if null a default name will be built)
          */
         BodyOriented(final String frameName) {
             super(inertialFrame, new TransformProvider() {
-
-                /** Serializable UID. */
-                private static final long serialVersionUID = 20170109L;
 
                 /** {@inheritDoc} */
                 public Transform getTransform(final AbsoluteDate date) {
@@ -375,8 +333,8 @@ class JPLCelestialBody implements CelestialBody {
                     final double w0 = iauPole.getPrimeMeridianAngle(date);
                     final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
                     return new Transform(date,
-                                         new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM),
-                                         new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K));
+                            new Rotation(Vector3D.PLUS_K, w0, RotationConvention.FRAME_TRANSFORM),
+                            new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K));
                 }
 
                 /** {@inheritDoc} */
@@ -385,158 +343,12 @@ class JPLCelestialBody implements CelestialBody {
                     final T w0 = iauPole.getPrimeMeridianAngle(date);
                     final T w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
                     return new FieldTransform<>(date,
-                                    new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
-                                                    RotationConvention.FRAME_TRANSFORM),
-                                    new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
+                            new FieldRotation<>(FieldVector3D.getPlusK(date.getField()), w0,
+                                    RotationConvention.FRAME_TRANSFORM),
+                            new FieldVector3D<>(w1.subtract(w0).divide(dt), Vector3D.PLUS_K));
                 }
 
             }, frameName == null ? name + BODY_FRAME_SUFFIX : frameName, false);
         }
-
-        /** Replace the instance with a data transfer object for serialization.
-         * <p>
-         * This intermediate class serializes the files supported names, the ephemeris type
-         * and the body name.
-         * </p>
-         * @return data transfer object that will be serialized
-         */
-        @DefaultDataContext
-        private Object writeReplace() {
-            return new DTOBodyFrame(supportedNames, generateType, name);
-        }
-
     }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private abstract static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 674742836536072422L;
-
-        /** Regular expression for supported files names. */
-        private final String supportedNames;
-
-        /** Ephemeris type to generate. */
-        private final EphemerisType generateType;
-
-        /** Name of the body. */
-        private final String name;
-
-        /** Simple constructor.
-         * @param supportedNames regular expression for supported files names
-         * @param generateType ephemeris type to generate
-         * @param name name of the body
-         */
-        DataTransferObject(final String supportedNames, final EphemerisType generateType, final String name) {
-            this.supportedNames = supportedNames;
-            this.generateType   = generateType;
-            this.name           = name;
-        }
-
-        /** Get the body associated with the serialized data.
-         * @return body associated with the serialized data
-         */
-        protected JPLCelestialBody getBody() {
-
-            try {
-                // first try to use the factory, in order to avoid building a new instance
-                // each time we deserialize and have the object properly cached
-                final CelestialBody factoryProvided =
-                                DataContext.getDefault().getCelestialBodies().getBody(name);
-                if (factoryProvided instanceof JPLCelestialBody) {
-                    final JPLCelestialBody jplBody = (JPLCelestialBody) factoryProvided;
-                    if (supportedNames.equals(jplBody.supportedNames) && generateType == jplBody.generateType) {
-                        // the factory created exactly the object we needed, just return it
-                        return jplBody;
-                    }
-                }
-
-                // the factory does not return the object we want
-                // we create a new one from scratch and don't cache it
-                return (JPLCelestialBody) new JPLEphemeridesLoader(supportedNames, generateType).loadCelestialBody(name);
-
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-
-        }
-
-    }
-
-    /** Specialization of the data transfer object for complete celestial body serialization. */
-    @DefaultDataContext
-    private static class DTOCelestialBody extends DataTransferObject {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -8287341529741045958L;
-
-        /** Simple constructor.
-         * @param supportedNames regular expression for supported files names
-         * @param generateType ephemeris type to generate
-         * @param name name of the body
-         */
-        DTOCelestialBody(final String supportedNames, final EphemerisType generateType, final String name) {
-            super(supportedNames, generateType, name);
-        }
-
-        /** Replace the deserialized data transfer object with a {@link JPLCelestialBody}.
-         * @return replacement {@link JPLCelestialBody}
-         */
-        private Object readResolve() {
-            return getBody();
-        }
-
-    }
-
-    /** Specialization of the data transfer object for inertially oriented frame serialization. */
-    @DefaultDataContext
-    private static class DTOInertialFrame extends DataTransferObject {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 7915071664444154948L;
-
-        /** Simple constructor.
-         * @param supportedNames regular expression for supported files names
-         * @param generateType ephemeris type to generate
-         * @param name name of the body
-         */
-        DTOInertialFrame(final String supportedNames, final EphemerisType generateType, final String name) {
-            super(supportedNames, generateType, name);
-        }
-
-        /** Replace the deserialized data transfer object with a {@link Frame}.
-         * @return replacement {@link Frame}
-         */
-        private Object readResolve() {
-            return getBody().inertialFrame;
-        }
-
-    }
-
-    /** Specialization of the data transfer object for body oriented frame serialization. */
-    @DefaultDataContext
-    private static class DTOBodyFrame extends DataTransferObject {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -3194195019557081000L;
-
-        /** Simple constructor.
-         * @param supportedNames regular expression for supported files names
-         * @param generateType ephemeris type to generate
-         * @param name name of the body
-         */
-        DTOBodyFrame(final String supportedNames, final EphemerisType generateType, final String name) {
-            super(supportedNames, generateType, name);
-        }
-
-        /** Replace the deserialized data transfer object with a {@link Frame}.
-         * @return replacement {@link Frame}
-         */
-        private Object readResolve() {
-            return getBody().bodyFrame;
-        }
-
-    }
-
 }

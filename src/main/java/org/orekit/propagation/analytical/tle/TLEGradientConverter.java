@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.frames.Frame;
@@ -25,7 +23,8 @@ import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalGradientConverter;
 import org.orekit.time.TimeScale;
 import org.orekit.utils.ParameterDriver;
-import org.orekit.utils.ParameterDriversProvider;
+
+import java.util.List;
 
 /** Converter for TLE propagator.
  * @author Luc Maisonobe
@@ -33,7 +32,7 @@ import org.orekit.utils.ParameterDriversProvider;
  * @author Thomas Paulet
  * @since 11.0
  */
-class TLEGradientConverter extends AbstractAnalyticalGradientConverter implements ParameterDriversProvider {
+class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
 
     /** Fixed dimension of the state. */
     public static final int FREE_STATE_PARAMETERS = 6;
@@ -54,7 +53,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter implement
      * @param propagator TLE propagator used to access initial orbit
      */
     TLEGradientConverter(final TLEPropagator propagator) {
-        super(propagator, TLEConstants.MU, FREE_STATE_PARAMETERS);
+        super(propagator, FREE_STATE_PARAMETERS);
         // TLE and related parameters
         this.tle      = propagator.getTLE();
         this.teme     = propagator.getFrame();
@@ -64,8 +63,10 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter implement
 
     /** {@inheritDoc} */
     @Override
-    public FieldTLEPropagator<Gradient> getPropagator(final FieldSpacecraftState<Gradient> state,
-                                                      final Gradient[] parameters) {
+    public FieldTLEPropagator<Gradient> getPropagator() {
+
+        final FieldSpacecraftState<Gradient> state = getState(this);
+        final Gradient[] parameters = getParameters(state, tle);
 
         // Zero
         final Gradient zero = state.getA().getField().getZero();
@@ -83,9 +84,10 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter implement
 
         // Initialize the new TLE
         final FieldTLE<Gradient> templateTLE = new FieldTLE<>(satelliteNumber, classification,
-                        launchYear, launchNumber, launchPiece, ephemerisType, elementNumber, state.getDate(),
-                        zero, zero, zero, zero, zero, zero, zero, zero,
-                        revolutionNumberAtEpoch, bStar, utc);
+                                                              launchYear, launchNumber, launchPiece,
+                                                              ephemerisType, elementNumber, state.getDate(),
+                                                              zero, zero, zero, zero, zero, zero, zero, zero,
+                                                              revolutionNumberAtEpoch, bStar, utc);
 
         // TLE
         final FieldTLE<Gradient> gTLE = TLEPropagator.getDefaultTleGenerationAlgorithm(utc, teme).generate(state, templateTLE);

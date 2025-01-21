@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,10 +41,7 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  * @since 6.0
  */
-public class OrphanFrame implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130409L;
+public class OrphanFrame {
 
     /** Instance name. */
     private final String name;
@@ -69,7 +65,7 @@ public class OrphanFrame implements Serializable {
      * @param name name of the frame
      */
     public OrphanFrame(final String name) {
-        children  = new ArrayList<OrphanFrame>();
+        children  = new ArrayList<>();
         this.name = name;
     }
 
@@ -146,7 +142,7 @@ public class OrphanFrame implements Serializable {
                                       name, orphanParent.name);
         }
 
-        // set up the attach point
+        // set up the attached point
         final OrphanFrame op = new OrphanFrame(parent.getName());
         op.frame = parent;
         op.addChild(this, transformProvider, isPseudoInertial);

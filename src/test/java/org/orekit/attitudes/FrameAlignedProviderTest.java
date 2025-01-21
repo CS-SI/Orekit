@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -70,7 +70,7 @@ public class FrameAlignedProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testIsInertial() {
+    void testIsInertial() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(0.6, 0.48, 0.64), 0.9,
                                                                          RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -88,7 +88,7 @@ public class FrameAlignedProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testCompensateMomentum() {
+    void testCompensateMomentum() {
         FrameAlignedProvider law = new FrameAlignedProvider(new Rotation(new Vector3D(-0.64, 0.6, 0.48), 0.2,
                                                                          RotationConvention.VECTOR_OPERATOR));
         KeplerianPropagator propagator = new KeplerianPropagator(orbit0, law);
@@ -104,7 +104,7 @@ public class FrameAlignedProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testSpin() {
+    void testSpin() {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 1, 1),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getUTC());
@@ -161,7 +161,7 @@ public class FrameAlignedProviderTest {
     }
 
     @Test
-    public void testGetAttitude() {
+    void testGetAttitude() {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);
@@ -204,7 +204,7 @@ public class FrameAlignedProviderTest {
      * FieldAbsoluteDate, Frame)}.
      */
     @Test
-    public void testGetAttitudeField() {
+    void testGetAttitudeField() {
         // expected
         Frame eci = orbit0.getFrame();
         Attitude expected = new Attitude(t0, eci, AngularCoordinates.IDENTITY);

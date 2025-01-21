@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,9 +24,6 @@ import java.util.List;
 
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.util.FastMath;
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitInternalError;
 
 /** Coordinated Universal Time.
  * <p>UTC is related to TAI using step adjustments from time to time
@@ -56,9 +52,6 @@ public class UTCScale implements TimeScale {
 
     /** Slope conversion factor from seconds per day to nanoseconds per second. */
     private static final long SLOPE_FACTOR = SEC_PER_DAY * ATTOS_PER_NANO;
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
 
     /** International Atomic Scale. */
     private final TimeScale tai;
@@ -386,49 +379,6 @@ public class UTCScale implements TimeScale {
                                mjdRef,
                                TimeOffset.parse(offset),
                                (int) (TimeOffset.parse(slope).getAttoSeconds()  / SLOPE_FACTOR));
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DataTransferObject(tai, baseOffsets);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20230302L;
-
-        /** International Atomic Scale. */
-        private final TimeScale tai;
-
-        /** base UTC-TAI offsets (may lack the pre-1975 offsets). */
-        private final Collection<? extends OffsetModel> baseOffsets;
-
-        /** Simple constructor.
-         * @param tai TAI time scale this UTC time scale references.
-         * @param baseOffsets UTC-TAI base offsets (may lack the pre-1975 offsets)
-         */
-        DataTransferObject(final TimeScale tai, final Collection<? extends OffsetModel> baseOffsets) {
-            this.tai         = tai;
-            this.baseOffsets = baseOffsets;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link UTCScale}.
-         * @return replacement {@link UTCScale}
-         */
-        private Object readResolve() {
-            try {
-                return new UTCScale(tai, baseOffsets);
-            } catch (OrekitException oe) {
-                throw new OrekitInternalError(oe);
-            }
-        }
-
     }
 
 }

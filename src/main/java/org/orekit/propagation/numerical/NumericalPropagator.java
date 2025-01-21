@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -730,8 +730,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         for (final ForceModel forceModel : getAllForceModels()) {
             for (final ParameterDriver driver : forceModel.getParametersDrivers()) {
                 if (!triggerDates.contains(driver.getNamesSpanMap().getFirstSpan().getData())) {
-                    // if the first span is not in triggerdate means that the driver is not a trigger
-                    // date and can be selected here
+                    // if the first span is not in triggerDates,
+                    // it means that the driver is not a trigger date and can be selected here
                     selected.add(driver);
                 }
             }
@@ -922,7 +922,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         private SpacecraftState currentState;
 
         /** Jacobian of the orbital parameters with respect to the Cartesian parameters. */
-        private double[][] jacobian;
+        private final double[][] jacobian;
 
         /** Flag keeping track whether Jacobian matrix needs to be recomputed or not. */
         private boolean recomputingJacobian;

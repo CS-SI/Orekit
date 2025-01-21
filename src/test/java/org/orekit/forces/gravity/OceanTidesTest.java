@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -73,7 +73,7 @@ public class OceanTidesTest {
      * Test based on example provide by Aspern in the <a href="https://forum.orekit.org/t/oceantides-weird-behavior/2370/3">following forum thread</a>
      */
     @Test
-    public void testIssue1055() {
+    void testIssue1055() {
 
         // Initialization
         AstronomicalAmplitudeReader aaReader =
@@ -125,7 +125,7 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testDefaultInterpolation() {
+    void testDefaultInterpolation() {
 
         IERSConventions conventions = IERSConventions.IERS_2010;
         Frame eme2000 = FramesFactory.getEME2000();
@@ -165,17 +165,17 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testTideEffect1996() {
+    void testTideEffect1996() {
         doTestTideEffect(IERSConventions.IERS_1996, 3.66948, 0.00000);
     }
 
     @Test
-    public void testTideEffect2003() {
+    void testTideEffect2003() {
         doTestTideEffect(IERSConventions.IERS_2003, 3.66941, 0.00000);
     }
 
     @Test
-    public void testTideEffect2010() {
+    void testTideEffect2010() {
         doTestTideEffect(IERSConventions.IERS_2010, 3.66939, 0.08981);
     }
 
@@ -224,7 +224,7 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testNoGetParameter() {
+    void testNoGetParameter() {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
@@ -249,7 +249,7 @@ public class OceanTidesTest {
     }
 
     @Test
-    public void testNoSetParameter() {
+    void testNoSetParameter() {
         AstronomicalAmplitudeReader aaReader =
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataContext.getDefault().getDataProvidersManager().feed(aaReader.getSupportedNames(), aaReader);
@@ -276,7 +276,7 @@ public class OceanTidesTest {
      * <p>Mostly for code coverage, with the introduction of interface {@link EventDetectorsProvider}
      */
     @Test
-    public void testGetEventDetectors() {
+    void testGetEventDetectors() {
         
         // Given
         // -----

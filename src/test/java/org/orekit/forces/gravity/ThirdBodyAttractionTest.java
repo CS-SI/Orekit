@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -137,7 +137,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
 
     @Test
-    public void testSunContrib() {
+    void testSunContrib() {
         Assertions.assertThrows(OrekitException.class, () -> {
             // initialization
             AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -358,7 +358,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
         Assertions.assertFalse(FastMath.abs(finPVC_DS.toPVCoordinates().getPosition().getZ() - finPVC_R.getPosition().getZ()) < FastMath.abs(finPVC_R.getPosition().getZ()) * 1e-11);
     }
     @Test
-    public void testMoonContrib() {
+    void testMoonContrib() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -416,7 +416,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -435,7 +435,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -454,7 +454,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -473,7 +473,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -492,7 +492,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization
@@ -524,7 +524,7 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
     @Test
     @DisplayName("Test that acceleration derivatives with respect to absolute date are not equal to zero.")
-    public void testIssue1070() {
+    void testIssue1070() {
         // GIVEN
         // Define possibly shifted absolute date
         final int freeParameters = 1;

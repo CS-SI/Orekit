@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.models.earth.ionosphere;
+package org.orekit.models.earth.ionosphere.nequick;
 
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
@@ -23,19 +23,35 @@ import org.orekit.time.DateTimeComponents;
 import org.orekit.time.TimeComponents;
 
 /**
- * This class perfoms the computation of the parameters used by the NeQuick model.
+ * This class performs the computation of the parameters used by the NeQuick model.
  *
  * @author Bryan Cazabonne
  *
  * @see "European Union (2016). European GNSS (Galileo) Open Service-Ionospheric Correction
  *       Algorithm for Galileo Single Frequency Users. 1.2."
+ * @see <a href="https://www.itu.int/rec/R-REC-P.531/en">ITU-R P.531</a>
  *
  * @since 10.1
  */
-class NeQuickParameters {
+public class NeQuickParameters {
 
     /** Solar zenith angle at day night transition, degrees. */
     private static final double X0 = 86.23292796211615;
+
+    /** Current date time components.
+     * @since 13.0
+     */
+    private final DateTimeComponents dateTime;
+
+    /** Effective sunspot number.
+     * @since 13.0
+     */
+    private final double azr;
+
+    /** F2 layer critical frequency.
+     * @since 13.0
+     */
+    private final double foF2;
 
     /** F2 layer maximum density. */
     private final double nmF2;
@@ -64,9 +80,6 @@ class NeQuickParameters {
     /** E layer bottom thickness parameter [km]. */
     private final double beBot;
 
-    /** topside thickness parameter [km]. */
-    private final double h0;
-
     /** Layer amplitudes. */
     private final double[] amplitudes;
 
@@ -74,23 +87,20 @@ class NeQuickParameters {
      * Build a new instance.
      * @param dateTime current date time components
      * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
-     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
+     * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
      * @param latitude latitude of a point along the integration path, in radians
      * @param longitude longitude of a point along the integration path, in radians
-     * @param alpha effective ionisation level coefficients
-     * @param modipGrip modip grid
+     * @param az effective ionisation level
+     * @param modip modip
      */
-    NeQuickParameters(final DateTimeComponents dateTime,
-                      final double[] flattenF2, final double[] flattenFm3,
-                      final double latitude, final double longitude,
-                      final double[] alpha, final double[][] modipGrip) {
+    public NeQuickParameters(final DateTimeComponents dateTime, final double[] flattenF2, final double[] flattenFm3,
+                             final double latitude, final double longitude, final double az, final double modip) {
 
-        // MODIP in degrees
-        final double modip = computeMODIP(latitude, longitude, modipGrip);
-        // Effective ionisation level Az
-        final double az = computeAz(modip, alpha);
+        this.dateTime = dateTime;
+
         // Effective sunspot number (Eq. 19)
-        final double azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;
+        azr = FastMath.sqrt(167273.0 + (az - 63.7) * 1123.6) - 408.99;
+
         // Date and Time components
         final DateComponents date = dateTime.getDate();
         final TimeComponents time = dateTime.getTime();
@@ -103,28 +113,28 @@ class NeQuickParameters {
         this.hmE = 120.0;
         // E layer critical frequency in MHz
         final double foE = computefoE(date.getMonth(), az, xeff, latitude);
-        // E layer maximum density in 10^11 m-3 (Eq. 36)
+        // E layer maximum density in 10^11 m⁻³ (Eq. 36)
         final double nmE = 0.124 * foE * foE;
 
         // Time argument (Eq. 49)
         final double t = FastMath.toRadians(15 * hours) - FastMath.PI;
         // Compute Fourier time series for foF2 and M(3000)F2
         final double[] scT = sinCos(t, 6);
-        final double[] cf2 = computeCF2(flattenF2, azr, scT);
-        final double[] cm3 = computeCm3(flattenFm3, azr, scT);
+        final double[] cf2 = computeCF2(flattenF2, scT);
+        final double[] cm3 = computeCm3(flattenFm3, scT);
         // F2 layer critical frequency in MHz
         final double[] scL = sinCos(longitude, 8);
-        final double foF2 = computefoF2(modip, cf2, latitude, scL);
+        this.foF2 = computefoF2(modip, cf2, latitude, scL);
         // Maximum Usable Frequency factor
         final double mF2  = computeMF2(modip, cm3, latitude, scL);
-        // F2 layer maximum density in 10^11 m-3
+        // F2 layer maximum density in 10^11 m⁻³
         this.nmF2 = 0.124 * foF2 * foF2;
         // F2 layer maximum density height in km
-        this.hmF2 = computehmF2(foE, foF2, mF2);
+        this.hmF2 = computehmF2(foE, mF2);
 
         // F1 layer critical frequency in MHz
-        final double foF1 = computefoF1(foE, foF2);
-        // F1 layer maximum density in 10^11 m-3
+        final double foF1 = computefoF1(foE);
+        // F1 layer maximum density in 10^11 m⁻³
         final double nmF1;
         if (foF1 <= 0.0 && foE > 2.0) {
             final double foEpopf = foE + 0.5;
@@ -146,11 +156,36 @@ class NeQuickParameters {
         // Layer amplitude coefficients
         this.amplitudes = computeLayerAmplitudes(nmE, nmF1, foF1);
 
-        // Topside thickness parameter
-        this.h0 = computeH0(date.getMonth(), azr);
     }
 
     /**
+     * Get current date time components.
+     * @return current date time components
+     * @since 13.0
+     */
+    public DateTimeComponents getDateTime() {
+        return dateTime;
+    }
+
+    /**
+     * Get effective sunspot number.
+     * @return effective sunspot number
+     * @since 13.0
+     */
+    public double getAzr() {
+        return azr;
+    }
+
+    /**
+     * Get F2 layer critical frequency.
+     * @return F2 layer critical frequency
+     * @since 13.0
+     */
+    public double getFoF2() {
+        return foF2;
+    }
+
+     /**
      * Get the F2 layer maximum density.
      * @return nmF2
      */
@@ -191,35 +226,25 @@ class NeQuickParameters {
     }
 
     /**
-     * Get the F1 layer thickness parameter (top).
-     * @return B1Top in km
+     * Get the F1 layer thickness parameter.
+     * @param h current height (km)
+     * @return B1 in km
+     * @since 13.0
      */
-    public double getB1Top() {
-        return b1Top;
+    public double getBF1(final double h) {
+        // Eq. 110
+        return (h > hmF1) ? b1Top : b1Bot;
     }
 
     /**
-     * Get the F1 layer thickness parameter (bottom).
-     * @return B1Bot in km
+     * Get the E layer thickness parameter.
+     * @param h current height (km)
+     * @return Be in km
+     * @since 13.0
      */
-    public double getB1Bot() {
-        return b1Bot;
-    }
-
-    /**
-     * Get the E layer thickness parameter (bottom).
-     * @return BeBot in km
-     */
-    public double getBEBot() {
-        return beBot;
-    }
-
-    /**
-     * Get the E layer thickness parameter (top).
-     * @return BeTop in km
-     */
-    public double getBETop() {
-        return beTop;
+    public double getBE(final double h) {
+        // Eq. 109
+        return (h > hmE) ? beTop : beBot;
     }
 
     /**
@@ -235,90 +260,6 @@ class NeQuickParameters {
      */
     public double[] getLayerAmplitudes() {
         return amplitudes.clone();
-    }
-
-    /**
-     * Get the topside thickness parameter H0.
-     * @return H0 in km
-     */
-    public double getH0() {
-        return h0;
-    }
-
-    /**
-     * Computes the value of the modified dip latitude (MODIP) for the
-     * given latitude and longitude.
-     *
-     * @param lat receiver latitude, radians
-     * @param lon receiver longitude, radians
-     * @param stModip modip grid
-     * @return the MODIP in degrees
-     */
-    private double computeMODIP(final double lat, final double lon, final double[][] stModip) {
-
-        // For the MODIP computation, latitude and longitude have to be converted in degrees
-        final double latitude = FastMath.toDegrees(lat);
-        final double longitude = FastMath.toDegrees(lon);
-
-        // Extreme cases
-        if (latitude == 90.0 || latitude == -90.0) {
-            return latitude;
-        }
-
-        // Auxiliary parameter l (Eq. 6 to 8)
-        final int lF = (int) ((longitude + 180) * 0.1);
-        int l = lF - 2;
-        if (l < -2) {
-            l += 36;
-        } else if (l > 33) {
-            l -= 36;
-        }
-
-        // Auxiliary parameter a (Eq. 9 to 11)
-        final double a  = 0.2 * (latitude + 90) + 1.0;
-        final double aF = FastMath.floor(a);
-        // Eq. 10
-        final double x = a - aF;
-        // Eq. 11
-        final int i = (int) aF - 2;
-
-        // zi coefficients (Eq. 12 and 13)
-        final double z1 = interpolate(stModip[i + 1][l + 2], stModip[i + 2][l + 2], stModip[i + 3][l + 2], stModip[i + 4][l + 2], x);
-        final double z2 = interpolate(stModip[i + 1][l + 3], stModip[i + 2][l + 3], stModip[i + 3][l + 3], stModip[i + 4][l + 3], x);
-        final double z3 = interpolate(stModip[i + 1][l + 4], stModip[i + 2][l + 4], stModip[i + 3][l + 4], stModip[i + 4][l + 4], x);
-        final double z4 = interpolate(stModip[i + 1][l + 5], stModip[i + 2][l + 5], stModip[i + 3][l + 5], stModip[i + 4][l + 5], x);
-
-        // Auxiliary parameter b (Eq. 14 and 15)
-        final double b  = (longitude + 180) * 0.1;
-        final double bF = FastMath.floor(b);
-        final double y  = b - bF;
-
-        // MODIP (Ref Eq. 16)
-        return interpolate(z1, z2, z3, z4, y);
-
-    }
-
-    /**
-     * This method computes the effective ionisation level Az.
-     * <p>
-     * This parameter is used for the computation of the Total Electron Content (TEC).
-     * </p>
-     * @param modip modified dip latitude (MODIP) in degrees
-     * @param alpha effective ionisation level coefficients
-     * @return the ionisation level Az
-     */
-    private double computeAz(final double modip, final double[] alpha) {
-        // Particular condition (Eq. 17)
-        if (alpha[0] == 0.0 && alpha[1] == 0.0 && alpha[2] == 0.0) {
-            return 63.7;
-        }
-        // Az = a0 + modip * a1 + modip^2 * a2 (Eq. 18)
-        double az = alpha[0] + modip * (alpha[1] + modip * alpha[2]);
-        // If Az < 0 -> Az = 0
-        az = FastMath.max(0.0, az);
-        // If Az > 400 -> Az = 400
-        az = FastMath.min(400.0, az);
-        return az;
     }
 
     /**
@@ -395,11 +336,10 @@ class NeQuickParameters {
     /**
      * Computes the F2 layer height of maximum electron density.
      * @param foE E layer layer critical frequency in MHz
-     * @param foF2 F2 layer layer critical frequency in MHz
      * @param mF2 maximum usable frequency factor
      * @return hmF2 in km
      */
-    private double computehmF2(final double foE, final double foF2, final double mF2) {
+    private double computehmF2(final double foE, final double mF2) {
         // Ratio
         final double fo = foF2 / foE;
         final double ratio = join(fo, 1.75, 20.0, fo - 1.75);
@@ -444,11 +384,10 @@ class NeQuickParameters {
     /**
      * Computes cf2 coefficients.
      * @param flattenF2 F2 coefficients used by the F2 layer (flatten array)
-     * @param azr effective sunspot number (Eq. 19)
      * @param scT sines/cosines array of time argument
      * @return the cf2 coefficients array
      */
-    private double[] computeCF2(final double[] flattenF2, final double azr, final double[] scT) {
+    private double[] computeCF2(final double[] flattenF2, final double[] scT) {
 
         // interpolation coefficients for effective spot number
         final double azr01 = azr * 0.01;
@@ -478,12 +417,11 @@ class NeQuickParameters {
 
     /**
      * Computes Cm3 coefficients.
-     * @param flattenFm3 Fm3 coefficients used by the F2 layer (flatten array)
-     * @param azr effective sunspot number (Eq. 19)
+     * @param flattenFm3 Fm3 coefficients used by the M(3000)F2 layer (flatten array)
      * @param scT sines/cosines array of time argument
      * @return the Cm3 coefficients array
      */
-    private double[] computeCm3(final double[] flattenFm3, final double azr, final double[] scT) {
+    private double[] computeCm3(final double[] flattenFm3, final double[] scT) {
 
         // interpolation coefficients for effective spot number
         final double azr01 = azr * 0.01;
@@ -525,7 +463,7 @@ class NeQuickParameters {
 
         double frequency = cf2[0];
 
-        // MODIP coefficients Eq. 57
+        // ModipGrid coefficients Eq. 57
         final double sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final double[] m = new double[12];
         m[0] = 1.0;
@@ -570,7 +508,7 @@ class NeQuickParameters {
 
         double m3000 = cm3[0];
 
-        // MODIP coefficients Eq. 57
+        // ModipGrid coefficients Eq. 57
         final double sinMODIP = FastMath.sin(FastMath.toRadians(modip));
         final double[] m = new double[12];
         m[0] = 1.0;
@@ -607,9 +545,8 @@ class NeQuickParameters {
      * </p>
      * @param foE the E layer critical frequency, MHz
      * @return the F1 layer critical frequency, MHz
-     * @param foF2 the F2 layer critical frequency, MHz
      */
-    private double computefoF1(final double foE, final double foF2) {
+    private double computefoF1(final double foE) {
         final double temp  = join(1.4 * foE, 0.0, 1000.0, foE - 2.0);
         final double temp2 = join(0.0, temp, 1000.0, foE - temp);
         final double value = join(temp2, 0.85 * temp2, 60.0, 0.85 * foF2 - temp2);
@@ -630,8 +567,8 @@ class NeQuickParameters {
      * <li>double[2] = A3 → E  layer amplitude
      * </ul>
      * </p>
-     * @param nmE E layer maximum density in 10^11 m-3
-     * @param nmF1 F1 layer maximum density in 10^11 m-3
+     * @param nmE E layer maximum density in 10^11 m⁻³
+     * @param nmF1 F1 layer maximum density in 10^11 m⁻³
      * @param foF1 F1 layer critical frequency in MHz
      * @return a three components array containing the layer amplitudes
      */
@@ -663,42 +600,6 @@ class NeQuickParameters {
     }
 
     /**
-     * This method computes the topside thickness parameter H0.
-     *
-     * @param month current month
-     * @param azr effective sunspot number
-     * @return H0 in km
-     */
-    private double computeH0(final int month, final double azr) {
-
-        // Auxiliary parameter ka (Eq. 99 and 100)
-        final double ka;
-        if (month > 3 && month < 10) {
-            // month = 4,5,6,7,8,9
-            ka = 6.705 - 0.014 * azr - 0.008 * hmF2;
-        } else {
-            // month = 1,2,3,10,11,12
-            final double ratio = hmF2 / b2Bot;
-            ka = -7.77 + 0.097 * ratio * ratio + 0.153 * nmF2;
-        }
-
-        // Auxiliary parameter kb (Eq. 101 and 102)
-        double kb = join(ka, 2.0, 1.0, ka - 2.0);
-        kb = join(8.0, kb, 1.0, kb - 8.0);
-
-        // Auxiliary parameter Ha (Eq. 103)
-        final double hA = kb * b2Bot;
-
-        // Auxiliary parameters x and v (Eq. 104 and 105)
-        final double x = 0.01 * (hA - 150.0);
-        final double v = (0.041163 * x - 0.183981) * x + 1.424472;
-
-        // Topside thickness parameter (Eq. 106)
-        return hA / v;
-
-    }
-
-    /**
      * A clipped exponential function.
      * <p>
      * This function, describe in section F.2.12.2 of the reference document, is
@@ -718,43 +619,11 @@ class NeQuickParameters {
     }
 
     /**
-     * This method provides a third order interpolation function
-     * as recommended in the reference document (Ref Eq. 128 to Eq. 138)
-     *
-     * @param z1 z1 coefficient
-     * @param z2 z2 coefficient
-     * @param z3 z3 coefficient
-     * @param z4 z4 coefficient
-     * @param x position
-     * @return a third order interpolation
-     */
-    private double interpolate(final double z1, final double z2,
-                               final double z3, final double z4,
-                               final double x) {
-
-        if (FastMath.abs(2.0 * x) < 1e-10) {
-            return z2;
-        }
-
-        final double delta = 2.0 * x - 1.0;
-        final double g1 = z3 + z2;
-        final double g2 = z3 - z2;
-        final double g3 = z4 + z1;
-        final double g4 = (z4 - z1) / 3.0;
-        final double a0 = 9.0 * g1 - g3;
-        final double a1 = 9.0 * g2 - g4;
-        final double a2 = g3 - g1;
-        final double a3 = g4 - g2;
-        return 0.0625 * (a0 + delta * (a1 + delta * (a2 + delta * a3)));
-
-    }
-
-    /**
      * Allows smooth joining of functions f1 and f2
      * (i.e. continuous first derivatives) at origin.
      * <p>
      * This function, describe in section F.2.12.1 of the reference document, is
-     * recommanded for computational efficiency.
+     * recommended for computational efficiency.
      * </p>
      * @param dF1 first function
      * @param dF2 second function
@@ -762,8 +631,7 @@ class NeQuickParameters {
      * @param dX x value
      * @return the computed value
      */
-    private double join(final double dF1, final double dF2,
-                        final double dA, final double dX) {
+    double join(final double dF1, final double dF2, final double dA, final double dX) {
         final double ee = clipExp(dA * dX);
         return (dF1 * ee + dF2) / (ee + 1.0);
     }

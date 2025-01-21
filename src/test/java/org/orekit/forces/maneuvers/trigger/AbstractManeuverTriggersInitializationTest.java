@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -167,7 +167,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testInBetween() {
+    void testInBetween() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate.shiftedBy(-(duration / 2)),
@@ -189,7 +189,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testOnStart() {
+    void testOnStart() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate,
@@ -214,7 +214,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testOnEnd() {
+    void testOnEnd() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate.shiftedBy(-duration),
@@ -239,7 +239,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testOnEndReverse() {
+    void testOnEndReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate.shiftedBy(-duration),
@@ -264,7 +264,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testOnStartReverse() {
+    void testOnStartReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate,
@@ -288,7 +288,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testInBetweenReverse() {
+    void testInBetweenReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate.shiftedBy(-duration / 2),
@@ -313,7 +313,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testControlForward() {
+    void testControlForward() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate.shiftedBy(1.0),
@@ -337,7 +337,7 @@ public abstract class AbstractManeuverTriggersInitializationTest<T extends Abstr
     }
 
     @Test
-    public void testControlReverse() {
+    void testControlReverse() {
         //Create test Thrust Maneuver
         Maneuver ctm = new Maneuver(null,
                                     configureTrigger(startDate.shiftedBy(-1.0 - duration),

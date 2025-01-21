@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,12 +33,18 @@ import org.orekit.utils.FieldPVCoordinates;
 
 /**
  * Class for indirect single shooting methods with Cartesian coordinates for fixed time fixed boundary.
- * Update is the classical Newton-Raphson one.
+ * Update is the classical Newton-Raphson one. It is computed using an LU matrix decomposition.
  *
  * @author Romain Serra
  * @since 12.2
  */
 public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBoundaryCartesianSingleShooting {
+
+    /** Default value for singularity threshold. */
+    private static final double DEFAULT_SINGULARITY_THRESHOLD = 1e-11;
+
+    /** Threshold for singularity exception in linear system inversion. */
+    private double singularityThreshold;
 
     /**
      * Constructor with boundary conditions as orbits.
@@ -50,6 +56,7 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
                                                       final FixedTimeCartesianBoundaryStates boundaryConditions,
                                                       final CartesianBoundaryConditionChecker convergenceChecker) {
         super(propagationSettings, boundaryConditions, convergenceChecker);
+        this.singularityThreshold = DEFAULT_SINGULARITY_THRESHOLD;
     }
 
     /**
@@ -62,6 +69,25 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
                                                       final FixedTimeBoundaryOrbits boundaryConditions,
                                                       final CartesianBoundaryConditionChecker convergenceChecker) {
         super(propagationSettings, boundaryConditions, convergenceChecker);
+        this.singularityThreshold = DEFAULT_SINGULARITY_THRESHOLD;
+    }
+
+    /**
+     * Setter for singularity threshold in LU decomposition.
+     * @param singularityThreshold new threshold value
+     * @since 13.0
+     */
+    public void setSingularityThreshold(final double singularityThreshold) {
+        this.singularityThreshold = singularityThreshold;
+    }
+
+    /**
+     * Getter for singularity threshold in LU decomposition.
+     * @return threshold
+     * @since 13.0
+     */
+    public double getSingularityThreshold() {
+        return singularityThreshold;
     }
 
     /** {@inheritDoc} */
@@ -115,8 +141,13 @@ public class NewtonFixedBoundaryCartesianSingleShooting extends AbstractFixedBou
      */
     private double[] computeCorrection(final double[] defects, final double[][] defectsJacobianData) {
         final RealMatrix defectsJacobian = MatrixUtils.createRealMatrix(defectsJacobianData);
-        final DecompositionSolver solver = new LUDecomposition(defectsJacobian).getSolver();
+        final DecompositionSolver solver = new LUDecomposition(defectsJacobian, singularityThreshold).getSolver();
         final RealVector negatedDefects = MatrixUtils.createRealVector(defects).mapMultiply(-1);
-        return solver.solve(negatedDefects).toArray();
+        final RealVector solved = solver.solve(negatedDefects);
+        final double[] corrections = new double[solved.getDimension()];
+        for (int i = 0; i < corrections.length; i++) {
+            corrections[i] = solved.getEntry(i) * getScales()[i];
+        }
+        return corrections;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,236 +16,301 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
-import org.orekit.annotation.DefaultDataContext;
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.data.DataContext;
-import org.orekit.frames.Frame;
-import org.orekit.frames.Frames;
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.hipparchus.util.FastMath;
+import org.orekit.gnss.SatelliteSystem;
 import org.orekit.propagation.analytical.gnss.GNSSPropagator;
-import org.orekit.propagation.analytical.gnss.GNSSPropagatorBuilder;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.GNSSDate;
+import org.orekit.time.TimeScales;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.ParameterDriver;
 
-/** This interface provides the minimal set of orbital elements needed by the {@link GNSSPropagator}.
-*
-* @author Pascal Parraud
-*
+/** This class provides the minimal set of orbital elements needed by the {@link GNSSPropagator}.
+ * <p>
+ * The parameters are split in two groups: Keplerian orbital parameters and non-Keplerian
+ * evolution parameters. All parameters can be updated as they are all instances of
+ * {@link ParameterDriver}. Only the non-Keplerian parameters are returned in the
+ * {@link #getParametersDrivers()} method, the Keplerian orbital parameters must
+ * be accessed independently. These groups ensure proper separate computation of
+ * state transition matrix and Jacobian matrix by {@link GNSSPropagator}.
+ * </p>
+ * @param <O> type of the orbital elements
+ * @since 13.0
+ * @author Pascal Parraud
+ * @author Luc Maisonobe
 */
-public interface GNSSOrbitalElements extends TimeStamped {
+public abstract class GNSSOrbitalElements<O extends GNSSOrbitalElements<O>>
+    extends GNSSOrbitalElementsDriversProvider
+    implements TimeStamped {
+
+    /** Name for semi major axis parameter. */
+    public static final String SEMI_MAJOR_AXIS = "GnssSemiMajorAxis";
+
+    /** Name for eccentricity parameter. */
+    public static final String ECCENTRICITY = "GnssEccentricity";
+
+    /** Name for inclination at reference time parameter. */
+    public static final String INCLINATION = "GnssInclination";
+
+    /** Name for argument of perigee parameter. */
+    public static final String ARGUMENT_OF_PERIGEE = "GnssPerigeeArgument";
+
+    /** Name for longitude of ascending node at weekly epoch parameter. */
+    public static final String NODE_LONGITUDE = "GnssNodeLongitude";
+
+    /** Name for mean anomaly at reference time parameter. */
+    public static final String MEAN_ANOMALY = "GnssMeanAnomaly";
+
+    /** Earth's universal gravitational parameter. */
+    private final double mu;
+
+    /** Reference epoch. */
+    private AbsoluteDate date;
+
+    /** Semi-Major Axis (m). */
+    private final ParameterDriver smaDriver;
+
+    /** Eccentricity. */
+    private final ParameterDriver eccDriver;
+
+    /** Inclination angle at reference time (rad). */
+    private final ParameterDriver i0Driver;
+
+    /** Argument of perigee (rad). */
+    private final ParameterDriver aopDriver;
+
+    /** Longitude of ascending node of orbit plane at weekly epoch (rad). */
+    private final ParameterDriver om0Driver;
+
+    /** Mean anomaly at reference time (rad). */
+    private final ParameterDriver anomDriver;
 
     /**
-     * Gets the PRN number of the GNSS satellite.
-     *
-     * @return the PRN number of the GNSS satellite
+     * Constructor.
+     * @param mu              Earth's universal gravitational parameter
+     * @param angularVelocity mean angular velocity of the Earth for the GNSS model
+     * @param weeksInCycle    number of weeks in the GNSS cycle
+     * @param timeScales      known time scales
+     * @param system          satellite system to consider for interpreting week number
+     *                        (may be different from real system, for example in Rinex nav, weeks
+     *                        are always according to GPS)
      */
-    int getPRN();
+    protected GNSSOrbitalElements(final double mu, final double angularVelocity, final int weeksInCycle,
+                                  final TimeScales timeScales, final SatelliteSystem system) {
 
-    /**
-     * Gets the Reference Week of the GNSS orbit.
-     *
-     * @return the Reference Week of the GNSS orbit within [0, 1024[
+        super(angularVelocity, weeksInCycle, timeScales, system);
+
+        // immutable field
+        this.mu         = mu;
+
+        // fields controlled by parameter drivers for Keplerian orbital elements
+        this.smaDriver  = createDriver(SEMI_MAJOR_AXIS);
+        this.eccDriver  = createDriver(ECCENTRICITY);
+        this.i0Driver   = createDriver(INCLINATION);
+        this.aopDriver  = createDriver(ARGUMENT_OF_PERIGEE);
+        this.om0Driver  = createDriver(NODE_LONGITUDE);
+        this.anomDriver = createDriver(MEAN_ANOMALY);
+
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param <A> type of the orbital elements (non-field version)
+     * @param original regular field instance
      */
-    int getWeek();
+    protected <T extends CalculusFieldElement<T>,
+               A extends GNSSOrbitalElements<A>> GNSSOrbitalElements(final FieldGnssOrbitalElements<T, A> original) {
+        this(original.getMu().getReal(), original.getAngularVelocity(), original.getWeeksInCycle(),
+             original.getTimeScales(), original.getSystem());
 
-    /**
-     * Gets the Reference Time of the GNSS orbit as a duration from week start.
-     *
-     * @return the Reference Time of the GNSS orbit (s)
+        // non-Keperian parameters
+        setPRN(original.getPRN());
+        setWeek(original.getWeek());
+        setTime(original.getTime());
+        setIDot(original.getIDot());
+        setOmegaDot(original.getOmegaDot());
+        setCuc(original.getCuc());
+        setCus(original.getCus());
+        setCrc(original.getCrc());
+        setCrs(original.getCrs());
+        setCic(original.getCic());
+        setCis(original.getCis());
+
+        // Keplerian orbital elements
+        setSma(original.getSma().getReal());
+        setE(original.getE().getReal());
+        setI0(original.getI0().getReal());
+        setPa(original.getPa().getReal());
+        setOmega0(original.getOmega0().getReal());
+        setM0(original.getM0().getReal());
+
+        // copy selection settings
+        copySelectionSettings(original);
+
+    }
+
+    /** Create a field version of the instance.
+     * @param <T> type of the field elements
+     * @param <F> type of the orbital elements (field version)
+     * @param field field to which elements belong
+     * @return field version of the instance
      */
-    double getTime();
+    public abstract <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, O>>
+        F toField(Field<T> field);
 
-    /**
-     * Gets the Semi-Major Axis.
-     *
-     * @return the Semi-Major Axis (m)
-     */
-    double getSma();
+    /** {@inheritDoc} */
+    protected void setGnssDate(final GNSSDate gnssDate) {
+        this.date = gnssDate.getDate();
+    }
 
-    /**
-     * Gets the Mean Motion.
-     *
-     * @return the Mean Motion (rad/s)
-     */
-    double getMeanMotion();
+    /** {@inheritDoc} */
+    @Override
+    public AbsoluteDate getDate() {
+        return date;
+    }
 
-    /**
-     * Gets the Eccentricity.
-     *
-     * @return the Eccentricity
-     */
-    double getE();
-
-    /**
-     * Gets the Inclination Angle at Reference Time.
-     *
-     * @return the Inclination Angle at Reference Time (rad)
-     */
-    double getI0();
-
-    /**
-     * Gets the Rate of Inclination Angle.
-     *
-     * @return the Rate of Inclination Angle (rad/s)
-     */
-    double getIDot();
-
-    /**
-     * Gets the Longitude of Ascending Node of Orbit Plane at Weekly Epoch.
-     *
-     * @return the Longitude of Ascending Node of Orbit Plane at Weekly Epoch (rad)
-     */
-    double getOmega0();
-
-    /**
-     * Gets the Rate of Right Ascension.
-     *
-     * @return the Rate of Right Ascension (rad/s)
-     */
-    double getOmegaDot();
-
-    /**
-     * Gets the Argument of Perigee.
-     *
-     * @return the Argument of Perigee (rad)
-     */
-    double getPa();
-
-    /**
-     * Gets the Mean Anomaly at Reference Time.
-     *
-     * @return the Mean Anomaly at Reference Time (rad)
-     */
-    double getM0();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Argument of Latitude (rad)
-     */
-    double getCuc();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Argument of Latitude (rad)
-     */
-    double getCus();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Orbit Radius (m)
-     */
-    double getCrc();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Orbit Radius (m)
-     */
-    double getCrs();
-
-    /**
-     * Gets the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination.
-     *
-     * @return the Amplitude of the Cosine Harmonic Correction Term to the Angle of Inclination (rad)
-     */
-    double getCic();
-
-    /**
-     * Gets the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination.
-     *
-     * @return the Amplitude of the Sine Harmonic Correction Term to the Angle of Inclination (rad)
-     */
-    double getCis();
-
-    /**
-     * Gets the Earth's universal gravitational parameter.
-     *
+    /** Get the Earth's universal gravitational parameter.
      * @return the Earth's universal gravitational parameter
      */
-    double getMu();
-
-    /**
-     * Gets the mean angular velocity of the Earth of the GNSS model.
-     *
-     * @return the mean angular velocity of the Earth of the GNSS model
-     */
-    double getAngularVelocity();
-
-    /**
-     * Gets the duration of the GNSS cycle in seconds.
-     *
-     * @return the duration of the GNSS cycle in seconds
-     */
-    double getCycleDuration();
-
-    /**
-     * Get the propagator corresponding to the navigation message.
-     * <p>
-     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
-     * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-     * The ECI frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-     *  context.<br>
-     * The ECEF frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-     *  CIO/2010-based ITRF simple EOP} in the default data context.
-     * </p><p>
-     * This constructor uses the {@link DataContext#getDefault() default data context}
-     * </p>
-     * @return the propagator corresponding to the navigation message
-     * @see #getPropagator(Frames)
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
-     * @since 12.0
-     */
-    @DefaultDataContext
-    default GNSSPropagator getPropagator() {
-        return new GNSSPropagatorBuilder(this).build();
+    public double getMu() {
+        return mu;
     }
 
-    /**
-     * Get the propagator corresponding to the navigation message.
-     * <p>
-     * The attitude provider is set by default to be aligned with the EME2000 frame.<br>
-     * The mass is set by default to the
-     *  {@link org.orekit.propagation.Propagator#DEFAULT_MASS DEFAULT_MASS}.<br>
-     * The ECI frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#EME2000 EME2000 frame} in the default data
-     *  context.<br>
-     * The ECEF frame is set by default to the
-     *  {@link org.orekit.frames.Predefined#ITRF_CIO_CONV_2010_SIMPLE_EOP
-     *  CIO/2010-based ITRF simple EOP} in the default data context.
-     * </p>
-     * @param frames set of frames to use
-     * @return the propagator corresponding to the navigation message
-     * @see #getPropagator()
-     * @see #getPropagator(Frames, AttitudeProvider, Frame, Frame, double)
-     * @since 12.0
+    /** Get semi-major axis.
+     * @return driver for the semi-major axis (m)
      */
-    default GNSSPropagator getPropagator(final Frames frames) {
-        return new GNSSPropagatorBuilder(this, frames).build();
+    public ParameterDriver getSmaDriver() {
+        return smaDriver;
     }
 
-    /**
-     * Get the propagator corresponding to the navigation message.
-     * @param frames set of frames to use
-     * @param provider attitude provider
-     * @param inertial inertial frame, use to provide the propagated orbit
-     * @param bodyFixed body fixed frame, corresponding to the navigation message
-     * @param mass spacecraft mass in kg
-     * @return the propagator corresponding to the navigation message
-     * @see #getPropagator()
-     * @see #getPropagator(Frames)
-     * @since 12.0
+    /** Get semi-major axis.
+     * @return semi-major axis (m)
      */
-    default GNSSPropagator getPropagator(final Frames frames, final AttitudeProvider provider,
-                                         final Frame inertial, final Frame bodyFixed, final double mass) {
-        return new GNSSPropagatorBuilder(this, frames).attitudeProvider(provider)
-                                                      .eci(inertial)
-                                                      .ecef(bodyFixed)
-                                                      .mass(mass)
-                                                      .build();
+    public double getSma() {
+        return getSmaDriver().getValue();
+    }
+
+    /** Set semi-major axis.
+     * @param sma demi-major axis (m)
+     */
+    public void setSma(final double sma) {
+        getSmaDriver().setValue(sma);
+    }
+
+    /** Get the mean motion.
+     * @return the mean motion (rad/s)
+     */
+    public double getMeanMotion() {
+        final double absA = FastMath.abs(getSma());
+        return FastMath.sqrt(getMu() / absA) / absA;
+    }
+
+
+    /** Get the driver for the eccentricity.
+     * @return driver for the eccentricity
+     */
+    public ParameterDriver getEDriver() {
+        return eccDriver;
+    }
+
+    /** Get eccentricity.
+     * @return eccentricity
+     */
+    public double getE() {
+        return getEDriver().getValue();
+    }
+
+    /** Set eccentricity.
+     * @param e eccentricity
+     */
+    public void setE(final double e) {
+        getEDriver().setValue(e);
+    }
+
+    /** Get the driver for the inclination angle at reference time.
+     * @return driver for the inclination angle at reference time (rad)
+     */
+    public ParameterDriver getI0Driver() {
+        return i0Driver;
+    }
+
+    /** Get the inclination angle at reference time.
+     * @return inclination angle at reference time (rad)
+     */
+    public double getI0() {
+        return getI0Driver().getValue();
+    }
+
+    /** Set inclination angle at reference time.
+     * @param i0 inclination angle at reference time (rad)
+     */
+    public void setI0(final double i0) {
+        getI0Driver().setValue(i0);
+    }
+
+    /** Get the driver for the longitude of ascending node of orbit plane at weekly epoch.
+     * @return driver for the longitude of ascending node of orbit plane at weekly epoch (rad)
+     */
+    public ParameterDriver getOmega0Driver() {
+        return om0Driver;
+    }
+
+    /** Get longitude of ascending node of orbit plane at weekly epoch.
+     * @return longitude of ascending node of orbit plane at weekly epoch (rad)
+     */
+    public double getOmega0() {
+        return getOmega0Driver().getValue();
+    }
+
+    /** Set longitude of ascending node of orbit plane at weekly epoch.
+     * @param om0 longitude of ascending node of orbit plane at weekly epoch (rad)
+     */
+    public void setOmega0(final double om0) {
+        getOmega0Driver().setValue(om0);
+    }
+
+    /** Get the driver for the argument of perigee.
+     * @return driver for the argument of perigee (rad)
+     */
+    public ParameterDriver getPaDriver() {
+        return aopDriver;
+    }
+
+    /** Get argument of perigee.
+     * @return argument of perigee (rad)
+     */
+    public double getPa() {
+        return getPaDriver().getValue();
+    }
+
+    /** Set argument of perigee.
+     * @param aop argument of perigee (rad)
+     */
+    public void setPa(final double aop) {
+        getPaDriver().setValue(aop);
+    }
+
+    /** Get the driver for the mean anomaly at reference time.
+     * @return driver for the mean anomaly at reference time (rad)
+     */
+    public ParameterDriver getM0Driver() {
+        return anomDriver;
+    }
+
+    /** Get mean anomaly at reference time.
+     * @return mean anomaly at reference time (rad)
+     */
+    public double getM0() {
+        return getM0Driver().getValue();
+    }
+
+    /** Set mean anomaly at reference time.
+     * @param anom mean anomaly at reference time (rad)
+     */
+    public void setM0(final double anom) {
+        getM0Driver().setValue(anom);
     }
 
 }

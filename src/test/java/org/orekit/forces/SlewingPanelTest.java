@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -47,7 +47,7 @@ import org.orekit.time.TimeScalesFactory;
 public class SlewingPanelTest {
 
     @Test
-    public void testCorrectFixedRate() {
+    void testCorrectFixedRate() {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
@@ -76,7 +76,7 @@ public class SlewingPanelTest {
     }
 
     @Test
-    public void testTooSlowFixedRate() {
+    void testTooSlowFixedRate() {
 
             AbsoluteDate initialDate = propagator.getInitialState().getDate();
             CelestialBody sun = CelestialBodyFactory.getSun();
@@ -109,7 +109,7 @@ public class SlewingPanelTest {
     }
 
     @Test
-    public void testNormalFixedRateDouble() {
+    void testNormalFixedRateDouble() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         SlewingPanel panel = new SlewingPanel(Vector3D.PLUS_J, 1.0e-3,
                                               initialDate, Vector3D.PLUS_K, 20.0, 0.0, 0.0, 1.0, 0.0);
@@ -122,7 +122,7 @@ public class SlewingPanelTest {
     }
 
     @Test
-    public void testNormalFixedRateField() {
+    void testNormalFixedRateField() {
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         SlewingPanel panel = new SlewingPanel(Vector3D.PLUS_J, 1.0e-3,
                                               initialDate, Vector3D.PLUS_K, 20.0, 0.0, 0.0, 1.0, 0.0);

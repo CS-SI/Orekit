@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -141,6 +141,17 @@ class NumericalPropagatorTest {
         propagator.addForceModel(new Maneuver(null, triggers, new BasicConstantThrustPropulsionModel(0., 1., Vector3D.PLUS_I, "")));
         propagator.setupMatricesComputation("stm", MatrixUtils.createRealIdentityMatrix(6), new DoubleArrayDictionary());
         propagator.setUpStmAndJacobianGenerators();
+    }
+
+    @Test
+    void testIssue879() {
+        // GIVEN
+        final EphemerisGenerator generator = propagator.getEphemerisGenerator();
+        // WHEN
+        propagator.clearEphemerisGenerators();
+        propagator.propagate(initDate.shiftedBy(1));
+        // THEN
+        Assertions.assertThrows(NullPointerException.class, generator::getGeneratedEphemeris);
     }
 
     @Test

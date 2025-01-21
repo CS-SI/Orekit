@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -252,7 +252,6 @@ public class TransformProviderUtilTest {
     private TransformProvider constantProvider(RandomGenerator random) {
         final Transform combined = randomTransform(random);
         return new TransformProvider() {
-            private static final long serialVersionUID = 20180330L;
             public <T extends CalculusFieldElement<T>> FieldTransform<T> getTransform(FieldAbsoluteDate<T> date)
                 {
                 return new FieldTransform<>(date.getField(), combined);

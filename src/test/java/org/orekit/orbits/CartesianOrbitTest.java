@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -39,11 +39,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Function;
@@ -288,72 +283,6 @@ public class CartesianOrbitTest {
                                                                    TimeScalesFactory.getUTC()),
                                                                    3.986004415E14);
         Assertions.assertEquals(0.0, orbit.getE(), 2.0e-14);
-    }
-
-    @Test
-    public void testSerialization()
-      throws IOException, ClassNotFoundException {
-        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
-        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
-        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
-        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(orbit);
-
-        Assertions.assertEquals(332, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        CartesianOrbit deserialized  = (CartesianOrbit) ois.readObject();
-        PVCoordinates dpv = new PVCoordinates(orbit.getPVCoordinates(), deserialized.getPVCoordinates());
-        Assertions.assertEquals(0.0, dpv.getPosition().getNorm(), 1.0e-10);
-        Assertions.assertEquals(0.0, dpv.getVelocity().getNorm(), 1.0e-10);
-        Assertions.assertEquals(orbit.getDate(), deserialized.getDate());
-        Assertions.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
-
-    }
-
-    @Test
-    public void testSerializationWithDerivatives()
-      throws IOException, ClassNotFoundException {
-        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
-        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
-        double r2 = position.getNormSq();
-        double r  = FastMath.sqrt(r2);
-        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
-                                             1, new Vector3D(-0.1, 0.2, 0.3));
-        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
-        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(orbit);
-
-        Assertions.assertEquals(356, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        CartesianOrbit deserialized  = (CartesianOrbit) ois.readObject();
-        PVCoordinates dpv = new PVCoordinates(orbit.getPVCoordinates(), deserialized.getPVCoordinates());
-        Assertions.assertEquals(0.0, dpv.getPosition().getNorm(), 1.0e-10);
-        Assertions.assertEquals(0.0, dpv.getVelocity().getNorm(), 1.0e-10);
-        Assertions.assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEDot(), deserialized.getEDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getIDot(), deserialized.getIDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialExDot(), deserialized.getEquinoctialExDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialEyDot(), deserialized.getEquinoctialEyDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHxDot(), deserialized.getHxDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHyDot(), deserialized.getHyDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getLvDot(), deserialized.getLvDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getDate(), deserialized.getDate());
-        Assertions.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
-
     }
 
     @Test

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,7 +53,7 @@ import java.util.List;
 public class SBASPropagatorTest {
 
     /** Threshold for test validation. */
-    private static double eps = 1.0e-15;
+    private static final double eps = 1.0e-15;
 
     /** SBAS orbital elements. */
     private SBASNavigationMessage soe;
@@ -166,7 +166,7 @@ public class SBASPropagatorTest {
             final AbsoluteDate central = t0.shiftedBy(dt);
             final PVCoordinates pv = propagator.getPVCoordinates(central, eme2000);
             final double h = 10.0;
-            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<>();
             for (int i = -3; i <= 3; ++i) {
                 sample.add(propagator.getPVCoordinates(central.shiftedBy(i * h), eme2000));
             }
@@ -219,4 +219,5 @@ public class SBASPropagatorTest {
         Assertions.assertDoesNotThrow(() -> propagator.propagate(new AbsoluteDate()), "No error should have been thrown");
 
     }
+
 }

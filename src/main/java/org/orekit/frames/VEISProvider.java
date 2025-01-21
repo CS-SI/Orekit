@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,9 +35,6 @@ import org.orekit.utils.Constants;
  * @author Pascal Parraud
  */
 class VEISProvider implements TransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130530L;
 
     /** 1st coef for Veis sidereal time computation in radians (100.075542 deg). */
     private static final double VST0 = 1.746647708617871;

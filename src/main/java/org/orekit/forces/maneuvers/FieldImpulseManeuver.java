@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Exotrail
+/* Copyright 2002-2025 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.orekit.propagation.events.FieldEventDetector;
 import org.orekit.propagation.events.handlers.FieldEventHandler;
 import org.orekit.time.FieldAbsoluteDate;
 import org.orekit.utils.Constants;
-import org.orekit.utils.FieldArrayDictionary;
+import org.orekit.utils.FieldAbsolutePVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 
 /** Impulse maneuver model for propagators working with Fields.
@@ -182,6 +182,14 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
     public void init(final FieldSpacecraftState<T> s0, final FieldAbsoluteDate<T> t) {
         FieldDetectorModifier.super.init(s0, t);
         forward = t.durationFrom(s0.getDate()).getReal() >= 0;
+        fieldImpulseProvider.init(s0, t);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void finish(final FieldSpacecraftState<T> state) {
+        FieldDetectorModifier.super.finish(state);
+        fieldImpulseProvider.finish(state);
     }
 
     /** {@inheritDoc} */
@@ -233,7 +241,7 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
                                     final FieldEventDetector<T> detector,
                                     final boolean increasing) {
             final FieldImpulseManeuver<T> im = (FieldImpulseManeuver<T>) detector;
-            im.trigger.getHandler().eventOccurred(s, detector, increasing); // Action ignored but method still called
+            im.trigger.getHandler().eventOccurred(s, im.trigger, increasing); // Action ignored but method still called
             return Action.RESET_STATE;
         }
 
@@ -245,8 +253,8 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
             final FieldImpulseManeuver<T> im = (FieldImpulseManeuver<T>) detector;
             final FieldAbsoluteDate<T> date = oldState.getDate();
             final boolean isStateOrbitDefined = oldState.isOrbitDefined();
-            final FieldRotation<T> rotation;
 
+            final FieldRotation<T> rotation;
             if (im.getAttitudeOverride() == null) {
                 rotation = oldState.getAttitude().getRotation();
             } else {
@@ -255,7 +263,7 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
             }
 
             // convert velocity increment in inertial frame
-            final FieldVector3D<T> deltaVSat = im.fieldImpulseProvider.getImpulse(oldState, im.forward, im.getAttitudeOverride());
+            final FieldVector3D<T> deltaVSat = im.fieldImpulseProvider.getImpulse(oldState, im.forward);
             final FieldVector3D<T> deltaV = rotation.applyInverseTo(deltaVSat);
             final T one = oldState.getMu().getField().getOne();
             final T sign = (im.forward) ? one : one.negate();
@@ -264,29 +272,24 @@ public class FieldImpulseManeuver<T extends CalculusFieldElement<T>> extends Abs
             final FieldPVCoordinates<T> oldPV = oldState.getPVCoordinates();
             final FieldVector3D<T> newVelocity = oldPV.getVelocity().add(deltaV);
             final FieldPVCoordinates<T> newPV = new FieldPVCoordinates<>(oldPV.getPosition(), newVelocity);
-            final FieldOrbit<T> newOrbit = new FieldCartesianOrbit<>(newPV, oldState.getFrame(), date, oldState.getMu());
 
             // compute new mass
             final T normDeltaV = im.getControl3DVectorCostType().evaluate(deltaVSat);
             final T newMass = oldState.getMass().multiply(FastMath.exp(normDeltaV.multiply(sign.negate()).divide(im.vExhaust)));
 
             // pack everything in a new state
-            FieldSpacecraftState<T> newState;
-            if (isStateOrbitDefined) {
-                newState = new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit,
-                        oldState.getOrbit()), oldState.getAttitude(), newMass);
+            if (oldState.isOrbitDefined()) {
+                final FieldOrbit<T> newOrbit = new FieldCartesianOrbit<>(newPV, oldState.getFrame(), oldState.getDate(),
+                        oldState.getMu());
+                return new FieldSpacecraftState<>(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
+                        oldState.getAttitude(), newMass, oldState.getAdditionalStatesValues(),
+                        oldState.getAdditionalStatesDerivatives());
             } else {
-                newState = new FieldSpacecraftState<>(oldState.getAbsPVA(), oldState.getAttitude(), newMass);
+                final FieldAbsolutePVCoordinates<T> newAbsPVA = new FieldAbsolutePVCoordinates<>(oldState.getFrame(),
+                        oldState.getDate(), newPV);
+                return new FieldSpacecraftState<>(newAbsPVA, oldState.getAttitude(), newMass,
+                        oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
             }
-
-            for (final FieldArrayDictionary<T>.Entry entry : oldState.getAdditionalStatesValues().getData()) {
-                newState = newState.addAdditionalState(entry.getKey(), entry.getValue());
-            }
-            for (final FieldArrayDictionary<T>.Entry entry : oldState.getAdditionalStatesDerivatives().getData()) {
-                newState = newState.addAdditionalStateDerivative(entry.getKey(), entry.getValue());
-            }
-
-            return newState;
         }
 
     }

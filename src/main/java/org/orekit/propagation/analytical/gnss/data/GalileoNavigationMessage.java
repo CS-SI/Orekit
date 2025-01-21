@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,17 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Container for data contained in a Galileo navigation message.
  * @author Bryan Cazabonne
  * @since 11.0
  */
-public class GalileoNavigationMessage extends AbstractNavigationMessage {
+public class GalileoNavigationMessage extends AbstractNavigationMessage<GalileoNavigationMessage> {
 
     /** Issue of Data of the navigation batch. */
     private int iodNav;
@@ -43,9 +48,37 @@ public class GalileoNavigationMessage extends AbstractNavigationMessage {
     /** Satellite health status. */
     private double svHealth;
 
-    /** Constructor. */
-    public GalileoNavigationMessage() {
-        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB);
+    /** Constructor.
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
+     */
+    public GalileoNavigationMessage(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.GALILEO_MU, GNSSConstants.GALILEO_AV, GNSSConstants.GALILEO_WEEK_NB,
+              timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> GalileoNavigationMessage(final FieldGalileoNavigationMessage<T> original) {
+        super(original);
+        setIODNav(original.getIODNav());
+        setDataSource(original.getDataSource());
+        setBGDE1E5a(original.getBGDE1E5a().getReal());
+        setBGDE5bE1(original.getBGDE5bE1().getReal());
+        setSisa(original.getSisa().getReal());
+        setSvHealth(original.getSvHealth().getReal());
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, GalileoNavigationMessage>>
+        F toField(final Field<T> field) {
+        return (F) new FieldGalileoNavigationMessage<>(field, this);
     }
 
     /**

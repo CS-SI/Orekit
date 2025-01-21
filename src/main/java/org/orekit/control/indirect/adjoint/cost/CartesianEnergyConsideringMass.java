@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,13 +19,10 @@ package org.orekit.control.indirect.adjoint.cost;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetectionSettings;
-import org.orekit.propagation.events.handlers.EventHandler;
-import org.orekit.propagation.events.handlers.ResetDerivativesOnEvent;
 
 /**
- * Abstract class for energy cost with Cartesian coordinates and non-zero mass flow rate.
+ * Abstract class for energy cost with Cartesian coordinates.
  * An energy cost is proportional to the integral over time of the squared Euclidean norm of the control vector, often scaled with 1/2.
  * This type of cost is not optimal in terms of mass consumption, however its solutions showcase a smoother behavior favorable for convergence in shooting techniques.
  *
@@ -84,7 +81,9 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
     @Override
     public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
                                          final double[] adjointDerivatives) {
-        adjointDerivatives[6] += getThrustForceNorm(adjointVariables, mass) * getAdjointVelocityNorm(adjointVariables) / (mass * mass);
+        if (getAdjointDimension() > 6) {
+            adjointDerivatives[6] += getThrustForceNorm(adjointVariables, mass) * getAdjointVelocityNorm(adjointVariables) / (mass * mass);
+        }
     }
 
     /** {@inheritDoc} */
@@ -97,18 +96,18 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
     /**
      * Event detector for singularities in adjoint dynamics.
      */
-    class SingularityDetector implements EventDetector {
+    class SingularityDetector extends ControlSwitchDetector {
 
         /** Value to detect. */
         private final double detectionValue;
-        /** Event handler. */
-        private final EventHandler handler = new ResetDerivativesOnEvent();
 
         /**
          * Constructor.
+         * @param detectionSettings detection settings
          * @param detectionValue value to detect
          */
-        SingularityDetector(final double detectionValue) {
+        SingularityDetector(final EventDetectionSettings detectionSettings, final double detectionValue) {
+            super(detectionSettings);
             this.detectionValue = detectionValue;
         }
 
@@ -127,18 +126,13 @@ abstract class CartesianEnergyConsideringMass extends AbstractCartesianCost {
          */
         private double evaluateVariablePart(final double[] adjointVariables, final double mass) {
             final double adjointVelocityNorm = getAdjointVelocityNorm(adjointVariables);
-            return adjointVelocityNorm / mass - getMassFlowRateFactor() * adjointVariables[6];
+            double variablePart = adjointVelocityNorm / mass;
+            if (getAdjointDimension() > 6) {
+                variablePart -= getMassFlowRateFactor() * adjointVariables[6];
+            }
+            return variablePart;
         }
 
-        @Override
-        public EventDetectionSettings getDetectionSettings() {
-            return eventDetectionSettings;
-        }
-
-        @Override
-        public EventHandler getHandler() {
-            return handler;
-        }
     }
 
 }

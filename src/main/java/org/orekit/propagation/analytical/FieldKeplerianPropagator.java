@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -156,6 +156,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
     public void resetInitialState(final FieldSpacecraftState<T> state) {
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
@@ -174,6 +175,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
     protected void resetIntermediateState(final FieldSpacecraftState<T> state, final boolean forward) {
         if (forward) {
             states.addValidAfter(state, state.getDate());
@@ -184,6 +186,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc} */
+    @Override
     protected FieldOrbit<T> propagateOrbit(final FieldAbsoluteDate<T> date, final T[] parameters) {
         // propagate orbit
         FieldOrbit<T> orbit = states.get(date).getOrbit();
@@ -196,6 +199,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
     }
 
     /** {@inheritDoc}*/
+    @Override
     protected T getMass(final FieldAbsoluteDate<T> date) {
         return states.get(date).getMass();
     }

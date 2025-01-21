@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -131,6 +131,20 @@ public class FieldNumericalPropagatorTest {
         final FieldAbstractIntegratedPropagator<T> notInitialised =
             new FieldNumericalPropagator<>(field, new ClassicalRungeKuttaFieldIntegrator<>(field, field.getZero().add((10.0))));
         notInitialised.propagate(initDate, initDate.shiftedBy(3600));
+    }
+
+
+    @Test
+    void testIssue879() {
+        // GIVEN
+        final FieldNumericalPropagator<Binary64> propagator = createPropagator(Binary64Field.getInstance());
+        final FieldEphemerisGenerator<Binary64> generator = propagator.getEphemerisGenerator();
+        final FieldAbsoluteDate<Binary64> epoch = propagator.getInitialState().getDate();
+        // WHEN
+        propagator.clearEphemerisGenerators();
+        propagator.propagate(epoch.shiftedBy(1));
+        // THEN
+        Assertions.assertThrows(NullPointerException.class, generator::getGeneratedEphemeris);
     }
 
     @Test

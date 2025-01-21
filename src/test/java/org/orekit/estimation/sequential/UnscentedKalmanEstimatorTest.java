@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -142,15 +142,13 @@ public class UnscentedKalmanEstimatorTest {
         // Unchanged orbital parameters (two body propagation)
         final KeplerianOrbit initialOrbit = (KeplerianOrbit) context.initialOrbit;
         Assertions.assertEquals(initialOrbit.getA(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue());
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("a").getValue(), 1e-8);
         Assertions.assertEquals(initialOrbit.getI(),
                 propagatorBuilder.getOrbitalParametersDrivers().findByName("i").getValue());
         Assertions.assertEquals(initialOrbit.getRightAscensionOfAscendingNode(),
                 propagatorBuilder.getOrbitalParametersDrivers().findByName("Ω").getValue());
         Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue());
-        Assertions.assertEquals(initialOrbit.getPerigeeArgument(),
-                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue());
+                propagatorBuilder.getOrbitalParametersDrivers().findByName("ω").getValue(), 1e-15);
 
         // Changed orbital parameters
         Assertions.assertNotEquals(initialOrbit.getE(),
@@ -256,22 +254,22 @@ public class UnscentedKalmanEstimatorTest {
 
         // Unchanged orbital parameters
         Assertions.assertEquals(refOrbit1.getA(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue());
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("a[0]").getValue(), 1e-8);
         Assertions.assertEquals(refOrbit1.getI(),
                 propagatorBuilder1.getOrbitalParametersDrivers().findByName("i[0]").getValue());
         Assertions.assertEquals(refOrbit1.getRightAscensionOfAscendingNode(),
                 propagatorBuilder1.getOrbitalParametersDrivers().findByName("Ω[0]").getValue());
         Assertions.assertEquals(refOrbit1.getPerigeeArgument(),
-                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue());
+                propagatorBuilder1.getOrbitalParametersDrivers().findByName("ω[0]").getValue(), 1e-15);
 
         Assertions.assertEquals(refOrbit2.getA(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue());
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("a[1]").getValue(), 1e-8);
         Assertions.assertEquals(refOrbit2.getI(),
                 propagatorBuilder2.getOrbitalParametersDrivers().findByName("i[1]").getValue());
         Assertions.assertEquals(refOrbit2.getRightAscensionOfAscendingNode(),
                 propagatorBuilder2.getOrbitalParametersDrivers().findByName("Ω[1]").getValue());
         Assertions.assertEquals(refOrbit2.getPerigeeArgument(),
-                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue());
+                propagatorBuilder2.getOrbitalParametersDrivers().findByName("ω[1]").getValue(), 1e-15);
 
         // Changed orbital parameters
         Assertions.assertNotEquals(refOrbit1.getE(),
@@ -1132,10 +1130,84 @@ public class UnscentedKalmanEstimatorTest {
 
     }
 
+    /**
+     * Test that the states passed to the process noise covariance calculation are the previous and predicted.
+     */
+    @Test
+    public void testProcessNoiseStates() {
+
+        // Create context
+        Context context = UnscentedEstimationTestUtils.eccentricContext("regular-data:potential:tides");
+
+        // Create initial orbit and propagator builder
+        final OrbitType     orbitType     = OrbitType.CARTESIAN;
+        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
+        final boolean       perfectStart  = true;
+        final double        minStep       = 1.e-6;
+        final double        maxStep       = 60.;
+        final double        dP            = 1.;
+        final NumericalPropagatorBuilder propagatorBuilder =
+                context.createBuilder(orbitType, positionAngleType, perfectStart,
+                        minStep, maxStep, dP);
+
+        // Create perfect PV measurements
+        final Propagator propagator = UnscentedEstimationTestUtils.createPropagator(context.initialOrbit,
+                propagatorBuilder);
+        final List<ObservedMeasurement<?>> measurements =
+                UnscentedEstimationTestUtils.createMeasurements(propagator,
+                        new PVMeasurementCreator(),
+                        0.0, 1.0, 300.0);
+
+        // Process noise
+        ProcessNoise processNoise = new ProcessNoise();
+
+        // Build the Kalman filter
+        final UnscentedKalmanEstimator kalman = new UnscentedKalmanEstimatorBuilder().
+                addPropagationConfiguration(propagatorBuilder, processNoise).
+                unscentedTransformProvider(new MerweUnscentedTransform(6)).
+                build();
+
+        // Single estimation step on the 10th measurement
+        kalman.estimationStep(measurements.get(10));
+
+        // Make sure previous and current are not the same
+        Assertions.assertEquals(measurements.get(0).getDate(), processNoise.getPrevious().getDate());
+        Assertions.assertEquals(measurements.get(10).getDate(), processNoise.getCurrent().getDate());
+        Assertions.assertNotEquals(processNoise.getPrevious().getPosition().getX(),
+                                   processNoise.getCurrent().getPosition().getX());
+    }
+
     private static class DummyException extends OrekitException {
         private static final long serialVersionUID = 1L;
         public DummyException() {
             super(OrekitMessages.INTERNAL_ERROR);
+        }
+    }
+
+
+    private static class ProcessNoise implements CovarianceMatrixProvider {
+
+        private SpacecraftState previous;
+        private SpacecraftState current;
+
+        public SpacecraftState getPrevious() {
+            return previous;
+        }
+
+        public SpacecraftState getCurrent() {
+            return current;
+        }
+
+        @Override
+        public RealMatrix getInitialCovarianceMatrix(SpacecraftState initial) {
+            return MatrixUtils.createRealMatrix(6, 6);
+        }
+
+        @Override
+        public RealMatrix getProcessNoiseMatrix(SpacecraftState previous, SpacecraftState current) {
+            this.previous = previous;
+            this.current = current;
+            return MatrixUtils.createRealMatrix(6, 6);
         }
     }
 

@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,9 @@ public abstract class FieldAbstractCartesianCost<T extends CalculusFieldElement<
     /** Mass flow rate factor (always positive). */
     private final T massFlowRateFactor;
 
+    /** Dimension of adjoint vector. */
+    private final int adjointDimension;
+
     /**
      * Constructor.
      * @param name name
@@ -44,6 +47,13 @@ public abstract class FieldAbstractCartesianCost<T extends CalculusFieldElement<
     protected FieldAbstractCartesianCost(final String name, final T massFlowRateFactor) {
         this.name = name;
         this.massFlowRateFactor = FastMath.abs(massFlowRateFactor);
+        this.adjointDimension = this.massFlowRateFactor.isZero() ? 6 : 7;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getAdjointDimension() {
+        return adjointDimension;
     }
 
     /**

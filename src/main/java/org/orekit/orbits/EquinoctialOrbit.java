@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,13 +16,10 @@
  */
 package org.orekit.orbits;
 
-import java.io.Serializable;
-
 import org.hipparchus.analysis.differentiation.UnivariateDerivative1;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.util.FastMath;
 import org.hipparchus.util.SinCos;
-import org.orekit.annotation.DefaultDataContext;
 import org.orekit.errors.OrekitIllegalArgumentException;
 import org.orekit.errors.OrekitInternalError;
 import org.orekit.errors.OrekitMessages;
@@ -74,9 +71,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class EquinoctialOrbit extends Orbit implements PositionAngleBased<EquinoctialOrbit> {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170414L;
 
     /** Semi-major axis (m). */
     private final double a;
@@ -1154,79 +1148,6 @@ public class EquinoctialOrbit extends Orbit implements PositionAngleBased<Equino
         final PositionAngleType positionAngleType = getCachedPositionAngleType();
         return new EquinoctialOrbit(getA(), getEquinoctialEx(), getEquinoctialEy(), getHx(), getHy(),
                 getL(positionAngleType), positionAngleType, getFrame(), getDate(), getMu());
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    @DefaultDataContext
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
-    /** Internal class used only for serialization. */
-    @DefaultDataContext
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20241114L;
-
-        /** Seconds. */
-        private final long seconds;
-
-        /** Attoseconds. */
-        private final long attoseconds;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Frame in which are defined the orbital parameters. */
-        private final Frame frame;
-
-        /** Cached type of position angle. */
-        private final PositionAngleType positionAngleType;
-
-        /** Simple constructor.
-         * @param orbit instance to serialize
-         */
-        private DTO(final EquinoctialOrbit orbit) {
-
-            this.positionAngleType = orbit.cachedPositionAngleType;
-
-            // decompose date
-            this.seconds     = orbit.getDate().getSeconds();
-            this.attoseconds = orbit.getDate().getAttoSeconds();
-
-            this.d = new double[] {
-                orbit.getMu(), orbit.a, orbit.ex, orbit.ey, orbit.hx, orbit.hy, orbit.cachedL,
-                orbit.aDot, orbit.exDot, orbit.eyDot, orbit.hxDot, orbit.hyDot, orbit.cachedLDot
-            };
-            this.frame = orbit.getFrame();
-
-        }
-
-        /** Replace the deserialized data transfer object with a {@link EquinoctialOrbit}.
-         * @return replacement {@link EquinoctialOrbit}
-         */
-        private Object readResolve() {
-            if (d.length >= 13) {
-                // we have derivatives
-                return new EquinoctialOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
-                                            d[ 7], d[ 8], d[ 9], d[10], d[11], d[12],
-                                            positionAngleType,
-                                            frame,
-                                            new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                            d[0]);
-            } else {
-                // we don't have derivatives
-                return new EquinoctialOrbit(d[ 1], d[ 2], d[ 3], d[ 4], d[ 5], d[ 6],
-                                            positionAngleType,
-                                            frame,
-                                            new AbsoluteDate(new TimeOffset(seconds, attoseconds)),
-                                            d[0]);
-            }
-        }
-
     }
 
 }

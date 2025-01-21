@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,11 +41,6 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.function.Function;
 
 import static org.orekit.OrekitMatchers.relativelyCloseTo;
@@ -182,17 +177,6 @@ public class EquinoctialOrbitTest {
         Assertions.assertEquals(MathUtils.normalizeAngle(paramCir.getLv(), equiCir.getLv()), equiCir
                      .getLv(), Utils.epsilonAngle * FastMath.abs(equiCir.getLv()));
 
-    }
-
-    @Timeout(5)
-    @ParameterizedTest()
-    @EnumSource(PositionAngleType.class)
-    void testConstructor(final PositionAngleType positionAngleType) {
-        for (int i = 0; i < 10000000; i++) {
-            final EquinoctialOrbit orbit = new EquinoctialOrbit(42166712.0, 0.1e-10, -0.1e-10, 0, 0.,
-                    5.300, positionAngleType, FramesFactory.getEME2000(), date, mu);
-            Assertions.assertEquals(positionAngleType, orbit.getCachedPositionAngleType());
-        }
     }
 
     @Test
@@ -828,76 +812,6 @@ public class EquinoctialOrbitTest {
                           32 * (oP3h.getL(type)         - oM3h.getL(type)) -
                          168 * (oP2h.getL(type)         - oM2h.getL(type)) +
                          672 * (oP1h.getL(type)         - oM1h.getL(type))) / (840 * h);
-
-    }
-
-    @Test
-    void testSerialization()
-      throws IOException, ClassNotFoundException {
-        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
-        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
-        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
-        EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(orbit);
-
-        Assertions.assertEquals(530, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        EquinoctialOrbit deserialized  = (EquinoctialOrbit) ois.readObject();
-        Assertions.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialEx(), deserialized.getEquinoctialEx(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialEy(), deserialized.getEquinoctialEy(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHx(), deserialized.getHx(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHy(), deserialized.getHy(), 1.0e-10);
-        Assertions.assertEquals(orbit.getLv(), deserialized.getLv(), 1.0e-10);
-        Assertions.assertEquals(orbit.getDate(), deserialized.getDate());
-        Assertions.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
-
-    }
-
-    @Test
-    void testSerializationWithDerivatives()
-      throws IOException, ClassNotFoundException {
-        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
-        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
-        double r2 = position.getNormSq();
-        double r  = FastMath.sqrt(r2);
-        Vector3D acceleration = new Vector3D(-mu / (r * r2), position,
-                                             1, new Vector3D(-0.1, 0.2, 0.3));
-        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity, acceleration);
-        EquinoctialOrbit orbit = new EquinoctialOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
-        Assertions.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(orbit);
-
-        Assertions.assertEquals(530, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        EquinoctialOrbit deserialized  = (EquinoctialOrbit) ois.readObject();
-        Assertions.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialEx(), deserialized.getEquinoctialEx(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialEy(), deserialized.getEquinoctialEy(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHx(), deserialized.getHx(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHy(), deserialized.getHy(), 1.0e-10);
-        Assertions.assertEquals(orbit.getLv(), deserialized.getLv(), 1.0e-10);
-        Assertions.assertEquals(orbit.getADot(), deserialized.getADot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialExDot(), deserialized.getEquinoctialExDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getEquinoctialEyDot(), deserialized.getEquinoctialEyDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHxDot(), deserialized.getHxDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getHyDot(), deserialized.getHyDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getLvDot(), deserialized.getLvDot(), 1.0e-10);
-        Assertions.assertEquals(orbit.getDate(), deserialized.getDate());
-        Assertions.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
 
     }
 

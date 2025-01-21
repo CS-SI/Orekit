@@ -37,9 +37,6 @@ public class SP3Coordinate extends TimeStampedPVCoordinates {
                                                                 Double.NaN,
                                                                 false, false, false, false);
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20230903L;
-
     /** Clock correction in s. */
     private final double clock;
 

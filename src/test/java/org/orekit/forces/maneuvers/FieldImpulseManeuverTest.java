@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Exotrail
+/* Copyright 2002-2025 Exotrail
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -43,6 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.FrameAlignedProvider;
@@ -64,6 +65,7 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.MatricesHarvester;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.FieldKeplerianPropagator;
 import org.orekit.propagation.events.*;
 import org.orekit.propagation.events.handlers.*;
 import org.orekit.propagation.events.intervals.FieldAdaptableInterval;
@@ -175,6 +177,21 @@ class FieldImpulseManeuverTest {
         Assertions.assertEquals(fieldImpulseManeuver1.getDetectionSettings(), dateDetector.getDetectionSettings());
         Assertions.assertEquals(fieldImpulseManeuver1.getAttitudeOverride(), fieldImpulseManeuver2.getAttitudeOverride());
         Assertions.assertEquals(fieldImpulseManeuver1.getIsp(), fieldImpulseManeuver2.getIsp());
+    }
+
+    @Test
+    void testEventOccurredEventSlopeFilter() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final Binary64Field field = Binary64Field.getInstance();
+        final FieldOrbit<Binary64> fieldOrbit = new FieldCartesianOrbit<>(field, orbit);
+        final FieldApsideDetector<Binary64> detector = new FieldApsideDetector<>(fieldOrbit);
+        final FieldImpulseManeuver<Binary64> maneuver = new FieldImpulseManeuver<>(new FieldEventSlopeFilter<>(detector,
+                FilterType.TRIGGER_ONLY_INCREASING_EVENTS), FieldVector3D.getZero(field), Binary64.ONE);
+        final FieldKeplerianPropagator<Binary64> propagator = new FieldKeplerianPropagator<>(fieldOrbit);
+        // WHEN & THEN
+        propagator.addEventDetector(maneuver);
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(fieldOrbit.getDate().shiftedBy(1e5)));
     }
 
     @Test
@@ -432,11 +449,11 @@ class FieldImpulseManeuverTest {
         final Orbit orbit = state.getOrbit();
         final FieldOrbit<T> fieldOrbit = fieldState.getOrbit();
         final double[] orbitAsArray = new double[6];
-        final PositionAngleType positionAngleType = PositionAngleType.TRUE;
-        final OrbitType orbitType = OrbitType.CARTESIAN;
-        orbitType.mapOrbitToArray(orbit, positionAngleType, orbitAsArray, orbitAsArray.clone());
+        final PositionAngleType positionAngle = PositionAngleType.TRUE;
+        final OrbitType type = OrbitType.CARTESIAN;
+        type.mapOrbitToArray(orbit, positionAngle, orbitAsArray, orbitAsArray.clone());
         final double[] fieldRealOrbitAsArray = orbitAsArray.clone();
-        orbitType.mapOrbitToArray(fieldOrbit.toOrbit(), positionAngleType, fieldRealOrbitAsArray, fieldRealOrbitAsArray.clone());
+        type.mapOrbitToArray(fieldOrbit.toOrbit(), positionAngle, fieldRealOrbitAsArray, fieldRealOrbitAsArray.clone());
         final double tolPos = 5e-2;
         final double tolVel = 3e-5;
         for (int i = 0; i < 3; i++) {

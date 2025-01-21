@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -134,7 +134,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
      * equal to -20.2 milliarcsecs per year.
      */
     @Test
-    public void testSmallEffectOnOrbit() {
+    void testSmallEffectOnOrbit() {
         // Setup
         final double gm = Constants.EIGEN5C_EARTH_MU;
 	final Frame frame = FramesFactory.getGCRF();
@@ -166,7 +166,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testGlobalStateJacobian()
+    void testGlobalStateJacobian()
         {
 
         // initialization
@@ -196,7 +196,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -271,7 +271,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80ImplementationGradient() {
+    void testJacobianVs80ImplementationGradient() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         DeSitterRelativity relativity = new DeSitterRelativity();
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);
@@ -289,7 +289,7 @@ public class DeSitterRelativityTest extends AbstractLegacyForceModelTest {
     }
 
     @Test
-    public void testJacobianVs80Implementation() {
+    void testJacobianVs80Implementation() {
         double gm = Constants.EIGEN5C_EARTH_MU;
         DeSitterRelativity relativity = new DeSitterRelativity();
         final Vector3D p = new Vector3D(3777828.75000531, -5543949.549783845, 2563117.448578311);

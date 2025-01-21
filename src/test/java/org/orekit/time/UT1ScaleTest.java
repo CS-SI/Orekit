@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,11 +26,6 @@ import org.orekit.frames.ITRFVersion;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -161,27 +156,6 @@ public class UT1ScaleTest {
         Assertions.assertEquals(   7,        components.getTime().getHour());
         Assertions.assertEquals(  51,        components.getTime().getMinute());
         Assertions.assertEquals(  27.946047, components.getTime().getSecond(), 1.0e-10);
-    }
-
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(ut1);
-
-        Assertions.assertTrue(bos.size() > 138000);
-        Assertions.assertTrue(bos.size() < 139000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        UT1Scale deserialized  = (UT1Scale) ois.readObject();
-        for (double dt = 0; dt < 7 * Constants.JULIAN_DAY; dt += 3600) {
-            AbsoluteDate date = ut1.getEOPHistory().getStartDate().shiftedBy(dt);
-            Assertions.assertEquals(ut1.offsetFromTAI(date), deserialized.offsetFromTAI(date));
-        }
-
     }
 
     @Test

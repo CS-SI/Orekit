@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -33,9 +33,6 @@ public class TransformProviderUtils {
      * </p>
      */
     public static final TransformProvider IDENTITY_PROVIDER = new TransformProvider() {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20180330L;
 
         /** {@inheritDoc}
          * <p>
@@ -86,9 +83,6 @@ public class TransformProviderUtils {
     public static TransformProvider getReversedProvider(final TransformProvider provider) {
         return new TransformProvider() {
 
-            /** serializable UID. */
-            private static final long serialVersionUID = 20180330L;
-
             /** {@inheritDoc} */
             @Override
             public Transform getTransform(final AbsoluteDate date) {
@@ -135,10 +129,6 @@ public class TransformProviderUtils {
     public static TransformProvider getCombinedProvider(final TransformProvider first,
                                                         final TransformProvider second) {
         return new TransformProvider() {
-
-            /** serializable UID. */
-            private static final long serialVersionUID = 20180330L;
-
             /** {@inheritDoc} */
             @Override
             public Transform getTransform(final AbsoluteDate date) {

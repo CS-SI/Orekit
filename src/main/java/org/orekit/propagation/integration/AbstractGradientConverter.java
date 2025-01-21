@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -101,9 +101,7 @@ public abstract class AbstractGradientConverter {
      * @param freeParameters total number of free parameters in the gradient
      * @return extended date
      */
-    protected FieldAbsoluteDate<Gradient> extend(
-            final FieldAbsoluteDate<Gradient> original,
-            final int freeParameters) {
+    protected FieldAbsoluteDate<Gradient> extend(final FieldAbsoluteDate<Gradient> original, final int freeParameters) {
         final AbsoluteDate date = original.toAbsoluteDate();
         final Gradient gradient = original.durationFrom(date);
         return new FieldAbsoluteDate<>(date, extend(gradient, freeParameters));
@@ -149,19 +147,17 @@ public abstract class AbstractGradientConverter {
 
         // position always has derivatives
         final Vector3D pos = state.getPosition();
-        final FieldVector3D<Gradient> posG = new FieldVector3D<>(
-                Gradient.variable(freeStateParameters, 0, pos.getX()),
-                Gradient.variable(freeStateParameters, 1, pos.getY()),
-                Gradient.variable(freeStateParameters, 2, pos.getZ()));
+        final FieldVector3D<Gradient> posG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 0, pos.getX()),
+                                                                 Gradient.variable(freeStateParameters, 1, pos.getY()),
+                                                                 Gradient.variable(freeStateParameters, 2, pos.getZ()));
 
         // velocity may have derivatives or not
         final Vector3D vel = state.getPVCoordinates().getVelocity();
         final FieldVector3D<Gradient> velG;
         if (freeStateParameters > 3) {
-            velG = new FieldVector3D<>(
-                    Gradient.variable(freeStateParameters, 3, vel.getX()),
-                    Gradient.variable(freeStateParameters, 4, vel.getY()),
-                    Gradient.variable(freeStateParameters, 5, vel.getZ()));
+            velG = new FieldVector3D<>(Gradient.variable(freeStateParameters, 3, vel.getX()),
+                                       Gradient.variable(freeStateParameters, 4, vel.getY()),
+                                       Gradient.variable(freeStateParameters, 5, vel.getZ()));
         } else {
             velG = new FieldVector3D<>(field, vel);
         }
@@ -173,8 +169,8 @@ public abstract class AbstractGradientConverter {
         // mass never has derivatives
         final Gradient gMass = Gradient.constant(freeStateParameters, state.getMass());
 
-        final TimeStampedFieldPVCoordinates<Gradient> timeStampedFieldPVCoordinates = new TimeStampedFieldPVCoordinates<>(
-                state.getDate(), posG, velG, accG);
+        final TimeStampedFieldPVCoordinates<Gradient> timeStampedFieldPVCoordinates =
+            new TimeStampedFieldPVCoordinates<>(state.getDate(), posG, velG, accG);
 
         final FieldCartesianOrbit<Gradient> gOrbit;
         final FieldAbsolutePVCoordinates<Gradient> gAbsolutePV;
@@ -191,7 +187,7 @@ public abstract class AbstractGradientConverter {
         if (freeStateParameters > 3) {
             // compute attitude partial derivatives with respect to position/velocity
             gAttitude = provider.getAttitude((state.isOrbitDefined()) ? gOrbit : gAbsolutePV,
-                    timeStampedFieldPVCoordinates.getDate(), state.getFrame());
+                                             timeStampedFieldPVCoordinates.getDate(), state.getFrame());
         } else {
             // force model does not depend on attitude, don't bother recomputing it
             gAttitude = new FieldAttitude<>(field, state.getAttitude());
@@ -202,6 +198,7 @@ public abstract class AbstractGradientConverter {
         } else {
             return new FieldSpacecraftState<>(gAbsolutePV, gAttitude, gMass);
         }
+
     }
 
     /**
@@ -255,28 +252,31 @@ public abstract class AbstractGradientConverter {
                 final FieldOrbit<Gradient> orbit = s0.getOrbit();
                 if (orbit.getType().equals(OrbitType.EQUINOCTIAL)) {
                     // for DSST, which always uses EquinoctialOrbit, not CartesianOrbit
-                    spacecraftState = new FieldSpacecraftState<>(
-                            new FieldEquinoctialOrbit<>(
-                                    extend(orbit.getA(), freeParameters),
-                                    extend(orbit.getEquinoctialEx(), freeParameters),
-                                    extend(orbit.getEquinoctialEy(), freeParameters),
-                                    extend(orbit.getHx(), freeParameters),
-                                    extend(orbit.getHy(), freeParameters),
-                                    extend(orbit.getLM(), freeParameters),
-                                    PositionAngleType.MEAN,
-                                    s0.getFrame(),
-                                    extend(s0.getDate(), freeParameters),
-                                    extend(s0.getMu(), freeParameters)
-                            ),
+                    spacecraftState =
+                        new FieldSpacecraftState<>(new FieldEquinoctialOrbit<>(extend(orbit.getA(), freeParameters),
+                                                                               extend(orbit.getEquinoctialEx(), freeParameters),
+                                                                               extend(orbit.getEquinoctialEy(), freeParameters),
+                                                                               extend(orbit.getHx(), freeParameters),
+                                                                               extend(orbit.getHy(), freeParameters),
+                                                                               extend(orbit.getLM(), freeParameters),
+                                                                               PositionAngleType.MEAN,
+                                                                               s0.getFrame(),
+                                                                               extend(s0.getDate(), freeParameters),
+                                                                               extend(s0.getMu(), freeParameters)),
                             gAttitude,
                             gMass);
                 } else {
-                    spacecraftState = new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
-                            s0.getFrame(), extend(s0.getMu(), freeParameters)), gAttitude, gMass);
+                    spacecraftState =
+                        new FieldSpacecraftState<>(new FieldCartesianOrbit<>(timeStampedFieldPVCoordinates,
+                                                                             s0.getFrame(),
+                                                                             extend(s0.getMu(), freeParameters)),
+                                                   gAttitude, gMass);
                 }
             } else {
-                spacecraftState = new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
-                        timeStampedFieldPVCoordinates), gAttitude, gMass);
+                spacecraftState =
+                    new FieldSpacecraftState<>(new FieldAbsolutePVCoordinates<>(s0.getFrame(),
+                                                                                timeStampedFieldPVCoordinates),
+                                               gAttitude, gMass);
             }
 
             gStates.set(nbParams, spacecraftState);
@@ -310,7 +310,6 @@ public abstract class AbstractGradientConverter {
         for (ParameterDriver driver : drivers) {
             // Loop on the spans
             for (Span<Double> span = driver.getValueSpanMap().getFirstSpan(); span != null; span = span.next()) {
-
                 parameters[i++] = driver.isSelected() ?
                                   Gradient.variable(freeParameters, index++, span.getData()) :
                                   Gradient.constant(freeParameters, span.getData());

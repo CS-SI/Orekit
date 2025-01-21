@@ -1,4 +1,4 @@
-/* Copyright 2023-2024 Alberto Ferrero
+/* Copyright 2023-2025 Alberto Ferrero
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -64,8 +64,9 @@ import org.orekit.utils.TimeStampedFieldPVCoordinates;
  * @param <T> type of the field elements
  */
 
-public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>> extends FieldAbstractPropagator<T>
-                                                                                           implements ParameterDriversProvider {
+public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldElement<T>>
+    extends FieldAbstractPropagator<T>
+    implements ParameterDriversProvider {
 
     /** Provider for attitude computation. */
     private final FieldPVCoordinatesProvider<T> pvProvider;
@@ -145,8 +146,9 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
             FieldSpacecraftState<T> state   = updateAdditionalStates(basicPropagate(start));
 
             // initialize event detectors
-            eventsStates = getAttitudeProvider().getFieldEventDetectors(getField()).map(FieldEventState::new)
-                .collect(Collectors.toList());
+            eventsStates = getAttitudeProvider().
+                           getFieldEventDetectors(getField()).map(FieldEventState::new).
+                           collect(Collectors.toList());
             eventsStates.addAll(userEventsStates);
             for (final FieldEventState<?, T> es : eventsStates) {
                 es.init(state, target);
@@ -359,13 +361,6 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      */
     protected abstract T getMass(FieldAbsoluteDate<T> date);
 
-    /** Get PV coordinates provider.
-     * @return PV coordinates provider
-     */
-    public FieldPVCoordinatesProvider<T> getPvProvider() {
-        return pvProvider;
-    }
-
     /** Reset an intermediate state.
      * @param state new intermediate state to consider
      * @param forward if true, the intermediate state is valid for
@@ -373,10 +368,10 @@ public abstract class FieldAbstractAnalyticalPropagator<T extends CalculusFieldE
      */
     protected abstract void resetIntermediateState(FieldSpacecraftState<T> state, boolean forward);
 
-    /** Extrapolate an orbit up to a specific target date.
+    /** Propagate an orbit up to a specific target date.
      * @param date target date for the orbit
      * @param parameters model parameters
-     * @return extrapolated parameters
+     * @return propagated orbit
      */
     protected abstract FieldOrbit<T> propagateOrbit(FieldAbsoluteDate<T> date, T[] parameters);
 

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,7 +27,7 @@ import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.FieldAbsoluteDate;
 
-/** Adapter from {@link ExtendedPVCoordinatesProvider} to {@link TransformProvider}.
+/** Adapter from {@link ExtendedPositionProvider} to {@link TransformProvider}.
  * <p>
  * The transform provider is a simple translation from a defining frame such
  * that the origin of the transformed frame corresponds to the moving point.
@@ -41,9 +41,6 @@ import org.orekit.time.FieldAbsoluteDate;
  */
 public class ExtendedPositionProviderAdapter extends Frame {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20221215L;
-
     /** Simple constructor.
      * @param parent parent frame (must be non-null)
      * @param provider coordinates provider defining the position of origin of the transformed frame
@@ -53,9 +50,6 @@ public class ExtendedPositionProviderAdapter extends Frame {
                                            final ExtendedPositionProvider provider,
                                            final String name) {
         super(parent, new TransformProvider() {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = 20221215L;
 
             /** {@inheritDoc} */
             @Override

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -100,16 +99,10 @@ import org.orekit.utils.TimeStampedPVCoordinatesHermiteInterpolator;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  */
-public class Transform implements
-        TimeShiftable<Transform>,
-        Serializable,
-        KinematicTransform {
+public class Transform implements TimeShiftable<Transform>, KinematicTransform {
 
     /** Identity transform. */
     public static final Transform IDENTITY = new IdentityTransform();
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 210140410L;
 
     /** Date of the transform. */
     private final AbsoluteDate date;
@@ -327,6 +320,7 @@ public class Transform implements
     }
 
     /** {@inheritDoc} */
+    @Override
     public Transform shiftedBy(final TimeOffset dt) {
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     }
@@ -705,9 +699,6 @@ public class Transform implements
 
     /** Specialized class for identity transform. */
     private static class IdentityTransform extends Transform {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -9042082036141830517L;
 
         /** Simple constructor. */
         IdentityTransform() {

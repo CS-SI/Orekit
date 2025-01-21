@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -60,7 +60,7 @@ import java.util.List;
 public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
 
     @Test
-    public void testGetParameterDrivers() {
+    void testGetParameterDrivers() {
 
         // A date
         final TimeScale utc = TimeScalesFactory.getUTC();
@@ -128,7 +128,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         // Time scale
         final TimeScale tai = TimeScalesFactory.getTAI();
@@ -184,7 +184,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobian() {
+    void testStateJacobian() {
 
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -246,7 +246,7 @@ public class TimeSpanParametricAccelerationTest extends AbstractForceModelTest {
     }
 
     @Test
-    public void testStateJacobianAttitudeOverride() {
+    void testStateJacobianAttitudeOverride() {
 
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),

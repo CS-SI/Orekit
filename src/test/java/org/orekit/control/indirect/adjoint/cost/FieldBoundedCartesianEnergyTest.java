@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,8 @@ import org.hipparchus.complex.ComplexField;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.events.Action;
+import org.hipparchus.util.Binary64;
+import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,29 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 class FieldBoundedCartesianEnergyTest {
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testUpdateFieldAdjointDerivatives(final boolean withMass) {
+        // GIVEN
+        final Binary64 massFlowRateFactor = withMass ? Binary64.ONE : Binary64.ZERO;
+        final FieldBoundedCartesianEnergy<Binary64> cost = new FieldBoundedCartesianEnergy<>("adjoint", massFlowRateFactor, Binary64.PI);
+        final Binary64[] adjoint = MathArrays.buildArray(Binary64Field.getInstance(), withMass ? 7 : 6);
+        final Binary64[] derivatives = adjoint.clone();
+        adjoint[3] = Binary64.ONE;
+        // WHEN
+        cost.updateFieldAdjointDerivatives(adjoint, Binary64.ONE, derivatives);
+        // THEN
+        final Binary64 zero = Binary64.ZERO;
+        for (int i = 0; i < 6; ++i) {
+            Assertions.assertEquals(zero, derivatives[i]);
+        }
+        if (withMass) {
+            Assertions.assertNotEquals(zero, derivatives[derivatives.length - 1]);
+        } else {
+            Assertions.assertEquals(zero, derivatives[derivatives.length - 1]);
+        }
+    }
 
     @Test
     void getFieldEventDetectorsSizeAndActionTest() {
@@ -54,6 +79,30 @@ class FieldBoundedCartesianEnergyTest {
                     (FieldCartesianEnergyConsideringMass<Complex>.FieldSingularityDetector) eventDetector;
             Assertions.assertEquals(Action.RESET_DERIVATIVES, singularityDetector.getHandler().eventOccurred(null, null, true));
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(doubles = {0, 1})
+    void testGetFieldThrustForceNorm(final double massFlowRateFactor) {
+        // GIVEN
+        final FieldBoundedCartesianEnergy<Complex> boundedCartesianEnergy = new FieldBoundedCartesianEnergy<>("",
+                new Complex(massFlowRateFactor), new Complex(2));
+        final ComplexField field = ComplexField.getInstance();
+        final Complex[] fieldAdjoint = MathArrays.buildArray(field, 7);
+        fieldAdjoint[3] = new Complex(1.0, 0.0);
+        fieldAdjoint[4] = new Complex(2.0, 0.0);
+        fieldAdjoint[5] = new Complex(3.0, 0.0);
+        fieldAdjoint[6] = new Complex(4.0, 0.0);
+        final Complex mass = new Complex(1, 0.);
+        // WHEN
+        final Complex fieldThrustNorm = boundedCartesianEnergy.getFieldThrustForceNorm(fieldAdjoint, mass);
+        // THEN
+        final double[] adjoint = new double[7];
+        for (int i = 0; i < adjoint.length; i++) {
+            adjoint[i] = fieldAdjoint[i].getReal();
+        }
+        final double thrustNorm = boundedCartesianEnergy.toCartesianCost().getThrustForceNorm(adjoint, mass.getReal());
+        Assertions.assertEquals(thrustNorm, fieldThrustNorm.getReal());
     }
 
     @ParameterizedTest

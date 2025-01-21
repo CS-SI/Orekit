@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,11 @@ public class TestCost implements CartesianCost {
     @Override
     public String getAdjointName() {
         return "";
+    }
+
+    @Override
+    public int getAdjointDimension() {
+        return getMassFlowRateFactor() == 0 ? 6 : 7;
     }
 
     @Override

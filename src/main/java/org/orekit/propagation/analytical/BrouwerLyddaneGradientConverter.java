@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,12 +16,12 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.util.List;
-
 import org.hipparchus.analysis.differentiation.Gradient;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.utils.ParameterDriver;
+
+import java.util.List;
 
 /**
  * Converter for Brouwer-Lyddane propagator.
@@ -41,18 +41,17 @@ class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverte
      * @param propagator orbit propagator used to access initial orbit
      */
     BrouwerLyddaneGradientConverter(final BrouwerLyddanePropagator propagator) {
-        super(propagator, propagator.getMu(), FREE_STATE_PARAMETERS);
+        super(propagator, FREE_STATE_PARAMETERS);
         // Initialize fields
         this.propagator = propagator;
     }
 
     /** {@inheritDoc} */
     @Override
-    public FieldBrouwerLyddanePropagator<Gradient> getPropagator(final FieldSpacecraftState<Gradient> state,
-                                                                 final Gradient[] parameters) {
+    public FieldBrouwerLyddanePropagator<Gradient> getPropagator() {
 
-        // Zero
-        final Gradient zero = state.getA().getField().getZero();
+        final FieldSpacecraftState<Gradient> state = getState(this);
+        final Gradient[] parameters = getParameters(state, propagator);
 
         // Model parameters
         final double[]         ck0      = propagator.getCk0();
@@ -60,11 +59,12 @@ class BrouwerLyddaneGradientConverter extends AbstractAnalyticalGradientConverte
         final AttitudeProvider provider = propagator.getAttitudeProvider();
 
         // Central attraction coefficient
-        final Gradient mu = zero.newInstance(propagator.getMu());
+        final Gradient mu = state.getA().newInstance(propagator.getMu());
 
         // Return the "Field" propagator
         return new FieldBrouwerLyddanePropagator<>(state.getOrbit(), provider, radius, mu,
-                ck0[2], ck0[3], ck0[4], ck0[5], parameters[0].getValue());
+                                                   ck0[2], ck0[3], ck0[4], ck0[5],
+                                                   parameters[0].getValue());
 
     }
 

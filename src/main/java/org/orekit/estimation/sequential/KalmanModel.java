@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ import java.util.Map;
  * @author Maxime Journot
  * @since 9.2
  */
-public class KalmanModel extends KalmanEstimationCommon implements NonLinearProcess<MeasurementDecorator> {
+public class KalmanModel extends AbstractKalmanEstimationCommon implements NonLinearProcess<MeasurementDecorator> {
 
 
     /** Harvesters for extracting Jacobians from integrated states. */
@@ -347,7 +347,6 @@ public class KalmanModel extends KalmanEstimationCommon implements NonLinearProc
 
         return new NonLinearEvolution(measurement.getTime(), predictedState,
                                       stateTransitionMatrix, normalizedProcessNoise, measurementMatrix);
-
     }
 
 

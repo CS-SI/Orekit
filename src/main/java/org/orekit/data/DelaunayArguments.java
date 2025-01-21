@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.data;
 
-import java.io.Serializable;
-
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -27,10 +25,7 @@ import org.orekit.time.TimeStamped;
  * @author Luc Maisonobe
  * @since 6.1
  */
-public class DelaunayArguments implements TimeStamped, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170106L;
+public class DelaunayArguments implements TimeStamped {
 
     /** Date. */
     private final AbsoluteDate date;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,6 +16,11 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
+
 /**
  * Class for BeiDou almanac.
  *
@@ -26,27 +31,48 @@ package org.orekit.propagation.analytical.gnss.data;
  * @since 10.0
  *
  */
-public class BeidouAlmanac extends AbstractAlmanac {
+public class BeidouAlmanac extends AbstractAlmanac<BeidouAlmanac> {
 
     /** Health status. */
     private int health;
 
     /**
      * Build a new almanac.
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
      */
-    public BeidouAlmanac() {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
+    public BeidouAlmanac(final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB, timeScales, system);
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> BeidouAlmanac(final FieldBeidouAlmanac<T> original) {
+        super(original);
+        setHealth(original.getHealth());
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouAlmanac>>
+        F toField(final Field<T> field) {
+        return (F) new FieldBeidouAlmanac<>(field, this);
     }
 
     /**
-     * Sets the Square Root of Semi-Major Axis (m^1/2).
+     * Sets the Square Root of Semi-Major Axis (√m).
      * <p>
      * In addition, this method set the value of the Semi-Major Axis.
      * </p>
-     * @param sqrtA the Square Root of Semi-Major Axis (m^1/2)
+     * @param sqrtA the Square Root of Semi-Major Axis (√m)
      */
     public void setSqrtA(final double sqrtA) {
-        super.setSma(sqrtA * sqrtA);
+        setSma(sqrtA * sqrtA);
     }
 
     /**
@@ -56,7 +82,7 @@ public class BeidouAlmanac extends AbstractAlmanac {
      * @param dinc the correction of orbit reference inclination at reference time
      */
     public void setI0(final double inc, final double dinc) {
-        super.setI0(inc + dinc);
+        setI0(inc + dinc);
     }
 
     /**

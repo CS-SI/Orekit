@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -92,7 +92,11 @@ public class FieldCartesianFuelCost<T extends CalculusFieldElement<T>> extends F
      * @return value of switch function
      */
     private T evaluateFieldSwitchFunction(final T[] adjointVariables, final T mass) {
-        return getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(adjointVariables[6].multiply(getMassFlowRateFactor())).subtract(1.);
+        T switchFunction = getFieldAdjointVelocityNorm(adjointVariables).divide(mass).subtract(1.);
+        if (getAdjointDimension() > 6) {
+            switchFunction = switchFunction.subtract(adjointVariables[6].multiply(getMassFlowRateFactor()));
+        }
+        return switchFunction;
     }
 
     /**
@@ -119,9 +123,12 @@ public class FieldCartesianFuelCost<T extends CalculusFieldElement<T>> extends F
     @Override
     public void updateFieldAdjointDerivatives(final T[] adjointVariables, final T mass,
                                               final T[] adjointDerivatives) {
-        final T switchFunction = evaluateFieldSwitchFunction(adjointVariables, mass);
-        if (switchFunction.getReal() > 0.) {
-            adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables).multiply(maximumThrustMagnitude).divide(mass.square()));
+        if (getAdjointDimension() > 6) {
+            final T switchFunction = evaluateFieldSwitchFunction(adjointVariables, mass);
+            if (switchFunction.getReal() > 0.) {
+                adjointDerivatives[6] = adjointDerivatives[6].add(getFieldAdjointVelocityNorm(adjointVariables)
+                        .multiply(maximumThrustMagnitude).divide(mass.square()));
+            }
         }
     }
 

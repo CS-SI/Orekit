@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,9 +23,6 @@ import org.hipparchus.CalculusFieldElement;
  * @since 12.1
  */
 public class ClockTimeScale implements TimeScale {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
 
     /** Name of the time scale. */
     private final String name;

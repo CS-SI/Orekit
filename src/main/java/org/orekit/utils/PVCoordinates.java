@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.utils;
-
-import java.io.Serializable;
 
 import org.hipparchus.analysis.differentiation.DSFactory;
 import org.hipparchus.analysis.differentiation.Derivative;
@@ -46,13 +44,10 @@ import org.orekit.time.TimeShiftable;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PVCoordinates>, Serializable {
+public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PVCoordinates> {
 
     /** Fixed position/velocity at origin (both p, v and a are zero vectors). */
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140407L;
 
     /** The position. */
     private final Vector3D position;
@@ -626,13 +621,6 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
                 append(acceleration.getZ()).append(")}").toString();
     }
 
-    /** Replace the instance with a data transfer object for serialization.
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DTO(this);
-    }
-
     /** {@inheritDoc} */
     @Override
     public PVCoordinates blendArithmeticallyWith(final PVCoordinates other, final double blendingValue)
@@ -642,37 +630,6 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Blendable<PV
         final Vector3D blendedAcceleration = acceleration.blendArithmeticallyWith(other.acceleration, blendingValue);
 
         return new PVCoordinates(blendedPosition, blendedVelocity, blendedAcceleration);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20140723L;
-
-        /** Double values. */
-        private final double[] d;
-
-        /** Simple constructor.
-         * @param pv instance to serialize
-         */
-        private DTO(final PVCoordinates pv) {
-            this.d = new double[] {
-                pv.getPosition().getX(),     pv.getPosition().getY(),     pv.getPosition().getZ(),
-                pv.getVelocity().getX(),     pv.getVelocity().getY(),     pv.getVelocity().getZ(),
-                pv.getAcceleration().getX(), pv.getAcceleration().getY(), pv.getAcceleration().getZ(),
-            };
-        }
-
-        /** Replace the deserialized data transfer object with a {@link PVCoordinates}.
-         * @return replacement {@link PVCoordinates}
-         */
-        private Object readResolve() {
-            return new PVCoordinates(new Vector3D(d[0], d[1], d[2]),
-                                     new Vector3D(d[3], d[4], d[5]),
-                                     new Vector3D(d[6], d[7], d[8]));
-        }
-
     }
 
 }

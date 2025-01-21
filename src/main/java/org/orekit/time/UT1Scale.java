@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,9 +29,6 @@ import org.orekit.frames.EOPHistory;
  * @since 5.1
  */
 public class UT1Scale implements TimeScale {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20240720L;
 
     /** UTC scale. */
     private final UTCScale utc;

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -34,9 +34,6 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  */
 class ITRFProvider implements EOPBasedTransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130922L;
 
     /** S' rate in radians per julian century.
      * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)

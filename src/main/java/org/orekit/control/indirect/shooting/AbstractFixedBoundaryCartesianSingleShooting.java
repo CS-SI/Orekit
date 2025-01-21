@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -82,6 +82,9 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
     /** Holder for integration steps. */
     private final List<AbsoluteDate> stepDates = new ArrayList<>();
 
+    /** Scales for automatic differentiation variables. */
+    private double[] scales;
+
     /** Scale for velocity defects (m). */
     private double scaleVelocityDefects;
 
@@ -106,6 +109,7 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         this.terminalCartesianState = boundaryConditions.getTerminalCartesianState().getPVCoordinates(propagationSettings.getPropagationFrame());
         this.scalePositionDefects = DEFAULT_SCALE;
         this.scaleVelocityDefects = DEFAULT_SCALE;
+        this.scales = getUnitScales();
     }
 
     /**
@@ -123,6 +127,22 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         this.terminalCartesianState = boundaryConditions.getTerminalOrbit().getPVCoordinates(propagationSettings.getPropagationFrame());
         this.scalePositionDefects = DEFAULT_SCALE;
         this.scaleVelocityDefects = DEFAULT_SCALE;
+        this.scales = getUnitScales();
+    }
+
+    private double[] getUnitScales() {
+        final double[] unitScales = new double[getPropagationSettings().getAdjointDynamicsProvider().getDimension()];
+        Arrays.fill(unitScales, 1.);
+        return unitScales;
+    }
+
+    /**
+     * Protected getter for the differentiation scales.
+     * @return scales for variable scales
+     * @since 13.0
+     */
+    protected double[] getScales() {
+        return scales;
     }
 
     /**
@@ -212,6 +232,20 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
     /** {@inheritDoc} */
     @Override
     public ShootingBoundaryOutput solve(final double initialMass, final double[] initialGuess) {
+        return solve(initialMass, initialGuess, getUnitScales());
+    }
+
+    /**
+     * Solve for the boundary conditions, given an initial mass and an initial guess for the adjoint variables.
+     * Uses scales for automatic differentiation.
+     * @param initialMass initial mass
+     * @param initialGuess initial guess
+     * @param userScales scales
+     * @return boundary problem solution
+     */
+    public ShootingBoundaryOutput solve(final double initialMass, final double[] initialGuess,
+                                        final double[] userScales) {
+        this.scales = userScales.clone();
         // check initial guess
         final SpacecraftState initialState = createStateWithMassAndAdjoint(initialMass, initialGuess);
         final ShootingBoundaryOutput initialGuessSolution = computeCandidateSolution(initialState, 0);
@@ -376,7 +410,7 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
                 createInitialStateWithMass(initialMass));
         final Gradient[] fieldInitialAdjoint = MathArrays.buildArray(field, initialAdjoint.length);
         for (int i = 0; i < parametersNumber; i++) {
-            fieldInitialAdjoint[i] = Gradient.variable(parametersNumber, i, initialAdjoint[i]);
+            fieldInitialAdjoint[i] = Gradient.variable(parametersNumber, i, 0.).multiply(scales[i]).add(initialAdjoint[i]);
         }
         final String adjointName = getPropagationSettings().getAdjointDynamicsProvider().getAdjointName();
         return stateWithoutAdjoint.addAdditionalState(adjointName, fieldInitialAdjoint);

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -149,7 +149,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testJacobianModelMatrix() {
+    void testJacobianModelMatrix() {
         final DSFactory factory = new DSFactory(6, 1);
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(2, 0);
         ForceModel gravityField =
@@ -244,7 +244,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRealField() {
+    void testRealField() {
 
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
@@ -305,7 +305,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRealFieldGradient() {
+    void testRealFieldGradient() {
 
         // Initial field Keplerian orbit
         // The variables are the six orbital parameters
@@ -366,7 +366,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivative() {
+    void testParameterDerivative() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -387,7 +387,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testParameterDerivativeGradient() {
+    void testParameterDerivativeGradient() {
 
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
         final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
@@ -408,7 +408,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testJacobianVsFiniteDifferences() {
+    void testJacobianVsFiniteDifferences() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -430,7 +430,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testJacobianVsFiniteDifferencesGradient() {
+    void testJacobianVsFiniteDifferencesGradient() {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 01),
@@ -452,7 +452,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
+    void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
@@ -494,7 +494,7 @@ public class ECOM2Test extends AbstractForceModelTest {
     }
 
     @Test
-    public void testRealAndFieldComparison() {
+    void testRealAndFieldComparison() {
 
         // Orbital parameters from GNSS almanac
         final int freeParameters = 6;

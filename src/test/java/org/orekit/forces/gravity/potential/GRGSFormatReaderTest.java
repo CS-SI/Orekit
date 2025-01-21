@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -31,7 +31,7 @@ import org.orekit.utils.Constants;
 public class GRGSFormatReaderTest {
 
     @Test
-    public void testAdditionalColumn() {
+    void testAdditionalColumn() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
@@ -54,7 +54,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cNormalized() {
+    void testRegular05cNormalized() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         Assertions.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
@@ -75,7 +75,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testRegular05cUnnormalized() {
+    void testRegular05cUnnormalized() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
@@ -97,7 +97,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testReadLimits() {
+    void testReadLimits() {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
         UnnormalizedSphericalHarmonics harmonics = provider.onDate(new AbsoluteDate(1997, 1, 1, 12, 0, 0.0, TimeScalesFactory.getTT()));
@@ -123,7 +123,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile1() {
+    void testCorruptedFile1() {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-1-grim5.dat", false));
             GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -131,7 +131,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile2() {
+    void testCorruptedFile2() {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-2-grim5.dat", false));
             GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -139,7 +139,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile3() {
+    void testCorruptedFile3() {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-3-grim5.dat", false));
             GravityFieldFactory.getUnnormalizedProvider(5, 5);
@@ -147,7 +147,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testCorruptedFile4() {
+    void testCorruptedFile4() {
         Assertions.assertThrows(OrekitException.class, () -> {
             GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-4-grim5.dat", false));
             GravityFieldFactory.getUnnormalizedProvider(5, 5);

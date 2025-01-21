@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Luc Maisonobe
+/* Copyright 2022-2025 Luc Maisonobe
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,14 +16,18 @@
  */
 package org.orekit.propagation.analytical.gnss.data;
 
+import org.hipparchus.CalculusFieldElement;
+import org.hipparchus.Field;
 import org.orekit.gnss.RadioWave;
+import org.orekit.gnss.SatelliteSystem;
+import org.orekit.time.TimeScales;
 
 /**
  * Container for data contained in a Beidou civilian navigation message.
  * @author Luc Maisonobe
  * @since 12.0
  */
-public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
+public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage<BeidouCivilianNavigationMessage> {
 
     /** Identifier for Beidou-3 B1C message type. */
     public static final String CNV1 = "CNV1";
@@ -93,11 +97,52 @@ public class BeidouCivilianNavigationMessage extends AbstractNavigationMessage {
 
     /**
      * Constructor.
-     * @param radioWave radio wave on which navigation signal is sent
+     * @param radioWave  radio wave on which navigation signal is sent
+     * @param timeScales known time scales
+     * @param system     satellite system to consider for interpreting week number
+     *                   (may be different from real system, for example in Rinex nav, weeks
+     *                   are always according to GPS)
      */
-    public BeidouCivilianNavigationMessage(final RadioWave radioWave) {
-        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB);
+    public BeidouCivilianNavigationMessage(final RadioWave radioWave,
+                                           final TimeScales timeScales, final SatelliteSystem system) {
+        super(GNSSConstants.BEIDOU_MU, GNSSConstants.BEIDOU_AV, GNSSConstants.BEIDOU_WEEK_NB,
+              timeScales, system);
         this.radioWave = radioWave;
+    }
+
+    /** Constructor from field instance.
+     * @param <T> type of the field elements
+     * @param original regular field instance
+     */
+    public <T extends CalculusFieldElement<T>> BeidouCivilianNavigationMessage(final FieldBeidouCivilianNavigationMessage<T> original) {
+        super(original);
+        this.radioWave = original.getRadioWave();
+        setADot(original.getADot().getReal());
+        setDeltaN0Dot(original.getDeltaN0Dot().getReal());
+        setIODE(original.getIODE());
+        setIODC(original.getIODC());
+        setIscB1CD(original.getIscB1CD().getReal());
+        setIscB1CP(original.getIscB1CP().getReal());
+        setIscB2AD(original.getIscB2AD().getReal());
+        setSisaiOe(original.getSisaiOe());
+        setSisaiOcb(original.getSisaiOcb());
+        setSisaiOc1(original.getSisaiOc1());
+        setSisaiOc2(original.getSisaiOc2());
+        setSismai(original.getSismai());
+        setHealth(original.getHealth());
+        setIntegrityFlags(original.getIntegrityFlags());
+        setTgdB1Cp(original.getTgdB1Cp().getReal());
+        setTgdB2ap(original.getTgdB2ap().getReal());
+        setTgdB2bI(original.getTgdB2bI().getReal());
+        setSatelliteType(original.getSatelliteType());
+    }
+
+    /** {@inheritDoc} */
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends CalculusFieldElement<T>, F extends FieldGnssOrbitalElements<T, BeidouCivilianNavigationMessage>>
+        F toField(final Field<T> field) {
+        return (F) new FieldBeidouCivilianNavigationMessage<>(field, this);
     }
 
     /**

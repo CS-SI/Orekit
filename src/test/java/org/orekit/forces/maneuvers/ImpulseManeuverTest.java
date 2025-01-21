@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -26,6 +26,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.Mockito;
+import org.orekit.TestUtils;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -131,6 +133,19 @@ class ImpulseManeuverTest {
         Assertions.assertEquals(finalVyExpected, finalVelocity.getY(), maneuverTolerance);
         Assertions.assertEquals(finalVzExpected, finalVelocity.getZ(), maneuverTolerance);
 
+    }
+
+    @Test
+    void testEventOccurredEventSlopeFilter() {
+        // GIVEN
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final ApsideDetector detector = new ApsideDetector(orbit);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new EventSlopeFilter<>(detector,
+                FilterType.TRIGGER_ONLY_INCREASING_EVENTS), Vector3D.ZERO, Double.POSITIVE_INFINITY);
+        final KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        // WHEN & THEN
+        propagator.addEventDetector(maneuver);
+        Assertions.assertDoesNotThrow(() -> propagator.propagate(orbit.getDate().shiftedBy(1e5)));
     }
 
     @Test
@@ -469,6 +484,32 @@ class ImpulseManeuverTest {
     }
 
     @Test
+    void testInit() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        final ImpulseProvider impulseProvider = ImpulseProvider.of(Vector3D.PLUS_I);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(), null, impulseProvider,
+                1, Control3DVectorCostType.NONE);
+        // WHEN
+        maneuver.init(mockedState, date);
+    }
+
+    @Test
+    void testFinish() {
+        // GIVEN
+        final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
+        final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
+        Mockito.when(mockedState.getDate()).thenReturn(date);
+        final ImpulseProvider impulseProvider = ImpulseProvider.of(Vector3D.PLUS_I);
+        final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(), null, impulseProvider,
+                1, Control3DVectorCostType.NONE);
+        // WHEN
+        maneuver.finish(mockedState);
+    }
+
+    @Test
     void testMultipleDates() {
         // GIVEN
         final Orbit initialOrbit = getOrbit();
@@ -498,7 +539,7 @@ class ImpulseManeuverTest {
         int count = 0;
 
         @Override
-        public Vector3D getImpulse(SpacecraftState state, boolean isForward, AttitudeProvider attitudeOverride) {
+        public Vector3D getImpulse(SpacecraftState state, boolean isForward) {
             count++;
             return Vector3D.PLUS_I.scalarMultiply(count);
         }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -116,7 +116,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testRoughBehaviour() {
+    void testRoughBehaviour() {
 
         final AttitudeProvider attitudeProvider = buildAttitudeProvider();
         final SpacecraftState initialState = buildInitialState(attitudeProvider);
@@ -155,7 +155,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testBackward() {
+    void testBackward() {
 
         final AttitudeProvider attitudeProvider = buildAttitudeProvider();
         final SpacecraftState initialState = buildInitialState(attitudeProvider);
@@ -185,7 +185,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testRoughBehaviourField() {
+    void testRoughBehaviourField() {
         doTestRoughBehaviourField(Binary64Field.getInstance());
     }
 
@@ -228,7 +228,7 @@ public abstract class AbstractManeuverTriggersTest<T extends AbstractManeuverTri
     }
 
     @Test
-    public void testBackwardField() {
+    void testBackwardField() {
         doTestBackwardField(Binary64Field.getInstance());
     }
 

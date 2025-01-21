@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
-
 import org.hipparchus.CalculusFieldElement;
 
 /** Interface for time scales.
@@ -28,7 +26,7 @@ import org.hipparchus.CalculusFieldElement;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public interface TimeScale extends Serializable {
+public interface TimeScale {
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
      * @param date conversion date

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,10 +81,6 @@ import java.util.Arrays;
  * @author Fabien Maussion (java translation)
  */
 public class DTM2000 extends AbstractSunInfluencedAtmosphere {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20170705L;
-
     // Constants :
 
     /** Number of parameters. */
@@ -152,7 +148,7 @@ public class DTM2000 extends AbstractSunInfluencedAtmosphere {
     private DTM2000InputParameters inputParams;
 
     /** Earth body shape. */
-    private BodyShape earth;
+    private final BodyShape earth;
 
     /** UTC time scale. */
     private final TimeScale utc;

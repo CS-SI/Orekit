@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -305,7 +305,7 @@ public class FieldPVCoordinates<T extends CalculusFieldElement<T>>
                                            a3, pv3.getAcceleration(), a4, pv4.getAcceleration());
     }
 
-    /** Builds a FieldPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link FieldDerivativeStructure}&gt;.
+    /** Builds a FieldPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link FieldDerivative}&gt;.
      * <p>
      * The vector components must have time as their only derivation parameter and
      * have consistent derivation orders.

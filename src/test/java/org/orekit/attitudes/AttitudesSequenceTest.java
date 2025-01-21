@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -81,7 +81,7 @@ public class AttitudesSequenceTest {
     private boolean inEclipse;
 
     @Test
-    public void testDayNightSwitch() {
+    void testDayNightSwitch() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -180,7 +180,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testDayNightSwitchField() {
+    void testDayNightSwitchField() {
         doTestDayNightSwitchField(Binary64Field.getInstance());
     }
 
@@ -302,7 +302,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testBackwardPropagation() {
+    void testBackwardPropagation() {
 
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
@@ -344,7 +344,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testTooShortTransition() {
+    void testTooShortTransition() {
         double threshold      = 1.5;
         double transitionTime = 0.5;
         try {
@@ -364,7 +364,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testOutOfSyncCalls() {
+    void testOutOfSyncCalls() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -439,7 +439,7 @@ public class AttitudesSequenceTest {
      * this test have been completed to test the issue 552 fix
      */
     @Test
-    public void testResetDuringTransitionForward() {
+    void testResetDuringTransitionForward() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -506,7 +506,7 @@ public class AttitudesSequenceTest {
     }
 
     @Test
-    public void testResetDuringTransitionBackward() {
+    void testResetDuringTransitionBackward() {
         //  Initial state definition : date, orbit
         final AbsoluteDate initialDate = new AbsoluteDate(2004, 1, 1, 23, 30, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -563,7 +563,7 @@ public class AttitudesSequenceTest {
      * Test for the issue 551 fix
      */
     @Test
-    public void testAnalyticalPropagatorTransition() {
+    void testAnalyticalPropagatorTransition() {
         // Define initial state
         final AbsoluteDate initialDate = new AbsoluteDate(2017, 03, 27, 0, 0, 00.000, TimeScalesFactory.getUTC());
         final Vector3D position  = new Vector3D(-39098981.4866597, -15784239.3610601, 78908.2289853595);
@@ -630,7 +630,7 @@ public class AttitudesSequenceTest {
 
     /** Issue 1387. */
     @Test
-    public void testGetSwitches() {
+    void testGetSwitches() {
         // GIVEN
         final double                   transitionTime             = 1;
         final AttitudeProvider         mockPastAttitudeProvider   = mock(AttitudeProvider.class);

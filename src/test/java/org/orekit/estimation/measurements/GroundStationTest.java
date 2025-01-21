@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -58,11 +58,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.ParameterDriver;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -231,35 +227,6 @@ public class GroundStationTest {
         Assertions.assertEquals(0.55431, physicalCovariances.getEntry(6, 6), 1.0e-5);
         Assertions.assertEquals(0.22694, physicalCovariances.getEntry(7, 7), 1.0e-5);
         Assertions.assertEquals(0.13106, physicalCovariances.getEntry(8, 8), 1.0e-5);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(moved.getEstimatedEarthFrame().getTransformProvider());
-
-        Assertions.assertEquals(139047, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        EstimatedEarthFrameProvider deserialized  = (EstimatedEarthFrameProvider) ois.readObject();
-        Assertions.assertEquals(moved.getPrimeMeridianOffsetDriver().getValue(),
-                                deserialized.getPrimeMeridianOffsetDriver().getValue(),
-                                1.0e-15);
-        Assertions.assertEquals(moved.getPrimeMeridianDriftDriver().getValue(),
-                                deserialized.getPrimeMeridianDriftDriver().getValue(),
-                                1.0e-15);
-        Assertions.assertEquals(moved.getPolarOffsetXDriver().getValue(),
-                                deserialized.getPolarOffsetXDriver().getValue(),
-                                1.0e-15);
-        Assertions.assertEquals(moved.getPolarDriftXDriver().getValue(),
-                                deserialized.getPolarDriftXDriver().getValue(),
-                                1.0e-15);
-        Assertions.assertEquals(moved.getPolarOffsetYDriver().getValue(),
-                                deserialized.getPolarOffsetYDriver().getValue(),
-                                1.0e-15);
-        Assertions.assertEquals(moved.getPolarDriftYDriver().getValue(),
-                                deserialized.getPolarDriftYDriver().getValue(),
-                                1.0e-15);
-
     }
 
     @Test

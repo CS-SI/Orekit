@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,11 +16,6 @@
  */
 package org.orekit.propagation;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.text.ParseException;
 
 import org.hipparchus.analysis.polynomials.PolynomialFunction;
@@ -30,7 +25,6 @@ import org.hipparchus.geometry.euclidean.threed.Rotation;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.hipparchus.ode.ODEIntegrator;
 import org.hipparchus.ode.events.Action;
-import org.hipparchus.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.hipparchus.ode.nonstiff.DormandPrince853Integrator;
 import org.hipparchus.util.FastMath;
 import org.junit.jupiter.api.AfterEach;
@@ -71,7 +65,7 @@ class SpacecraftStateTest {
 
     @Test
     void testShiftVsEcksteinHechlerError()
-        throws ParseException, OrekitException {
+        throws OrekitException {
 
 
         // polynomial models for interpolation error in position, velocity, acceleration and attitude
@@ -400,123 +394,6 @@ class SpacecraftStateTest {
         });
         SpacecraftState finalState = propagator.propagate(date0, date0.shiftedBy(5));
         Assertions.assertEquals(+1, finalState.getAdditionalState(name)[0], 1.0e-15);
-
-    }
-
-    @Test
-    void testSerialization()
-            throws IOException, ClassNotFoundException, OrekitException {
-
-        propagator.resetInitialState(propagator.getInitialState().
-                                     addAdditionalState("p1", 12.25).
-                                     addAdditionalState("p2", 1, 2, 3));
-        SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(123.456));
-
-        Assertions.assertEquals(2, state.getAdditionalStatesValues().size());
-        Assertions.assertEquals(1, state.getAdditionalState("p1").length);
-        Assertions.assertEquals(12.25, state.getAdditionalState("p1")[0], 1.0e-15);
-        Assertions.assertEquals(3, state.getAdditionalState("p2").length);
-        Assertions.assertEquals(1.0, state.getAdditionalState("p2")[0], 1.0e-15);
-        Assertions.assertEquals(2.0, state.getAdditionalState("p2")[1], 1.0e-15);
-        Assertions.assertEquals(3.0, state.getAdditionalState("p2")[2], 1.0e-15);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(state);
-
-        Assertions.assertTrue(bos.size() >  900);
-        Assertions.assertTrue(bos.size() < 1000);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
-        Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPosition(),
-                                              deserialized.getPosition()),
-                            1.0e-10);
-        Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPVCoordinates().getVelocity(),
-                                              deserialized.getPVCoordinates().getVelocity()),
-                            1.0e-10);
-        Assertions.assertEquals(0.0,
-                            Rotation.distance(state.getAttitude().getRotation(),
-                                              deserialized.getAttitude().getRotation()),
-                            1.0e-10);
-        Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getAttitude().getSpin(),
-                                              deserialized.getAttitude().getSpin()),
-                            1.0e-10);
-        Assertions.assertEquals(state.getDate(), deserialized.getDate());
-        Assertions.assertEquals(state.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(state.getFrame().getName(), deserialized.getFrame().getName());
-        Assertions.assertEquals(2, deserialized.getAdditionalStatesValues().size());
-        Assertions.assertEquals(1, deserialized.getAdditionalState("p1").length);
-        Assertions.assertEquals(12.25, deserialized.getAdditionalState("p1")[0], 1.0e-15);
-        Assertions.assertEquals(3, deserialized.getAdditionalState("p2").length);
-        Assertions.assertEquals(1.0, deserialized.getAdditionalState("p2")[0], 1.0e-15);
-        Assertions.assertEquals(2.0, deserialized.getAdditionalState("p2")[1], 1.0e-15);
-        Assertions.assertEquals(3.0, deserialized.getAdditionalState("p2")[2], 1.0e-15);
-
-    }
-
-    @Test
-    void testSerializationWithAbsPV()
-            throws IOException, ClassNotFoundException, OrekitException {
-
-        final NumericalPropagator numPropagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
-        final AbsolutePVCoordinates pva = new AbsolutePVCoordinates(orbit.getFrame(), orbit.getDate(),
-                                                                    orbit.getPosition(),
-                                                                    orbit.getPVCoordinates().getVelocity());
-        numPropagator.setOrbitType(null);
-        numPropagator.setIgnoreCentralAttraction(true);
-        numPropagator.setInitialState(new SpacecraftState(pva).
-                                     addAdditionalState("p1", 12.25).
-                                     addAdditionalState("p2", 1, 2, 3));
-        SpacecraftState state = numPropagator.propagate(pva.getDate().shiftedBy(123.456));
-
-        Assertions.assertEquals(2, state.getAdditionalStatesValues().size());
-        Assertions.assertEquals(1, state.getAdditionalState("p1").length);
-        Assertions.assertEquals(12.25, state.getAdditionalState("p1")[0], 1.0e-15);
-        Assertions.assertEquals(3, state.getAdditionalState("p2").length);
-        Assertions.assertEquals(1.0, state.getAdditionalState("p2")[0], 1.0e-15);
-        Assertions.assertEquals(2.0, state.getAdditionalState("p2")[1], 1.0e-15);
-        Assertions.assertEquals(3.0, state.getAdditionalState("p2")[2], 1.0e-15);
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(state);
-
-        Assertions.assertEquals(939, bos.size());
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
-        Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPosition(),
-                                              deserialized.getPosition()),
-                            1.0e-10);
-        Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getPVCoordinates().getVelocity(),
-                                              deserialized.getPVCoordinates().getVelocity()),
-                            1.0e-10);
-        Assertions.assertEquals(0.0,
-                            Rotation.distance(state.getAttitude().getRotation(),
-                                              deserialized.getAttitude().getRotation()),
-                            1.0e-10);
-        Assertions.assertEquals(0.0,
-                            Vector3D.distance(state.getAttitude().getSpin(),
-                                              deserialized.getAttitude().getSpin()),
-                            1.0e-10);
-        Assertions.assertEquals(state.getDate(), deserialized.getDate());
-        Assertions.assertEquals(state.getMu(), deserialized.getMu(), 1.0e-10);
-        Assertions.assertEquals(state.getFrame().getName(), deserialized.getFrame().getName());
-        Assertions.assertEquals(2, deserialized.getAdditionalStatesValues().size());
-        Assertions.assertEquals(1, deserialized.getAdditionalState("p1").length);
-        Assertions.assertEquals(12.25, deserialized.getAdditionalState("p1")[0], 1.0e-15);
-        Assertions.assertEquals(3, deserialized.getAdditionalState("p2").length);
-        Assertions.assertEquals(1.0, deserialized.getAdditionalState("p2")[0], 1.0e-15);
-        Assertions.assertEquals(2.0, deserialized.getAdditionalState("p2")[1], 1.0e-15);
-        Assertions.assertEquals(3.0, deserialized.getAdditionalState("p2")[2], 1.0e-15);
 
     }
 

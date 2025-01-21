@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,6 +19,10 @@ package org.orekit.forces.maneuvers;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.orekit.TestUtils;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 class ImpulseProviderTest {
 
@@ -26,11 +30,13 @@ class ImpulseProviderTest {
     void testOf() {
         // GIVEN
         final Vector3D forwardImpulse = new Vector3D(1, 2, 3);
-        final ImpulseProvider provider = ImpulseProvider.of(forwardImpulse);
+        final Orbit orbit = TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH);
+        final SpacecraftState state = new SpacecraftState(orbit, 100);
         // WHEN
-        final Vector3D vector3D = provider.getImpulse(null, true, null);
+        final ImpulseProvider provider = ImpulseProvider.of(forwardImpulse);
+        final Vector3D vector3D = provider.getImpulse(state, true);
         // THEN
         Assertions.assertEquals(forwardImpulse, vector3D);
-        Assertions.assertEquals(forwardImpulse.negate(), provider.getImpulse(null, false, null));
+        Assertions.assertEquals(forwardImpulse.negate(), provider.getImpulse(state, false));
     }
 }

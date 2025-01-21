@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2024 CS GROUP
+<!-- Copyright 2002-2025 CS GROUP
   Licensed to CS GROUP (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -21,9 +21,34 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1644">
+            Add duration flight cost for indirect shooting.
+        </action>
+        <action dev="serrof" type="add" issue="1641">
+            Add tuning option for LU decomposition in Newton-based indirect shooting.
+        </action>
+        <action dev="serrof" type="add" issue="1640">
+            Add logarithmic barrier for fuel cost with indirect control.
+        </action>
+        <action dev="luc" type="fix" issue="1625">
+            Added implementation of ITU version of NeQuick ionosphere model.
+        </action>
+        <action dev="markrutten" type="add" issue="1639">
+            Add Kalman smoother.
+        </action>
+        <action dev="luc" type="fix" issue="1638">
+            Fixed field implementation of Galileo NeQuick ionosphere model.
+        </action>
+        <action dev="evan" type="update" issue="1364">
+          Update ComparableMeasurement.compareTo(...) to return a valid result
+          for equal objects.
+        </action>
         <action dev="evan" type="update" issue="1623">
             Update OCM parsing, so it is possible to know when a value is not present in a
             OCM file. Updated OCM writing so values that are not present are not written.
+        </action>
+        <action dev="serrof" type="add" issue="1634">
+            Add penalized fuel cost for indirect control.
         </action>
         <action dev="serrof" type="update" issue="1633">
             Introduce dedicated ResettableManeuverTriggers interface.
@@ -33,6 +58,9 @@
         </action>
         <action dev="serrof" type="update" issue="1628">
             Remove ThrustDirectionAndAttitudeProvider and ConfigurableLowThrustManeuver.
+        </action>
+        <action dev="serrof" type="update" issue="1627">
+            Remove DataTransferObject implementations (removing many Serializable implementations).
         </action>
         <action dev="serrof" type="update" issue="1626">
             Use ExtendedPositionProvider in YawSteering.
@@ -206,6 +234,9 @@
         <action dev="serrof" type="add" issue="1519">
             Allow to define body attraction without CelestialBody.
         </action>
+        <action dev="serrof" type="add" issue="1514">
+            Add scales for differentiation in indirect shooting.
+        </action>
         <action dev="luc" type="add" issue="707">
             Properly parse dates during the 1961 leap that was 1.422818s long.
         </action>
@@ -289,6 +320,9 @@
         <action dev="bryan" type="add" issue="1039">
             Added optional name for ObservableSatellite.
         </action>
+        <action dev="serrof" type="add" issue="879">
+            Added clearing method for ephemeris generators in integrator-based propagators.
+        </action>
     </release>
     <release version="12.2.1" date="18/12/2024"
              description="Version 12.2.1 is a patch release of Orekit.
@@ -319,7 +353,7 @@
         <action dev="serrof" type="fix" issue="1525">
             Fixed conversion error with large values for arguments of longitude and latitude.
         </action>
-        <action dev="serrof" type="fix" issue="1418">
+        <action dev="geckonoid" type="fix" issue="1418">
             Fixed ClockOffsetDriver not modifying the value of BistaticRange.
         </action>
     </release>

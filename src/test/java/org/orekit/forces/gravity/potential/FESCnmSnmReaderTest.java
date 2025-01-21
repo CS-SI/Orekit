@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -29,7 +29,7 @@ import java.util.List;
 public class FESCnmSnmReaderTest {
 
     @Test
-    public void testCorruptedNumberFile() {
+    void testCorruptedNumberFile() {
         try {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004-corrupted-line.dat", 1.0e-11);
             reader.setMaxParseDegree(5);
@@ -44,7 +44,7 @@ public class FESCnmSnmReaderTest {
     }
 
     @Test
-    public void testUnsupportedDegreeFile() {
+    void testUnsupportedDegreeFile() {
         try {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
             reader.setMaxParseDegree(20);
@@ -59,7 +59,7 @@ public class FESCnmSnmReaderTest {
     }
 
     @Test
-    public void testUnsupportedOrderFile() {
+    void testUnsupportedOrderFile() {
         try {
             OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
             reader.setMaxParseDegree(5);
@@ -74,7 +74,7 @@ public class FESCnmSnmReaderTest {
     }
 
     @Test
-    public void testTruncatedModelFile()
+    void testTruncatedModelFile()
         {
         OceanTidesReader reader = new FESCnmSnmReader("fes2004_Cnm-Snm-8x8.dat", 1.0e-11);
         reader.setMaxParseDegree(5);

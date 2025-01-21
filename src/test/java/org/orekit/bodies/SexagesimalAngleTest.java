@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 Thales Alenia Space
+/* Copyright 2022-2025 Thales Alenia Space
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -32,12 +32,12 @@ import java.util.Locale;
 public class SexagesimalAngleTest {
 
     @Test
-    public void testZeroDMS() {
+    void testZeroDMS() {
         Assertions.assertEquals(0.0, new SexagesimalAngle(1, 0, 0, 0.0).getAngle(), 1.0e-15);
     }
 
     @Test
-    public void testZeroRadians() {
+    void testZeroRadians() {
         final SexagesimalAngle angle = new SexagesimalAngle(0.0);
         Assertions.assertEquals(1,   angle.getSign());
         Assertions.assertEquals(0,   angle.getDegree());
@@ -46,12 +46,12 @@ public class SexagesimalAngleTest {
     }
 
     @Test
-    public void testPositiveRighAngleDMS() {
+    void testPositiveRighAngleDMS() {
         Assertions.assertEquals(MathUtils.SEMI_PI, new SexagesimalAngle(1, 90, 0, 0.0).getAngle(), 1.0e-15);
     }
 
     @Test
-    public void testPositiveRighAngleRadians() {
+    void testPositiveRighAngleRadians() {
         final SexagesimalAngle angle = new SexagesimalAngle(MathUtils.SEMI_PI);
         Assertions.assertEquals( 1,   angle.getSign());
         Assertions.assertEquals(90,   angle.getDegree());
@@ -60,12 +60,12 @@ public class SexagesimalAngleTest {
     }
 
     @Test
-    public void testNegativeRighAngleDMS() {
+    void testNegativeRighAngleDMS() {
         Assertions.assertEquals(-MathUtils.SEMI_PI, new SexagesimalAngle(-1, 90, 0, 0.0).getAngle(), 1.0e-15);
     }
 
     @Test
-    public void testNegativeRighAngleRadians() {
+    void testNegativeRighAngleRadians() {
         final SexagesimalAngle angle = new SexagesimalAngle(-MathUtils.SEMI_PI);
         Assertions.assertEquals(-1,   angle.getSign());
         Assertions.assertEquals(90,   angle.getDegree());
@@ -74,7 +74,7 @@ public class SexagesimalAngleTest {
     }
 
     @Test
-    public void testIter() {
+    void testIter() {
         final String[] expected = new String[] {
             "00W 10′ 15.0″", "00W 09′ 45.0″", "00W 09′ 15.0″", "00W 08′ 45.0″", "00W 08′ 15.0″", "00W 07′ 45.0″",
             "00W 07′ 15.0″", "00W 06′ 45.0″", "00W 06′ 15.0″", "00W 05′ 45.0″", "00W 05′ 15.0″", "00W 04′ 45.0″",

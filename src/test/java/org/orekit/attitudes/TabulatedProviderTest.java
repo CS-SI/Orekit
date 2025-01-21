@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -74,7 +74,7 @@ public class TabulatedProviderTest {
 
     @Test
     @DefaultDataContext
-    public void testDifferentFrames() {
+    void testDifferentFrames() {
         double             samplingRate      = 10.0;
         int                n                 = 8;
         AttitudeProvider   referenceProvider = new NadirPointing(circOrbit.getFrame(), earthShape);
@@ -107,7 +107,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithoutRate() {
+    void testWithoutRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -122,7 +122,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithRate() {
+    void testWithRate() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;
@@ -137,7 +137,7 @@ public class TabulatedProviderTest {
     }
 
     @Test
-    public void testWithAcceleration() {
+    void testWithAcceleration() {
         double             samplingRate      = 10.0;
         double             checkingRate      = 1.0;
         int                n                 = 8;

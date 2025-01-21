@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -41,12 +41,9 @@ import org.orekit.utils.IERSConventions;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
@@ -278,62 +275,6 @@ public class FundamentalNutationArgumentsTest {
                 return angle;
             }
         });
-    }
-
-    @Test
-    public void testSerializationNoTidalCorrection() throws IOException, ClassNotFoundException {
-        IERSConventions conventions = IERSConventions.IERS_2010;
-        TimeScale ut1 = TimeScalesFactory.getUT1(conventions, true);
-        checkSerialization(340000, 350000, conventions.getNutationArguments(ut1));
-    }
-
-    @Test
-    public void testSerializationTidalCorrection() throws IOException, ClassNotFoundException {
-        IERSConventions conventions = IERSConventions.IERS_2010;
-        TimeScale ut1 = TimeScalesFactory.getUT1(conventions, false);
-        checkSerialization(340000, 350000, conventions.getNutationArguments(ut1));
-    }
-
-    @Test
-    public void testSerializationNoUT1Correction() throws IOException, ClassNotFoundException {
-        IERSConventions conventions = IERSConventions.IERS_2010;
-        checkSerialization(850, 950, conventions.getNutationArguments(null));
-    }
-
-    private void checkSerialization(int low, int high, FundamentalNutationArguments nutation)
-        throws IOException, ClassNotFoundException {
-
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream    oos = new ObjectOutputStream(bos);
-        oos.writeObject(nutation);
-
-        Assertions.assertTrue(bos.size() > low);
-        Assertions.assertTrue(bos.size() < high);
-
-        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
-        ObjectInputStream     ois = new ObjectInputStream(bis);
-        FundamentalNutationArguments deserialized  = (FundamentalNutationArguments) ois.readObject();
-        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 3600) {
-            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
-            BodiesElements be1 = nutation.evaluateAll(date);
-            BodiesElements be2 = deserialized.evaluateAll(date);
-            Assertions.assertEquals(be1.getGamma(),  be2.getGamma(),  1.0e-15);
-            Assertions.assertEquals(be1.getL(),      be2.getL(),      1.0e-15);
-            Assertions.assertEquals(be1.getLPrime(), be2.getLPrime(), 1.0e-15);
-            Assertions.assertEquals(be1.getF(),      be2.getF(),      1.0e-15);
-            Assertions.assertEquals(be1.getD(),      be2.getD(),      1.0e-15);
-            Assertions.assertEquals(be1.getOmega(),  be2.getOmega(),  1.0e-15);
-            Assertions.assertEquals(be1.getLMe(),    be2.getLMe(),    1.0e-15);
-            Assertions.assertEquals(be1.getLVe(),    be2.getLVe(),    1.0e-15);
-            Assertions.assertEquals(be1.getLE(),     be2.getLE(),     1.0e-15);
-            Assertions.assertEquals(be1.getLMa(),    be2.getLMa(),    1.0e-15);
-            Assertions.assertEquals(be1.getLJu(),    be2.getLJu(),    1.0e-15);
-            Assertions.assertEquals(be1.getLSa(),    be2.getLSa(),    1.0e-15);
-            Assertions.assertEquals(be1.getLUr(),    be2.getLUr(),    1.0e-15);
-            Assertions.assertEquals(be1.getLNe(),    be2.getLNe(),    1.0e-15);
-            Assertions.assertEquals(be1.getPa(),     be2.getPa(),     1.0e-15);
-        }
-
     }
 
     @BeforeEach

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -53,10 +52,7 @@ import org.orekit.time.FieldAbsoluteDate;
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
-public class Frame implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6981146543760234087L;
+public class Frame {
 
     /** Parent frame (only the root frame doesn't have a parent). */
     private final Frame parent;
@@ -511,22 +507,7 @@ public class Frame implements Serializable {
     private static class LazyRootHolder {
 
         /** Unique instance. */
-        private static final Frame INSTANCE = new Frame(Predefined.GCRF.getName(), true) {
-
-            /** Serializable UID. */
-            private static final long serialVersionUID = -2654403496396721543L;
-
-            /** Replace the instance with a data transfer object for serialization.
-             * <p>
-             * This intermediate class serializes nothing.
-             * </p>
-             * @return data transfer object that will be serialized
-             */
-            private Object writeReplace() {
-                return new DataTransferObject();
-            }
-
-        };
+        private static final Frame INSTANCE = new Frame(Predefined.GCRF.getName(), true) { };
 
         /** Private constructor.
          * <p>This class is a utility class, it should neither have a public
@@ -534,26 +515,6 @@ public class Frame implements Serializable {
          * the compiler from generating one automatically.</p>
          */
         private LazyRootHolder() {
-        }
-
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 4067764035816491212L;
-
-        /** Simple constructor.
-         */
-        private DataTransferObject() {
-        }
-
-        /** Replace the deserialized data transfer object with a {@link FactoryManagedFrame}.
-         * @return replacement {@link FactoryManagedFrame}
-         */
-        private Object readResolve() {
-            return getRoot();
         }
 
     }

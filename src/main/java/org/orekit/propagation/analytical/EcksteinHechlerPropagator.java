@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 package org.orekit.propagation.analytical;
-
-import java.io.Serializable;
 
 import org.hipparchus.analysis.differentiation.UnivariateDerivative2;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
@@ -92,16 +90,16 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     private EHModel initialModel;
 
     /** All models. */
-    private transient TimeSpanMap<EHModel> models;
+    private TimeSpanMap<EHModel> models;
 
     /** Reference radius of the central body attraction model (m). */
-    private double referenceRadius;
+    private final double referenceRadius;
 
     /** Central attraction coefficient (m³/s²). */
-    private double mu;
+    private final double mu;
 
     /** Un-normalized zonal coefficients. */
-    private double[] ck0;
+    private final double[] ck0;
 
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
@@ -593,6 +591,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
      * must be defined with an osculating orbit.</p>
      * @see #resetInitialState(SpacecraftState, PropagationType)
      */
+    @Override
     public void resetInitialState(final SpacecraftState state) {
         resetInitialState(state, PropagationType.OSCULATING);
     }
@@ -620,7 +619,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new EHModel(circular, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(circular, state.getMass(), epsilon, maxIterations);
-        this.models = new TimeSpanMap<EHModel>(initialModel);
+        this.models = new TimeSpanMap<>(initialModel);
     }
 
     /** {@inheritDoc} */
@@ -766,10 +765,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** Local class for Eckstein-Hechler model, with fixed mean parameters. */
-    private static class EHModel implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20160115L;
+    private static class EHModel {
 
         /** Mean orbit. */
         private final CircularOrbit mean;

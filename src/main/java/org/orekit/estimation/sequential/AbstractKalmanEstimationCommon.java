@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -44,7 +44,7 @@ import org.orekit.utils.ParameterDriversList.DelegatingDriver;
  * @author Maxime Journot
  * @since 9.2
  */
-class KalmanEstimationCommon implements KalmanEstimation {
+abstract class AbstractKalmanEstimationCommon implements KalmanEstimation {
 
     /** Builders for propagators. */
     private final List<PropagatorBuilder> builders;
@@ -120,10 +120,10 @@ class KalmanEstimationCommon implements KalmanEstimation {
      * @param estimatedMeasurementParameters measurement parameters to estimate
      * @param measurementProcessNoiseMatrix provider for measurement process noise matrix
      */
-    protected KalmanEstimationCommon(final List<PropagatorBuilder> propagatorBuilders,
-                                     final List<CovarianceMatrixProvider> covarianceMatricesProviders,
-                                     final ParameterDriversList estimatedMeasurementParameters,
-                                     final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
+    protected AbstractKalmanEstimationCommon(final List<PropagatorBuilder> propagatorBuilders,
+                                             final List<CovarianceMatrixProvider> covarianceMatricesProviders,
+                                             final ParameterDriversList estimatedMeasurementParameters,
+                                             final CovarianceMatrixProvider measurementProcessNoiseMatrix) {
 
         this.builders                        = propagatorBuilders;
         this.estimatedMeasurementsParameters = estimatedMeasurementParameters;
@@ -317,7 +317,6 @@ class KalmanEstimationCommon implements KalmanEstimation {
         final RealMatrix correctedCovariance = KalmanEstimatorUtil.normalizeCovarianceMatrix(physicalProcessNoise, scale);
 
         correctedEstimate = new ProcessEstimate(0.0, correctedState, correctedCovariance);
-
     }
 
 
@@ -626,7 +625,7 @@ class KalmanEstimationCommon implements KalmanEstimation {
     /** Setter for the currentDate.
      * @param currentDate the currentDate
      */
-    public void setCurrentDate(final AbsoluteDate currentDate) {
+    protected void setCurrentDate(final AbsoluteDate currentDate) {
         this.currentDate = currentDate;
     }
 

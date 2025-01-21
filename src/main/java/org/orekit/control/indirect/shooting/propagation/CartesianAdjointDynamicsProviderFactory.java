@@ -1,4 +1,4 @@
-/* Copyright 2022-2024 Romain Serra
+/* Copyright 2022-2025 Romain Serra
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,11 +22,17 @@ import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.CartesianAdjointEquationTerm;
 import org.orekit.control.indirect.adjoint.FieldCartesianAdjointDerivativesProvider;
 import org.orekit.control.indirect.adjoint.cost.BoundedCartesianEnergy;
+import org.orekit.control.indirect.adjoint.cost.CartesianFlightDurationCost;
 import org.orekit.control.indirect.adjoint.cost.CartesianFuelCost;
 import org.orekit.control.indirect.adjoint.cost.FieldBoundedCartesianEnergy;
+import org.orekit.control.indirect.adjoint.cost.FieldCartesianFlightDurationCost;
 import org.orekit.control.indirect.adjoint.cost.FieldCartesianFuelCost;
+import org.orekit.control.indirect.adjoint.cost.FieldLogarithmicBarrierCartesianFuel;
+import org.orekit.control.indirect.adjoint.cost.FieldQuadraticPenaltyCartesianFuel;
 import org.orekit.control.indirect.adjoint.cost.FieldUnboundedCartesianEnergy;
 import org.orekit.control.indirect.adjoint.cost.FieldUnboundedCartesianEnergyNeglectingMass;
+import org.orekit.control.indirect.adjoint.cost.LogarithmicBarrierCartesianFuel;
+import org.orekit.control.indirect.adjoint.cost.QuadraticPenaltyCartesianFuel;
 import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergy;
 import org.orekit.control.indirect.adjoint.cost.UnboundedCartesianEnergyNeglectingMass;
 import org.orekit.propagation.events.EventDetectionSettings;
@@ -46,6 +52,35 @@ public class CartesianAdjointDynamicsProviderFactory {
      */
     private CartesianAdjointDynamicsProviderFactory() {
         // factory class
+    }
+
+    /**
+     * Method building a provider with unbounded Cartesian energy and vanishing mass flow as cost.
+     * @param adjointName adjoint name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
+     * @return provider
+     */
+    public static CartesianAdjointDynamicsProvider buildFlightDurationProvider(final String adjointName,
+                                                                               final double massFlowRateFactor,
+                                                                               final double maximumThrustMagnitude,
+                                                                               final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
+
+            @Override
+            public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
+                return new CartesianAdjointDerivativesProvider(new CartesianFlightDurationCost(adjointName, massFlowRateFactor, maximumThrustMagnitude),
+                        cartesianAdjointEquationTerms);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
+                return new FieldCartesianAdjointDerivativesProvider<>(new FieldCartesianFlightDurationCost<>(adjointName,
+                        field.getZero().newInstance(massFlowRateFactor), field.getZero().newInstance(maximumThrustMagnitude)),
+                        cartesianAdjointEquationTerms);
+            }
+        };
     }
 
     /**
@@ -84,7 +119,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                                 final double massFlowRateFactor,
                                                                                 final EventDetectionSettings eventDetectionSettings,
                                                                                 final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -115,7 +150,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                               final double maximumThrustMagnitude,
                                                                               final EventDetectionSettings eventDetectionSettings,
                                                                               final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -147,7 +182,7 @@ public class CartesianAdjointDynamicsProviderFactory {
                                                                                 final double maximumThrustMagnitude,
                                                                                 final EventDetectionSettings eventDetectionSettings,
                                                                                 final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
-        return new CartesianAdjointDynamicsProvider(adjointName, 7) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
 
             @Override
             public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
@@ -163,5 +198,81 @@ public class CartesianAdjointDynamicsProviderFactory {
                         new FieldEventDetectionSettings<>(field, eventDetectionSettings)), cartesianAdjointEquationTerms);
             }
         };
+    }
+
+    /**
+     * Method building a provider with bounded Cartesian fuel penalized with a quadratic term.
+     * @param adjointName adjoint name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param epsilon penalty weight
+     * @param eventDetectionSettings detection settings for adjoint-related events
+     * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
+     * @return provider
+     */
+    public static CartesianAdjointDynamicsProvider buildQuadraticPenaltyFuelCostProvider(final String adjointName,
+                                                                                         final double massFlowRateFactor,
+                                                                                         final double maximumThrustMagnitude,
+                                                                                         final double epsilon,
+                                                                                         final EventDetectionSettings eventDetectionSettings,
+                                                                                         final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
+
+            @Override
+            public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
+                return new CartesianAdjointDerivativesProvider(new QuadraticPenaltyCartesianFuel(adjointName, massFlowRateFactor,
+                        maximumThrustMagnitude, epsilon, eventDetectionSettings), cartesianAdjointEquationTerms);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
+                final T zero = field.getZero();
+                return new FieldCartesianAdjointDerivativesProvider<>(new FieldQuadraticPenaltyCartesianFuel<>(adjointName,
+                        zero.newInstance(massFlowRateFactor), zero.newInstance(maximumThrustMagnitude),
+                        zero.newInstance(epsilon), new FieldEventDetectionSettings<>(field, eventDetectionSettings)),
+                        cartesianAdjointEquationTerms);
+            }
+        };
+    }
+
+    /**
+     * Method building a provider with bounded Cartesian fuel penalized with a logarithmic barrier.
+     * @param adjointName adjoint name
+     * @param massFlowRateFactor mass flow rate factor
+     * @param maximumThrustMagnitude maximum thrust magnitude
+     * @param epsilon penalty weight
+     * @param cartesianAdjointEquationTerms Cartesian adjoint equation terms
+     * @return provider
+     */
+    public static CartesianAdjointDynamicsProvider buildLogarithmicBarrierFuelCostProvider(final String adjointName,
+                                                                                           final double massFlowRateFactor,
+                                                                                           final double maximumThrustMagnitude,
+                                                                                           final double epsilon,
+                                                                                           final CartesianAdjointEquationTerm... cartesianAdjointEquationTerms) {
+        return new CartesianAdjointDynamicsProvider(adjointName, getDimension(massFlowRateFactor)) {
+
+            @Override
+            public CartesianAdjointDerivativesProvider buildAdditionalDerivativesProvider() {
+                return new CartesianAdjointDerivativesProvider(new LogarithmicBarrierCartesianFuel(adjointName, massFlowRateFactor,
+                        maximumThrustMagnitude, epsilon), cartesianAdjointEquationTerms);
+            }
+
+            @Override
+            public <T extends CalculusFieldElement<T>> FieldCartesianAdjointDerivativesProvider<T> buildFieldAdditionalDerivativesProvider(final Field<T> field) {
+                final T zero = field.getZero();
+                return new FieldCartesianAdjointDerivativesProvider<>(new FieldLogarithmicBarrierCartesianFuel<>(adjointName,
+                        zero.newInstance(massFlowRateFactor), zero.newInstance(maximumThrustMagnitude),
+                        zero.newInstance(epsilon)), cartesianAdjointEquationTerms);
+            }
+        };
+    }
+
+    /**
+     * Get the adjoint dimension.
+     * @param massFlowRateFactor mass flow rate factor
+     * @return dimension
+     */
+    private static int getDimension(final double massFlowRateFactor) {
+        return massFlowRateFactor == 0. ? 6 : 7;
     }
 }

@@ -1,4 +1,4 @@
-/* Copyright 2002-2024 CS GROUP
+/* Copyright 2002-2025 CS GROUP
  * Licensed to CS GROUP (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -17,7 +17,6 @@
 
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +44,6 @@ import org.orekit.utils.GenericTimeStampedCache;
  * @author Luc Maisonobe
  */
 public class InterpolatingTransformProvider implements TransformProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20140723L;
 
     /** Provider for raw (non-interpolated) transforms. */
     private final TransformProvider rawProvider;
@@ -155,90 +151,6 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
         // interpolate to specified date
         return FieldTransform.interpolate(date, cFilter, aFilter, sample);
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the data needed for generation,
-     * but does <em>not</em> serializes the cache itself (in fact the cache is
-     * not serializable).
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DTO(rawProvider, cFilter.getMaxOrder(), aFilter.getMaxOrder(),
-                       cache.getMaxNeighborsSize(), step,
-                       cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DTO implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20170823L;
-
-        /** Provider for raw (non-interpolated) transforms. */
-        private final TransformProvider rawProvider;
-
-        /** Cartesian derivatives to use in interpolation. */
-        private final int cDerivatives;
-
-        /** Angular derivatives to use in interpolation. */
-        private final int aDerivatives;
-
-        /** Number of grid points. */
-        private final int gridPoints;
-
-        /** Grid points time step. */
-        private final double step;
-
-        /** Maximum number of independent cached time slots. */
-        private final int maxSlots;
-
-        /** Maximum duration span in seconds of one slot. */
-        private final double maxSpan;
-
-        /** Time interval above which a new slot is created. */
-        private final double newSlotInterval;
-
-        /** Simple constructor.
-         * @param rawProvider provider for raw (non-interpolated) transforms
-         * @param cDerivatives derivation order for Cartesian coordinates
-         * @param aDerivatives derivation order for angular coordinates
-         * @param gridPoints number of interpolation grid points
-         * @param step grid points time step
-         * @param maxSlots maximum number of independent cached time slots
-         * in the {@link GenericTimeStampedCache time-stamped cache}
-         * @param maxSpan maximum duration span in seconds of one slot
-         * in the {@link GenericTimeStampedCache time-stamped cache}
-         * @param newSlotInterval time interval above which a new slot is created
-         * in the {@link GenericTimeStampedCache time-stamped cache}
-         */
-        private DTO(final TransformProvider rawProvider, final int cDerivatives, final int aDerivatives,
-                    final int gridPoints, final double step,
-                    final int maxSlots, final double maxSpan, final double newSlotInterval) {
-            this.rawProvider     = rawProvider;
-            this.cDerivatives    = cDerivatives;
-            this.aDerivatives    = aDerivatives;
-            this.gridPoints      = gridPoints;
-            this.step            = step;
-            this.maxSlots        = maxSlots;
-            this.maxSpan         = maxSpan;
-            this.newSlotInterval = newSlotInterval;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link InterpolatingTransformProvider}.
-         * @return replacement {@link InterpolatingTransformProvider}
-         */
-        private Object readResolve() {
-            // build a new provider, with an empty cache
-            return new InterpolatingTransformProvider(rawProvider,
-                                                      CartesianDerivativesFilter.getFilter(cDerivatives),
-                                                      AngularDerivativesFilter.getFilter(aDerivatives),
-                                                      gridPoints, step,
-                                                      maxSlots, maxSpan, newSlotInterval);
-        }
-
     }
 
 }
