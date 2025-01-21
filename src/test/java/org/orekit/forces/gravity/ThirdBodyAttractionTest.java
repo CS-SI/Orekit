@@ -405,8 +405,8 @@ public class ThirdBodyAttractionTest extends AbstractLegacyForceModelTest {
 
         public void handleStep(SpacecraftState currentState) {
             double t = currentState.getDate().durationFrom(reference);
-            Assertions.assertEquals(hXRef(t), currentState.getHx(), 1e-4);
-            Assertions.assertEquals(hYRef(t), currentState.getHy(), 1e-4);
+            Assertions.assertEquals(hXRef(t), currentState.getOrbit().getHx(), 1e-4);
+            Assertions.assertEquals(hYRef(t), currentState.getOrbit().getHy(), 1e-4);
         }
 
         protected abstract double hXRef(double t);

@@ -495,9 +495,10 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
                                        stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
             // set propagation orbit type
-            if (Double.isNaN(getMu().getReal())) {
-                setMu(getInitialState().getMu());
+            if (Double.isNaN(getMu().getReal()) && getInitialState().isOrbitDefined()) {
+                setMu(getInitialState().getOrbit().getMu());
             }
+
             if (getInitialState().getMass().getReal() <= 0.0) {
                 throw new OrekitException(OrekitMessages.NOT_POSITIVE_SPACECRAFT_MASS,
                                                getInitialState().getMass());
@@ -578,7 +579,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
     private FieldODEState<T> createInitialState(final FieldSpacecraftState<T> initialState) {
 
         // retrieve initial state
-        final T[] primary  = MathArrays.buildArray(initialState.getA().getField(), getBasicDimension());
+        final T[] primary  = MathArrays.buildArray(initialState.getMass().getField(), getBasicDimension());
         stateMapper.mapStateToArray(initialState, primary, null);
 
         if (secondaryOffsets.isEmpty()) {
@@ -591,7 +592,7 @@ public abstract class FieldAbstractIntegratedPropagator<T extends CalculusFieldE
             secondaryOffsets.put(SECONDARY_DIMENSION, offset);
         }
 
-        return new FieldODEState<>(initialState.getA().getField().getZero(), primary, secondary(initialState));
+        return new FieldODEState<>(initialState.getMass().getField().getZero(), primary, secondary(initialState));
 
     }
 

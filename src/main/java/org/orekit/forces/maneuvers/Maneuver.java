@@ -250,7 +250,7 @@ public class Maneuver implements ForceModel {
             return propulsionModel.getAcceleration(s, maneuverAttitude, getPropulsionModelParameters(parameters));
         } else {
             // Constant (and null) acceleration when not firing
-            return FieldVector3D.getZero(s.getMu().getField());
+            return FieldVector3D.getZero(s.getMass().getField());
         }
     }
 

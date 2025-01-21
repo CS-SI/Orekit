@@ -161,7 +161,7 @@ public class FieldKeplerianPropagator<T extends CalculusFieldElement<T>> extends
 
         // ensure the orbit use the specified mu and has no non-Keplerian derivatives
         final FieldSpacecraftState<T> formerInitial = getInitialState();
-        final T mu = formerInitial == null ? state.getMu() : formerInitial.getMu();
+        final T mu = formerInitial == null ? state.getOrbit().getMu() : formerInitial.getOrbit().getMu();
         final FieldSpacecraftState<T> fixedState = fixState(state.getOrbit(),
                                                             state.getAttitude(),
                                                             state.getMass(),

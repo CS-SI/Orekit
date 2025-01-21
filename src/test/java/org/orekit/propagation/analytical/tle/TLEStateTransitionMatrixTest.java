@@ -82,7 +82,7 @@ public class TLEStateTransitionMatrixTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
+        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         MatricesHarvester harvester = propagator.setupMatricesComputation("stm", null, null);
         RealMatrix dYdY0 = harvester.getStateTransitionMatrix(initialState);
         Assertions.assertNull(dYdY0);
@@ -156,7 +156,7 @@ public class TLEStateTransitionMatrixTest {
         array[0][column] += delta;
 
         return arrayToState(array, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

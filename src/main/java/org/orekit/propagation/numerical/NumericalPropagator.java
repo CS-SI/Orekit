@@ -421,7 +421,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
-            setMu(state.getMu());
+            setMu(state.isOrbitDefined() ? state.getOrbit().getMu() : Double.NaN);
         }
         setStartDate(state.getDate());
     }

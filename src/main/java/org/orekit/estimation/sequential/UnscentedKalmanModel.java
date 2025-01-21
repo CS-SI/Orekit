@@ -171,7 +171,7 @@ public class UnscentedKalmanModel extends AbstractKalmanEstimationCommon impleme
                     new CartesianOrbit(predicted.getPVCoordinates(),
                             predicted.getFrame(),
                             measurement.getObservedMeasurement().getDate(),
-                            predicted.getMu()
+                            predicted.getOrbit().getMu()
                     )
             );
             getBuilders().get(k).resetOrbit(predictedOrbit);

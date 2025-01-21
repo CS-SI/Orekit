@@ -146,8 +146,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final double apogee  = auxiliaryElements.getSma() * (1. + auxiliaryElements.getEcc());
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
-            return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
-                                  FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0) };
+            return new double[] { -FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0),
+                                  FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0) };
         }
         // Else, trajectory partialy within of the atmosphere
         final double fb = FastMath.acos(((auxiliaryElements.getSma() * (1. - auxiliaryElements.getEcc() * auxiliaryElements.getEcc()) / rbar) - 1.) / auxiliaryElements.getEcc());
@@ -173,8 +173,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         if (apogee.getReal() < rbar) {
             final T zero = field.getZero();
             final T pi   = zero.getPi();
-            tab[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(pi);
-            tab[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
+            tab[0] = MathUtils.normalizeAngle(state.getOrbit().getLv(), zero).subtract(pi);
+            tab[1] = MathUtils.normalizeAngle(state.getOrbit().getLv(), zero).add(pi);
             return tab;
         }
         // Else, trajectory partialy within of the atmosphere

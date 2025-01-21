@@ -604,7 +604,7 @@ public class FieldEcksteinHechlerPropagator<T extends CalculusFieldElement<T>> e
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new FieldEHModel<>(circular, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(circular, state.getMass(), epsilon, maxIterations);
-        this.models = new FieldTimeSpanMap<FieldEHModel<T>, T>(initialModel, state.getA().getField());
+        this.models = new FieldTimeSpanMap<>(initialModel, state.getMass().getField());
     }
 
     /** {@inheritDoc} */

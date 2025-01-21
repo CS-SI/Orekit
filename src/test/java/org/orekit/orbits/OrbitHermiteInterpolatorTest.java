@@ -463,7 +463,7 @@ class OrbitHermiteInterpolatorTest {
             Vector3D     propagatedP   = propagator.propagate(t).getPosition();
             double       shiftedE      = initialOrbit.shiftedBy(dt).getE();
             double       interpolatedE = interpolator.interpolate(t, sample).getE();
-            double       propagatedE   = propagator.propagate(t).getE();
+            double       propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
             maxInterpolationPositionError     =
@@ -496,7 +496,7 @@ class OrbitHermiteInterpolatorTest {
             Vector3D     propagatedP   = propagator.propagate(t).getPosition();
             double       shiftedE      = initialOrbit.shiftedBy(dt).getE();
             double       interpolatedE = interpolator.interpolate(t, sample).getE();
-            double       propagatedE   = propagator.propagate(t).getE();
+            double       propagatedE   = propagator.propagate(t).getOrbit().getE();
             maxShiftPositionError             =
                     FastMath.max(maxShiftPositionError, shiftedP.subtract(propagatedP).getNorm());
             maxInterpolationPositionError     =

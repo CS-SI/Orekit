@@ -478,7 +478,7 @@ public class SemiAnalyticalUnscentedKalmanModel implements KalmanEstimation, Uns
 
         // State transition matrix using Keplerian contribution only
         final double mu  = builder.getMu();
-        final double sma = previousNominalMeanSpacecraftState.getA();
+        final double sma = previousNominalMeanSpacecraftState.getOrbit().getA();
         final double dt  = currentDate.durationFrom(previousNominalMeanSpacecraftState.getDate());
         final double contribution = -1.5 * dt * FastMath.sqrt(mu / FastMath.pow(sma, 5));
         stm.setEntry(5, 0, contribution);

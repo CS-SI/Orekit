@@ -207,7 +207,7 @@ class FieldDSSTSolarRadiationPressureTest {
                                                                                        Constants.WGS84_EARTH_FLATTENING,
                                                                                        FramesFactory.getITRF(IERSConventions.IERS_2010, false)),
                                                                   boxAndWing,
-                                                                  meanState.getMu().getReal());
+                                                                  meanState.getOrbit().getMu().getReal());
 
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
@@ -550,7 +550,7 @@ class FieldDSSTSolarRadiationPressureTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

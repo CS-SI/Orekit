@@ -137,7 +137,7 @@ public class FieldDSSTThirdBodyTest {
 
         final FieldSpacecraftState<T> meanState = getGEOState(field);
 
-        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu().getReal());
+        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu().getReal());
 
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(moon);
@@ -196,8 +196,8 @@ public class FieldDSSTThirdBodyTest {
 
         // Force model
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
-        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getMu());
+        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu());
+        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getOrbit().getMu());
         forces.add(moon);
         forces.add(sun);
 
@@ -215,7 +215,7 @@ public class FieldDSSTThirdBodyTest {
 
             // Array for short period terms
             final Gradient[] shortPeriod = new Gradient[6];
-            final Gradient zero = dsState.getA().getField().getZero();
+            final Gradient zero = dsState.getOrbit().getA().getField().getZero();
             Arrays.fill(shortPeriod, zero);
 
             final List<FieldShortPeriodTerms<Gradient>> shortPeriodTerms = new ArrayList<FieldShortPeriodTerms<Gradient>>();
@@ -316,8 +316,8 @@ public class FieldDSSTThirdBodyTest {
 
         // Force model
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
-        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getMu());
-        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getMu());
+        final DSSTForceModel moon    = new DSSTThirdBody(CelestialBodyFactory.getMoon(), meanState.getOrbit().getMu());
+        final DSSTForceModel sun     = new DSSTThirdBody(CelestialBodyFactory.getSun(),  meanState.getOrbit().getMu());
         forces.add(moon);
         forces.add(sun);
 
@@ -497,7 +497,7 @@ public class FieldDSSTThirdBodyTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

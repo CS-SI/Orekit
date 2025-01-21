@@ -183,7 +183,7 @@ public class AdditionalDerivativesProvidersTest {
         // verify
         Assertions.assertEquals(coupling.secondaryInit + dt * coupling.secondaryRate,
                 finalState.getAdditionalState(coupling.getName())[0], 1.0e-10);
-        Assertions.assertEquals(initialState.getA() + dt * coupling.smaRate, finalState.getA(), 1.0e-10);
+        Assertions.assertEquals(initialState.getOrbit().getA() + dt * coupling.smaRate, finalState.getOrbit().getA(), 1.0e-10);
 
     }
 

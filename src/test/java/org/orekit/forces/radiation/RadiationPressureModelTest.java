@@ -168,7 +168,7 @@ class RadiationPressureModelTest {
               doBuildFieldPropagator(field, forceModel, initialState);
         final AbsoluteDate                       epoch           = initialState.getDate();
         final AbsoluteDate terminalDate =
-              epoch.shiftedBy(initialState.getKeplerianPeriod() * 10);
+              epoch.shiftedBy(initialState.getOrbit().getKeplerianPeriod() * 10);
         // WHEN
         final FieldSpacecraftState<Binary64> propagatedState =
               fieldPropagator.propagate(new FieldAbsoluteDate<>(field, terminalDate));

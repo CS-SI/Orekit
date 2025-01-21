@@ -69,7 +69,7 @@ class TLEGradientConverter extends AbstractAnalyticalGradientConverter {
         final Gradient[] parameters = getParameters(state, tle);
 
         // Zero
-        final Gradient zero = state.getA().getField().getZero();
+        final Gradient zero = state.getMass().getField().getZero();
 
         // Template TLE
         final int satelliteNumber         = tle.getSatelliteNumber();

@@ -165,7 +165,7 @@ public class FieldDateDetector<T extends CalculusFieldElement<T>> extends FieldA
     public T g(final FieldSpacecraftState<T> s) {
         gDate = s.getDate();
         if (currentIndex < 0) {
-            return s.getA().getField().getZero().newInstance(-1);
+            return s.getMass().getField().getZero().newInstance(-1);
         } else {
             final FieldEventDate<T> event = getClosest(gDate);
             return event.isgIncrease() ? gDate.durationFrom(event.getDate()) : event.getDate().durationFrom(gDate);

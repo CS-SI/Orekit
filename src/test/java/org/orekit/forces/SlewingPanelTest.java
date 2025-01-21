@@ -51,7 +51,7 @@ public class SlewingPanelTest {
 
         AbsoluteDate initialDate = propagator.getInitialState().getDate();
         CelestialBody sun = CelestialBodyFactory.getSun();
-        Panel solarArray = new SlewingPanel(Vector3D.PLUS_J, propagator.getInitialState().getKeplerianMeanMotion(),
+        Panel solarArray = new SlewingPanel(Vector3D.PLUS_J, propagator.getInitialState().getOrbit().getKeplerianMeanMotion(),
                                             initialDate, new Vector3D(0.46565509814462996, 0.0,  0.884966287251619),
                                             20.0, 0.0, 0.0, 0.0, 0.0);
 
@@ -81,7 +81,7 @@ public class SlewingPanelTest {
             AbsoluteDate initialDate = propagator.getInitialState().getDate();
             CelestialBody sun = CelestialBodyFactory.getSun();
             Panel solarArray = new SlewingPanel(Vector3D.PLUS_J,
-                                                0.1 * propagator.getInitialState().getKeplerianMeanMotion(),
+                                                0.1 * propagator.getInitialState().getOrbit().getKeplerianMeanMotion(),
                                                 initialDate, new Vector3D(0.46565509814462996, 0.0,  0.884966287251619),
                                                 20.0, 0.0, 0.0, 0.0, 0.0);
 

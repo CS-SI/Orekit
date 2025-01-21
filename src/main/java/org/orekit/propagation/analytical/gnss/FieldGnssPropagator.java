@@ -441,10 +441,11 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
                       add(nonKeplerianElements.getAngularVelocity() * nonKeplerianElements.getTime());
 
         // recover eccentricity and anomaly
-        final T rV2OMu           = rk.multiply(v.getNormSq()).divide(initialState.getMu());
+        final T mu = initialState.getOrbit().getMu();
+        final T rV2OMu           = rk.multiply(v.getNormSq()).divide(mu);
         final T sma              = rk.divide(rV2OMu.negate().add(2));
         final T eCosE            = rV2OMu.subtract(1);
-        final T eSinE            = FieldVector3D.dotProduct(p, v).divide(FastMath.sqrt(initialState.getMu().multiply(sma)));
+        final T eSinE            = FieldVector3D.dotProduct(p, v).divide(FastMath.sqrt(mu.multiply(sma)));
         final T e                = FastMath.hypot(eCosE, eSinE);
         final T eccentricAnomaly = FastMath.atan2(eSinE, eCosE);
         final T aop              = phi.subtract(eccentricAnomaly);
@@ -452,7 +453,7 @@ public class FieldGnssPropagator<T extends CalculusFieldElement<T>> extends Fiel
 
         return new FieldKeplerianOrbit<>(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN,
                                          PositionAngleType.MEAN, frozenEcef,
-                                         initialState.getDate(), initialState.getMu());
+                                         initialState.getDate(), mu);
 
     }
 
