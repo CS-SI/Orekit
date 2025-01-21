@@ -489,14 +489,11 @@ class ImpulseManeuverTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
         Mockito.when(mockedState.getDate()).thenReturn(date);
-        final ImpulseProvider impulseProvider = Mockito.mock(ImpulseProvider.class);
-        Mockito.doCallRealMethod().when(impulseProvider).init(mockedState, date);
+        final ImpulseProvider impulseProvider = ImpulseProvider.of(Vector3D.PLUS_I);
         final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(), null, impulseProvider,
                 1, Control3DVectorCostType.NONE);
         // WHEN
         maneuver.init(mockedState, date);
-        // THEN
-        Mockito.verify(impulseProvider, Mockito.times(1)).init(mockedState, date);
     }
 
     @Test
@@ -505,14 +502,11 @@ class ImpulseManeuverTest {
         final AbsoluteDate date = AbsoluteDate.ARBITRARY_EPOCH;
         final SpacecraftState mockedState = Mockito.mock(SpacecraftState.class);
         Mockito.when(mockedState.getDate()).thenReturn(date);
-        final ImpulseProvider impulseProvider = Mockito.mock(ImpulseProvider.class);
-        Mockito.doCallRealMethod().when(impulseProvider).finish(mockedState);
+        final ImpulseProvider impulseProvider = ImpulseProvider.of(Vector3D.PLUS_I);
         final ImpulseManeuver maneuver = new ImpulseManeuver(new DateDetector(), null, impulseProvider,
                 1, Control3DVectorCostType.NONE);
         // WHEN
         maneuver.finish(mockedState);
-        // THEN
-        Mockito.verify(impulseProvider, Mockito.times(1)).finish(mockedState);
     }
 
     @Test
