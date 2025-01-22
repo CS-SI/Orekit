@@ -292,7 +292,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         super.resetInitialState(state);
         if (!hasNewtonianAttraction()) {
             // use the state to define central attraction
-            setMu(state.getMu());
+            setMu(state.getOrbit().getMu());
         }
         super.setStartDate(state.getDate());
     }
@@ -899,12 +899,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final EquinoctialOrbit rebuilt = computeOsculatingOrbit(meanState, shortPeriodTerms);
 
             // adapted parameters residuals
-            final double deltaA  = osculating.getA() - rebuilt.getA();
-            final double deltaEx = osculating.getEquinoctialEx() - rebuilt.getEquinoctialEx();
-            final double deltaEy = osculating.getEquinoctialEy() - rebuilt.getEquinoctialEy();
-            final double deltaHx = osculating.getHx() - rebuilt.getHx();
-            final double deltaHy = osculating.getHy() - rebuilt.getHy();
-            final double deltaLM = MathUtils.normalizeAngle(osculating.getLM() - rebuilt.getLM(), 0.0);
+            final Orbit osculationOrbit = osculating.getOrbit();
+            final double deltaA  = osculationOrbit.getA() - rebuilt.getA();
+            final double deltaEx = osculationOrbit.getEquinoctialEx() - rebuilt.getEquinoctialEx();
+            final double deltaEy = osculationOrbit.getEquinoctialEy() - rebuilt.getEquinoctialEy();
+            final double deltaHx = osculationOrbit.getHx() - rebuilt.getHx();
+            final double deltaHy = osculationOrbit.getHy() - rebuilt.getHy();
+            final double deltaLM = MathUtils.normalizeAngle(osculationOrbit.getLM() - rebuilt.getLM(), 0.0);
 
             // check convergence
             if (FastMath.abs(deltaA)  < thresholdA &&
@@ -954,7 +955,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
         return (EquinoctialOrbit) OrbitType.EQUINOCTIAL.mapArrayToOrbit(y, meanDot,
                                                                         PositionAngleType.MEAN, meanState.getDate(),
-                                                                        meanState.getMu(), meanState.getFrame());
+                                                                        meanState.getOrbit().getMu(), meanState.getFrame());
     }
 
     /** {@inheritDoc} */

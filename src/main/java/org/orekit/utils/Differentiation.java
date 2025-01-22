@@ -179,7 +179,7 @@ public class Differentiation {
             final Orbit orbit = orbitType.mapArrayToOrbit(array, arrayDot,
                     positionAngleType,
                                                           baseState.getDate(),
-                                                          baseState.getMu(),
+                                                          baseState.getOrbit().getMu(),
                                                           baseState.getFrame());
             final SpacecraftState state =
                     new SpacecraftState(orbit,

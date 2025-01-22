@@ -89,7 +89,7 @@ public class FieldKeplerianPropagatorTest {
     private double mu;
 
     @Test
-    public void testTuple() {
+    void testTuple() {
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         KeplerianOrbit k0 = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
@@ -148,119 +148,119 @@ public class FieldKeplerianPropagatorTest {
     }
 
     @Test
-    public void testSameDateCartesian() {
+    void testSameDateCartesian() {
         doTestSameDateCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testSameDateKeplerian() {
+    void testSameDateKeplerian() {
         doTestSameDateKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedCartesian() {
+    void testPropagatedCartesian() {
         doTestPropagatedCartesian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testPropagatedKeplerian() {
+    void testPropagatedKeplerian() {
         doTestPropagatedKeplerian(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testAscendingNode() {
+    void testAscendingNode() {
         doTestAscendingNode(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testStopAtTargetDate() {
+    void testStopAtTargetDate() {
         doTestStopAtTargetDate(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testFixedStep() {
+    void testFixedStep() {
         doTestFixedStep(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testVariableStep() {
+    void testVariableStep() {
         doTestVariableStep(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testEphemeris() {
+    void testEphemeris() {
         doTestEphemeris(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testAdditionalState() {
+    void testAdditionalState() {
         doTestAdditionalState(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue14() {
+    void testIssue14() {
         doTestIssue14(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testIssue107() {
+    void testIssue107() {
         doTestIssue107(Binary64Field.getInstance());
     }
 
 
     @Test
-    public void testMu() {
+    void testMu() {
         doTestMu(Binary64Field.getInstance());
     }
 
     @Test
-    public void testNoDerivatives() {
+    void testNoDerivatives() {
         doTestNoDerivatives(Binary64Field.getInstance());
     }
 
     @Test
-    public void testWrongAttitude() {
+    void testWrongAttitude() {
         Assertions.assertThrows(OrekitException.class, () -> doTestWrongAttitude(Binary64Field.getInstance()));
     }
 
     @Test
-    public void testStepException() {
+    void testStepException() {
         Assertions.assertThrows(OrekitException.class, () -> doTestStepException(Binary64Field.getInstance()));
     }
 
     @Test
-    public void testWrappedAttitudeException() {
+    void testWrappedAttitudeException() {
         Assertions.assertThrows(OrekitException.class, () -> doTestWrappedAttitudeException(Binary64Field.getInstance()));
     }
 
     @Test
-    public void testPerigee() {
+    void testPerigee() {
         doTestPerigee(Binary64Field.getInstance());
     }
 
     @Test
-    public void testAltitude() {
+    void testAltitude() {
         doTestAltitude(Binary64Field.getInstance());
     }
 
     @Test
-    public void testDate() {
+    void testDate() {
         doTestDate(Binary64Field.getInstance());
     }
 
     @Test
-    public void testSetting() {
+    void testSetting() {
         doTestSetting(Binary64Field.getInstance());
     }
 
@@ -284,7 +284,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         T a = finalOrbit.getA();
         // another way to compute n
@@ -323,7 +323,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         T a = finalOrbit.getA();
         // another way to compute n
@@ -366,7 +366,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero.add(100000.0); // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
 
         // computation of (M final - M initial) with another method
@@ -456,7 +456,7 @@ public class FieldKeplerianPropagatorTest {
         T delta_t = zero.add(100000.0); // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = initDate.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(extrapDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
         Assertions.assertEquals(6092.3362422560844633, finalOrbit.getKeplerianPeriod().getReal(), 1.0e-12);
         Assertions.assertEquals(0.001031326088602888358, finalOrbit.getKeplerianMeanMotion().getReal(), 1.0e-16);
 

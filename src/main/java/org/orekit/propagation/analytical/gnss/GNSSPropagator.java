@@ -459,10 +459,11 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
                            nonKeplerianElements.getAngularVelocity() * nonKeplerianElements.getTime();
 
         // recover eccentricity and anomaly
-        final double rV2OMu           = rk * v.getNormSq() / initialState.getMu();
+        final double mu = initialState.getOrbit().getMu();
+        final double rV2OMu           = rk * v.getNormSq() / mu;
         final double sma              = rk / (2 - rV2OMu);
         final double eCosE            = rV2OMu - 1;
-        final double eSinE            = Vector3D.dotProduct(p, v) / FastMath.sqrt(initialState.getMu() * sma);
+        final double eSinE            = Vector3D.dotProduct(p, v) / FastMath.sqrt(mu * sma);
         final double e                = FastMath.hypot(eCosE, eSinE);
         final double eccentricAnomaly = FastMath.atan2(eSinE, eCosE);
         final double aop              = phi - eccentricAnomaly;
@@ -470,7 +471,7 @@ public class GNSSPropagator extends AbstractAnalyticalPropagator {
 
         return new KeplerianOrbit(sma, e, i0, aop, om0, meanAnomaly, PositionAngleType.MEAN,
                                   PositionAngleType.MEAN, frozenEcef,
-                                  initialState.getDate(), initialState.getMu());
+                                  initialState.getDate(), mu);
 
     }
 

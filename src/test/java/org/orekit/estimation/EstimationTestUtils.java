@@ -287,7 +287,7 @@ public class EstimationTestUtils {
                                                                   final double step) {
 
         propagator.setStepHandler(step, creator);
-        final double       period = propagator.getInitialState().getKeplerianPeriod();
+        final double       period = propagator.getInitialState().getOrbit().getKeplerianPeriod();
         final AbsoluteDate start  = propagator.getInitialState().getDate().shiftedBy(startPeriod * period);
         final AbsoluteDate end    = propagator.getInitialState().getDate().shiftedBy(endPeriod   * period);
         propagator.propagate(start, end);

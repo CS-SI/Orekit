@@ -32,6 +32,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.StaticTransform;
+import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.EphemerisGenerator;
 import org.orekit.propagation.Propagator;
@@ -61,12 +62,14 @@ public class TLEPropagatorTest {
         SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(period));
 
         // Check results
-        Assertions.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
-        Assertions.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
-        Assertions.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
-        Assertions.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final Orbit finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA(), finalOrbit.getA(), 1e-1);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEx(), 1e-1);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(), finalOrbit.getEquinoctialEy(), 1e-1);
+        Assertions.assertEquals(initialOrbit.getHx(), finalOrbit.getHx(), 1e-3);
+        Assertions.assertEquals(initialOrbit.getHy(), finalOrbit.getHy(), 1e-3);
+        Assertions.assertEquals(initialOrbit.getLM(), finalOrbit.getLM(), 1e-3);
 
     }
 
@@ -92,22 +95,25 @@ public class TLEPropagatorTest {
         SpacecraftState boundedState = boundedProp.propagate(initDate);
 
         // Check results
-        Assertions.assertEquals(initialState.getA(), boundedState.getA(), 0.);
-        Assertions.assertEquals(initialState.getEquinoctialEx(), boundedState.getEquinoctialEx(), 0.);
-        Assertions.assertEquals(initialState.getEquinoctialEy(), boundedState.getEquinoctialEy(), 0.);
-        Assertions.assertEquals(initialState.getHx(), boundedState.getHx(), 0.);
-        Assertions.assertEquals(initialState.getHy(), boundedState.getHy(), 0.);
-        Assertions.assertEquals(initialState.getLM(), boundedState.getLM(), 1e-14);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final Orbit boundedOrbit = boundedState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA(), boundedOrbit.getA(), 0.);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(), boundedOrbit.getEquinoctialEx(), 0.);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(), boundedOrbit.getEquinoctialEy(), 0.);
+        Assertions.assertEquals(initialOrbit.getHx(), boundedOrbit.getHx(), 0.);
+        Assertions.assertEquals(initialOrbit.getHy(), boundedOrbit.getHy(), 0.);
+        Assertions.assertEquals(initialOrbit.getLM(), boundedOrbit.getLM(), 1e-14);
 
         SpacecraftState finalState = boundedProp.propagate(endDate);
 
         // Check results
-        Assertions.assertEquals(initialState.getA(), finalState.getA(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1e-1);
-        Assertions.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1e-1);
-        Assertions.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
-        Assertions.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
-        Assertions.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
+        final Orbit finalOrbit = finalState.getOrbit();
+        Assertions.assertEquals(initialOrbit.getA(), finalOrbit.getA(), 1e-1);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(), finalOrbit.getEquinoctialEx(), 1e-1);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(), finalOrbit.getEquinoctialEy(), 1e-1);
+        Assertions.assertEquals(initialOrbit.getHx(), finalOrbit.getHx(), 1e-3);
+        Assertions.assertEquals(initialOrbit.getHy(), finalOrbit.getHy(), 1e-3);
+        Assertions.assertEquals(initialOrbit.getLM(), finalOrbit.getLM(), 1e-3);
 
     }
 

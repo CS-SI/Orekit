@@ -97,7 +97,7 @@ class FieldAbstractAnalyticalPropagatorTest {
         @Override
         protected FieldOrbit<Complex> propagateOrbit(FieldAbsoluteDate<Complex> date, Complex[] parameters) {
             final FieldSpacecraftState<Complex> state = getInitialState();
-            return new FieldCartesianOrbit<>(state.getOrbit().getPVCoordinates(), getFrame(), date, state.getMu());
+            return new FieldCartesianOrbit<>(state.getOrbit().getPVCoordinates(), getFrame(), date, state.getOrbit().getMu());
         }
 
         @Override

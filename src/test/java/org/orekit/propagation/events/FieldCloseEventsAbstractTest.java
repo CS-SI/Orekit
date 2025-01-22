@@ -262,7 +262,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         List<FieldEventDetector<T>> detectors = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             FieldFunctionalDetector<T> detector1 = new FieldFunctionalDetector<>(field)
-                    .withFunction(s -> s.getA().subtract(10e6))
+                    .withFunction(s -> s.getOrbit().getA().subtract(10e6))
                     .withThreshold(v(tol))
                     .withMaxCheck(10)
                     .withHandler(new FieldRecordAndContinue<>(events));
@@ -1291,7 +1291,7 @@ public abstract class FieldCloseEventsAbstractTest<T extends CalculusFieldElemen
         List<FieldEventDetector<T>> detectors = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             FieldFunctionalDetector<T> detector1 = new FieldFunctionalDetector<>(field)
-                    .withFunction(s -> s.getA().subtract(10e6))
+                    .withFunction(s -> s.getOrbit().getA().subtract(10e6))
                     .withThreshold(v(tol))
                     .withMaxCheck(10)
                     .withHandler(new FieldRecordAndContinue<>(events));

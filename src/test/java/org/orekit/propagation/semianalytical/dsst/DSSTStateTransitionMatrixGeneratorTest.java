@@ -46,7 +46,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.ToleranceProvider;
 import org.orekit.propagation.integration.AdditionalDerivativesProvider;
 import org.orekit.propagation.integration.CombinedDerivatives;
-import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTTesseral;
@@ -243,7 +242,7 @@ class DSSTStateTransitionMatrixGeneratorTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 

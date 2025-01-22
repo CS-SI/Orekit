@@ -192,7 +192,7 @@ public class BrouwerLyddanePropagatorTest {
                                 Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                   finalOrbit.getPVCoordinates().getVelocity()),
                                 1.9e-11);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 9.4e-10);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 9.4e-10);
 
     }
 
@@ -220,7 +220,7 @@ public class BrouwerLyddanePropagatorTest {
                             Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                               finalOrbit.getPVCoordinates().getVelocity()),
                             9.0e-11);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 1.9e-9);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 1.9e-9);
     }
 
 
@@ -263,8 +263,8 @@ public class BrouwerLyddanePropagatorTest {
         double delta_t = 100.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbitAna = extrapolatorAna.propagate(extrapDate);
-        SpacecraftState finalOrbitKep = extrapolatorKep.propagate(extrapDate);
+        Orbit finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
+        Orbit finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(0.0, finalOrbitAna.getDate().durationFrom(extrapDate), 0.0);
         // comparison of each orbital parameters
@@ -700,7 +700,7 @@ public class BrouwerLyddanePropagatorTest {
                                 Vector3D.distance(initialOrbit.getPVCoordinates().getVelocity(),
                                                   finalOrbit.getPVCoordinates().getVelocity()),
                                 2.7e-12);
-        Assertions.assertEquals(0.0, finalOrbit.getA() - initialOrbit.getA(), 7.5e-9);
+        Assertions.assertEquals(0.0, finalOrbit.getOrbit().getA() - initialOrbit.getA(), 7.5e-9);
     }
 
     @Test

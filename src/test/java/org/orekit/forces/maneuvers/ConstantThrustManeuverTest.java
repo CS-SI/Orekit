@@ -317,8 +317,8 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
         final double massTolerance =
                 FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventDetectors().findFirst().get().getThreshold();
         Assertions.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
-        Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
-        Assertions.assertEquals(28970, finalorb.getA()/1000, 1);
+        Assertions.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getOrbit().getI(), FastMath.PI)), 1e-4);
+        Assertions.assertEquals(28970, finalorb.getOrbit().getA()/1000, 1);
 
     }
 
@@ -839,7 +839,7 @@ class ConstantThrustManeuverTest extends AbstractLegacyForceModelTest {
 
         // Propagation
         final SpacecraftState finalState = numProp.propagate(initialDate.shiftedBy(60));
-        Assertions.assertEquals(cartesianOrbit.getA(), finalState.getA(), 1.0e-15);
+        Assertions.assertEquals(cartesianOrbit.getA(), finalState.getOrbit().getA(), 1.0e-15);
 
     }
 

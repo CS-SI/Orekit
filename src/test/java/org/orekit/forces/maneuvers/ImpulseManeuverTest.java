@@ -81,7 +81,7 @@ class ImpulseManeuverTest {
         propagator.addEventDetector(new ImpulseManeuver(trigger.withHandler((s, detector, increasing) -> action),
                                                         new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
-        Assertions.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
+        Assertions.assertEquals(0.0028257, propagated.getOrbit().getI(), 1.0e-6);
         Assertions.assertEquals(0.442476 + 6 * FastMath.PI, propagated.getOrbit().getLv(), 1.0e-6);
     }
 

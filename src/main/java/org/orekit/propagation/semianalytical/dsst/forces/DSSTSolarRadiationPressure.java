@@ -202,8 +202,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     protected double[] getLLimits(final SpacecraftState state, final AuxiliaryElements auxiliaryElements) {
 
         // Default bounds without shadow [-PI, PI]
-        final double[] ll = {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
-                             FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
+        final double[] ll = {-FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0),
+                             FastMath.PI + MathUtils.normalizeAngle(state.getOrbit().getLv(), 0)};
 
         // Direction cosines of the Sun in the equinoctial frame
         final Vector3D sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();
@@ -298,8 +298,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
         // Default bounds without shadow [-PI, PI]
         final T[] ll = MathArrays.buildArray(field, 2);
-        ll[0] = MathUtils.normalizeAngle(state.getLv(), zero).subtract(pi);
-        ll[1] = MathUtils.normalizeAngle(state.getLv(), zero).add(pi);
+        ll[0] = MathUtils.normalizeAngle(state.getOrbit().getLv(), zero).subtract(pi);
+        ll[1] = MathUtils.normalizeAngle(state.getOrbit().getLv(), zero).add(pi);
 
         // Direction cosines of the Sun in the equinoctial frame
         final FieldVector3D<T> sunDir = sun.getPosition(state.getDate(), state.getFrame()).normalize();

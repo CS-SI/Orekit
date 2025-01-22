@@ -60,13 +60,13 @@ public class OsculatingToMeanElementsConverterTest {
 
         final double eps  = 1.e-15;
 
-        Assertions.assertEquals(orbit1.getA(), meanOrbit.getA(), eps * orbit1.getA());
-        Assertions.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getEquinoctialEx(), eps);
-        Assertions.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getEquinoctialEy(), eps);
-        Assertions.assertEquals(orbit1.getHx(), meanOrbit.getHx(), eps);
-        Assertions.assertEquals(orbit1.getHy(), meanOrbit.getHy(), eps);
+        Assertions.assertEquals(orbit1.getA(), meanOrbit.getOrbit().getA(), eps * orbit1.getA());
+        Assertions.assertEquals(orbit1.getEquinoctialEx(), meanOrbit.getOrbit().getEquinoctialEx(), eps);
+        Assertions.assertEquals(orbit1.getEquinoctialEy(), meanOrbit.getOrbit().getEquinoctialEy(), eps);
+        Assertions.assertEquals(orbit1.getHx(), meanOrbit.getOrbit().getHx(), eps);
+        Assertions.assertEquals(orbit1.getHy(), meanOrbit.getOrbit().getHy(), eps);
         Assertions.assertEquals(MathUtils.normalizeAngle(orbit1.getLM(), FastMath.PI),
-                            MathUtils.normalizeAngle(meanOrbit.getLM(), FastMath.PI), eps);
+                            MathUtils.normalizeAngle(meanOrbit.getOrbit().getLM(), FastMath.PI), eps);
     }
 
     @BeforeEach

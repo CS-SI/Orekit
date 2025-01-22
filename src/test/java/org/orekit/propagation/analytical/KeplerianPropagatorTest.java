@@ -175,7 +175,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 0.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         double a = finalOrbit.getA();
         // another way to compute n
@@ -210,7 +210,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 0.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
         double a = finalOrbit.getA();
         // another way to compute n
@@ -249,7 +249,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
 
 
         // computation of (M final - M initial) with another method
@@ -339,7 +339,7 @@ public class KeplerianPropagatorTest {
         double delta_t = 100000.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = initDate.shiftedBy(delta_t);
 
-        SpacecraftState finalOrbit = extrapolator.propagate(extrapDate);
+        Orbit finalOrbit = extrapolator.propagate(extrapDate).getOrbit();
         Assertions.assertEquals(6092.3362422560844633, finalOrbit.getKeplerianPeriod(), 1.0e-12);
         Assertions.assertEquals(0.001031326088602888358, finalOrbit.getKeplerianMeanMotion(), 1.0e-16);
 
