@@ -595,6 +595,12 @@ UNKNOWN_CLOCK_DATA_TYPE = type de donnée d''horloge {0} inconnu
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = code d''antenne satellite {0} inconnu
 
+# unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
+UNKNOWN_GNSS_ANTENNA = antenne GNSS inconnue, nom : {0}, code radome : {1}, numéro de série : {2}
+
+# unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
+UNKNOWN_GNSS_FREQUENCY = fréquence GNSS inconnue, système : {0}, code de fréquence : {1} (ligne {2}, fichier {3})
+
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = fréquence {0} non prise en compte par l''antenne {1}
 

@@ -24,6 +24,7 @@ import java.util.Map;
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.GnssSignal;
 import org.orekit.models.earth.displacement.PsdCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.TimeSpanMap;
@@ -60,10 +61,15 @@ public class Station {
     /** TimeSpanMap of site antenna eccentricities. */
     private final TimeSpanMap<Vector3D> eccentricitiesTimeSpanMap;
 
-    /** Antenna type.
-     * @since 12.0
+    /** Antenna key.
+     * @since 13.0
      */
-    private final TimeSpanMap<String> antennaTypesMap;
+    private final TimeSpanMap<AntennaKey> antennaKeysMap;
+
+    /** Phase centers.
+     * @since 13.0
+     */
+    private final TimeSpanMap<Map<GnssSignal, Vector3D>> phaseCentersMap;
 
     /** Post-Seismic Deformation.
      * @since 12.0
@@ -84,7 +90,8 @@ public class Station {
      */
     public Station() {
         this.eccentricitiesTimeSpanMap = new TimeSpanMap<>(null);
-        this.antennaTypesMap           = new TimeSpanMap<>(null);
+        this.antennaKeysMap            = new TimeSpanMap<>(null);
+        this.phaseCentersMap           = new TimeSpanMap<>(null);
         this.psdMap                    = new TimeSpanMap<>(null);
         this.position                  = Vector3D.ZERO;
         this.velocity                  = Vector3D.ZERO;
@@ -213,18 +220,6 @@ public class Station {
         eccentricitiesTimeSpanMap.addValidBefore(entry, latestValidityDate, false);
     }
 
-    /** Add a station eccentricity vector entry valid after a limit date.<br>
-     * Using <code>addStationEccentricitiesValidAfter(entry, t)</code> will make <code>entry</code>
-     * valid in [t, +∞[ (note the closed bracket).
-     * @param entry station eccentricity vector entry
-     * @param earliestValidityDate date after which the entry is valid
-     * (must be different from <b>all</b> dates already used for transitions)
-     * @since 11.1
-     */
-    public void addStationEccentricitiesValidAfter(final Vector3D entry, final AbsoluteDate earliestValidityDate) {
-        eccentricitiesTimeSpanMap.addValidAfter(entry, earliestValidityDate, false);
-    }
-
     /** Get the TimeSpanMap of Post-Seismic Deformation.
      * @return the TimeSpanMap of Post-Seismic Deformation
      * @since 12.1
@@ -261,21 +256,21 @@ public class Station {
     }
 
     /**
-     * Get the antenna type for the given epoch.
-     * If there is no antenna types for the given epoch, an
+     * Get the antenna key for the given epoch.
+     * If there is no antenna keys for the given epoch, an
      * exception is thrown.
      * @param date epoch
-     * @return antenna type
-     * @since 12.0
+     * @return antenna key
+     * @since 13.0
      */
-    public String getAntennaType(final AbsoluteDate date) {
-        final String typeAtEpoch = antennaTypesMap.get(date);
+    public AntennaKey getAntennaKey(final AbsoluteDate date) {
+        final AntennaKey keyAtEpoch = antennaKeysMap.get(date);
         // If the entry is null, there is no valid type for the input epoch
-        if (typeAtEpoch == null) {
+        if (keyAtEpoch == null) {
             // Throw an exception
             throw new OrekitException(OrekitMessages.MISSING_STATION_DATA_FOR_EPOCH, date);
         }
-        return typeAtEpoch;
+        return keyAtEpoch;
     }
 
     /**
@@ -283,32 +278,47 @@ public class Station {
      * @return the TimeSpanMap of site antenna type
      * @since 12.0
      */
-    public TimeSpanMap<String> getAntennaTypeTimeSpanMap() {
-        return antennaTypesMap;
+    public TimeSpanMap<AntennaKey> getAntennaKeyTimeSpanMap() {
+        return antennaKeysMap;
     }
 
-    /** Add a antenna type entry valid before a limit date.<br>
-     * Using <code>addAntennaTypeValidBefore(entry, t)</code> will make <code>entry</code>
+    /** Add a antenna key entry valid before a limit date.<br>
+     * Using <code>addAntennaKeyValidBefore(entry, t)</code> will make <code>entry</code>
      * valid in ]-∞, t[ (note the open bracket).
-     * @param entry antenna type entry
+     * @param entry antenna key entry
      * @param latestValidityDate date before which the entry is valid
      * (must be different from <b>all</b> dates already used for transitions)
      * @since 12.0
      */
-    public void addAntennaTypeValidBefore(final String entry, final AbsoluteDate latestValidityDate) {
-        antennaTypesMap.addValidBefore(entry, latestValidityDate, false);
+    public void addAntennaKeyValidBefore(final AntennaKey entry, final AbsoluteDate latestValidityDate) {
+        antennaKeysMap.addValidBefore(entry, latestValidityDate, false);
     }
 
-    /** Add a antenna type entry valid after a limit date.<br>
-     * Using <code>addAntennaTypeValidAfter(entry, t)</code> will make <code>entry</code>
-     * valid in [t, +∞[ (note the closed bracket).
-     * @param entry antenna type entry
-     * @param earliestValidityDate date after which the entry is valid
-     * (must be different from <b>all</b> dates already used for transitions)
-     * @since 12.0
+    /**
+     * Get the TimeSpanMap of phase centers.
+     * @return the TimeSpanMap of phase centers
+     * @since 13.0
      */
-    public void addAntennaTypeValidAfter(final String entry, final AbsoluteDate earliestValidityDate) {
-        antennaTypesMap.addValidAfter(entry, earliestValidityDate, false);
+    public TimeSpanMap<Map<GnssSignal, Vector3D>> getPhaseCentersMap() {
+        return phaseCentersMap;
+    }
+
+    /**
+     * Get the phase centers for the given epoch.
+     * If there is no phase centers for the given epoch, an
+     * exception is thrown.
+     * @param date epoch
+     * @return phase centers
+     * @since 13.0
+     */
+    public Map<GnssSignal, Vector3D> getPhaseCenters(final AbsoluteDate date) {
+        final Map<GnssSignal, Vector3D> phaseCentersAtEpoch = phaseCentersMap.get(date);
+        // If the entry is null, there is no valid key for the input epoch
+        if (phaseCentersAtEpoch == null) {
+            // Throw an exception
+            throw new OrekitException(OrekitMessages.MISSING_STATION_DATA_FOR_EPOCH, date);
+        }
+        return phaseCentersAtEpoch;
     }
 
     /**

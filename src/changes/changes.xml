@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="luc" type="add" issue="1649">
+            Adding parsing of SITE/GPS_PHASE_CENTER, SITE/GAL_PHASE_CENTER,
+            and SATELLITE/PHASE_CENTER from Sinex files.
+        </action>
         <action dev="luc" type="add" issue="1652">
             Added createMedian factory method to {Field}AbsoluteDate.
         </action>

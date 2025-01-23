@@ -595,6 +595,12 @@ UNKNOWN_CLOCK_DATA_TYPE = tip de date de ceas necunoscut {0}
 # unknown satellite antenna code {0}
 UNKNOWN_SATELLITE_ANTENNA_CODE = codul {0} de antenă satelit este necunoscut
 
+# unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}
+UNKNOWN_GNSS_ANTENNA = <MISSING TRANSLATION>
+
+# unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})
+UNKNOWN_GNSS_FREQUENCY = <MISSING TRANSLATION>
+
 # frequency {0} is not supported by antenna {1}
 UNSUPPORTED_FREQUENCY_FOR_ANTENNA = frecvența {0} nu este luată în considerare de antena {1}
 

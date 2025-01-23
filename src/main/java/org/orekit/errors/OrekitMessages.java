@@ -629,6 +629,12 @@ public enum OrekitMessages implements Localizable {
     /** UNKNOWN_SATELLITE_ANTENNA_CODE. */
     UNKNOWN_SATELLITE_ANTENNA_CODE("unknown satellite antenna code {0}"),
 
+    /** UNKNOWN_GNSS_ANTENNA. */
+    UNKNOWN_GNSS_ANTENNA("unknown GNSS antenna, name: {0}, radome code: {1}, serial number: {2}"),
+
+    /** UNKNOWN_GNSS_FREQUENCY. */
+    UNKNOWN_GNSS_FREQUENCY("unknown GNSS frequency, system: {0}, frequency code: {1} (line {2}, file {3})"),
+
     /** UNSUPPORTED_FREQUENCY_FOR_ANTENNA. */
     UNSUPPORTED_FREQUENCY_FOR_ANTENNA("frequency {0} is not supported by antenna {1}"),
 
