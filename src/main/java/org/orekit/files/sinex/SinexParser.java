@@ -56,8 +56,14 @@ public class SinexParser extends AbstractSinexParser<Sinex, SinexParseInfo> {
                                            Collections.singletonList(SingleLineBlockPredicate.SITE_ID)));
         blockParsers.add(new BlockParser<>("SITE/ANTENNA",
                                            Collections.singletonList(SingleLineBlockPredicate.SITE_ANTENNA)));
+        blockParsers.add(new BlockParser<>("SITE/GPS_PHASE_CENTER",
+                                           Collections.singletonList(SingleLineBlockPredicate.SITE_GPS_PHASE_CENTER)));
+        blockParsers.add(new BlockParser<>("SITE/GAL_PHASE_CENTER",
+                                           Collections.singletonList(SingleLineBlockPredicate.SITE_GAL_PHASE_CENTER)));
         blockParsers.add(new BlockParser<>("SITE/ECCENTRICITY",
                                            Collections.singletonList(SingleLineBlockPredicate.SITE_ECCENTRICITY)));
+        blockParsers.add(new BlockParser<>("SATELLITE/PHASE_CENTER",
+                                           Collections.singletonList(SingleLineBlockPredicate.SATELLITE_PHASE_CENTER)));
         blockParsers.add(new BlockParser<>("SOLUTION/EPOCHS",
                                            Collections.singletonList(SingleLineBlockPredicate.SOLUTION_EPOCHS)));
         blockParsers.add(new BlockParser<>("SOLUTION/ESTIMATE",

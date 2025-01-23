@@ -576,7 +576,7 @@ public class AbsoluteDate
      * @since 13.0
      */
     public AbsoluteDate(final TimeOffset offset) {
-        super(offset.getSeconds(), offset.getAttoSeconds());
+        super(offset);
     }
 
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
@@ -841,6 +841,16 @@ public class AbsoluteDate
         // create the date
         return new AbsoluteDate(dc, tc, timeScale);
 
+    }
+
+    /** Create an instance as the median data between two existing instances.
+     * @param date1 first instance
+     * @param date2 second instance
+     * @return median date between first and second instance
+     * @since 13.0
+     */
+    public static AbsoluteDate createMedian(final AbsoluteDate date1, final AbsoluteDate date2) {
+        return new AbsoluteDate(date2.add(date1).divide(2));
     }
 
     /** Build an instance corresponding to a Julian Epoch (JE).

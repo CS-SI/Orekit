@@ -17,9 +17,14 @@
 package org.orekit.files.sinex;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.gnss.GnssSignal;
+import org.orekit.gnss.SatInSystem;
 import org.orekit.models.earth.displacement.PsdCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScales;
+import org.orekit.utils.TimeSpanMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +35,12 @@ import java.util.Map;
  * @since 13.0
  */
 public class SinexParseInfo extends ParseInfo<Sinex> {
+
+    /** Satellites antennas. */
+    private final Map<SatInSystem, Map<GnssSignal, Vector3D>> satellitesPhaseCenters;
+
+    /** Stations phase centers. */
+    private final Map<AntennaKey, Map<GnssSignal, Vector3D>> stationsPhaseCenters;
 
     /** Station data. */
     private final Map<String, Station> stations;
@@ -67,13 +78,19 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
     /** Correction relaxation time. */
     private double relaxationTime;
 
+    /** Phase centers. */
+    private final Map<GnssSignal, Vector3D> phaseCenters;
+
     /** Simple constructor.
      * @param timeScales time scales
      */
     SinexParseInfo(final TimeScales timeScales) {
         super(timeScales);
-        this.stations = new HashMap<>();
-        this.eop = new HashMap<>();
+        this.satellitesPhaseCenters = new HashMap<>();
+        this.stationsPhaseCenters   = new HashMap<>();
+        this.stations               = new HashMap<>();
+        this.eop                    = new HashMap<>();
+        this.phaseCenters           = new HashMap<>();
     }
 
     /** {@inheritDoc} */
@@ -83,6 +100,31 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
         resetPosition();
         resetVelocity();
         resetPsdCorrection();
+    }
+
+    /** Add satellite phase center.
+     * @param satInSystem satellite id
+     * @param signal signal
+     * @param phaseCenter phase center
+     */
+    void addSatellitePhaseCenter(final SatInSystem satInSystem, final GnssSignal signal, final Vector3D phaseCenter) {
+        satellitesPhaseCenters.
+            computeIfAbsent(satInSystem, s -> new HashMap<>()).
+            put(signal, phaseCenter);
+    }
+
+    /** Add station phase center.
+     * @param key antenna key
+     * @param phaseCenter phase center
+     * @param signals signals to use in order
+     */
+    void addStationPhaseCenter(final AntennaKey key, final Vector3D phaseCenter, final GnssSignal[] signals) {
+        phaseCenters.put(signals[phaseCenters.size()], phaseCenter);
+        if (phaseCenters.size() == signals.length) {
+            // we have parsed all expected signals
+            stationsPhaseCenters.computeIfAbsent(key, k -> new HashMap<>()).putAll(phaseCenters);
+            phaseCenters.clear();
+        }
     }
 
     /** Add station.
@@ -279,7 +321,55 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
     /** {@inheritDoc} */
     @Override
     protected Sinex build() {
-        return new Sinex(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(), stations, eop);
+
+        // set up phase centers for stations
+        for (final Station station : stations.values()) {
+
+            // time span map we need to populate
+            final TimeSpanMap<Map<GnssSignal, Vector3D>> phaseCentersMap = station.getPhaseCentersMap();
+
+            if (station.getAntennaKeyTimeSpanMap().getSpansNumber() > 1) {
+                for (TimeSpanMap.Span<AntennaKey> keySpan = station.getAntennaKeyTimeSpanMap().getFirstNonNullSpan();
+                     keySpan != null; keySpan = keySpan.next()) {
+
+                    // get the existing map for this span
+                    Map<GnssSignal, Vector3D> centers =
+                        phaseCentersMap.get(AbsoluteDate.createMedian(keySpan.getStart(), keySpan.getEnd()));
+                    if (centers == null) {
+                        // this is the first time we process this time span
+                        centers = new HashMap<>();
+                        phaseCentersMap.addValidBetween(centers, keySpan.getStart(), keySpan.getEnd());
+                    }
+
+                    if (keySpan.getData() != null) {
+
+                        // try to identify the closest match for antenna
+                        AntennaKey closestKey = null;
+                        for (final AntennaKey candidate : keySpan.getData().matchingCandidates()) {
+                            if (stationsPhaseCenters.containsKey(candidate)) {
+                                closestKey = candidate;
+                                break;
+                            }
+                        }
+                        if (closestKey == null) {
+                            throw new OrekitException(OrekitMessages.UNKNOWN_GNSS_ANTENNA,
+                                                      keySpan.getData().getName(),
+                                                      keySpan.getData().getRadomeCode(),
+                                                      keySpan.getData().getSerialNumber());
+                        }
+
+                        // add the phase centers for the closest key
+                        centers.putAll(stationsPhaseCenters.get(closestKey));
+
+                    }
+
+                }
+            }
+
+        }
+
+        return new Sinex(getTimeScales(), getCreationDate(), getStartDate(), getEndDate(),
+                         satellitesPhaseCenters, stations, eop);
     }
 
 }
