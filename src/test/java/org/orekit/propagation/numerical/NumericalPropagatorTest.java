@@ -496,17 +496,18 @@ class NumericalPropagatorTest {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
-        final SpacecraftState finalState =
-            propagator.propagate(initDate.shiftedBy(-60), initDate.shiftedBy(dt));
+        final Orbit finalOrbit =
+            propagator.propagate(initDate.shiftedBy(-60), initDate.shiftedBy(dt)).getOrbit();
 
         // Check results
-        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        Assertions.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        Assertions.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 2.0e-9);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final double n = FastMath.sqrt(initialOrbit.getMu() / initialOrbit.getA()) / initialOrbit.getA();
+        Assertions.assertEquals(initialOrbit.getA(),    finalOrbit.getA(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(),    finalOrbit.getEquinoctialEx(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(),    finalOrbit.getEquinoctialEy(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHx(),    finalOrbit.getHx(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHy(),    finalOrbit.getHy(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getLM() + n * dt, finalOrbit.getLM(), 2.0e-9);
 
     }
 
@@ -559,7 +560,7 @@ class NumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final PVCoordinates pv = initialState.getPVCoordinates();
         final double dP = 0.001;
-        final double dV = initialState.getMu() * dP /
+        final double dV = initialState.getOrbit().getMu() * dP /
                           (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
 
         final PVCoordinates pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.MEAN);
@@ -621,7 +622,7 @@ class NumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final PVCoordinates pv = state.getPVCoordinates();
         final double dP = 0.001;
-        final double dV = state.getMu() * dP /
+        final double dV = state.getOrbit().getMu() * dP /
                           (pv.getPosition().getNormSq() * pv.getVelocity().getNorm());
 
         final PVCoordinates pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.MEAN);
@@ -731,17 +732,18 @@ class NumericalPropagatorTest {
         checking.assertEvent(false);
         Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         propagator.setResetAtEnd(true);
-        final SpacecraftState finalState =
-            propagator.propagate(initDate.shiftedBy(dt));
+        final Orbit finalOrbit =
+            propagator.propagate(initDate.shiftedBy(dt)).getOrbit();
         Assertions.assertEquals(dt, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         checking.assertEvent(true);
-        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        Assertions.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        Assertions.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final double n = FastMath.sqrt(initialOrbit.getMu() / initialOrbit.getA()) / initialOrbit.getA();
+        Assertions.assertEquals(initialOrbit.getA(),    finalOrbit.getA(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(),    finalOrbit.getEquinoctialEx(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(),    finalOrbit.getEquinoctialEy(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHx(),    finalOrbit.getHx(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHy(),    finalOrbit.getHy(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getLM() + n * dt, finalOrbit.getLM(), 6.0e-10);
     }
 
     @Test
@@ -753,17 +755,18 @@ class NumericalPropagatorTest {
         checking.assertEvent(false);
         Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         propagator.setResetAtEnd(false);
-        final SpacecraftState finalState =
-            propagator.propagate(initDate.shiftedBy(dt));
+        final Orbit finalOrbit =
+            propagator.propagate(initDate.shiftedBy(dt)).getOrbit();
         Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate), 1.0e-10);
         checking.assertEvent(true);
-        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        Assertions.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        Assertions.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+        final Orbit initialOrbit = initialState.getOrbit();
+        final double n = FastMath.sqrt(initialOrbit.getMu() / initialOrbit.getA()) / initialOrbit.getA();
+        Assertions.assertEquals(initialOrbit.getA(),    finalOrbit.getA(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx(),    finalOrbit.getEquinoctialEx(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy(),    finalOrbit.getEquinoctialEy(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHx(),    finalOrbit.getHx(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHy(),    finalOrbit.getHy(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getLM() + n * dt, finalOrbit.getLM(), 6.0e-10);
     }
 
     @Test
@@ -1017,7 +1020,7 @@ class NumericalPropagatorTest {
                 return "squaredA";
             }
             public double[] getAdditionalState(SpacecraftState state) {
-                return new double[] { state.getA() * state.getA() };
+                return new double[] { state.getOrbit().getA() * state.getOrbit().getA() };
             }
         });
         propagator.addAdditionalDerivativesProvider(new AdditionalDerivativesProvider() {
@@ -1057,7 +1060,7 @@ class NumericalPropagatorTest {
         Assertions.assertEquals(2, s.getAdditionalStatesValues().size());
         Assertions.assertTrue(s.hasAdditionalState("squaredA"));
         Assertions.assertTrue(s.hasAdditionalState("extra"));
-        Assertions.assertEquals(s.getA() * s.getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
+        Assertions.assertEquals(s.getOrbit().getA() * s.getOrbit().getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
         Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0], 1.0e-10);
 
         try {

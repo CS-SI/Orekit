@@ -95,7 +95,7 @@ public class BrouwerLyddaneParametersDerivativesTest {
         final SpacecraftState initialState = propagator.getInitialState();
         final double[] stateVector = new double[6];
         OrbitType.CARTESIAN.mapOrbitToArray(initialState.getOrbit(), PositionAngleType.MEAN, stateVector, null);
-        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getKeplerianPeriod());
+        final AbsoluteDate target = initialState.getDate().shiftedBy(initialState.getOrbit().getKeplerianPeriod());
         BrouwerLyddaneHarvester harvester = (BrouwerLyddaneHarvester) propagator.setupMatricesComputation("stm", null, null);
         harvester.freezeColumnsNames();
         final SpacecraftState finalState = propagator.propagate(target);

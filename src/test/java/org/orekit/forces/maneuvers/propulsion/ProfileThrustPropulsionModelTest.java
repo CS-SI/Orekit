@@ -157,7 +157,7 @@ class ProfileThrustPropulsionModelTest {
         final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
         Assertions.assertEquals(expectedM, finalorb.getMass(), 0.001);
-        Assertions.assertEquals(expectedA, finalorb.getA(),    0.002);
+        Assertions.assertEquals(expectedA, finalorb.getOrbit().getA(),    0.002);
 
     }
 
@@ -250,7 +250,7 @@ class ProfileThrustPropulsionModelTest {
         final FieldSpacecraftState<T> finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
         Assertions.assertEquals(expectedM, finalorb.getMass().getReal(), 0.001);
-        Assertions.assertEquals(expectedA, finalorb.getA().getReal(),    0.002);
+        Assertions.assertEquals(expectedA, finalorb.getOrbit().getA().getReal(),    0.002);
 
     }
 

@@ -690,7 +690,7 @@ public class FieldBrouwerLyddanePropagator<T extends CalculusFieldElement<T>> ex
         this.initialModel = (stateType == PropagationType.MEAN) ?
                              new FieldBLModel<>(keplerian, state.getMass(), referenceRadius, mu, ck0) :
                              computeMeanParameters(keplerian, state.getMass(), epsilon, maxIterations);
-        this.models = new FieldTimeSpanMap<>(initialModel, state.getA().getField());
+        this.models = new FieldTimeSpanMap<>(initialModel, state.getMass().getField());
     }
 
     /** {@inheritDoc} */

@@ -340,7 +340,7 @@ public class HarmonicAccelerationModelTest extends AbstractForceModelTest {
 
         final HarmonicAccelerationModel accelerationModel = new HarmonicAccelerationModel("kT",
                                                                                           state.getDate().shiftedBy(-2.0),
-                                                                                          state.getKeplerianPeriod(), harmonicMultiplier);
+                                                                                          state.getOrbit().getKeplerianPeriod(), harmonicMultiplier);
         final ParametricAcceleration hpa = new ParametricAcceleration(Vector3D.PLUS_K, false, accelerationModel);
         hpa.init(state, state.getDate().shiftedBy(3600.0));
         hpa.getParametersDrivers().get(0).setValue(0.00001);

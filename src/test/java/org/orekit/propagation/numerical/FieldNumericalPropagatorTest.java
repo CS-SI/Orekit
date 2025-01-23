@@ -528,13 +528,15 @@ public class FieldNumericalPropagatorTest {
             propagator.propagate(initDate.shiftedBy(-60), initDate.shiftedBy(dt));
 
         // Check results
-        final double n = FastMath.sqrt(initialState.getMu().divide(initialState.getA())).getReal() / initialState.getA().getReal();
-        Assertions.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(),    finalState.getEquinoctialEx().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(),    finalState.getEquinoctialEy().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHx().getReal(),    finalState.getHx().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHy().getReal(),    finalState.getHy().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getLM().getReal() + n * dt, finalState.getLM().getReal(), 2.0e-9);
+        final FieldOrbit<T> initialOrbit = initialState.getOrbit();
+        final FieldOrbit<T> finalOrbit = finalState.getOrbit();
+        final double n = FastMath.sqrt(initialOrbit.getMu().divide(initialOrbit.getA())).getReal() / initialOrbit.getA().getReal();
+        Assertions.assertEquals(initialOrbit.getA().getReal(),    finalOrbit.getA().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx().getReal(),    finalOrbit.getEquinoctialEx().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy().getReal(),    finalOrbit.getEquinoctialEy().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHx().getReal(),    finalOrbit.getHx().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHy().getReal(),    finalOrbit.getHy().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getLM().getReal() + n * dt, finalOrbit.getLM().getReal(), 2.0e-9);
 
     }
 
@@ -616,7 +618,7 @@ public class FieldNumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final FieldPVCoordinates<T> pv = initialState.getPVCoordinates();
         final T dP = zero.add(0.001);
-        final T dV = pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()).reciprocal().multiply(dP.multiply(initialState.getMu()));
+        final T dV = pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()).reciprocal().multiply(dP.multiply(initialState.getOrbit().getMu()));
 
         final FieldPVCoordinates<T> pvcM = propagateInType(initialState, dP, OrbitType.CARTESIAN,   PositionAngleType.MEAN, propagator);
         final FieldPVCoordinates<T> pviM = propagateInType(initialState, dP, OrbitType.CIRCULAR,    PositionAngleType.MEAN, propagator);
@@ -700,7 +702,7 @@ public class FieldNumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final FieldPVCoordinates<T> pv = state.getPVCoordinates();
         final T dP = zero.add(0.001);
-        final T dV = dP.multiply(state.getMu()).divide(
+        final T dV = dP.multiply(state.getOrbit().getMu()).divide(
                           pv.getPosition().getNormSq().multiply(pv.getVelocity().getNorm()));
 
         final FieldPVCoordinates<T> pvcM = propagateInType(state, dP, OrbitType.CARTESIAN, PositionAngleType.MEAN, propagator);
@@ -900,13 +902,15 @@ public class FieldNumericalPropagatorTest {
             propagator.propagate(initDate.shiftedBy(dt));
         Assertions.assertEquals(dt, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
         checking.assertEvent(true);
-        final double n = FastMath.sqrt(initialState.getMu().getReal() / initialState.getA().getReal()) / initialState.getA().getReal();
-        Assertions.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(),    finalState.getEquinoctialEx().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(),    finalState.getEquinoctialEy().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHx().getReal(),    finalState.getHx().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHy().getReal(),    finalState.getHy().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getLM().getReal() + n * dt, finalState.getLM().getReal(), 6.0e-10);
+        final FieldOrbit<T> initialOrbit = initialState.getOrbit();
+        final FieldOrbit<T> finalOrbit = finalState.getOrbit();
+        final double n = FastMath.sqrt(initialOrbit.getMu().getReal() / initialOrbit.getA().getReal()) / initialOrbit.getA().getReal();
+        Assertions.assertEquals(initialOrbit.getA().getReal(),    finalOrbit.getA().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx().getReal(),    finalOrbit.getEquinoctialEx().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy().getReal(),    finalOrbit.getEquinoctialEy().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHx().getReal(),    finalOrbit.getHx().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHy().getReal(),    finalOrbit.getHy().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getLM().getReal() + n * dt, finalOrbit.getLM().getReal(), 6.0e-10);
     }
 
     @Test
@@ -950,13 +954,16 @@ public class FieldNumericalPropagatorTest {
             propagator.propagate(initDate.shiftedBy(dt));
         Assertions.assertEquals(0.0, propagator.getInitialState().getDate().durationFrom(initDate).getReal(), 1.0e-10);
         checking.assertEvent(true);
-        final double n = FastMath.sqrt(initialState.getMu().getReal() / initialState.getA().getReal()) / initialState.getA().getReal();
-        Assertions.assertEquals(initialState.getA().getReal(),    finalState.getA().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEx().getReal(),    finalState.getEquinoctialEx().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getEquinoctialEy().getReal(),    finalState.getEquinoctialEy().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHx().getReal(),    finalState.getHx().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getHy().getReal(),    finalState.getHy().getReal(),    1.0e-10);
-        Assertions.assertEquals(initialState.getLM().getReal() + n * dt, finalState.getLM().getReal(), 6.0e-10);
+
+        final FieldOrbit<T> initialOrbit = initialState.getOrbit();
+        final FieldOrbit<T> finalOrbit = finalState.getOrbit();
+        final double n = FastMath.sqrt(initialOrbit.getMu().getReal() / initialOrbit.getA().getReal()) / initialOrbit.getA().getReal();
+        Assertions.assertEquals(initialOrbit.getA().getReal(),    finalOrbit.getA().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEx().getReal(),    finalOrbit.getEquinoctialEx().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getEquinoctialEy().getReal(),    finalOrbit.getEquinoctialEy().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHx().getReal(),    finalOrbit.getHx().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getHy().getReal(),    finalOrbit.getHy().getReal(),    1.0e-10);
+        Assertions.assertEquals(initialOrbit.getLM().getReal() + n * dt, finalOrbit.getLM().getReal(), 6.0e-10);
     }
 
     @Test
@@ -1259,7 +1266,7 @@ public class FieldNumericalPropagatorTest {
             }
             public T[] getAdditionalState(FieldSpacecraftState<T> state) {
                 T[] a = MathArrays.buildArray(field, 1);
-                a[0] = state.getA().multiply(state.getA());
+                a[0] = state.getOrbit().getA().multiply(state.getOrbit().getA());
                 return a;
             }
         });
@@ -1302,7 +1309,7 @@ public class FieldNumericalPropagatorTest {
         Assertions.assertEquals(2, s.getAdditionalStatesValues().size());
         Assertions.assertTrue(s.hasAdditionalState("squaredA"));
         Assertions.assertTrue(s.hasAdditionalState("extra"));
-        Assertions.assertEquals(s.getA().multiply(s.getA()).getReal(), s.getAdditionalState("squaredA")[0].getReal(), 1.0e-10);
+        Assertions.assertEquals(s.getOrbit().getA().multiply(s.getOrbit().getA()).getReal(), s.getAdditionalState("squaredA")[0].getReal(), 1.0e-10);
         Assertions.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0].getReal(), 1.0e-10);
 
         try {

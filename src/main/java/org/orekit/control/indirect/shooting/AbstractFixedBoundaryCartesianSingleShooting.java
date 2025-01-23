@@ -437,7 +437,7 @@ public abstract class AbstractFixedBoundaryCartesianSingleShooting extends Abstr
         final FieldPVCoordinates<T> pvCoordinates = new FieldPVCoordinates<>(position, velocity);
         final FieldSpacecraftState<T> stateWithoutAdjoint;
         if (initialSpacecraftStateTemplate.isOrbitDefined()) {
-            final T mu = field.getZero().newInstance(initialSpacecraftStateTemplate.getMu());
+            final T mu = field.getZero().newInstance(initialSpacecraftStateTemplate.getOrbit().getMu());
             final FieldCartesianOrbit<T> orbit = new FieldCartesianOrbit<>(pvCoordinates, frame, date, mu);
             final FieldAttitude<T> attitude = getPropagationSettings().getAttitudeProvider().getAttitude(orbit,
                     orbit.getDate(), orbit.getFrame());

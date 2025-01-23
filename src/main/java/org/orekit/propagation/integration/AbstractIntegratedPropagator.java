@@ -498,7 +498,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             attitudeProviderForDerivatives = initializeAttitudeProviderForDerivatives();
 
             if (Double.isNaN(getMu())) {
-                setMu(getInitialState().getMu());
+                setMu(getInitialState().isOrbitDefined() ? getInitialState().getOrbit().getMu() : Double.NaN);
             }
 
             if (getInitialState().getMass() <= 0.0) {

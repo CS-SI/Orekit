@@ -80,7 +80,7 @@ public class GnssGradientConverterTest {
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
         Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals(0, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(6, gPropagator.getInitialState().getA().getFreeParameters());
+        Assertions.assertEquals(6, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
     }
 
@@ -90,7 +90,7 @@ public class GnssGradientConverterTest {
         final FieldGnssPropagator<Gradient> gPropagator = new GnssGradientConverter(propagator).getPropagator();
         Assertions.assertEquals(9, gPropagator.getParametersDrivers().size());
         Assertions.assertEquals( 9, gPropagator.getParametersDrivers().stream().filter(ParameterDriver::isSelected).count());
-        Assertions.assertEquals(15, gPropagator.getInitialState().getA().getFreeParameters());
+        Assertions.assertEquals(15, gPropagator.getInitialState().getOrbit().getA().getFreeParameters());
         checkUnitaryInitialSTM(gPropagator.getInitialState());
     }
 
@@ -242,7 +242,7 @@ public class GnssGradientConverterTest {
             final SpacecraftState shiftedState =
                 new SpacecraftState(OrbitType.CARTESIAN.mapArrayToOrbit(in, null, PositionAngleType.MEAN,
                                                                         original.getDate(),
-                                                                        original.getMu(), original.getFrame()),
+                                                                        original.getOrbit().getMu(), original.getFrame()),
                                     original.getAttitude(), original.getMass());
 
             // build shifted propagator

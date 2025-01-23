@@ -604,8 +604,8 @@ public class SolarRadiationPressureTest extends AbstractLegacyForceModelTest {
 
         @Override
         public void handleStep(SpacecraftState currentState) {
-            final double dex = currentState.getEquinoctialEx() - 0.01071166;
-            final double dey = currentState.getEquinoctialEy() - 0.00654848;
+            final double dex = currentState.getOrbit().getEquinoctialEx() - 0.01071166;
+            final double dey = currentState.getOrbit().getEquinoctialEy() - 0.00654848;
             final double alpha = FastMath.toDegrees(FastMath.atan2(dey, dex));
             Assertions.assertTrue(alpha > 100.0);
             Assertions.assertTrue(alpha < 112.0);

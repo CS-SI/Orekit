@@ -28,6 +28,9 @@
         <action dev="luc" type="add" issue="1652">
             Added createMedian factory method to {Field}AbsoluteDate.
         </action>
+        <action dev="serrof" type="update" issue="1650">
+            Removed orbit-related chained getters in (Field)SpacecraftState.
+        </action>
         <action dev="serrof" type="add" issue="1644">
             Add duration flight cost for indirect shooting.
         </action>

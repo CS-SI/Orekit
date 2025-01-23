@@ -47,8 +47,8 @@ public class RelativisticClockInterSatellitesOneWayRangeRateModifier
         final SpacecraftState local  = estimated.getStates()[0];
         final SpacecraftState remote = estimated.getStates()[1];
         modifyWithoutDerivatives(estimated,
-                                 local.getA(), local.getPosition().getNorm(),
-                                 remote.getA(), remote.getPosition().getNorm());
+                                 local.getOrbit().getA(), local.getPosition().getNorm(),
+                                 remote.getOrbit().getA(), remote.getPosition().getNorm());
     }
 
 }

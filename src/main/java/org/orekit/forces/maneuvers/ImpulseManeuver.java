@@ -269,7 +269,7 @@ public class ImpulseManeuver extends AbstractImpulseManeuver implements Detector
             // pack everything in a new state
             if (oldState.isOrbitDefined()) {
                 final CartesianOrbit newOrbit = new CartesianOrbit(newPV, oldState.getFrame(), oldState.getDate(),
-                        oldState.getMu());
+                        oldState.getOrbit().getMu());
                 return new SpacecraftState(oldState.getOrbit().getType().normalize(newOrbit, oldState.getOrbit()),
                         oldState.getAttitude(), newMass, oldState.getAdditionalStatesValues(), oldState.getAdditionalStatesDerivatives());
             } else {

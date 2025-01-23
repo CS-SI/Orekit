@@ -141,7 +141,7 @@ public class DSSTNewtonianAttraction implements DSSTForceModel {
                                                                   final T[] parameters) {
 
         // Field for array building
-        final Field<T> field = state.getMu().getField();
+        final Field<T> field = state.getMass().getField();
         // Container for attributes
         final FieldDSSTNewtonianAttractionContext<T> context = initializeStep(auxiliaryElements, parameters);
 

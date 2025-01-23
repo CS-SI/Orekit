@@ -211,8 +211,8 @@ public class FieldAdditionalDerivativesProvidersTest {
         Assertions.assertEquals(coupling.secondaryInit + dt.getReal() * coupling.secondaryRate,
                             finalState.getAdditionalState(coupling.getName())[0].getReal(),
                             1.0e-10);
-        Assertions.assertEquals(initialState.getA() + dt.getReal() * coupling.smaRate,
-                            finalState.getA().getReal(),
+        Assertions.assertEquals(initialState.getOrbit().getA() + dt.getReal() * coupling.smaRate,
+                            finalState.getOrbit().getA().getReal(),
                             1.0e-10);
 
     }

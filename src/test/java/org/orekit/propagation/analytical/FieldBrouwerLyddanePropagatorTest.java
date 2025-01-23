@@ -135,7 +135,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         // ---------------------------------
         FieldBrouwerLyddanePropagator<T> extrapolator =
                 new FieldBrouwerLyddanePropagator<T>(initialOrbit, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // positions  velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
@@ -171,7 +171,7 @@ public class FieldBrouwerLyddanePropagatorTest {
         FieldBrouwerLyddanePropagator<T> extrapolator =
                 new FieldBrouwerLyddanePropagator<T>(initialOrbit, DEFAULT_LAW, GravityFieldFactory.getUnnormalizedProvider(provider), BrouwerLyddanePropagator.M2);
 
-        FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // positions  velocity and semi major axis match perfectly
         Assertions.assertEquals(0.0,
@@ -234,8 +234,8 @@ public class FieldBrouwerLyddanePropagatorTest {
         double delta_t = 100.0; // extrapolation duration in seconds
         FieldAbsoluteDate<T> extrapDate = date.shiftedBy(delta_t);
 
-        FieldSpacecraftState<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate);
-        FieldSpacecraftState<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate);
+        FieldOrbit<T> finalOrbitAna = extrapolatorAna.propagate(extrapDate).getOrbit();
+        FieldOrbit<T> finalOrbitKep = extrapolatorKep.propagate(extrapDate).getOrbit();
 
         Assertions.assertEquals(finalOrbitAna.getDate().durationFrom(extrapDate).getReal(), 0.0,
                      Utils.epsilonTest);
@@ -742,7 +742,7 @@ public class FieldBrouwerLyddanePropagatorTest {
 
         // Extrapolation at the initial date
         // ---------------------------------
-        final FieldSpacecraftState<T> finalOrbit = extrapolator.propagate(initDate);
+        final FieldOrbit<T> finalOrbit = extrapolator.propagate(initDate).getOrbit();
 
         // Asserts
         // -------

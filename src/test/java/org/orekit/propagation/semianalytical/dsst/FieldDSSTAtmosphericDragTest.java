@@ -205,7 +205,7 @@ class FieldDSSTAtmosphericDragTest {
                                                                 LOFType.LVLH_CCSDS, RotationOrder.XYZ,
                                                                 0.0, 0.0, 0.0);
 
-        final DSSTForceModel drag = new DSSTAtmosphericDrag(atmosphere, boxAndWing, meanState.getMu().getReal());
+        final DSSTForceModel drag = new DSSTAtmosphericDrag(atmosphere, boxAndWing, meanState.getOrbit().getMu().getReal());
 
         //Create the auxiliary object
         final FieldAuxiliaryElements<T> aux = new FieldAuxiliaryElements<>(meanState.getOrbit(), 1);
@@ -553,7 +553,7 @@ class FieldDSSTAtmosphericDragTest {
         array[0][column] += delta;
 
         return arrayToState(array, orbitType, state.getFrame(), state.getDate(),
-                            state.getMu(), state.getAttitude());
+                            state.getOrbit().getMu(), state.getAttitude());
 
     }
 
