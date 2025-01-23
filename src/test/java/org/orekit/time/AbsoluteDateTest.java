@@ -307,9 +307,9 @@ public class AbsoluteDateTest {
     @Test
     public void test1970Instant() {
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.EPOCH, utc).toString());
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.ofEpochMilli(0l), utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.ofEpochMilli(0L), utc).toString());
         Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.EPOCH, (UTCScale) utc).toString());
-        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.ofEpochMilli(0l), (UTCScale) utc).toString());
+        Assertions.assertEquals("1970-01-01T00:00:00.000Z", new AbsoluteDate(Instant.ofEpochMilli(0L), (UTCScale) utc).toString());
     }
 
     @Test
@@ -399,6 +399,31 @@ public class AbsoluteDateTest {
 
         // Proper date is close enough from reference date
         Assertions.assertEquals(0.0, properDate.durationFrom(refDate), 2.132e-13);
+    }
+
+    @Test
+    public void testMedian() {
+        final AbsoluteDate date1 = new AbsoluteDate(2003, 6, 13, 14, 15,
+                                                    new TimeOffset(53, TimeOffset.SECOND, 12, TimeOffset.ATTOSECOND),
+                                                    TimeScalesFactory.getTT());
+        final AbsoluteDate date2 = new AbsoluteDate(2003, 6, 13, 14, 17,
+                                                    new TimeOffset(25, TimeOffset.SECOND, 120, TimeOffset.ATTOSECOND),
+                                                    TimeScalesFactory.getTT());
+        final AbsoluteDate dateM = new AbsoluteDate(2003, 6, 13, 14, 16,
+                                                 new TimeOffset(39, TimeOffset.SECOND, 66, TimeOffset.ATTOSECOND),
+                                                 TimeScalesFactory.getTT());
+        Assertions.assertEquals(dateM, AbsoluteDate.createMedian(date1, date2));
+        Assertions.assertEquals(dateM, AbsoluteDate.createMedian(date2, date1));
+    }
+
+    @Test
+    public void testMedianInfinite() {
+        Assertions.assertEquals(AbsoluteDate.FUTURE_INFINITY,
+                                AbsoluteDate.createMedian(AbsoluteDate.FUTURE_INFINITY,
+                                                          AbsoluteDate.ARBITRARY_EPOCH));
+        Assertions.assertEquals(AbsoluteDate.PAST_INFINITY,
+                                AbsoluteDate.createMedian(AbsoluteDate.PAST_INFINITY,
+                                                          AbsoluteDate.ARBITRARY_EPOCH));
     }
 
     @Test
