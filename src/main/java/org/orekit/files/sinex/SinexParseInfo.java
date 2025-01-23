@@ -333,12 +333,12 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
                      keySpan != null; keySpan = keySpan.next()) {
 
                     // get the existing map for this span
-                    Map<GnssSignal, Vector3D> phaseCenters =
+                    Map<GnssSignal, Vector3D> centers =
                         phaseCentersMap.get(AbsoluteDate.createMedian(keySpan.getStart(), keySpan.getEnd()));
-                    if (phaseCenters == null) {
+                    if (centers == null) {
                         // this is the first time we process this time span
-                        phaseCenters = new HashMap<>();
-                        phaseCentersMap.addValidBetween(phaseCenters, keySpan.getStart(), keySpan.getEnd());
+                        centers = new HashMap<>();
+                        phaseCentersMap.addValidBetween(centers, keySpan.getStart(), keySpan.getEnd());
                     }
 
                     if (keySpan.getData() != null) {
@@ -359,7 +359,7 @@ public class SinexParseInfo extends ParseInfo<Sinex> {
                         }
 
                         // add the phase centers for the closest key
-                        phaseCenters.putAll(stationsPhaseCenters.get(closestKey));
+                        centers.putAll(stationsPhaseCenters.get(closestKey));
 
                     }
 

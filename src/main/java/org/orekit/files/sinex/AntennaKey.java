@@ -129,6 +129,7 @@ public class AntennaKey {
      * <tr><td style="background-color:#c9d5c9; padding:5px">fourth candidate</td>
      *     <td>{@link #getName()}</td><td>{@link #OTHER_RADOME_CODE "NONE"} </td><td>{@link #ANY_SERIAL_NUMBER "-----"}</td></tr>
      * </table>
+     * @return candidates for matching instance key, sorted from stricter to looser match
      */
     public List<AntennaKey> matchingCandidates() {
         return Arrays.asList(this,
