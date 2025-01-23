@@ -709,6 +709,19 @@ public class FieldAbsoluteDate<T extends CalculusFieldElement<T>>
                                        timeScale).shiftedBy(secondsInDay);
     }
 
+    /** Create an instance as the median data between two existing instances.
+     * @param date1 first instance
+     * @param date2 second instance
+     * @return median date between first and second instance
+     * @param <T> the type of the field elements
+     * @since 13.0
+     */
+    public static <T extends CalculusFieldElement<T>> FieldAbsoluteDate<T> createMedian(final FieldAbsoluteDate<T> date1,
+                                                                                        final FieldAbsoluteDate<T> date2) {
+        return new FieldAbsoluteDate<>(AbsoluteDate.createMedian(date1.date, date2.date),
+                                       date2.fieldOffset.add(date1.fieldOffset).multiply(0.5));
+    }
+
     /** Build an instance corresponding to a GPS date.
      *
      * <p>This method uses the {@link DataContext#getDefault() default data context}.

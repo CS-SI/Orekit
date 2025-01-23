@@ -1816,6 +1816,39 @@ public class FieldAbsoluteDateTest {
     }
 
     @Test
+    public void testMedian() {
+        final AbsoluteDate date1 = new AbsoluteDate(2003, 6, 13, 14, 15,
+                                                    new TimeOffset(53, TimeOffset.SECOND, 12, TimeOffset.ATTOSECOND),
+                                                    TimeScalesFactory.getTT());
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate1 =
+            new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(), date1).
+            shiftedBy(new UnivariateDerivative1(0.0, 1.0));
+        final AbsoluteDate date2 = new AbsoluteDate(2003, 6, 13, 14, 17,
+                                                    new TimeOffset(25, TimeOffset.SECOND, 120, TimeOffset.ATTOSECOND),
+                                                    TimeScalesFactory.getTT());
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDate2 =
+            new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(), date2).
+            shiftedBy(new UnivariateDerivative1(0.0, 2.0));
+        final AbsoluteDate dateM = new AbsoluteDate(2003, 6, 13, 14, 16,
+                                                 new TimeOffset(39, TimeOffset.SECOND, 66, TimeOffset.ATTOSECOND),
+                                                 TimeScalesFactory.getTT());
+        final FieldAbsoluteDate<UnivariateDerivative1> fieldDateM =
+            new FieldAbsoluteDate<>(UnivariateDerivative1Field.getInstance(), dateM).
+            shiftedBy(new UnivariateDerivative1(0.0, 1.5));
+        Assertions.assertEquals(fieldDateM, FieldAbsoluteDate.createMedian(fieldDate1, fieldDate2));
+        Assertions.assertEquals(fieldDateM, FieldAbsoluteDate.createMedian(fieldDate2, fieldDate1));
+    }
+
+    @Test
+    public void testMedianInfinite() {
+        final FieldAbsoluteDate<Binary64> future    = FieldAbsoluteDate.getFutureInfinity(Binary64Field.getInstance());
+        final FieldAbsoluteDate<Binary64> past      = FieldAbsoluteDate.getPastInfinity(Binary64Field.getInstance());
+        final FieldAbsoluteDate<Binary64> arbitrary = FieldAbsoluteDate.getArbitraryEpoch(Binary64Field.getInstance());
+        Assertions.assertEquals(future, FieldAbsoluteDate.createMedian(future, arbitrary));
+        Assertions.assertEquals(past,   FieldAbsoluteDate.createMedian(past,   arbitrary));
+    }
+
+    @Test
     void testToFUD2Field() {
         // GIVEN
         final Field<Binary64> field = Binary64Field.getInstance();
