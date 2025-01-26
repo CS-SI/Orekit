@@ -19,8 +19,12 @@ package org.orekit.control.indirect.adjoint.cost;
 import org.hipparchus.CalculusFieldElement;
 import org.hipparchus.Field;
 import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
+import org.hipparchus.util.MathArrays;
 import org.orekit.control.indirect.adjoint.CartesianAdjointDerivativesProvider;
+import org.orekit.propagation.FieldSpacecraftState;
 import org.orekit.propagation.events.FieldEventDetector;
+import org.orekit.propagation.integration.FieldAdditionalDerivativesProvider;
+import org.orekit.propagation.integration.FieldCombinedDerivatives;
 
 import java.util.stream.Stream;
 
@@ -68,7 +72,8 @@ public interface FieldCartesianCost<T extends CalculusFieldElement<T>> {
     void updateFieldAdjointDerivatives(T[] adjointVariables, T mass, T[] adjointDerivatives);
 
     /**
-     * Computes the Hamiltonian contribution of the cost function.
+     * Computes the Hamiltonian contribution to the cost function.
+     * It equals the Lagrange-form integrand multiplied by -1.
      * @param adjointVariables adjoint vector
      * @param mass mass
      * @return contribution to Hamiltonian
@@ -82,6 +87,42 @@ public interface FieldCartesianCost<T extends CalculusFieldElement<T>> {
      */
     default Stream<FieldEventDetector<T>> getFieldEventDetectors(final Field<T> field) {
         return Stream.of();
+    }
+
+    /**
+     * Get the derivatives provider to be able to integrate the cost function.
+     * @param name name of cost as additional state variable
+     * @return derivatives provider
+     * @since 13.0
+     */
+    default FieldAdditionalDerivativesProvider<T> getCostDerivativeProvider(final String name) {
+        return new FieldAdditionalDerivativesProvider<T>() {
+
+            @Override
+            public String getName() {
+                return name;
+            }
+
+            @Override
+            public int getDimension() {
+                return 1;
+            }
+
+            @Override
+            public boolean yields(final FieldSpacecraftState<T> state) {
+                return !state.hasAdditionalState(getAdjointName());
+            }
+
+            @Override
+            public FieldCombinedDerivatives<T> combinedDerivatives(final FieldSpacecraftState<T> s) {
+                final T mass = s.getMass();
+                final T[] derivatives = MathArrays.buildArray(mass.getField(), 1);
+                final T[] adjoint = s.getAdditionalState(getAdjointName());
+                final T hamiltonianContribution = getFieldHamiltonianContribution(adjoint, s.getMass());
+                derivatives[0] = hamiltonianContribution.negate();
+                return new FieldCombinedDerivatives<>(derivatives, null);
+            }
+        };
     }
 
     /**
