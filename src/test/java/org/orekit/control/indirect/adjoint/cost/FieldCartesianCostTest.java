@@ -16,6 +16,7 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import org.hipparchus.geometry.euclidean.threed.FieldVector3D;
 import org.hipparchus.util.Binary64;
 import org.hipparchus.util.Binary64Field;
 import org.hipparchus.util.MathArrays;
@@ -48,7 +49,7 @@ class FieldCartesianCostTest {
         // GIVEN
         final TestFieldCost fieldCost = new TestFieldCost();
         final String expectedName = "a";
-        final FieldSpacecraftState mockedState = Mockito.mock();
+        final FieldSpacecraftState<Binary64> mockedState = Mockito.mock();
         final String adjointName = fieldCost.getAdjointName();
         Mockito.when(mockedState.hasAdditionalState(adjointName)).thenReturn(yields);
         // WHEN
@@ -63,10 +64,8 @@ class FieldCartesianCostTest {
     @SuppressWarnings("unchecked")
     void getCostDerivativeProviderCombinedDerivativesTest() {
         // GIVEN
-        final FieldCartesianCost<Binary64> mockedFieldCost = Mockito.mock();
+        final FieldCartesianCost<Binary64> cost = new TestCost();
         final String expectedName = "a";
-        final String adjointName = "adjoint";
-        Mockito.when(mockedFieldCost.getAdjointName()).thenReturn(adjointName);
         final Binary64Field field = Binary64Field.getInstance();
         final Binary64[] adjoint = MathArrays.buildArray(field, 6);
         for (int i = 0; i < adjoint.length; ++i) {
@@ -74,16 +73,53 @@ class FieldCartesianCostTest {
         }
         final FieldSpacecraftState<Binary64> state = new FieldSpacecraftState<>(field,
                 new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH)))
-                .addAdditionalState(adjointName, adjoint);
+                .addAdditionalState(cost.getAdjointName(), adjoint);
         final Binary64 expectedDerivative = Binary64.ONE;
-        Mockito.when(mockedFieldCost.getFieldHamiltonianContribution(adjoint, state.getMass()))
-                .thenReturn(expectedDerivative.negate());
-        Mockito.when(mockedFieldCost.getCostDerivativeProvider(expectedName)).thenCallRealMethod();
         // WHEN
-        final FieldAdditionalDerivativesProvider<Binary64> fieldCostDerivative = mockedFieldCost.getCostDerivativeProvider(expectedName);
+        final FieldAdditionalDerivativesProvider<Binary64> fieldCostDerivative = cost.getCostDerivativeProvider(expectedName);
         // THEN
         final FieldCombinedDerivatives<Binary64> fieldCombinedDerivatives = fieldCostDerivative.combinedDerivatives(state);
         Assertions.assertNull(fieldCombinedDerivatives.getMainStateDerivativesIncrements());
         Assertions.assertEquals(expectedDerivative, fieldCombinedDerivatives.getAdditionalDerivatives()[0]);
     }
+
+    private static class TestCost implements FieldCartesianCost<Binary64> {
+
+        @Override
+        public String getAdjointName() {
+            return "adjoint";
+        }
+
+        @Override
+        public int getAdjointDimension() {
+            return 6;
+        }
+
+        @Override
+        public Binary64 getMassFlowRateFactor() {
+            return Binary64.ZERO;
+        }
+
+        @Override
+        public FieldVector3D<Binary64> getFieldThrustAccelerationVector(final Binary64[] adjointVariables, final Binary64 mass) {
+            return null;
+        }
+
+        @Override
+        public void updateFieldAdjointDerivatives(final Binary64[] adjointVariables, final Binary64 mass,
+                                                  final Binary64[] adjointDerivatives) {
+
+        }
+
+        @Override
+        public Binary64 getFieldHamiltonianContribution(final Binary64[] adjointVariables, final Binary64 mass) {
+            return new Binary64(-1);
+        }
+
+        @Override
+        public CartesianCost toCartesianCost() {
+            return null;
+        }
+    }
+
 }

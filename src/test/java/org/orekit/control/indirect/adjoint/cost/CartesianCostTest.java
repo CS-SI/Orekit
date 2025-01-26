@@ -16,6 +16,7 @@
  */
 package org.orekit.control.indirect.adjoint.cost;
 
+import org.hipparchus.geometry.euclidean.threed.Vector3D;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -57,21 +58,51 @@ class CartesianCostTest {
     @Test
     void getCostDerivativeProviderCombinedDerivativesTest() {
         // GIVEN
-        final CartesianCost mockedCost = Mockito.mock();
-        final String adjointName = "adjoint";
-        Mockito.when(mockedCost.getAdjointName()).thenReturn(adjointName);
+        final CartesianCost cost = new TestCost();
         final String name = "a";
-        Mockito.when(mockedCost.getCostDerivativeProvider(name)).thenCallRealMethod();
         final double[] adjoint = new double[] {1, 2, 3, 4, 5, 6};
         final SpacecraftState state = new SpacecraftState(TestUtils.getDefaultOrbit(AbsoluteDate.ARBITRARY_EPOCH))
-                .addAdditionalState(mockedCost.getAdjointName(), adjoint);
-        final double expectedDerivative = 1.;
-        Mockito.when(mockedCost.getHamiltonianContribution(adjoint, state.getMass())).thenReturn(-expectedDerivative);
+                .addAdditionalState(cost.getAdjointName(), adjoint);
         // WHEN
-        final AdditionalDerivativesProvider costDerivative = mockedCost.getCostDerivativeProvider(name);
+        final AdditionalDerivativesProvider costDerivative = cost.getCostDerivativeProvider(name);
         // THEN
         final CombinedDerivatives combinedDerivatives = costDerivative.combinedDerivatives(state);
         Assertions.assertNull(combinedDerivatives.getMainStateDerivativesIncrements());
-        Assertions.assertEquals(expectedDerivative, combinedDerivatives.getAdditionalDerivatives()[0]);
+        Assertions.assertEquals(1, combinedDerivatives.getAdditionalDerivatives()[0]);
     }
+
+    private static class TestCost implements CartesianCost {
+
+        @Override
+        public String getAdjointName() {
+            return "adjoint";
+        }
+
+        @Override
+        public int getAdjointDimension() {
+            return 6;
+        }
+
+        @Override
+        public double getMassFlowRateFactor() {
+            return 0;
+        }
+
+        @Override
+        public Vector3D getThrustAccelerationVector(final double[] adjointVariables, final double mass) {
+            return null;
+        }
+
+        @Override
+        public void updateAdjointDerivatives(final double[] adjointVariables, final double mass,
+                                             final double[] adjointDerivatives) {
+
+        }
+
+        @Override
+        public double getHamiltonianContribution(final double[] adjointVariables, final double mass) {
+            return -1;
+        }
+    }
+
 }
