@@ -17,6 +17,7 @@
 package org.orekit.models.earth.tessellation;
 
 import org.hipparchus.geometry.euclidean.threed.Vector3D;
+import org.hipparchus.geometry.partitioning.Region;
 import org.hipparchus.geometry.partitioning.Region.Location;
 import org.hipparchus.geometry.partitioning.RegionFactory;
 import org.hipparchus.geometry.spherical.twod.S2Point;
@@ -364,7 +365,122 @@ public class EllipsoidTessellatorTest {
         doTestSampleAroundPole(aoi, new DivertedSingularityAiming(aoi), 993);
     }
 
-    private void doTestSampleAroundPole(final SphericalPolygonsSet aoi, final TileAiming aiming, final int expectedNodes) {
+    @Test
+    public void testIssue1388A() {
+        doTestIssue1388(true);
+    }
+
+    @Test
+    public void testIssue1388B() {
+        doTestIssue1388(false);
+    }
+
+    private void doTestIssue1388(final boolean order) {
+        final double[][] coordinates1 = new double[][] {
+            { 18.52684751402596,  -76.97880893719434 },
+            { 18.451108862175584, -76.99484778988442 },
+            { 18.375369256045143, -77.01087679277504 },
+            { 18.299628701801268, -77.02689599675749 },
+            { 18.223887203723567, -77.04290545732495 },
+            { 18.148144771769385, -77.05890521550272 },
+            { 18.072401410187016, -77.0748953260324  },
+            { 17.99665712514784,  -77.09087584010511 },
+            { 17.92091192468999,  -77.10684680260262 },
+            { 17.84516581113023,  -77.12280827309398 },
+            { 17.769418792522664, -77.13876029654094 },
+            { 17.747659863099422, -77.14334087084347 },
+            { 17.67571798336192,  -77.15846791369165 },
+//            adding 1.0e-4 to the second coordinate of the following point
+//            generates an open outline boundary error
+            { 17.624293265977183, -77.16938381433733 },
+            { 17.5485398681768,   -77.18520934447962 },
+            { 17.526779103104783, -77.1897823275402  },
+            { 17.49650619905315,  -77.0342031192472  },
+            { 17.588661518962343, -77.01473903648854 },
+            { 17.728574326965138, -76.98517769352242 },
+            { 17.80416324015021,  -76.96919708557023 },
+            { 17.87969526622326,  -76.95321858415689 },
+            { 17.955280973332677, -76.93721874766547 },
+            { 18.030855567607098, -76.92121123297645 },
+            { 18.106414929680927, -76.90519686376611 },
+            { 18.182031502555215, -76.88916022728444 },
+            { 18.257597934434987, -76.87312403715188 },
+            { 18.3331742522667,   -76.85707550881591 },
+            { 18.408750874895002, -76.84101662269072 },
+            { 18.57249082100609,  -76.80620195239239 },
+            { 18.602585205425896, -76.96276018365842 }
+        };
+
+        final double[][] coordinates2 = new double[][] {
+            { 18.338614038907608, -78.37885677406668 },
+            { 18.195574802144037, -78.24425107003432 },
+            { 18.20775293886321,  -78.0711865934217  },
+            { 18.07679345301507,  -77.95901517339438 },
+            { 18.006705181057598, -77.85325354879791 },
+            { 17.857293838883137, -77.73787723105598 },
+            { 17.854243316622103, -77.57442744758828 },
+            { 17.875595873376014, -77.38213358468467 },
+            { 17.72607423578937,  -77.23470828979222 },
+            { 17.71386286451302,  -77.12253686976543 },
+            { 17.790170276013725, -77.14817605148616 },
+            { 17.869495404611797, -77.14497115377101 },
+            { 17.854243309397717, -76.9302429967729  },
+            { 17.954882874700132, -76.84371075846688 },
+            { 17.94268718313505,  -76.6898756681441  },
+            { 17.869495397388064, -76.54886016868198 },
+            { 17.863394719203555, -76.35015651034861 },
+            { 17.93049065091843,  -76.23478019260665 },
+            { 18.155989976776553, -76.32451732862788 },
+            { 18.22601854027039,  -76.63218750927341 },
+            { 18.33861403170316,  -76.85653034932697 },
+            { 18.405527980074993, -76.97831646249921 },
+            { 18.4541763474828,   -77.28598664314421 },
+            { 18.496732365966466, -77.705828243816   },
+            { 18.451136227912485, -78.00708862903122 },
+            { 18.405527980074993, -78.25707065080552 }
+        };
+
+        final double[][] expectedIn = new double[][] {
+                { 18.408, -77.003 },
+                { 18.338, -76.857 },
+                { 17.869, -77.117 },
+                { 17.857, -76.959 },
+                { 17.761, -77.139 },
+                { 17.715, -77.125 }
+        };
+
+        final double[][] expectedOut = new double[][] {
+                { 17.794, -77.145 },
+                { 17.736, -76.981 },
+                { 17.715, -77.138 },
+                { 18.153, -77.059 },
+                { 18.232, -76.877 },
+                { 18.373, -76.917 },
+                { 17.871, -77.261 } // this is the point that was wrongly inside the intersection
+        };
+
+        SphericalPolygonsSet shape1 = buildSimpleZone(1e-10, coordinates1);
+        SphericalPolygonsSet shape2 = buildSimpleZone(1e-10, coordinates2);
+        Region<Sphere2D, S2Point> intersection = order ?
+                                                 new RegionFactory<Sphere2D, S2Point>().intersection(shape1, shape2) :
+                                                 new RegionFactory<Sphere2D, S2Point>().intersection(shape2, shape1);
+
+        for (final double[] doubles : expectedIn) {
+            Assertions.assertEquals(Location.INSIDE,
+                                    intersection.checkPoint(new S2Point(FastMath.toRadians(doubles[1]),
+                                                                        FastMath.toRadians(90.0 - doubles[0]))));
+        }
+
+        for (final double[] doubles : expectedOut) {
+            Assertions.assertEquals(Location.OUTSIDE,
+                                    intersection.checkPoint(new S2Point(FastMath.toRadians(doubles[1]),
+                                                                        FastMath.toRadians(90.0 - doubles[0]))));
+        }
+
+    }
+
+    private void doTestSampleAroundPole(final SphericalPolygonsSet aoi, final TileAiming aiming,
+                                        final int expectedNodes) {
         EllipsoidTessellator tessellator = new EllipsoidTessellator(ellipsoid, aiming, 1);
         try {
             List<List<GeodeticPoint>> sampledZone = tessellator.sample(aoi, 20000.0, 20000.0);
@@ -446,7 +562,7 @@ public class EllipsoidTessellatorTest {
                                                                        FastMath.toRadians(9.22975),
                                                                        0.0));
 
-          return (SphericalPolygonsSet) new RegionFactory<Sphere2D>().union(continental, corsica);
+          return (SphericalPolygonsSet) new RegionFactory<Sphere2D, S2Point>().union(continental, corsica);
 
     }
 

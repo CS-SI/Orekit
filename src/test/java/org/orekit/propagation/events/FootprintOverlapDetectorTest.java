@@ -229,7 +229,7 @@ public class FootprintOverlapDetectorTest {
             { 41.58361,  8.77572 }, { 41.38000,  9.22975 }
           });
 
-          return (SphericalPolygonsSet) new RegionFactory<Sphere2D>().union(continental, corsica);
+          return (SphericalPolygonsSet) new RegionFactory<Sphere2D, S2Point>().union(continental, corsica);
 
     }
 
