@@ -122,14 +122,14 @@ public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
     /** {@inheritDoc} */
     @Override
     public Stream<EventDetector> getEventDetectors() {
-        return Stream.of(new QuadraticallyPenalizedSwitchDetector(getEventDetectionSettings(), 0),
-                new QuadraticallyPenalizedSwitchDetector(getEventDetectionSettings(), getMaximumThrustMagnitude()));
+        return Stream.of(new QuadraticPenalizedSwitchDetector(getEventDetectionSettings(), 0),
+                new QuadraticPenalizedSwitchDetector(getEventDetectionSettings(), getMaximumThrustMagnitude()));
     }
 
     /**
-     * Event detector for bang-bang switches.
+     * Event detector for control non-differentiability.
      */
-    private class QuadraticallyPenalizedSwitchDetector extends ControlSwitchDetector {
+    private class QuadraticPenalizedSwitchDetector extends ControlSwitchDetector {
 
         /** Critical value at which the switching function has an event. */
         private final double criticalValue;
@@ -139,8 +139,8 @@ public class QuadraticPenaltyCartesianFuel extends PenalizedCartesianFuelCost {
          * @param detectionSettings detection settings.
          * @param criticalValue switch function value to detect
          */
-        QuadraticallyPenalizedSwitchDetector(final EventDetectionSettings detectionSettings,
-                                             final double criticalValue) {
+        QuadraticPenalizedSwitchDetector(final EventDetectionSettings detectionSettings,
+                                         final double criticalValue) {
             super(detectionSettings);
             this.criticalValue = criticalValue;
         }
