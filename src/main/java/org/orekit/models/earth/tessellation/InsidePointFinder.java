@@ -36,7 +36,7 @@ import org.hipparchus.geometry.spherical.twod.Vertex;
  * </p>
  * @author Luc Maisonobe
  */
-class InsidePointFinder implements BSPTreeVisitor<Sphere2D> {
+class InsidePointFinder implements BSPTreeVisitor<Sphere2D, S2Point> {
 
     /** Zone of interest. */
     private final SphericalPolygonsSet zone;
@@ -58,18 +58,18 @@ class InsidePointFinder implements BSPTreeVisitor<Sphere2D> {
 
     /** {@inheritDoc} */
     @Override
-    public Order visitOrder(final BSPTree<Sphere2D> node) {
+    public Order visitOrder(final BSPTree<Sphere2D, S2Point> node) {
         return Order.MINUS_PLUS_SUB;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void visitInternalNode(final BSPTree<Sphere2D> node) {
+    public void visitInternalNode(final BSPTree<Sphere2D, S2Point> node) {
     }
 
     /** {@inheritDoc} */
     @Override
-    public void visitLeafNode(final BSPTree<Sphere2D> node) {
+    public void visitLeafNode(final BSPTree<Sphere2D, S2Point> node) {
 
         // we have already found a good point
         if (insidePointFirstChoice != null) {

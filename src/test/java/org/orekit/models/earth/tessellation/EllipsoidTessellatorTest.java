@@ -42,7 +42,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
-import java.io.IOException;
 import java.util.List;
 
 public class EllipsoidTessellatorTest {
@@ -367,16 +366,16 @@ public class EllipsoidTessellatorTest {
     }
 
     @Test
-    public void testIssue1388A() throws IOException {
+    public void testIssue1388A() {
         doTestIssue1388(true);
     }
 
     @Test
-    public void testIssue1388B() throws IOException {
+    public void testIssue1388B() {
         doTestIssue1388(false);
     }
 
-    private void doTestIssue1388(final boolean order) throws IOException {
+    private void doTestIssue1388(final boolean order) {
         final double[][] coordinates1 = new double[][] {
             { 18.52684751402596,  -76.97880893719434 },
             { 18.451108862175584, -76.99484778988442 },
@@ -391,7 +390,9 @@ public class EllipsoidTessellatorTest {
             { 17.769418792522664, -77.13876029654094 },
             { 17.747659863099422, -77.14334087084347 },
             { 17.67571798336192,  -77.15846791369165 },
-            { 17.624293265977183, -77.16928381433733 },
+//            adding 1.0e-4 to the second coordinate of the following point
+//            generates an open outline boundary error
+            { 17.624293265977183, -77.16938381433733 },
             { 17.5485398681768,   -77.18520934447962 },
             { 17.526779103104783, -77.1897823275402  },
             { 17.49650619905315,  -77.0342031192472  },
@@ -460,25 +461,26 @@ public class EllipsoidTessellatorTest {
 
         SphericalPolygonsSet shape1 = buildSimpleZone(1e-10, coordinates1);
         SphericalPolygonsSet shape2 = buildSimpleZone(1e-10, coordinates2);
-        Region<Sphere2D> intersection = order ?
-                                        new RegionFactory<Sphere2D>().intersection(shape1, shape2) :
-                                        new RegionFactory<Sphere2D>().intersection(shape2, shape1);
+        Region<Sphere2D, S2Point> intersection = order ?
+                                                 new RegionFactory<Sphere2D, S2Point>().intersection(shape1, shape2) :
+                                                 new RegionFactory<Sphere2D, S2Point>().intersection(shape2, shape1);
 
-        for (int i = 0; i < expectedIn.length; i++) {
+        for (final double[] doubles : expectedIn) {
             Assertions.assertEquals(Location.INSIDE,
-                                    intersection.checkPoint(new S2Point(FastMath.toRadians(expectedIn[i][1]),
-                                                                        FastMath.toRadians(90.0 - expectedIn[i][0]))));
+                                    intersection.checkPoint(new S2Point(FastMath.toRadians(doubles[1]),
+                                                                        FastMath.toRadians(90.0 - doubles[0]))));
         }
 
-        for (int i = 0; i < expectedOut.length; i++) {
+        for (final double[] doubles : expectedOut) {
             Assertions.assertEquals(Location.OUTSIDE,
-                                    intersection.checkPoint(new S2Point(FastMath.toRadians(expectedOut[i][1]),
-                                                                        FastMath.toRadians(90.0 - expectedOut[i][0]))));
+                                    intersection.checkPoint(new S2Point(FastMath.toRadians(doubles[1]),
+                                                                        FastMath.toRadians(90.0 - doubles[0]))));
         }
 
     }
 
-    private void doTestSampleAroundPole(final SphericalPolygonsSet aoi, final TileAiming aiming, final int expectedNodes) {
+    private void doTestSampleAroundPole(final SphericalPolygonsSet aoi, final TileAiming aiming,
+                                        final int expectedNodes) {
         EllipsoidTessellator tessellator = new EllipsoidTessellator(ellipsoid, aiming, 1);
         try {
             List<List<GeodeticPoint>> sampledZone = tessellator.sample(aoi, 20000.0, 20000.0);
@@ -560,7 +562,7 @@ public class EllipsoidTessellatorTest {
                                                                        FastMath.toRadians(9.22975),
                                                                        0.0));
 
-          return (SphericalPolygonsSet) new RegionFactory<Sphere2D>().union(continental, corsica);
+          return (SphericalPolygonsSet) new RegionFactory<Sphere2D, S2Point>().union(continental, corsica);
 
     }
 

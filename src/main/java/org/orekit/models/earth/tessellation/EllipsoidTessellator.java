@@ -164,12 +164,12 @@ public class EllipsoidTessellator {
                                        final double widthOverlap, final double lengthOverlap,
                                        final boolean truncateLastWidth, final boolean truncateLastLength) {
 
-        final double                  splitWidth  = (fullWidth  - widthOverlap)  / quantization;
-        final double                  splitLength = (fullLength - lengthOverlap) / quantization;
-        final Map<Mesh, List<Tile>>   map         = new IdentityHashMap<>();
-        final RegionFactory<Sphere2D> factory     = new RegionFactory<>();
-        SphericalPolygonsSet          remaining   = (SphericalPolygonsSet) zone.copySelf();
-        S2Point                       inside      = getInsidePoint(remaining);
+        final double                           splitWidth  = (fullWidth  - widthOverlap)  / quantization;
+        final double                           splitLength = (fullLength - lengthOverlap) / quantization;
+        final Map<Mesh, List<Tile>>            map         = new IdentityHashMap<>();
+        final RegionFactory<Sphere2D, S2Point> factory     = new RegionFactory<>();
+        SphericalPolygonsSet                   remaining   = (SphericalPolygonsSet) zone.copySelf();
+        S2Point                                inside      = getInsidePoint(remaining);
 
         int count = 0;
         while (inside != null) {
@@ -241,12 +241,12 @@ public class EllipsoidTessellator {
     public List<List<GeodeticPoint>> sample(final SphericalPolygonsSet zone,
                                             final double width, final double length) {
 
-        final double                         splitWidth  = width  / quantization;
-        final double                         splitLength = length / quantization;
-        final Map<Mesh, List<GeodeticPoint>> map         = new IdentityHashMap<>();
-        final RegionFactory<Sphere2D>        factory     = new RegionFactory<>();
-        SphericalPolygonsSet                 remaining   = (SphericalPolygonsSet) zone.copySelf();
-        S2Point                              inside      = getInsidePoint(remaining);
+        final double                           splitWidth  = width  / quantization;
+        final double                           splitLength = length / quantization;
+        final Map<Mesh, List<GeodeticPoint>>   map         = new IdentityHashMap<>();
+        final RegionFactory<Sphere2D, S2Point> factory     = new RegionFactory<>();
+        SphericalPolygonsSet                   remaining   = (SphericalPolygonsSet) zone.copySelf();
+        S2Point                                inside      = getInsidePoint(remaining);
 
         int count = 0;
         while (inside != null) {
@@ -427,7 +427,7 @@ public class EllipsoidTessellator {
                 final SphericalPolygonsSet quadrilateral =
                         new SphericalPolygonsSet(zone.getTolerance(), s2p0, s2p1, s2p2, s2p3);
 
-                if (!new RegionFactory<Sphere2D>().intersection(zone.copySelf(), quadrilateral).isEmpty()) {
+                if (!new RegionFactory<Sphere2D, S2Point>().intersection(zone.copySelf(), quadrilateral).isEmpty()) {
 
                     // the tile does cover part of the zone, it contributes to the tessellation
                     tiles.add(new Tile(toGeodetic(s2p0), toGeodetic(s2p1), toGeodetic(s2p2), toGeodetic(s2p3)));
@@ -737,7 +737,8 @@ public class EllipsoidTessellator {
      * @param sub arc to characterize
      * @return true if the arc meets the inside of the zone
      */
-    private boolean recurseMeetInside(final BSPTree<Sphere2D> node, final SubHyperplane<Sphere2D> sub) {
+    private boolean recurseMeetInside(final BSPTree<Sphere2D, S2Point> node,
+                                      final SubHyperplane<Sphere2D, S2Point> sub) {
 
         if (node.getCut() == null) {
             // we have reached a leaf node
@@ -747,8 +748,8 @@ public class EllipsoidTessellator {
                 return (Boolean) node.getAttribute();
             }
         } else {
-            final Hyperplane<Sphere2D> hyperplane = node.getCut().getHyperplane();
-            final SubHyperplane.SplitSubHyperplane<Sphere2D> split = sub.split(hyperplane);
+            final Hyperplane<Sphere2D, S2Point> hyperplane = node.getCut().getHyperplane();
+            final SubHyperplane.SplitSubHyperplane<Sphere2D, S2Point> split = sub.split(hyperplane);
             switch (split.getSide()) {
                 case PLUS:
                     return recurseMeetInside(node.getPlus(),  sub);
