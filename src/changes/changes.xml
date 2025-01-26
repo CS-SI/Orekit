@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="13.0" date="TBD" description="TBD">
+        <action dev="serrof" type="add" issue="1654">
+            Add easy way to integrate cost with indirect control.
+        </action>
         <action dev="luc" type="add" issue="1649">
             Adding parsing of SITE/GPS_PHASE_CENTER, SITE/GAL_PHASE_CENTER,
             and SATELLITE/PHASE_CENTER from Sinex files.
@@ -185,7 +188,7 @@
             Deprecate tolerances in (Field)NumericalPropagator and (Field)DSSTPropagator.
         </action>
         <action dev="serrof" type="update" issue="1569">
-            Moved initizaliztion of (Field)Handler in (Field)EventDetector.
+            Moved initialization of (Field)Handler in (Field)EventDetector.
         </action>
         <action dev="luc" type="fix" issue="1567">
             Fixed interpolation of phase center variations in Antex files.
@@ -393,7 +396,7 @@
         Add abstract class for solar flux model with spherical body.
       </action>
       <action dev="serrof" type="fix" issue="1537" due-to="markrutten">
-        Fix crash of EKF whithout orbital parameters and at least one propagation parameter to estimate.
+        Fix crash of EKF without orbital parameters and at least one propagation parameter to estimate.
       </action>
       <action dev="serrof" type="update" issue="1536">
         Override methods in (Field) static transform identity.
