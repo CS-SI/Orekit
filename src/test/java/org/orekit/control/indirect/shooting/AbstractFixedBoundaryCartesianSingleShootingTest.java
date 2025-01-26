@@ -95,8 +95,13 @@ class AbstractFixedBoundaryCartesianSingleShootingTest {
         }
 
         @Override
-        protected double[] updateAdjoint(double[] originalInitialAdjoint, FieldSpacecraftState<Gradient> fieldTerminalState) {
-            return originalInitialAdjoint;
+        public int getMaximumIterationCount() {
+            return 0;
+        }
+
+        @Override
+        protected double[] updateShootingVariables(double[] originalShootingVariables, FieldSpacecraftState<Gradient> fieldTerminalState) {
+            return originalShootingVariables;
         }
     }
 

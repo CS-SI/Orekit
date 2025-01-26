@@ -81,7 +81,7 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
     }
 
     @Test
-    void testUpdateAdjointZeroDefects() {
+    void testUpdateShootingVariablesZeroDefects() {
         // GIVEN
         final double[] originalAdjoint = new double[] { 1, 2, 3, 4, 5, 6 };
         final GradientField field = GradientField.getField(6);
@@ -98,11 +98,11 @@ class NewtonFixedBoundaryCartesianSingleShootingTest {
         final double one = 1;
         Mockito.when(shooting.getScalePositionDefects()).thenReturn(one);
         Mockito.when(shooting.getScaleVelocityDefects()).thenReturn(one);
-        Mockito.when(shooting.updateAdjoint(originalAdjoint, fieldState)).thenCallRealMethod();
+        Mockito.when(shooting.updateShootingVariables(originalAdjoint, fieldState)).thenCallRealMethod();
         Mockito.when(shooting.getTerminalCartesianState()).thenReturn(targetPV);
         Mockito.when(shooting.getScales()).thenReturn(new double[] {1, 1, 1, 1, 1, 1});
         // WHEN
-        final double[] adjoint = shooting.updateAdjoint(originalAdjoint, fieldState);
+        final double[] adjoint = shooting.updateShootingVariables(originalAdjoint, fieldState);
         // THEN
         Assertions.assertArrayEquals(originalAdjoint, adjoint);
     }
